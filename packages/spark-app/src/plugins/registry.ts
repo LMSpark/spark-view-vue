@@ -58,48 +58,58 @@ export type PluginInstance = {
   /** 加载器信息 */
   loader: PluginLoader}
 
+/** Plugin Registry 的语义模型。 */
 export class PluginRegistry {
   private readonly loaders = new Map<string, PluginLoader>()
 
-  register(id: string, loader: Omit<PluginLoader, 'id'>): void {
+    /** 执行 register 操作。 */
+register(id: string, loader: Omit<PluginLoader, 'id'>): void {
     if (this.loaders.has(id)) {
       pluginLogger.warn(`Plugin "${id}" already registered, will be overwritten`)
     }
     this.loaders.set(id, { id, ...loader })
   }
 
-  registerAll(entries: Record<string, Omit<PluginLoader, 'id'>> | null | undefined): void {
+    /** 执行 register All 操作。 */
+registerAll(entries: Record<string, Omit<PluginLoader, 'id'>> | null | undefined): void {
     if (entries === null || entries === undefined) return
     for (const [id, loader] of Object.entries(entries)) {
       this.register(id, loader)
     }
   }
 
-  get(id: string): PluginLoader | undefined {
+    /** 执行 get 操作。 */
+get(id: string): PluginLoader | undefined {
     return this.loaders.get(id)
   }
 
-  has(id: string): boolean {
+    /** 执行 has 操作。 */
+has(id: string): boolean {
     return this.loaders.has(id)
   }
 
-  getAll(): PluginLoader[] {
+    /** 读取 All。 */
+getAll(): PluginLoader[] {
     return Array.from(this.loaders.values())
   }
 
-  getAllIds(): string[] {
+    /** 读取 All Ids。 */
+getAllIds(): string[] {
     return Array.from(this.loaders.keys())
   }
 
-  unregister(id: string): boolean {
+    /** 执行 unregister 操作。 */
+unregister(id: string): boolean {
     return this.loaders.delete(id)
   }
 
-  clear(): void {
+    /** 执行 clear 操作。 */
+clear(): void {
     this.loaders.clear()
   }
 
-  getStats(): { total: number; plugins: string[] } {
+    /** 读取 Stats。 */
+getStats(): { total: number; plugins: string[] } {
     return { total: this.loaders.size, plugins: Array.from(this.loaders.keys()) }
   }
 }

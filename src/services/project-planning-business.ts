@@ -14,15 +14,25 @@ import {
   type AiAgentToolLoopNudgeContext,
 } from '@/services/spark-ai-agent-bindings'
 import { CLASS_MODEL_TOOL_NAMES } from '@spark-appworks/spark-ai/class-model'
-import { ProjectModel, type ProjectNodeData, type ProjectWorkspace } from '@spark-appworks/spark-project-model'
+import {
+  ProjectRootModel,
+  applyProjectRootModelToProjectModel,
+  projectRootModelFromProjectModel,
+  type ProjectModel,
+  type ProjectNodeData,
+  type ProjectWorkspace,
+} from '@spark-appworks/spark-project-model'
 import { evaluateProjectPlanningToolGate } from '@/services/project-planning-gates'
 import { createProjectPlanningClassModelKnowledgeProvider } from '@/services/project-planning-class-model-knowledge-provider'
 import { dtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
 
 export const PROJECT_PLANNING_MODULE_ID = 'projectPlanning'
 
-const PROJECT_PLANNING_ROOT_CLASS_NAME = 'ProjectModel'
+const PROJECT_PLANNING_ROOT_CLASS_NAME = 'ProjectRootModel'
 
+const projectPlanningDomainRoots = new Map<string, ProjectRootModel>()
+
+/** Project Planning Run Input 的输入数据。 */
 export type ProjectPlanningRunInput = Readonly<{
   projectId: string
   /** 项目级短需求；来自 readProjectPlanningInput().requirement。 */
@@ -45,6 +55,7 @@ export type ProjectPlanningAgentInput = Readonly<{
   navigationNodes: NavigationPlanningAgentInput[]
 }>
 
+/** Navigation Planning Agent Input 的输入数据。 */
 export type NavigationPlanningAgentInput = Readonly<{
   nodeId: string
   title: string
@@ -54,6 +65,7 @@ export type NavigationPlanningAgentInput = Readonly<{
   planningAttachmentText?: string
 }>
 
+/** Navigation Planning Run Input 的输入数据。 */
 export type NavigationPlanningRunInput = Readonly<{
   nodeId: string
   title: string
@@ -65,6 +77,7 @@ export type NavigationPlanningRunInput = Readonly<{
   planningAttachmentText?: string
 }>
 
+/** Resolve Project Planning Run Input Options 的调用配置。 */
 export type ResolveProjectPlanningRunInputOptions = Readonly<{
   /** Host Run 可注入一次性需求，不写回 ProjectModel。 */
   requirementOverride?: string
@@ -74,6 +87,7 @@ export type ResolveProjectPlanningRunInputOptions = Readonly<{
   navigationAttachmentTextByNodeId?: Readonly<Record<string, string>>
 }>
 
+/** Filter Navigation Planning Nodes Options 的调用配置。 */
 export type FilterNavigationPlanningNodesOptions = Readonly<{
   /** 仅包含这些 nodeId；未传则按 includeEmptyRequirement 规则过滤。 */
   scopeNodeIds?: readonly string[]
@@ -81,9 +95,11 @@ export type FilterNavigationPlanningNodesOptions = Readonly<{
   includeEmptyRequirement?: boolean
 }>
 
+/** Resolve Scoped Project Planning Run Input Options 的调用配置。 */
 export type ResolveScopedProjectPlanningRunInputOptions =
   ResolveProjectPlanningRunInputOptions & FilterNavigationPlanningNodesOptions
 
+/** Ensure Project Planning Business Options 的调用配置。 */
 export type EnsureProjectPlanningBusinessOptions = Readonly<{
   host: AiAgentHost
   getProjectPlanningEditor: (context: { moduleInstanceId: string }) => ProjectWorkspace
@@ -234,7 +250,7 @@ export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusi
   return options.host.ensure(PROJECT_PLANNING_MODULE_ID, {
     moduleId: PROJECT_PLANNING_MODULE_ID,
     create: () => ClassModelAgentAdapter.createRegistration({
-      moduleClass: ProjectModel,
+      moduleClass: ProjectRootModel,
       options: {
         moduleId: PROJECT_PLANNING_MODULE_ID,
         rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
@@ -279,11 +295,21 @@ export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusi
             '业务契约见 DTS ClassModel 知识索引（model_query / model_action_guide）。',
           ],
         }),
-        resolveInstance: ctx => resolveProjectPlanningProject(options, ctx),
-        beforeFunctionCall: (instance: ProjectModel, hookOptions) => evaluateProjectPlanningBeforeFunctionCall(
+        resolveInstance: (ctx) => resolveProjectPlanningDomainRoot(options, ctx),
+        beforeFunctionCall: (instance: ProjectRootModel, hookOptions) => evaluateProjectPlanningBeforeFunctionCall(
           instance,
           hookOptions,
         ),
+        afterFunctionCall: (instance: ProjectRootModel, hookOptions) => {
+          if (hookOptions.toolName === CLASS_MODEL_TOOL_NAMES.script) {
+            const editor = options.getProjectPlanningEditor({ moduleInstanceId: hookOptions.moduleInstanceId })
+            applyProjectRootModelToProjectModel(instance, editor.project)
+          }
+          return { status: 'continue' }
+        },
+        releaseModuleInstance: (_instance, moduleInstanceId) => {
+          projectPlanningDomainRoots.delete(moduleInstanceId)
+        },
         executionToolNames: PROJECT_PLANNING_EXECUTION_TOOL_NAMES,
         planWithoutToolMarkers: PROJECT_PLANNING_PLAN_WITHOUT_TOOL_MARKERS,
         toolLoopNudge: createProjectPlanningToolLoopNudge,
@@ -326,12 +352,12 @@ function createProjectPlanningSystemPrompt(input: ProjectPlanningAgentInput): st
   return [
     `当前 projectPlanning 项目: ${input.projectId}`,
     context,
-    '知识索引: DTS ClassModel（ProjectModel 根模型）；只把 ClassModel 当作模型知识索引，项目策划语义只在 App 层本业务内编排。',
-    '职责边界: LLM 只负责发出 model_script({ script }) tool_call；script 是 async function body；运行时负责把 this 绑定到 ProjectModel 并执行脚本。',
+    '知识索引: DTS ClassModel（ProjectRootModel 根模型）；只把 ClassModel 当作模型知识索引，项目策划语义只在 App 层本业务内编排。',
+    '职责边界: LLM 只负责发出 model_script({ script }) tool_call；script 是 async function body；运行时负责把 this 绑定到 ProjectRootModel 并执行脚本。',
     '执行规则: 不要把脚本写成普通文本回答；不要直接声明或访问 project 对象；不要用 project.xxx 路径；最终必须通过 model_script 的 script 字符串调用 this.xxx。',
-    '知识查询规则: action 只用 model_action_guide({ kind: "ProjectModel", actionName }) 查询；attribute 才用 model_attribute_guide；replaceNavigationChildren/readProjectPlanningInput/readNavigationPlanningInputs 都是 action。',
-    '参数契约规则: 不要查询 ProjectNodeData 当作 attribute；children 的结构来自 model_action_guide({ kind: "ProjectModel", actionName: "replaceNavigationChildren" }) 的 paramsSchema.children。',
-    '执行前查询: model_action_guide({ kind: "ProjectModel", actionName: "readProjectPlanningInput" }) + model_action_guide({ kind: "ProjectModel", actionName: "readNavigationPlanningInputs" }) + model_action_guide({ kind: "ProjectModel", actionName: "replaceNavigationChildren" })，然后 model_script 读取输入并写入 navigation children 概要。',
+    '知识查询规则: action 只用 model_action_guide({ kind: "ProjectRootModel", actionName }) 查询；attribute 才用 model_attribute_guide；replaceNavigationChildren/readProjectPlanningInput/readNavigationPlanningInputs 都是 action。',
+    '参数契约规则: 不要查询 ProjectNodeData 当作 attribute；children 的结构来自 model_action_guide({ kind: "ProjectRootModel", actionName: "replaceNavigationChildren" }) 的 paramsSchema.children。',
+    '执行前查询: model_action_guide({ kind: "ProjectRootModel", actionName: "readProjectPlanningInput" }) + model_action_guide({ kind: "ProjectRootModel", actionName: "readNavigationPlanningInputs" }) + model_action_guide({ kind: "ProjectRootModel", actionName: "replaceNavigationChildren" })，然后 model_script 读取输入并写入 navigation children 概要。',
     '导航结构规则: 顶层按业务域生成 module；每个主要 module 至少包含 1 个 nodeKind="page" 的 children 页面概要；禁止只生成一组 module 壳。',
     '完成自检: agent_complete 前必须确认 navigationRoot.children 的业务 module 下存在 nodeKind="page"；如果没有 page，必须先重发 model_script 修正 children。',
     ...projectPlanningScriptSopLines(input.projectId),
@@ -365,19 +391,24 @@ function projectPlanningScriptSopLines(projectId: string): readonly string[] {
   ]
 }
 
-function resolveProjectPlanningProject(
+function resolveProjectPlanningDomainRoot(
   options: EnsureProjectPlanningBusinessOptions,
   ctx: AiAgentRuntimeContext,
-): ProjectModel {
+): ProjectRootModel {
   const moduleInstanceId = ctx.moduleInstanceId.trim()
   if (moduleInstanceId.length === 0) {
-    throw new Error('projectPlanning ProjectModel requires host.moduleInstanceId.')
+    throw new Error('projectPlanning ProjectRootModel requires host.moduleInstanceId.')
   }
-  return options.getProjectPlanningEditor({ moduleInstanceId }).project
+  const cached = projectPlanningDomainRoots.get(moduleInstanceId)
+  if (cached !== undefined) return cached
+  const editor = options.getProjectPlanningEditor({ moduleInstanceId })
+  const domain = projectRootModelFromProjectModel(editor.project)
+  projectPlanningDomainRoots.set(moduleInstanceId, domain)
+  return domain
 }
 
 function evaluateProjectPlanningBeforeFunctionCall(
-  project: ProjectModel,
+  project: ProjectRootModel,
   options: AiAgentBeforeFunctionCallOptions,
 ): AiAgentBeforeFunctionCallDirective {
   const completionGate = evaluateProjectPlanningCompletionGate(project, options)
@@ -395,7 +426,7 @@ function evaluateProjectPlanningBeforeFunctionCall(
 }
 
 function evaluateProjectPlanningCompletionGate(
-  project: ProjectModel,
+  project: ProjectRootModel,
   options: AiAgentBeforeFunctionCallOptions,
 ): AiAgentBeforeFunctionCallDirective | undefined {
   if (options.toolName !== CLASS_MODEL_TOOL_NAMES.agentComplete) return undefined
@@ -410,7 +441,7 @@ function evaluateProjectPlanningCompletionGate(
 }
 
 function evaluateProjectPlanningNavigationShapeForCompletion(
-  project: ProjectModel,
+  project: ProjectRootModel,
 ): AiAgentBeforeFunctionCallDirective | undefined {
   const pageCount = countNavigationNodesByKind(project.toTree(), 'page')
   if (pageCount > 0) return undefined

@@ -5,6 +5,7 @@
  */
 import type { InjectionKey } from 'vue'
 
+/** Project Switch Service 的语义模型。 */
 export type ProjectSwitchService = {
   /** 切换到指定项目并刷新导航 + 路由 */
   switchAndReload(projectId: string): Promise<void>}

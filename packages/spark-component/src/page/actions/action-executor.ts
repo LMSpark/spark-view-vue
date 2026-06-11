@@ -146,6 +146,7 @@ const logger = Logger('action-executor')
 
 // ── 公开执行入口 ──────────────────────────────────────────────────────────
 
+/** Action Execution Options 的调用配置。 */
 export type ActionExecutionOptions = {
   /** 原始事件参数（如行数据、CancellableControl 等） */
   eventArgs?: unknown[]

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/views/app/dev-system/DevSiteTree.vue.d.ts",
+  "module": {
+    "name": "app:views/app/dev-system/DevSiteTree",
+    "sourcePath": "declarations/src/views/app/dev-system/DevSiteTree.vue.d.ts",
+    "sourceFile": "src/views/app/dev-system/DevSiteTree.vue",
+    "packageName": "app",
+    "modulePath": "views/app/dev-system/DevSiteTree",
+    "jsdoc": "@module app:views/app/dev-system/DevSiteTree\napp 的 views/app/dev-system/DevSiteTree 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.134Z"
+}

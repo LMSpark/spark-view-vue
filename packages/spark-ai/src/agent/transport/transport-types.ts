@@ -109,6 +109,7 @@ export type AiAgentAppendMessagesInput = Readonly<{
   messages: readonly AiAgentTransportMessage[]
 }>
 
+/** Ai Agent App Sse Event Source 的语义模型。 */
 export type AiAgentAppSseEventSource = Readonly<{
   on(name: AiAgentAppSseEventName, listener: (event: AiAgentAppSseEvent) => void): () => void
 }>

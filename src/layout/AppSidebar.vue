@@ -1,3 +1,8 @@
+<!--
+@module app:layout/AppSidebar
+app 的 layout/AppSidebar 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="app-sidebar">
     <div class="app-sidebar__logo">

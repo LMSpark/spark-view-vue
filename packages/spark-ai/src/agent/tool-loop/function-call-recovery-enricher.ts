@@ -62,6 +62,7 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
   ],
 }
 
+/** Enrich Function Call Failure Command 的命令参数。 */
 export type EnrichFunctionCallFailureCommand = Readonly<{
   protocolToolName: string
   args: AiJsonParams
@@ -70,6 +71,7 @@ export type EnrichFunctionCallFailureCommand = Readonly<{
   moduleInstanceId?: string
 }>
 
+/** Enrich Function Call Result Options 的调用配置。 */
 export type EnrichFunctionCallResultOptions = Readonly<{
   enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
 }>

@@ -63,6 +63,7 @@ type FileLoaderListeners = {
   [K in keyof FileLoaderEventMap]: Array<(payload: FileLoaderEventMap[K]) => void>
 }
 
+/** Load Option Base 的语义模型。 */
 type LoadOptionBase = {
   /** false = 返回原始字符串，不 JSON.parse（默认 true） */
   /** 跳过缓存强制重新请求（默认 false） */
@@ -70,6 +71,7 @@ type LoadOptionBase = {
   /** 过期级别（覆盖全局默认值），对应 expirationTiers 中的 level */
   expirationLevel?: number}
 
+/** File Loader Store Input 的输入数据。 */
 export type FileLoaderStoreInput = Readonly<{
   key: string
   data: unknown
@@ -92,12 +94,17 @@ type StorageScopedBudgetCommand = Readonly<{
   countAllStorageKeys: boolean
 }>
 
+/** Json Load Options 的调用配置。 */
 export type JsonLoadOptions = LoadOptionBase & {
-  parseJSON?: true}
+    /** parse JSON 字段。 */
+parseJSON?: true}
 
+/** Text Load Options 的调用配置。 */
 export type TextLoadOptions = LoadOptionBase & {
-  parseJSON: false}
+    /** parse JSON 字段。 */
+parseJSON: false}
 
+/** Transform Load Options 的调用配置。 */
 export type TransformLoadOptions<T> = LoadOptionBase & {
   /**
      * 对原始文件内容应用变换，结果自动缓存（缓存键=文件路径）。
@@ -108,20 +115,25 @@ export type TransformLoadOptions<T> = LoadOptionBase & {
 /** load() 选项 */
 export type LoadOptions<T = unknown> = JsonLoadOptions | TextLoadOptions | TransformLoadOptions<T>
 
+/** Transformed File Load Options 的调用配置。 */
 export type TransformedFileLoadOptions = Pick<LoadOptionBase, 'forceRefresh'>
 
+/** Transformed File Loader 的语义模型。 */
 export class TransformedFileLoader<T> {
   private readonly transformedCache = new Map<string, CacheEntry<T>>()
 
+  /** 创建带变换缓存的文件加载器。 */
   constructor(
     private readonly owner: FileLoader,
     private readonly transform: (rawContent: string) => T | Promise<T>,
   ) {}
 
+  /** 加载单个文件并返回变换后的结果。 */
   load(fileName: string, opts?: TransformedFileLoadOptions): Promise<FileLoadResult<T>> {
     return this.loadTransformed(fileName, opts)
   }
 
+  /** 批量加载文件并返回每个文件的变换结果。 */
   async loadBatch(fileNames: string[], opts?: TransformedFileLoadOptions): Promise<Map<string, FileLoadResult<T>>> {
     const results = new Map<string, FileLoadResult<T>>()
     await Promise.all(
@@ -198,6 +210,7 @@ export class TransformedFileLoader<T> {
   }
 }
 
+/** File Loader 的语义模型。 */
 export class FileLoader {
   private opts: Required<Omit<FileLoadOptions, 'getHeaders' | 'request'>> & Pick<FileLoadOptions, 'getHeaders' | 'request'>
   private memCache = new Map<string, CacheEntry<unknown>>()
@@ -210,7 +223,8 @@ export class FileLoader {
     'file-error': [],
   }
 
-  constructor(options: FileLoadOptions) {
+    /** 创建 File Loader 实例。 */
+constructor(options: FileLoadOptions) {
     this.opts = {
       storage: 'localStorage',
       cachePrefix: 'spark_file_',
@@ -335,6 +349,7 @@ export class FileLoader {
         || value['reason'] === 'unknown')
   }
 
+  /** 以纯文本形式加载文件。 */
   loadText(fileName: string, options?: TransformedFileLoadOptions): Promise<FileLoadResult<string>> {
     const textOptions: TextLoadOptions = options?.forceRefresh === true
       ? { parseJSON: false, forceRefresh: true }
@@ -347,8 +362,11 @@ export class FileLoader {
    * - 不传 transform：返回解析后的原始 JSON（或字符串）。
    * - 传入 transform：返回变换结果，变换产物自动缓存，timestamp 未变时跳过变换。
    */
+  /** 加载文件并使用 transform 返回变换结果。 */
   async load<T>(fileName: string, options: TransformLoadOptions<T>): Promise<FileLoadResult<T>>
+  /** 以纯文本形式加载文件。 */
   async load(fileName: string, options: TextLoadOptions): Promise<FileLoadResult<string>>
+  /** 加载文件并按 JSON 解析返回。 */
   async load(fileName: string, options?: JsonLoadOptions): Promise<FileLoadResult<unknown>>
   async load<T>(
     fileName: string,
@@ -378,9 +396,11 @@ export class FileLoader {
     }
   }
 
-  /** 批量加载（并行） */
+  /** 批量加载文件并使用 transform 返回变换结果。 */
   async loadBatch<T>(fileNames: string[], options: TransformLoadOptions<T>): Promise<Map<string, FileLoadResult<T>>>
+  /** 批量以纯文本形式加载文件。 */
   async loadBatch(fileNames: string[], options: TextLoadOptions): Promise<Map<string, FileLoadResult<string>>>
+  /** 批量加载文件并按 JSON 解析返回。 */
   async loadBatch(fileNames: string[], options?: JsonLoadOptions): Promise<Map<string, FileLoadResult<unknown>>>
   async loadBatch<T>(
     fileNames: string[],

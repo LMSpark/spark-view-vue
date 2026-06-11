@@ -1,0 +1,692 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:http/HttpClientBase",
+    "sourcePath": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+    "sourceFile": "packages/spark-utils/src/http/HttpClientBase.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "http/HttpClientBase",
+    "jsdoc": "HttpClientBase — HTTP 客户端抽象基类\n所有公共逻辑的**唯一来源**：\n- 重试循环（retry + exponential delay）\n- 内存缓存（TTL + LRU 淘汰）\n- 拦截器管理（request / response 双链）\n- HTTP 快捷方法（get/post/put/patch/delete）\n- 错误归一化（统一 RequestError）\n- 延时工具（重试用，支持 AbortSignal 取消）\n子类仅需实现：\n- `executeRequest(config): Promise<HttpResponse<unknown>>`  — 适配层核心\n- 需要识别适配器特定错误时，再覆盖 `normalizeTransportError`\n设计原则：\n- SRP：基类只管公共流程，子类只管传输适配\n- OCP：扩展新传输层只需新子类 + executeRequest()\n- DRY：重试、缓存、拦截器、快捷方法仅存一处",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "HttpClientBase"
+    ]
+  },
+  "symbols": [
+    "HttpClientBase"
+  ],
+  "models": {
+    "HttpClientBase": {
+      "kind": "HttpClientBase",
+      "className": "HttpClientBase",
+      "jsdoc": "/** Http Client Base 的语义模型。 */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+        "line": 25,
+        "className": "HttpClientBase",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "defaults": {
+              "title": "Partial<RequestConfig>"
+            },
+            "loggerName": {
+              "type": "string",
+              "title": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Http Client Base 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+          "line": 34,
+          "className": "HttpClientBase",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [
+        {
+          "name": "defaults",
+          "schema": {
+            "title": "Partial<RequestConfig>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前 HTTP 客户端实例的默认请求配置。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 27,
+            "className": "HttpClientBase",
+            "memberName": "defaults",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "logger",
+          "schema": {
+            "title": "ReturnType<typeof Logger>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 诊断日志接口。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 32,
+            "className": "HttpClientBase",
+            "memberName": "logger",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "interceptors",
+          "schema": {
+            "title": "{\n        request: {\n            use: (interceptor: RequestInterceptor) => (() => void);\n        };\n        response: {\n            use: (interceptor: ResponseInterceptor) => (() => void);\n        };\n    }"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** interceptors 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 51,
+            "className": "HttpClientBase",
+            "memberName": "interceptors",
+            "declarationKind": "class"
+          }
+        }
+      ],
+      "methods": [
+        {
+          "name": "executeRequest",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "title": "RequestConfig"
+              }
+            },
+            "required": [
+              "config"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<HttpResponse<unknown>>"
+          },
+          "returnTypeText": "Promise<HttpResponse<unknown>>",
+          "jsdoc": "/**\n     * 执行单次 HTTP 请求并返回完整响应。\n     *\n     * - 不含重试、缓存、拦截器——这些由基类统一处理\n     * - 子类只负责\"发出请求 → 读取响应\"\n     */",
+          "paramsTypeText": "config: RequestConfig",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 43,
+            "className": "HttpClientBase",
+            "memberName": "executeRequest",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "normalizeAdapterError",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "err": {
+                "title": "unknown"
+              },
+              "config": {
+                "title": "RequestConfig"
+              }
+            },
+            "required": [
+              "err"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "RequestError"
+          },
+          "returnTypeText": "RequestError",
+          "jsdoc": "/** 将错误转换为统一 RequestError，保留已经归一化过的错误。 */",
+          "paramsTypeText": "err: unknown, config?: RequestConfig | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 45,
+            "className": "HttpClientBase",
+            "memberName": "normalizeAdapterError",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "normalizeTransportError",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "err": {
+                "title": "unknown"
+              },
+              "config": {
+                "title": "RequestConfig"
+              }
+            },
+            "required": [
+              "err"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "RequestError"
+          },
+          "returnTypeText": "RequestError",
+          "jsdoc": "/**\n     * 将适配器原始错误转换为统一 RequestError。适配器可覆盖以保留 status/code/response 等细节。\n     */",
+          "paramsTypeText": "err: unknown, config?: RequestConfig | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 49,
+            "className": "HttpClientBase",
+            "memberName": "normalizeTransportError",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "request",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "title": "RequestConfig"
+              }
+            },
+            "required": [
+              "config"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<T>"
+          },
+          "returnTypeText": "Promise<T>",
+          "jsdoc": "/** 请求对象。 */",
+          "paramsTypeText": "config: RequestConfig",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 60,
+            "className": "HttpClientBase",
+            "memberName": "request",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "requestFull",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "title": "RequestConfig"
+              }
+            },
+            "required": [
+              "config"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<HttpResponse<T>>"
+          },
+          "returnTypeText": "Promise<HttpResponse<T>>",
+          "jsdoc": "/** 执行 request Full 操作。 */",
+          "paramsTypeText": "config: RequestConfig",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 62,
+            "className": "HttpClientBase",
+            "memberName": "requestFull",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "get",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "title": "string"
+              },
+              "params": {
+                "title": "Record<string, unknown>"
+              },
+              "config": {
+                "title": "Partial<RequestConfig>"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<T>"
+          },
+          "returnTypeText": "Promise<T>",
+          "jsdoc": "/** 执行 get 操作。 */",
+          "paramsTypeText": "url: string, params?: Record<string, unknown> | undefined, config?: Partial<RequestConfig> | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 70,
+            "className": "HttpClientBase",
+            "memberName": "get",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "post",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "title": "string"
+              },
+              "data": {
+                "title": "unknown"
+              },
+              "config": {
+                "title": "Partial<RequestConfig>"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<T>"
+          },
+          "returnTypeText": "Promise<T>",
+          "jsdoc": "/** 执行 post 操作。 */",
+          "paramsTypeText": "url: string, data?: unknown, config?: Partial<RequestConfig> | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 72,
+            "className": "HttpClientBase",
+            "memberName": "post",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "put",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "title": "string"
+              },
+              "data": {
+                "title": "unknown"
+              },
+              "config": {
+                "title": "Partial<RequestConfig>"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<T>"
+          },
+          "returnTypeText": "Promise<T>",
+          "jsdoc": "/** 执行 put 操作。 */",
+          "paramsTypeText": "url: string, data?: unknown, config?: Partial<RequestConfig> | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 74,
+            "className": "HttpClientBase",
+            "memberName": "put",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "patch",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "title": "string"
+              },
+              "data": {
+                "title": "unknown"
+              },
+              "config": {
+                "title": "Partial<RequestConfig>"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<T>"
+          },
+          "returnTypeText": "Promise<T>",
+          "jsdoc": "/** 执行 patch 操作。 */",
+          "paramsTypeText": "url: string, data?: unknown, config?: Partial<RequestConfig> | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 76,
+            "className": "HttpClientBase",
+            "memberName": "patch",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "delete",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "title": "string"
+              },
+              "params": {
+                "title": "Record<string, unknown>"
+              },
+              "config": {
+                "title": "Partial<RequestConfig>"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<T>"
+          },
+          "returnTypeText": "Promise<T>",
+          "jsdoc": "/** 执行 delete 操作。 */",
+          "paramsTypeText": "url: string, params?: Record<string, unknown> | undefined, config?: Partial<RequestConfig> | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 78,
+            "className": "HttpClientBase",
+            "memberName": "delete",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "clearCache",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 清空 Cache。 */",
+          "paramsTypeText": "url?: string | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 80,
+            "className": "HttpClientBase",
+            "memberName": "clearCache",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "applyRequestInterceptors",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "title": "RequestConfig"
+              }
+            },
+            "required": [
+              "config"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<RequestConfig>"
+          },
+          "returnTypeText": "Promise<RequestConfig>",
+          "jsdoc": "/** 执行 apply Request Interceptors 操作。 */",
+          "paramsTypeText": "config: RequestConfig",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 82,
+            "className": "HttpClientBase",
+            "memberName": "applyRequestInterceptors",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "applyResponseInterceptors",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "response": {
+                "title": "HttpResponse<T>"
+              }
+            },
+            "required": [
+              "response"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<HttpResponse<T>>"
+          },
+          "returnTypeText": "Promise<HttpResponse<T>>",
+          "jsdoc": "/** 执行 apply Response Interceptors 操作。 */",
+          "paramsTypeText": "response: HttpResponse<T>",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 84,
+            "className": "HttpClientBase",
+            "memberName": "applyResponseInterceptors",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "applyResponseErrorInterceptors",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "title": "RequestError"
+              }
+            },
+            "required": [
+              "error"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<RequestError>"
+          },
+          "returnTypeText": "Promise<RequestError>",
+          "jsdoc": "/** 执行 apply Response Error Interceptors 操作。 */",
+          "paramsTypeText": "error: RequestError",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 86,
+            "className": "HttpClientBase",
+            "memberName": "applyResponseErrorInterceptors",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "mergeConfig",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "title": "RequestConfig"
+              }
+            },
+            "required": [
+              "config"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "RequestConfig"
+          },
+          "returnTypeText": "RequestConfig",
+          "jsdoc": "/** merge Config 配置。 */",
+          "paramsTypeText": "config: RequestConfig",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 88,
+            "className": "HttpClientBase",
+            "memberName": "mergeConfig",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "isRequestError",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "err": {
+                "title": "unknown"
+              }
+            },
+            "required": [
+              "err"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "err is RequestError"
+          },
+          "returnTypeText": "err is RequestError",
+          "jsdoc": "/** 是否 is Request Error。 */",
+          "paramsTypeText": "err: unknown",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 92,
+            "className": "HttpClientBase",
+            "memberName": "isRequestError",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "buildRequestError",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "title": "string"
+              },
+              "config": {
+                "title": "RequestConfig"
+              },
+              "opts": {
+                "title": "{\n        code?: string;\n        status?: number;\n        response?: unknown;\n    }"
+              }
+            },
+            "required": [
+              "message",
+              "config"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "RequestError"
+          },
+          "returnTypeText": "RequestError",
+          "jsdoc": "/** build Request Error 错误信息。 */",
+          "paramsTypeText": "message: string, config: RequestConfig, opts?: { code?: string | undefined; status?: number | undefined; response?: unknown; } | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 94,
+            "className": "HttpClientBase",
+            "memberName": "buildRequestError",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "extractApiEnvelopeErrorMessage",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "body": {
+                "title": "unknown"
+              }
+            },
+            "required": [
+              "body"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "string | undefined"
+          },
+          "returnTypeText": "string | undefined",
+          "jsdoc": "/** 执行 extract Api Envelope Error Message 操作。 */",
+          "paramsTypeText": "body: unknown",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 100,
+            "className": "HttpClientBase",
+            "memberName": "extractApiEnvelopeErrorMessage",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "delay",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ms": {
+                "type": "number",
+                "title": "number"
+              },
+              "signal": {
+                "title": "AbortSignal"
+              }
+            },
+            "required": [
+              "ms"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 执行 delay 操作。 */",
+          "paramsTypeText": "ms: number, signal?: AbortSignal | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/http/HttpClientBase.d.ts",
+            "line": 110,
+            "className": "HttpClientBase",
+            "memberName": "delay",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.009Z"
+}

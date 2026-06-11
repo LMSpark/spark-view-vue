@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/display/non-data-components/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/display/non-data-components/index",
+    "sourcePath": "declarations/packages/spark-component/src/components/display/non-data-components/index.d.ts",
+    "sourceFile": "packages/spark-component/src/components/display/non-data-components/index.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/display/non-data-components/index",
+    "jsdoc": "@module @spark-appworks/spark-component:components/display/non-data-components/index\n@spark-appworks/spark-component:components/display/non-data-components/index 模块，属于 SPARK component display/static-display。\n组件目录: display/non-data-components。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [],
+    "componentLevel": "display",
+    "componentLayer": "static-display",
+    "componentDirectory": "display/non-data-components"
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.384Z"
+}

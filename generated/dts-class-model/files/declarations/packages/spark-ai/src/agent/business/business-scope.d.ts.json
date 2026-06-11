@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-scope.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/business/business-scope",
+    "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-scope.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/business/business-scope.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/business/business-scope",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\nagent/business/business-scope.ts — 业务作用域工厂函数\n═══════════════════════════════════════════════════════════════\n【架构定位】纯函数工具集。负责从原始 ID 字符串构造类型安全的\nAiAgentScope / AiAgentRuntimeContext 等作用域对象。\n【设计原则】\n- SSOT：AiAgentTarget 是业务坐标唯一来源；Scope/RuntimeContext/sessionId 都是它的投影\n- 所有输入字符串都经过 normalizeRequiredText 校验（非空、去空白）\n- sessionId = \"kind:instanceId\"（冒号拼接，全局唯一）\n- turnKey 用于一次对话 turn 的隔离（kind + instanceId + turnId）\n- streamKey 用于 turn 内更细的 stream/诊断流（turnKey + streamId）\n【函数清单】\nnormalizeAiAgentTarget     — 规范化业务定位（校验 + 去空白）\ncreateAiAgentSessionId     — 生成会话 ID\ncreateAiAgentScope         — 构造业务作用域\ncreateAiAgentTurnKey               — 生成 turn 隔离键\ncreateAiAgentStreamKey             — 生成 turn 内 stream 键\ntoAiAgentRuntimeScope              — Scope → RuntimeContext 投影\nlatestUserInput                   — 从请求历史中提取最新用户消息\n【消费方】business-session、turn-event-collector、tool-loop-runner、APP turn bridge\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.679Z"
+}

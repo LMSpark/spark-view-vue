@@ -1,4 +1,9 @@
 /**
+ * @module app:services/project-planning-ai-runner
+ * app 的 services/project-planning-ai-runner 模块。
+ * 导出 ClassModel symbol: ProjectPlanningAiRunOptions, ProjectPlanningAiRunEvents, ProjectPlanningAiRunCommand, ProjectPlanningAiRunResult（共 4 个 symbol）。
+ */
+/**
  * projectPlanning headless AI runner（无 DevSystem / 无 UI 依赖）。
  *
  * 统一入口：`runProjectPlanningAiSession` → `AiAgentHost.run('projectPlanning', input)`。
@@ -23,15 +28,18 @@ import {
   type ResolveScopedProjectPlanningRunInputOptions,
 } from '@/services/project-planning-business'
 
+/** Project Planning Ai Run Options 的调用配置。 */
 export type ProjectPlanningAiRunOptions = ResolveScopedProjectPlanningRunInputOptions & Readonly<{
   /** 自动化/headless 可在 run 结束后保存 navigation；默认 false。 */
   saveNavigationAfterRun?: boolean
 }>
 
+/** Project Planning Ai Run Events 的语义模型。 */
 export type ProjectPlanningAiRunEvents = Readonly<{
   onToolCall?: (record: AiAgentToolCallRecord) => void
 }>
 
+/** Project Planning Ai Run Command 的命令参数。 */
 export type ProjectPlanningAiRunCommand = ProjectPlanningAiRunOptions & Readonly<{
   editor: ProjectWorkspace
   consumeCapability?: SparkCapabilityConsumer | null
@@ -46,6 +54,7 @@ export type ProjectPlanningAiRunCommand = ProjectPlanningAiRunOptions & Readonly
   userMessage?: string
 }>
 
+/** Project Planning Ai Run Result 的返回结果。 */
 export type ProjectPlanningAiRunResult = Readonly<{
   sawToolCall: boolean
   input: ProjectPlanningAgentInput

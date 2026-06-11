@@ -1,3 +1,8 @@
+<!--
+@module app:views/platform/PlatformApps
+app 的 views/platform/PlatformApps 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="platform-apps">
     <div class="page-toolbar">

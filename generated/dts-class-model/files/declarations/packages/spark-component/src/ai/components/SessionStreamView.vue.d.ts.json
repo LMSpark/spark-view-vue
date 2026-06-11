@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionStreamView.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/SessionStreamView",
+    "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionStreamView.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/SessionStreamView.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/SessionStreamView",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/SessionStreamView\n@spark-appworks/spark-component 的 ai/components/SessionStreamView 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.015Z"
+}

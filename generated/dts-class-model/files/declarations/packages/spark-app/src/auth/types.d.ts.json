@@ -1,0 +1,432 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/auth/types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:auth/types",
+    "sourcePath": "declarations/packages/spark-app/src/auth/types.d.ts",
+    "sourceFile": "packages/spark-app/src/auth/types.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "auth/types",
+    "jsdoc": "认证模块类型定义",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "LoginCredentials",
+      "AuthResult",
+      "TokenStorage",
+      "AuthConfig"
+    ]
+  },
+  "symbols": [
+    "LoginCredentials",
+    "AuthResult",
+    "TokenStorage",
+    "AuthConfig"
+  ],
+  "models": {
+    "LoginCredentials": {
+      "kind": "LoginCredentials",
+      "className": "LoginCredentials",
+      "jsdoc": "/**\n * 登录凭证\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n    [key: string]: unknown;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+        "line": 9,
+        "className": "LoginCredentials",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "username",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** username 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 11,
+            "className": "LoginCredentials",
+            "memberName": "username",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "password",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** password 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 13,
+            "className": "LoginCredentials",
+            "memberName": "password",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "AuthResult": {
+      "kind": "AuthResult",
+      "className": "AuthResult",
+      "jsdoc": "/**\n * 认证结果\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** user 字段。 */\n    user: UserInfo;\n    /** tenant 字段。 */\n    tenant: TenantInfo;\n    /** env 字段。 */\n    env: EnvironmentInfo;\n    /** token 字段。 */\n    token?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+        "line": 19,
+        "className": "AuthResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "user",
+          "schema": {
+            "title": "UserInfo"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** user 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 21,
+            "className": "AuthResult",
+            "memberName": "user",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "tenant",
+          "schema": {
+            "title": "TenantInfo"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** tenant 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 23,
+            "className": "AuthResult",
+            "memberName": "tenant",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "env",
+          "schema": {
+            "title": "EnvironmentInfo"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** env 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 25,
+            "className": "AuthResult",
+            "memberName": "env",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "token",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** token 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 27,
+            "className": "AuthResult",
+            "memberName": "token",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "TokenStorage": {
+      "kind": "TokenStorage",
+      "className": "TokenStorage",
+      "jsdoc": "/**\n * Token 存储类型\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "'localStorage' | 'sessionStorage' | 'cookie' | 'memory'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'localStorage'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'sessionStorage'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'cookie'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'memory'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+        "line": 32,
+        "className": "TokenStorage",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AuthConfig": {
+      "kind": "AuthConfig",
+      "className": "AuthConfig",
+      "jsdoc": "/**\n * 认证配置\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * API 端点配置\n     */\n    apiEndpoints: {\n        /** 登录接口 - POST */\n        login: string | undefined;\n        /** 登出接口 - POST */\n        logout: string | undefined;\n        /** 获取当前用户信息 - GET */\n        me: string | undefined;\n        /** 刷新 Token - POST */\n        refresh: string | undefined;\n    } | undefined;\n    /**\n     * Token 存储方式\n     * @default 'localStorage'\n     */\n    tokenStorage: TokenStorage | undefined;\n    /**\n     * Token 存储键名\n     * @default 'spark_token'\n     */\n    tokenKey: string | undefined;\n    /**\n     * 登录页面路径\n     * @default '/login'\n     */\n    loginPath: string | undefined;\n    /**\n     * 登录页面组件（可选，如果提供则自动注册路由）\n     */\n    loginComponent: Component | (() => Promise<Component>) | undefined;\n    /**\n     * 是否启用 Mock 模式（开发环境）\n     * @default false\n     */\n    enableMock: boolean | undefined;\n    /**\n     * Mock 用户数据（enableMock=true 时使用）\n     */\n    mockUser: UserInfo | undefined;\n    /**\n     * Mock 租户数据\n     */\n    mockTenant: TenantInfo | undefined;\n    /**\n     * 请求超时时间（毫秒）\n     * @default 10000\n     */\n    timeout: number | undefined;\n    /**\n     * API 基础路径\n     */\n    apiBaseUrl: string | undefined;\n    /**\n     * 钩子函数\n     */\n    onLoginSuccess: ((user: UserInfo) => void | Promise<void>) | undefined;\n    /** on Logout Success 事件回调。 */\n    onLogoutSuccess: (() => void | Promise<void>) | undefined;\n    /** on Auth Error 事件回调。 */\n    onAuthError: ((error: Error) => void) | undefined;\n    /** on Token Refresh 事件回调。 */\n    onTokenRefresh: ((token: string) => void) | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+        "line": 36,
+        "className": "AuthConfig",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "apiEndpoints",
+          "schema": {
+            "title": "{\n        /** 登录接口 - POST */\n        login: string | undefined;\n        /** 登出接口 - POST */\n        logout: string | undefined;\n        /** 获取当前用户信息 - GET */\n        me: string | undefined;\n        /** 刷新 Token - POST */\n        refresh: string | undefined;\n    } | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * API 端点配置\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 40,
+            "className": "AuthConfig",
+            "memberName": "apiEndpoints",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "tokenStorage",
+          "schema": {
+            "title": "TokenStorage | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * Token 存储方式\n     * @default 'localStorage'\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 54,
+            "className": "AuthConfig",
+            "memberName": "tokenStorage",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "tokenKey",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * Token 存储键名\n     * @default 'spark_token'\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 59,
+            "className": "AuthConfig",
+            "memberName": "tokenKey",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "loginPath",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * 登录页面路径\n     * @default '/login'\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 64,
+            "className": "AuthConfig",
+            "memberName": "loginPath",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "loginComponent",
+          "schema": {
+            "title": "Component | (() => Promise<Component>) | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * 登录页面组件（可选，如果提供则自动注册路由）\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 68,
+            "className": "AuthConfig",
+            "memberName": "loginComponent",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "enableMock",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * 是否启用 Mock 模式（开发环境）\n     * @default false\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 73,
+            "className": "AuthConfig",
+            "memberName": "enableMock",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "mockUser",
+          "schema": {
+            "title": "UserInfo | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * Mock 用户数据（enableMock=true 时使用）\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 77,
+            "className": "AuthConfig",
+            "memberName": "mockUser",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "mockTenant",
+          "schema": {
+            "title": "TenantInfo | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * Mock 租户数据\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 81,
+            "className": "AuthConfig",
+            "memberName": "mockTenant",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "timeout",
+          "schema": {
+            "title": "number | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * 请求超时时间（毫秒）\n     * @default 10000\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 86,
+            "className": "AuthConfig",
+            "memberName": "timeout",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "apiBaseUrl",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * API 基础路径\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 90,
+            "className": "AuthConfig",
+            "memberName": "apiBaseUrl",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onLoginSuccess",
+          "schema": {
+            "title": "((user: UserInfo) => void | Promise<void>) | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * 钩子函数\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 94,
+            "className": "AuthConfig",
+            "memberName": "onLoginSuccess",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onLogoutSuccess",
+          "schema": {
+            "title": "(() => void | Promise<void>) | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** on Logout Success 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 96,
+            "className": "AuthConfig",
+            "memberName": "onLogoutSuccess",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onAuthError",
+          "schema": {
+            "title": "((error: Error) => void) | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** on Auth Error 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 98,
+            "className": "AuthConfig",
+            "memberName": "onAuthError",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onTokenRefresh",
+          "schema": {
+            "title": "((token: string) => void) | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** on Token Refresh 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auth/types.d.ts",
+            "line": 100,
+            "className": "AuthConfig",
+            "memberName": "onTokenRefresh",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.906Z"
+}

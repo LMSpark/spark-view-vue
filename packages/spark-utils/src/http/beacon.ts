@@ -1,4 +1,9 @@
 /**
+ * @module @spark-appworks/spark-utils:http/beacon
+ * @spark-appworks/spark-utils 的 http/beacon 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
+/**
  * sendBeacon — 页面卸载期日志/埋点上报。
  *
  * 优先使用 navigator.sendBeacon，不可用时降级为 fetch + keepalive。

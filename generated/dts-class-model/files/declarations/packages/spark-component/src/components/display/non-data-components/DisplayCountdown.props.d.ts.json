@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/display/non-data-components/DisplayCountdown.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/display/non-data-components/DisplayCountdown.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/display/non-data-components/DisplayCountdown.props\nDisplayCountdown 模块，属于 SPARK component display/static-display。\n组件目录: display/non-data-components。\n导出 ClassModel symbol: RDisplayCountdownProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RDisplayCountdownProps"
+    ],
+    "componentName": "DisplayCountdown",
+    "componentType": "display-countdown",
+    "componentLevel": "display",
+    "componentLayer": "static-display",
+    "componentDirectory": "display/non-data-components"
+  },
+  "symbols": [
+    "RDisplayCountdownProps"
+  ],
+  "models": {
+    "RDisplayCountdownProps": {
+      "kind": "RDisplayCountdownProps",
+      "className": "RDisplayCountdownProps",
+      "jsdoc": "/** RDisplay Countdown Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 目标时间（时间戳或 Date） */\n    value?: number | Date;\n    /** 格式化字符串，如 HH:mm:ss */\n    format?: string;\n    /** 前缀文本 */\n    prefix?: string;\n    /** 后缀文本 */\n    suffix?: string;\n    /** 标题 */\n    title?: string;\n    /** 值样式 */\n    valueStyle?: CSSProperties;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 目标时间（时间戳或 Date） */\n    value?: number | Date;\n    /** 格式化字符串，如 HH:mm:ss */\n    format?: string;\n    /** 前缀文本 */\n    prefix?: string;\n    /** 后缀文本 */\n    suffix?: string;\n    /** 标题 */\n    title?: string;\n    /** 值样式 */\n    valueStyle?: CSSProperties;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.d.ts",
+        "line": 10,
+        "className": "RDisplayCountdownProps",
+        "declarationKind": "type",
+        "componentName": "DisplayCountdown",
+        "componentType": "display-countdown",
+        "componentLevel": "display",
+        "componentLayer": "static-display",
+        "componentDirectory": "display/non-data-components"
+      },
+      "attributes": [
+        {
+          "name": "value",
+          "schema": {
+            "title": "number | Date"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 目标时间（时间戳或 Date） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.d.ts",
+            "line": 12,
+            "className": "RDisplayCountdownProps",
+            "memberName": "value",
+            "declarationKind": "interface",
+            "componentName": "DisplayCountdown",
+            "componentType": "display-countdown",
+            "componentLevel": "display",
+            "componentLayer": "static-display",
+            "componentDirectory": "display/non-data-components"
+          }
+        },
+        {
+          "name": "format",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 格式化字符串，如 HH:mm:ss */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.d.ts",
+            "line": 14,
+            "className": "RDisplayCountdownProps",
+            "memberName": "format",
+            "declarationKind": "interface",
+            "componentName": "DisplayCountdown",
+            "componentType": "display-countdown",
+            "componentLevel": "display",
+            "componentLayer": "static-display",
+            "componentDirectory": "display/non-data-components"
+          }
+        },
+        {
+          "name": "prefix",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 前缀文本 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.d.ts",
+            "line": 16,
+            "className": "RDisplayCountdownProps",
+            "memberName": "prefix",
+            "declarationKind": "interface",
+            "componentName": "DisplayCountdown",
+            "componentType": "display-countdown",
+            "componentLevel": "display",
+            "componentLayer": "static-display",
+            "componentDirectory": "display/non-data-components"
+          }
+        },
+        {
+          "name": "suffix",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 后缀文本 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.d.ts",
+            "line": 18,
+            "className": "RDisplayCountdownProps",
+            "memberName": "suffix",
+            "declarationKind": "interface",
+            "componentName": "DisplayCountdown",
+            "componentType": "display-countdown",
+            "componentLevel": "display",
+            "componentLayer": "static-display",
+            "componentDirectory": "display/non-data-components"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 标题 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.d.ts",
+            "line": 20,
+            "className": "RDisplayCountdownProps",
+            "memberName": "title",
+            "declarationKind": "interface",
+            "componentName": "DisplayCountdown",
+            "componentType": "display-countdown",
+            "componentLevel": "display",
+            "componentLayer": "static-display",
+            "componentDirectory": "display/non-data-components"
+          }
+        },
+        {
+          "name": "valueStyle",
+          "schema": {
+            "title": "CSSProperties"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 值样式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.d.ts",
+            "line": 22,
+            "className": "RDisplayCountdownProps",
+            "memberName": "valueStyle",
+            "declarationKind": "interface",
+            "componentName": "DisplayCountdown",
+            "componentType": "display-countdown",
+            "componentLevel": "display",
+            "componentLayer": "static-display",
+            "componentDirectory": "display/non-data-components"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.352Z"
+}

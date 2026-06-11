@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/CustomRTableDemo
+app 的 views/app/CustomRTableDemo 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="custom-r-table-demo">
     <header class="custom-r-table-demo__hero">

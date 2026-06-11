@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/tool-loop/payload-codec",
+    "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/tool-loop/payload-codec.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/tool-loop/payload-codec",
+    "jsdoc": "┌─────────────────────────────────────────────────────────────────────────────┐\n│  AI HOST · 载荷编解码器                                                       │\n│  Payload Codec — 序列化 / 反序列化 / 参数规整                                 │\n│                                                                              │\n│  本模块是 Tool Loop 的数据转换层，负责：                                        │\n│    1. 将 LLM 返回的原始 JSON 字符串解析为类型安全的参数记录                      │\n│    2. 将用户最新输入提取为传输层消息格式                                        │\n│    3. 将任意 JS 值安全序列化为 JSON（处理 BigInt、循环引用等边界情况）           │\n│                                                                              │\n│  调用关系：                                                                   │\n│    parseToolArgs        → tool-call-executor.ts  —— 解析 LLM 工具调用参数     │\n│    toCurrentTurnMessages → tool-loop-runner.ts   —— 获取当前轮次用户消息       │\n│    stringifyAiAgentPayload → tool-call-executor.ts —— 序列化工具调用结果        │\n│                           → diagnostic-events.ts —— 序列化诊断事件数据         │\n└─────────────────────────────────────────────────────────────────────────────┘",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ToolArgsParseError"
+    ]
+  },
+  "symbols": [
+    "ToolArgsParseError"
+  ],
+  "models": {
+    "ToolArgsParseError": {
+      "kind": "ToolArgsParseError",
+      "className": "ToolArgsParseError",
+      "jsdoc": "/** Tool Args Parse Error 的错误信息。 */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "Error",
+          "targetName": "Error"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
+        "line": 22,
+        "className": "ToolArgsParseError",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "title": "'TOOL_ARGS_INVALID_JSON' | 'TOOL_ARGS_NOT_OBJECT'"
+            },
+            "message": {
+              "type": "string",
+              "title": "string"
+            },
+            "raw": {
+              "type": "string",
+              "title": "string"
+            }
+          },
+          "required": [
+            "code",
+            "message",
+            "raw"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Tool Args Parse Error 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
+          "line": 28,
+          "className": "ToolArgsParseError",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [
+        {
+          "name": "code",
+          "schema": {
+            "title": "'TOOL_ARGS_INVALID_JSON' | 'TOOL_ARGS_NOT_OBJECT'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 参数解析失败的稳定错误码。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
+            "line": 24,
+            "className": "ToolArgsParseError",
+            "memberName": "code",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "raw",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** LLM 返回的原始 function.arguments 字符串。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
+            "line": 26,
+            "className": "ToolArgsParseError",
+            "memberName": "raw",
+            "declarationKind": "class"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.780Z"
+}

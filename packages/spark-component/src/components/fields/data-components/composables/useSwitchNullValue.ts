@@ -1,18 +1,33 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/data-components/composables/useSwitchNullValue
+ * @spark-appworks/spark-component:components/fields/data-components/composables/useSwitchNullValue 模块，属于 SPARK component field-level/data-field。
+ * 组件目录: fields/data-components。
+ * 导出 ClassModel symbol: BoundBooleanColumn, UseSwitchNullValueOptions（共 2 个 symbol）。
+ */
 import { computed, watchEffect } from 'vue'
 import type { DataRow } from '@spark-appworks/spark-data'
 import type { ValueRef } from '../../../shared-types.js'
 import { isDataViewEditingSource } from '../../context/dataViewEditing'
 
+/** Bound Boolean Column 的语义模型。 */
 type BoundBooleanColumn = {
-  type: string
-  allowDBNull?: boolean | undefined}
+    /** 类型标识。 */
+type: string
+    /** 是否 allow DBNull。 */
+allowDBNull?: boolean | undefined}
 
+/** Use Switch Null Value Options 的调用配置。 */
 type UseSwitchNullValueOptions = {
-  boundColumn: ValueRef<BoundBooleanColumn | null | undefined>
-  contextData: DataRow | null
-  dataSource: unknown
-  fieldName: ValueRef<string>
-  syncValue: (value: boolean | null) => void}
+    /** bound Column 字段。 */
+boundColumn: ValueRef<BoundBooleanColumn | null | undefined>
+    /** context Data 字段。 */
+contextData: DataRow | null
+    /** data Source 字段。 */
+dataSource: unknown
+    /** 绑定字段名。 */
+fieldName: ValueRef<string>
+    /** sync Value 回调。 */
+syncValue: (value: boolean | null) => void}
 
 export function useSwitchNullValue(options: UseSwitchNullValueOptions) {
   const normalizedEmptyValue = computed<boolean | null>(() => {

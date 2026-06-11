@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/project-planning-gates.d.ts",
+  "module": {
+    "name": "app:services/project-planning-gates",
+    "sourcePath": "declarations/src/services/project-planning-gates.d.ts",
+    "sourceFile": "src/services/project-planning-gates.ts",
+    "packageName": "app",
+    "modulePath": "services/project-planning-gates",
+    "jsdoc": "projectPlanning 工具闸门：策划阶段禁止进入 pageDesign 四文件链。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ProjectPlanningGateValidationResult"
+    ]
+  },
+  "symbols": [
+    "ProjectPlanningGateValidationResult"
+  ],
+  "models": {
+    "ProjectPlanningGateValidationResult": {
+      "kind": "ProjectPlanningGateValidationResult",
+      "className": "ProjectPlanningGateValidationResult",
+      "jsdoc": "/** Project Planning Gate Validation Result 的返回结果。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ok: boolean;\n    reason?: string;\n    fix?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    ok: boolean;\n    reason?: string;\n    fix?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/project-planning-gates.d.ts",
+        "line": 6,
+        "className": "ProjectPlanningGateValidationResult",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.100Z"
+}

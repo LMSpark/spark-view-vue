@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/display/non-data-components/DisplaySkeleton
+DisplaySkeleton 模块，属于 SPARK component display/static-display。
+组件目录: display/non-data-components。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-skeleton
     v-if="isVisible"

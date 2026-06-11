@@ -1,0 +1,542 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/fields/non-data-components/FieldContextRenderer",
+    "sourcePath": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/fields/non-data-components/FieldContextRenderer",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/non-data-components/FieldContextRenderer\nFieldContextRenderer 模块，属于 SPARK component field-level/field-support。\n组件目录: fields/non-data-components。\n导出 ClassModel symbol: Props（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "Props"
+    ],
+    "componentName": "FieldContextRenderer",
+    "componentType": "r-context-renderer",
+    "componentLevel": "field-level",
+    "componentLayer": "field-support",
+    "componentDirectory": "fields/non-data-components"
+  },
+  "symbols": [
+    "Props"
+  ],
+  "models": {
+    "Props": {
+      "kind": "Props",
+      "className": "Props",
+      "jsdoc": "/** 字段上下文渲染器属性，统一描述字段在表格、表单、详情中的展示状态。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 显示标签 */\n    displayLabel?: string | undefined;\n    /** 字段绑定名 */\n    fieldName?: string | undefined;\n    /** 列宽 */\n    width?: string | number | undefined;\n    /** 表格列是否允许拖动列宽 */\n    resizable?: boolean | undefined;\n    /** 表格列排序能力 */\n    sortable?: boolean | 'custom' | undefined;\n    /** 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning */\n    filterable?: boolean | undefined;\n    /** 最小列宽 */\n    minWidth?: string | number | undefined;\n    /** 固定列方向 */\n    fixed?: boolean | 'left' | 'right' | undefined;\n    /** 列对齐 */\n    align?: 'left' | 'center' | 'right' | undefined;\n    /** 表头对齐 */\n    headerAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 子组件配置 */\n    mergedChildren?: SparkNode[] | undefined;\n    /** 当前字段是否隐藏 */\n    isCurrentFieldHidden?: boolean | undefined;\n    /** 当前宿主下字段是否应渲染 */\n    shouldRenderCurrentField?: boolean | undefined;\n    /** 当前显示值 */\n    currentDisplayValue?: string | undefined;\n    /** 表格行级隐藏判断 */\n    isTableCellHidden?: ((row: DataRow) => boolean) | undefined;\n    /** 表格行级显示值获取 */\n    getTableCellDisplayValue?: ((row: DataRow) => string) | undefined;\n    /** 表单验证规则 */\n    validationRules?: FormItemRule[] | undefined;\n    /** 标题对齐（table/detail） */\n    titleAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 值对齐（table/detail） */\n    valueAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 表头 class（table） */\n    headerCellClassName?: string | undefined;\n    /** 单元格 class（table） */\n    cellClassName?: string | undefined;\n    /** 标题 class（detail） */\n    titleClassName?: string | undefined;\n    /** 值 class（detail/table value） */\n    valueClassName?: string | undefined;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 显示标签 */\n    displayLabel?: string | undefined;\n    /** 字段绑定名 */\n    fieldName?: string | undefined;\n    /** 列宽 */\n    width?: string | number | undefined;\n    /** 表格列是否允许拖动列宽 */\n    resizable?: boolean | undefined;\n    /** 表格列排序能力 */\n    sortable?: boolean | 'custom' | undefined;\n    /** 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning */\n    filterable?: boolean | undefined;\n    /** 最小列宽 */\n    minWidth?: string | number | undefined;\n    /** 固定列方向 */\n    fixed?: boolean | 'left' | 'right' | undefined;\n    /** 列对齐 */\n    align?: 'left' | 'center' | 'right' | undefined;\n    /** 表头对齐 */\n    headerAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 子组件配置 */\n    mergedChildren?: SparkNode[] | undefined;\n    /** 当前字段是否隐藏 */\n    isCurrentFieldHidden?: boolean | undefined;\n    /** 当前宿主下字段是否应渲染 */\n    shouldRenderCurrentField?: boolean | undefined;\n    /** 当前显示值 */\n    currentDisplayValue?: string | undefined;\n    /** 表格行级隐藏判断 */\n    isTableCellHidden?: ((row: DataRow) => boolean) | undefined;\n    /** 表格行级显示值获取 */\n    getTableCellDisplayValue?: ((row: DataRow) => string) | undefined;\n    /** 表单验证规则 */\n    validationRules?: FormItemRule[] | undefined;\n    /** 标题对齐（table/detail） */\n    titleAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 值对齐（table/detail） */\n    valueAlign?: 'left' | 'center' | 'right' | undefined;\n    /** 表头 class（table） */\n    headerCellClassName?: string | undefined;\n    /** 单元格 class（table） */\n    cellClassName?: string | undefined;\n    /** 标题 class（detail） */\n    titleClassName?: string | undefined;\n    /** 值 class（detail/table value） */\n    valueClassName?: string | undefined;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+        "line": 6,
+        "className": "Props",
+        "declarationKind": "type",
+        "componentName": "FieldContextRenderer",
+        "componentType": "r-context-renderer",
+        "componentLevel": "field-level",
+        "componentLayer": "field-support",
+        "componentDirectory": "fields/non-data-components"
+      },
+      "attributes": [
+        {
+          "name": "displayLabel",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 显示标签 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 8,
+            "className": "Props",
+            "memberName": "displayLabel",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "fieldName",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 字段绑定名 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 10,
+            "className": "Props",
+            "memberName": "fieldName",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "width",
+          "schema": {
+            "title": "string | number | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 列宽 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 12,
+            "className": "Props",
+            "memberName": "width",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "resizable",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 表格列是否允许拖动列宽 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 14,
+            "className": "Props",
+            "memberName": "resizable",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "sortable",
+          "schema": {
+            "title": "boolean | 'custom' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 表格列排序能力 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 16,
+            "className": "Props",
+            "memberName": "sortable",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "filterable",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 18,
+            "className": "Props",
+            "memberName": "filterable",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "minWidth",
+          "schema": {
+            "title": "string | number | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 最小列宽 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 20,
+            "className": "Props",
+            "memberName": "minWidth",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "fixed",
+          "schema": {
+            "title": "boolean | 'left' | 'right' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 固定列方向 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 22,
+            "className": "Props",
+            "memberName": "fixed",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "align",
+          "schema": {
+            "title": "'left' | 'center' | 'right' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 列对齐 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 24,
+            "className": "Props",
+            "memberName": "align",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "headerAlign",
+          "schema": {
+            "title": "'left' | 'center' | 'right' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 表头对齐 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 26,
+            "className": "Props",
+            "memberName": "headerAlign",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "mergedChildren",
+          "schema": {
+            "title": "SparkNode[] | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 子组件配置 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 28,
+            "className": "Props",
+            "memberName": "mergedChildren",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "isCurrentFieldHidden",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前字段是否隐藏 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 30,
+            "className": "Props",
+            "memberName": "isCurrentFieldHidden",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "shouldRenderCurrentField",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前宿主下字段是否应渲染 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 32,
+            "className": "Props",
+            "memberName": "shouldRenderCurrentField",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "currentDisplayValue",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前显示值 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 34,
+            "className": "Props",
+            "memberName": "currentDisplayValue",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "isTableCellHidden",
+          "schema": {
+            "title": "((row: DataRow) => boolean) | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 表格行级隐藏判断 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 36,
+            "className": "Props",
+            "memberName": "isTableCellHidden",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "getTableCellDisplayValue",
+          "schema": {
+            "title": "((row: DataRow) => string) | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 表格行级显示值获取 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 38,
+            "className": "Props",
+            "memberName": "getTableCellDisplayValue",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "validationRules",
+          "schema": {
+            "title": "FormItemRule[] | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 表单验证规则 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 40,
+            "className": "Props",
+            "memberName": "validationRules",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "titleAlign",
+          "schema": {
+            "title": "'left' | 'center' | 'right' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 标题对齐（table/detail） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 42,
+            "className": "Props",
+            "memberName": "titleAlign",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "valueAlign",
+          "schema": {
+            "title": "'left' | 'center' | 'right' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 值对齐（table/detail） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 44,
+            "className": "Props",
+            "memberName": "valueAlign",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "headerCellClassName",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 表头 class（table） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 46,
+            "className": "Props",
+            "memberName": "headerCellClassName",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "cellClassName",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 单元格 class（table） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 48,
+            "className": "Props",
+            "memberName": "cellClassName",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "titleClassName",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 标题 class（detail） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 50,
+            "className": "Props",
+            "memberName": "titleClassName",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        },
+        {
+          "name": "valueClassName",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 值 class（detail/table value） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue.d.ts",
+            "line": 52,
+            "className": "Props",
+            "memberName": "valueClassName",
+            "declarationKind": "interface",
+            "componentName": "FieldContextRenderer",
+            "componentType": "r-context-renderer",
+            "componentLevel": "field-level",
+            "componentLayer": "field-support",
+            "componentDirectory": "fields/non-data-components"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.575Z"
+}

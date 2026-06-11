@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/index",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/index.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/index.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/index",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/index\n@spark-appworks/spark-component:components/containers/layout/index 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [],
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.123Z"
+}

@@ -1,0 +1,365 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:project/project-session",
+    "sourcePath": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+    "sourceFile": "packages/spark-project-model/src/project/project-session.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "project/project-session",
+    "jsdoc": "@module @spark-appworks/spark-project-model:project/project-session\n@spark-appworks/spark-project-model 的 project/project-session 模块。\n导出 ClassModel symbol: ProjectSessionState, ProjectSessionOwner, ProjectSession（共 3 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ProjectSessionState",
+      "ProjectSessionOwner",
+      "ProjectSession"
+    ]
+  },
+  "symbols": [
+    "ProjectSessionState",
+    "ProjectSessionOwner",
+    "ProjectSession"
+  ],
+  "models": {
+    "ProjectSessionState": {
+      "kind": "ProjectSessionState",
+      "className": "ProjectSessionState",
+      "jsdoc": "/** Project Session State 的运行状态。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** selected Node Id 标识。 */\n    selectedNodeId: string | null;\n    /** active Page Id 标识。 */\n    activePageId: string | null;\n    /** navigation Dirty 字段。 */\n    navigationDirty: boolean;\n    /** navigation Dirty Scope 字段。 */\n    navigationDirtyScope: ProjectNavigationDirtyScope | null;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+        "line": 11,
+        "className": "ProjectSessionState",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "selectedNodeId",
+          "schema": {
+            "title": "string | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** selected Node Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+            "line": 13,
+            "className": "ProjectSessionState",
+            "memberName": "selectedNodeId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "activePageId",
+          "schema": {
+            "title": "string | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** active Page Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+            "line": 15,
+            "className": "ProjectSessionState",
+            "memberName": "activePageId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "navigationDirty",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** navigation Dirty 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+            "line": 17,
+            "className": "ProjectSessionState",
+            "memberName": "navigationDirty",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "navigationDirtyScope",
+          "schema": {
+            "title": "ProjectNavigationDirtyScope | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** navigation Dirty Scope 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+            "line": 19,
+            "className": "ProjectSessionState",
+            "memberName": "navigationDirtyScope",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectSessionOwner": {
+      "kind": "ProjectSessionOwner",
+      "className": "ProjectSessionOwner",
+      "jsdoc": "/** Project Session Owner 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    findNodeById(nodeId: string): ProjectNode | null;\n    findConfigPageByPageId(pageId: string): ConfigPageNode | null;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+        "line": 22,
+        "className": "ProjectSessionOwner",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ProjectSession": {
+      "kind": "ProjectSession",
+      "className": "ProjectSession",
+      "jsdoc": "/**\n * ProjectModel 持有的设计过程态：选中、活动页、dirty 与导航草稿（不落盘）。\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+        "line": 29,
+        "className": "ProjectSession",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "title": "ProjectSessionOwner"
+            }
+          },
+          "required": [
+            "owner"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Project Session 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+          "line": 34,
+          "className": "ProjectSession",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "setNavigationDraft",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "draft": {
+                "title": "NavigationNodeDraft | null"
+              }
+            },
+            "required": [
+              "draft"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 设置 Navigation Draft。 */",
+          "paramsTypeText": "draft: NavigationNodeDraft | null",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+            "line": 40,
+            "className": "ProjectSession",
+            "memberName": "setNavigationDraft",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "beginNavigationDraft",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "draft": {
+                "title": "NavigationNodeDraft"
+              }
+            },
+            "required": [
+              "draft"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "NavigationNodeDraft"
+          },
+          "returnTypeText": "NavigationNodeDraft",
+          "jsdoc": "/** 执行 begin Navigation Draft 操作。 */",
+          "paramsTypeText": "draft: NavigationNodeDraft",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+            "line": 42,
+            "className": "ProjectSession",
+            "memberName": "beginNavigationDraft",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "discardNavigationDraft",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 discard Navigation Draft 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+            "line": 44,
+            "className": "ProjectSession",
+            "memberName": "discardNavigationDraft",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "markNavigationDirty",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "scope": {
+                "title": "ProjectNavigationDirtyScope"
+              }
+            },
+            "required": [
+              "scope"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 mark Navigation Dirty 操作。 */",
+          "paramsTypeText": "scope: ProjectNavigationDirtyScope",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+            "line": 46,
+            "className": "ProjectSession",
+            "memberName": "markNavigationDirty",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "markNavigationClean",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 mark Navigation Clean 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+            "line": 48,
+            "className": "ProjectSession",
+            "memberName": "markNavigationClean",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setSelectedNodeId",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "title": "string | null | undefined"
+              },
+              "options": {
+                "title": "{\n        silentIfMissing?: boolean;\n    }"
+              }
+            },
+            "required": [
+              "nodeId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** set Selected Node Id 标识。 */",
+          "paramsTypeText": "nodeId: string | null | undefined, options?: { silentIfMissing?: boolean | undefined; } | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+            "line": 50,
+            "className": "ProjectSession",
+            "memberName": "setSelectedNodeId",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setActivePageId",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "title": "string | null | undefined"
+              }
+            },
+            "required": [
+              "pageId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** set Active Page Id 标识。 */",
+          "paramsTypeText": "pageId: string | null | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+            "line": 54,
+            "className": "ProjectSession",
+            "memberName": "setActivePageId",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "syncWithModel",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 sync With Model 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-session.d.ts",
+            "line": 56,
+            "className": "ProjectSession",
+            "memberName": "syncWithModel",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.976Z"
+}

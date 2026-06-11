@@ -12,6 +12,7 @@ import type {
 
 // ── 流展示条目 ──
 
+/** Tool Call Display Item 的语义模型。 */
 export type ToolCallDisplayItem = Readonly<{
   toolName: string
   argsPreview: string
@@ -23,6 +24,7 @@ export type ToolCallDisplayItem = Readonly<{
   durationMs: number
 }>
 
+/** Reasoning Display Item 的语义模型。 */
 export type ReasoningDisplayItem = Readonly<{
   text: string
   turnId: string
@@ -44,6 +46,7 @@ export type StreamDisplayEntry =
 
 // ── 诊断数据 ──
 
+/** Session Diagnostic Issue 的语义模型。 */
 export type SessionDiagnosticIssue = Readonly<{
   level: 'error' | 'warn' | 'info'
   code: string

@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-registry.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/business/business-registry",
+    "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-registry.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/business/business-registry.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/business/business-registry",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\nagent/business/business-registry.ts — 业务注册表\n═══════════════════════════════════════════════════════════════\n【架构定位】Host 层的业务注册中心。管理所有 AiAgentRegistration，\n提供按 moduleId 查询能力。sessionStore 必须由业务注册显式注入。\n【注册流程】\n1. 业务方构造 AiAgentRegistration\n2. AiAgentHost.register/ensure 委托到内部 registry\n3. 内部检查 moduleId 不重复 → 存入 Map\n【消费方】business-session（resolveRegistration）、Host 初始化代码\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentRegistry"
+    ]
+  },
+  "symbols": [
+    "AiAgentRegistry"
+  ],
+  "models": {
+    "AiAgentRegistry": {
+      "kind": "AiAgentRegistry",
+      "className": "AiAgentRegistry",
+      "jsdoc": "/** Ai Agent Registry 的语义模型。 */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/business/business-registry.d.ts",
+        "line": 20,
+        "className": "AiAgentRegistry",
+        "declarationKind": "class"
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "register",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "registration": {
+                "title": "AiAgentRegistration<TInput>"
+              }
+            },
+            "required": [
+              "registration"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 注册一个业务。\n     * 若 moduleId 重复则抛出异常（注册期冲突，非运行时错误）。\n     */",
+          "paramsTypeText": "registration: AiAgentRegistration<TInput>",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/business/business-registry.d.ts",
+            "line": 27,
+            "className": "AiAgentRegistry",
+            "memberName": "register",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "get",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "moduleId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "moduleId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "AiAgentRegistration<TInput> | undefined"
+          },
+          "returnTypeText": "AiAgentRegistration<TInput> | undefined",
+          "jsdoc": "/** 按 moduleId 查询注册项 */",
+          "paramsTypeText": "moduleId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/business/business-registry.d.ts",
+            "line": 29,
+            "className": "AiAgentRegistry",
+            "memberName": "get",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "list",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ReadonlyArray<AiAgentRegistration<TInput>>"
+          },
+          "returnTypeText": "ReadonlyArray<AiAgentRegistration<TInput>>",
+          "jsdoc": "/** 列出当前所有业务注册项。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/business/business-registry.d.ts",
+            "line": 31,
+            "className": "AiAgentRegistry",
+            "memberName": "list",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "delete",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "moduleId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "moduleId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/** 删除一个业务注册项，供 Host.unregister 维护别名映射时使用。 */",
+          "paramsTypeText": "moduleId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/business/business-registry.d.ts",
+            "line": 33,
+            "className": "AiAgentRegistry",
+            "memberName": "delete",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.668Z"
+}

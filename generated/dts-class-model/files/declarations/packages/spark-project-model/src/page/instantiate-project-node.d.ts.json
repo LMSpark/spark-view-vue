@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/page/instantiate-project-node.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:page/instantiate-project-node",
+    "sourcePath": "declarations/packages/spark-project-model/src/page/instantiate-project-node.d.ts",
+    "sourceFile": "packages/spark-project-model/src/page/instantiate-project-node.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "page/instantiate-project-node",
+    "jsdoc": "配置页节点实例化——放在 page 层，避免 navigation 反向依赖 ConfigPageNode。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.951Z"
+}

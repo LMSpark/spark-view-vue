@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/signature-renderer.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/class-model/signature-renderer",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/signature-renderer.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/class-model/signature-renderer.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/class-model/signature-renderer",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/signature-renderer\n@spark-appworks/spark-ai 的 class-model/class-model/signature-renderer 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.825Z"
+}

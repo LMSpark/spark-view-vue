@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/data-views/RendererForm/types",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/types.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/data-views/RendererForm/types.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/data-views/RendererForm/types",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererForm/types\nRendererForm 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: RendererFormApi（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RendererFormApi"
+    ],
+    "componentName": "RendererForm",
+    "componentType": "r-form",
+    "componentLevel": "table-level",
+    "componentLayer": "data-view-container",
+    "componentDirectory": "containers/data-views"
+  },
+  "symbols": [
+    "RendererFormApi"
+  ],
+  "models": {
+    "RendererFormApi": {
+      "kind": "RendererFormApi",
+      "className": "RendererFormApi",
+      "jsdoc": "/** Renderer Form Api 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "BaseContainerApi & {\n    getFormData(): Record<string, unknown>;\n    getNativeForm(): unknown;\n    validate(): Promise<boolean>;\n    resetFields(): void;\n    clearValidate(): void;\n    getFieldValue(field: string): unknown;\n    setFieldValue(field: string, value: unknown): void;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "BaseContainerApi",
+          "targetName": "BaseContainerApi"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    getFormData(): Record<string, unknown>;\n    getNativeForm(): unknown;\n    validate(): Promise<boolean>;\n    resetFields(): void;\n    clearValidate(): void;\n    getFieldValue(field: string): unknown;\n    setFieldValue(field: string, value: unknown): void;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/types.d.ts",
+        "line": 9,
+        "className": "RendererFormApi",
+        "declarationKind": "type",
+        "componentName": "RendererForm",
+        "componentType": "r-form",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.049Z"
+}

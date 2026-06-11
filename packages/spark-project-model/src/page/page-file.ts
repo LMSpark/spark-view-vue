@@ -17,10 +17,13 @@ export const PAGE_NODE_FILE_NAMES: readonly ['rule.json', 'pagedata.json', 'scri
   'style.css',
 ]
 
+/** Page Node File Name 的语义模型。 */
 export type PageNodeFileName = typeof PAGE_NODE_FILE_NAMES[number]
 
+/** Page Node Load Options 的调用配置。 */
 export type PageNodeLoadOptions = {
-  forceReload?: boolean
+    /** force Reload 字段。 */
+forceReload?: boolean
 }
 
 export function pageFilePath(pageId: string, filename: string): string {
@@ -31,28 +34,46 @@ export function pageFilePaths(pageId: string): readonly string[] {
   return PAGE_NODE_FILE_NAMES.map(filename => pageFilePath(pageId, filename))
 }
 
+/** Page Content Load Result 的返回结果。 */
 export type PageContentLoadResult<T = unknown> = {
-  success: boolean
-  data?: T
-  error?: string
-  reason?: string
-  source?: 'remote'
-  timestamp?: number
-  sourceTimestamp?: string
-  fromCache?: boolean
-  notModified?: boolean
+    /** success 字段。 */
+success: boolean
+    /** 业务数据载荷。 */
+data?: T
+    /** 错误对象或错误信息。 */
+error?: string
+    /** reason 字段。 */
+reason?: string
+    /** 来源对象。 */
+source?: 'remote'
+    /** 事件时间戳。 */
+timestamp?: number
+    /** source Timestamp 字段。 */
+sourceTimestamp?: string
+    /** from Cache 字段。 */
+fromCache?: boolean
+    /** not Modified 字段。 */
+notModified?: boolean
 }
 
+/** Page Node File Version Summary 的语义模型。 */
 export type PageNodeFileVersionSummary = {
-  version: number
-  createdAt: string
-  isCurrent: boolean
-  modifiedBy: string | null
+    /** version 字段。 */
+version: number
+    /** 创建时间。 */
+createdAt: string
+    /** 是否 is Current。 */
+isCurrent: boolean
+    /** modified By 字段。 */
+modifiedBy: string | null
 }
 
+/** Page File Create Options 的调用配置。 */
 export type PageFileCreateOptions = {
-  title?: string
-  icon?: string
+    /** 显示标题。 */
+title?: string
+    /** icon 字段。 */
+icon?: string
 }
 
 export function tryParseRuleTextError(rawText: string): string | null {

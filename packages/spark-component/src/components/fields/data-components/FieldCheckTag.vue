@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/fields/data-components/FieldCheckTag
+FieldCheckTag 模块，属于 SPARK component field-level/data-field。
+组件目录: fields/data-components。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-check-tag
     v-if="isVisible"

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/fields/data-components/FieldAutocomplete",
+    "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/components/fields/data-components/FieldAutocomplete.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/fields/data-components/FieldAutocomplete",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/FieldAutocomplete\nFieldAutocomplete 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: SuggestionItem（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "SuggestionItem"
+    ],
+    "componentName": "FieldAutocomplete",
+    "componentType": "r-autocomplete",
+    "componentLevel": "field-level",
+    "componentLayer": "data-field",
+    "componentDirectory": "fields/data-components"
+  },
+  "symbols": [
+    "SuggestionItem"
+  ],
+  "models": {
+    "SuggestionItem": {
+      "kind": "SuggestionItem",
+      "className": "SuggestionItem",
+      "jsdoc": "/** 自动补全候选项的通用数据结构。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    [key: string]: unknown;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.vue.d.ts",
+        "line": 3,
+        "className": "SuggestionItem",
+        "declarationKind": "type",
+        "componentName": "FieldAutocomplete",
+        "componentType": "r-autocomplete",
+        "componentLevel": "field-level",
+        "componentLayer": "data-field",
+        "componentDirectory": "fields/data-components"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.468Z"
+}

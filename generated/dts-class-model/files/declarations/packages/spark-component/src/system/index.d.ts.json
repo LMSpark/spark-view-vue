@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/system/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:system/index",
+    "sourcePath": "declarations/packages/spark-component/src/system/index.d.ts",
+    "sourceFile": "packages/spark-component/src/system/index.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "system/index",
+    "jsdoc": "system 层入口。\n聚合 Spark 命名空间、Vue 插件与组件注册表。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.682Z"
+}

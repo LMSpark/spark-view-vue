@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/session/session-diagnostics",
+    "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/session/session-diagnostics.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/session/session-diagnostics",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\nagent/session/session-diagnostics.ts — AI 会话历史诊断工具\n═══════════════════════════════════════════════════════════════\n【架构定位】Agent 会话层的只读诊断入口。从 AiAgentSessionRecord\n提取摘要和转录视图，用于 Agent 能力诊断、冒烟运行摘要、\n调试面板或日志导出。不修改 sessionStore 状态。\n【核心函数】\nsummarizeAiAgentSessionRecord  — 汇总会话数量、失败工具调用、最后助手文本\ncreateAiAgentSessionTranscript  — 将 session history 转为方向标识的调试转录\npreviewAiAgentDiagnosticValue   — 安全序列化并裁剪诊断值\n【消费方】APP 层调试面板、冒烟运行摘要、日志导出\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentSessionSummary",
+      "AiAgentSessionTranscriptEntry",
+      "AiAgentSessionTranscriptOptions"
+    ]
+  },
+  "symbols": [
+    "AiAgentSessionSummary",
+    "AiAgentSessionTranscriptEntry",
+    "AiAgentSessionTranscriptOptions"
+  ],
+  "models": {
+    "AiAgentSessionSummary": {
+      "kind": "AiAgentSessionSummary",
+      "className": "AiAgentSessionSummary",
+      "jsdoc": "/** Ai Agent Session Summary 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    status: string | null;\n    historyCount: number;\n    messageCount: number;\n    toolCallCount: number;\n    failedToolCallCount: number;\n    functionNames: readonly string[];\n    lastAssistantText: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    status: string | null;\n    historyCount: number;\n    messageCount: number;\n    toolCallCount: number;\n    failedToolCallCount: number;\n    functionNames: readonly string[];\n    lastAssistantText: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
+        "line": 20,
+        "className": "AiAgentSessionSummary",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentSessionTranscriptEntry": {
+      "kind": "AiAgentSessionTranscriptEntry",
+      "className": "AiAgentSessionTranscriptEntry",
+      "jsdoc": "/** Ai Agent Session Transcript Entry 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    seq: number | null;\n    id: string;\n    timestamp: string | null;\n    kind: 'message' | 'functionCall' | 'unknown';\n    direction: string;\n    role?: string;\n    source?: string;\n    toolName?: string;\n    status?: string;\n    content?: string;\n    args?: string;\n    result?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    seq: number | null;\n    id: string;\n    timestamp: string | null;\n    kind: 'message' | 'functionCall' | 'unknown';\n    direction: string;\n    role?: string;\n    source?: string;\n    toolName?: string;\n    status?: string;\n    content?: string;\n    args?: string;\n    result?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
+        "line": 30,
+        "className": "AiAgentSessionTranscriptEntry",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentSessionTranscriptOptions": {
+      "kind": "AiAgentSessionTranscriptOptions",
+      "className": "AiAgentSessionTranscriptOptions",
+      "jsdoc": "/** Ai Agent Session Transcript Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    contentLimit?: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    contentLimit?: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
+        "line": 45,
+        "className": "AiAgentSessionTranscriptOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.768Z"
+}

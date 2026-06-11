@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererLink.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererLink.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererLink.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererLink.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererLink.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererLink.props\nRendererLink 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: RLinkProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RLinkProps"
+    ],
+    "componentName": "RendererLink",
+    "componentType": "r-link",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "RLinkProps"
+  ],
+  "models": {
+    "RLinkProps": {
+      "kind": "RLinkProps",
+      "className": "RLinkProps",
+      "jsdoc": "/** RLink Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 链接文本 */\n    label?: string;\n    /** 链接类型 */\n    linkType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 是否显示下划线 */\n    underline?: boolean;\n    /** 跳转地址 */\n    href?: string;\n    /** 跳转目标 */\n    target?: '_blank' | '_self' | '_parent' | '_top';\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 链接文本 */\n    label?: string;\n    /** 链接类型 */\n    linkType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 是否显示下划线 */\n    underline?: boolean;\n    /** 跳转地址 */\n    href?: string;\n    /** 跳转目标 */\n    target?: '_blank' | '_self' | '_parent' | '_top';\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/layout/RendererLink.props.d.ts",
+        "line": 9,
+        "className": "RLinkProps",
+        "declarationKind": "type",
+        "componentName": "RendererLink",
+        "componentType": "r-link",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "label",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 链接文本 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererLink.props.d.ts",
+            "line": 11,
+            "className": "RLinkProps",
+            "memberName": "label",
+            "declarationKind": "interface",
+            "componentName": "RendererLink",
+            "componentType": "r-link",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "linkType",
+          "schema": {
+            "title": "'' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 链接类型 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererLink.props.d.ts",
+            "line": 13,
+            "className": "RLinkProps",
+            "memberName": "linkType",
+            "declarationKind": "interface",
+            "componentName": "RendererLink",
+            "componentType": "r-link",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "underline",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否显示下划线 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererLink.props.d.ts",
+            "line": 15,
+            "className": "RLinkProps",
+            "memberName": "underline",
+            "declarationKind": "interface",
+            "componentName": "RendererLink",
+            "componentType": "r-link",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "href",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 跳转地址 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererLink.props.d.ts",
+            "line": 17,
+            "className": "RLinkProps",
+            "memberName": "href",
+            "declarationKind": "interface",
+            "componentName": "RendererLink",
+            "componentType": "r-link",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "target",
+          "schema": {
+            "title": "'_blank' | '_self' | '_parent' | '_top'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 跳转目标 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererLink.props.d.ts",
+            "line": 19,
+            "className": "RLinkProps",
+            "memberName": "target",
+            "declarationKind": "interface",
+            "componentName": "RendererLink",
+            "componentType": "r-link",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.176Z"
+}

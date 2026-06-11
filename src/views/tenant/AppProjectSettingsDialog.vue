@@ -1,3 +1,8 @@
+<!--
+@module app:views/tenant/AppProjectSettingsDialog
+app 的 views/tenant/AppProjectSettingsDialog 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-dialog
     v-model="visible"

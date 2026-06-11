@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:index",
+    "sourcePath": "declarations/packages/spark-utils/src/index.d.ts",
+    "sourceFile": "packages/spark-utils/src/index.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "index",
+    "jsdoc": "SPARK Utils - 纯基础设施工具库\n提供日志、HTTP 客户端、能力系统等核心工具",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.021Z"
+}

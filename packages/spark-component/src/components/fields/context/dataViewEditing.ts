@@ -1,6 +1,12 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/context/dataViewEditing
+ * @spark-appworks/spark-component 的 components/fields/context/dataViewEditing 模块。
+ * 导出 ClassModel symbol: DataViewEditingEventName, DataViewEditingEvents, DataViewEditingSource, DataViewEditingWriteInput（共 4 个 symbol）。
+ */
 import type { DataRow } from '@spark-appworks/spark-data'
 import { isRecord } from '@spark-appworks/spark-utils'
 
+/** Data View Editing Event Name 的语义模型。 */
 export type DataViewEditingEventName =
   | 'editingFieldChanged'
   | 'editingChanged'
@@ -9,16 +15,19 @@ export type DataViewEditingEventName =
   | 'selectedRowsChanged'
   | 'cleared'
 
+/** Data View Editing Events 的语义模型。 */
 export type DataViewEditingEvents = {
   on(eventName: DataViewEditingEventName, handler: () => void): void
   off(eventName: DataViewEditingEventName, handler: () => void): void}
 
+/** Data View Editing Source 的语义模型。 */
 export type DataViewEditingSource = {
   getPkKey(row: DataRow): string | number | undefined
   hasEditingChanges(id?: string | number): boolean
   getEditingRow(id: string | number): DataRow | null
   updateEditingValue(id: string | number, field: string, value: unknown): DataRow
-  events?: DataViewEditingEvents}
+    /** events 字段。 */
+events?: DataViewEditingEvents}
 
 export function isDataViewEditingSource(value: unknown): value is DataViewEditingSource {
   if (!isRecord(value)) return false
@@ -35,6 +44,7 @@ export function resolveDataViewEditingRow(source: unknown, row: DataRow | null):
   return source.getEditingRow(rowId)
 }
 
+/** Data View Editing Write Input 的输入数据。 */
 export type DataViewEditingWriteInput = Readonly<{
   source: unknown
   row: DataRow | null

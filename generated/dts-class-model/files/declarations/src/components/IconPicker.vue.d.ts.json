@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/components/IconPicker.vue.d.ts",
+  "module": {
+    "name": "app:components/IconPicker",
+    "sourcePath": "declarations/src/components/IconPicker.vue.d.ts",
+    "sourceFile": "src/components/IconPicker.vue",
+    "packageName": "app",
+    "modulePath": "components/IconPicker",
+    "jsdoc": "@module app:components/IconPicker\napp 的 components/IconPicker 模块。\n导出 ClassModel symbol: Props（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "Props"
+    ]
+  },
+  "symbols": [
+    "Props"
+  ],
+  "models": {
+    "Props": {
+      "kind": "Props",
+      "className": "Props",
+      "jsdoc": "/** 图标选择器属性，描述当前图标值和输入外观。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前选中的图标名称。 */\n    modelValue?: string;\n    /** 未选择图标时的占位提示。 */\n    placeholder?: string;\n    /** 图标选择器输入框宽度。 */\n    width?: number | string;\n}",
+      "provenance": {
+        "file": "declarations/src/components/IconPicker.vue.d.ts",
+        "line": 2,
+        "className": "Props",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "modelValue",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前选中的图标名称。 */",
+          "provenance": {
+            "file": "declarations/src/components/IconPicker.vue.d.ts",
+            "line": 4,
+            "className": "Props",
+            "memberName": "modelValue",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "placeholder",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 未选择图标时的占位提示。 */",
+          "provenance": {
+            "file": "declarations/src/components/IconPicker.vue.d.ts",
+            "line": 6,
+            "className": "Props",
+            "memberName": "placeholder",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "width",
+          "schema": {
+            "title": "number | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 图标选择器输入框宽度。 */",
+          "provenance": {
+            "file": "declarations/src/components/IconPicker.vue.d.ts",
+            "line": 8,
+            "className": "Props",
+            "memberName": "width",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.037Z"
+}

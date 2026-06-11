@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-project-model:navigation/navigation-tree
+ * @spark-appworks/spark-project-model 的 navigation/navigation-tree 模块。
+ * 导出 ClassModel symbol: NormalizeNavRootInput, BuildProjectPageSummariesOptions, TreeNodeLike（共 3 个 symbol）。
+ */
 /** 节点纯函数——tree/flat 转换、pageId 解析、类型判断。 */
 import { deepClone } from '@spark-appworks/spark-utils'
 import type {
@@ -68,17 +73,28 @@ function normalizeRootChildPlacement(value: unknown): 'header' | 'sidebar' {
   return normalized === 'header' || normalized === 'sidebar' ? normalized : 'header'
 }
 
+/** Normalize Nav Root Input 的输入数据。 */
 type NormalizeNavRootInput = {
-  id?: string | undefined
-  title?: string | undefined
-  childPlacement?: string | undefined
-  children?: ProjectNodeData[] | undefined
-  icon?: string | undefined
-  description?: string | undefined
-  planningAttachmentRef?: string | undefined
-  version?: string | undefined
-  nodeKind?: 'module' | 'system-directory' | undefined
-  homePath?: string | undefined
+    /** 唯一标识。 */
+id?: string | undefined
+    /** 显示标题。 */
+title?: string | undefined
+    /** child Placement 字段。 */
+childPlacement?: string | undefined
+    /** 子节点集合。 */
+children?: ProjectNodeData[] | undefined
+    /** icon 字段。 */
+icon?: string | undefined
+    /** description 字段。 */
+description?: string | undefined
+    /** planning Attachment Ref 字段。 */
+planningAttachmentRef?: string | undefined
+    /** version 字段。 */
+version?: string | undefined
+    /** node Kind 字段。 */
+nodeKind?: 'module' | 'system-directory' | undefined
+    /** home Path 路径。 */
+homePath?: string | undefined
 }
 
 export function normalizeNavRoot(config: NormalizeNavRootInput): ProjectModelData {
@@ -261,8 +277,10 @@ export function appendProjectDescriptionContext(c: readonly ProjectDescriptionCo
   return n === null ? [...c] : [...c, n]
 }
 
+/** Build Project Page Summaries Options 的调用配置。 */
 type BuildProjectPageSummariesOptions = {
-  descriptionContext?: readonly ProjectDescriptionContext[]
+    /** description Context 字段。 */
+descriptionContext?: readonly ProjectDescriptionContext[]
 }
 
 export function buildProjectPageSummaries(
@@ -331,8 +349,10 @@ export function flattenProjectNavigationRoot(root: ProjectModelData): Array<{ no
 
 /** 树节点最小接口——避免循环依赖 */
 type TreeNodeLike = {
-  readonly id: string
-  readonly pid: string
+    /** 唯一标识。 */
+readonly id: string
+    /** pid 字段。 */
+readonly pid: string
   toNodeData(): ProjectNodeData
 }
 

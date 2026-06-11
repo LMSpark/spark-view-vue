@@ -1,0 +1,428 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/crud-service.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:crud-service",
+    "sourcePath": "declarations/packages/spark-data/src/crud-service.d.ts",
+    "sourceFile": "packages/spark-data/src/crud-service.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "crud-service",
+    "jsdoc": "业务层网络CRUD服务\n基于 spark-utils HTTP客户端，封装标准CRUD操作\n与 DataSet/DataTable 深度集成，支持权限和数据转换",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "CrudService"
+    ]
+  },
+  "symbols": [
+    "CrudService"
+  ],
+  "models": {
+    "CrudService": {
+      "kind": "CrudService",
+      "className": "CrudService",
+      "jsdoc": "/**\n * 业务层CRUD服务\n *\n * 封装网络请求，提供类型安全的CRUD操作\n * 自动处理权限、数据转换、分页等业务逻辑\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+        "line": 16,
+        "className": "CrudService",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "api": {
+              "title": "CrudApi"
+            },
+            "httpConfigOrClient": {
+              "title": "Partial<RequestConfig> | HttpClientBase"
+            },
+            "endpointContextProvider": {
+              "title": "() => Record<string, unknown>"
+            }
+          },
+          "required": [
+            "api"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/**\n     * 创建CRUD服务实例\n     * @param api CRUD API配置\n     * @param httpConfigOrClient 可选：HTTP 客户端配置对象 **或** 已有 HttpClientBase 实例（共享 auth/拦截器）\n     */",
+        "provenance": {
+          "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+          "line": 26,
+          "className": "CrudService",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "getHttpClient",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "HttpClientBase"
+          },
+          "returnTypeText": "HttpClientBase",
+          "jsdoc": "/**\n     * 获取内部 HTTP 客户端实例（供 TreeManager 等模块共享拦截器/认证/配置）\n     *\n     * @returns HttpClientBase 实例\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+            "line": 32,
+            "className": "CrudService",
+            "memberName": "getHttpClient",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "create",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "title": "Partial<T>"
+              },
+              "config": {
+                "title": "CrudOperationConfig"
+              }
+            },
+            "required": [
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<T>>"
+          },
+          "returnTypeText": "Promise<CrudResult<T>>",
+          "jsdoc": "/**\n     * 创建记录\n     * @param data 记录数据\n     * @param config CRUD操作配置（包含权限快照）\n     * @returns CRUD操作结果\n     */",
+          "paramsTypeText": "data: Partial<T>, config?: CrudOperationConfig | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+            "line": 39,
+            "className": "CrudService",
+            "memberName": "create",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "retrieve",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pk": {
+                "title": "Record<string, unknown>"
+              },
+              "config": {
+                "title": "CrudOperationConfig"
+              }
+            },
+            "required": [
+              "pk"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<T>>"
+          },
+          "returnTypeText": "Promise<CrudResult<T>>",
+          "jsdoc": "/**\n     * 查询单条记录\n     * @param pk 服务端 PK payload（如 { id: 1 } 或 { orderId: 1, productId: 10 }）\n     * @param config CRUD操作配置（包含权限快照）\n     * @returns CRUD操作结果\n     */",
+          "paramsTypeText": "pk: Record<string, unknown>, config?: CrudOperationConfig | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+            "line": 46,
+            "className": "CrudService",
+            "memberName": "retrieve",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "update",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pk": {
+                "title": "Record<string, unknown>"
+              },
+              "data": {
+                "title": "Partial<T>"
+              },
+              "config": {
+                "title": "CrudOperationConfig"
+              }
+            },
+            "required": [
+              "pk",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<T>>"
+          },
+          "returnTypeText": "Promise<CrudResult<T>>",
+          "jsdoc": "/**\n     * 更新记录\n     * @param pk 服务端 PK payload（如 { id: 1 } 或 { orderId: 1, productId: 10 }）\n     * @param data 更新数据\n     * @param config CRUD操作配置（包含权限快照）\n     * @returns CRUD操作结果\n     */",
+          "paramsTypeText": "pk: Record<string, unknown>, data: Partial<T>, config?: CrudOperationConfig | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+            "line": 54,
+            "className": "CrudService",
+            "memberName": "update",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "delete",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pk": {
+                "title": "Record<string, unknown>"
+              },
+              "config": {
+                "title": "CrudOperationConfig"
+              }
+            },
+            "required": [
+              "pk"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<boolean>>"
+          },
+          "returnTypeText": "Promise<CrudResult<boolean>>",
+          "jsdoc": "/**\n     * 删除记录\n     * @param pk 服务端 PK payload（如 { id: 1 } 或 { orderId: 1, productId: 10 }）\n     * @param config CRUD操作配置（包含权限快照）\n     * @returns CRUD操作结果\n     */",
+          "paramsTypeText": "pk: Record<string, unknown>, config?: CrudOperationConfig | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+            "line": 61,
+            "className": "CrudService",
+            "memberName": "delete",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "list",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "QueryParams"
+              },
+              "config": {
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<T>>"
+          },
+          "returnTypeText": "Promise<CrudResult<T>>",
+          "jsdoc": "/**\n     * 查询列表（支持分页）\n     * @param params 查询参数（包含权限令牌）\n     * @param config CRUD操作配置（包含权限快照）\n     * @returns CRUD操作结果\n     */",
+          "paramsTypeText": "params?: QueryParams | undefined, config?: CrudOperationConfig | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+            "line": 68,
+            "className": "CrudService",
+            "memberName": "list",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "executeTransaction",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "request": {
+                "title": "DataSetTransactionRequest"
+              },
+              "endpoint": {
+                "title": "HttpEndpoint"
+              },
+              "config": {
+                "title": "CrudOperationConfig"
+              }
+            },
+            "required": [
+              "request"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<T>>"
+          },
+          "returnTypeText": "Promise<CrudResult<T>>",
+          "jsdoc": "/** 执行 execute Transaction 操作。 */",
+          "paramsTypeText": "request: DataSetTransactionRequest, endpoint?: HttpEndpoint | undefined, config?: CrudOperationConfig | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+            "line": 70,
+            "className": "CrudService",
+            "memberName": "executeTransaction",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "batchCreate",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "title": "Array<Partial<T>>"
+              },
+              "config": {
+                "title": "CrudOperationConfig"
+              }
+            },
+            "required": [
+              "items"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<BatchResult>>"
+          },
+          "returnTypeText": "Promise<CrudResult<BatchResult>>",
+          "jsdoc": "/**\n     * 批量创建\n     * @param items 记录数据数组\n     * @param config CRUD操作配置（包含权限快照）\n     * @returns 批量操作结果\n     */",
+          "paramsTypeText": "items: Partial<T>[], config?: CrudOperationConfig | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+            "line": 77,
+            "className": "CrudService",
+            "memberName": "batchCreate",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "batchUpdate",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "title": "Array<Partial<T>>"
+              },
+              "config": {
+                "title": "CrudOperationConfig"
+              }
+            },
+            "required": [
+              "items"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<BatchResult>>"
+          },
+          "returnTypeText": "Promise<CrudResult<BatchResult>>",
+          "jsdoc": "/**\n     * 批量更新\n     * @param items 更新数据数组（必须包含主键字段）\n     * @param config CRUD操作配置（包含权限快照）\n     * @returns 批量操作结果\n     */",
+          "paramsTypeText": "items: Partial<T>[], config?: CrudOperationConfig | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+            "line": 84,
+            "className": "CrudService",
+            "memberName": "batchUpdate",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "batchDelete",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pks": {
+                "title": "Array<Record<string, unknown>>"
+              },
+              "config": {
+                "title": "CrudOperationConfig"
+              }
+            },
+            "required": [
+              "pks"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<BatchResult>>"
+          },
+          "returnTypeText": "Promise<CrudResult<BatchResult>>",
+          "jsdoc": "/**\n     * 批量删除\n     * @param pks 服务端 PK payload 数组（如 [{ id: 1 }, { id: 2 }]）\n     * @param config 请求配置\n     * @returns 批量操作结果\n     */",
+          "paramsTypeText": "pks: Record<string, unknown>[], config?: CrudOperationConfig | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+            "line": 91,
+            "className": "CrudService",
+            "memberName": "batchDelete",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "importData",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "title": "File"
+              },
+              "config": {
+                "title": "Partial<RequestConfig>"
+              }
+            },
+            "required": [
+              "file"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<{\n        imported: number;\n        failed: number;\n    }>>"
+          },
+          "returnTypeText": "Promise<CrudResult<{\n        imported: number;\n        failed: number;\n    }>>",
+          "jsdoc": "/**\n     * 导入数据\n     * @param file 上传的文件\n     * @param config 请求配置\n     * @returns 导入结果\n     */",
+          "paramsTypeText": "file: File, config?: any",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+            "line": 98,
+            "className": "CrudService",
+            "memberName": "importData",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "exportData",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "QueryParams"
+              },
+              "config": {
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<Blob>>"
+          },
+          "returnTypeText": "Promise<CrudResult<Blob>>",
+          "jsdoc": "/**\n     * 导出数据\n     * @param params 导出参数\n     * @param config CRUD操作配置（包含权限快照）\n     * @returns 导出结果（Blob）\n     */",
+          "paramsTypeText": "params?: QueryParams | undefined, config?: CrudOperationConfig | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/crud-service.d.ts",
+            "line": 108,
+            "className": "CrudService",
+            "memberName": "exportData",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.708Z"
+}

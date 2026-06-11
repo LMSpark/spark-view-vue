@@ -1,3 +1,8 @@
+<!--
+@module app:App
+app 的 App 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <!-- 登录页：无布局框架 -->
   <router-view v-if="isLoginPage" />

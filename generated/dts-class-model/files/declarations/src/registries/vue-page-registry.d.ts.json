@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/registries/vue-page-registry.d.ts",
+  "module": {
+    "name": "app:registries/vue-page-registry",
+    "sourcePath": "declarations/src/registries/vue-page-registry.d.ts",
+    "sourceFile": "src/registries/vue-page-registry.ts",
+    "packageName": "app",
+    "modulePath": "registries/vue-page-registry",
+    "jsdoc": "Vue system-page registry.\nJSON config only declares pages. This registry binds those declarations to\nVite component loaders and exposes the derived route/navigation helpers.",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageScope",
+      "VuePageConfigEntry",
+      "VuePageEntry"
+    ]
+  },
+  "symbols": [
+    "PageScope",
+    "VuePageConfigEntry",
+    "VuePageEntry"
+  ],
+  "models": {
+    "PageScope": {
+      "kind": "PageScope",
+      "className": "PageScope",
+      "jsdoc": "/** Page Scope 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'public' | 'tenant' | 'app'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'public'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'tenant'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'app'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/registries/vue-page-registry.d.ts",
+        "line": 10,
+        "className": "PageScope",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "VuePageConfigEntry": {
+      "kind": "VuePageConfigEntry",
+      "className": "VuePageConfigEntry",
+      "jsdoc": "/** Vue Page Config Entry 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    path: string;\n    title: string;\n    icon?: string;\n    description?: string;\n    scope: PageScope;\n    source: string;\n    hidden?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    path: string;\n    title: string;\n    icon?: string;\n    description?: string;\n    scope: PageScope;\n    source: string;\n    hidden?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/registries/vue-page-registry.d.ts",
+        "line": 12,
+        "className": "VuePageConfigEntry",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "VuePageEntry": {
+      "kind": "VuePageEntry",
+      "className": "VuePageEntry",
+      "jsdoc": "/** Vue Page Entry 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<Omit<VuePageConfigEntry, 'path'> & {\n    load: () => Promise<{\n        default: Component;\n    }>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<Omit<VuePageConfigEntry, 'path'> & {\n    load: () => Promise<{\n        default: Component;\n    }>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/registries/vue-page-registry.d.ts",
+        "line": 22,
+        "className": "VuePageEntry",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.063Z"
+}

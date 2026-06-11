@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayIcon.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/display/non-data-components/DisplayIcon.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayIcon.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/display/non-data-components/DisplayIcon.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/display/non-data-components/DisplayIcon.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/display/non-data-components/DisplayIcon.props\nDisplayIcon 模块，属于 SPARK component display/static-display。\n组件目录: display/non-data-components。\n导出 ClassModel symbol: RDisplayIconProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RDisplayIconProps"
+    ],
+    "componentName": "DisplayIcon",
+    "componentType": "display-icon",
+    "componentLevel": "display",
+    "componentLayer": "static-display",
+    "componentDirectory": "display/non-data-components"
+  },
+  "symbols": [
+    "RDisplayIconProps"
+  ],
+  "models": {
+    "RDisplayIconProps": {
+      "kind": "RDisplayIconProps",
+      "className": "RDisplayIconProps",
+      "jsdoc": "/** RDisplay Icon Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 图标名称（由项目图标注册表解析） */\n    icon?: string;\n    /** 图标大小 */\n    iconSize?: number | string;\n    /** 图标颜色 */\n    color?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 图标名称（由项目图标注册表解析） */\n    icon?: string;\n    /** 图标大小 */\n    iconSize?: number | string;\n    /** 图标颜色 */\n    color?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayIcon.props.d.ts",
+        "line": 9,
+        "className": "RDisplayIconProps",
+        "declarationKind": "type",
+        "componentName": "DisplayIcon",
+        "componentType": "display-icon",
+        "componentLevel": "display",
+        "componentLayer": "static-display",
+        "componentDirectory": "display/non-data-components"
+      },
+      "attributes": [
+        {
+          "name": "icon",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 图标名称（由项目图标注册表解析） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayIcon.props.d.ts",
+            "line": 11,
+            "className": "RDisplayIconProps",
+            "memberName": "icon",
+            "declarationKind": "interface",
+            "componentName": "DisplayIcon",
+            "componentType": "display-icon",
+            "componentLevel": "display",
+            "componentLayer": "static-display",
+            "componentDirectory": "display/non-data-components"
+          }
+        },
+        {
+          "name": "iconSize",
+          "schema": {
+            "title": "number | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 图标大小 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayIcon.props.d.ts",
+            "line": 13,
+            "className": "RDisplayIconProps",
+            "memberName": "iconSize",
+            "declarationKind": "interface",
+            "componentName": "DisplayIcon",
+            "componentType": "display-icon",
+            "componentLevel": "display",
+            "componentLayer": "static-display",
+            "componentDirectory": "display/non-data-components"
+          }
+        },
+        {
+          "name": "color",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 图标颜色 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayIcon.props.d.ts",
+            "line": 15,
+            "className": "RDisplayIconProps",
+            "memberName": "color",
+            "declarationKind": "interface",
+            "componentName": "DisplayIcon",
+            "componentType": "display-icon",
+            "componentLevel": "display",
+            "componentLayer": "static-display",
+            "componentDirectory": "display/non-data-components"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.367Z"
+}

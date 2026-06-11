@@ -1,11 +1,21 @@
+/**
+ * @module app:services/project-ui-settings
+ * app 的 services/project-ui-settings 模块。
+ * 导出 ClassModel symbol: ProjectUiSettings（共 1 个 symbol）。
+ */
 import type { PageMode } from '@spark-appworks/spark-app'
 import { isRecord } from '@spark-appworks/spark-utils'
 
+/** Project Ui Settings 的语义模型。 */
 export type ProjectUiSettings = {
-  headerFirst: boolean
-  sidebarCollapsed: boolean
-  showFooter: boolean
-  pageMode: PageMode}
+    /** header First 字段。 */
+headerFirst: boolean
+    /** sidebar Collapsed 字段。 */
+sidebarCollapsed: boolean
+    /** 是否 show Footer。 */
+showFooter: boolean
+    /** page Mode 字段。 */
+pageMode: PageMode}
 
 export const PROJECT_UI_SETTINGS_STORAGE_PREFIX = 'spark-ui-settings'
 

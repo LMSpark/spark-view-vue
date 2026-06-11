@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererPopover.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererPopover.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererPopover.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererPopover.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererPopover.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererPopover.props\nRendererPopover 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: RPopoverProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RPopoverProps"
+    ],
+    "componentName": "RendererPopover",
+    "componentType": "r-popover",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "RPopoverProps"
+  ],
+  "models": {
+    "RPopoverProps": {
+      "kind": "RPopoverProps",
+      "className": "RPopoverProps",
+      "jsdoc": "/** RPopover Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & SparkFloatingLayerProps & SparkTitleContentProps & {\n    /** 浮层正文节点列表。 */\n    contentChildren?: SparkNode[];\n    /** 浮层宽度。 */\n    width?: number | string;\n    /** 浮层触发方式。 */\n    trigger?: 'click' | 'hover' | 'focus' | 'contextmenu';\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkFloatingLayerProps",
+          "targetName": "SparkFloatingLayerProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkTitleContentProps",
+          "targetName": "SparkTitleContentProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 浮层正文节点列表。 */\n    contentChildren?: SparkNode[];\n    /** 浮层宽度。 */\n    width?: number | string;\n    /** 浮层触发方式。 */\n    trigger?: 'click' | 'hover' | 'focus' | 'contextmenu';\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/layout/RendererPopover.props.d.ts",
+        "line": 10,
+        "className": "RPopoverProps",
+        "declarationKind": "type",
+        "componentName": "RendererPopover",
+        "componentType": "r-popover",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "contentChildren",
+          "schema": {
+            "type": "array",
+            "title": "SparkNode[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 浮层正文节点列表。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererPopover.props.d.ts",
+            "line": 12,
+            "className": "RPopoverProps",
+            "memberName": "contentChildren",
+            "declarationKind": "interface",
+            "componentName": "RendererPopover",
+            "componentType": "r-popover",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "width",
+          "schema": {
+            "title": "number | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 浮层宽度。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererPopover.props.d.ts",
+            "line": 14,
+            "className": "RPopoverProps",
+            "memberName": "width",
+            "declarationKind": "interface",
+            "componentName": "RendererPopover",
+            "componentType": "r-popover",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "trigger",
+          "schema": {
+            "title": "'click' | 'hover' | 'focus' | 'contextmenu'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 浮层触发方式。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererPopover.props.d.ts",
+            "line": 16,
+            "className": "RPopoverProps",
+            "memberName": "trigger",
+            "declarationKind": "interface",
+            "componentName": "RendererPopover",
+            "componentType": "r-popover",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.183Z"
+}

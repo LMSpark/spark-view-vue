@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/data-components/index
+ * @spark-appworks/spark-component:components/fields/data-components/index 模块，属于 SPARK component field-level/data-field。
+ * 组件目录: fields/data-components。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 export { default as FieldText } from './FieldText.vue'
 export { default as FieldTextarea } from './FieldTextarea.vue'
 export { default as FieldHtmlEditor } from './FieldHtmlEditor.vue'

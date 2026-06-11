@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/turn-event-collector.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/tool-loop/turn-event-collector",
+    "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/turn-event-collector.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/tool-loop/turn-event-collector.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/tool-loop/turn-event-collector",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\nagent/tool-loop/turn-event-collector.ts — AI turn APP SSE 事件收集器\n═══════════════════════════════════════════════════════════════\n【架构定位】Agent 层的纯编排组件。消费方提供 APP SSE 事件源，\n本收集器将中立的 llm-frame 事件聚合为一个完整的 turn 结果。\n不处理网络请求，只做事件过滤、状态管理和结果汇总。\n【核心类型】\nTurnEventCollector  — 收集器接口（result Promise + close 方法）\nTurnEventState      — 内部状态机（text/reasoning/toolCalls 聚合）\n【数据流】\n1. createTurnEventCollector({ input, source }) → 注册 llm-frame 事件监听\n2. 收到 delta 事件 → 追加 text（可选 onDelta 回调）\n3. 收到 reasoning 事件 → 追加 reasoning（可选 onReasoning 回调）\n4. 收到 result 事件 → 汇总 text + toolCalls，触发完成\n5. 收到 done 事件 → 以当前累积状态完成\n6. 收到 error / 超时 / abort → reject\n【消费方】transport 层的 executeTurn 实现（APP 层注入）\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "TurnEventCollectorInput",
+      "TurnEventCollector"
+    ]
+  },
+  "symbols": [
+    "TurnEventCollectorInput",
+    "TurnEventCollector"
+  ],
+  "models": {
+    "TurnEventCollectorInput": {
+      "kind": "TurnEventCollectorInput",
+      "className": "TurnEventCollectorInput",
+      "jsdoc": "/** 收集器的构造输入 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    input: AiAgentStreamTurnInput;\n    source: AiAgentAppSseEventSource;\n    /** 绝对上限：整轮 turn 最长等待时间。 */\n    timeoutMs?: number;\n    /** 空闲上限：连续无 SSE 帧超过该毫秒则 fail-fast。 */\n    idleTimeoutMs?: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    input: AiAgentStreamTurnInput;\n    source: AiAgentAppSseEventSource;\n    /** 绝对上限：整轮 turn 最长等待时间。 */\n    timeoutMs?: number;\n    /** 空闲上限：连续无 SSE 帧超过该毫秒则 fail-fast。 */\n    idleTimeoutMs?: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/tool-loop/turn-event-collector.d.ts",
+        "line": 27,
+        "className": "TurnEventCollectorInput",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "TurnEventCollector": {
+      "kind": "TurnEventCollector",
+      "className": "TurnEventCollector",
+      "jsdoc": "/** AI turn 事件收集器接口 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    result: Promise<AiAgentStreamTurnResult>;\n    close(): void;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    result: Promise<AiAgentStreamTurnResult>;\n    close(): void;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/tool-loop/turn-event-collector.d.ts",
+        "line": 36,
+        "className": "TurnEventCollector",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.791Z"
+}

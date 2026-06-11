@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/page/actions/action-executor.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:page/actions/action-executor",
+    "sourcePath": "declarations/packages/spark-component/src/page/actions/action-executor.d.ts",
+    "sourceFile": "packages/spark-component/src/page/actions/action-executor.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/actions/action-executor",
+    "jsdoc": "Action Descriptor 执行引擎（单一真源）\n解析并执行声明式 action descriptor，提供框架无关的行为执行能力。\n由 normalizeRuleEvents（on 事件）、容器 wrapper 区域（如 r-toolbar）以及\nSparkNode 翻译器（nodeToActionDescriptor）共同使用。\n## 执行模型\n```\nexecuteActionDescriptor(descriptor, ctx, options?)\n├─ cancelDefault → control.cancel = true（通知容器跳过默认行为）\n├─ dispatchAction → 按 action 类型路由到具体执行器\n│    ├─ UI 类 → executeShowMessage / executeConfirm / executeAlert / executeNavigate / executeOpen\n│    └─ 数据类 → action-data.ts 各执行器\n├─ 异常捕获 → handleTopLevelError（拼接 errorMessage 文案，打日志）\n└─ then → 链式执行下一个 descriptor\n```",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ActionExecutionOptions"
+    ]
+  },
+  "symbols": [
+    "ActionExecutionOptions"
+  ],
+  "models": {
+    "ActionExecutionOptions": {
+      "kind": "ActionExecutionOptions",
+      "className": "ActionExecutionOptions",
+      "jsdoc": "/** Action Execution Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 原始事件参数（如行数据、CancellableControl 等） */\n    eventArgs?: unknown[];\n    /** 流程控制信号（cancelDefault 时置 cancel=true） */\n    control?: ActionExecutionControl;\n    /** 执行作用域（行内动作注入的当前行 + formApi 等） */\n    scope?: ActionExecutionScope;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/page/actions/action-executor.d.ts",
+        "line": 22,
+        "className": "ActionExecutionOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "eventArgs",
+          "schema": {
+            "type": "array",
+            "title": "unknown[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 原始事件参数（如行数据、CancellableControl 等） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/action-executor.d.ts",
+            "line": 24,
+            "className": "ActionExecutionOptions",
+            "memberName": "eventArgs",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "control",
+          "schema": {
+            "title": "ActionExecutionControl"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 流程控制信号（cancelDefault 时置 cancel=true） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/action-executor.d.ts",
+            "line": 26,
+            "className": "ActionExecutionOptions",
+            "memberName": "control",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "scope",
+          "schema": {
+            "title": "ActionExecutionScope"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 执行作用域（行内动作注入的当前行 + formApi 等） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/action-executor.d.ts",
+            "line": 28,
+            "className": "ActionExecutionOptions",
+            "memberName": "scope",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.617Z"
+}

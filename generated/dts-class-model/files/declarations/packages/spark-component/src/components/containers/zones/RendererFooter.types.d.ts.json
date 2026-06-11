@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/zones/RendererFooter.types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/zones/RendererFooter.types",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/zones/RendererFooter.types.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/zones/RendererFooter.types.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/zones/RendererFooter.types",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/zones/RendererFooter.types\nRendererFooter 模块，属于 SPARK component container/zone-container。\n组件目录: containers/zones。\n导出 ClassModel symbol: RFooterProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RFooterProps"
+    ],
+    "componentName": "RendererFooter",
+    "componentType": "r-footer",
+    "componentLevel": "container",
+    "componentLayer": "zone-container",
+    "componentDirectory": "containers/zones"
+  },
+  "symbols": [
+    "RFooterProps"
+  ],
+  "models": {
+    "RFooterProps": {
+      "kind": "RFooterProps",
+      "className": "RFooterProps",
+      "jsdoc": "/**\n * `RendererFooter` 运行时公开属性。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 组件类型固定为 `r-footer`。 */\n    type?: 'r-footer';\n    /** 节点标识。 */\n    id?: string;\n    /** 底部内容节点列表。 */\n    children?: SparkNode[];\n    /** 底部区域附加 class */\n    class?: string;\n    /** 底部区域宽度 */\n    width?: string | number;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 组件类型固定为 `r-footer`。 */\n    type?: 'r-footer';\n    /** 节点标识。 */\n    id?: string;\n    /** 底部内容节点列表。 */\n    children?: SparkNode[];\n    /** 底部区域附加 class */\n    class?: string;\n    /** 底部区域宽度 */\n    width?: string | number;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/zones/RendererFooter.types.d.ts",
+        "line": 12,
+        "className": "RFooterProps",
+        "declarationKind": "type",
+        "componentName": "RendererFooter",
+        "componentType": "r-footer",
+        "componentLevel": "container",
+        "componentLayer": "zone-container",
+        "componentDirectory": "containers/zones"
+      },
+      "attributes": [
+        {
+          "name": "type",
+          "schema": {
+            "title": "'r-footer'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 组件类型固定为 `r-footer`。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/zones/RendererFooter.types.d.ts",
+            "line": 14,
+            "className": "RFooterProps",
+            "memberName": "type",
+            "declarationKind": "interface",
+            "componentName": "RendererFooter",
+            "componentType": "r-footer",
+            "componentLevel": "container",
+            "componentLayer": "zone-container",
+            "componentDirectory": "containers/zones"
+          }
+        },
+        {
+          "name": "id",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 节点标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/zones/RendererFooter.types.d.ts",
+            "line": 16,
+            "className": "RFooterProps",
+            "memberName": "id",
+            "declarationKind": "interface",
+            "componentName": "RendererFooter",
+            "componentType": "r-footer",
+            "componentLevel": "container",
+            "componentLayer": "zone-container",
+            "componentDirectory": "containers/zones"
+          }
+        },
+        {
+          "name": "children",
+          "schema": {
+            "type": "array",
+            "title": "SparkNode[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 底部内容节点列表。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/zones/RendererFooter.types.d.ts",
+            "line": 18,
+            "className": "RFooterProps",
+            "memberName": "children",
+            "declarationKind": "interface",
+            "componentName": "RendererFooter",
+            "componentType": "r-footer",
+            "componentLevel": "container",
+            "componentLayer": "zone-container",
+            "componentDirectory": "containers/zones"
+          }
+        },
+        {
+          "name": "class",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 底部区域附加 class */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/zones/RendererFooter.types.d.ts",
+            "line": 20,
+            "className": "RFooterProps",
+            "memberName": "class",
+            "declarationKind": "interface",
+            "componentName": "RendererFooter",
+            "componentType": "r-footer",
+            "componentLevel": "container",
+            "componentLayer": "zone-container",
+            "componentDirectory": "containers/zones"
+          }
+        },
+        {
+          "name": "width",
+          "schema": {
+            "title": "string | number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 底部区域宽度 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/zones/RendererFooter.types.d.ts",
+            "line": 22,
+            "className": "RFooterProps",
+            "memberName": "width",
+            "declarationKind": "interface",
+            "componentName": "RendererFooter",
+            "componentType": "r-footer",
+            "componentLevel": "container",
+            "componentLayer": "zone-container",
+            "componentDirectory": "containers/zones"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.293Z"
+}

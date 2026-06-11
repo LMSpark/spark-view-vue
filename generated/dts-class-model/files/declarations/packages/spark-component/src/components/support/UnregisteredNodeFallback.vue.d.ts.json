@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/support/UnregisteredNodeFallback.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/support/UnregisteredNodeFallback",
+    "sourcePath": "declarations/packages/spark-component/src/components/support/UnregisteredNodeFallback.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/components/support/UnregisteredNodeFallback.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/support/UnregisteredNodeFallback",
+    "jsdoc": "@module @spark-appworks/spark-component:components/support/UnregisteredNodeFallback\nUnregisteredNodeFallback 模块，属于 SPARK component infrastructure/support。\n组件目录: support。\n导出 ClassModel symbol: Props（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "Props"
+    ],
+    "componentName": "UnregisteredNodeFallback",
+    "componentLevel": "infrastructure",
+    "componentLayer": "support",
+    "componentDirectory": "support"
+  },
+  "symbols": [
+    "Props"
+  ],
+  "models": {
+    "Props": {
+      "kind": "Props",
+      "className": "Props",
+      "jsdoc": "/** 未注册节点兜底渲染属性。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 未注册的源节点 */\n    node: SparkNode;\n    /** 提示标题 */\n    title?: string;\n    /** 说明文本 */\n    description?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/support/UnregisteredNodeFallback.vue.d.ts",
+        "line": 3,
+        "className": "Props",
+        "declarationKind": "type",
+        "componentName": "UnregisteredNodeFallback",
+        "componentLevel": "infrastructure",
+        "componentLayer": "support",
+        "componentDirectory": "support"
+      },
+      "attributes": [
+        {
+          "name": "node",
+          "schema": {
+            "title": "SparkNode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 未注册的源节点 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/UnregisteredNodeFallback.vue.d.ts",
+            "line": 5,
+            "className": "Props",
+            "memberName": "node",
+            "declarationKind": "interface",
+            "componentName": "UnregisteredNodeFallback",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 提示标题 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/UnregisteredNodeFallback.vue.d.ts",
+            "line": 7,
+            "className": "Props",
+            "memberName": "title",
+            "declarationKind": "interface",
+            "componentName": "UnregisteredNodeFallback",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        },
+        {
+          "name": "description",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 说明文本 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/UnregisteredNodeFallback.vue.d.ts",
+            "line": 9,
+            "className": "Props",
+            "memberName": "description",
+            "declarationKind": "interface",
+            "componentName": "UnregisteredNodeFallback",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.604Z"
+}

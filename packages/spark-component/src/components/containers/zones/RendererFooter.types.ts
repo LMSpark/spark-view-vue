@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/zones/RendererFooter.types
+ * RendererFooter 模块，属于 SPARK component container/zone-container。
+ * 组件目录: containers/zones。
+ * 导出 ClassModel symbol: RFooterProps（共 1 个 symbol）。
+ */
 import type { SparkNode } from '../../internal'
 import type { SparkNodeProps } from '../../shared-types'
 

@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-app:navigation/useColorScheme
+ * @spark-appworks/spark-app 的 navigation/useColorScheme 模块。
+ * 导出 ClassModel symbol: PrimaryPreset, NavColorSet, NavPreset, StyleColorSet, StylePreset（共 5 个 symbol）。
+ */
 import { ref, computed, watch } from 'vue'
 import { isRecord } from '@spark-appworks/spark-utils'
 import { readProperty } from '@spark-appworks/spark-utils/internal'
@@ -37,54 +42,98 @@ function mixColor(c1: string, c2: string, weight: number): string {
 
 // ── Preset definitions ──
 
+/** Primary Preset 的语义模型。 */
 export type PrimaryPreset = {
-  name: string
-  color: string}
+    /** 显示或业务名称。 */
+name: string
+    /** color 字段。 */
+color: string}
 
+/** Nav Color Set 的语义模型。 */
 export type NavColorSet = {
-  headerBg: string
-  sidebarBg: string
-  textColor: string}
+    /** header Bg 字段。 */
+headerBg: string
+    /** sidebar Bg 字段。 */
+sidebarBg: string
+    /** text Color 字段。 */
+textColor: string}
 
+/** Nav Preset 的语义模型。 */
 export type NavPreset = {
-  name: string
-  color: string
-  light: NavColorSet
-  dark: NavColorSet}
+    /** 显示或业务名称。 */
+name: string
+    /** color 字段。 */
+color: string
+    /** light 字段。 */
+light: NavColorSet
+    /** dark 字段。 */
+dark: NavColorSet}
 
+/** Style Color Set 的语义模型。 */
 export type StyleColorSet = {
-  bg: string
-  page: string
-  overlay: string
-  soft: string
-  sunken: string
-  hover: string
-  selected: string
-  textPrimary: string
-  textRegular: string
-  textSecondary: string
-  textPlaceholder: string
-  border: string
-  borderLight: string
-  divider: string
-  chromeBorder: string
-  controlBg: string
-  controlBorder: string
-  controlBorderHover: string
-  shadow: string
-  shadowLight: string
-  shadowPanel: string
-  scrollbarThumb: string
-  scrollbarThumbHover: string}
+    /** bg 字段。 */
+bg: string
+    /** 当前页码。 */
+page: string
+    /** overlay 字段。 */
+overlay: string
+    /** soft 字段。 */
+soft: string
+    /** sunken 字段。 */
+sunken: string
+    /** hover 字段。 */
+hover: string
+    /** selected 字段。 */
+selected: string
+    /** text Primary 字段。 */
+textPrimary: string
+    /** text Regular 字段。 */
+textRegular: string
+    /** text Secondary 字段。 */
+textSecondary: string
+    /** text Placeholder 字段。 */
+textPlaceholder: string
+    /** border 字段。 */
+border: string
+    /** border Light 字段。 */
+borderLight: string
+    /** divider 字段。 */
+divider: string
+    /** chrome Border 字段。 */
+chromeBorder: string
+    /** control Bg 字段。 */
+controlBg: string
+    /** control Border 字段。 */
+controlBorder: string
+    /** control Border Hover 字段。 */
+controlBorderHover: string
+    /** shadow 字段。 */
+shadow: string
+    /** shadow Light 字段。 */
+shadowLight: string
+    /** shadow Panel 字段。 */
+shadowPanel: string
+    /** scrollbar Thumb 字段。 */
+scrollbarThumb: string
+    /** scrollbar Thumb Hover 字段。 */
+scrollbarThumbHover: string}
 
+/** Style Preset 的语义模型。 */
 export type StylePreset = {
-  name: string
-  description: string
-  icon: string
-  primaryColor: string
-  navIndex: number
-  light: StyleColorSet
-  dark: StyleColorSet}
+    /** 显示或业务名称。 */
+name: string
+    /** description 字段。 */
+description: string
+    /** icon 字段。 */
+icon: string
+    /** primary Color 字段。 */
+primaryColor: string
+    /** nav Index 字段。 */
+navIndex: number
+    /** light 字段。 */
+light: StyleColorSet
+    /** dark 字段。 */
+dark: StyleColorSet}
 
 export const PRIMARY_PRESETS: readonly PrimaryPreset[] = [
   { name: '默认蓝', color: '#409eff' },

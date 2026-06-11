@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/error-handler.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:error-handler",
+    "sourcePath": "declarations/packages/spark-app/src/error-handler.d.ts",
+    "sourceFile": "packages/spark-app/src/error-handler.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "error-handler",
+    "jsdoc": "Error Handler\n全局错误处理与降级策略",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.920Z"
+}

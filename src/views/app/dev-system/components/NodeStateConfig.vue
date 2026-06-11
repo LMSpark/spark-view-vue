@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/dev-system/components/NodeStateConfig
+app 的 views/app/dev-system/components/NodeStateConfig 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div>
     <el-divider content-position="left">状态控制</el-divider>

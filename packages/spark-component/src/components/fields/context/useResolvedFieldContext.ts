@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/context/useResolvedFieldContext
+ * @spark-appworks/spark-component 的 components/fields/context/useResolvedFieldContext 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import { computed, getCurrentInstance } from 'vue'
 import type { CapabilityContext } from '../../internal'
 import { type SparkRuntimeOwner, sparkResolveParentContext } from '../../../core/capability-context.js'

@@ -1,3 +1,8 @@
+/**
+ * @module app:views/app/dev-system/composables/useDevFileEditor
+ * app 的 views/app/dev-system/composables/useDevFileEditor 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import { computed, watch, type Ref } from 'vue'
 import type { DevState } from '../useDevState'
 import type { PageNodeFileName } from '@spark-appworks/spark-project-model'

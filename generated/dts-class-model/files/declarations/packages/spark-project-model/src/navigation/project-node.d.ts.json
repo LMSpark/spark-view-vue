@@ -1,0 +1,2140 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:navigation/project-node",
+    "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+    "sourceFile": "packages/spark-project-model/src/navigation/project-node.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "navigation/project-node",
+    "jsdoc": "@module @spark-appworks/spark-project-model:navigation/project-node\n@spark-appworks/spark-project-model 的 navigation/project-node 模块。\n导出 ClassModel symbol: ChildPlacement, NavNodeKind, NavPermissionMode, ProjectNodeFamily, ProjectDescriptionContext, NavContextItem, NavContextConfig, ProjectNodeData 等（共 18 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "ChildPlacement",
+      "NavNodeKind",
+      "NavPermissionMode",
+      "ProjectNodeFamily",
+      "ProjectDescriptionContext",
+      "NavContextItem",
+      "NavContextConfig",
+      "ProjectNodeData",
+      "ProjectNodeNavigationPatch",
+      "ProjectNodeLocation",
+      "ProjectModelData",
+      "RegionItems",
+      "RegionVisibility",
+      "NavContextState",
+      "ProjectPageSurface",
+      "ProjectPageNodeSummary",
+      "ProjectNodeModelOptions",
+      "ProjectNode"
+    ]
+  },
+  "symbols": [
+    "ChildPlacement",
+    "NavNodeKind",
+    "NavPermissionMode",
+    "ProjectNodeFamily",
+    "ProjectDescriptionContext",
+    "NavContextItem",
+    "NavContextConfig",
+    "ProjectNodeData",
+    "ProjectNodeNavigationPatch",
+    "ProjectNodeLocation",
+    "ProjectModelData",
+    "RegionItems",
+    "RegionVisibility",
+    "NavContextState",
+    "ProjectPageSurface",
+    "ProjectPageNodeSummary",
+    "ProjectNodeModelOptions",
+    "ProjectNode"
+  ],
+  "models": {
+    "ChildPlacement": {
+      "kind": "ChildPlacement",
+      "className": "ChildPlacement",
+      "jsdoc": "/** 子节点布局位置：决定子节点在 UI 中的渲染区域。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'parent' | 'flat'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'header'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'sidebar'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'toolbar'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'user-menu'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'parent'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'flat'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 5,
+        "className": "ChildPlacement",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "NavNodeKind": {
+      "kind": "NavNodeKind",
+      "className": "NavNodeKind",
+      "jsdoc": "/** 项目节点类型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'system-directory' | 'module' | 'system-page' | 'system-action' | 'page' | 'link' | 'sub-page' | 'ref'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'system-directory'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'module'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'system-page'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'system-action'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'page'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'link'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'sub-page'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'ref'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 7,
+        "className": "NavNodeKind",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "NavPermissionMode": {
+      "kind": "NavPermissionMode",
+      "className": "NavPermissionMode",
+      "jsdoc": "/** 权限未匹配时的展示模式。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'none' | 'masked' | 'invisible'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'none'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'masked'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'invisible'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 9,
+        "className": "NavPermissionMode",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ProjectNodeFamily": {
+      "kind": "ProjectNodeFamily",
+      "className": "ProjectNodeFamily",
+      "jsdoc": "/** Project Node Family 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'module' | 'config-page' | 'system-page' | 'system-action' | 'link' | 'ref'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'module'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'config-page'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'system-page'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'system-action'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'link'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'ref'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 11,
+        "className": "ProjectNodeFamily",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ProjectDescriptionContext": {
+      "kind": "ProjectDescriptionContext",
+      "className": "ProjectDescriptionContext",
+      "jsdoc": "/** Project Description Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 上下文来源节点 ID。 */\n    nodeId: string;\n    /** 上下文来源节点标题。 */\n    title: string;\n    /** 上下文来源节点类型。 */\n    nodeKind: string;\n    /** 上下文来源节点描述文本。 */\n    description: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 13,
+        "className": "ProjectDescriptionContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "nodeId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 上下文来源节点 ID。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 15,
+            "className": "ProjectDescriptionContext",
+            "memberName": "nodeId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 上下文来源节点标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 17,
+            "className": "ProjectDescriptionContext",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "nodeKind",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 上下文来源节点类型。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 19,
+            "className": "ProjectDescriptionContext",
+            "memberName": "nodeKind",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "description",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 上下文来源节点描述文本。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 21,
+            "className": "ProjectDescriptionContext",
+            "memberName": "description",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "NavContextItem": {
+      "kind": "NavContextItem",
+      "className": "NavContextItem",
+      "jsdoc": "/** 上下文下拉选项项。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 选项稳定值，会写入导航上下文状态。 */\n    id: string | number;\n    /** 选项展示标题。 */\n    title: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 24,
+        "className": "NavContextItem",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "schema": {
+            "title": "string | number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 选项稳定值，会写入导航上下文状态。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 26,
+            "className": "NavContextItem",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 选项展示标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 28,
+            "className": "NavContextItem",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "NavContextConfig": {
+      "kind": "NavContextConfig",
+      "className": "NavContextConfig",
+      "jsdoc": "/** 动态上下文配置：描述 ProjectNode 上下文的来源和交互行为。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 上下文选项来源；字符串表示远端/命名来源，数组表示内联静态选项。 */\n    source: string | NavContextItem[];\n    /** 上下文未选择时的占位提示。 */\n    placeholder?: string | undefined;\n    /** 上下文默认选中值。 */\n    defaultValue?: string | number | undefined;\n    /** 写入路由或查询参数时使用的参数名。 */\n    paramName?: string | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 31,
+        "className": "NavContextConfig",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "source",
+          "schema": {
+            "type": "array",
+            "title": "string | NavContextItem[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 上下文选项来源；字符串表示远端/命名来源，数组表示内联静态选项。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 33,
+            "className": "NavContextConfig",
+            "memberName": "source",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "placeholder",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 上下文未选择时的占位提示。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 35,
+            "className": "NavContextConfig",
+            "memberName": "placeholder",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "defaultValue",
+          "schema": {
+            "title": "string | number | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 上下文默认选中值。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 37,
+            "className": "NavContextConfig",
+            "memberName": "defaultValue",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "paramName",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 写入路由或查询参数时使用的参数名。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 39,
+            "className": "NavContextConfig",
+            "memberName": "paramName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectNodeData": {
+      "kind": "ProjectNodeData",
+      "className": "ProjectNodeData",
+      "jsdoc": "/** 项目树节点的可序列化数据形状。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 导航节点唯一 ID。 */\n    id: string;\n    /** 导航节点标题。 */\n    title: string;\n    /** 节点业务描述，供 AI 策划和页面设计理解用途。 */\n    description?: string | undefined;\n    /** 节点策划详细说明附件引用；正文由工作区解析后传给 LLM。 */\n    planningAttachmentRef?: string | undefined;\n    /** 节点版本号或版本标签。 */\n    version?: string | undefined;\n    /** 节点图标名。 */\n    icon?: string | undefined;\n    /** 导航节点类型，决定页面、模块、链接、引用等行为。 */\n    nodeKind?: NavNodeKind | undefined;\n    /** 子节点在应用壳中的布局区域。 */\n    childPlacement?: ChildPlacement | undefined;\n    /** 导航上下文配置或静态上下文选项。 */\n    context?: string | NavContextItem[] | NavContextConfig | undefined;\n    /** 同级排序值，数值越小越靠前。 */\n    order?: number | undefined;\n    /** 是否在导航中隐藏。 */\n    hidden?: boolean | undefined;\n    /** 是否禁用该导航节点。 */\n    disabled?: boolean | undefined;\n    /** 是否在该节点后显示分隔线。 */\n    dividerAfter?: boolean | undefined;\n    /** 权限不匹配时的展示策略。 */\n    permissionMode?: NavPermissionMode | undefined;\n    /** 子导航节点。 */\n    children?: ProjectNodeData[] | undefined;\n    /** 页面路由路径。 */\n    path?: string | undefined;\n    /** link 节点的打开目标。 */\n    linkTarget?: 'iframe' | 'new-tab' | 'self' | undefined;\n    /** 重定向目标路径。 */\n    redirect?: string | undefined;\n    /** ref 节点引用的目标节点 ID。 */\n    refId?: string | undefined;\n    /** ref 节点解析后的目标路径。 */\n    refPath?: string | undefined;\n    /** ref 节点引用的目标项目 ID。 */\n    refProjectId?: string | undefined;\n    /** ref 引用是否已失效。 */\n    refBroken?: boolean | undefined;\n    /** Agent 策划闸门；缺省时由 effectiveDescription 推断。 */\n    planningStatus?: 'planning_draft' | 'planning_confirmed' | undefined;\n    /** pageDesign 实现放行闸门；缺省过渡期为 open。 */\n    implGate?: 'closed' | 'open' | undefined;\n    /** 上游 iPaaS / 契约就绪；缺省 true。 */\n    upstreamContractsSatisfied?: boolean | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 42,
+        "className": "ProjectNodeData",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 导航节点唯一 ID。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 44,
+            "className": "ProjectNodeData",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 导航节点标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 46,
+            "className": "ProjectNodeData",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "description",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 节点业务描述，供 AI 策划和页面设计理解用途。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 48,
+            "className": "ProjectNodeData",
+            "memberName": "description",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "planningAttachmentRef",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 节点策划详细说明附件引用；正文由工作区解析后传给 LLM。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 50,
+            "className": "ProjectNodeData",
+            "memberName": "planningAttachmentRef",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "version",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 节点版本号或版本标签。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 52,
+            "className": "ProjectNodeData",
+            "memberName": "version",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "icon",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 节点图标名。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 54,
+            "className": "ProjectNodeData",
+            "memberName": "icon",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "nodeKind",
+          "schema": {
+            "title": "NavNodeKind | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 导航节点类型，决定页面、模块、链接、引用等行为。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 56,
+            "className": "ProjectNodeData",
+            "memberName": "nodeKind",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "childPlacement",
+          "schema": {
+            "title": "ChildPlacement | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 子节点在应用壳中的布局区域。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 58,
+            "className": "ProjectNodeData",
+            "memberName": "childPlacement",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "context",
+          "schema": {
+            "title": "string | NavContextItem[] | NavContextConfig | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 导航上下文配置或静态上下文选项。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 60,
+            "className": "ProjectNodeData",
+            "memberName": "context",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "order",
+          "schema": {
+            "title": "number | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 同级排序值，数值越小越靠前。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 62,
+            "className": "ProjectNodeData",
+            "memberName": "order",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "hidden",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否在导航中隐藏。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 64,
+            "className": "ProjectNodeData",
+            "memberName": "hidden",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "disabled",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否禁用该导航节点。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 66,
+            "className": "ProjectNodeData",
+            "memberName": "disabled",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "dividerAfter",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否在该节点后显示分隔线。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 68,
+            "className": "ProjectNodeData",
+            "memberName": "dividerAfter",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "permissionMode",
+          "schema": {
+            "title": "NavPermissionMode | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 权限不匹配时的展示策略。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 70,
+            "className": "ProjectNodeData",
+            "memberName": "permissionMode",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "children",
+          "schema": {
+            "title": "ProjectNodeData[] | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 子导航节点。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 72,
+            "className": "ProjectNodeData",
+            "memberName": "children",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "path",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 页面路由路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 74,
+            "className": "ProjectNodeData",
+            "memberName": "path",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "linkTarget",
+          "schema": {
+            "title": "'iframe' | 'new-tab' | 'self' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** link 节点的打开目标。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 76,
+            "className": "ProjectNodeData",
+            "memberName": "linkTarget",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "redirect",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 重定向目标路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 78,
+            "className": "ProjectNodeData",
+            "memberName": "redirect",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "refId",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** ref 节点引用的目标节点 ID。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 80,
+            "className": "ProjectNodeData",
+            "memberName": "refId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "refPath",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** ref 节点解析后的目标路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 82,
+            "className": "ProjectNodeData",
+            "memberName": "refPath",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "refProjectId",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** ref 节点引用的目标项目 ID。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 84,
+            "className": "ProjectNodeData",
+            "memberName": "refProjectId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "refBroken",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** ref 引用是否已失效。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 86,
+            "className": "ProjectNodeData",
+            "memberName": "refBroken",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "planningStatus",
+          "schema": {
+            "title": "'planning_draft' | 'planning_confirmed' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** Agent 策划闸门；缺省时由 effectiveDescription 推断。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 88,
+            "className": "ProjectNodeData",
+            "memberName": "planningStatus",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "implGate",
+          "schema": {
+            "title": "'closed' | 'open' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** pageDesign 实现放行闸门；缺省过渡期为 open。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 90,
+            "className": "ProjectNodeData",
+            "memberName": "implGate",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "upstreamContractsSatisfied",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 上游 iPaaS / 契约就绪；缺省 true。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 92,
+            "className": "ProjectNodeData",
+            "memberName": "upstreamContractsSatisfied",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectNodeNavigationPatch": {
+      "kind": "ProjectNodeNavigationPatch",
+      "className": "ProjectNodeNavigationPatch",
+      "jsdoc": "/** Project Node Navigation Patch 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 新标题。 */\n    title: string;\n    /** 新节点类型。 */\n    nodeKind?: NavNodeKind | undefined;\n    /** 新图标名。 */\n    icon?: string | undefined;\n    /** 是否在节点后显示分隔线。 */\n    dividerAfter?: boolean | undefined;\n    /** 新节点描述。 */\n    description?: string | undefined;\n    /** 新策划详细说明附件引用。 */\n    planningAttachmentRef?: string | undefined;\n    /** 新路由路径。 */\n    path?: string | undefined;\n    /** link 节点新打开目标。 */\n    linkTarget?: string | undefined;\n    /** 新子节点布局区域。 */\n    childPlacement?: string | undefined;\n    /** 新同级排序值。 */\n    order?: number | undefined;\n    /** 是否隐藏节点。 */\n    hidden?: boolean | undefined;\n    /** 是否禁用节点。 */\n    disabled?: boolean | undefined;\n    /** 新 ref 目标节点 ID。 */\n    refId?: string | undefined;\n    /** 新权限展示策略。 */\n    permissionMode?: NavPermissionMode | undefined;\n    /** 新导航上下文配置。 */\n    context?: string | NavContextItem[] | NavContextConfig | undefined;\n    /** 新 Agent 策划闸门。 */\n    planningStatus?: 'planning_draft' | 'planning_confirmed' | undefined;\n    /** 新 pageDesign 实现放行闸门。 */\n    implGate?: 'closed' | 'open' | undefined;\n    /** 新上游契约就绪状态。 */\n    upstreamContractsSatisfied?: boolean | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 95,
+        "className": "ProjectNodeNavigationPatch",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 新标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 97,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "nodeKind",
+          "schema": {
+            "title": "NavNodeKind | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新节点类型。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 99,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "nodeKind",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "icon",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新图标名。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 101,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "icon",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "dividerAfter",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否在节点后显示分隔线。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 103,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "dividerAfter",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "description",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新节点描述。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 105,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "description",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "planningAttachmentRef",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新策划详细说明附件引用。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 107,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "planningAttachmentRef",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "path",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新路由路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 109,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "path",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "linkTarget",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** link 节点新打开目标。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 111,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "linkTarget",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "childPlacement",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新子节点布局区域。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 113,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "childPlacement",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "order",
+          "schema": {
+            "title": "number | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新同级排序值。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 115,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "order",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "hidden",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否隐藏节点。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 117,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "hidden",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "disabled",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否禁用节点。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 119,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "disabled",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "refId",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新 ref 目标节点 ID。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 121,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "refId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "permissionMode",
+          "schema": {
+            "title": "NavPermissionMode | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新权限展示策略。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 123,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "permissionMode",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "context",
+          "schema": {
+            "title": "string | NavContextItem[] | NavContextConfig | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新导航上下文配置。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 125,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "context",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "planningStatus",
+          "schema": {
+            "title": "'planning_draft' | 'planning_confirmed' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新 Agent 策划闸门。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 127,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "planningStatus",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "implGate",
+          "schema": {
+            "title": "'closed' | 'open' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新 pageDesign 实现放行闸门。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 129,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "implGate",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "upstreamContractsSatisfied",
+          "schema": {
+            "title": "boolean | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 新上游契约就绪状态。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 131,
+            "className": "ProjectNodeNavigationPatch",
+            "memberName": "upstreamContractsSatisfied",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectNodeLocation": {
+      "kind": "ProjectNodeLocation",
+      "className": "ProjectNodeLocation",
+      "jsdoc": "/** Project Node Location 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 命中的节点数据。 */\n    node: ProjectNodeData;\n    /** 父节点数据；根节点无父级时为 null。 */\n    parent: ProjectNodeData | null;\n    /** 父节点 ID；根节点无父级时为 null。 */\n    parentId: string | null;\n    /** 节点在父级 children 中的索引。 */\n    index: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 134,
+        "className": "ProjectNodeLocation",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "node",
+          "schema": {
+            "title": "ProjectNodeData"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 命中的节点数据。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 136,
+            "className": "ProjectNodeLocation",
+            "memberName": "node",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "parent",
+          "schema": {
+            "title": "ProjectNodeData | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 父节点数据；根节点无父级时为 null。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 138,
+            "className": "ProjectNodeLocation",
+            "memberName": "parent",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "parentId",
+          "schema": {
+            "title": "string | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 父节点 ID；根节点无父级时为 null。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 140,
+            "className": "ProjectNodeLocation",
+            "memberName": "parentId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "index",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 节点在父级 children 中的索引。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 142,
+            "className": "ProjectNodeLocation",
+            "memberName": "index",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectModelData": {
+      "kind": "ProjectModelData",
+      "className": "ProjectModelData",
+      "jsdoc": "/** 项目模型的可序列化根数据。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Omit<ProjectNodeData, 'id' | 'nodeKind' | 'children' | 'childPlacement'> & {\n    /** 项目根节点 ID。 */\n    id?: string | undefined;\n    /** 项目根节点类型。 */\n    nodeKind?: 'module' | 'system-directory' | undefined;\n    /** 项目标题。 */\n    title: string;\n    /** 项目根节点子级布局区域。 */\n    childPlacement: 'header' | 'sidebar';\n    /** 项目导航树根级子节点。 */\n    children: ProjectNodeData[];\n    /** 项目首页路径。 */\n    homePath?: string | undefined;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "Omit<ProjectNodeData, 'id' | 'nodeKind' | 'children' | 'childPlacement'>",
+          "targetName": "Omit"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 项目根节点 ID。 */\n    id?: string | undefined;\n    /** 项目根节点类型。 */\n    nodeKind?: 'module' | 'system-directory' | undefined;\n    /** 项目标题。 */\n    title: string;\n    /** 项目根节点子级布局区域。 */\n    childPlacement: 'header' | 'sidebar';\n    /** 项目导航树根级子节点。 */\n    children: ProjectNodeData[];\n    /** 项目首页路径。 */\n    homePath?: string | undefined;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 146,
+        "className": "ProjectModelData",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 项目根节点 ID。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 148,
+            "className": "ProjectModelData",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "nodeKind",
+          "schema": {
+            "title": "'module' | 'system-directory' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 项目根节点类型。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 150,
+            "className": "ProjectModelData",
+            "memberName": "nodeKind",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 项目标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 152,
+            "className": "ProjectModelData",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "childPlacement",
+          "schema": {
+            "title": "'header' | 'sidebar'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 项目根节点子级布局区域。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 154,
+            "className": "ProjectModelData",
+            "memberName": "childPlacement",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "children",
+          "schema": {
+            "type": "array",
+            "title": "ProjectNodeData[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 项目导航树根级子节点。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 156,
+            "className": "ProjectModelData",
+            "memberName": "children",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "homePath",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 项目首页路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 158,
+            "className": "ProjectModelData",
+            "memberName": "homePath",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "RegionItems": {
+      "kind": "RegionItems",
+      "className": "RegionItems",
+      "jsdoc": "/** 按区域分组的导航节点列表。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 顶部导航区域节点。 */\n    header: ProjectNodeData[];\n    /** 侧边栏区域节点。 */\n    sidebar: ProjectNodeData[];\n    /** 工具栏区域节点。 */\n    toolbar: ProjectNodeData[];\n    /** 用户菜单区域节点。 */\n    userMenu: ProjectNodeData[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 161,
+        "className": "RegionItems",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "header",
+          "schema": {
+            "type": "array",
+            "title": "ProjectNodeData[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 顶部导航区域节点。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 163,
+            "className": "RegionItems",
+            "memberName": "header",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "sidebar",
+          "schema": {
+            "type": "array",
+            "title": "ProjectNodeData[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 侧边栏区域节点。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 165,
+            "className": "RegionItems",
+            "memberName": "sidebar",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "toolbar",
+          "schema": {
+            "type": "array",
+            "title": "ProjectNodeData[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 工具栏区域节点。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 167,
+            "className": "RegionItems",
+            "memberName": "toolbar",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "userMenu",
+          "schema": {
+            "type": "array",
+            "title": "ProjectNodeData[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 用户菜单区域节点。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 169,
+            "className": "RegionItems",
+            "memberName": "userMenu",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "RegionVisibility": {
+      "kind": "RegionVisibility",
+      "className": "RegionVisibility",
+      "jsdoc": "/** 各区域是否可见。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 顶部导航是否可见。 */\n    header: boolean;\n    /** 侧边栏是否可见。 */\n    sidebar: boolean;\n    /** 工具栏是否可见。 */\n    toolbar: boolean;\n    /** 用户菜单是否可见。 */\n    userMenu: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 172,
+        "className": "RegionVisibility",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "header",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 顶部导航是否可见。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 174,
+            "className": "RegionVisibility",
+            "memberName": "header",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "sidebar",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 侧边栏是否可见。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 176,
+            "className": "RegionVisibility",
+            "memberName": "sidebar",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "toolbar",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 工具栏是否可见。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 178,
+            "className": "RegionVisibility",
+            "memberName": "toolbar",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "userMenu",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 用户菜单是否可见。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 180,
+            "className": "RegionVisibility",
+            "memberName": "userMenu",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "NavContextState": {
+      "kind": "NavContextState",
+      "className": "NavContextState",
+      "jsdoc": "/** 导航上下文运行时状态。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前上下文配置。 */\n    config: NavContextConfig;\n    /** 绑定该上下文的导航节点 ID。 */\n    nodeId: string;\n    /** 当前选中上下文值。 */\n    selected: string | number | null;\n    /** 当前可选上下文项。 */\n    items: NavContextItem[];\n    /** 上下文选项是否正在加载。 */\n    loading: boolean;\n    /** 上下文加载错误消息。 */\n    error: string | null;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 183,
+        "className": "NavContextState",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "config",
+          "schema": {
+            "title": "NavContextConfig"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前上下文配置。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 185,
+            "className": "NavContextState",
+            "memberName": "config",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "nodeId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 绑定该上下文的导航节点 ID。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 187,
+            "className": "NavContextState",
+            "memberName": "nodeId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "selected",
+          "schema": {
+            "title": "string | number | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前选中上下文值。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 189,
+            "className": "NavContextState",
+            "memberName": "selected",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "items",
+          "schema": {
+            "type": "array",
+            "title": "NavContextItem[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前可选上下文项。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 191,
+            "className": "NavContextState",
+            "memberName": "items",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "loading",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 上下文选项是否正在加载。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 193,
+            "className": "NavContextState",
+            "memberName": "loading",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "error",
+          "schema": {
+            "title": "string | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 上下文加载错误消息。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 195,
+            "className": "NavContextState",
+            "memberName": "error",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectPageSurface": {
+      "kind": "ProjectPageSurface",
+      "className": "ProjectPageSurface",
+      "jsdoc": "/** 导航页在模型侧的页面表面（不携带应用框架实现细节）。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'config-files' | 'system-page' | 'link' | 'ref' | 'none'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'config-files'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'system-page'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'link'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'ref'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'none'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 198,
+        "className": "ProjectPageSurface",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ProjectPageNodeSummary": {
+      "kind": "ProjectPageNodeSummary",
+      "className": "ProjectPageNodeSummary",
+      "jsdoc": "/** Project Page Node Summary 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Record<string, unknown> & {\n    /** 配置页 pageId。 */\n    pageId: string;\n    /** 页面路由路径。 */\n    path: string;\n    /** 页面标题。 */\n    title: string;\n    /** 导航节点 ID。 */\n    nodeId: string;\n    /** 导航节点类型。 */\n    nodeKind: NavNodeKind;\n    /** 模型侧编辑表面：config-files=四文件；system-page=系统页；none=不可编辑页面文件 */\n    designSurface: ProjectPageSurface;\n    /** 页面节点自身描述。 */\n    description: string;\n    /** 页面节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 从祖先或上下文节点继承的描述列表。 */\n    descriptionContext: ProjectDescriptionContext[];\n    /** 聚合后的有效描述文本，供 AI 理解页面意图。 */\n    effectiveDescription: string;\n    /** Agent 可见策划闸门；缺省时由 effectiveDescription 推断 planning_confirmed。 */\n    planningStatus?: 'planning_draft' | 'planning_confirmed';\n    /** 实现放行闸门；缺省过渡期为 open（runner 可 strictImplGate）。 */\n    implGate?: 'closed' | 'open';\n    /** 上游 iPaaS / 契约就绪；缺省 true。 */\n    upstreamContractsSatisfied?: boolean;\n    /** 页面图标名。 */\n    icon?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "Record<string, unknown>",
+          "targetName": "Record"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 配置页 pageId。 */\n    pageId: string;\n    /** 页面路由路径。 */\n    path: string;\n    /** 页面标题。 */\n    title: string;\n    /** 导航节点 ID。 */\n    nodeId: string;\n    /** 导航节点类型。 */\n    nodeKind: NavNodeKind;\n    /** 模型侧编辑表面：config-files=四文件；system-page=系统页；none=不可编辑页面文件 */\n    designSurface: ProjectPageSurface;\n    /** 页面节点自身描述。 */\n    description: string;\n    /** 页面节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 从祖先或上下文节点继承的描述列表。 */\n    descriptionContext: ProjectDescriptionContext[];\n    /** 聚合后的有效描述文本，供 AI 理解页面意图。 */\n    effectiveDescription: string;\n    /** Agent 可见策划闸门；缺省时由 effectiveDescription 推断 planning_confirmed。 */\n    planningStatus?: 'planning_draft' | 'planning_confirmed';\n    /** 实现放行闸门；缺省过渡期为 open（runner 可 strictImplGate）。 */\n    implGate?: 'closed' | 'open';\n    /** 上游 iPaaS / 契约就绪；缺省 true。 */\n    upstreamContractsSatisfied?: boolean;\n    /** 页面图标名。 */\n    icon?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 200,
+        "className": "ProjectPageNodeSummary",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 配置页 pageId。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 202,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "path",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 页面路由路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 204,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "path",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 页面标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 206,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "nodeId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 导航节点 ID。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 208,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "nodeId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "nodeKind",
+          "schema": {
+            "title": "NavNodeKind"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 导航节点类型。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 210,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "nodeKind",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "designSurface",
+          "schema": {
+            "title": "ProjectPageSurface"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 模型侧编辑表面：config-files=四文件；system-page=系统页；none=不可编辑页面文件 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 212,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "designSurface",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "description",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 页面节点自身描述。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 214,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "description",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "planningAttachmentRef",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 页面节点策划详细说明附件引用。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 216,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "planningAttachmentRef",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "descriptionContext",
+          "schema": {
+            "type": "array",
+            "title": "ProjectDescriptionContext[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 从祖先或上下文节点继承的描述列表。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 218,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "descriptionContext",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "effectiveDescription",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 聚合后的有效描述文本，供 AI 理解页面意图。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 220,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "effectiveDescription",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "planningStatus",
+          "schema": {
+            "title": "'planning_draft' | 'planning_confirmed'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** Agent 可见策划闸门；缺省时由 effectiveDescription 推断 planning_confirmed。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 222,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "planningStatus",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "implGate",
+          "schema": {
+            "title": "'closed' | 'open'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 实现放行闸门；缺省过渡期为 open（runner 可 strictImplGate）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 224,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "implGate",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "upstreamContractsSatisfied",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 上游 iPaaS / 契约就绪；缺省 true。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 226,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "upstreamContractsSatisfied",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "icon",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 页面图标名。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 228,
+            "className": "ProjectPageNodeSummary",
+            "memberName": "icon",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectNodeModelOptions": {
+      "kind": "ProjectNodeModelOptions",
+      "className": "ProjectNodeModelOptions",
+      "jsdoc": "/** Project Node Model Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前导航节点数据快照。 */\n    node: ProjectNodeData;\n    /** 父节点 ID；根级节点传空字符串。 */\n    pid: string;\n    /** 祖先或上下文描述链。 */\n    descriptionContext?: readonly ProjectDescriptionContext[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 231,
+        "className": "ProjectNodeModelOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "node",
+          "schema": {
+            "title": "ProjectNodeData"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前导航节点数据快照。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 233,
+            "className": "ProjectNodeModelOptions",
+            "memberName": "node",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "pid",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 父节点 ID；根级节点传空字符串。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 235,
+            "className": "ProjectNodeModelOptions",
+            "memberName": "pid",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "descriptionContext",
+          "schema": {
+            "type": "array",
+            "title": "readonly ProjectDescriptionContext[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 祖先或上下文描述链。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 237,
+            "className": "ProjectNodeModelOptions",
+            "memberName": "descriptionContext",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectNode": {
+      "kind": "ProjectNode",
+      "className": "ProjectNode",
+      "jsdoc": "/**\n * 导航节点基类。\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+        "line": 242,
+        "className": "ProjectNode",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "title": "ProjectNodeModelOptions"
+            }
+          },
+          "required": [
+            "options"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Project Node 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+          "line": 245,
+          "className": "ProjectNode",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "toNodeData",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectNodeData"
+          },
+          "returnTypeText": "ProjectNodeData",
+          "jsdoc": "/** 执行 to Node Data 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 249,
+            "className": "ProjectNode",
+            "memberName": "toNodeData",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "applyNavigationPatch",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "patch": {
+                "title": "ProjectNodeNavigationPatch"
+              }
+            },
+            "required": [
+              "patch"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 导航编辑只能通过 class API 提交；DTO 快照不可作为包内可变真源。 */",
+          "paramsTypeText": "patch: ProjectNodeNavigationPatch",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 251,
+            "className": "ProjectNode",
+            "memberName": "applyNavigationPatch",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "rebindNavigationNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "node": {
+                "title": "ProjectNodeData"
+              },
+              "pid": {
+                "type": "string",
+                "title": "string"
+              },
+              "descriptionContext": {
+                "type": "array",
+                "title": "readonly ProjectDescriptionContext[]",
+                "items": true
+              }
+            },
+            "required": [
+              "node",
+              "pid",
+              "descriptionContext"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 rebind Navigation Node 操作。 */",
+          "paramsTypeText": "node: ProjectNodeData, pid: string, descriptionContext: readonly ProjectDescriptionContext[]",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
+            "line": 313,
+            "className": "ProjectNode",
+            "memberName": "rebindNavigationNode",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.920Z"
+}

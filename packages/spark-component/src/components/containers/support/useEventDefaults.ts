@@ -67,10 +67,12 @@ export type EventDefaultDeclaration<TArgs extends readonly unknown[] = readonly 
 export type EventArgsMap = {
   [eventName: string]: readonly unknown[]}
 
+/** Event Default Declarations 的语义模型。 */
 export type EventDefaultDeclarations<TEvents extends EventArgsMap> = Readonly<{
   [TName in keyof TEvents]: EventDefaultDeclaration<NoInfer<TEvents[TName]>>
 }>
 
+/** Event Dispatcher 的语义模型。 */
 export type EventDispatcher<TEvents extends EventArgsMap = Record<string, readonly unknown[]>> = {
   <TName extends Extract<keyof TEvents, string>>(eventName: TName, ...args: TEvents[TName]): Promise<InteractionControl>}
 

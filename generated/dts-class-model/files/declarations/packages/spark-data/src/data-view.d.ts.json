@@ -1,0 +1,2602 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:data-view",
+    "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts",
+    "sourceFile": "packages/spark-data/src/data-view.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "data-view",
+    "jsdoc": "DataView — 数据视图，SPARK 数据层的统一交互枢纽。\n引用链：DataView → DataTable → DataSet。\n级联加载：子订阅父，父不知子。\n请求编排：requestData(上行) / refresh(下行) / requestState(唯一状态源)。\n委托分工：CrudDelegate / CascadeDelegate / SelectionDelegate / etc.",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "DataViewEventMap",
+      "DataViewRecomputeColumnsOptions",
+      "DataViewServerRowsPayload",
+      "DataView"
+    ]
+  },
+  "symbols": [
+    "DataViewEventMap",
+    "DataViewRecomputeColumnsOptions",
+    "DataViewServerRowsPayload",
+    "DataView"
+  ],
+  "models": {
+    "DataViewEventMap": {
+      "kind": "DataViewEventMap",
+      "className": "DataViewEventMap",
+      "jsdoc": "/** DataView 事件映射 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Record<string, any[]> & {\n    /** 当前行变化 */\n    currentRowChanged: [currentRow: DataRow | null, originatorId?: string];\n    /** 选中行变化 */\n    selectedRowsChanged: [selectedRows: DataRow[], originatorId?: string];\n    /** 行数据批量变化（防抖 16ms） */\n    rowsChanged: [];\n    /** 编辑态字段变化 */\n    editingFieldChanged: [event: DataViewEditingFieldChangeEvent];\n    /** 编辑态 patch 集合变化 */\n    editingChanged: [];\n    /** 数据已清空 */\n    cleared: [];\n    /** 视图配置变化（分页、排序、过滤、主键、树、聚合等） */\n    configChanged: [];\n    /** 请求状态变化（Idle→Loading→Loaded/Failed） */\n    requestStateChanged: [requestState: RequestState];\n    /** CRUD 变更状态变化 */\n    mutatingChanged: [mutating: boolean];\n    /** aggregateResult 已重算 */\n    summaryChanged: [];\n    /** selectionAggregateResult 已单独重算（仅选中行变更时触发，数据变更走 summaryChanged） */\n    selectionSummaryChanged: [];\n    /** CRUD 提交前事件——业务脚本可调用 event.cancel() 取消操作 */\n    'crud:before': [CrudLifecycleEvent];\n    /** CRUD 提交后事件——业务脚本可根据 result 执行联动 */\n    'crud:after': [CrudLifecycleEvent];\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "Record<string, any[]>",
+          "targetName": "Record"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 当前行变化 */\n    currentRowChanged: [currentRow: DataRow | null, originatorId?: string];\n    /** 选中行变化 */\n    selectedRowsChanged: [selectedRows: DataRow[], originatorId?: string];\n    /** 行数据批量变化（防抖 16ms） */\n    rowsChanged: [];\n    /** 编辑态字段变化 */\n    editingFieldChanged: [event: DataViewEditingFieldChangeEvent];\n    /** 编辑态 patch 集合变化 */\n    editingChanged: [];\n    /** 数据已清空 */\n    cleared: [];\n    /** 视图配置变化（分页、排序、过滤、主键、树、聚合等） */\n    configChanged: [];\n    /** 请求状态变化（Idle→Loading→Loaded/Failed） */\n    requestStateChanged: [requestState: RequestState];\n    /** CRUD 变更状态变化 */\n    mutatingChanged: [mutating: boolean];\n    /** aggregateResult 已重算 */\n    summaryChanged: [];\n    /** selectionAggregateResult 已单独重算（仅选中行变更时触发，数据变更走 summaryChanged） */\n    selectionSummaryChanged: [];\n    /** CRUD 提交前事件——业务脚本可调用 event.cancel() 取消操作 */\n    'crud:before': [CrudLifecycleEvent];\n    /** CRUD 提交后事件——业务脚本可根据 result 执行联动 */\n    'crud:after': [CrudLifecycleEvent];\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/data-view.d.ts",
+        "line": 24,
+        "className": "DataViewEventMap",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "currentRowChanged",
+          "schema": {
+            "title": "[currentRow: DataRow | null, originatorId?: string]"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前行变化 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 26,
+            "className": "DataViewEventMap",
+            "memberName": "currentRowChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "selectedRowsChanged",
+          "schema": {
+            "title": "[selectedRows: DataRow[], originatorId?: string]"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 选中行变化 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 28,
+            "className": "DataViewEventMap",
+            "memberName": "selectedRowsChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "rowsChanged",
+          "schema": {
+            "type": "array",
+            "title": "[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 行数据批量变化（防抖 16ms） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 30,
+            "className": "DataViewEventMap",
+            "memberName": "rowsChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "editingFieldChanged",
+          "schema": {
+            "title": "[event: DataViewEditingFieldChangeEvent]"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 编辑态字段变化 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 32,
+            "className": "DataViewEventMap",
+            "memberName": "editingFieldChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "editingChanged",
+          "schema": {
+            "type": "array",
+            "title": "[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 编辑态 patch 集合变化 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 34,
+            "className": "DataViewEventMap",
+            "memberName": "editingChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "cleared",
+          "schema": {
+            "type": "array",
+            "title": "[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 数据已清空 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 36,
+            "className": "DataViewEventMap",
+            "memberName": "cleared",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "configChanged",
+          "schema": {
+            "type": "array",
+            "title": "[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 视图配置变化（分页、排序、过滤、主键、树、聚合等） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 38,
+            "className": "DataViewEventMap",
+            "memberName": "configChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "requestStateChanged",
+          "schema": {
+            "title": "[requestState: RequestState]"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 请求状态变化（Idle→Loading→Loaded/Failed） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 40,
+            "className": "DataViewEventMap",
+            "memberName": "requestStateChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "mutatingChanged",
+          "schema": {
+            "title": "[mutating: boolean]"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** CRUD 变更状态变化 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 42,
+            "className": "DataViewEventMap",
+            "memberName": "mutatingChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "summaryChanged",
+          "schema": {
+            "type": "array",
+            "title": "[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** aggregateResult 已重算 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 44,
+            "className": "DataViewEventMap",
+            "memberName": "summaryChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "selectionSummaryChanged",
+          "schema": {
+            "type": "array",
+            "title": "[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** selectionAggregateResult 已单独重算（仅选中行变更时触发，数据变更走 summaryChanged） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 46,
+            "className": "DataViewEventMap",
+            "memberName": "selectionSummaryChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "crud:before",
+          "schema": {
+            "title": "[CrudLifecycleEvent]"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** CRUD 提交前事件——业务脚本可调用 event.cancel() 取消操作 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 48,
+            "className": "DataViewEventMap",
+            "memberName": "crud:before",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "crud:after",
+          "schema": {
+            "title": "[CrudLifecycleEvent]"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** CRUD 提交后事件——业务脚本可根据 result 执行联动 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 50,
+            "className": "DataViewEventMap",
+            "memberName": "crud:after",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataViewRecomputeColumnsOptions": {
+      "kind": "DataViewRecomputeColumnsOptions",
+      "className": "DataViewRecomputeColumnsOptions",
+      "jsdoc": "/** 手动重算计算列时的通知选项。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 是否发出 rowsChanged 及聚合通知；false 表示仅更新内部派生值。 */\n    emit?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/data-view.d.ts",
+        "line": 53,
+        "className": "DataViewRecomputeColumnsOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "emit",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否发出 rowsChanged 及聚合通知；false 表示仅更新内部派生值。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 55,
+            "className": "DataViewRecomputeColumnsOptions",
+            "memberName": "emit",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataViewServerRowsPayload": {
+      "kind": "DataViewServerRowsPayload",
+      "className": "DataViewServerRowsPayload",
+      "jsdoc": "/** 服务端行数据响应载荷。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 服务端返回的行数据列表。 */\n    rows?: DataRow[];\n    /** 服务端返回的总行数。 */\n    total?: number;\n    /** 服务端返回或确认的当前页码。 */\n    page?: number;\n    /** 服务端返回或确认的每页行数。 */\n    pageSize?: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/data-view.d.ts",
+        "line": 58,
+        "className": "DataViewServerRowsPayload",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "rows",
+          "schema": {
+            "type": "array",
+            "title": "DataRow[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 服务端返回的行数据列表。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 60,
+            "className": "DataViewServerRowsPayload",
+            "memberName": "rows",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "total",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 服务端返回的总行数。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 62,
+            "className": "DataViewServerRowsPayload",
+            "memberName": "total",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "page",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 服务端返回或确认的当前页码。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 64,
+            "className": "DataViewServerRowsPayload",
+            "memberName": "page",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "pageSize",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 服务端返回或确认的每页行数。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 66,
+            "className": "DataViewServerRowsPayload",
+            "memberName": "pageSize",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataView": {
+      "kind": "DataView",
+      "className": "DataView",
+      "jsdoc": "/**\n * DataView - 单个表视图的数据操作子模块。\n *\n */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "implements",
+          "typeText": "DataSource",
+          "targetName": "DataSource"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/data-view.d.ts",
+        "line": 72,
+        "className": "DataView",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "tableName": {
+              "type": "string",
+              "title": "string"
+            },
+            "viewId": {
+              "type": "string",
+              "title": "string"
+            }
+          },
+          "required": [
+            "tableName"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/**\n     * 创建数据视图实例。\n     *\n     * @param tableName 视图所属表名。\n     * @param viewId 视图 ID，默认 `default` 表示主数据视图。\n     */",
+        "provenance": {
+          "file": "declarations/packages/spark-data/src/data-view.d.ts",
+          "line": 360,
+          "className": "DataView",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [
+        {
+          "name": "tableName",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 数据表名。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 81,
+            "className": "DataView",
+            "memberName": "tableName",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "viewId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 视图标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 83,
+            "className": "DataView",
+            "memberName": "viewId",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "rows",
+          "schema": {
+            "type": "array",
+            "title": "DataRow[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 行数据集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 85,
+            "className": "DataView",
+            "memberName": "rows",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "_currentRowId",
+          "schema": {
+            "title": "string | number | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前行主键值（null 表示未选中）。通过 currentRow getter 取对应行对象 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 92,
+            "className": "DataView",
+            "memberName": "_currentRowId",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "_selectedRowIds",
+          "schema": {
+            "title": "Array<string | number>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 多选行主键值列表。通过 selectedRows getter 取对应行对象数组 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 94,
+            "className": "DataView",
+            "memberName": "_selectedRowIds",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "valueField",
+          "schema": {
+            "type": "array",
+            "title": "string | string[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 值字段名（用于 value getter/setter 序列化），未指定时回退到主键字段 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 96,
+            "className": "DataView",
+            "memberName": "valueField",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "labelField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 标签显示字段名（用于 labels/label getter），未指定时回退到主键值字符串 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 98,
+            "className": "DataView",
+            "memberName": "labelField",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "selectionDelimiter",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 值序列化分隔符（默认 ','）。非空=多选，空字符串=单选 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 100,
+            "className": "DataView",
+            "memberName": "selectionDelimiter",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "total",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 总记录数。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 156,
+            "className": "DataView",
+            "memberName": "total",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "page",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前页码。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 158,
+            "className": "DataView",
+            "memberName": "page",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "pageSize",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 分页大小。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 160,
+            "className": "DataView",
+            "memberName": "pageSize",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "loadingError",
+          "schema": {
+            "title": "Error | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** loading Error 错误信息。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 162,
+            "className": "DataView",
+            "memberName": "loadingError",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "requestState",
+          "schema": {
+            "title": "RequestState"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 请求状态机，见 {@link RequestState}。唯一状态源，勿另设布尔标志。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 164,
+            "className": "DataView",
+            "memberName": "requestState",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "mutating",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 增删改批网络请求进行中（与 requestState 独立，可同时为 true） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 166,
+            "className": "DataView",
+            "memberName": "mutating",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "mutatingError",
+          "schema": {
+            "title": "Error | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 最近一次增删改批操作的错误；成功或未发起时为 null */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 168,
+            "className": "DataView",
+            "memberName": "mutatingError",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "filterExpression",
+          "schema": {
+            "title": "FilterExpression"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** filter Expression 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 170,
+            "className": "DataView",
+            "memberName": "filterExpression",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "sortExpression",
+          "schema": {
+            "title": "SortExpression"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** sort Expression 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 172,
+            "className": "DataView",
+            "memberName": "sortExpression",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "autoCurrentFirst",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 请求成功后是否自动 currentRow = rows[0]（默认 true） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 174,
+            "className": "DataView",
+            "memberName": "autoCurrentFirst",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "autoSelectFirst",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 请求成功后是否自动 selectedRows = [rows[0]]（默认 true） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 176,
+            "className": "DataView",
+            "memberName": "autoSelectFirst",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "treeConfig",
+          "schema": {
+            "title": "TreeConfig"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 树结构字段配置 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 178,
+            "className": "DataView",
+            "memberName": "treeConfig",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "autoLoad",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** DataSet 初始化后是否自动加载数据（默认 false） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 180,
+            "className": "DataView",
+            "memberName": "autoLoad",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "autoLoadConfigured",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** autoLoad 是否来自显式视图配置，而不是类默认值。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 182,
+            "className": "DataView",
+            "memberName": "autoLoadConfigured",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "commitMode",
+          "schema": {
+            "title": "CommitMode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * 增删改提交模式（默认 `'immediate'`）。\n     *\n     * - `'immediate'`：每次 addRow/editRowById/removeRow 立即调用网络 CRUD（如已配置 API）\n     * - `'staged'`：仅修改内存并标脏，调用 saveChanges() 批量提交\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 203,
+            "className": "DataView",
+            "memberName": "commitMode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "aggregates",
+          "schema": {
+            "title": "Record<string, AggregateColumnConfig>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 视图级聚合配置——行变更后自动重算 aggregateResult / selectionAggregateResult。仅由 applyViewConfig() 初始化 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 205,
+            "className": "DataView",
+            "memberName": "aggregates",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "treeManager",
+          "schema": {
+            "title": "TreeManager | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** tree Manager 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 270,
+            "className": "DataView",
+            "memberName": "treeManager",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "rowIndexMap",
+          "schema": {
+            "title": "Map<DataRow, number> | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 行索引缓存（用于加速 updateRowById 行对象替换）——由 LocalMutationDelegate 管理，内部状态勿直接操作 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 294,
+            "className": "DataView",
+            "memberName": "rowIndexMap",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "events",
+          "schema": {
+            "title": "SparkEventEmitter<DataViewEventMap>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 事件总线——独立事件模型（currentRowChanged / selectedRowsChanged / rowsChanged / cleared / configChanged / requestStateChanged / mutatingChanged） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 351,
+            "className": "DataView",
+            "memberName": "events",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "logger",
+          "schema": {
+            "title": "import(\"@spark-appworks/spark-utils\").LoggerApi"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 诊断日志接口。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 353,
+            "className": "DataView",
+            "memberName": "logger",
+            "declarationKind": "class"
+          }
+        }
+      ],
+      "methods": [
+        {
+          "name": "resetPrimaryKey",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 清除显式覆盖，恢复从 DataTable 列定义自动推导主键 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 90,
+            "className": "DataView",
+            "memberName": "resetPrimaryKey",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setCurrentRow",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "title": "DataRow | null"
+              },
+              "originatorId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "row"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 设置当前行（自动提取主键存储，null 清除）。\n     *\n     * @param row 要设为当前行的行对象；null 表示清除当前行。\n     * @param originatorId 可选变更来源标识，用于级联订阅方避免回环。\n     */",
+          "paramsTypeText": "row: DataRow | null, originatorId?: string | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 120,
+            "className": "DataView",
+            "memberName": "setCurrentRow",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setCurrentRowById",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number | null"
+              },
+              "originatorId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/**\n     * 通过主键设置当前行（行不存在时返回 false）。\n     *\n     * @param id 目标行主键值；null 表示清除当前行。\n     * @param originatorId 可选变更来源标识，用于级联订阅方避免回环。\n     */",
+          "paramsTypeText": "id: string | number | null, originatorId?: string | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 127,
+            "className": "DataView",
+            "memberName": "setCurrentRowById",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setSelectedRows",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "title": "DataRow[]",
+                "items": true
+              },
+              "originatorId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "rows"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 设置多选行（覆盖式）。\n     *\n     * @param rows 新的选中行列表。\n     * @param originatorId 可选变更来源标识，用于级联订阅方避免回环。\n     */",
+          "paramsTypeText": "rows: DataRow[], originatorId?: string | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 134,
+            "className": "DataView",
+            "memberName": "setSelectedRows",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "addSelectedRows",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "title": "DataRow[]",
+                "items": true
+              }
+            },
+            "required": [
+              "rows"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number",
+            "title": "number"
+          },
+          "returnTypeText": "number",
+          "jsdoc": "/**\n     * 追加多选行（返回实际新增数量）。\n     *\n     * @param rows 要追加到选中集的行列表。\n     */",
+          "paramsTypeText": "rows: DataRow[]",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 140,
+            "className": "DataView",
+            "memberName": "addSelectedRows",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "removeSelectedRows",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "title": "DataRow[]",
+                "items": true
+              }
+            },
+            "required": [
+              "rows"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number",
+            "title": "number"
+          },
+          "returnTypeText": "number",
+          "jsdoc": "/**\n     * 移除多选行（返回实际移除数量）。\n     *\n     * @param rows 要从选中集中移除的行列表。\n     */",
+          "paramsTypeText": "rows: DataRow[]",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 146,
+            "className": "DataView",
+            "memberName": "removeSelectedRows",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "removeSelectedRowsById",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ids": {
+                "title": "Array<string | number>"
+              }
+            },
+            "required": [
+              "ids"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number",
+            "title": "number"
+          },
+          "returnTypeText": "number",
+          "jsdoc": "/**\n     * 通过主键批量移除多选行（返回实际移除数量）。\n     *\n     * @param ids 要从选中集中移除的行主键值列表。\n     */",
+          "paramsTypeText": "ids: (string | number)[]",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 152,
+            "className": "DataView",
+            "memberName": "removeSelectedRowsById",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "clearSelectedRows",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 清空多选行 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 154,
+            "className": "DataView",
+            "memberName": "clearSelectedRows",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setComputedContext",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ctx": {
+                "title": "Record<string, unknown>"
+              }
+            },
+            "required": [
+              "ctx"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 设置计算列共享上下文（表达式中通过 ctx 引用），重新编译并对现有 rows 求值。\n     *\n     * @param ctx 计算列表达式可通过 ctx 读取的共享上下文。\n     */",
+          "paramsTypeText": "ctx: Record<string, unknown>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 214,
+            "className": "DataView",
+            "memberName": "setComputedContext",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "recomputeColumns",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "DataViewRecomputeColumnsOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 手动触发全量计算列重新求值 + 聚合重算。常规行操作已自动触发，仅用于特殊场景。\n     *\n     * @param options 重算通知选项。\n     */",
+          "paramsTypeText": "options?: DataViewRecomputeColumnsOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 220,
+            "className": "DataView",
+            "memberName": "recomputeColumns",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "stripComputedColumns",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "title": "Partial<DataRow>"
+              }
+            },
+            "required": [
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Partial<DataRow>"
+          },
+          "returnTypeText": "Partial<DataRow>",
+          "jsdoc": "/** @internal 从数据对象中移除计算列字段，返回浅拷贝；无计算列时返回原对象。 */",
+          "paramsTypeText": "data: Partial<DataRow>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 224,
+            "className": "DataView",
+            "memberName": "stripComputedColumns",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "onDataSetRelationsReady",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** @internal DataSet 关系规范化完成后由 DataTable 调用——重挂级联订阅并重编译计算列（含聚合 resolver） */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 228,
+            "className": "DataView",
+            "memberName": "onDataSetRelationsReady",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getColumn",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataColumn | undefined"
+          },
+          "returnTypeText": "DataColumn | undefined",
+          "jsdoc": "/**\n     * 按名称获取单个列定义\n     *\n     * @param name 列名（精确匹配）\n     * @returns 对应的列定义，不存在时返回 undefined\n     *\n     * @example\n     * ```ts\n     * const col = view.getColumn('price')\n     * if (col) {\n     *   console.log(col.label)   // '单价'\n     *   console.log(col.type)    // 'number'\n     * }\n     * ```\n     */",
+          "paramsTypeText": "name: string",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 255,
+            "className": "DataView",
+            "memberName": "getColumn",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getDataSet",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataSet | undefined"
+          },
+          "returnTypeText": "DataSet | undefined",
+          "jsdoc": "/** @internal 返回 DataSet 实例 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 257,
+            "className": "DataView",
+            "memberName": "getDataSet",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getPkKey",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "title": "DataRow"
+              }
+            },
+            "required": [
+              "row"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "string | number | undefined"
+          },
+          "returnTypeText": "string | number | undefined",
+          "jsdoc": "/**\n     * 获取行的主键值（标量）。\n     *\n     * @param row 目标行。\n     */",
+          "paramsTypeText": "row: DataRow",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 380,
+            "className": "DataView",
+            "memberName": "getPkKey",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "buildServerPk",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "title": "DataRow"
+              }
+            },
+            "required": [
+              "row"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Record<string, unknown>"
+          },
+          "returnTypeText": "Record<string, unknown>",
+          "jsdoc": "/**\n     * 从行数据构建服务端 PK payload。\n     *\n     * @param row 目标行。\n     */",
+          "paramsTypeText": "row: DataRow",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 386,
+            "className": "DataView",
+            "memberName": "buildServerPk",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "requestData",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/**\n     * 视图级加载编排器（幂等：requestState≠Idle 时直接返回）。外部应使用 refresh() 或 loadFromServer()。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 390,
+            "className": "DataView",
+            "memberName": "requestData",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "loadFromServer",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "QueryParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult>"
+          },
+          "returnTypeText": "Promise<CrudResult>",
+          "jsdoc": "/**\n     * 从服务器拉取列表（带防重入 + 请求 ID 竞态保护）。\n     *\n     * @param params 查询参数；省略时由当前视图配置生成。\n     */",
+          "paramsTypeText": "params?: QueryParams | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 397,
+            "className": "DataView",
+            "memberName": "loadFromServer",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "retrieveRecord",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pk": {
+                "title": "Record<string, unknown>"
+              },
+              "options": {
+                "title": "RetrieveRecordOptions"
+              }
+            },
+            "required": [
+              "pk"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<DataRow>>"
+          },
+          "returnTypeText": "Promise<CrudResult<DataRow>>",
+          "jsdoc": "/**\n     * 按服务端 PK 拉取单条记录。\n     * 默认会将结果同步回本地 rows；可选设为当前行。\n     *\n     * @param pk 服务端主键 payload。\n     * @param options 单条记录拉取后的同步选项。\n     */",
+          "paramsTypeText": "pk: Record<string, unknown>, options?: RetrieveRecordOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 405,
+            "className": "DataView",
+            "memberName": "retrieveRecord",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "retrieveRecordById",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              },
+              "options": {
+                "title": "RetrieveRecordOptions"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<DataRow>>"
+          },
+          "returnTypeText": "Promise<CrudResult<DataRow>>",
+          "jsdoc": "/**\n     * 按本地主键值拉取单条记录。\n     * 若本地已存在该行，会优先构造真实服务端 PK；否则回退到 `{ [primaryKey]: id }`。\n     *\n     * @param id 本地主键值。\n     * @param options 单条记录拉取后的同步选项。\n     */",
+          "paramsTypeText": "id: string | number, options?: RetrieveRecordOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 413,
+            "className": "DataView",
+            "memberName": "retrieveRecordById",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "loadTreeNested",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rootId": {
+                "title": "string | number | null"
+              },
+              "limit": {
+                "type": "number",
+                "title": "number"
+              },
+              "depthLimit": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<NestedTreeNode[]>>"
+          },
+          "returnTypeText": "Promise<CrudResult<NestedTreeNode[]>>",
+          "jsdoc": "/** 加载 Tree Nested。 */",
+          "paramsTypeText": "rootId?: string | number | null | undefined, limit?: number | undefined, depthLimit?: number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 416,
+            "className": "DataView",
+            "memberName": "loadTreeNested",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "refresh",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 强制刷新：先置 Idle 再 requestData()；远程表重拉，静态/无 API 表走本地同步。清除 staged 模式的脏追踪状态。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 418,
+            "className": "DataView",
+            "memberName": "refresh",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "applyInMemoryCascade",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rel": {
+                "title": "DataRelation"
+              },
+              "parentRows": {
+                "type": "array",
+                "title": "readonly DataRow[]",
+                "items": true
+              }
+            },
+            "required": [
+              "rel",
+              "parentRows"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 无 API 时的内存级联过滤（从 DataTable.rows 按依赖过滤条件写入视图）。\n     *\n     * @param rel 父子视图依赖关系。\n     * @param parentRows 父视图当前参与级联的行列表。\n     */",
+          "paramsTypeText": "rel: DataRelation, parentRows: readonly DataRow[]",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 425,
+            "className": "DataView",
+            "memberName": "applyInMemoryCascade",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "updateFromServer",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "title": "DataViewServerRowsPayload | DataRow[]",
+                "items": true
+              }
+            },
+            "required": [
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定。\n     *\n     * @param data 服务端返回的行数组或行数据响应载荷。\n     */",
+          "paramsTypeText": "data: DataRow[] | DataViewServerRowsPayload",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 431,
+            "className": "DataView",
+            "memberName": "updateFromServer",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "appendRow",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "title": "DataRow"
+              }
+            },
+            "required": [
+              "row"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 本地追加一行，触发计算列求值 + 聚合重算 + rowsChanged。\n     *\n     * @param row 要追加的行。\n     */",
+          "paramsTypeText": "row: DataRow",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 437,
+            "className": "DataView",
+            "memberName": "appendRow",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "updateRowById",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              },
+              "data": {
+                "title": "Partial<DataRow>"
+              }
+            },
+            "required": [
+              "id",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/**\n     * 本地按主键部分更新一行；返回是否成功（行不存在时 false）。\n     *\n     * @param id 目标行主键值。\n     * @param data 要合并到目标行上的字段更新。\n     */",
+          "paramsTypeText": "id: string | number, data: Partial<DataRow>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 444,
+            "className": "DataView",
+            "memberName": "updateRowById",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "deleteRowById",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/**\n     * 本地按主键删除一行，清理选中引用；返回是否成功（行不存在时 false）。\n     *\n     * @param id 目标行主键值。\n     */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 450,
+            "className": "DataView",
+            "memberName": "deleteRowById",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "replaceRows",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "title": "DataRow[]",
+                "items": true
+              }
+            },
+            "required": [
+              "rows"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 本地整批替换所有行，清理无效选中引用，清除 staged 模式的脏追踪状态。\n     *\n     * @param rows 新的完整行列表。\n     */",
+          "paramsTypeText": "rows: DataRow[]",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 456,
+            "className": "DataView",
+            "memberName": "replaceRows",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "hasEditingChanges",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/**\n     * 是否存在编辑态变更。\n     *\n     * @param id 可选行主键值；省略时检查是否存在任意编辑态变更。\n     */",
+          "paramsTypeText": "id?: string | number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 462,
+            "className": "DataView",
+            "memberName": "hasEditingChanges",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getEditingPatch",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Partial<DataRow> | undefined"
+          },
+          "returnTypeText": "Partial<DataRow> | undefined",
+          "jsdoc": "/**\n     * 获取指定行当前编辑态 patch。\n     *\n     * @param id 目标行主键值。\n     */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 468,
+            "className": "DataView",
+            "memberName": "getEditingPatch",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getEditingRow",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataRow | null"
+          },
+          "returnTypeText": "DataRow | null",
+          "jsdoc": "/**\n     * 获取指定行的编辑态 overlay；未编辑时返回当前 DataView 行。\n     *\n     * @param id 目标行主键值。\n     */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 474,
+            "className": "DataView",
+            "memberName": "getEditingRow",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "updateEditingValue",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              },
+              "field": {
+                "type": "string",
+                "title": "string"
+              },
+              "value": {
+                "title": "unknown"
+              }
+            },
+            "required": [
+              "id",
+              "field",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataRow"
+          },
+          "returnTypeText": "DataRow",
+          "jsdoc": "/**\n     * 将 UI 字段值写入编辑态，不直接污染 rows。\n     *\n     * @param id 目标行主键值。\n     * @param field 要编辑的字段名。\n     * @param value 新字段值。\n     */",
+          "paramsTypeText": "id: string | number, field: string, value: unknown",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 482,
+            "className": "DataView",
+            "memberName": "updateEditingValue",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "discardEditingRows",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ids": {
+                "title": "Array<string | number>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number",
+            "title": "number"
+          },
+          "returnTypeText": "number",
+          "jsdoc": "/**\n     * 丢弃指定行或全部编辑态变更。\n     *\n     * @param ids 可选行主键值列表；省略时丢弃全部编辑态变更。\n     */",
+          "paramsTypeText": "ids?: (string | number)[] | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 488,
+            "className": "DataView",
+            "memberName": "discardEditingRows",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "applyEditingRows",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ids": {
+                "title": "Array<string | number>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<DataViewApplyEditingRowsResult>>"
+          },
+          "returnTypeText": "Promise<CrudResult<DataViewApplyEditingRowsResult>>",
+          "jsdoc": "/**\n     * 将编辑态 patch 应用到现有 editRowById 管线。\n     *\n     * @param ids 可选行主键值列表；省略时应用全部编辑态变更。\n     */",
+          "paramsTypeText": "ids?: (string | number)[] | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 494,
+            "className": "DataView",
+            "memberName": "applyEditingRows",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "addRow",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "title": "Partial<DataRow>"
+              }
+            },
+            "required": [
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<DataRow | CrudResult<DataRow>>"
+          },
+          "returnTypeText": "Promise<DataRow | CrudResult<DataRow>>",
+          "jsdoc": "/**\n     * 本地新增行。commitMode='staged' 时标记为 pending-create（saveChanges 统一提交）；\n     * commitMode='immediate' 且已配置 API 时立即调用 crud.createRecord。\n     *\n     * @param data 新行数据。\n     */",
+          "paramsTypeText": "data: Partial<DataRow>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 501,
+            "className": "DataView",
+            "memberName": "addRow",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "removeRow",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<boolean | CrudResult<boolean>>"
+          },
+          "returnTypeText": "Promise<boolean | CrudResult<boolean>>",
+          "jsdoc": "/**\n     * 本地删除行。commitMode='staged' 时标记为 pending-delete（saveChanges 统一提交）；\n     * commitMode='immediate' 且已配置 API 时立即调用 crud.deleteRecord。\n     *\n     * @param id 目标行主键值。\n     */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 508,
+            "className": "DataView",
+            "memberName": "removeRow",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "editRowById",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              },
+              "data": {
+                "title": "Partial<DataRow>"
+              }
+            },
+            "required": [
+              "id",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<boolean | CrudResult<DataRow>>"
+          },
+          "returnTypeText": "Promise<boolean | CrudResult<DataRow>>",
+          "jsdoc": "/**\n     * 手工编辑指定行（标脏）。commitMode='staged' 时仅更新内存并标脏；\n     * commitMode='immediate' 且已配置 API 时立即调用 crud.updateRecord。\n     * 连续编辑同一行只保留首次编辑前的快照。\n     *\n     * @param id 目标行主键值。\n     * @param data 要合并到目标行上的字段更新。\n     */",
+          "paramsTypeText": "id: string | number, data: Partial<DataRow>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 517,
+            "className": "DataView",
+            "memberName": "editRowById",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getDirtyChanges",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "RowDiff"
+          },
+          "returnTypeText": "RowDiff",
+          "jsdoc": "/**\n     * 获取指定行的字段级变更明细（行不脏时返回 {}）。\n     *\n     * @param id 目标行主键值。\n     */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 525,
+            "className": "DataView",
+            "memberName": "getDirtyChanges",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "saveChanges",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ids": {
+                "title": "Array<string | number>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<SaveChangesData>>"
+          },
+          "returnTypeText": "Promise<CrudResult<SaveChangesData>>",
+          "jsdoc": "/**\n     * 将待提交变更（新增→更新→删除）逐条保存到服务端。单行失败不中断后续行。\n     *\n     * @param ids 可选行主键值列表；省略时保存全部脏行。\n     */",
+          "paramsTypeText": "ids?: (string | number)[] | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 531,
+            "className": "DataView",
+            "memberName": "saveChanges",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "clearAll",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 清空所有状态并发射 cleared 事件（通知 UI 和子视图） */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 533,
+            "className": "DataView",
+            "memberName": "clearAll",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "resetState",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 重置行数据和选中状态，并将 requestState 重置为 Idle。\n     * 同时清除脏追踪状态（staged 模式下的未提交变更）。\n     * 通过领域事件通知订阅者刷新 rows / selection / request / aggregate / editing。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 539,
+            "className": "DataView",
+            "memberName": "resetState",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "cleanupInvalidSelections",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/** 清理已不在 rows 中的选中状态，返回是否发生了清理（委托给 SelectionDelegate） */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 542,
+            "className": "DataView",
+            "memberName": "cleanupInvalidSelections",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "loadTreeChildren",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentId": {
+                "title": "string | number | null"
+              },
+              "limit": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "required": [
+              "parentId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<FlatTreeNode[]>"
+          },
+          "returnTypeText": "Promise<FlatTreeNode[]>",
+          "jsdoc": "/**\n     * 拉取直接子节点并写入缓存（对应 /tree/children）。\n     *\n     * @param parentId 父节点 ID；null 表示根级节点。\n     * @param limit 最大返回子节点数。\n     */",
+          "paramsTypeText": "parentId: string | number | null, limit?: number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 551,
+            "className": "DataView",
+            "memberName": "loadTreeChildren",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "loadTreePath",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<TreePath>"
+          },
+          "returnTypeText": "Promise<TreePath>",
+          "jsdoc": "/**\n     * 获取节点祖先链 ID（对应 /tree/path）。\n     *\n     * @param id 目标节点 ID。\n     */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 557,
+            "className": "DataView",
+            "memberName": "loadTreePath",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "expandTreeToNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "targetId": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "targetId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/**\n     * 展开到目标节点，差量补齐缓存（对应 /tree/path + /tree/subtree）。\n     *\n     * @param targetId 目标节点 ID。\n     */",
+          "paramsTypeText": "targetId: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 563,
+            "className": "DataView",
+            "memberName": "expandTreeToNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "moveTreeNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "title": "string | number"
+              },
+              "newParentId": {
+                "title": "string | number | null"
+              },
+              "index": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "required": [
+              "nodeId",
+              "newParentId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<DataRow | null>"
+          },
+          "returnTypeText": "Promise<DataRow | null>",
+          "jsdoc": "/** 执行 move Tree Node 操作。 */",
+          "paramsTypeText": "nodeId: string | number, newParentId: string | number | null, index?: number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 565,
+            "className": "DataView",
+            "memberName": "moveTreeNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "searchTreeNested",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "keyword": {
+                "type": "string",
+                "title": "string"
+              },
+              "limit": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "required": [
+              "keyword"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<NestedTreeSearchResult[]>"
+          },
+          "returnTypeText": "Promise<NestedTreeSearchResult[]>",
+          "jsdoc": "/**\n     * 嵌套模式远端搜索（对应 /tree/nested/search）。\n     *\n     * @param keyword 搜索关键字。\n     * @param limit 最大返回匹配节点数。\n     */",
+          "paramsTypeText": "keyword: string, limit?: number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 572,
+            "className": "DataView",
+            "memberName": "searchTreeNested",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setPage",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "required": [
+              "page"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/**\n     * 设置当前页；远端视图自动重新查询。\n     *\n     * @param page 新页码。\n     */",
+          "paramsTypeText": "page: number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 594,
+            "className": "DataView",
+            "memberName": "setPage",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setPageSize",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageSize": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "required": [
+              "pageSize"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/**\n     * 设置每页条数并重置页码为 1；远端视图自动重新查询。\n     *\n     * @param pageSize 新每页行数。\n     */",
+          "paramsTypeText": "pageSize: number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 600,
+            "className": "DataView",
+            "memberName": "setPageSize",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setSort",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "sort": {
+                "title": "SortExpression | undefined"
+              }
+            },
+            "required": [
+              "sort"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/**\n     * 设置排序表达式；远端视图自动重新查询。\n     *\n     * @param sort 新排序表达式；undefined 表示清除排序。\n     */",
+          "paramsTypeText": "sort: SortExpression | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 606,
+            "className": "DataView",
+            "memberName": "setSort",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setFilter",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "filter": {
+                "title": "FilterExpression | undefined"
+              }
+            },
+            "required": [
+              "filter"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/**\n     * 设置过滤表达式并重置页码为 1；表达式变更后由数据层自动处理数据。\n     *\n     * @param filter 新过滤表达式；undefined 表示清除过滤。\n     */",
+          "paramsTypeText": "filter: FilterExpression | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 612,
+            "className": "DataView",
+            "memberName": "setFilter",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "executeFilter",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "filter": {
+                "title": "FilterExpression | undefined"
+              }
+            },
+            "required": [
+              "filter"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/**\n     * 显式执行过滤：即使表达式未变化也会处理数据（用于“查询”按钮语义）。\n     *\n     * @param filter 要执行的过滤表达式；undefined 表示清除过滤。\n     */",
+          "paramsTypeText": "filter: FilterExpression | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 618,
+            "className": "DataView",
+            "memberName": "executeFilter",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "destroy",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 销毁视图，释放所有订阅、委托和外部引用\n     *\n     * 应在资源释放时调用，防止内存泄漏。\n     * 销毁顺序：级联委托 → CRUD 委托 → 防抖定时器 → 事件总线 → 行数据 → TreeManager → DataTable 引用\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 627,
+            "className": "DataView",
+            "memberName": "destroy",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "isDestroyed",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/** 检查视图是否已销毁 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 629,
+            "className": "DataView",
+            "memberName": "isDestroyed",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "applyViewConfig",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "vc": {
+                "title": "Partial<ViewMetadata>"
+              }
+            },
+            "required": [
+              "vc"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 将 ViewMetadata 配置字段应用到当前视图实例（不创建新实例，不处理 rows）。\n     *\n     * @param vc 要应用的视图配置片段。\n     */",
+          "paramsTypeText": "vc: Partial<ViewMetadata>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 642,
+            "className": "DataView",
+            "memberName": "applyViewConfig",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "configure",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "title": "Partial<ViewMetadata>"
+              }
+            },
+            "required": [
+              "config"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 configure 操作。 */",
+          "paramsTypeText": "config: Partial<ViewMetadata>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 644,
+            "className": "DataView",
+            "memberName": "configure",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setAggregates",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "aggregates": {
+                "title": "Record<string, AggregateColumnConfig>"
+              }
+            },
+            "required": [
+              "aggregates"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 设置 Aggregates。 */",
+          "paramsTypeText": "aggregates: Record<string, AggregateColumnConfig>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 646,
+            "className": "DataView",
+            "memberName": "setAggregates",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setTreeConfig",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "treeConfig": {
+                "title": "TreeConfig"
+              }
+            },
+            "required": [
+              "treeConfig"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** set Tree Config 配置。 */",
+          "paramsTypeText": "treeConfig: TreeConfig",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 648,
+            "className": "DataView",
+            "memberName": "setTreeConfig",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "initAutoSelection",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 对已有 rows 应用 autoCurrentFirst / autoSelectFirst 初始化选中状态（静态数据路径用） */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 650,
+            "className": "DataView",
+            "memberName": "initAutoSelection",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "toJson",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ViewMetadata"
+          },
+          "returnTypeText": "ViewMetadata",
+          "jsdoc": "/** 执行 to Json 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 652,
+            "className": "DataView",
+            "memberName": "toJson",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "fromJson",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "title": "ViewMetadata | Record<string, unknown> | string"
+              },
+              "tableName": {
+                "type": "string",
+                "title": "string"
+              },
+              "viewId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "data",
+              "tableName",
+              "viewId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataView"
+          },
+          "returnTypeText": "DataView",
+          "jsdoc": "/** 执行 from Json 操作。 */",
+          "paramsTypeText": "data: string | Record<string, unknown> | ViewMetadata, tableName: string, viewId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/data-view.d.ts",
+            "line": 654,
+            "className": "DataView",
+            "memberName": "fromJson",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.719Z"
+}

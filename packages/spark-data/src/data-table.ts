@@ -28,7 +28,7 @@ import type {
 import type { DataSet } from './dataset'
 import { DataValidator } from './validation'
 import { type CrudService, createCrudService } from './crud-service'
-import { normalizeTableMetadata } from './metadata'
+import { parseTableMetadataInput } from './metadata'
 import { assertNoSeparator, resolveApi } from './core/utils'
 
 /** DataTable.addColumns 的执行结果摘要。 */
@@ -461,8 +461,8 @@ export class DataTable {
   /**
    * 从表元数据恢复 DataTable。
    */
-  static fromJson(data: TableMetadata): DataTable {
-    const normalized = normalizeTableMetadata(data)
+  static fromJson(data: TableMetadata | Record<string, unknown> | string): DataTable {
+    const normalized = parseTableMetadataInput(data)
     const t = new DataTable(normalized.tableName, normalized.columns)
     // P2: API 简写展开（字符串 / true → CrudApi 对象）
     if (normalized.api !== undefined) {

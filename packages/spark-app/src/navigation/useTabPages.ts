@@ -1,7 +1,13 @@
+/**
+ * @module @spark-appworks/spark-app:navigation/useTabPages
+ * @spark-appworks/spark-app 的 navigation/useTabPages 模块。
+ * 导出 ClassModel symbol: TabPage, PageMode, UseTabPagesOptions（共 3 个 symbol）。
+ */
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
 
+/** Tab Page 的语义模型。 */
 export type TabPage = {
   /** 路由完整路径（唯一标识） */
   path: string
@@ -16,10 +22,13 @@ export type TabPage = {
   /** 完整路由信息快照 */
   fullPath: string}
 
+/** Page Mode 的语义模型。 */
 export type PageMode = 'single' | 'multi'
 
+/** Use Tab Pages Options 的调用配置。 */
 export type UseTabPagesOptions = {
-  navigate?: (fullPath: string) => Promise<void> | void}
+    /** navigate 回调。 */
+navigate?: (fullPath: string) => Promise<void> | void}
 
 const _tabs = ref<TabPage[]>([])
 const _activeTab = ref('')

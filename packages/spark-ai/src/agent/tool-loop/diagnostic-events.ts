@@ -27,6 +27,7 @@ import type { AiAgentScope } from '../business/scope-types'
 import type { AiAgentChatRequest, AiAgentStreamEvent, AiAgentTurnMeta } from '../chat/chat-types'
 import { stringifyAiAgentPayload } from './payload-codec'
 
+/** Ai Agent Diagnostic Event Input 的输入数据。 */
 type AiAgentDiagnosticEventInput = Readonly<{
   request: AiAgentChatRequest
   scope: AiAgentScope
@@ -35,6 +36,7 @@ type AiAgentDiagnosticEventInput = Readonly<{
   data: unknown
 }>
 
+/** Tool Result Event Input 的输入数据。 */
 type ToolResultEventInput = Readonly<{
   request: AiAgentChatRequest
   scope: AiAgentScope

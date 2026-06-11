@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/fields/data-components/composables/useChoiceFieldState",
+    "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.d.ts",
+    "sourceFile": "packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/fields/data-components/composables/useChoiceFieldState",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useChoiceFieldState\n@spark-appworks/spark-component:components/fields/data-components/composables/useChoiceFieldState 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: UseChoiceFieldStateOptions（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "UseChoiceFieldStateOptions"
+    ],
+    "componentLevel": "field-level",
+    "componentLayer": "data-field",
+    "componentDirectory": "fields/data-components"
+  },
+  "symbols": [
+    "UseChoiceFieldStateOptions"
+  ],
+  "models": {
+    "UseChoiceFieldStateOptions": {
+      "kind": "UseChoiceFieldStateOptions",
+      "className": "UseChoiceFieldStateOptions",
+      "jsdoc": "/** Use Choice Field State Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: OptionFieldStateProps<TValue>;\n    /** field Type 字段。 */\n    fieldType: string;\n    /** fallback Value 字段。 */\n    fallbackValue: TValue;\n    /** emit Update 回调。 */\n    emitUpdate: (value: TValue) => void;\n    /** coerce 回调。 */\n    coerce: (rawValue: unknown) => TValue;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.d.ts",
+        "line": 3,
+        "className": "UseChoiceFieldStateOptions",
+        "declarationKind": "type",
+        "componentLevel": "field-level",
+        "componentLayer": "data-field",
+        "componentDirectory": "fields/data-components"
+      },
+      "attributes": [
+        {
+          "name": "props",
+          "schema": {
+            "title": "OptionFieldStateProps<TValue>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 组件属性集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.d.ts",
+            "line": 5,
+            "className": "UseChoiceFieldStateOptions",
+            "memberName": "props",
+            "declarationKind": "interface",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "fieldType",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** field Type 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.d.ts",
+            "line": 7,
+            "className": "UseChoiceFieldStateOptions",
+            "memberName": "fieldType",
+            "declarationKind": "interface",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "fallbackValue",
+          "schema": {
+            "title": "TValue"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** fallback Value 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.d.ts",
+            "line": 9,
+            "className": "UseChoiceFieldStateOptions",
+            "memberName": "fallbackValue",
+            "declarationKind": "interface",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "emitUpdate",
+          "schema": {
+            "title": "(value: TValue) => void"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** emit Update 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.d.ts",
+            "line": 11,
+            "className": "UseChoiceFieldStateOptions",
+            "memberName": "emitUpdate",
+            "declarationKind": "interface",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "coerce",
+          "schema": {
+            "title": "(rawValue: unknown) => TValue"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** coerce 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useChoiceFieldState.d.ts",
+            "line": 13,
+            "className": "UseChoiceFieldStateOptions",
+            "memberName": "coerce",
+            "declarationKind": "interface",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.435Z"
+}

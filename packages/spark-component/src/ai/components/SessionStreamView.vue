@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-component:ai/components/SessionStreamView
+@spark-appworks/spark-component 的 ai/components/SessionStreamView 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-card :class="$style['stream-view']" shadow="never">
     <div v-if="entries.length === 0" :class="$style['stream-view__empty']">

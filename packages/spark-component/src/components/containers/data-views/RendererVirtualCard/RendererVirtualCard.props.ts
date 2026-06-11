@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/RendererVirtualCard/RendererVirtualCard.props
+ * RendererVirtualCard 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: RVirtualCardProps（共 1 个 symbol）。
+ */
 import type { CSSProperties } from 'vue'
 import type { DataView } from '@spark-appworks/spark-data'
 import type {
@@ -8,6 +14,7 @@ import type {
 import type { RowClickHandler } from '../../support'
 import type { RToolbarProps } from '../../layout/RendererToolbar.types'
 
+/** RVirtual Card Props 的属性契约。 */
 export type RVirtualCardProps = SparkNodeProps & SparkCrudDataContainerProps & SparkGridLayoutProps & {
   /** 显式收窄为虚拟卡片容器使用的 DataView 数据线。 */
   dataSource?: DataView

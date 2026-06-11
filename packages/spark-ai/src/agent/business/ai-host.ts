@@ -71,6 +71,7 @@ export type AiAgentHostEnsureCommand<TInput extends AiJsonParams = AiJsonParams>
   create: () => AiAgentRegistration<TInput>
 }>
 
+/** Ai Agent Host Registration Summary 的语义模型。 */
 export type AiAgentHostRegistrationSummary = Readonly<{
   alias: string
   moduleId: string
@@ -81,10 +82,12 @@ export type AiAgentHostRegistrationSummary = Readonly<{
   status: AiAgentToolRuntimeInspectReport['status']
 }>
 
+/** Ai Agent Host Registration Description 的语义模型。 */
 export type AiAgentHostRegistrationDescription = AiAgentHostRegistrationSummary & Readonly<{
   inspectReport: AiAgentToolRuntimeInspectReport
 }>
 
+/** Ai Agent Host Dry Run Diagnostic 的诊断信息。 */
 export type AiAgentHostDryRunDiagnostic = Readonly<{
   level: 'error' | 'warn' | 'info'
   code: string
@@ -92,6 +95,7 @@ export type AiAgentHostDryRunDiagnostic = Readonly<{
   fix?: string
 }>
 
+/** Ai Agent Host Orchestration Summary 的语义模型。 */
 export type AiAgentHostOrchestrationSummary = Readonly<{
   title?: string
   userMessageLength: number
@@ -99,6 +103,7 @@ export type AiAgentHostOrchestrationSummary = Readonly<{
   readonlyStepCount: number
 }>
 
+/** Ai Agent Host Dry Run Result 的返回结果。 */
 export type AiAgentHostDryRunResult = Readonly<
   | {
     ok: true
@@ -326,11 +331,13 @@ export class AiAgentHost<TEntries extends AiAgentHostEntryMap = {}> {
    * 流程：解析 alias → 查找 moduleId → 委托 runAiAgent() 执行完整的
    * "创建 task → 启动 session → 发送首轮消息" 流程。
    */
+  /** 按已知 alias 运行注册业务，并使用该 alias 推断输入类型。 */
   public async run<K extends keyof TEntries & string>(
     alias: K,
     args: AiAgentHostRegistrationInput<TEntries[K]>,
     chat?: AiAgentTaskChatOptions,
   ): Promise<AiAgentHostRunResult>
+  /** 按动态 alias 运行注册业务。 */
   public async run<TInput extends AiJsonParams = AiJsonParams>(
     alias: string,
     args: TInput,

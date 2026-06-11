@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/knowledge/index
+ * @spark-appworks/spark-ai 的 class-model/knowledge/index 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 export {
   ClassModelKnowledgeService,
 } from './class-model-knowledge-service'

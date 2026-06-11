@@ -63,15 +63,24 @@ const DEFAULT_GRID_GAP = 0
 
 /** 容器内部完整属性形状（包括私有布局字段）。 */
 type FormDetailContainerProps = SparkNode & {
-  dataViewKey: string | undefined
-    contextDataMember: DataMember | `${DataMember}` | undefined
-    contextDataField: string | undefined
-    dataSource?: DataView
-    toolbar?: RToolbarProps
-    autoColumns: boolean | undefined
-    gridColumns: number | undefined
-    gridGap: number | string | undefined
-    gridAutoRows: string | undefined}
+    /** DataView 定位键。 */
+dataViewKey: string | undefined
+        /** context Data Member 字段。 */
+contextDataMember: DataMember | `${DataMember}` | undefined
+        /** context Data Field 字段。 */
+contextDataField: string | undefined
+        /** data Source 字段。 */
+dataSource?: DataView
+        /** toolbar 字段。 */
+toolbar?: RToolbarProps
+        /** auto Columns 字段。 */
+autoColumns: boolean | undefined
+        /** grid Columns 字段。 */
+gridColumns: number | undefined
+        /** grid Gap 字段。 */
+gridGap: number | string | undefined
+        /** grid Auto Rows 字段。 */
+gridAutoRows: string | undefined}
 
 /**
  * r-form / r-detail 消费 `useFormDetailContainer` 时的最小输入形状。
@@ -79,18 +88,30 @@ type FormDetailContainerProps = SparkNode & {
  * 目的：统一两侧组件的入参组装，避免在消费端重复展开同一批可选字段。
  */
 export type FormDetailContainerConsumerProps = {
-  type: SparkNode['type']
-  id?: SparkNode['id']
-  toolbar?: RToolbarProps
-  children?: SparkNode['children']
-  dataSource?: DataView
-  dataViewKey: string | undefined
-  contextDataMember: DataMember | `${DataMember}` | undefined
-  contextDataField: string | undefined
-  autoColumns: boolean | undefined
-  gridColumns: number | undefined
-  gridGap: number | string | undefined
-  gridAutoRows: string | undefined}
+    /** 类型标识。 */
+type: SparkNode['type']
+    /** 唯一标识。 */
+id?: SparkNode['id']
+    /** toolbar 字段。 */
+toolbar?: RToolbarProps
+    /** 子节点集合。 */
+children?: SparkNode['children']
+    /** data Source 字段。 */
+dataSource?: DataView
+    /** DataView 定位键。 */
+dataViewKey: string | undefined
+    /** context Data Member 字段。 */
+contextDataMember: DataMember | `${DataMember}` | undefined
+    /** context Data Field 字段。 */
+contextDataField: string | undefined
+    /** auto Columns 字段。 */
+autoColumns: boolean | undefined
+    /** grid Columns 字段。 */
+gridColumns: number | undefined
+    /** grid Gap 字段。 */
+gridGap: number | string | undefined
+    /** grid Auto Rows 字段。 */
+gridAutoRows: string | undefined}
 
 /**
  * 构建 `useFormDetailContainer` 规范入参。

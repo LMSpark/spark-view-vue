@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldCheckbox.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/fields/data-components/FieldCheckbox.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldCheckbox.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/fields/data-components/FieldCheckbox.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/fields/data-components/FieldCheckbox.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/FieldCheckbox.props\nFieldCheckbox 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: RCheckboxProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RCheckboxProps"
+    ],
+    "componentName": "FieldCheckbox",
+    "componentType": "r-checkbox",
+    "componentLevel": "field-level",
+    "componentLayer": "data-field",
+    "componentDirectory": "fields/data-components"
+  },
+  "symbols": [
+    "RCheckboxProps"
+  ],
+  "models": {
+    "RCheckboxProps": {
+      "kind": "RCheckboxProps",
+      "className": "RCheckboxProps",
+      "jsdoc": "/** RCheckbox Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & SparkFieldSemanticProps<boolean> & {\n    /** 选中状态下展示的文本。 */\n    checkedText?: string;\n    /** 未选中状态下展示的文本。 */\n    uncheckedText?: string;\n    /** 复选框旁边的标签文本。 */\n    checkboxText?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkFieldSemanticProps<boolean>",
+          "targetName": "SparkFieldSemanticProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 选中状态下展示的文本。 */\n    checkedText?: string;\n    /** 未选中状态下展示的文本。 */\n    uncheckedText?: string;\n    /** 复选框旁边的标签文本。 */\n    checkboxText?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldCheckbox.props.d.ts",
+        "line": 9,
+        "className": "RCheckboxProps",
+        "declarationKind": "type",
+        "componentName": "FieldCheckbox",
+        "componentType": "r-checkbox",
+        "componentLevel": "field-level",
+        "componentLayer": "data-field",
+        "componentDirectory": "fields/data-components"
+      },
+      "attributes": [
+        {
+          "name": "checkedText",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 选中状态下展示的文本。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldCheckbox.props.d.ts",
+            "line": 11,
+            "className": "RCheckboxProps",
+            "memberName": "checkedText",
+            "declarationKind": "interface",
+            "componentName": "FieldCheckbox",
+            "componentType": "r-checkbox",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "uncheckedText",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 未选中状态下展示的文本。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldCheckbox.props.d.ts",
+            "line": 13,
+            "className": "RCheckboxProps",
+            "memberName": "uncheckedText",
+            "declarationKind": "interface",
+            "componentName": "FieldCheckbox",
+            "componentType": "r-checkbox",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "checkboxText",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 复选框旁边的标签文本。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldCheckbox.props.d.ts",
+            "line": 15,
+            "className": "RCheckboxProps",
+            "memberName": "checkboxText",
+            "declarationKind": "interface",
+            "componentName": "FieldCheckbox",
+            "componentType": "r-checkbox",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.473Z"
+}

@@ -1,14 +1,25 @@
+/**
+ * @module @spark-appworks/spark-app:navigation/action-registry
+ * @spark-appworks/spark-app 的 navigation/action-registry 模块。
+ * 导出 ClassModel symbol: NavigationActionContext, NavigationActionHandler, NavigationActionRegistry（共 3 个 symbol）。
+ */
 import type { InjectionKey } from 'vue'
 import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
 
+/** Navigation Action Context 的运行上下文。 */
 export type NavigationActionContext = {
-  command: string
-  node?: ProjectNodeData
-  source?: 'navigation' | 'toolbar' | 'user-menu' | 'app-shell'}
+    /** command 字段。 */
+command: string
+    /** node 字段。 */
+node?: ProjectNodeData
+    /** 来源对象。 */
+source?: 'navigation' | 'toolbar' | 'user-menu' | 'app-shell'}
 
+/** Navigation Action Handler 的回调函数契约。 */
 export type NavigationActionHandler = {
   (context: NavigationActionContext): void | Promise<void>}
 
+/** Navigation Action Registry 的语义模型。 */
 export type NavigationActionRegistry = {
   register(command: string, handler: NavigationActionHandler): () => void
   unregister(command: string): boolean

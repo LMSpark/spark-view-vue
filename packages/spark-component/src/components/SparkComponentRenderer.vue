@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-component:components/SparkComponentRenderer
+@spark-appworks/spark-component 的 components/SparkComponentRenderer 模块。
+导出 ClassModel symbol: RendererProps（共 1 个 symbol）。
+-->
 <template>
   <!-- 已注册：SparkNode 运行时输入 + 事件处理器 → 统一作为 Vue Props 传递 -->
   <component
@@ -180,6 +185,7 @@ const NATIVE_HTML_TAGS = new Set([
 
 // ── 渲染器输入：外部只传节点本体与可选父上下文 ───────────────────────────────
 
+/** SparkComponentRenderer 递归渲染入口属性。 */
 type RendererProps = {
   /**
    * 被渲染的节点本体。

@@ -1,0 +1,392 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:io/page-file-api",
+    "sourcePath": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+    "sourceFile": "packages/spark-project-model/src/io/page-file-api.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "io/page-file-api",
+    "jsdoc": "Page file API.\n管理 PageNode 四文件的远端写入、页面文件创建/删除和版本操作。\n读路径由 PageContentLoader 负责，子模型只依赖这里的写能力。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageFileCreateParams",
+      "PageFileApiOptions",
+      "PageFileApi"
+    ]
+  },
+  "symbols": [
+    "PageFileCreateParams",
+    "PageFileApiOptions",
+    "PageFileApi"
+  ],
+  "models": {
+    "PageFileCreateParams": {
+      "kind": "PageFileCreateParams",
+      "className": "PageFileCreateParams",
+      "jsdoc": "/** Page File Create Params 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "PageFileCreateOptions & {\n    /** page Id 标识。 */\n    pageId: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "PageFileCreateOptions",
+          "targetName": "PageFileCreateOptions"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+        "line": 10,
+        "className": "PageFileCreateParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** page Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+            "line": 12,
+            "className": "PageFileCreateParams",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "PageFileApiOptions": {
+      "kind": "PageFileApiOptions",
+      "className": "PageFileApiOptions",
+      "jsdoc": "/** Page File Api Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** get Page Files Api 回调。 */\n    getPageFilesApi: () => string;\n    /** http 字段。 */\n    http: HttpClientBase;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+        "line": 15,
+        "className": "PageFileApiOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "getPageFilesApi",
+          "schema": {
+            "title": "() => string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** get Page Files Api 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+            "line": 17,
+            "className": "PageFileApiOptions",
+            "memberName": "getPageFilesApi",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "http",
+          "schema": {
+            "title": "HttpClientBase"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** http 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+            "line": 19,
+            "className": "PageFileApiOptions",
+            "memberName": "http",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "PageFileApi": {
+      "kind": "PageFileApi",
+      "className": "PageFileApi",
+      "jsdoc": "/** Page File Api 的语义模型。 */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+        "line": 22,
+        "className": "PageFileApi",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "title": "PageFileApiOptions"
+            }
+          },
+          "required": [
+            "options"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Page File Api 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+          "line": 26,
+          "className": "PageFileApi",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "saveFileContent",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string",
+                "title": "string"
+              },
+              "filename": {
+                "title": "PageNodeFileName"
+              },
+              "content": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "pageId",
+              "filename",
+              "content"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 保存 File Content。 */",
+          "paramsTypeText": "pageId: string, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", content: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+            "line": 28,
+            "className": "PageFileApi",
+            "memberName": "saveFileContent",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "createFiles",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "PageFileCreateParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<Record<string, unknown>>"
+          },
+          "returnTypeText": "Promise<Record<string, unknown>>",
+          "jsdoc": "/** 创建 Files。 */",
+          "paramsTypeText": "params: PageFileCreateParams",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+            "line": 30,
+            "className": "PageFileApi",
+            "memberName": "createFiles",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "deleteFiles",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "pageId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 删除 Files。 */",
+          "paramsTypeText": "pageId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+            "line": 32,
+            "className": "PageFileApi",
+            "memberName": "deleteFiles",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "listVersions",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string",
+                "title": "string"
+              },
+              "filename": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "pageId",
+              "filename"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<PageNodeFileVersionSummary[]>"
+          },
+          "returnTypeText": "Promise<PageNodeFileVersionSummary[]>",
+          "jsdoc": "/** 执行 list Versions 操作。 */",
+          "paramsTypeText": "pageId: string, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+            "line": 34,
+            "className": "PageFileApi",
+            "memberName": "listVersions",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "restoreVersion",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string",
+                "title": "string"
+              },
+              "filename": {
+                "title": "PageNodeFileName"
+              },
+              "version": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "required": [
+              "pageId",
+              "filename",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 执行 restore Version 操作。 */",
+          "paramsTypeText": "pageId: string, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", version: number",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+            "line": 36,
+            "className": "PageFileApi",
+            "memberName": "restoreVersion",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "createVersion",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string",
+                "title": "string"
+              },
+              "filename": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "pageId",
+              "filename"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 创建 Version。 */",
+          "paramsTypeText": "pageId: string, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+            "line": 38,
+            "className": "PageFileApi",
+            "memberName": "createVersion",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "deleteVersion",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string",
+                "title": "string"
+              },
+              "filename": {
+                "title": "PageNodeFileName"
+              },
+              "version": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "required": [
+              "pageId",
+              "filename",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 删除 Version。 */",
+          "paramsTypeText": "pageId: string, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", version: number",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts",
+            "line": 40,
+            "className": "PageFileApi",
+            "memberName": "deleteVersion",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.892Z"
+}

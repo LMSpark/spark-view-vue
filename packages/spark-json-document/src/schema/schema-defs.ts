@@ -12,6 +12,7 @@ import { attachJsonSchemaDefs } from './schema-attach'
 import { standardizeJsonSchema } from './schema-standardize'
 import type { JsonSchema } from './schema-types'
 
+/** Json Schema Local Defs Extraction 的语义模型。 */
 export type JsonSchemaLocalDefsExtraction = Readonly<{
   schema: unknown
   defs: Readonly<Record<string, JsonSchema>>

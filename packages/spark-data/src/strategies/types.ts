@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-data:strategies/types
+ * @spark-appworks/spark-data 的 strategies/types 模块。
+ * 导出 ClassModel symbol: CrudOperation, CrudLifecycleEvent, CrudLifecycleEventInput（共 3 个 symbol）。
+ */
 import type { CrudResult } from '../types'
 
 // ─────────────────────────────────────────────
@@ -17,8 +22,10 @@ export type CrudOperation =
  * - `after` 阶段：业务脚本可根据 result 执行联动（如刷新关联表、弹出提示）
  */
 export type CrudLifecycleEvent = {
-  readonly operation: CrudOperation
-  readonly phase: 'before' | 'after'
+    /** operation 字段。 */
+readonly operation: CrudOperation
+    /** phase 字段。 */
+readonly phase: 'before' | 'after'
   /** 提交的数据（before 阶段为原始入参，after 阶段同前） */
   readonly data: unknown
   /** 操作结果（仅 after 阶段） */
@@ -28,6 +35,7 @@ export type CrudLifecycleEvent = {
   /** 取消操作（仅 before 阶段调用） */
   cancel(): void}
 
+/** Crud Lifecycle Event Input 的输入数据。 */
 export type CrudLifecycleEventInput = Readonly<{
   operation: CrudOperation
   phase: 'before' | 'after'

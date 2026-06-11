@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/knowledge/dts-bundle-class-model-knowledge-service",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/knowledge/dts-bundle-class-model-knowledge-service",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/dts-bundle-class-model-knowledge-service\n@spark-appworks/spark-ai 的 class-model/knowledge/dts-bundle-class-model-knowledge-service 模块。\n导出 ClassModel symbol: DtsBundleClassModelKnowledgeServiceOptions, DtsBundleClassModelKnowledgeService（共 2 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "DtsBundleClassModelKnowledgeServiceOptions",
+      "DtsBundleClassModelKnowledgeService"
+    ]
+  },
+  "symbols": [
+    "DtsBundleClassModelKnowledgeServiceOptions",
+    "DtsBundleClassModelKnowledgeService"
+  ],
+  "models": {
+    "DtsBundleClassModelKnowledgeServiceOptions": {
+      "kind": "DtsBundleClassModelKnowledgeServiceOptions",
+      "className": "DtsBundleClassModelKnowledgeServiceOptions",
+      "jsdoc": "/** Dts Bundle Class Model Knowledge Service Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    loader: DtsClassModelBundleLoader;\n    rootClassName: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    loader: DtsClassModelBundleLoader;\n    rootClassName: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+        "line": 10,
+        "className": "DtsBundleClassModelKnowledgeServiceOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsBundleClassModelKnowledgeService": {
+      "kind": "DtsBundleClassModelKnowledgeService",
+      "className": "DtsBundleClassModelKnowledgeService",
+      "jsdoc": "/** Dts Bundle Class Model Knowledge Service 的语义模型。 */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "implements",
+          "typeText": "ClassModelKnowledgeProvider",
+          "targetName": "ClassModelKnowledgeProvider"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+        "line": 15,
+        "className": "DtsBundleClassModelKnowledgeService",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "title": "DtsBundleClassModelKnowledgeServiceOptions"
+            }
+          },
+          "required": [
+            "options"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Dts Bundle Class Model Knowledge Service 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+          "line": 18,
+          "className": "DtsBundleClassModelKnowledgeService",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "query",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "title": "ClassModelKnowledgeQueryInput"
+              }
+            },
+            "required": [
+              "input"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<AiJsonValue>"
+          },
+          "returnTypeText": "Promise<AiJsonValue>",
+          "jsdoc": "/** 查询参数。 */",
+          "paramsTypeText": "input: Readonly<{ kind?: string | undefined; keyword?: string | undefined; includeMembers: boolean; }>",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+            "line": 20,
+            "className": "DtsBundleClassModelKnowledgeService",
+            "memberName": "query",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "modelGuide",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "title": "ClassModelModelGuideInput"
+              }
+            },
+            "required": [
+              "input"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<string>"
+          },
+          "returnTypeText": "Promise<string>",
+          "jsdoc": "/** 执行 model Guide 操作。 */",
+          "paramsTypeText": "input: Readonly<{ kind: string; }>",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+            "line": 22,
+            "className": "DtsBundleClassModelKnowledgeService",
+            "memberName": "modelGuide",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "attributeGuide",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "title": "ClassModelAttributeGuideInput"
+              }
+            },
+            "required": [
+              "input"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<string>"
+          },
+          "returnTypeText": "Promise<string>",
+          "jsdoc": "/** 执行 attribute Guide 操作。 */",
+          "paramsTypeText": "input: Readonly<{ kind: string; attributeName: string; }>",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+            "line": 24,
+            "className": "DtsBundleClassModelKnowledgeService",
+            "memberName": "attributeGuide",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "methodGuide",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "title": "ClassModelMethodGuideInput"
+              }
+            },
+            "required": [
+              "input"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<string>"
+          },
+          "returnTypeText": "Promise<string>",
+          "jsdoc": "/** 执行 method Guide 操作。 */",
+          "paramsTypeText": "input: Readonly<{ kind: string; methodName: string; }>",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+            "line": 26,
+            "className": "DtsBundleClassModelKnowledgeService",
+            "memberName": "methodGuide",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.833Z"
+}

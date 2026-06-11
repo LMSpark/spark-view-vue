@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionReasoningBlock.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/SessionReasoningBlock.props",
+    "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionReasoningBlock.props.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/SessionReasoningBlock.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/SessionReasoningBlock.props",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/SessionReasoningBlock.props\n@spark-appworks/spark-component 的 ai/components/SessionReasoningBlock.props 模块。\n导出 ClassModel symbol: SessionReasoningBlockProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SessionReasoningBlockProps"
+    ]
+  },
+  "symbols": [
+    "SessionReasoningBlockProps"
+  ],
+  "models": {
+    "SessionReasoningBlockProps": {
+      "kind": "SessionReasoningBlockProps",
+      "className": "SessionReasoningBlockProps",
+      "jsdoc": "/** Session Reasoning Block Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    text: string;\n    collapsed?: boolean;\n    isActive?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    text: string;\n    collapsed?: boolean;\n    isActive?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/ai/components/SessionReasoningBlock.props.d.ts",
+        "line": 7,
+        "className": "SessionReasoningBlockProps",
+        "declarationKind": "type",
+        "componentName": "SessionReasoningBlock"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.011Z"
+}

@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/layout/RendererCollapseItem
+RendererCollapseItem 模块，属于 SPARK component container/layout-container。
+组件目录: containers/layout。
+导出 ClassModel symbol: Props（共 1 个 symbol）。
+-->
 <template>
   <el-collapse-item
     :name="itemName"
@@ -29,6 +35,7 @@ import { nodeId } from '../../internal'
 import { useCompositeItemGrid } from '../runtime/container-layout'
 import type { SparkNodeProps } from '../../shared-types'
 
+/** r-collapse-item 内部面板项属性，继承 SparkNode 通用节点属性。 */
 type Props = SparkNodeProps & {
   /** 面板唯一标识 */
     name?: string | number

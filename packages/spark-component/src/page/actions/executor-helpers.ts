@@ -47,12 +47,18 @@ export function readString(value: unknown): string | undefined {
 
 const INTERPOLATION = /\{(\w+(?:\.\w+)*)\}/g
 
+/** Pick Action Text Input 的输入数据。 */
 export type PickActionTextInput = {
-  decorator: ActionUiDecorator | undefined
-  key: keyof ActionUiDecorator
-  fallback: string
-  vars?: Record<string, string | number | undefined>
-  row?: DataRow | null}
+    /** decorator 字段。 */
+decorator: ActionUiDecorator | undefined
+    /** 定位键。 */
+key: keyof ActionUiDecorator
+    /** fallback 字段。 */
+fallback: string
+    /** vars 字段。 */
+vars?: Record<string, string | number | undefined>
+    /** 当前行数据。 */
+row?: DataRow | null}
 
 /**
  * 模板插值：`{count}` `{row.name}` 等。
@@ -382,6 +388,7 @@ export const BUILTIN_ACTION_META = {
   'save-dataset': { label: '保存全部' },
 } satisfies Record<string, BuiltinActionMeta>
 
+/** Builtin Action Name 的语义模型。 */
 export type BuiltinActionName = keyof typeof BUILTIN_ACTION_META
 
 /** 判断字符串是否为已注册的内置动作名（BuiltinActionName 类型守卫）。 */

@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-app:router/route-helpers
+ * @spark-appworks/spark-app 的 router/route-helpers 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
 
 function normalizePath(path: string): string {

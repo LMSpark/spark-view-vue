@@ -1,3 +1,8 @@
+<!--
+@module app:components/NavIcon
+app 的 components/NavIcon 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <script setup lang="ts">
 import { computed } from 'vue'
 import * as Icons from '@element-plus/icons-vue'

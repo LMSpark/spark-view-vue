@@ -1,3 +1,8 @@
+<!--
+@module app:layout/NavContextSelector
+app 的 layout/NavContextSelector 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="nav-context-selector">
     <span class="nav-context-selector__label">项目</span>

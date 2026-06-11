@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/router/cross-project-ref-page.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:router/cross-project-ref-page",
+    "sourcePath": "declarations/packages/spark-app/src/router/cross-project-ref-page.d.ts",
+    "sourceFile": "packages/spark-app/src/router/cross-project-ref-page.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "router/cross-project-ref-page",
+    "jsdoc": "@module @spark-appworks/spark-app:router/cross-project-ref-page\n@spark-appworks/spark-app 的 router/cross-project-ref-page 模块。\n导出 ClassModel symbol: CrossProjectRefPageRouteProps（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "CrossProjectRefPageRouteProps"
+    ]
+  },
+  "symbols": [
+    "CrossProjectRefPageRouteProps"
+  ],
+  "models": {
+    "CrossProjectRefPageRouteProps": {
+      "kind": "CrossProjectRefPageRouteProps",
+      "className": "CrossProjectRefPageRouteProps",
+      "jsdoc": "/** Cross Project Ref Page Route Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** page Content Loader 字段。 */\n    pageContentLoader: PageContentLoader;\n    /** tenant Id 标识。 */\n    tenantId?: string | undefined;\n    /** host Project Id 标识。 */\n    hostProjectId?: string | undefined;\n    /** route Path 路径。 */\n    routePath?: string | undefined;\n    /** route Meta 字段。 */\n    routeMeta?: Record<string, unknown> | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/router/cross-project-ref-page.d.ts",
+        "line": 4,
+        "className": "CrossProjectRefPageRouteProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "pageContentLoader",
+          "schema": {
+            "title": "PageContentLoader"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** page Content Loader 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/cross-project-ref-page.d.ts",
+            "line": 6,
+            "className": "CrossProjectRefPageRouteProps",
+            "memberName": "pageContentLoader",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "tenantId",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** tenant Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/cross-project-ref-page.d.ts",
+            "line": 8,
+            "className": "CrossProjectRefPageRouteProps",
+            "memberName": "tenantId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "hostProjectId",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** host Project Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/cross-project-ref-page.d.ts",
+            "line": 10,
+            "className": "CrossProjectRefPageRouteProps",
+            "memberName": "hostProjectId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "routePath",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** route Path 路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/cross-project-ref-page.d.ts",
+            "line": 12,
+            "className": "CrossProjectRefPageRouteProps",
+            "memberName": "routePath",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "routeMeta",
+          "schema": {
+            "title": "Record<string, unknown> | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** route Meta 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/cross-project-ref-page.d.ts",
+            "line": 14,
+            "className": "CrossProjectRefPageRouteProps",
+            "memberName": "routeMeta",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.962Z"
+}

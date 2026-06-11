@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/page/createSandbox.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:page/createSandbox",
+    "sourcePath": "declarations/packages/spark-component/src/page/createSandbox.d.ts",
+    "sourceFile": "packages/spark-component/src/page/createSandbox.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/createSandbox",
+    "jsdoc": "脚本沙箱工具",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.644Z"
+}

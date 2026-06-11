@@ -1,0 +1,317 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/runtime/container-filter",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/runtime/container-filter.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/runtime/container-filter",
+    "jsdoc": "container-filter.ts\n容器过滤面板层：过滤表达式构建、双向绑定模型管理与 DataView 过滤应用。\n职责：\n- useFilterPanel : 从过滤器节点配置生成表达式，管理 filterModel，应用到 DataView\n工作流程：\nfilterChildren (SparkNode[]) → 描述符 → 模型同步 → filterExpression → DataView.setFilter/executeFilter\n两种过滤值类型：\n1. input     : 用户输入的双向绑定值（filterModel[field]）\n2. field-ref : 常驻字段引用（filterValueRefField），无需用户输入，直接引用 DataView 字段值\n消费方：RendererFilter.vue",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ErrorLoggerLike",
+      "FilterPanelDataView",
+      "UseFilterPanelOptions",
+      "FilterPanelState"
+    ]
+  },
+  "symbols": [
+    "ErrorLoggerLike",
+    "FilterPanelDataView",
+    "UseFilterPanelOptions",
+    "FilterPanelState"
+  ],
+  "models": {
+    "ErrorLoggerLike": {
+      "kind": "ErrorLoggerLike",
+      "className": "ErrorLoggerLike",
+      "jsdoc": "/** 极简日志接口（最小化依赖）。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    error(message: string, error?: unknown): void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+        "line": 22,
+        "className": "ErrorLoggerLike",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "FilterPanelDataView": {
+      "kind": "FilterPanelDataView",
+      "className": "FilterPanelDataView",
+      "jsdoc": "/** Filter Panel Data View 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 行数据集合。 */\n    readonly rows: ReadonlyArray<Record<string, unknown>>;\n    /** 列定义集合。 */\n    readonly columns?: readonly unknown[];\n    /** filter Expression 字段。 */\n    readonly filterExpression?: FilterExpression | undefined;\n    /** data Table 字段。 */\n    readonly dataTable?: {\n        readonly api?: {\n            readonly list?: unknown;\n        } | undefined;\n        readonly resourceType?: string | undefined;\n    } | null | undefined;\n    /** get Column 回调。 */\n    getColumn?: (field: string) => unknown;\n    setFilter(expr: FilterExpression | undefined): Promise<void>;\n    executeFilter(expr: FilterExpression | undefined): Promise<void>;\n    refresh(): Promise<void>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+        "line": 26,
+        "className": "FilterPanelDataView",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "rows",
+          "schema": {
+            "title": "ReadonlyArray<Record<string, unknown>>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 行数据集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 28,
+            "className": "FilterPanelDataView",
+            "memberName": "rows",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "columns",
+          "schema": {
+            "type": "array",
+            "title": "readonly unknown[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 列定义集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 30,
+            "className": "FilterPanelDataView",
+            "memberName": "columns",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "filterExpression",
+          "schema": {
+            "title": "FilterExpression | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** filter Expression 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 32,
+            "className": "FilterPanelDataView",
+            "memberName": "filterExpression",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "dataTable",
+          "schema": {
+            "title": "{\n        readonly api?: {\n            readonly list?: unknown;\n        } | undefined;\n        readonly resourceType?: string | undefined;\n    } | null | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** data Table 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 34,
+            "className": "FilterPanelDataView",
+            "memberName": "dataTable",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "getColumn",
+          "schema": {
+            "title": "(field: string) => unknown"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** get Column 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 41,
+            "className": "FilterPanelDataView",
+            "memberName": "getColumn",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "UseFilterPanelOptions": {
+      "kind": "UseFilterPanelOptions",
+      "className": "UseFilterPanelOptions",
+      "jsdoc": "/** Use Filter Panel Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 过滤器子节点列表（响应式）。 */\n    filterChildren: MaybeRefOrGetter<SparkNode[]>;\n    /** 目标 DataView（响应式）。 */\n    dataView: MaybeRefOrGetter<FilterPanelDataView | null>;\n    /** 错误日志接口。 */\n    logger: ErrorLoggerLike;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+        "line": 47,
+        "className": "UseFilterPanelOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "filterChildren",
+          "schema": {
+            "title": "MaybeRefOrGetter<SparkNode[]>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 过滤器子节点列表（响应式）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 49,
+            "className": "UseFilterPanelOptions",
+            "memberName": "filterChildren",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "dataView",
+          "schema": {
+            "title": "MaybeRefOrGetter<FilterPanelDataView | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 目标 DataView（响应式）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 51,
+            "className": "UseFilterPanelOptions",
+            "memberName": "dataView",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "logger",
+          "schema": {
+            "title": "ErrorLoggerLike"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 错误日志接口。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 53,
+            "className": "UseFilterPanelOptions",
+            "memberName": "logger",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "FilterPanelState": {
+      "kind": "FilterPanelState",
+      "className": "FilterPanelState",
+      "jsdoc": "/** `useFilterPanel` 返回状态。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 双向绑定的过滤模型（field → 用户输入值）。 */\n    filterModel: Record<string, unknown>;\n    /** 当前可渲染的过滤器配置列表（input 类型）。 */\n    filterConfigs: ComputedRef<SparkNode[]>;\n    /** 是否有可渲染的过滤器。 */\n    hasFilters: ComputedRef<boolean>;\n    /** 当前有值的过滤器数量（用于 badge）。 */\n    activeFilterCount: ComputedRef<number>;\n    /** 应用过滤（executeFilter 模式，用于搜索按钮）。 */\n    searchFilters: () => Promise<void>;\n    /** 重置所有过滤值。 */\n    resetFilters: () => Promise<void>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+        "line": 56,
+        "className": "FilterPanelState",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "filterModel",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 双向绑定的过滤模型（field → 用户输入值）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 58,
+            "className": "FilterPanelState",
+            "memberName": "filterModel",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "filterConfigs",
+          "schema": {
+            "title": "ComputedRef<SparkNode[]>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前可渲染的过滤器配置列表（input 类型）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 60,
+            "className": "FilterPanelState",
+            "memberName": "filterConfigs",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "hasFilters",
+          "schema": {
+            "title": "ComputedRef<boolean>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 是否有可渲染的过滤器。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 62,
+            "className": "FilterPanelState",
+            "memberName": "hasFilters",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "activeFilterCount",
+          "schema": {
+            "title": "ComputedRef<number>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前有值的过滤器数量（用于 badge）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 64,
+            "className": "FilterPanelState",
+            "memberName": "activeFilterCount",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "searchFilters",
+          "schema": {
+            "title": "() => Promise<void>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 应用过滤（executeFilter 模式，用于搜索按钮）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 66,
+            "className": "FilterPanelState",
+            "memberName": "searchFilters",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "resetFilters",
+          "schema": {
+            "title": "() => Promise<void>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 重置所有过滤值。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-filter.d.ts",
+            "line": 68,
+            "className": "FilterPanelState",
+            "memberName": "resetFilters",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.240Z"
+}

@@ -1,3 +1,8 @@
+<!--
+@module app:views/platform/PlatformTenantManagement
+app 的 views/platform/PlatformTenantManagement 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="platform-tenants">
     <div class="page-toolbar">

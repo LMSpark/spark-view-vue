@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/class-model-knowledge.worker.d.ts",
+  "module": {
+    "name": "app:services/class-model-knowledge.worker",
+    "sourcePath": "declarations/src/services/class-model-knowledge.worker.d.ts",
+    "sourceFile": "src/services/class-model-knowledge.worker.ts",
+    "packageName": "app",
+    "modulePath": "services/class-model-knowledge.worker",
+    "jsdoc": "@module app:services/class-model-knowledge.worker\napp 的 services/class-model-knowledge.worker 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.078Z"
+}

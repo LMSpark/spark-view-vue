@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:index",
+    "sourcePath": "declarations/packages/spark-data/src/index.d.ts",
+    "sourceFile": "packages/spark-data/src/index.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "index",
+    "jsdoc": "@spark-appworks/spark-data\nSPARK 数据空间 — 数据模型 + CRUD + 树结构 + 权限\n**推荐入口**：`SparkData` 命名空间（工厂方法 + 解析工具）\n精简公共 API，只暴露外部消费者实际需要的最小集合：\n- 命名空间：`SparkData`\n- 核心类：`DataSet`、`DataView`（纯 TS，无框架依赖）\n- DataViewKey / DataMember 解析工具函数\n- 权限渲染常量\n- 数据配置所需的类型",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.749Z"
+}

@@ -1,5 +1,12 @@
+/**
+ * @module @spark-appworks/spark-component:components/display/data-components/DisplayPagination.props
+ * DisplayPagination 模块，属于 SPARK component display/data-display。
+ * 组件目录: display/data-components。
+ * 导出 ClassModel symbol: RPaginationProps（共 1 个 symbol）。
+ */
 import type { SparkNodeProps } from '../../shared-types'
 
+/** RPagination Props 的属性契约。 */
 export type RPaginationProps = SparkNodeProps & {
   /** 总条数 */
   total?: number

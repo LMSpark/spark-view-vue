@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/class-model/dts-class-model-bundle-loader",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/class-model/dts-class-model-bundle-loader",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-class-model-bundle-loader\n@spark-appworks/spark-ai 的 class-model/class-model/dts-class-model-bundle-loader 模块。\n导出 ClassModel symbol: DtsClassModelBundleLoaderOptions, DtsClassModelBundleLoader（共 2 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "DtsClassModelBundleLoaderOptions",
+      "DtsClassModelBundleLoader"
+    ]
+  },
+  "symbols": [
+    "DtsClassModelBundleLoaderOptions",
+    "DtsClassModelBundleLoader"
+  ],
+  "models": {
+    "DtsClassModelBundleLoaderOptions": {
+      "kind": "DtsClassModelBundleLoaderOptions",
+      "className": "DtsClassModelBundleLoaderOptions",
+      "jsdoc": "/** Dts Class Model Bundle Loader Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    manifestUrl: string;\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    manifestUrl: string;\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
+        "line": 10,
+        "className": "DtsClassModelBundleLoaderOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelBundleLoader": {
+      "kind": "DtsClassModelBundleLoader",
+      "className": "DtsClassModelBundleLoader",
+      "jsdoc": "/** Dts Class Model Bundle Loader 的语义模型。 */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
+        "line": 15,
+        "className": "DtsClassModelBundleLoader",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "title": "DtsClassModelBundleLoaderOptions"
+            }
+          },
+          "required": [
+            "options"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Dts Class Model Bundle Loader 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
+          "line": 23,
+          "className": "DtsClassModelBundleLoader",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "init",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<DtsClassModelBundleManifest>"
+          },
+          "returnTypeText": "Promise<DtsClassModelBundleManifest>",
+          "jsdoc": "/** 执行 init 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
+            "line": 25,
+            "className": "DtsClassModelBundleLoader",
+            "memberName": "init",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "ensureClassName",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "className": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "className"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<ClassModel>"
+          },
+          "returnTypeText": "Promise<ClassModel>",
+          "jsdoc": "/** ensure Class Name 名称。 */",
+          "paramsTypeText": "className: string",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
+            "line": 27,
+            "className": "DtsClassModelBundleLoader",
+            "memberName": "ensureClassName",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "ensureSourcePath",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "sourcePath": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "sourcePath"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<DtsFileProjectionDocument>"
+          },
+          "returnTypeText": "Promise<DtsFileProjectionDocument>",
+          "jsdoc": "/** ensure Source Path 路径。 */",
+          "paramsTypeText": "sourcePath: string",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
+            "line": 29,
+            "className": "DtsClassModelBundleLoader",
+            "memberName": "ensureSourcePath",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "ensureReachableClosure",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rootClassName": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "rootClassName"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<readonly string[]>"
+          },
+          "returnTypeText": "Promise<readonly string[]>",
+          "jsdoc": "/** 执行 ensure Reachable Closure 操作。 */",
+          "paramsTypeText": "rootClassName: string",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
+            "line": 31,
+            "className": "DtsClassModelBundleLoader",
+            "memberName": "ensureReachableClosure",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "buildLoadedSurface",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "configPath": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DtsClassModelSurfaceDocument"
+          },
+          "returnTypeText": "DtsClassModelSurfaceDocument",
+          "jsdoc": "/** 执行 build Loaded Surface 操作。 */",
+          "paramsTypeText": "configPath?: string | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
+            "line": 33,
+            "className": "DtsClassModelBundleLoader",
+            "memberName": "buildLoadedSurface",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.812Z"
+}

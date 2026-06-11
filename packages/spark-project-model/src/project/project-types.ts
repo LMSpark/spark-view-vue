@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-project-model:project/project-types
+ * @spark-appworks/spark-project-model 的 project/project-types 模块。
+ * 导出 ClassModel symbol: ProjectNavigationDirtyScope, ProjectModelEvent, ProjectModelEventListener, ProjectPageFileWriteCommand, ProjectNavigationProjection, ProjectActivePageProjection, ProjectDirtyProjection, ProjectPlanningInput 等（共 12 个 symbol）。
+ */
 import type {
   ProjectModelData,
   ProjectNodeData,
@@ -7,8 +12,10 @@ import type {
 import type { NavigationNodeDraft } from '../navigation/navigation-edit'
 import type { PageNodeFileName } from '../page/page-file'
 
+/** Project Navigation Dirty Scope 的语义模型。 */
 export type ProjectNavigationDirtyScope = 'node' | 'root'
 
+/** Project Model Event 的事件载荷。 */
 export type ProjectModelEvent =
   | {
       type: 'navigation.changed'
@@ -38,8 +45,10 @@ export type ProjectModelEvent =
       pageId?: string
     }
 
+/** Project Model Event Listener 的语义模型。 */
 export type ProjectModelEventListener = (event: ProjectModelEvent) => void
 
+/** Project Page File Write Command 的命令参数。 */
 export type ProjectPageFileWriteCommand = {
   /** 目标配置页 pageId；省略时使用当前 activePage。 */
   pageId?: string | undefined
@@ -49,31 +58,52 @@ export type ProjectPageFileWriteCommand = {
   text: string
 }
 
+/** Project Navigation Projection 的语义模型。 */
 export type ProjectNavigationProjection = {
-  navigationRoot: ProjectModelData
-  treeData: ProjectNodeData[]
-  selectedNode: ProjectNodeData | null
-  selectedNodeId: string | null
-  navigationLocation: ProjectNodeLocation | null
-  navigationDraft: NavigationNodeDraft | null
-  pageFeatures: ProjectPageNodeSummary[]
+    /** navigation Root 字段。 */
+navigationRoot: ProjectModelData
+    /** tree Data 字段。 */
+treeData: ProjectNodeData[]
+    /** selected Node 字段。 */
+selectedNode: ProjectNodeData | null
+    /** selected Node Id 标识。 */
+selectedNodeId: string | null
+    /** navigation Location 字段。 */
+navigationLocation: ProjectNodeLocation | null
+    /** navigation Draft 字段。 */
+navigationDraft: NavigationNodeDraft | null
+    /** page Features 字段。 */
+pageFeatures: ProjectPageNodeSummary[]
 }
 
+/** Project Active Page Projection 的语义模型。 */
 export type ProjectActivePageProjection = {
-  pageId: string
-  ruleJson: string
-  pageDataJson: string
-  script: string
-  style: string
-  parseErrors: Record<PageNodeFileName, string | null>
-  isLoaded: boolean
+    /** page Id 标识。 */
+pageId: string
+    /** rule Json 字段。 */
+ruleJson: string
+    /** page Data Json 字段。 */
+pageDataJson: string
+    /** script 字段。 */
+script: string
+    /** style 字段。 */
+style: string
+    /** parse Errors 字段。 */
+parseErrors: Record<PageNodeFileName, string | null>
+    /** 是否 is Loaded。 */
+isLoaded: boolean
 }
 
+/** Project Dirty Projection 的语义模型。 */
 export type ProjectDirtyProjection = {
-  dirtyFiles: Set<PageNodeFileName>
-  hasAnyFileDirty: boolean
-  navigationDirty: boolean
-  hasAnyDirty: boolean
+    /** dirty Files 字段。 */
+dirtyFiles: Set<PageNodeFileName>
+    /** 是否 has Any File Dirty。 */
+hasAnyFileDirty: boolean
+    /** navigation Dirty 字段。 */
+navigationDirty: boolean
+    /** 是否 has Any Dirty。 */
+hasAnyDirty: boolean
 }
 
 /** 项目级策划输入：短需求 + 可选详细说明附件引用。 */
@@ -94,6 +124,7 @@ export type NavigationPlanningInput = Readonly<{
   planningAttachmentRef?: string
 }>
 
+/** Project Info 的语义模型。 */
 export type ProjectInfo = {
   /** 租户 ID；多租户环境下用于隔离项目。 */
   tenantId?: string | undefined
@@ -119,6 +150,7 @@ export type ProjectInfo = {
   updatedAt?: string | undefined
 }
 
+/** Project Info Input 的输入数据。 */
 export type ProjectInfoInput = Partial<Omit<ProjectInfo, 'projectId'>> & {
   /** 可选项目 ID；未提供时由 ProjectModel 构造参数补齐。 */
   projectId?: string | undefined

@@ -1,0 +1,448 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:strategies/crud-delegate",
+    "sourcePath": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+    "sourceFile": "packages/spark-data/src/strategies/crud-delegate.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "strategies/crud-delegate",
+    "jsdoc": "CrudDelegate — CRUD 操作委托\n从 DataView 提取的 CRUD 职责：\n- 单条读取（retrieve）\n- 单条 CRUD（create/update/delete）\n- 批量 CRUD（batchCreate/batchUpdate/batchDelete）\n- 导入/导出（importData/exportData）\n- 数据校验代理\n- CRUD 生命周期事件（before/after hooks）\n通过 DataView 宿主交互。delegate 是 DataView 的内部职责切分，\n不再维护单实现宿主接口。\nCrudService 实例由 DataTable 持有并缓存（模型级共享）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "EmitCrudLifecycleFn",
+      "MutatingFn",
+      "CrudDelegate"
+    ]
+  },
+  "symbols": [
+    "EmitCrudLifecycleFn",
+    "MutatingFn",
+    "CrudDelegate"
+  ],
+  "models": {
+    "EmitCrudLifecycleFn": {
+      "kind": "EmitCrudLifecycleFn",
+      "className": "EmitCrudLifecycleFn",
+      "jsdoc": "/** Emit Crud Lifecycle Fn 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    (event: CrudLifecycleEvent): void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+        "line": 22,
+        "className": "EmitCrudLifecycleFn",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "MutatingFn": {
+      "kind": "MutatingFn",
+      "className": "MutatingFn",
+      "jsdoc": "/** Mutating Fn 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    (delta: 1 | -1, error?: Error | null): void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+        "line": 26,
+        "className": "MutatingFn",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "CrudDelegate": {
+      "kind": "CrudDelegate",
+      "className": "CrudDelegate",
+      "jsdoc": "/**\n * CRUD 委托\n *\n * 封装所有 CRUD 相关逻辑，包括数据校验、单条 & 批量操作、导入导出。\n * CrudService 由 DataTable 持有，本委托通过 host.dataTable 获取。\n * 每个操作前后发射 crud:before / crud:after 事件，供业务脚本层拦截和联动。\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+        "line": 36,
+        "className": "CrudDelegate",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "title": "DataView"
+            },
+            "emitCrudLifecycle": {
+              "title": "EmitCrudLifecycleFn"
+            },
+            "emitMutating": {
+              "title": "MutatingFn"
+            }
+          },
+          "required": [
+            "host",
+            "emitCrudLifecycle",
+            "emitMutating"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Crud Delegate 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+          "line": 41,
+          "className": "CrudDelegate",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "ensureCrudService",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "CrudService"
+          },
+          "returnTypeText": "CrudService",
+          "jsdoc": "/** 确保 CrudService 已初始化，否则抛出 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 48,
+            "className": "CrudDelegate",
+            "memberName": "ensureCrudService",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getCrudConfig",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "CrudOperationConfig | undefined"
+          },
+          "returnTypeText": "CrudOperationConfig | undefined",
+          "jsdoc": "/** 获取 CRUD 操作配置（超时、重试等） */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 50,
+            "className": "CrudDelegate",
+            "memberName": "getCrudConfig",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "list",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "QueryParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult>"
+          },
+          "returnTypeText": "Promise<CrudResult>",
+          "jsdoc": "/** 执行列表查询 */",
+          "paramsTypeText": "params?: QueryParams | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 71,
+            "className": "CrudDelegate",
+            "memberName": "list",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "retrieveRecord",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pk": {
+                "title": "Record<string, unknown>"
+              }
+            },
+            "required": [
+              "pk"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<DataRow>>"
+          },
+          "returnTypeText": "Promise<CrudResult<DataRow>>",
+          "jsdoc": "/** 查询单条记录，不修改本地 rows。 */",
+          "paramsTypeText": "pk: Record<string, unknown>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 73,
+            "className": "CrudDelegate",
+            "memberName": "retrieveRecord",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "createRecord",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "title": "Partial<DataRow>"
+              }
+            },
+            "required": [
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<DataRow>>"
+          },
+          "returnTypeText": "Promise<CrudResult<DataRow>>",
+          "jsdoc": "/** 新增记录，成功后追加至 rows */",
+          "paramsTypeText": "data: Partial<DataRow>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 75,
+            "className": "CrudDelegate",
+            "memberName": "createRecord",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "updateRecord",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              },
+              "data": {
+                "title": "Partial<DataRow>"
+              },
+              "serverPk": {
+                "title": "Record<string, unknown>"
+              }
+            },
+            "required": [
+              "id",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<DataRow>>"
+          },
+          "returnTypeText": "Promise<CrudResult<DataRow>>",
+          "jsdoc": "/**\n     * 更新记录，成功后刷新对应行\n     * @param id 本地主键值（用于本地 rows 更新）\n     * @param data 更新数据\n     * @param serverPk 服务端 PK payload（用于 HTTP 请求，可选，默认从 id 构建）\n     */",
+          "paramsTypeText": "id: string | number, data: Partial<DataRow>, serverPk?: Record<string, unknown> | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 82,
+            "className": "CrudDelegate",
+            "memberName": "updateRecord",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "deleteRecord",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              },
+              "serverPk": {
+                "title": "Record<string, unknown>"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<boolean>>"
+          },
+          "returnTypeText": "Promise<CrudResult<boolean>>",
+          "jsdoc": "/**\n     * 删除记录，成功后从 rows 移除\n     * @param id 本地主键值\n     * @param serverPk 服务端 PK payload（用于 HTTP 请求，可选，默认从 id 构建）\n     */",
+          "paramsTypeText": "id: string | number, serverPk?: Record<string, unknown> | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 88,
+            "className": "CrudDelegate",
+            "memberName": "deleteRecord",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "batchCreateRecords",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "title": "Array<Partial<DataRow>>"
+              }
+            },
+            "required": [
+              "items"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<BatchResult>>"
+          },
+          "returnTypeText": "Promise<CrudResult<BatchResult>>",
+          "jsdoc": "/** 批量新增 */",
+          "paramsTypeText": "items: Partial<DataRow>[]",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 90,
+            "className": "CrudDelegate",
+            "memberName": "batchCreateRecords",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "batchUpdateRecords",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "title": "Array<Partial<DataRow>>"
+              }
+            },
+            "required": [
+              "items"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<BatchResult>>"
+          },
+          "returnTypeText": "Promise<CrudResult<BatchResult>>",
+          "jsdoc": "/** 批量更新（items 中必须包含主键字段，主键名由 host.primaryKey 决定） */",
+          "paramsTypeText": "items: Partial<DataRow>[]",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 92,
+            "className": "CrudDelegate",
+            "memberName": "batchUpdateRecords",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "batchDeleteRecords",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ids": {
+                "title": "Array<string | number>"
+              }
+            },
+            "required": [
+              "ids"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<BatchResult>>"
+          },
+          "returnTypeText": "Promise<CrudResult<BatchResult>>",
+          "jsdoc": "/** 批量删除 */",
+          "paramsTypeText": "ids: (string | number)[]",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 94,
+            "className": "CrudDelegate",
+            "memberName": "batchDeleteRecords",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "importData",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "title": "File"
+              }
+            },
+            "required": [
+              "file"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<{\n        imported: number;\n        failed: number;\n    }>>"
+          },
+          "returnTypeText": "Promise<CrudResult<{\n        imported: number;\n        failed: number;\n    }>>",
+          "jsdoc": "/** 导入文件，成功后重置状态并重新走完整编排 */",
+          "paramsTypeText": "file: File",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 104,
+            "className": "CrudDelegate",
+            "memberName": "importData",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "exportData",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "QueryParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<Blob>>"
+          },
+          "returnTypeText": "Promise<CrudResult<Blob>>",
+          "jsdoc": "/** 导出数据 */",
+          "paramsTypeText": "params?: QueryParams | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 109,
+            "className": "CrudDelegate",
+            "memberName": "exportData",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "destroy",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 销毁 — CrudService 由 DataTable 管理，此处无需释放 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts",
+            "line": 111,
+            "className": "CrudDelegate",
+            "memberName": "destroy",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.787Z"
+}

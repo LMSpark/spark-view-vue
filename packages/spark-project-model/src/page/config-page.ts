@@ -19,22 +19,33 @@ import { PageTextFile } from './content/text-file'
 
 export type { PageNodeLoadOptions } from './page-file'
 
+/** Page Node Render Config 的配置结构。 */
 export type PageNodeRenderConfig = {
-  pageId: string
-  navigation: ProjectNodeData | null
-  rule: SparkNode[]
-  data: DataSet
-  script: string | undefined
-  css: string | undefined
+    /** page Id 标识。 */
+pageId: string
+    /** navigation 字段。 */
+navigation: ProjectNodeData | null
+    /** rule 字段。 */
+rule: SparkNode[]
+    /** 业务数据载荷。 */
+data: DataSet
+    /** script 字段。 */
+script: string | undefined
+    /** css 字段。 */
+css: string | undefined
 }
 
+/** Page Node Like 的语义模型。 */
 export type PageNodeLike = {
-  readonly pageId: string
-  readonly isLoaded: boolean
+    /** page Id 标识。 */
+readonly pageId: string
+    /** 是否 is Loaded。 */
+readonly isLoaded: boolean
   load(options?: PageNodeLoadOptions): Promise<void>
   toRenderConfig(): PageNodeRenderConfig
 }
 
+/** Project Config Page Node Model Options 的调用配置。 */
 export type ProjectConfigPageNodeModelOptions = ProjectNodeModelOptions & {
   /** 配置页唯一 pageId；省略时从导航节点解析。 */
   pageId?: string
@@ -55,10 +66,14 @@ type ConfigPageFileModel = {
  *
  */
 export class ConfigPageNode extends ProjectNode {
-  readonly rule: PageRuleFile
-  readonly dataSet: PageDataSetFile
-  readonly style: PageTextFile
-  readonly script: PageTextFile
+    /** rule 字段。 */
+readonly rule: PageRuleFile
+    /** data Set 字段。 */
+readonly dataSet: PageDataSetFile
+    /** style 字段。 */
+readonly style: PageTextFile
+    /** script 字段。 */
+readonly script: PageTextFile
   /** 配置页唯一 pageId，与四文件存储目录一致。 */
   readonly pageId: string
   private readonly files: Record<PageNodeFileName, ConfigPageFileModel>
@@ -94,7 +109,8 @@ export class ConfigPageNode extends ProjectNode {
 
   get isSubPage(): boolean { return false }
 
-  isDirty(): boolean {
+    /** 是否 is Dirty。 */
+isDirty(): boolean {
     return this.getDirtyFileNames().length > 0
   }
 
@@ -116,15 +132,18 @@ export class ConfigPageNode extends ProjectNode {
     }
   }
 
-  markLoaded(): void {
+    /** 执行 mark Loaded 操作。 */
+markLoaded(): void {
     this._isLoaded = true
   }
 
-  markUnloaded(): void {
+    /** 执行 mark Unloaded 操作。 */
+markUnloaded(): void {
     this._isLoaded = false
   }
 
-  markFileSaved(name: PageNodeFileName): void {
+    /** 执行 mark File Saved 操作。 */
+markFileSaved(name: PageNodeFileName): void {
     switch (name) {
       case 'rule.json':
         this.rule.markSaved()
@@ -173,7 +192,8 @@ export class ConfigPageNode extends ProjectNode {
     }
   }
 
-  canUndoFile(name: PageNodeFileName): boolean {
+    /** 是否 can Undo File。 */
+canUndoFile(name: PageNodeFileName): boolean {
     switch (name) {
       case 'rule.json': return this.rule.canUndo
       case 'pagedata.json': return this.dataSet.canUndo
@@ -182,7 +202,8 @@ export class ConfigPageNode extends ProjectNode {
     }
   }
 
-  canRedoFile(name: PageNodeFileName): boolean {
+    /** 是否 can Redo File。 */
+canRedoFile(name: PageNodeFileName): boolean {
     switch (name) {
       case 'rule.json': return this.rule.canRedo
       case 'pagedata.json': return this.dataSet.canRedo
@@ -191,7 +212,8 @@ export class ConfigPageNode extends ProjectNode {
     }
   }
 
-  undoFile(name: PageNodeFileName): boolean {
+    /** 执行 undo File 操作。 */
+undoFile(name: PageNodeFileName): boolean {
     switch (name) {
       case 'rule.json': return this.rule.undo()
       case 'pagedata.json': return this.dataSet.undo()
@@ -200,7 +222,8 @@ export class ConfigPageNode extends ProjectNode {
     }
   }
 
-  redoFile(name: PageNodeFileName): boolean {
+    /** 执行 redo File 操作。 */
+redoFile(name: PageNodeFileName): boolean {
     switch (name) {
       case 'rule.json': return this.rule.redo()
       case 'pagedata.json': return this.dataSet.redo()
@@ -209,7 +232,8 @@ export class ConfigPageNode extends ProjectNode {
     }
   }
 
-  getDirtyFileNames(): PageNodeFileName[] {
+    /** 读取 Dirty File Names。 */
+getDirtyFileNames(): PageNodeFileName[] {
     return PAGE_NODE_FILE_NAMES.filter(name => this.files[name].isDirty)
   }
 
@@ -261,7 +285,8 @@ export class ConfigPageNode extends ProjectNode {
     await this.dataSet.editTool(run)
   }
 
-  toRenderConfig(): PageNodeRenderConfig {
+    /** to Render Config 配置。 */
+toRenderConfig(): PageNodeRenderConfig {
     if (!this._isLoaded) throw new Error(`配置页面节点 ${this.pageId} 尚未加载完成`)
     return {
       pageId: this.pageId,
@@ -273,7 +298,8 @@ export class ConfigPageNode extends ProjectNode {
     }
   }
 
-  toSummary(): ProjectPageNodeSummary {
+    /** 执行 to Summary 操作。 */
+toSummary(): ProjectPageNodeSummary {
     const node = this.toNodeData()
     return {
       pageId: this.pageId, path: this.resolvedPath, title: this.name,
@@ -303,7 +329,8 @@ export class ConfigSubPageNode extends ConfigPageNode {
     return 'config-page' as const
   }
 
-  override toSummary(): ProjectPageNodeSummary {
+    /** 执行 to Summary 操作。 */
+override toSummary(): ProjectPageNodeSummary {
     const summary = super.toSummary()
     return {
       ...summary,

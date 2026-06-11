@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumb.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/display/non-data-components/DisplayBreadcrumb.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumb.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumb.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/display/non-data-components/DisplayBreadcrumb.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/display/non-data-components/DisplayBreadcrumb.props\nDisplayBreadcrumb 模块，属于 SPARK component display/static-display。\n组件目录: display/non-data-components。\n导出 ClassModel symbol: RBreadcrumbProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RBreadcrumbProps"
+    ],
+    "componentName": "DisplayBreadcrumb",
+    "componentType": "r-breadcrumb",
+    "componentLevel": "display",
+    "componentLayer": "static-display",
+    "componentDirectory": "display/non-data-components"
+  },
+  "symbols": [
+    "RBreadcrumbProps"
+  ],
+  "models": {
+    "RBreadcrumbProps": {
+      "kind": "RBreadcrumbProps",
+      "className": "RBreadcrumbProps",
+      "jsdoc": "/** RBreadcrumb Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 分隔符文本，例如 `/` 或 `>` */\n    separator?: string;\n    /** 分隔符图标名，优先级高于 separator 文本 */\n    separatorIcon?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 分隔符文本，例如 `/` 或 `>` */\n    separator?: string;\n    /** 分隔符图标名，优先级高于 separator 文本 */\n    separatorIcon?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumb.props.d.ts",
+        "line": 9,
+        "className": "RBreadcrumbProps",
+        "declarationKind": "type",
+        "componentName": "DisplayBreadcrumb",
+        "componentType": "r-breadcrumb",
+        "componentLevel": "display",
+        "componentLayer": "static-display",
+        "componentDirectory": "display/non-data-components"
+      },
+      "attributes": [
+        {
+          "name": "separator",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 分隔符文本，例如 `/` 或 `>` */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumb.props.d.ts",
+            "line": 11,
+            "className": "RBreadcrumbProps",
+            "memberName": "separator",
+            "declarationKind": "interface",
+            "componentName": "DisplayBreadcrumb",
+            "componentType": "r-breadcrumb",
+            "componentLevel": "display",
+            "componentLayer": "static-display",
+            "componentDirectory": "display/non-data-components"
+          }
+        },
+        {
+          "name": "separatorIcon",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 分隔符图标名，优先级高于 separator 文本 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumb.props.d.ts",
+            "line": 13,
+            "className": "RBreadcrumbProps",
+            "memberName": "separatorIcon",
+            "declarationKind": "interface",
+            "componentName": "DisplayBreadcrumb",
+            "componentType": "r-breadcrumb",
+            "componentLevel": "display",
+            "componentLayer": "static-display",
+            "componentDirectory": "display/non-data-components"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.344Z"
+}

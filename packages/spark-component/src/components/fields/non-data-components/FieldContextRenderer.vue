@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/fields/non-data-components/FieldContextRenderer
+FieldContextRenderer 模块，属于 SPARK component field-level/field-support。
+组件目录: fields/non-data-components。
+导出 ClassModel symbol: Props（共 1 个 symbol）。
+-->
 <template>
   <!-- table 模式：el-table-column -->
   <template v-if="resolvedContext === 'table'">
@@ -95,6 +101,7 @@ import type { FormItemRule } from '../columnFormRules'
 import { useResolvedFieldContext } from '../context/useResolvedFieldContext'
 import { TABLE_COLUMN_RESIZABLE_KEY } from '../context/tableColumnContext'
 
+/** 字段上下文渲染器属性，统一描述字段在表格、表单、详情中的展示状态。 */
 type Props = SparkNodeProps & {
   /** 显示标签 */
   displayLabel?: string | undefined

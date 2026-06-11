@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/router/guards.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:router/guards",
+    "sourcePath": "declarations/packages/spark-app/src/router/guards.d.ts",
+    "sourceFile": "packages/spark-app/src/router/guards.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "router/guards",
+    "jsdoc": "Router Guards\n路由守卫（鉴权、权限检查、预加载）\n注意：路由守卫运行在 Vue setup 上下文之外，不能使用 inject()。\nAppContext 通过函数参数传入。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.974Z"
+}

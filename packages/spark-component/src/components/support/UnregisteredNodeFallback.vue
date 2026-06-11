@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/support/UnregisteredNodeFallback
+UnregisteredNodeFallback 模块，属于 SPARK component infrastructure/support。
+组件目录: support。
+导出 ClassModel symbol: Props（共 1 个 symbol）。
+-->
 <template>
   <div class="spark-component-renderer spark-component-unregistered">
     <div class="unregistered-header">
@@ -35,6 +41,7 @@
 import { computed, ref, useSlots } from 'vue'
 import type { SparkNode } from '../../core/types.js'
 
+/** 未注册节点兜底渲染属性。 */
 type Props = {
   /** 未注册的源节点 */
   node: SparkNode

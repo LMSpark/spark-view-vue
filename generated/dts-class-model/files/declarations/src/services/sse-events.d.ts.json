@@ -1,0 +1,939 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/sse-events.d.ts",
+  "module": {
+    "name": "app:services/sse-events",
+    "sourcePath": "declarations/src/services/sse-events.d.ts",
+    "sourceFile": "src/services/sse-events.ts",
+    "packageName": "app",
+    "modulePath": "services/sse-events",
+    "jsdoc": "APP 公共 SSE 事件总线。\n本文件只维护 `/api/events` 的单例连接、v4 envelope 解包和按事件名分发。\n页面配置、数据任务、通知、AI Host Run 等业务动作在各自订阅方处理。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "FileChangeEvent",
+      "DataBatchJobEvent",
+      "DataChangeEvent",
+      "ServerNotificationEvent",
+      "AiHostRunRequestEvent",
+      "AiHostRunResultStatus",
+      "AiHostRunResultEvent"
+    ]
+  },
+  "symbols": [
+    "FileChangeEvent",
+    "DataBatchJobEvent",
+    "DataChangeEvent",
+    "ServerNotificationEvent",
+    "AiHostRunRequestEvent",
+    "AiHostRunResultStatus",
+    "AiHostRunResultEvent"
+  ],
+  "models": {
+    "FileChangeEvent": {
+      "kind": "FileChangeEvent",
+      "className": "FileChangeEvent",
+      "jsdoc": "/** File Change Event 的事件载荷。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** 文件路径或文件对象。 */\n    file: string;\n    /** 事件时间戳。 */\n    timestamp: number;\n}",
+      "provenance": {
+        "file": "declarations/src/services/sse-events.d.ts",
+        "line": 9,
+        "className": "FileChangeEvent",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** page Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 11,
+            "className": "FileChangeEvent",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "file",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 文件路径或文件对象。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 13,
+            "className": "FileChangeEvent",
+            "memberName": "file",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "timestamp",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 事件时间戳。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 15,
+            "className": "FileChangeEvent",
+            "memberName": "timestamp",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataBatchJobEvent": {
+      "kind": "DataBatchJobEvent",
+      "className": "DataBatchJobEvent",
+      "jsdoc": "/** Data Batch Job Event 的事件载荷。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** project Id 标识。 */\n    projectId: string;\n    /** job Id 标识。 */\n    jobId: string;\n    /** 当前状态。 */\n    status: string;\n    /** completed 字段。 */\n    completed: number;\n    /** 总记录数。 */\n    total: number;\n    /** 事件时间戳。 */\n    timestamp: number;\n    /** 操作结果。 */\n    result?: unknown;\n    /** 错误对象或错误信息。 */\n    error?: string;\n}",
+      "provenance": {
+        "file": "declarations/src/services/sse-events.d.ts",
+        "line": 18,
+        "className": "DataBatchJobEvent",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "tenantId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** tenant Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 20,
+            "className": "DataBatchJobEvent",
+            "memberName": "tenantId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "projectId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** project Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 22,
+            "className": "DataBatchJobEvent",
+            "memberName": "projectId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "jobId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** job Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 24,
+            "className": "DataBatchJobEvent",
+            "memberName": "jobId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "status",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前状态。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 26,
+            "className": "DataBatchJobEvent",
+            "memberName": "status",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "completed",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** completed 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 28,
+            "className": "DataBatchJobEvent",
+            "memberName": "completed",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "total",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 总记录数。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 30,
+            "className": "DataBatchJobEvent",
+            "memberName": "total",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "timestamp",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 事件时间戳。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 32,
+            "className": "DataBatchJobEvent",
+            "memberName": "timestamp",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "result",
+          "schema": {
+            "title": "unknown"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 操作结果。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 34,
+            "className": "DataBatchJobEvent",
+            "memberName": "result",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "error",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 错误对象或错误信息。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 36,
+            "className": "DataBatchJobEvent",
+            "memberName": "error",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataChangeEvent": {
+      "kind": "DataChangeEvent",
+      "className": "DataChangeEvent",
+      "jsdoc": "/** Data Change Event 的事件载荷。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** project Id 标识。 */\n    projectId: string;\n    /** 数据表名。 */\n    tableName: string;\n    /** operation 字段。 */\n    operation: string;\n    /** 事件时间戳。 */\n    timestamp: number;\n    /** job Id 标识。 */\n    jobId?: string;\n}",
+      "provenance": {
+        "file": "declarations/src/services/sse-events.d.ts",
+        "line": 39,
+        "className": "DataChangeEvent",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "tenantId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** tenant Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 41,
+            "className": "DataChangeEvent",
+            "memberName": "tenantId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "projectId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** project Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 43,
+            "className": "DataChangeEvent",
+            "memberName": "projectId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "tableName",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 数据表名。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 45,
+            "className": "DataChangeEvent",
+            "memberName": "tableName",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "operation",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** operation 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 47,
+            "className": "DataChangeEvent",
+            "memberName": "operation",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "timestamp",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 事件时间戳。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 49,
+            "className": "DataChangeEvent",
+            "memberName": "timestamp",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "jobId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** job Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 51,
+            "className": "DataChangeEvent",
+            "memberName": "jobId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ServerNotificationEvent": {
+      "kind": "ServerNotificationEvent",
+      "className": "ServerNotificationEvent",
+      "jsdoc": "/** Server Notification Event 的事件载荷。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 显示标题。 */\n    title: string;\n    /** 用户可读消息。 */\n    message: string;\n    /** 事件时间戳。 */\n    timestamp: number;\n    /** notification Id 标识。 */\n    notificationId?: string;\n    /** level 字段。 */\n    level?: string;\n    /** category 字段。 */\n    category?: string;\n    /** 来源对象。 */\n    source?: string;\n    /** action Url 地址。 */\n    actionUrl?: string;\n}",
+      "provenance": {
+        "file": "declarations/src/services/sse-events.d.ts",
+        "line": 54,
+        "className": "ServerNotificationEvent",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 显示标题。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 56,
+            "className": "ServerNotificationEvent",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "message",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 用户可读消息。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 58,
+            "className": "ServerNotificationEvent",
+            "memberName": "message",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "timestamp",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 事件时间戳。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 60,
+            "className": "ServerNotificationEvent",
+            "memberName": "timestamp",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "notificationId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** notification Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 62,
+            "className": "ServerNotificationEvent",
+            "memberName": "notificationId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "level",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** level 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 64,
+            "className": "ServerNotificationEvent",
+            "memberName": "level",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "category",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** category 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 66,
+            "className": "ServerNotificationEvent",
+            "memberName": "category",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "source",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 来源对象。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 68,
+            "className": "ServerNotificationEvent",
+            "memberName": "source",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "actionUrl",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** action Url 地址。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 70,
+            "className": "ServerNotificationEvent",
+            "memberName": "actionUrl",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "AiHostRunRequestEvent": {
+      "kind": "AiHostRunRequestEvent",
+      "className": "AiHostRunRequestEvent",
+      "jsdoc": "/** Ai Host Run Request Event 的事件载荷。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** request Id 标识。 */\n    requestId: string;\n    /** alias 字段。 */\n    alias: string;\n    /** args 字段。 */\n    args: Record<string, unknown>;\n    /** 事件时间戳。 */\n    timestamp: number;\n    /** timeout Ms 字段。 */\n    timeoutMs?: number;\n    /** reason 字段。 */\n    reason?: string;\n}",
+      "provenance": {
+        "file": "declarations/src/services/sse-events.d.ts",
+        "line": 73,
+        "className": "AiHostRunRequestEvent",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "requestId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** request Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 75,
+            "className": "AiHostRunRequestEvent",
+            "memberName": "requestId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "alias",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** alias 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 77,
+            "className": "AiHostRunRequestEvent",
+            "memberName": "alias",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "args",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** args 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 79,
+            "className": "AiHostRunRequestEvent",
+            "memberName": "args",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "timestamp",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 事件时间戳。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 81,
+            "className": "AiHostRunRequestEvent",
+            "memberName": "timestamp",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "timeoutMs",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** timeout Ms 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 83,
+            "className": "AiHostRunRequestEvent",
+            "memberName": "timeoutMs",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "reason",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** reason 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 85,
+            "className": "AiHostRunRequestEvent",
+            "memberName": "reason",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "AiHostRunResultStatus": {
+      "kind": "AiHostRunResultStatus",
+      "className": "AiHostRunResultStatus",
+      "jsdoc": "/** Ai Host Run Result Status 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'completed' | 'failed' | 'timeout' | 'busy' | 'unknown_alias' | 'non_runnable' | 'invalid_args' | 'cancelled'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'completed'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'failed'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'timeout'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'busy'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'unknown_alias'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'non_runnable'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'invalid_args'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'cancelled'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/sse-events.d.ts",
+        "line": 88,
+        "className": "AiHostRunResultStatus",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiHostRunResultEvent": {
+      "kind": "AiHostRunResultEvent",
+      "className": "AiHostRunResultEvent",
+      "jsdoc": "/** Ai Host Run Result Event 的事件载荷。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** request Id 标识。 */\n    requestId: string;\n    /** alias 字段。 */\n    alias: string;\n    /** 当前状态。 */\n    status: AiHostRunResultStatus;\n    /** duration Ms 字段。 */\n    durationMs?: number;\n    /** client Timestamp 字段。 */\n    clientTimestamp?: number;\n    /** server Timestamp 字段。 */\n    serverTimestamp?: number;\n    /** session Id 标识。 */\n    sessionId?: string;\n    /** business Registration Id 标识。 */\n    businessRegistrationId?: string;\n    /** business Instance Id 标识。 */\n    businessInstanceId?: string;\n    /** 展示文本。 */\n    text?: string;\n    /** reasoning 字段。 */\n    reasoning?: string;\n    /** tool Calls 字段。 */\n    toolCalls?: unknown;\n    /** 错误对象或错误信息。 */\n    error?: unknown;\n}",
+      "provenance": {
+        "file": "declarations/src/services/sse-events.d.ts",
+        "line": 90,
+        "className": "AiHostRunResultEvent",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "requestId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** request Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 92,
+            "className": "AiHostRunResultEvent",
+            "memberName": "requestId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "alias",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** alias 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 94,
+            "className": "AiHostRunResultEvent",
+            "memberName": "alias",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "status",
+          "schema": {
+            "title": "AiHostRunResultStatus"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前状态。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 96,
+            "className": "AiHostRunResultEvent",
+            "memberName": "status",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "durationMs",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** duration Ms 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 98,
+            "className": "AiHostRunResultEvent",
+            "memberName": "durationMs",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "clientTimestamp",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** client Timestamp 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 100,
+            "className": "AiHostRunResultEvent",
+            "memberName": "clientTimestamp",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "serverTimestamp",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** server Timestamp 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 102,
+            "className": "AiHostRunResultEvent",
+            "memberName": "serverTimestamp",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "sessionId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** session Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 104,
+            "className": "AiHostRunResultEvent",
+            "memberName": "sessionId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "businessRegistrationId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** business Registration Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 106,
+            "className": "AiHostRunResultEvent",
+            "memberName": "businessRegistrationId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "businessInstanceId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** business Instance Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 108,
+            "className": "AiHostRunResultEvent",
+            "memberName": "businessInstanceId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "text",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 展示文本。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 110,
+            "className": "AiHostRunResultEvent",
+            "memberName": "text",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "reasoning",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** reasoning 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 112,
+            "className": "AiHostRunResultEvent",
+            "memberName": "reasoning",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "toolCalls",
+          "schema": {
+            "title": "unknown"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** tool Calls 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 114,
+            "className": "AiHostRunResultEvent",
+            "memberName": "toolCalls",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "error",
+          "schema": {
+            "title": "unknown"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 错误对象或错误信息。 */",
+          "provenance": {
+            "file": "declarations/src/services/sse-events.d.ts",
+            "line": 116,
+            "className": "AiHostRunResultEvent",
+            "memberName": "error",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.109Z"
+}

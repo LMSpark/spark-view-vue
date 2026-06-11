@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/dev-system/components/NodeLayoutConfig
+app 的 views/app/dev-system/components/NodeLayoutConfig 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div v-if="flags.isDirectoryNode.value">
     <el-divider content-position="left">布局配置</el-divider>

@@ -1,5 +1,12 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/data-components/FieldUpload.props
+ * FieldUpload 模块，属于 SPARK component field-level/data-field。
+ * 组件目录: fields/data-components。
+ * 导出 ClassModel symbol: RUploadProps（共 1 个 symbol）。
+ */
 import type { SparkNodeProps, SparkUploadFieldProps } from '../../shared-types'
 
+/** RUpload Props 的属性契约。 */
 export type RUploadProps = SparkNodeProps & SparkUploadFieldProps & {
   /** 选择文件后是否立即开始上传。 */
     autoUpload?: boolean

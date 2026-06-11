@@ -10,6 +10,7 @@ import type {
   AiModuleMetadataJson,
 } from '../metadata'
 
+/** Class Model Failure Mode Recovery Command 的命令参数。 */
 export type ClassModelFailureModeRecoveryCommand = Readonly<{
   callResult: Readonly<{
     code: string
@@ -18,6 +19,7 @@ export type ClassModelFailureModeRecoveryCommand = Readonly<{
   moduleInstanceId?: string
 }>
 
+/** Class Model Failure Mode Recovery Context 的运行上下文。 */
 export type ClassModelFailureModeRecoveryContext = Readonly<{
   kind: string
   actionName: string

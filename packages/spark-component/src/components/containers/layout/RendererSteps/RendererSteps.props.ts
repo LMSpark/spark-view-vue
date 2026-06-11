@@ -1,7 +1,14 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/layout/RendererSteps/RendererSteps.props
+ * RendererSteps 模块，属于 SPARK component container/layout-container。
+ * 组件目录: containers/layout。
+ * 导出 ClassModel symbol: RStepsProps（共 1 个 symbol）。
+ */
 import type { SparkNodeProps } from '../../../shared-types'
 import type { SparkNode } from '../../../internal'
 import type { RToolbarProps } from '../RendererToolbar.types'
 
+/** RSteps Props 的属性契约。 */
 export type RStepsProps = SparkNodeProps & {
   /** 结构化工具栏 */
     toolbar?: RToolbarProps

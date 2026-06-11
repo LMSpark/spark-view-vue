@@ -1,0 +1,576 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/logger/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:logger/index",
+    "sourcePath": "declarations/packages/spark-app/src/logger/index.d.ts",
+    "sourceFile": "packages/spark-app/src/logger/index.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "logger/index",
+    "jsdoc": "Application Logger\n应用层日志系统（独立实现）\n职责：\n1. 应用级日志配置（级别、格式、颜色）\n2. 日志上报（可配置发送到后端，支持批量上传）\n3. 日志聚合与格式化\n4. 作用域日志（page、api、router 等）\n5. 全局传输器：所有 AppLogger 实例共享，main.ts 配置后全局生效\n注意：\n- 这是独立的 Logger 实现，不依赖 spark-component\n- spark-component 有自己的轻量级 Logger\n\n日志级别（与 spark-utils 共享）",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AppLoggerApi",
+      "AppLoggerConfig",
+      "LogTransport",
+      "BatchTransportOptions",
+      "AppLogger"
+    ]
+  },
+  "symbols": [
+    "AppLoggerApi",
+    "AppLoggerConfig",
+    "LogTransport",
+    "BatchTransportOptions",
+    "AppLogger"
+  ],
+  "models": {
+    "AppLoggerApi": {
+      "kind": "AppLoggerApi",
+      "className": "AppLoggerApi",
+      "jsdoc": "/**\n * 应用层 Logger API 接口\n *\n * 与 spark-utils 的 LoggerApi 是不同的接口：\n * - spark-utils LoggerApi: 轻量级，(...args: unknown[]) => void\n * - AppLoggerApi: 结构化参数，(message: string, meta?) => void\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    debug(message: string, meta?: Record<string, unknown>): void;\n    info(message: string, meta?: Record<string, unknown>): void;\n    warn(message: string, meta?: Record<string, unknown>): void;\n    error(message: string, error?: Error | Record<string, unknown>): void;\n    success(message: string, meta?: Record<string, unknown>): void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+        "line": 28,
+        "className": "AppLoggerApi",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AppLoggerConfig": {
+      "kind": "AppLoggerConfig",
+      "className": "AppLoggerConfig",
+      "jsdoc": "/**\n * 日志配置\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 最小日志级别 */\n    level?: LogLevel;\n    /** 是否启用颜色 */\n    enableColors?: boolean;\n    /** 是否显示时间戳 */\n    showTimestamp?: boolean;\n    /** 日志前缀 */\n    prefix?: string;\n    /** error 级别是否避免使用 console.error 输出，防止浏览器自动展开调用栈 */\n    suppressErrorConsoleTrace?: boolean;\n    /** 远程日志端点 */\n    remoteEndpoint?: string;\n    /** 远程上报的最小日志级别（默认 'debug'，即上报所有级别） */\n    minRemoteLevel?: LogLevel;\n    /** 批量上传：队列大小阈值（达到后立即 flush，默认 50） */\n    batchSize?: number;\n    /** 批量上传：定时 flush 间隔（毫秒，默认 5000） */\n    flushInterval?: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+        "line": 38,
+        "className": "AppLoggerConfig",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "level",
+          "schema": {
+            "title": "LogLevel"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 最小日志级别 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 40,
+            "className": "AppLoggerConfig",
+            "memberName": "level",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "enableColors",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否启用颜色 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 42,
+            "className": "AppLoggerConfig",
+            "memberName": "enableColors",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "showTimestamp",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否显示时间戳 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 44,
+            "className": "AppLoggerConfig",
+            "memberName": "showTimestamp",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "prefix",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 日志前缀 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 46,
+            "className": "AppLoggerConfig",
+            "memberName": "prefix",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "suppressErrorConsoleTrace",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** error 级别是否避免使用 console.error 输出，防止浏览器自动展开调用栈 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 48,
+            "className": "AppLoggerConfig",
+            "memberName": "suppressErrorConsoleTrace",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "remoteEndpoint",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 远程日志端点 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 50,
+            "className": "AppLoggerConfig",
+            "memberName": "remoteEndpoint",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "minRemoteLevel",
+          "schema": {
+            "title": "LogLevel"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 远程上报的最小日志级别（默认 'debug'，即上报所有级别） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 52,
+            "className": "AppLoggerConfig",
+            "memberName": "minRemoteLevel",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "batchSize",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 批量上传：队列大小阈值（达到后立即 flush，默认 50） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 54,
+            "className": "AppLoggerConfig",
+            "memberName": "batchSize",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "flushInterval",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 批量上传：定时 flush 间隔（毫秒，默认 5000） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 56,
+            "className": "AppLoggerConfig",
+            "memberName": "flushInterval",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "LogTransport": {
+      "kind": "LogTransport",
+      "className": "LogTransport",
+      "jsdoc": "/**\n * 日志传输器接口\n *\n * 继承 spark-utils LogTransport（SSoT）并补充批量传输需要的 flush/destroy。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "BaseLogTransport & {\n    /** 立即刷新队列中的日志（批量传输器可选实现） */\n    flush?(): void;\n    /** 销毁传输器，释放定时器等资源 */\n    destroy?(): void;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "BaseLogTransport",
+          "targetName": "BaseLogTransport"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 立即刷新队列中的日志（批量传输器可选实现） */\n    flush?(): void;\n    /** 销毁传输器，释放定时器等资源 */\n    destroy?(): void;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+        "line": 63,
+        "className": "LogTransport",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "BatchTransportOptions": {
+      "kind": "BatchTransportOptions",
+      "className": "BatchTransportOptions",
+      "jsdoc": "/** Batch Transport Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 远程端点 URL */\n    endpoint: string;\n    /** 上报的最小日志级别（默认 'debug'） */\n    minLevel?: LogLevel;\n    /** 队列大小阈值（默认 50） */\n    batchSize?: number;\n    /** 定时 flush 间隔 ms（默认 5000） */\n    flushInterval?: number;\n    /** 获取当前页面 ID（每条日志自动附带） */\n    getPageId?: () => string | undefined;\n    /** 会话 ID（整个浏览器生命周期不变，用于日志关联） */\n    sessionId?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+        "line": 82,
+        "className": "BatchTransportOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "endpoint",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 远程端点 URL */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 84,
+            "className": "BatchTransportOptions",
+            "memberName": "endpoint",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "minLevel",
+          "schema": {
+            "title": "LogLevel"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 上报的最小日志级别（默认 'debug'） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 86,
+            "className": "BatchTransportOptions",
+            "memberName": "minLevel",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "batchSize",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 队列大小阈值（默认 50） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 88,
+            "className": "BatchTransportOptions",
+            "memberName": "batchSize",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "flushInterval",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 定时 flush 间隔 ms（默认 5000） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 90,
+            "className": "BatchTransportOptions",
+            "memberName": "flushInterval",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "getPageId",
+          "schema": {
+            "title": "() => string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 获取当前页面 ID（每条日志自动附带） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 92,
+            "className": "BatchTransportOptions",
+            "memberName": "getPageId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "sessionId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 会话 ID（整个浏览器生命周期不变，用于日志关联） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 94,
+            "className": "BatchTransportOptions",
+            "memberName": "sessionId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "AppLogger": {
+      "kind": "AppLogger",
+      "className": "AppLogger",
+      "jsdoc": "/**\n * 应用层 Logger 实现\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+        "line": 127,
+        "className": "AppLogger",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "config": {
+              "title": "AppLoggerConfig"
+            }
+          },
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 App Logger 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+          "line": 131,
+          "className": "AppLogger",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "addTransport",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "transport": {
+                "title": "LogTransport"
+              }
+            },
+            "required": [
+              "transport"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 添加实例级传输器\n     */",
+          "paramsTypeText": "transport: any",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 135,
+            "className": "AppLogger",
+            "memberName": "addTransport",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "debug",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "title": "string"
+              },
+              "meta": {
+                "title": "Record<string, unknown>"
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * Debug 日志\n     */",
+          "paramsTypeText": "message: string, meta?: Record<string, unknown> | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 155,
+            "className": "AppLogger",
+            "memberName": "debug",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "info",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "title": "string"
+              },
+              "meta": {
+                "title": "Record<string, unknown>"
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * Info 日志\n     */",
+          "paramsTypeText": "message: string, meta?: Record<string, unknown> | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 159,
+            "className": "AppLogger",
+            "memberName": "info",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "warn",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "title": "string"
+              },
+              "meta": {
+                "title": "Record<string, unknown>"
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * Warning 日志\n     */",
+          "paramsTypeText": "message: string, meta?: Record<string, unknown> | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 163,
+            "className": "AppLogger",
+            "memberName": "warn",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "error",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "title": "string"
+              },
+              "error": {
+                "title": "Error | Record<string, unknown>"
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * Error 日志\n     */",
+          "paramsTypeText": "message: string, error?: Record<string, unknown> | Error | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 167,
+            "className": "AppLogger",
+            "memberName": "error",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "success",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "title": "string"
+              },
+              "meta": {
+                "title": "Record<string, unknown>"
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * Success 日志（扩展）\n     */",
+          "paramsTypeText": "message: string, meta?: Record<string, unknown> | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/logger/index.d.ts",
+            "line": 171,
+            "className": "AppLogger",
+            "memberName": "success",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.928Z"
+}

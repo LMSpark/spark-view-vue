@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/support/scopeFactories.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/support/scopeFactories",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/support/scopeFactories.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/support/scopeFactories.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/support/scopeFactories",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/support/scopeFactories\n@spark-appworks/spark-component 的 components/containers/support/scopeFactories 模块。\n导出 ClassModel symbol: BaseScopeContext（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "BaseScopeContext"
+    ]
+  },
+  "symbols": [
+    "BaseScopeContext"
+  ],
+  "models": {
+    "BaseScopeContext": {
+      "kind": "BaseScopeContext",
+      "className": "BaseScopeContext",
+      "jsdoc": "/** Base Scope Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** data Source 字段。 */\n    dataSource: TSource | null | undefined;\n    /** model Permission 字段。 */\n    modelPermission: ModelPermission | undefined;\n    /** module Context 字段。 */\n    moduleContext?: ModuleContext | null | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/support/scopeFactories.d.ts",
+        "line": 9,
+        "className": "BaseScopeContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "dataSource",
+          "schema": {
+            "title": "TSource | null | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** data Source 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/scopeFactories.d.ts",
+            "line": 11,
+            "className": "BaseScopeContext",
+            "memberName": "dataSource",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "modelPermission",
+          "schema": {
+            "title": "ModelPermission | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** model Permission 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/scopeFactories.d.ts",
+            "line": 13,
+            "className": "BaseScopeContext",
+            "memberName": "modelPermission",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "moduleContext",
+          "schema": {
+            "title": "ModuleContext | null | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** module Context 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/scopeFactories.d.ts",
+            "line": 15,
+            "className": "BaseScopeContext",
+            "memberName": "moduleContext",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.283Z"
+}

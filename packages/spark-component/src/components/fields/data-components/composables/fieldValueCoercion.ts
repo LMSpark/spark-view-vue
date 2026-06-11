@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/data-components/composables/fieldValueCoercion
+ * @spark-appworks/spark-component:components/fields/data-components/composables/fieldValueCoercion 模块，属于 SPARK component field-level/data-field。
+ * 组件目录: fields/data-components。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 // 这里不再为 JS 基础类型保留导出别名，字段值归一化结果直接使用原生联合类型。
 
 export function coerceStringValue(value: unknown): string {

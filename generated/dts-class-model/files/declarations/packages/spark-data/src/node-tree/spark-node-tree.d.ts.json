@@ -1,0 +1,2553 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:node-tree/spark-node-tree",
+    "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+    "sourceFile": "packages/spark-data/src/node-tree/spark-node-tree.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "node-tree/spark-node-tree",
+    "jsdoc": "SparkNodeTree - 组件节点树的不可变编辑模型。\n围绕单个 SparkNode 实例及其递归子树，提供查询、写入、undo/redo 等完整能力。\n是页面设计器中规则编辑能力的真实本体。\n┌──────────────────────────────────────────────────────┐\n│  类型分组（按树编辑生命周期）                          │\n│                                                      │\n│  1. 入口常量：  SPARK_PAGE_NODE_TYPE / SPARK_PAGE_ROOT_ID│\n│  2. JSON 输入： SparkNodeTreeJsonInput                │\n│                SparkNodeTreeRuleJsonInput             │\n│  3. 构造参数：  SparkNodeTreeRootParams               │\n│                SparkNodeTreeFromJsonOptions           │\n│  4. 查询参数：  SparkNodeTreeLookupParams             │\n│                SparkNodeTreeChildrenParams            │\n│                SparkNodeFindByTypeParams              │\n│  5. 写入参数：  SparkNodeTreeAddParams                │\n│                SparkNodeTreeAddNodesParams            │\n│                SparkNodeTreeMoveParams                │\n│                SparkNodeTreeSetPropsParams            │\n│                SparkNodeTreeSetPropsBatchParams       │\n│                SparkNodeTreeReplaceParams             │\n│                SparkNodeTreeReplaceNodesParams        │\n│                SparkNodeTreeRemoveParams              │\n│                SparkNodeTreeRemoveNodesParams         │\n│  6. 位置/结果：  SparkNodeLocation                    │\n│                SparkNodeAddResult / AddNodesResult    │\n│                SparkNodeMoveResult                    │\n│                SparkNodeSetPropsResult                │\n│                SparkNodeReplaceResult                 │\n│                SparkNodeRemoveResult                  │\n│                SparkNodeFindByTypeMatch/Result        │\n│  7. 方法名联合：SparkNodeTreeMethodKey                │\n└──────────────────────────────────────────────────────┘",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SparkNodeTreeJsonInput",
+      "SparkNodeTreeRuleJsonInput",
+      "SparkNodeTreeRootParams",
+      "SparkNodeTreeFromJsonOptions",
+      "SparkNodeTreeHistoryStats",
+      "SparkNodeTreeLookupParams",
+      "SparkNodeTreeChildrenParams",
+      "SparkNodeFindByTypeParams",
+      "SparkNodeTreeAddParams",
+      "SparkNodeTreeAddNodesParams",
+      "SparkNodeTreeMoveParams",
+      "SparkNodeTreeSetPropsParams",
+      "SparkNodeTreeSetPropsBatchItem",
+      "SparkNodeTreeSetPropsBatchParams",
+      "SparkNodeTreeReplaceParams",
+      "SparkNodeTreeReplaceNodesItem",
+      "SparkNodeTreeReplaceNodesParams",
+      "SparkNodeTreeRemoveParams",
+      "SparkNodeTreeRemoveNodesParams",
+      "SparkNodeLocation",
+      "SparkNodeAddResult",
+      "SparkNodeAddNodesResult",
+      "SparkNodeMoveResult",
+      "SparkNodeSetPropsResult",
+      "SparkNodeSetPropsBatchResult",
+      "SparkNodeReplaceResult",
+      "SparkNodeReplaceNodesResult",
+      "SparkNodeRemoveResult",
+      "SparkNodeRemoveNodesResult",
+      "SparkNodeFindByTypeMatch",
+      "SparkNodeFindByTypeResult",
+      "SparkNodeTreeMethodKey",
+      "SparkNodeTree"
+    ]
+  },
+  "symbols": [
+    "SparkNodeTreeJsonInput",
+    "SparkNodeTreeRuleJsonInput",
+    "SparkNodeTreeRootParams",
+    "SparkNodeTreeFromJsonOptions",
+    "SparkNodeTreeHistoryStats",
+    "SparkNodeTreeLookupParams",
+    "SparkNodeTreeChildrenParams",
+    "SparkNodeFindByTypeParams",
+    "SparkNodeTreeAddParams",
+    "SparkNodeTreeAddNodesParams",
+    "SparkNodeTreeMoveParams",
+    "SparkNodeTreeSetPropsParams",
+    "SparkNodeTreeSetPropsBatchItem",
+    "SparkNodeTreeSetPropsBatchParams",
+    "SparkNodeTreeReplaceParams",
+    "SparkNodeTreeReplaceNodesItem",
+    "SparkNodeTreeReplaceNodesParams",
+    "SparkNodeTreeRemoveParams",
+    "SparkNodeTreeRemoveNodesParams",
+    "SparkNodeLocation",
+    "SparkNodeAddResult",
+    "SparkNodeAddNodesResult",
+    "SparkNodeMoveResult",
+    "SparkNodeSetPropsResult",
+    "SparkNodeSetPropsBatchResult",
+    "SparkNodeReplaceResult",
+    "SparkNodeReplaceNodesResult",
+    "SparkNodeRemoveResult",
+    "SparkNodeRemoveNodesResult",
+    "SparkNodeFindByTypeMatch",
+    "SparkNodeFindByTypeResult",
+    "SparkNodeTreeMethodKey",
+    "SparkNodeTree"
+  ],
+  "models": {
+    "SparkNodeTreeJsonInput": {
+      "kind": "SparkNodeTreeJsonInput",
+      "className": "SparkNodeTreeJsonInput",
+      "jsdoc": "/** fromJson 的输入：SparkNode 对象、任意对象或 JSON 字符串 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNode | Record<string, unknown> | string",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "SparkNode",
+          "targetName": "SparkNode"
+        },
+        {
+          "kind": "union",
+          "typeText": "Record<string, unknown>",
+          "targetName": "Record"
+        },
+        {
+          "kind": "union",
+          "typeText": "string"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 43,
+        "className": "SparkNodeTreeJsonInput",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkNodeTreeRuleJsonInput": {
+      "kind": "SparkNodeTreeRuleJsonInput",
+      "className": "SparkNodeTreeRuleJsonInput",
+      "jsdoc": "/**\n * fromRuleJson 的输入：rule.json 的合法形态。\n * 可以是单个节点、节点数组、任意对象或数组、JSON 字符串。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNode | readonly SparkNode[] | Record<string, unknown> | ReadonlyArray<Record<string, unknown>> | string",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "SparkNode",
+          "targetName": "SparkNode"
+        },
+        {
+          "kind": "union",
+          "typeText": "readonly SparkNode[]"
+        },
+        {
+          "kind": "union",
+          "typeText": "Record<string, unknown>",
+          "targetName": "Record"
+        },
+        {
+          "kind": "union",
+          "typeText": "ReadonlyArray<Record<string, unknown>>",
+          "targetName": "ReadonlyArray"
+        },
+        {
+          "kind": "union",
+          "typeText": "string"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 48,
+        "className": "SparkNodeTreeRuleJsonInput",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkNodeTreeRootParams": {
+      "kind": "SparkNodeTreeRootParams",
+      "className": "SparkNodeTreeRootParams",
+      "jsdoc": "/** 创建 SparkNodeTree 实例的输入参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前被编辑的组件实例节点，可以是任意 SparkNode */\n    root: SparkNode;\n    /** 历史记录最大条目数，默认 50；设为 0 时禁用 undo/redo */\n    historyLimit?: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 50,
+        "className": "SparkNodeTreeRootParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "root",
+          "schema": {
+            "title": "SparkNode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前被编辑的组件实例节点，可以是任意 SparkNode */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 52,
+            "className": "SparkNodeTreeRootParams",
+            "memberName": "root",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "historyLimit",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 历史记录最大条目数，默认 50；设为 0 时禁用 undo/redo */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 54,
+            "className": "SparkNodeTreeRootParams",
+            "memberName": "historyLimit",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeFromJsonOptions": {
+      "kind": "SparkNodeTreeFromJsonOptions",
+      "className": "SparkNodeTreeFromJsonOptions",
+      "jsdoc": "/** SparkNodeTree.fromJson 的可选参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 历史记录最大条目数 */\n    historyLimit?: number;\n    /** 是否在反序列化时为缺失 id 的节点自动补齐组件 id，默认 true */\n    fillMissingComponentId?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 57,
+        "className": "SparkNodeTreeFromJsonOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "historyLimit",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 历史记录最大条目数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 59,
+            "className": "SparkNodeTreeFromJsonOptions",
+            "memberName": "historyLimit",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "fillMissingComponentId",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否在反序列化时为缺失 id 的节点自动补齐组件 id，默认 true */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 61,
+            "className": "SparkNodeTreeFromJsonOptions",
+            "memberName": "fillMissingComponentId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeHistoryStats": {
+      "kind": "SparkNodeTreeHistoryStats",
+      "className": "SparkNodeTreeHistoryStats",
+      "jsdoc": "/** SparkNodeTree 历史栈状态摘要。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 历史快照条目数。 */\n    length: number;\n    /** 当前历史游标位置。 */\n    cursor: number;\n    /** 当前是否可以撤销。 */\n    canUndo: boolean;\n    /** 当前是否可以重做。 */\n    canRedo: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 64,
+        "className": "SparkNodeTreeHistoryStats",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "length",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 历史快照条目数。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 66,
+            "className": "SparkNodeTreeHistoryStats",
+            "memberName": "length",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "cursor",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前历史游标位置。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 68,
+            "className": "SparkNodeTreeHistoryStats",
+            "memberName": "cursor",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "canUndo",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前是否可以撤销。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 70,
+            "className": "SparkNodeTreeHistoryStats",
+            "memberName": "canUndo",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "canRedo",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前是否可以重做。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 72,
+            "className": "SparkNodeTreeHistoryStats",
+            "memberName": "canRedo",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeLookupParams": {
+      "kind": "SparkNodeTreeLookupParams",
+      "className": "SparkNodeTreeLookupParams",
+      "jsdoc": "/** 按 componentId 查找节点的参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 组件节点 ID */\n    componentId: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 75,
+        "className": "SparkNodeTreeLookupParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "componentId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 组件节点 ID */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 77,
+            "className": "SparkNodeTreeLookupParams",
+            "memberName": "componentId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeChildrenParams": {
+      "kind": "SparkNodeTreeChildrenParams",
+      "className": "SparkNodeTreeChildrenParams",
+      "jsdoc": "/** 定位父节点 children 的参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 父节点 ID，省略时表示当前根节点 */\n    parentComponentId?: string | null;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 80,
+        "className": "SparkNodeTreeChildrenParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "parentComponentId",
+          "schema": {
+            "title": "string | null"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 父节点 ID，省略时表示当前根节点 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 82,
+            "className": "SparkNodeTreeChildrenParams",
+            "memberName": "parentComponentId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeFindByTypeParams": {
+      "kind": "SparkNodeFindByTypeParams",
+      "className": "SparkNodeFindByTypeParams",
+      "jsdoc": "/** findByType 的查询参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 要搜索的组件类型名，精确匹配 */\n    type: string;\n    /** 可选，从哪个节点开始向下递归搜索，省略时从根节点开始 */\n    startComponentId?: string;\n    /** 可选，最多返回多少条匹配结果，默认不限制 */\n    limit?: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 85,
+        "className": "SparkNodeFindByTypeParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "type",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 要搜索的组件类型名，精确匹配 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 87,
+            "className": "SparkNodeFindByTypeParams",
+            "memberName": "type",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "startComponentId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 可选，从哪个节点开始向下递归搜索，省略时从根节点开始 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 89,
+            "className": "SparkNodeFindByTypeParams",
+            "memberName": "startComponentId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "limit",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 可选，最多返回多少条匹配结果，默认不限制 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 91,
+            "className": "SparkNodeFindByTypeParams",
+            "memberName": "limit",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeAddParams": {
+      "kind": "SparkNodeTreeAddParams",
+      "className": "SparkNodeTreeAddParams",
+      "jsdoc": "/** 添加单个节点的参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeTreeChildrenParams & {\n    /** 待添加的节点 */\n    node: SparkNode;\n    /** 插入位置索引，省略时追加到末尾 */\n    index?: number;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeTreeChildrenParams",
+          "targetName": "SparkNodeTreeChildrenParams"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 待添加的节点 */\n    node: SparkNode;\n    /** 插入位置索引，省略时追加到末尾 */\n    index?: number;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 94,
+        "className": "SparkNodeTreeAddParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "node",
+          "schema": {
+            "title": "SparkNode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 待添加的节点 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 96,
+            "className": "SparkNodeTreeAddParams",
+            "memberName": "node",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "index",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 插入位置索引，省略时追加到末尾 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 98,
+            "className": "SparkNodeTreeAddParams",
+            "memberName": "index",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeAddNodesParams": {
+      "kind": "SparkNodeTreeAddNodesParams",
+      "className": "SparkNodeTreeAddNodesParams",
+      "jsdoc": "/** 批量添加节点的参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeTreeChildrenParams & {\n    /** 待添加的节点列表 */\n    nodes: SparkNode[];\n    /** 起始插入位置索引 */\n    index?: number;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeTreeChildrenParams",
+          "targetName": "SparkNodeTreeChildrenParams"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 待添加的节点列表 */\n    nodes: SparkNode[];\n    /** 起始插入位置索引 */\n    index?: number;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 101,
+        "className": "SparkNodeTreeAddNodesParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "nodes",
+          "schema": {
+            "type": "array",
+            "title": "SparkNode[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 待添加的节点列表 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 103,
+            "className": "SparkNodeTreeAddNodesParams",
+            "memberName": "nodes",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "index",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 起始插入位置索引 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 105,
+            "className": "SparkNodeTreeAddNodesParams",
+            "memberName": "index",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeMoveParams": {
+      "kind": "SparkNodeTreeMoveParams",
+      "className": "SparkNodeTreeMoveParams",
+      "jsdoc": "/** 移动已有节点的参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeTreeChildrenParams & {\n    /** 待移动节点的 ID */\n    componentId: string;\n    /** 目标插入位置索引 */\n    index?: number;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeTreeChildrenParams",
+          "targetName": "SparkNodeTreeChildrenParams"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 待移动节点的 ID */\n    componentId: string;\n    /** 目标插入位置索引 */\n    index?: number;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 108,
+        "className": "SparkNodeTreeMoveParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "componentId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 待移动节点的 ID */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 110,
+            "className": "SparkNodeTreeMoveParams",
+            "memberName": "componentId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "index",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 目标插入位置索引 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 112,
+            "className": "SparkNodeTreeMoveParams",
+            "memberName": "index",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeSetPropsParams": {
+      "kind": "SparkNodeTreeSetPropsParams",
+      "className": "SparkNodeTreeSetPropsParams",
+      "jsdoc": "/** 设置单个节点 props 的参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeTreeLookupParams & {\n    /** 待设置的属性键值对 */\n    props: Record<string, unknown>;\n    /** 是否浅合并，false 时表示直接替换 */\n    merge?: boolean;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeTreeLookupParams",
+          "targetName": "SparkNodeTreeLookupParams"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 待设置的属性键值对 */\n    props: Record<string, unknown>;\n    /** 是否浅合并，false 时表示直接替换 */\n    merge?: boolean;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 115,
+        "className": "SparkNodeTreeSetPropsParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "props",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 待设置的属性键值对 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 117,
+            "className": "SparkNodeTreeSetPropsParams",
+            "memberName": "props",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "merge",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否浅合并，false 时表示直接替换 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 119,
+            "className": "SparkNodeTreeSetPropsParams",
+            "memberName": "merge",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeSetPropsBatchItem": {
+      "kind": "SparkNodeTreeSetPropsBatchItem",
+      "className": "SparkNodeTreeSetPropsBatchItem",
+      "jsdoc": "/** 批量设置节点 props 的单项参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeTreeLookupParams & {\n    /** 待设置的属性键值对 */\n    props: Record<string, unknown>;\n    /** 是否浅合并 */\n    merge?: boolean;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeTreeLookupParams",
+          "targetName": "SparkNodeTreeLookupParams"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 待设置的属性键值对 */\n    props: Record<string, unknown>;\n    /** 是否浅合并 */\n    merge?: boolean;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 122,
+        "className": "SparkNodeTreeSetPropsBatchItem",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "props",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 待设置的属性键值对 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 124,
+            "className": "SparkNodeTreeSetPropsBatchItem",
+            "memberName": "props",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "merge",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否浅合并 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 126,
+            "className": "SparkNodeTreeSetPropsBatchItem",
+            "memberName": "merge",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeSetPropsBatchParams": {
+      "kind": "SparkNodeTreeSetPropsBatchParams",
+      "className": "SparkNodeTreeSetPropsBatchParams",
+      "jsdoc": "/** 批量设置节点 props 的参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 批量设置项列表 */\n    items: SparkNodeTreeSetPropsBatchItem[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 129,
+        "className": "SparkNodeTreeSetPropsBatchParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "items",
+          "schema": {
+            "type": "array",
+            "title": "SparkNodeTreeSetPropsBatchItem[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 批量设置项列表 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 131,
+            "className": "SparkNodeTreeSetPropsBatchParams",
+            "memberName": "items",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeReplaceParams": {
+      "kind": "SparkNodeTreeReplaceParams",
+      "className": "SparkNodeTreeReplaceParams",
+      "jsdoc": "/** 替换单个节点的参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeTreeLookupParams & {\n    /** 用于替换的新节点 */\n    node: SparkNode;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeTreeLookupParams",
+          "targetName": "SparkNodeTreeLookupParams"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 用于替换的新节点 */\n    node: SparkNode;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 134,
+        "className": "SparkNodeTreeReplaceParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "node",
+          "schema": {
+            "title": "SparkNode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 用于替换的新节点 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 136,
+            "className": "SparkNodeTreeReplaceParams",
+            "memberName": "node",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeReplaceNodesItem": {
+      "kind": "SparkNodeTreeReplaceNodesItem",
+      "className": "SparkNodeTreeReplaceNodesItem",
+      "jsdoc": "/** 批量替换节点的单项参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeTreeLookupParams & {\n    /** 用于替换的新节点 */\n    node: SparkNode;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeTreeLookupParams",
+          "targetName": "SparkNodeTreeLookupParams"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 用于替换的新节点 */\n    node: SparkNode;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 139,
+        "className": "SparkNodeTreeReplaceNodesItem",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "node",
+          "schema": {
+            "title": "SparkNode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 用于替换的新节点 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 141,
+            "className": "SparkNodeTreeReplaceNodesItem",
+            "memberName": "node",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeReplaceNodesParams": {
+      "kind": "SparkNodeTreeReplaceNodesParams",
+      "className": "SparkNodeTreeReplaceNodesParams",
+      "jsdoc": "/** 批量替换节点的参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 批量替换项列表 */\n    items: SparkNodeTreeReplaceNodesItem[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 144,
+        "className": "SparkNodeTreeReplaceNodesParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "items",
+          "schema": {
+            "type": "array",
+            "title": "SparkNodeTreeReplaceNodesItem[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 批量替换项列表 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 146,
+            "className": "SparkNodeTreeReplaceNodesParams",
+            "memberName": "items",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeRemoveParams": {
+      "kind": "SparkNodeTreeRemoveParams",
+      "className": "SparkNodeTreeRemoveParams",
+      "jsdoc": "/** 删除单个节点的参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 待删除节点的 ID */\n    componentId: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 149,
+        "className": "SparkNodeTreeRemoveParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "componentId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 待删除节点的 ID */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 151,
+            "className": "SparkNodeTreeRemoveParams",
+            "memberName": "componentId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeRemoveNodesParams": {
+      "kind": "SparkNodeTreeRemoveNodesParams",
+      "className": "SparkNodeTreeRemoveNodesParams",
+      "jsdoc": "/** 批量删除节点的参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 待删除的节点 ID 列表 */\n    componentIds: string[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 154,
+        "className": "SparkNodeTreeRemoveNodesParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "componentIds",
+          "schema": {
+            "type": "array",
+            "title": "string[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 待删除的节点 ID 列表 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 156,
+            "className": "SparkNodeTreeRemoveNodesParams",
+            "memberName": "componentIds",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeLocation": {
+      "kind": "SparkNodeLocation",
+      "className": "SparkNodeLocation",
+      "jsdoc": "/** 节点在树中的位置信息 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 命中的节点本身 */\n    node: SparkNode;\n    /** 直接父节点，根节点时为 null */\n    parent: SparkNode | null;\n    /** 在父节点 children 中的索引，根节点时为 -1 */\n    index: number;\n    /** 深度，根节点为 0 */\n    depth: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 159,
+        "className": "SparkNodeLocation",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "node",
+          "schema": {
+            "title": "SparkNode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 命中的节点本身 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 161,
+            "className": "SparkNodeLocation",
+            "memberName": "node",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "parent",
+          "schema": {
+            "title": "SparkNode | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 直接父节点，根节点时为 null */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 163,
+            "className": "SparkNodeLocation",
+            "memberName": "parent",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "index",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 在父节点 children 中的索引，根节点时为 -1 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 165,
+            "className": "SparkNodeLocation",
+            "memberName": "index",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "depth",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 深度，根节点为 0 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 167,
+            "className": "SparkNodeLocation",
+            "memberName": "depth",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeAddResult": {
+      "kind": "SparkNodeAddResult",
+      "className": "SparkNodeAddResult",
+      "jsdoc": "/** addNode 的返回结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 已添加的节点 */\n    node: SparkNode;\n    /** 插入位置索引 */\n    index: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 170,
+        "className": "SparkNodeAddResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "node",
+          "schema": {
+            "title": "SparkNode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 已添加的节点 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 172,
+            "className": "SparkNodeAddResult",
+            "memberName": "node",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "index",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 插入位置索引 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 174,
+            "className": "SparkNodeAddResult",
+            "memberName": "index",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeAddNodesResult": {
+      "kind": "SparkNodeAddNodesResult",
+      "className": "SparkNodeAddNodesResult",
+      "jsdoc": "/** addNodes 的返回结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 已添加的节点列表 */\n    nodes: SparkNode[];\n    /** 各节点的插入位置索引 */\n    indexes: number[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 177,
+        "className": "SparkNodeAddNodesResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "nodes",
+          "schema": {
+            "type": "array",
+            "title": "SparkNode[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 已添加的节点列表 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 179,
+            "className": "SparkNodeAddNodesResult",
+            "memberName": "nodes",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "indexes",
+          "schema": {
+            "type": "array",
+            "title": "number[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 各节点的插入位置索引 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 181,
+            "className": "SparkNodeAddNodesResult",
+            "memberName": "indexes",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeMoveResult": {
+      "kind": "SparkNodeMoveResult",
+      "className": "SparkNodeMoveResult",
+      "jsdoc": "/** moveNode 的返回结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 被移动的节点 ID */\n    componentId: string;\n    /** 原父节点 ID */\n    fromParentComponentId: string | null;\n    /** 新父节点 ID */\n    toParentComponentId: string | null;\n    /** 原位置索引 */\n    previousIndex: number;\n    /** 新位置索引 */\n    index: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 184,
+        "className": "SparkNodeMoveResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "componentId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 被移动的节点 ID */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 186,
+            "className": "SparkNodeMoveResult",
+            "memberName": "componentId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "fromParentComponentId",
+          "schema": {
+            "title": "string | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 原父节点 ID */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 188,
+            "className": "SparkNodeMoveResult",
+            "memberName": "fromParentComponentId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "toParentComponentId",
+          "schema": {
+            "title": "string | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 新父节点 ID */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 190,
+            "className": "SparkNodeMoveResult",
+            "memberName": "toParentComponentId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "previousIndex",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 原位置索引 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 192,
+            "className": "SparkNodeMoveResult",
+            "memberName": "previousIndex",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "index",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 新位置索引 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 194,
+            "className": "SparkNodeMoveResult",
+            "memberName": "index",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeSetPropsResult": {
+      "kind": "SparkNodeSetPropsResult",
+      "className": "SparkNodeSetPropsResult",
+      "jsdoc": "/** setProps 的返回结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 设置属性后的节点 */\n    node: SparkNode;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 197,
+        "className": "SparkNodeSetPropsResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "node",
+          "schema": {
+            "title": "SparkNode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 设置属性后的节点 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 199,
+            "className": "SparkNodeSetPropsResult",
+            "memberName": "node",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeSetPropsBatchResult": {
+      "kind": "SparkNodeSetPropsBatchResult",
+      "className": "SparkNodeSetPropsBatchResult",
+      "jsdoc": "/** setPropsBatch 的返回结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 设置属性后的节点列表 */\n    nodes: SparkNode[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 202,
+        "className": "SparkNodeSetPropsBatchResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "nodes",
+          "schema": {
+            "type": "array",
+            "title": "SparkNode[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 设置属性后的节点列表 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 204,
+            "className": "SparkNodeSetPropsBatchResult",
+            "memberName": "nodes",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeReplaceResult": {
+      "kind": "SparkNodeReplaceResult",
+      "className": "SparkNodeReplaceResult",
+      "jsdoc": "/** replaceNode 的返回结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 替换后的新节点 */\n    node: SparkNode;\n    /** 被替换的旧节点 */\n    previous: SparkNode;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 207,
+        "className": "SparkNodeReplaceResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "node",
+          "schema": {
+            "title": "SparkNode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 替换后的新节点 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 209,
+            "className": "SparkNodeReplaceResult",
+            "memberName": "node",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "previous",
+          "schema": {
+            "title": "SparkNode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 被替换的旧节点 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 211,
+            "className": "SparkNodeReplaceResult",
+            "memberName": "previous",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeReplaceNodesResult": {
+      "kind": "SparkNodeReplaceNodesResult",
+      "className": "SparkNodeReplaceNodesResult",
+      "jsdoc": "/** replaceNodes 的返回结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 各节点的替换结果 */\n    items: SparkNodeReplaceResult[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 214,
+        "className": "SparkNodeReplaceNodesResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "items",
+          "schema": {
+            "type": "array",
+            "title": "SparkNodeReplaceResult[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 各节点的替换结果 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 216,
+            "className": "SparkNodeReplaceNodesResult",
+            "memberName": "items",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeRemoveResult": {
+      "kind": "SparkNodeRemoveResult",
+      "className": "SparkNodeRemoveResult",
+      "jsdoc": "/** removeNode 的返回结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 被删除的节点 */\n    removed: SparkNode;\n    /** 被删除时的位置索引 */\n    index: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 219,
+        "className": "SparkNodeRemoveResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "removed",
+          "schema": {
+            "title": "SparkNode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 被删除的节点 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 221,
+            "className": "SparkNodeRemoveResult",
+            "memberName": "removed",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "index",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 被删除时的位置索引 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 223,
+            "className": "SparkNodeRemoveResult",
+            "memberName": "index",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeRemoveNodesResult": {
+      "kind": "SparkNodeRemoveNodesResult",
+      "className": "SparkNodeRemoveNodesResult",
+      "jsdoc": "/** removeNodes 的返回结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 各节点的删除结果 */\n    items: SparkNodeRemoveResult[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 226,
+        "className": "SparkNodeRemoveNodesResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "items",
+          "schema": {
+            "type": "array",
+            "title": "SparkNodeRemoveResult[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 各节点的删除结果 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 228,
+            "className": "SparkNodeRemoveNodesResult",
+            "memberName": "items",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeFindByTypeMatch": {
+      "kind": "SparkNodeFindByTypeMatch",
+      "className": "SparkNodeFindByTypeMatch",
+      "jsdoc": "/** findByType 单条匹配结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 节点的真实 id，未设置 id 时为 undefined */\n    id: string | undefined;\n    /** 组件类型名 */\n    type: string;\n    /** 节点在树中的深度 */\n    depth: number;\n    /** 直接父节点 id，根节点时为 null，父节点未设置 id 时为 undefined */\n    parentId: string | null | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 231,
+        "className": "SparkNodeFindByTypeMatch",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 节点的真实 id，未设置 id 时为 undefined */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 233,
+            "className": "SparkNodeFindByTypeMatch",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "type",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 组件类型名 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 235,
+            "className": "SparkNodeFindByTypeMatch",
+            "memberName": "type",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "depth",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 节点在树中的深度 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 237,
+            "className": "SparkNodeFindByTypeMatch",
+            "memberName": "depth",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "parentId",
+          "schema": {
+            "title": "string | null | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 直接父节点 id，根节点时为 null，父节点未设置 id 时为 undefined */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 239,
+            "className": "SparkNodeFindByTypeMatch",
+            "memberName": "parentId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeFindByTypeResult": {
+      "kind": "SparkNodeFindByTypeResult",
+      "className": "SparkNodeFindByTypeResult",
+      "jsdoc": "/** findByType 的返回结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 按深度优先顺序排列的匹配结果 */\n    matches: SparkNodeFindByTypeMatch[];\n    /** 命中数；提供 limit 且提前终止时等于 matches.length */\n    total: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 242,
+        "className": "SparkNodeFindByTypeResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "matches",
+          "schema": {
+            "type": "array",
+            "title": "SparkNodeFindByTypeMatch[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 按深度优先顺序排列的匹配结果 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 244,
+            "className": "SparkNodeFindByTypeResult",
+            "memberName": "matches",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "total",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 命中数；提供 limit 且提前终止时等于 matches.length */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 246,
+            "className": "SparkNodeFindByTypeResult",
+            "memberName": "total",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeTreeMethodKey": {
+      "kind": "SparkNodeTreeMethodKey",
+      "className": "SparkNodeTreeMethodKey",
+      "jsdoc": "/** SparkNodeTree 公开方法键名联合类型 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'getNode' | 'getLocation' | 'hasNode' | 'getParent' | 'listChildren' | 'countNodes' | 'getAllData' | 'collectDataViewKeys' | 'collectHandlerNames' | 'findByType' | 'addNode' | 'addNodes' | 'moveNode' | 'setProps' | 'setPropsBatch' | 'replaceNode' | 'replaceNodes' | 'removeNode' | 'removeNodes'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'getNode'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'getLocation'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'hasNode'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'getParent'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'listChildren'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'countNodes'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'getAllData'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'collectDataViewKeys'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'collectHandlerNames'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'findByType'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'addNode'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'addNodes'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'moveNode'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'setProps'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'setPropsBatch'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'replaceNode'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'replaceNodes'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'removeNode'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'removeNodes'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 249,
+        "className": "SparkNodeTreeMethodKey",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkNodeTree": {
+      "kind": "SparkNodeTree",
+      "className": "SparkNodeTree",
+      "jsdoc": "/**\n * SparkNodeTree\n *\n * 面向单个组件实例（SparkNode）及其子树的结构编辑核心。\n *\n * 这里的 root 表示“当前被编辑的组件实例”。\n * 它既可以是页面组件，也可以是页面中的任意子组件；页面只是递归 SparkNode 模型里的一个更大组件。\n *\n * 在上层设计里，SparkNodeTree 是设计时编辑能力的真实本体：\n * 1. 调用方先查询组件列表，选择合适的组件 type；\n * 2. 再根据组件规格构造一个 SparkNode 节点对象；\n * 3. 最后调用 SparkNodeTree 的公开方法，把该节点写入当前子树，或对已有节点做查询与修改。\n *\n * 因此，这个类提供的不是“组件清单”，而是“树编辑能力集合”。\n * 上层的 tool catalog / function 列表，只是在此基础上做协议投影。\n *\n * 当前公开能力大致可分为四类：\n * 1. 节点查询：getNode / getLocation / hasNode / getParent / listChildren / findByType。\n * 2. 子树统计：countNodes / collectDataViewKeys / collectHandlerNames。\n * 3. 节点写入：addNode / addNodes / moveNode / replaceNode / replaceNodes / removeNode / removeNodes。\n * 4. 属性写入：setProps / setPropsBatch。\n *\n *\n * 设计目标：\n * 1. 构造时绑定一个当前组件实例，后续所有方法都围绕该组件及其子树工作。\n * 2. 查询类方法不修改当前树状态。\n * 3. 写操作通过不可变重写生成新子树，并回写到实例内部 root。\n * 4. 全部公开方法只接受命名参数对象，不提供位置参数重载。\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+        "line": 279,
+        "className": "SparkNodeTree",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "title": "SparkNodeTreeRootParams"
+            }
+          },
+          "required": [
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/**\n     * 使用一个当前组件实例节点创建树操作实例。\n     * 构造时自动创建 version 0 作为初始快照。\n     *\n     * @param params 根节点和历史栈配置。\n     */",
+        "provenance": {
+          "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+          "line": 312,
+          "className": "SparkNodeTree",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "fromJson",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "json": {
+                "title": "SparkNode | Record<string, unknown> | string"
+              },
+              "options": {
+                "title": "SparkNodeTreeFromJsonOptions"
+              }
+            },
+            "required": [
+              "json"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeTree"
+          },
+          "returnTypeText": "SparkNodeTree",
+          "jsdoc": "/**\n     * 从 JSON 输入创建 SparkNodeTree。\n     *\n     * - 支持对象或 JSON 字符串输入\n     * - 默认会在反序列化过程中补齐缺失组件 id\n     */",
+          "paramsTypeText": "json: string | Record<string, unknown> | SparkNode, options?: SparkNodeTreeFromJsonOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 290,
+            "className": "SparkNodeTree",
+            "memberName": "fromJson",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "fromRuleJson",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "json": {
+                "title": "SparkNodeTreeRuleJsonInput"
+              },
+              "options": {
+                "title": "SparkNodeTreeFromJsonOptions"
+              }
+            },
+            "required": [
+              "json"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeTree"
+          },
+          "returnTypeText": "SparkNodeTree",
+          "jsdoc": "/**\n     * 从 rule.json 输入创建页面树。\n     *\n     * rule.json 可以是：\n     * - 单个 SparkNode：作为页面唯一顶层组件\n     * - SparkNode[]：作为页面 children\n     * - spark-page 根节点：作为完整页面树\n     *\n     * 进入 SparkNodeTree 后统一为单根 `spark-page`。\n     */",
+          "paramsTypeText": "json: SparkNodeTreeRuleJsonInput, options?: SparkNodeTreeFromJsonOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 301,
+            "className": "SparkNodeTree",
+            "memberName": "fromRuleJson",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "fromPageChildren",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "children": {
+                "type": "array",
+                "title": "readonly SparkNode[]",
+                "items": true
+              },
+              "options": {
+                "title": "SparkNodeTreeFromJsonOptions"
+              }
+            },
+            "required": [
+              "children"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeTree"
+          },
+          "returnTypeText": "SparkNodeTree",
+          "jsdoc": "/**\n     * 从页面 children 创建单根页面树。\n     */",
+          "paramsTypeText": "children: readonly SparkNode[], options?: SparkNodeTreeFromJsonOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 305,
+            "className": "SparkNodeTree",
+            "memberName": "fromPageChildren",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "toJSON",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNode"
+          },
+          "returnTypeText": "SparkNode",
+          "jsdoc": "/**\n     * 导出当前组件实例子树快照。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 324,
+            "className": "SparkNodeTree",
+            "memberName": "toJSON",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getAllData",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNode"
+          },
+          "returnTypeText": "SparkNode",
+          "jsdoc": "/**\n     * 获取当前绑定子树的完整数据快照。\n     * 语义上等价于 toJSON()。\n     *\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 330,
+            "className": "SparkNodeTree",
+            "memberName": "getAllData",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "undo",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNode | null"
+          },
+          "returnTypeText": "SparkNode | null",
+          "jsdoc": "/**\n     * 撤销最近一次写操作，还原到上一个快照。\n     * 返回撤销后的 root；无可撤销时返回 null 不修改状态。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 347,
+            "className": "SparkNodeTree",
+            "memberName": "undo",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "redo",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNode | null"
+          },
+          "returnTypeText": "SparkNode | null",
+          "jsdoc": "/**\n     * 重做最近一次被撤销的写操作。\n     * 返回重做后的 root；无可重做时返回 null 不修改状态。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 352,
+            "className": "SparkNodeTree",
+            "memberName": "redo",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "clearHistory",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 清空全部历史，仅保留当前快照。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 356,
+            "className": "SparkNodeTree",
+            "memberName": "clearHistory",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "estimateHistorySize",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number",
+            "title": "number"
+          },
+          "returnTypeText": "number",
+          "jsdoc": "/**\n     * 估算单个快照的节点数量，用于评估历史栈的相对内存占用。\n     * 由于不可变树的结构共享特性，实际内存开销小于该值 × 历史长度。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 361,
+            "className": "SparkNodeTree",
+            "memberName": "estimateHistorySize",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getHistoryStats",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeTreeHistoryStats"
+          },
+          "returnTypeText": "SparkNodeTreeHistoryStats",
+          "jsdoc": "/**\n     * 返回历史栈的统计信息。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 365,
+            "className": "SparkNodeTree",
+            "memberName": "getHistoryStats",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "loadRoot",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "newRoot": {
+                "title": "SparkNode"
+              }
+            },
+            "required": [
+              "newRoot"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 加载新的根节点，替换当前根并以新根作为历史基线重新开始。\n     * 清空既有历史栈，等价于 DataSetCrudTool.replaceFromJson。\n     *\n     * @param newRoot 新的根节点。\n     */",
+          "paramsTypeText": "newRoot: SparkNode",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 372,
+            "className": "SparkNodeTree",
+            "memberName": "loadRoot",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "replaceRoot",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "newRoot": {
+                "title": "SparkNode"
+              }
+            },
+            "required": [
+              "newRoot"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 替换当前根节点并将变更提交到历史（可 undo/redo）。\n     * 用于“文本整体替换”等粗粒度写操作，保留既有历史栈。\n     *\n     * @param newRoot 新的根节点。\n     */",
+          "paramsTypeText": "newRoot: SparkNode",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 379,
+            "className": "SparkNodeTree",
+            "memberName": "replaceRoot",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeLookupParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNode | null"
+          },
+          "returnTypeText": "SparkNode | null",
+          "jsdoc": "/**\n     * 按 componentId 查找节点；未命中时返回 null。\n     *\n     * @param params 节点查找参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeLookupParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 392,
+            "className": "SparkNodeTree",
+            "memberName": "getNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getLocation",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeLookupParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeLocation | null"
+          },
+          "returnTypeText": "SparkNodeLocation | null",
+          "jsdoc": "/**\n     * 获取节点在树中的完整位置信息；未命中时返回 null。\n     *\n     * @param params 节点查找参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeLookupParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 398,
+            "className": "SparkNodeTree",
+            "memberName": "getLocation",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "hasNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeLookupParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/**\n     * 判断指定 componentId 是否存在。\n     *\n     * @param params 节点查找参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeLookupParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 404,
+            "className": "SparkNodeTree",
+            "memberName": "hasNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getParent",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeLookupParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNode | null"
+          },
+          "returnTypeText": "SparkNode | null",
+          "jsdoc": "/**\n      * 获取目标节点的直接父节点；当前绑定 root 或未命中时返回 null。\n     *\n     * @param params 节点查找参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeLookupParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 410,
+            "className": "SparkNodeTree",
+            "memberName": "getParent",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "listChildren",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeChildrenParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeChildren"
+          },
+          "returnTypeText": "SparkNodeChildren",
+          "jsdoc": "/**\n     * 读取当前组件实例或指定子组件的直接 children。\n     *\n     * 返回的是 children 的浅拷贝，避免调用方直接改写实例内部数组引用。\n     *\n     * @param params 子节点读取参数；省略时读取当前根节点 children。\n     */",
+          "paramsTypeText": "params?: SparkNodeTreeChildrenParams | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 418,
+            "className": "SparkNodeTree",
+            "memberName": "listChildren",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "countNodes",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number",
+            "title": "number"
+          },
+          "returnTypeText": "number",
+          "jsdoc": "/**\n     * 统计当前组件实例子树中的结构节点数量。\n     *\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 423,
+            "className": "SparkNodeTree",
+            "memberName": "countNodes",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "collectDataViewKeys",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Set<string>"
+          },
+          "returnTypeText": "Set<string>",
+          "jsdoc": "/**\n    * 收集当前组件实例子树中出现过的全部唯一 DataView 定位键。\n     *\n    * 包括容器、展示、动作、选项等 props.dataViewKey / props.optionDataViewKey。\n     *\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 430,
+            "className": "SparkNodeTree",
+            "memberName": "collectDataViewKeys",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "collectHandlerNames",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Set<string>"
+          },
+          "returnTypeText": "Set<string>",
+          "jsdoc": "/**\n     * 收集当前组件实例子树中 props.on 里声明过的全部唯一处理器名。\n     *\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 435,
+            "className": "SparkNodeTree",
+            "memberName": "collectHandlerNames",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "findByType",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeFindByTypeParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeFindByTypeResult"
+          },
+          "returnTypeText": "SparkNodeFindByTypeResult",
+          "jsdoc": "/**\n     * 按组件类型名递归搜索子树，返回所有匹配节点的真实 id、深度和父 id。\n     *\n     * 典型用法：当调用方知道目标组件类型（如 'r-tabs'）但不知道其节点 id 时，\n     * 调用此方法可一步获取可直接用于 getNode / setProps / removeNode 的真实 id。\n     *\n     * @param params 组件类型查询参数。\n     */",
+          "paramsTypeText": "params: SparkNodeFindByTypeParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 444,
+            "className": "SparkNodeTree",
+            "memberName": "findByType",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "addNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeAddParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeAddResult"
+          },
+          "returnTypeText": "SparkNodeAddResult",
+          "jsdoc": "/**\n     * 向当前组件实例或指定子组件的 children 中添加一个新节点。\n     *\n     * 这是“先构造 SparkNode，再放入 SparkNodeTree”这条链路的最直接入口。\n     *\n     * @param params 单节点添加参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeAddParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 452,
+            "className": "SparkNodeTree",
+            "memberName": "addNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "addNodes",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeAddNodesParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeAddNodesResult"
+          },
+          "returnTypeText": "SparkNodeAddNodesResult",
+          "jsdoc": "/**\n     * 向同一个子组件容器批量插入多个新节点。\n     *\n     * - nodes 按传入顺序依次插入\n     * - index 省略时整体追加到末尾\n     * - index 提供时，从该位置开始连续插入\n     *\n     * @param params 批量节点添加参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeAddNodesParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 462,
+            "className": "SparkNodeTree",
+            "memberName": "addNodes",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "moveNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeMoveParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeMoveResult"
+          },
+          "returnTypeText": "SparkNodeMoveResult",
+          "jsdoc": "/**\n     * 把已有节点移动到当前组件实例或指定子组件的 children 中。\n     *\n     * 返回值只包含移动摘要，不回传完整节点子树，避免结果膨胀。\n     *\n     * @param params 节点移动参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeMoveParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 470,
+            "className": "SparkNodeTree",
+            "memberName": "moveNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setProps",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeSetPropsParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeSetPropsResult"
+          },
+          "returnTypeText": "SparkNodeSetPropsResult",
+          "jsdoc": "/**\n     * 设置目标节点的 props。\n     *\n     * - merge !== false 时，采用浅合并语义\n     * - merge === false 时，直接替换整个 props 对象\n     *\n     * 这类方法承载的是“修改属性值”能力，而不是组件选择能力。\n     *\n     * @param params props 设置参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeSetPropsParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 481,
+            "className": "SparkNodeTree",
+            "memberName": "setProps",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setPropsBatch",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeSetPropsBatchParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeSetPropsBatchResult"
+          },
+          "returnTypeText": "SparkNodeSetPropsBatchResult",
+          "jsdoc": "/**\n     * 批量设置多个节点的 props。\n     *\n     * @param params 批量 props 设置参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeSetPropsBatchParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 487,
+            "className": "SparkNodeTree",
+            "memberName": "setPropsBatch",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "replaceNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeReplaceParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeReplaceResult"
+          },
+          "returnTypeText": "SparkNodeReplaceResult",
+          "jsdoc": "/**\n     * 用一个新的 SparkNode 完整替换目标节点。\n     *\n     * 这类方法承载的是“修改节点结构”能力：节点 type、props、children 都可以整体替换。\n     *\n     * @param params 节点替换参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeReplaceParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 495,
+            "className": "SparkNodeTree",
+            "memberName": "replaceNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "replaceNodes",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeReplaceNodesParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeReplaceNodesResult"
+          },
+          "returnTypeText": "SparkNodeReplaceNodesResult",
+          "jsdoc": "/**\n     * 批量替换多个节点。\n     *\n     * @param params 批量节点替换参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeReplaceNodesParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 501,
+            "className": "SparkNodeTree",
+            "memberName": "replaceNodes",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "removeNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeRemoveParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeRemoveResult"
+          },
+          "returnTypeText": "SparkNodeRemoveResult",
+          "jsdoc": "/**\n     * 删除当前组件实例子树内的指定节点。\n     *\n     * 当前绑定的 root 自身不允许删除；调用方如果要整体替换当前组件实例，应直接创建新的实例或重建 root。\n     *\n     * @param params 节点删除参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeRemoveParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 509,
+            "className": "SparkNodeTree",
+            "memberName": "removeNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "removeNodes",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "SparkNodeTreeRemoveNodesParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeRemoveNodesResult"
+          },
+          "returnTypeText": "SparkNodeRemoveNodesResult",
+          "jsdoc": "/**\n     * 批量删除多个节点。\n     *\n     * @param params 批量节点删除参数。\n     */",
+          "paramsTypeText": "params: SparkNodeTreeRemoveNodesParams",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts",
+            "line": 515,
+            "className": "SparkNodeTree",
+            "memberName": "removeNodes",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.762Z"
+}

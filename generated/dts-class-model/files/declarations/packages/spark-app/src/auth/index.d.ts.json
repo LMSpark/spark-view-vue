@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/auth/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:auth/index",
+    "sourcePath": "declarations/packages/spark-app/src/auth/index.d.ts",
+    "sourceFile": "packages/spark-app/src/auth/index.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "auth/index",
+    "jsdoc": "认证模块入口",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.895Z"
+}

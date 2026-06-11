@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/ai-host.d.ts",
+  "module": {
+    "name": "app:services/ai-host",
+    "sourcePath": "declarations/src/services/ai-host.d.ts",
+    "sourceFile": "src/services/ai-host.ts",
+    "packageName": "app",
+    "modulePath": "services/ai-host",
+    "jsdoc": "@module app:services/ai-host\napp 的 services/ai-host 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.069Z"
+}

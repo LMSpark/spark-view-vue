@@ -1,4 +1,9 @@
 /**
+ * @module app:services/auth
+ * app 的 services/auth 模块。
+ * 导出 ClassModel symbol: AuthUser, PlatformAdminUserLike, LoginParams, RegisterParams, RegisterTenantParams（共 5 个 symbol）。
+ */
+/**
  * 认证服务 — 前端 Token 管理 + API 调用封装。
  *
  * 存储布局：
@@ -17,18 +22,29 @@ const USER_KEY = 'spark_user'
 const LOGOUT_PENDING_KEY = 'spark_logout_pending'
 
 export type AuthUser = {
-  userId: string
-  username: string
-  displayName: string
-  email: string
-  avatar: string
-  roles: string[]
-  tenantId: string
-  defaultProjectId: string}
+    /** user Id 标识。 */
+userId: string
+    /** username 字段。 */
+username: string
+    /** display Name 名称。 */
+displayName: string
+    /** email 字段。 */
+email: string
+    /** avatar 字段。 */
+avatar: string
+    /** roles 字段。 */
+roles: string[]
+    /** tenant Id 标识。 */
+tenantId: string
+    /** default Project Id 标识。 */
+defaultProjectId: string}
 
+/** Platform Admin User Like 的语义模型。 */
 type PlatformAdminUserLike = {
-  tenantId?: string
-  roles?: readonly string[]}
+    /** tenant Id 标识。 */
+tenantId?: string
+    /** roles 字段。 */
+roles?: readonly string[]}
 
 
 function isAuthUser(value: unknown): value is AuthUser {
@@ -142,10 +158,14 @@ async function authFetch(url: string, body: Record<string, string>): Promise<Rec
   }
 }
 
+/** Login Params 的语义模型。 */
 export type LoginParams = {
-  tenantId: string
-  username: string
-  password: string}
+    /** tenant Id 标识。 */
+tenantId: string
+    /** username 字段。 */
+username: string
+    /** password 字段。 */
+password: string}
 
 export async function login(params: LoginParams): Promise<AuthUser> {
   const data = await authFetch('/api/auth/login', { ...params })
@@ -157,12 +177,18 @@ export async function login(params: LoginParams): Promise<AuthUser> {
   return authUser
 }
 
+/** Register Params 的语义模型。 */
 export type RegisterParams = {
-  tenantId: string
-  username: string
-  password: string
-  displayName?: string
-  email?: string}
+    /** tenant Id 标识。 */
+tenantId: string
+    /** username 字段。 */
+username: string
+    /** password 字段。 */
+password: string
+    /** display Name 名称。 */
+displayName?: string
+    /** email 字段。 */
+email?: string}
 
 export async function register(params: RegisterParams): Promise<AuthUser> {
   const body: Record<string, string> = {
@@ -182,11 +208,16 @@ export async function register(params: RegisterParams): Promise<AuthUser> {
   return authUser
 }
 
+/** Register Tenant Params 的语义模型。 */
 export type RegisterTenantParams = {
-  tenantId: string
-  tenantName: string
-  username: string
-  password: string}
+    /** tenant Id 标识。 */
+tenantId: string
+    /** tenant Name 名称。 */
+tenantName: string
+    /** username 字段。 */
+username: string
+    /** password 字段。 */
+password: string}
 
 export async function registerTenant(params: RegisterTenantParams): Promise<AuthUser> {
   const data = await authFetch('/api/auth/register-tenant', { ...params })

@@ -7,6 +7,7 @@
 import type { JsonTreePolicy } from './tree-types'
 import { ensureUniqueObjectKey } from './tree-utils'
 
+/** Resolved Policy 的语义模型。 */
 type ResolvedPolicy = Required<JsonTreePolicy>
 
 const DEFAULT_POLICY: ResolvedPolicy = {

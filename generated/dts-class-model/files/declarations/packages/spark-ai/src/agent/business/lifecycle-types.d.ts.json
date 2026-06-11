@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/business/lifecycle-types",
+    "sourcePath": "declarations/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/business/lifecycle-types.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/business/lifecycle-types",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\nagent/business/lifecycle-types.ts — 业务生命周期类型\n═══════════════════════════════════════════════════════════════\n【架构定位】Agent 层的生命周期指令契约。定义工具调用前的策略裁决、\n工具调用后的三态流转（continue/complete/abort）以及生命周期回调入参类型。\n位于 business/ 层，被 registration-types、business-task、tool-loop-runner\n和 tool-call-executor 共同消费。\n【核心类型】\nAiAgentBeforeFunctionCallStatus    — 工具调用前置裁决三态\nAiAgentBeforeFunctionCallDirective — 工具调用前置裁决指令\nAiAgentLifecycleStatus             — 生命周期三态枚举\nAiAgentLifecycleDirective          — 生命周期指令（状态 + 可选信息）\nAiAgentBeforeFunctionCallOptions   — 工具调用前回调的入参\nAiAgentAfterFunctionCallOptions    — 工具调用后回调的入参\n【数据流】\n1. tool-call-executor 执行 runtime 前，调用 registration.beforeFunctionCall()\n2. allow → 继续执行工具；reject → 回灌失败 tool result；abort → 进入终止流程\n3. tool-call-executor 执行完一次工具调用后，调用 registration.afterFunctionCall()\n4. 业务方返回 AiAgentLifecycleDirective（continue / complete / abort）\n5. continue → 进入下一轮工具循环\n6. complete / abort → tool-loop-runner 进入生命周期终止流程\n【消费方】registration-types、business-task、tool-loop-runner、tool-call-executor\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentBeforeFunctionCallStatus",
+      "AiAgentBeforeFunctionCallDirective",
+      "AiAgentBeforeFunctionCallOptions",
+      "AiAgentLifecycleStatus",
+      "AiAgentLifecycleDirective",
+      "AiAgentAfterFunctionCallOptions"
+    ]
+  },
+  "symbols": [
+    "AiAgentBeforeFunctionCallStatus",
+    "AiAgentBeforeFunctionCallDirective",
+    "AiAgentBeforeFunctionCallOptions",
+    "AiAgentLifecycleStatus",
+    "AiAgentLifecycleDirective",
+    "AiAgentAfterFunctionCallOptions"
+  ],
+  "models": {
+    "AiAgentBeforeFunctionCallStatus": {
+      "kind": "AiAgentBeforeFunctionCallStatus",
+      "className": "AiAgentBeforeFunctionCallStatus",
+      "jsdoc": "/**\n * 工具调用前置裁决三态：\n *   'allow'  — 允许本次工具调用继续执行\n *   'reject' — 拒绝本次工具调用，回灌失败 tool result，当前 turn 可继续\n *   'abort'  — 中止当前 turn，并进入会话停止流程\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "'allow' | 'reject' | 'abort'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'allow'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'reject'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'abort'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
+        "line": 39,
+        "className": "AiAgentBeforeFunctionCallStatus",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentBeforeFunctionCallDirective": {
+      "kind": "AiAgentBeforeFunctionCallDirective",
+      "className": "AiAgentBeforeFunctionCallDirective",
+      "jsdoc": "/**\n * 工具调用前置裁决指令。\n *\n * 字段：\n *   status                — 必填，allow / reject / abort 之一\n *   reason                — 可选，拒绝或中止原因\n *   fix                   — 可选，给 LLM 的修正建议，仅 reject/abort 失败结果使用\n *   finalAssistantMessage — 可选，abort 时发送给用户的最终消息\n *   releaseInstance       — 可选，abort 时是否释放模块实例资源\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    status: AiAgentBeforeFunctionCallStatus;\n    reason?: string;\n    fix?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    status: AiAgentBeforeFunctionCallStatus;\n    reason?: string;\n    fix?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
+        "line": 50,
+        "className": "AiAgentBeforeFunctionCallDirective",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentBeforeFunctionCallOptions": {
+      "kind": "AiAgentBeforeFunctionCallOptions",
+      "className": "AiAgentBeforeFunctionCallOptions",
+      "jsdoc": "/**\n * beforeFunctionCall 回调的入参。\n *\n * 继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n * 追加本次工具调用的工具名与已解析参数。该钩子只负责策略裁决，不执行工具。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "AiAgentRuntimeContext",
+          "targetName": "AiAgentRuntimeContext"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
+        "line": 63,
+        "className": "AiAgentBeforeFunctionCallOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentLifecycleStatus": {
+      "kind": "AiAgentLifecycleStatus",
+      "className": "AiAgentLifecycleStatus",
+      "jsdoc": "/**\n * 生命周期状态三态：\n *   'continue' — 继续下一轮工具调用（默认）\n *   'complete' — 业务目标已达成，正常结束当前 turn\n *   'abort'    — 业务异常或用户取消，中止当前 turn\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "'continue' | 'complete' | 'abort'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'continue'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'complete'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'abort'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
+        "line": 73,
+        "className": "AiAgentLifecycleStatus",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentLifecycleDirective": {
+      "kind": "AiAgentLifecycleDirective",
+      "className": "AiAgentLifecycleDirective",
+      "jsdoc": "/**\n * 生命周期指令：业务方在 afterFunctionCall 中返回，决定工具循环的后续行为。\n *\n * 字段：\n *   status               — 必填，三态之一\n *   reason               — 可选，结束原因（complete/abort 时建议提供）\n *   finalAssistantMessage — 可选，结束时发送给用户的最终消息\n *   releaseInstance      — 可选，是否在结束时释放模块实例资源\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    status: AiAgentLifecycleStatus;\n    reason?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    status: AiAgentLifecycleStatus;\n    reason?: string;\n    finalAssistantMessage?: string;\n    releaseInstance?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
+        "line": 83,
+        "className": "AiAgentLifecycleDirective",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentAfterFunctionCallOptions": {
+      "kind": "AiAgentAfterFunctionCallOptions",
+      "className": "AiAgentAfterFunctionCallOptions",
+      "jsdoc": "/**\n * afterFunctionCall 回调的入参。\n *\n * 继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n * 追加本次工具调用的具体信息：\n *   toolName — 被调用的工具名称\n *   args     — 调用参数（已通过 JSON Schema 校验）\n *   result   — 调用结果（ok: true 带 data，ok: false 带 code/msg/fix）\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n    result: AiAgentFunctionCallResult<unknown>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "AiAgentRuntimeContext",
+          "targetName": "AiAgentRuntimeContext"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "Readonly<{\n    toolName: string;\n    args: AiJsonParams;\n    result: AiAgentFunctionCallResult<unknown>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
+        "line": 98,
+        "className": "AiAgentAfterFunctionCallOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.741Z"
+}

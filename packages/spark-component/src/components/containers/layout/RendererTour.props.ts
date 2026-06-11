@@ -1,5 +1,12 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/layout/RendererTour.props
+ * RendererTour 模块，属于 SPARK component container/layout-container。
+ * 组件目录: containers/layout。
+ * 导出 ClassModel symbol: TourStep, RTourProps（共 2 个 symbol）。
+ */
 import type { SparkNodeProps } from '../../shared-types'
 
+/** Tour Step 的语义模型。 */
 export type TourStep = {
   /** CSS 选择器或元素引用（运行时解析） */
   target?: string | HTMLElement | null
@@ -14,6 +21,7 @@ export type TourStep = {
   /** 是否显示箭头 */
   showArrow?: boolean}
 
+/** RTour Props 的属性契约。 */
 export type RTourProps = SparkNodeProps & {
   /** 步骤配置列表 */
     steps?: TourStep[]

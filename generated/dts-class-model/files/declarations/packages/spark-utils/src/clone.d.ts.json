@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/clone.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:clone",
+    "sourcePath": "declarations/packages/spark-utils/src/clone.d.ts",
+    "sourceFile": "packages/spark-utils/src/clone.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "clone",
+    "jsdoc": "@module @spark-appworks/spark-utils:clone\n@spark-appworks/spark-utils 的 clone 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.996Z"
+}

@@ -1,13 +1,25 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/layout/RendererCollapse/zero-code
+ * RendererCollapse 模块，属于 SPARK component container/layout-container。
+ * 组件目录: containers/layout。
+ * 导出 ClassModel symbol: RendererCollapseZeroCodeOptions（共 1 个 symbol）。
+ */
 import type { SparkNode } from '../../../internal'
 import type { RendererCollapseApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
+/** Renderer Collapse Zero Code Options 的调用配置。 */
 type RendererCollapseZeroCodeOptions = {
-  currentValue: ValueRef<string | number | Array<string | number> | undefined>
-  commitCollapseValue: (value: string | number | Array<string | number>, options?: { emit?: boolean }) => void
-  itemConfigs: ValueRef<SparkNode[]>
-  getItemName: (item: SparkNode, index: number) => string | number
-  onChange: ((value: string | number | Array<string | number>) => void) | undefined}
+    /** current Value 字段。 */
+currentValue: ValueRef<string | number | Array<string | number> | undefined>
+    /** commit Collapse Value 回调。 */
+commitCollapseValue: (value: string | number | Array<string | number>, options?: { emit?: boolean }) => void
+    /** item Configs 字段。 */
+itemConfigs: ValueRef<SparkNode[]>
+    /** get Item Name 名称。 */
+getItemName: (item: SparkNode, index: number) => string | number
+    /** on Change 事件回调。 */
+onChange: ((value: string | number | Array<string | number>) => void) | undefined}
 
 export function createRendererCollapseZeroCode(options: RendererCollapseZeroCodeOptions) {
   const collapseApi: RendererCollapseApi = {

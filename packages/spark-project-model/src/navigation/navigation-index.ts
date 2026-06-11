@@ -2,10 +2,14 @@
 import type { ProjectNodeData, ProjectNodeLocation } from './project-node'
 import { buildProjectNavigationTree, findFlatNodeLocation } from './navigation-tree'
 
+/** Navigation Tree Node Like 的语义模型。 */
 export type NavigationTreeNodeLike = {
-  readonly id: string
-  readonly pid: string
-  readonly order: number
+    /** 唯一标识。 */
+readonly id: string
+    /** pid 字段。 */
+readonly pid: string
+    /** order 字段。 */
+readonly order: number
   toNodeData(): ProjectNodeData
 }
 
@@ -24,11 +28,13 @@ export class NavigationIndex<TNode extends NavigationTreeNodeLike> {
   private childrenByPid = new Map<string, TNode[]>()
   private treeCache: ProjectNodeData[] | null = null
 
-  constructor(nodesById: Map<string, TNode>) {
+    /** 创建 Navigation Index 实例。 */
+constructor(nodesById: Map<string, TNode>) {
     this.nodesById = nodesById
   }
 
-  rebuild(): void {
+    /** 执行 rebuild 操作。 */
+rebuild(): void {
     this.childrenByPid.clear()
     this.treeCache = null
     for (const node of this.nodesById.values()) {
@@ -45,15 +51,18 @@ export class NavigationIndex<TNode extends NavigationTreeNodeLike> {
     }
   }
 
-  invalidateTree(): void {
+    /** 执行 invalidate Tree 操作。 */
+invalidateTree(): void {
     this.treeCache = null
   }
 
-  getChildren(pid: string): readonly TNode[] {
+    /** 读取 Children。 */
+getChildren(pid: string): readonly TNode[] {
     return this.childrenByPid.get(pid.trim()) ?? []
   }
 
-  collectDescendants(nodeId: string): TNode[] {
+    /** 执行 collect Descendants 操作。 */
+collectDescendants(nodeId: string): TNode[] {
     const result: TNode[] = []
     const stack = [...this.getChildren(nodeId)]
     while (stack.length > 0) {
@@ -65,20 +74,23 @@ export class NavigationIndex<TNode extends NavigationTreeNodeLike> {
     return result
   }
 
-  nextChildOrder(pid: string): number {
+    /** 执行 next Child Order 操作。 */
+nextChildOrder(pid: string): number {
     const siblings = this.getChildren(pid)
     let max = -1
     for (const node of siblings) max = Math.max(max, node.order)
     return max + 1
   }
 
-  buildTree(): ProjectNodeData[] {
+    /** 执行 build Tree 操作。 */
+buildTree(): ProjectNodeData[] {
     if (this.treeCache !== null) return this.treeCache
     this.treeCache = buildProjectNavigationTree(this.nodesById.values())
     return this.treeCache
   }
 
-  findNodeLocation(targetId: string): ProjectNodeLocation | null {
+    /** 执行 find Node Location 操作。 */
+findNodeLocation(targetId: string): ProjectNodeLocation | null {
     return findFlatNodeLocation(this.nodesById, (pid) => this.getChildren(pid), targetId)
   }
 }

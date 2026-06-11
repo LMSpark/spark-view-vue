@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/RendererTable/RendererTable.props
+ * RendererTable 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: RTableProps（共 1 个 symbol）。
+ */
 import type { DataView } from '@spark-appworks/spark-data'
 import type {
   SparkInteractiveDataContainerProps,

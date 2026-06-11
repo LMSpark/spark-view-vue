@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/layout/AppTabBar.vue.d.ts",
+  "module": {
+    "name": "app:layout/AppTabBar",
+    "sourcePath": "declarations/src/layout/AppTabBar.vue.d.ts",
+    "sourceFile": "src/layout/AppTabBar.vue",
+    "packageName": "app",
+    "modulePath": "layout/AppTabBar",
+    "jsdoc": "@module app:layout/AppTabBar\napp 的 layout/AppTabBar 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.057Z"
+}

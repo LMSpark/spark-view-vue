@@ -1,0 +1,219 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/data-views/RendererForm/RendererForm.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/data-views/RendererForm/RendererForm.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererForm/RendererForm.props\nRendererForm 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: RFormProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RFormProps"
+    ],
+    "componentName": "RendererForm",
+    "componentType": "r-form",
+    "componentLevel": "table-level",
+    "componentLayer": "data-view-container",
+    "componentDirectory": "containers/data-views"
+  },
+  "symbols": [
+    "RFormProps"
+  ],
+  "models": {
+    "RFormProps": {
+      "kind": "RFormProps",
+      "className": "RFormProps",
+      "jsdoc": "/**\n * r-form 组件公开属性接口。\n *\n * 命名规范：组件 type `r-form` → 接口名 `RFormProps`。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & SparkCrudDataContainerProps & SparkGridLayoutProps & {\n    /** 显式收窄为表单容器使用的 DataView 数据线。 */\n    dataSource?: DataView;\n    /** 结构化工具栏 */\n    toolbar?: RToolbarProps;\n    /** 上下文 DataView 成员，默认 currentRow。 */\n    contextDataMember?: DataMember | `${DataMember}`;\n    /** 上下文成员内部业务字段或点路径。 */\n    contextDataField?: string;\n    /** 没有显式 children 时，是否从 DataView.columns 自动生成字段。默认 true。 */\n    autoColumns?: boolean;\n    /** 表单标签宽度 */\n    labelWidth?: string;\n    /** 透传给 el-form 的显式属性 */\n    formProps?: Record<string, unknown>;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkCrudDataContainerProps",
+          "targetName": "SparkCrudDataContainerProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkGridLayoutProps",
+          "targetName": "SparkGridLayoutProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 显式收窄为表单容器使用的 DataView 数据线。 */\n    dataSource?: DataView;\n    /** 结构化工具栏 */\n    toolbar?: RToolbarProps;\n    /** 上下文 DataView 成员，默认 currentRow。 */\n    contextDataMember?: DataMember | `${DataMember}`;\n    /** 上下文成员内部业务字段或点路径。 */\n    contextDataField?: string;\n    /** 没有显式 children 时，是否从 DataView.columns 自动生成字段。默认 true。 */\n    autoColumns?: boolean;\n    /** 表单标签宽度 */\n    labelWidth?: string;\n    /** 透传给 el-form 的显式属性 */\n    formProps?: Record<string, unknown>;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.d.ts",
+        "line": 15,
+        "className": "RFormProps",
+        "declarationKind": "type",
+        "componentName": "RendererForm",
+        "componentType": "r-form",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "dataSource",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 显式收窄为表单容器使用的 DataView 数据线。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.d.ts",
+            "line": 17,
+            "className": "RFormProps",
+            "memberName": "dataSource",
+            "declarationKind": "interface",
+            "componentName": "RendererForm",
+            "componentType": "r-form",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "toolbar",
+          "schema": {
+            "title": "RToolbarProps"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 结构化工具栏 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.d.ts",
+            "line": 19,
+            "className": "RFormProps",
+            "memberName": "toolbar",
+            "declarationKind": "interface",
+            "componentName": "RendererForm",
+            "componentType": "r-form",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "contextDataMember",
+          "schema": {
+            "title": "DataMember | `${DataMember}`"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 上下文 DataView 成员，默认 currentRow。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.d.ts",
+            "line": 21,
+            "className": "RFormProps",
+            "memberName": "contextDataMember",
+            "declarationKind": "interface",
+            "componentName": "RendererForm",
+            "componentType": "r-form",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "contextDataField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 上下文成员内部业务字段或点路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.d.ts",
+            "line": 23,
+            "className": "RFormProps",
+            "memberName": "contextDataField",
+            "declarationKind": "interface",
+            "componentName": "RendererForm",
+            "componentType": "r-form",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "autoColumns",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 没有显式 children 时，是否从 DataView.columns 自动生成字段。默认 true。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.d.ts",
+            "line": 25,
+            "className": "RFormProps",
+            "memberName": "autoColumns",
+            "declarationKind": "interface",
+            "componentName": "RendererForm",
+            "componentType": "r-form",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "labelWidth",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 表单标签宽度 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.d.ts",
+            "line": 27,
+            "className": "RFormProps",
+            "memberName": "labelWidth",
+            "declarationKind": "interface",
+            "componentName": "RendererForm",
+            "componentType": "r-form",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "formProps",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 透传给 el-form 的显式属性 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.props.d.ts",
+            "line": 29,
+            "className": "RFormProps",
+            "memberName": "formProps",
+            "declarationKind": "interface",
+            "componentName": "RendererForm",
+            "componentType": "r-form",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.045Z"
+}

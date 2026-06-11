@@ -1,3 +1,8 @@
+<!--
+@module app:views/platform/TenantConfigPanel
+app 的 views/platform/TenantConfigPanel 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="tenant-config-panel">
     <el-skeleton v-if="loading" :rows="8" animated />

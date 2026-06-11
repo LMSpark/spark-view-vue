@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/layout/AppHeader.vue.d.ts",
+  "module": {
+    "name": "app:layout/AppHeader",
+    "sourcePath": "declarations/src/layout/AppHeader.vue.d.ts",
+    "sourceFile": "src/layout/AppHeader.vue",
+    "packageName": "app",
+    "modulePath": "layout/AppHeader",
+    "jsdoc": "@module app:layout/AppHeader\napp 的 layout/AppHeader 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.050Z"
+}

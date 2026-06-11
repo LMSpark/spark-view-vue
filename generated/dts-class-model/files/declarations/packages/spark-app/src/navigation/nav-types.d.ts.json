@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:navigation/nav-types",
+    "sourcePath": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+    "sourceFile": "packages/spark-app/src/navigation/nav-types.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "navigation/nav-types",
+    "jsdoc": "@module @spark-appworks/spark-app:navigation/nav-types\n@spark-appworks/spark-app 的 navigation/nav-types 模块。\n导出 ClassModel symbol: NavigationContext（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "NavigationContext"
+    ]
+  },
+  "symbols": [
+    "NavigationContext"
+  ],
+  "models": {
+    "NavigationContext": {
+      "kind": "NavigationContext",
+      "className": "NavigationContext",
+      "jsdoc": "/** Navigation Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 从根到当前叶子的节点路径 */\n    activePath: ComputedRef<ProjectNodeData[]>;\n    /** 各区域的导航项 */\n    regionItems: ComputedRef<RegionItems>;\n    /** 各区域是否可见（有项为 true） */\n    regionVisibility: ComputedRef<RegionVisibility>;\n    /** 当前模块的上下文选择器状态（null = 当前模块无上下文；作用域：模块下全部页面） */\n    moduleContext: ComputedRef<NavContextState | null>;\n    /** 导航到指定节点（处理外部链接、重定向、首个叶子等） */\n    navigateTo: (node: ProjectNodeData) => void;\n    /** 导航到指定路径（自动追加租户前缀） */\n    navigateToPath: (path: string) => void;\n    /** 设置当前模块上下文选择器的值 */\n    setContextValue: (value: string | number | null) => void;\n    /** 判断节点是否在活动路径上 */\n    isNodeActive: (node: ProjectNodeData) => boolean;\n    /** 获取节点的角标（运行时动态设定） */\n    getBadge: (nodeId: string) => string | number | undefined;\n    /** 设置节点的角标（运行时 API） */\n    setBadge: (nodeId: string, value: string | number | undefined) => void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+        "line": 9,
+        "className": "NavigationContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "activePath",
+          "schema": {
+            "title": "ComputedRef<ProjectNodeData[]>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 从根到当前叶子的节点路径 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+            "line": 11,
+            "className": "NavigationContext",
+            "memberName": "activePath",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "regionItems",
+          "schema": {
+            "title": "ComputedRef<RegionItems>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 各区域的导航项 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+            "line": 13,
+            "className": "NavigationContext",
+            "memberName": "regionItems",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "regionVisibility",
+          "schema": {
+            "title": "ComputedRef<RegionVisibility>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 各区域是否可见（有项为 true） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+            "line": 15,
+            "className": "NavigationContext",
+            "memberName": "regionVisibility",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "moduleContext",
+          "schema": {
+            "title": "ComputedRef<NavContextState | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前模块的上下文选择器状态（null = 当前模块无上下文；作用域：模块下全部页面） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+            "line": 17,
+            "className": "NavigationContext",
+            "memberName": "moduleContext",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "navigateTo",
+          "schema": {
+            "title": "(node: ProjectNodeData) => void"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 导航到指定节点（处理外部链接、重定向、首个叶子等） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+            "line": 19,
+            "className": "NavigationContext",
+            "memberName": "navigateTo",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "navigateToPath",
+          "schema": {
+            "title": "(path: string) => void"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 导航到指定路径（自动追加租户前缀） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+            "line": 21,
+            "className": "NavigationContext",
+            "memberName": "navigateToPath",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "setContextValue",
+          "schema": {
+            "title": "(value: string | number | null) => void"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 设置当前模块上下文选择器的值 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+            "line": 23,
+            "className": "NavigationContext",
+            "memberName": "setContextValue",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "isNodeActive",
+          "schema": {
+            "title": "(node: ProjectNodeData) => boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 判断节点是否在活动路径上 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+            "line": 25,
+            "className": "NavigationContext",
+            "memberName": "isNodeActive",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "getBadge",
+          "schema": {
+            "title": "(nodeId: string) => string | number | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 获取节点的角标（运行时动态设定） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+            "line": 27,
+            "className": "NavigationContext",
+            "memberName": "getBadge",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "setBadge",
+          "schema": {
+            "title": "(nodeId: string, value: string | number | undefined) => void"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 设置节点的角标（运行时 API） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/navigation/nav-types.d.ts",
+            "line": 29,
+            "className": "NavigationContext",
+            "memberName": "setBadge",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.934Z"
+}

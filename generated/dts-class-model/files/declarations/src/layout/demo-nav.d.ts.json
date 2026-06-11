@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/layout/demo-nav.d.ts",
+  "module": {
+    "name": "app:layout/demo-nav",
+    "sourcePath": "declarations/src/layout/demo-nav.d.ts",
+    "sourceFile": "src/layout/demo-nav.ts",
+    "packageName": "app",
+    "modulePath": "layout/demo-nav",
+    "jsdoc": "@module app:layout/demo-nav\napp 的 layout/demo-nav 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.059Z"
+}

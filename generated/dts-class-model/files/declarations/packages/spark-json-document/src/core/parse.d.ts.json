@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/core/parse.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:core/parse",
+    "sourcePath": "declarations/packages/spark-json-document/src/core/parse.d.ts",
+    "sourceFile": "packages/spark-json-document/src/core/parse.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "core/parse",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\ncore/parse.ts — JSON 文档解析与序列化\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.832Z"
+}

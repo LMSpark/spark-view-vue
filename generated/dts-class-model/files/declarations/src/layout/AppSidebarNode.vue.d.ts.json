@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/layout/AppSidebarNode.vue.d.ts",
+  "module": {
+    "name": "app:layout/AppSidebarNode",
+    "sourcePath": "declarations/src/layout/AppSidebarNode.vue.d.ts",
+    "sourceFile": "src/layout/AppSidebarNode.vue",
+    "packageName": "app",
+    "modulePath": "layout/AppSidebarNode",
+    "jsdoc": "@module app:layout/AppSidebarNode\napp 的 layout/AppSidebarNode 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.056Z"
+}

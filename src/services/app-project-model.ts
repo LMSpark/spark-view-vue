@@ -1,3 +1,8 @@
+/**
+ * @module app:services/app-project-model
+ * app 的 services/app-project-model 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import {
   ProjectModel,
   type ProjectModelData,

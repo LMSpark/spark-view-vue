@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/page-design-host-run-provider.d.ts",
+  "module": {
+    "name": "app:services/page-design-host-run-provider",
+    "sourcePath": "declarations/src/services/page-design-host-run-provider.d.ts",
+    "sourceFile": "src/services/page-design-host-run-provider.ts",
+    "packageName": "app",
+    "modulePath": "services/page-design-host-run-provider",
+    "jsdoc": "APP 壳层 pageDesign Host Run provider（隔离式门面实例）。\n与 DevSystem 面板内 AI（共用当前编辑 scope 的 `editor.project`）不同：\nHost Run / SSE 为无 UI 会话、可并发多 pageId，故每次 run 创建 headless\n独立 `ProjectWorkspace`，运行结束保存 dirty 四文件后丢弃，不污染 DevSystem 编辑 session。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.086Z"
+}

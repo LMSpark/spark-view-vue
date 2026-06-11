@@ -1,5 +1,11 @@
+/**
+ * @module app:views/app/dev-system/childPlacementLabels
+ * app 的 views/app/dev-system/childPlacementLabels 模块。
+ * 导出 ClassModel symbol: ChildPlacementValue（共 1 个 symbol）。
+ */
 import type { ChildPlacement } from '@spark-appworks/spark-project-model'
 
+/** Child Placement Value 的语义模型。 */
 type ChildPlacementValue = '' | ChildPlacement
 
 const CHILD_PLACEMENT_LABELS = {

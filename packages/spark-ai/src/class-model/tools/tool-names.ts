@@ -1,4 +1,9 @@
 /**
+ * @module @spark-appworks/spark-ai:class-model/tools/tool-names
+ * @spark-appworks/spark-ai 的 class-model/tools/tool-names 模块。
+ * 导出 ClassModel symbol: ClassModelToolName（共 1 个 symbol）。
+ */
+/**
  * ClassModel 的 OpenAI tool 闭集。
  *
  * 注意：这里才是 OpenAI tool 名；ClassModel.methods 只是源码 class
@@ -14,6 +19,7 @@ export const CLASS_MODEL_TOOL_NAMES = Object.freeze({
   agentComplete: 'agent_complete',
 } as const)
 
+/** Class Model Tool Name 的语义模型。 */
 export type ClassModelToolName = typeof CLASS_MODEL_TOOL_NAMES[keyof typeof CLASS_MODEL_TOOL_NAMES]
 
 export function isClassModelToolName(name: string): name is ClassModelToolName {

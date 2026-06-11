@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/composables/useNotifications.d.ts",
+  "module": {
+    "name": "app:composables/useNotifications",
+    "sourcePath": "declarations/src/composables/useNotifications.d.ts",
+    "sourceFile": "src/composables/useNotifications.ts",
+    "packageName": "app",
+    "modulePath": "composables/useNotifications",
+    "jsdoc": "@module app:composables/useNotifications\napp 的 composables/useNotifications 模块。\n导出 ClassModel symbol: NotificationItem（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "NotificationItem"
+    ]
+  },
+  "symbols": [
+    "NotificationItem"
+  ],
+  "models": {
+    "NotificationItem": {
+      "kind": "NotificationItem",
+      "className": "NotificationItem",
+      "jsdoc": "/** Notification Item 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: number;\n    /** 显示标题。 */\n    title: string;\n    /** 用户可读消息。 */\n    message: string;\n    /** time 字段。 */\n    time: number;\n    /** read 字段。 */\n    read: boolean;\n    /** remote Id 标识。 */\n    remoteId?: string;\n    /** level 字段。 */\n    level?: string;\n    /** category 字段。 */\n    category?: string;\n    /** 来源对象。 */\n    source?: string;\n    /** action Url 地址。 */\n    actionUrl?: string;\n}",
+      "provenance": {
+        "file": "declarations/src/composables/useNotifications.d.ts",
+        "line": 2,
+        "className": "NotificationItem",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 唯一标识。 */",
+          "provenance": {
+            "file": "declarations/src/composables/useNotifications.d.ts",
+            "line": 4,
+            "className": "NotificationItem",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 显示标题。 */",
+          "provenance": {
+            "file": "declarations/src/composables/useNotifications.d.ts",
+            "line": 6,
+            "className": "NotificationItem",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "message",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 用户可读消息。 */",
+          "provenance": {
+            "file": "declarations/src/composables/useNotifications.d.ts",
+            "line": 8,
+            "className": "NotificationItem",
+            "memberName": "message",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "time",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** time 字段。 */",
+          "provenance": {
+            "file": "declarations/src/composables/useNotifications.d.ts",
+            "line": 10,
+            "className": "NotificationItem",
+            "memberName": "time",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "read",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** read 字段。 */",
+          "provenance": {
+            "file": "declarations/src/composables/useNotifications.d.ts",
+            "line": 12,
+            "className": "NotificationItem",
+            "memberName": "read",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "remoteId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** remote Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/composables/useNotifications.d.ts",
+            "line": 14,
+            "className": "NotificationItem",
+            "memberName": "remoteId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "level",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** level 字段。 */",
+          "provenance": {
+            "file": "declarations/src/composables/useNotifications.d.ts",
+            "line": 16,
+            "className": "NotificationItem",
+            "memberName": "level",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "category",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** category 字段。 */",
+          "provenance": {
+            "file": "declarations/src/composables/useNotifications.d.ts",
+            "line": 18,
+            "className": "NotificationItem",
+            "memberName": "category",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "source",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 来源对象。 */",
+          "provenance": {
+            "file": "declarations/src/composables/useNotifications.d.ts",
+            "line": 20,
+            "className": "NotificationItem",
+            "memberName": "source",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "actionUrl",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** action Url 地址。 */",
+          "provenance": {
+            "file": "declarations/src/composables/useNotifications.d.ts",
+            "line": 22,
+            "className": "NotificationItem",
+            "memberName": "actionUrl",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.042Z"
+}

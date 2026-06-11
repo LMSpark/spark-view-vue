@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/page-design/page-design-class-model-knowledge-provider.d.ts",
+  "module": {
+    "name": "app:services/page-design/page-design-class-model-knowledge-provider",
+    "sourcePath": "declarations/src/services/page-design/page-design-class-model-knowledge-provider.d.ts",
+    "sourceFile": "src/services/page-design/page-design-class-model-knowledge-provider.ts",
+    "packageName": "app",
+    "modulePath": "services/page-design/page-design-class-model-knowledge-provider",
+    "jsdoc": "@module app:services/page-design/page-design-class-model-knowledge-provider\napp 的 services/page-design/page-design-class-model-knowledge-provider 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.087Z"
+}

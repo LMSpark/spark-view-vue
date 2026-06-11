@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/zones/RendererFilter
+RendererFilter 模块，属于 SPARK component container/zone-container。
+组件目录: containers/zones。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div v-if="isPanelMode && standaloneChildren.length > 0" class="renderer-table-filters">
     <div v-if="props.collapsible" class="renderer-table-filters__header">

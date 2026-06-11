@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/permission/PermissionFilter.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:permission/PermissionFilter",
+    "sourcePath": "declarations/packages/spark-component/src/permission/PermissionFilter.d.ts",
+    "sourceFile": "packages/spark-component/src/permission/PermissionFilter.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "permission/PermissionFilter",
+    "jsdoc": "权限过滤器 — 纯函数集\n批量过滤行、字段，并保留服务端已经处理好的显示值",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.671Z"
+}

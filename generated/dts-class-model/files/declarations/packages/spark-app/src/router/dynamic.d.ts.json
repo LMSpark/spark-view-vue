@@ -1,0 +1,369 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:router/dynamic",
+    "sourcePath": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+    "sourceFile": "packages/spark-app/src/router/dynamic.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "router/dynamic",
+    "jsdoc": "动态路由注册器 - 支持 SPA 动态路由\n动态路由属于应用引导层（spark-app），页面节点能力来自 spark-project-model。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "DynamicRouterOptions",
+      "DynamicRouter"
+    ]
+  },
+  "symbols": [
+    "DynamicRouterOptions",
+    "DynamicRouter"
+  ],
+  "models": {
+    "DynamicRouterOptions": {
+      "kind": "DynamicRouterOptions",
+      "className": "DynamicRouterOptions",
+      "jsdoc": "/**\n * 动态路由注册选项\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** Vue Router 实例 */\n    router: Router;\n    /** 配置页四文件加载器 */\n    pageContentLoader: PageContentLoader;\n    /**\n     * 动态页面组件（必需）\n     * 用于渲染配置化页面\n     *\n     * @example\n     * ```typescript\n     * import { PageRenderer } from '@spark-appworks/spark-component'\n     * const options = { router, pageContentLoader, pageComponent: PageRenderer }\n     * ```\n     */\n    pageComponent: Component;\n    /**\n     * system-page 路径 → Vue 组件映射。\n     * 导航节点 nodeKind='system-page' 时，使用此映射解析组件。\n     */\n    componentMap?: Record<string, Component>;\n    /**\n     * 租户路径前缀（如 '/t/:tenantId'）。\n     * 设置后，config 页面路由自动加此前缀，使所有业务路由统一在租户 URL 下。\n     * system-page 路由不受影响（DB 中已含完整路径）。\n     */\n    tenantPathPrefix?: string;\n    /**\n     * 导航数据加载函数 — 导航树作为路由的唯一来源。\n     *\n     * 已认证时 `registerRoutes()` 使用此函数加载远程导航树并派生路由。\n     * 返回的 ProjectModelData 对象同时用于 UI 渲染（侧栏/顶栏菜单）。\n     */\n    loadNavigation?: (() => Promise<ProjectModelData>) | undefined;\n    /**\n     * 平台工作台导航加载函数。\n     *\n     * 返回的节点 path 仍保持相对形态（如 /dashboard、/tenants），\n     * 注册路由时统一映射到 platformPathPrefix 下（默认 /platform）。\n     */\n    loadPlatformNavigation?: (() => Promise<ProjectModelData>) | undefined;\n    /** 平台工作台路由前缀（默认 /platform）。 */\n    platformPathPrefix?: string | undefined;\n    /** 是否注册平台工作台导航。通常仅 platform_admin 返回 true。 */\n    isPlatformNavigationEnabled?: (() => boolean) | undefined;\n    /**\n     * 登录前本地导航树 — 未认证时使用的静态导航数据。\n     *\n     * 当 `registerRoutes()` 在未登录状态调用时（无法调用 loadNavigation），\n     * 使用此本地导航树注册路由（如 / 和 /login）。\n     * 登录后 `refreshRoutes()` 会用远程导航树替换。\n     */\n    preAuthNavTree?: ProjectModelData | undefined;\n    /**\n     * 认证状态检查回调。\n     *\n     * `registerRoutes()` 在运行时通过此回调判断当前状态：\n     * - 已登录 → 使用 `loadNavigation` 加载远程导航树\n     * - 未登录 → 使用 `preAuthNavTree` 本地导航树\n     */\n    isAuthenticated?: (() => boolean) | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+        "line": 13,
+        "className": "DynamicRouterOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "router",
+          "schema": {
+            "title": "Router"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** Vue Router 实例 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 15,
+            "className": "DynamicRouterOptions",
+            "memberName": "router",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "pageContentLoader",
+          "schema": {
+            "title": "PageContentLoader"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 配置页四文件加载器 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 17,
+            "className": "DynamicRouterOptions",
+            "memberName": "pageContentLoader",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "pageComponent",
+          "schema": {
+            "title": "Component"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * 动态页面组件（必需）\n     * 用于渲染配置化页面\n     *\n     * @example\n     * ```typescript\n     * import { PageRenderer } from '@spark-appworks/spark-component'\n     * const options = { router, pageContentLoader, pageComponent: PageRenderer }\n     * ```\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 28,
+            "className": "DynamicRouterOptions",
+            "memberName": "pageComponent",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "componentMap",
+          "schema": {
+            "title": "Record<string, Component>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * system-page 路径 → Vue 组件映射。\n     * 导航节点 nodeKind='system-page' 时，使用此映射解析组件。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 33,
+            "className": "DynamicRouterOptions",
+            "memberName": "componentMap",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "tenantPathPrefix",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 租户路径前缀（如 '/t/:tenantId'）。\n     * 设置后，config 页面路由自动加此前缀，使所有业务路由统一在租户 URL 下。\n     * system-page 路由不受影响（DB 中已含完整路径）。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 39,
+            "className": "DynamicRouterOptions",
+            "memberName": "tenantPathPrefix",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "loadNavigation",
+          "schema": {
+            "title": "(() => Promise<ProjectModelData>) | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 导航数据加载函数 — 导航树作为路由的唯一来源。\n     *\n     * 已认证时 `registerRoutes()` 使用此函数加载远程导航树并派生路由。\n     * 返回的 ProjectModelData 对象同时用于 UI 渲染（侧栏/顶栏菜单）。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 46,
+            "className": "DynamicRouterOptions",
+            "memberName": "loadNavigation",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "loadPlatformNavigation",
+          "schema": {
+            "title": "(() => Promise<ProjectModelData>) | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 平台工作台导航加载函数。\n     *\n     * 返回的节点 path 仍保持相对形态（如 /dashboard、/tenants），\n     * 注册路由时统一映射到 platformPathPrefix 下（默认 /platform）。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 53,
+            "className": "DynamicRouterOptions",
+            "memberName": "loadPlatformNavigation",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "platformPathPrefix",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 平台工作台路由前缀（默认 /platform）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 55,
+            "className": "DynamicRouterOptions",
+            "memberName": "platformPathPrefix",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "isPlatformNavigationEnabled",
+          "schema": {
+            "title": "(() => boolean) | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否注册平台工作台导航。通常仅 platform_admin 返回 true。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 57,
+            "className": "DynamicRouterOptions",
+            "memberName": "isPlatformNavigationEnabled",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "preAuthNavTree",
+          "schema": {
+            "title": "ProjectModelData | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 登录前本地导航树 — 未认证时使用的静态导航数据。\n     *\n     * 当 `registerRoutes()` 在未登录状态调用时（无法调用 loadNavigation），\n     * 使用此本地导航树注册路由（如 / 和 /login）。\n     * 登录后 `refreshRoutes()` 会用远程导航树替换。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 65,
+            "className": "DynamicRouterOptions",
+            "memberName": "preAuthNavTree",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "isAuthenticated",
+          "schema": {
+            "title": "(() => boolean) | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 认证状态检查回调。\n     *\n     * `registerRoutes()` 在运行时通过此回调判断当前状态：\n     * - 已登录 → 使用 `loadNavigation` 加载远程导航树\n     * - 未登录 → 使用 `preAuthNavTree` 本地导航树\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 73,
+            "className": "DynamicRouterOptions",
+            "memberName": "isAuthenticated",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DynamicRouter": {
+      "kind": "DynamicRouter",
+      "className": "DynamicRouter",
+      "jsdoc": "/**\n * 动态路由管理器\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+        "line": 78,
+        "className": "DynamicRouter",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "title": "DynamicRouterOptions"
+            }
+          },
+          "required": [
+            "options"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Dynamic Router 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+          "line": 106,
+          "className": "DynamicRouter",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "registerRoutes",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 注册所有路由（从导航树派生） */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 117,
+            "className": "DynamicRouter",
+            "memberName": "registerRoutes",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "removeRoute",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 移除路由 */",
+          "paramsTypeText": "name: string",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 138,
+            "className": "DynamicRouter",
+            "memberName": "removeRoute",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "refreshRoutes",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<ProjectModelData | null>"
+          },
+          "returnTypeText": "Promise<ProjectModelData | null>",
+          "jsdoc": "/** 刷新路由（重新加载导航树，保留静态组件映射），返回加载后的导航树 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 140,
+            "className": "DynamicRouter",
+            "memberName": "refreshRoutes",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getNavTree",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectModelData | null"
+          },
+          "returnTypeText": "ProjectModelData | null",
+          "jsdoc": "/** 获取已加载的导航树（导航模式下可用） */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 142,
+            "className": "DynamicRouter",
+            "memberName": "getNavTree",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getRegisteredRoutes",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "string[]",
+            "items": true
+          },
+          "returnTypeText": "string[]",
+          "jsdoc": "/** 获取已注册路由列表 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/router/dynamic.d.ts",
+            "line": 144,
+            "className": "DynamicRouter",
+            "memberName": "getRegisteredRoutes",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.971Z"
+}

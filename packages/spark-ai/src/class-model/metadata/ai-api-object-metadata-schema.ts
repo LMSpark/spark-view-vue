@@ -7,6 +7,7 @@
 
 import type { AiJsonSchema, AiJsonSchemaObject, AiJsonValue } from '../../json'
 
+/** Ai Api Action Failure Mode 的语义模型。 */
 export type AiApiActionFailureMode = Readonly<{
   /** 错误码（LLM 可见，用于识别失败类型）。 */
   code: string
@@ -16,6 +17,7 @@ export type AiApiActionFailureMode = Readonly<{
   fix: string
 }>
 
+/** Ai Api Action Example 的语义模型。 */
 export type AiApiActionExample = Readonly<{
   /** 用户输入示例，可用于判断触发条件。 */
   user?: string
@@ -27,6 +29,7 @@ export type AiApiActionExample = Readonly<{
   call?: AiJsonValue
 }>
 
+/** Ai Api Action Anti Example 的语义模型。 */
 export type AiApiActionAntiExample = Readonly<{
   /** 用户输入或场景示例。 */
   user?: string

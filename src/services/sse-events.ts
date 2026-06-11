@@ -28,53 +28,91 @@ const ServerEventType = Object.freeze({
 
 // Payload contracts ---------------------------------------------------------
 
+/** File Change Event 的事件载荷。 */
 export type FileChangeEvent = {
-  pageId: string
-  file: string
-  timestamp: number
+    /** page Id 标识。 */
+pageId: string
+    /** 文件路径或文件对象。 */
+file: string
+    /** 事件时间戳。 */
+timestamp: number
 }
 
+/** Data Batch Job Event 的事件载荷。 */
 export type DataBatchJobEvent = {
-  tenantId: string
-  projectId: string
-  jobId: string
-  status: string
-  completed: number
-  total: number
-  timestamp: number
-  result?: unknown
-  error?: string
+    /** tenant Id 标识。 */
+tenantId: string
+    /** project Id 标识。 */
+projectId: string
+    /** job Id 标识。 */
+jobId: string
+    /** 当前状态。 */
+status: string
+    /** completed 字段。 */
+completed: number
+    /** 总记录数。 */
+total: number
+    /** 事件时间戳。 */
+timestamp: number
+    /** 操作结果。 */
+result?: unknown
+    /** 错误对象或错误信息。 */
+error?: string
 }
 
+/** Data Change Event 的事件载荷。 */
 export type DataChangeEvent = {
-  tenantId: string
-  projectId: string
-  tableName: string
-  operation: string
-  timestamp: number
-  jobId?: string
+    /** tenant Id 标识。 */
+tenantId: string
+    /** project Id 标识。 */
+projectId: string
+    /** 数据表名。 */
+tableName: string
+    /** operation 字段。 */
+operation: string
+    /** 事件时间戳。 */
+timestamp: number
+    /** job Id 标识。 */
+jobId?: string
 }
 
+/** Server Notification Event 的事件载荷。 */
 export type ServerNotificationEvent = {
-  title: string
-  message: string
-  timestamp: number
-  notificationId?: string
-  level?: string
-  category?: string
-  source?: string
-  actionUrl?: string
+    /** 显示标题。 */
+title: string
+    /** 用户可读消息。 */
+message: string
+    /** 事件时间戳。 */
+timestamp: number
+    /** notification Id 标识。 */
+notificationId?: string
+    /** level 字段。 */
+level?: string
+    /** category 字段。 */
+category?: string
+    /** 来源对象。 */
+source?: string
+    /** action Url 地址。 */
+actionUrl?: string
 }
 
+/** Ai Host Run Request Event 的事件载荷。 */
 export type AiHostRunRequestEvent = {
-  requestId: string
-  alias: string
-  args: Record<string, unknown>
-  timestamp: number
-  timeoutMs?: number
-  reason?: string
+    /** request Id 标识。 */
+requestId: string
+    /** alias 字段。 */
+alias: string
+    /** args 字段。 */
+args: Record<string, unknown>
+    /** 事件时间戳。 */
+timestamp: number
+    /** timeout Ms 字段。 */
+timeoutMs?: number
+    /** reason 字段。 */
+reason?: string
 }
 
+/** Ai Host Run Result Status 的语义模型。 */
 export type AiHostRunResultStatus =
   | 'completed'
   | 'failed'
@@ -85,20 +123,34 @@ export type AiHostRunResultStatus =
   | 'invalid_args'
   | 'cancelled'
 
+/** Ai Host Run Result Event 的事件载荷。 */
 export type AiHostRunResultEvent = {
-  requestId: string
-  alias: string
-  status: AiHostRunResultStatus
-  durationMs?: number
-  clientTimestamp?: number
-  serverTimestamp?: number
-  sessionId?: string
-  businessRegistrationId?: string
-  businessInstanceId?: string
-  text?: string
-  reasoning?: string
-  toolCalls?: unknown
-  error?: unknown
+    /** request Id 标识。 */
+requestId: string
+    /** alias 字段。 */
+alias: string
+    /** 当前状态。 */
+status: AiHostRunResultStatus
+    /** duration Ms 字段。 */
+durationMs?: number
+    /** client Timestamp 字段。 */
+clientTimestamp?: number
+    /** server Timestamp 字段。 */
+serverTimestamp?: number
+    /** session Id 标识。 */
+sessionId?: string
+    /** business Registration Id 标识。 */
+businessRegistrationId?: string
+    /** business Instance Id 标识。 */
+businessInstanceId?: string
+    /** 展示文本。 */
+text?: string
+    /** reasoning 字段。 */
+reasoning?: string
+    /** tool Calls 字段。 */
+toolCalls?: unknown
+    /** 错误对象或错误信息。 */
+error?: unknown
 }
 
 type EventNormalizer<T> = (data: unknown) => T | null

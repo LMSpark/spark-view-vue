@@ -12,10 +12,14 @@ import { isJsonObject } from '../core/json-types'
 
 /** Schema 路径解析结果 */
 export type JsonSchemaInfo = {
-  title: string
-  description: string
-  required: boolean
-  enumValues: string[]
+    /** 显示标题。 */
+title: string
+    /** description 字段。 */
+description: string
+    /** 是否必填。 */
+required: boolean
+    /** enum Values 字段。 */
+enumValues: string[]
 }
 
 type JsonSchemaRecord = {

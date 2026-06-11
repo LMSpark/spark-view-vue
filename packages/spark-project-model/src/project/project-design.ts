@@ -29,9 +29,12 @@ import type { ProjectInfo, ProjectInfoInput, ProjectModelInitOptions } from './p
 
 export type { ProjectInfo, ProjectInfoInput } from './project-types'
 
+/** Project Design Node Edit Result 的返回结果。 */
 export type ProjectDesignNodeEditResult<TNode extends ProjectNode = ProjectNode> = {
-  node: TNode
-  result: NavigationNodeDraftApplyResult
+    /** node 字段。 */
+node: TNode
+    /** 操作结果。 */
+result: NavigationNodeDraftApplyResult
 }
 
 /**
@@ -54,7 +57,8 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
   private readonly navigationIndex: NavigationIndex<TNode>
   private navigationRootCache: ProjectModelData | null = null
 
-  constructor(options: ProjectModelInitOptions) {
+    /** 创建 Project Design 实例。 */
+constructor(options: ProjectModelInitOptions) {
     const projectId = options.projectId.trim()
     if (!projectId) throw new Error('projectId 不能为空')
     this.projectIdValue = projectId
@@ -125,7 +129,8 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
 
   get pages(): Iterable<ConfigPageNode> { return this.configPagesByPageId.values() }
 
-  getChildNodes(nodeId = ''): TNode[] {
+    /** 读取 Child Nodes。 */
+getChildNodes(nodeId = ''): TNode[] {
     return this.readChildNodes(nodeId)
   }
 
@@ -133,11 +138,13 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     return [...this.nodesById.values()]
   }
 
-  forEachNode(callback: (node: TNode) => void): void {
+    /** 执行 for Each Node 操作。 */
+forEachNode(callback: (node: TNode) => void): void {
     for (const node of this.nodesById.values()) callback(node)
   }
 
-  replaceNavigationRoot(root: ProjectModelData): ProjectModelData {
+    /** 执行 replace Navigation Root 操作。 */
+replaceNavigationRoot(root: ProjectModelData): ProjectModelData {
     const normalized = normalizeNavRoot(root)
     const normalizedRoot: ProjectModelData = normalized.id?.trim()
       ? normalized
@@ -170,7 +177,8 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     return this.navigationRoot
   }
 
-  replaceProjectInfo(project: ProjectInfoInput): ProjectInfo {
+    /** 执行 replace Project Info 操作。 */
+replaceProjectInfo(project: ProjectInfoInput): ProjectInfo {
     const projectId = project.projectId?.trim()
     if (projectId !== undefined && projectId !== '' && projectId !== this.projectId) {
       throw new Error(`项目 ID 不匹配: ${projectId} != ${this.projectId}`)
@@ -196,23 +204,28 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     return this.projectInfo
   }
 
-  replaceNavigationChildren(children: ProjectNodeData[]): ProjectModelData {
+    /** 执行 replace Navigation Children 操作。 */
+replaceNavigationChildren(children: ProjectNodeData[]): ProjectModelData {
     return this.replaceNavigationRoot(buildNavRoot(children, this.navigationRoot))
   }
 
-  findNodeById(nodeId: string): TNode | null {
+    /** find Node By Id 标识。 */
+findNodeById(nodeId: string): TNode | null {
     return this.nodesById.get(nodeId.trim()) ?? null
   }
 
-  findNodeLocation(nodeId: string): ProjectNodeLocation | null {
+    /** 执行 find Node Location 操作。 */
+findNodeLocation(nodeId: string): ProjectNodeLocation | null {
     return this.navigationIndex.findNodeLocation(nodeId)
   }
 
-  findConfigPageByPageId(pageId: string): ConfigPageNode | null {
+    /** find Config Page By Page Id 标识。 */
+findConfigPageByPageId(pageId: string): ConfigPageNode | null {
     return this.configPagesByPageId.get(pageId.trim()) ?? null
   }
 
-  applyNavigationNodeEdit(input: NavigationNodeDraft): ProjectDesignNodeEditResult<TNode> {
+    /** 执行 apply Navigation Node Edit 操作。 */
+applyNavigationNodeEdit(input: NavigationNodeDraft): ProjectDesignNodeEditResult<TNode> {
     const nodeId = input.node.id.trim()
     if (!nodeId) throw new Error('nodeId 不能为空')
     const model = this.findNodeById(nodeId)
@@ -223,7 +236,8 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     return { node: model, result }
   }
 
-  openPageDesign(pageId: string): ConfigPageNode {
+    /** 执行 open Page Design 操作。 */
+openPageDesign(pageId: string): ConfigPageNode {
     const normalized = pageId.trim()
     if (!normalized) throw new Error('pageId 不能为空')
     const existing = this.findConfigPageByPageId(normalized)
@@ -238,7 +252,8 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     return this.openDetachedConfigPage(node)
   }
 
-  closePageDesign(pageId: string): void {
+    /** 执行 close Page Design 操作。 */
+closePageDesign(pageId: string): void {
     const normalized = pageId.trim()
     if (!normalized) return
     const page = this.findConfigPageByPageId(normalized)
@@ -246,7 +261,8 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     this.configPagesByPageId.delete(page.pageId)
   }
 
-  readPageSummaries(): ProjectPageNodeSummary[] {
+    /** 执行 read Page Summaries 操作。 */
+readPageSummaries(): ProjectPageNodeSummary[] {
     const summaries = buildProjectPageSummaries(this.navigationIndex.buildTree(), {
       descriptionContext: this.readProjectDescriptionContext(),
     })
@@ -258,7 +274,8 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     return summaries
   }
 
-  addRootModule(createId: () => string): ProjectNodeData {
+    /** 执行 add Root Module 操作。 */
+addRootModule(createId: () => string): ProjectNodeData {
     const node: ProjectNodeData = {
       id: createId(),
       nodeKind: 'module',
@@ -273,7 +290,8 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     return node
   }
 
-  addChildPage(createId: () => string, parent: ProjectNodeData | null = null): ProjectNodeData {
+    /** 执行 add Child Page 操作。 */
+addChildPage(createId: () => string, parent: ProjectNodeData | null = null): ProjectNodeData {
     const id = createId()
     const node: ProjectNodeData = {
       id,
@@ -288,7 +306,8 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     return node
   }
 
-  removeNode(nodeId: string): ProjectNodeData | null {
+    /** 删除 Node。 */
+removeNode(nodeId: string): ProjectNodeData | null {
     const normalized = nodeId.trim()
     if (!normalized) throw new Error('nodeId 不能为空')
     const model = this.findNodeById(normalized)
@@ -301,11 +320,13 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     return removed
   }
 
-  refreshNavRefs(): void {
+    /** 执行 refresh Nav Refs 操作。 */
+refreshNavRefs(): void {
     this.rebindDescriptionContext()
   }
 
-  toTree(): ProjectNodeData[] {
+    /** 执行 to Tree 操作。 */
+toTree(): ProjectNodeData[] {
     return this.navigationIndex.buildTree()
   }
 

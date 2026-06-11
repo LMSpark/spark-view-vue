@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/display/data-components/DisplayStatistic.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/display/data-components/DisplayStatistic.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/display/data-components/DisplayStatistic.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/display/data-components/DisplayStatistic.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/display/data-components/DisplayStatistic.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/display/data-components/DisplayStatistic.props\nDisplayStatistic 模块，属于 SPARK component display/data-display。\n组件目录: display/data-components。\n导出 ClassModel symbol: RStatisticProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RStatisticProps"
+    ],
+    "componentName": "DisplayStatistic",
+    "componentType": "r-statistic",
+    "componentLevel": "display",
+    "componentLayer": "data-display",
+    "componentDirectory": "display/data-components"
+  },
+  "symbols": [
+    "RStatisticProps"
+  ],
+  "models": {
+    "RStatisticProps": {
+      "kind": "RStatisticProps",
+      "className": "RStatisticProps",
+      "jsdoc": "/** RStatistic Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & SparkDataDisplayProps<number | string> & {\n    /** 统计标题 */\n    title?: string;\n    /** 小数精度 */\n    precision?: number;\n    /** 小数分隔符 */\n    decimalSeparator?: string;\n    /** 千分位分隔符 */\n    groupSeparator?: string;\n    /** 前缀 */\n    prefix?: string;\n    /** 后缀 */\n    suffix?: string;\n    /** 数值样式 */\n    valueStyle?: Record<string, unknown> | string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkDataDisplayProps<number | string>",
+          "targetName": "SparkDataDisplayProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 统计标题 */\n    title?: string;\n    /** 小数精度 */\n    precision?: number;\n    /** 小数分隔符 */\n    decimalSeparator?: string;\n    /** 千分位分隔符 */\n    groupSeparator?: string;\n    /** 前缀 */\n    prefix?: string;\n    /** 后缀 */\n    suffix?: string;\n    /** 数值样式 */\n    valueStyle?: Record<string, unknown> | string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayStatistic.props.d.ts",
+        "line": 9,
+        "className": "RStatisticProps",
+        "declarationKind": "type",
+        "componentName": "DisplayStatistic",
+        "componentType": "r-statistic",
+        "componentLevel": "display",
+        "componentLayer": "data-display",
+        "componentDirectory": "display/data-components"
+      },
+      "attributes": [
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 统计标题 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayStatistic.props.d.ts",
+            "line": 11,
+            "className": "RStatisticProps",
+            "memberName": "title",
+            "declarationKind": "interface",
+            "componentName": "DisplayStatistic",
+            "componentType": "r-statistic",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "precision",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 小数精度 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayStatistic.props.d.ts",
+            "line": 13,
+            "className": "RStatisticProps",
+            "memberName": "precision",
+            "declarationKind": "interface",
+            "componentName": "DisplayStatistic",
+            "componentType": "r-statistic",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "decimalSeparator",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 小数分隔符 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayStatistic.props.d.ts",
+            "line": 15,
+            "className": "RStatisticProps",
+            "memberName": "decimalSeparator",
+            "declarationKind": "interface",
+            "componentName": "DisplayStatistic",
+            "componentType": "r-statistic",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "groupSeparator",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 千分位分隔符 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayStatistic.props.d.ts",
+            "line": 17,
+            "className": "RStatisticProps",
+            "memberName": "groupSeparator",
+            "declarationKind": "interface",
+            "componentName": "DisplayStatistic",
+            "componentType": "r-statistic",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "prefix",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 前缀 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayStatistic.props.d.ts",
+            "line": 19,
+            "className": "RStatisticProps",
+            "memberName": "prefix",
+            "declarationKind": "interface",
+            "componentName": "DisplayStatistic",
+            "componentType": "r-statistic",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "suffix",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 后缀 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayStatistic.props.d.ts",
+            "line": 21,
+            "className": "RStatisticProps",
+            "memberName": "suffix",
+            "declarationKind": "interface",
+            "componentName": "DisplayStatistic",
+            "componentType": "r-statistic",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "valueStyle",
+          "schema": {
+            "title": "Record<string, unknown> | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 数值样式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayStatistic.props.d.ts",
+            "line": 23,
+            "className": "RStatisticProps",
+            "memberName": "valueStyle",
+            "declarationKind": "interface",
+            "componentName": "DisplayStatistic",
+            "componentType": "r-statistic",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.327Z"
+}

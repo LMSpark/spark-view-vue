@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/AiSessionTracePanel.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/AiSessionTracePanel.props",
+    "sourcePath": "declarations/packages/spark-component/src/ai/components/AiSessionTracePanel.props.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/AiSessionTracePanel.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/AiSessionTracePanel.props",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/AiSessionTracePanel.props\n@spark-appworks/spark-component 的 ai/components/AiSessionTracePanel.props 模块。\n导出 ClassModel symbol: AiSessionTracePanelProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiSessionTracePanelProps"
+    ]
+  },
+  "symbols": [
+    "AiSessionTracePanelProps"
+  ],
+  "models": {
+    "AiSessionTracePanelProps": {
+      "kind": "AiSessionTracePanelProps",
+      "className": "AiSessionTracePanelProps",
+      "jsdoc": "/**\n * AiSessionTracePanel 根组件 Props。\n *\n * entries       — 外部 AI runtime 传入的 live 流展示条目（不由 UI 组件创建或缓存）。\n * isStreaming   — 是否正在接收流式增量。\n * isReasoning   — 是否正在接收推理文本。\n * diagnostics   — 外部诊断投影。永远有值（含空摘要）。\n * height        — 面板高度 CSS 值，默认 '100%'。\n * emptyText     — 无 live entries 且诊断投影为空时的占位文本。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    diagnostics: SessionDiagnosticsData;\n    height?: string;\n    emptyText?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    diagnostics: SessionDiagnosticsData;\n    height?: string;\n    emptyText?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/ai/components/AiSessionTracePanel.props.d.ts",
+        "line": 17,
+        "className": "AiSessionTracePanelProps",
+        "declarationKind": "type",
+        "componentName": "AiSessionTracePanel"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.993Z"
+}

@@ -11,14 +11,22 @@ import { extractColumnRules } from '@spark-appworks/spark-data'
 
 /** 渲染层 FormItemRule 最小子集（避免引入具体实现类型依赖） */
 export type FormItemRule = {
-  required?: boolean
-  message?: string
-  trigger?: string | string[]
-  type?: string
-  min?: number
-  max?: number
-  pattern?: RegExp
-  validator?: (rule: unknown, value: unknown, callback: (error?: Error) => void) => void}
+    /** 是否必填。 */
+required?: boolean
+    /** 用户可读消息。 */
+message?: string
+    /** trigger 字段。 */
+trigger?: string | string[]
+    /** 类型标识。 */
+type?: string
+    /** min 字段。 */
+min?: number
+    /** max 字段。 */
+max?: number
+    /** pattern 字段。 */
+pattern?: RegExp
+    /** validator 回调。 */
+validator?: (rule: unknown, value: unknown, callback: (error?: Error) => void) => void}
 
 /**
  * 将框架无关的 ColumnValidationRule 数组转为渲染层 FormItemRule 数组。

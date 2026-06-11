@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/data-views/RendererForm/RendererForm
+RendererForm 模块，属于 SPARK component table-level/data-view-container。
+组件目录: containers/data-views。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div :class="['renderer-form-layout', `renderer-form-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-form-toolbar', toolbarClassValue]">

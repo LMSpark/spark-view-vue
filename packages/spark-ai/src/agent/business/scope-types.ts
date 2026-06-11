@@ -39,8 +39,11 @@ import type {
  * businessInstanceId     — 顶层实例 ID（同一次会话内不变）
  */
 export class AiAgentTarget {
-  public constructor(
+    /** 创建 Ai Agent Target 实例。 */
+public constructor(
+    /** 业务注册 ID，对应 BusinessRegistry 中的顶层注册项。 */
     public readonly businessRegistrationId: string,
+    /** 业务实例 ID，用于定位同一注册项下的具体实例。 */
     public readonly businessInstanceId: string,
   ) {}
 }
@@ -65,10 +68,13 @@ export class AiAgentTarget {
  * 同时也是 turnKey / streamKey 的数据来源。
  */
 export class AiAgentScope extends AiAgentTarget {
-  public constructor(
+    /** 创建 Ai Agent Scope 实例。 */
+public constructor(
     businessRegistrationId: string,
     businessInstanceId: string,
+    /** 顶层实例 ID，参与生成后端 sessionId。 */
     public readonly instanceId: string,
+    /** 工具 runtime 内部实例 ID，当前通常与顶层实例 ID 一致。 */
     public readonly runtimeInstanceId: string,
   ) {
     super(businessRegistrationId, businessInstanceId)
@@ -97,9 +103,13 @@ export class AiAgentScope extends AiAgentTarget {
  * 因为生命周期回调已在具体业务实例内部执行，无需重复定位。
  */
 export class AiAgentRuntimeContext {
-  public constructor(
+    /** 创建 Ai Agent Runtime Context 实例。 */
+public constructor(
+    /** 业务模块 ID，对应 registration.moduleId。 */
     public readonly moduleId: string,
+    /** 顶层模块实例 ID，例如 pageId 或业务草稿 ID。 */
     public readonly moduleInstanceId: string,
+    /** 顶层实例 ID，参与生成后端 sessionId。 */
     public readonly instanceId: string,
   ) {}
 }
@@ -111,6 +121,7 @@ export class AiAgentRuntimeContext {
  * 继承自 RuntimeContext（确定写入哪个会话），追加消息体字段。
  * ----------------------------------------------------------------------------- */
 
+/** Ai Agent Append Message Options 的调用配置。 */
 export type AiAgentAppendMessageOptions = AiAgentRuntimeContext & Readonly<{
   /** 消息角色：user / assistant / system / tool */
   role: AiAgentMessageRole

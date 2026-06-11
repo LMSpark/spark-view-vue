@@ -1,0 +1,2369 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/shared-types",
+    "sourcePath": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+    "sourceFile": "packages/spark-component/src/components/shared-types.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/shared-types",
+    "jsdoc": "组件层共享类型——容器 & 字段均可引用。\nValueRef<T> 是 Vue Ref<T> 的最小结构约束，\n用于纯 TS 文件中接受 ref-like 对象而无需 import vue。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ValueRef",
+      "SparkNodeProps",
+      "SparkTitleContentProps",
+      "SparkDataDisplayProps",
+      "SparkFieldSemanticProps",
+      "SparkPrimaryActionTextProps",
+      "SparkReadonlyActionTextProps",
+      "SparkMultilineRowsProps",
+      "SparkMultilineFieldProps",
+      "SparkNumericMaxProps",
+      "SparkNumericBoundsProps",
+      "SparkMaxNumericFieldProps",
+      "SparkBoundedFieldProps",
+      "SparkRangeNumericFieldProps",
+      "SparkFileFieldProps",
+      "SparkFileUploadActionProps",
+      "SparkUploadFieldProps",
+      "SparkFilePickerFieldProps",
+      "SparkTemporalPickerProps",
+      "SparkRangeFilterProps",
+      "SparkRangeTemporalFieldProps",
+      "SparkOptionButtonStyleProps",
+      "SparkHierarchicalSelectionProps",
+      "SparkOptionValueMode",
+      "SparkOptionFieldProps",
+      "SparkButtonOptionFieldProps",
+      "SparkHierarchicalOptionFieldProps",
+      "SparkOptionSourceProps",
+      "SparkFloatingLayerProps",
+      "SparkGridLayoutProps",
+      "SparkTableModelProps",
+      "SparkCrudEventProps",
+      "SparkRowInteractionEventProps",
+      "SparkCrudDataContainerProps",
+      "SparkInteractiveDataContainerProps",
+      "SparkVisibilityEventProps",
+      "SparkVisibilityContainerProps"
+    ]
+  },
+  "symbols": [
+    "ValueRef",
+    "SparkNodeProps",
+    "SparkTitleContentProps",
+    "SparkDataDisplayProps",
+    "SparkFieldSemanticProps",
+    "SparkPrimaryActionTextProps",
+    "SparkReadonlyActionTextProps",
+    "SparkMultilineRowsProps",
+    "SparkMultilineFieldProps",
+    "SparkNumericMaxProps",
+    "SparkNumericBoundsProps",
+    "SparkMaxNumericFieldProps",
+    "SparkBoundedFieldProps",
+    "SparkRangeNumericFieldProps",
+    "SparkFileFieldProps",
+    "SparkFileUploadActionProps",
+    "SparkUploadFieldProps",
+    "SparkFilePickerFieldProps",
+    "SparkTemporalPickerProps",
+    "SparkRangeFilterProps",
+    "SparkRangeTemporalFieldProps",
+    "SparkOptionButtonStyleProps",
+    "SparkHierarchicalSelectionProps",
+    "SparkOptionValueMode",
+    "SparkOptionFieldProps",
+    "SparkButtonOptionFieldProps",
+    "SparkHierarchicalOptionFieldProps",
+    "SparkOptionSourceProps",
+    "SparkFloatingLayerProps",
+    "SparkGridLayoutProps",
+    "SparkTableModelProps",
+    "SparkCrudEventProps",
+    "SparkRowInteractionEventProps",
+    "SparkCrudDataContainerProps",
+    "SparkInteractiveDataContainerProps",
+    "SparkVisibilityEventProps",
+    "SparkVisibilityContainerProps"
+  ],
+  "models": {
+    "ValueRef": {
+      "kind": "ValueRef",
+      "className": "ValueRef",
+      "jsdoc": "/** Value Ref 的引用结构。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 当前持有的值。\n     *\n     * 约定：\n     * - 调用方可以像操作 Vue ref 一样读取 `value`\n     * - 也可以直接覆写 `value`，用于在纯 TS 工具中完成状态同步\n     */\n    value: T;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 11,
+        "className": "ValueRef",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "value",
+          "schema": {
+            "title": "T"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * 当前持有的值。\n     *\n     * 约定：\n     * - 调用方可以像操作 Vue ref 一样读取 `value`\n     * - 也可以直接覆写 `value`，用于在纯 TS 工具中完成状态同步\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 19,
+            "className": "ValueRef",
+            "memberName": "value",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeProps": {
+      "kind": "SparkNodeProps",
+      "className": "SparkNodeProps",
+      "jsdoc": "/**\n * SPARK 组件共享基类（第一层）：所有 SPARK 组件 props 的统一起点。\n *\n * 说明：\n * - type 由渲染器路由与组件默认值共同决定\n * - id 对应 SparkNode.id 的运行时映射\n * - children 必须对齐 `SparkNode.children` 的真实运行时形态\n * - registry 分支会直接把 `node.children` 透传给目标组件\n * - `children` 允许包含文本子节点，因此不能错误收窄成 `SparkNode[]`\n * - 只消费结构子节点的容器，应在本地使用 `getSparkNodeChildren()` 再收窄\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 组件类型标识。\n     *\n     * 来源通常是 `SparkNode.type`，也可能在运行时由组件默认值补齐，\n     * 主要用于渲染器路由、调试信息展示，以及少量组件内部的类型分支判断。\n     */\n    type?: string;\n    /**\n     * 组件实例的稳定标识。\n     *\n      * 它通常对应 `SparkNode.id`，可用于：\n     * - 页面脚本按名称查询节点\n     * - 事件回调、日志、调试面板定位具体组件\n     * - 某些容器对子节点做稳定 key 推导\n     */\n    id?: string;\n    /**\n     * 原始子节点载荷，必须严格对齐 `SparkNode.children` 的运行时形态。\n     *\n     * 注意：\n     * - 这里不只会出现结构化 `SparkNode`\n     * - 还可能出现字符串、数字等文本子节点\n     * - 只接受结构节点的组件，必须在本地显式收窄，而不能在共享层提前写死为 `SparkNode[]`\n     */\n    children?: SparkNodeChildren;\n    /**\n     * 权限不足时的呈现策略。\n     * - `disable`：保留可见但禁用（默认）\n     * - `hide`：直接隐藏组件\n     */\n    permissionDeniedMode?: 'disable' | 'hide';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 32,
+        "className": "SparkNodeProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "type",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 组件类型标识。\n     *\n     * 来源通常是 `SparkNode.type`，也可能在运行时由组件默认值补齐，\n     * 主要用于渲染器路由、调试信息展示，以及少量组件内部的类型分支判断。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 39,
+            "className": "SparkNodeProps",
+            "memberName": "type",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "id",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 组件实例的稳定标识。\n     *\n      * 它通常对应 `SparkNode.id`，可用于：\n     * - 页面脚本按名称查询节点\n     * - 事件回调、日志、调试面板定位具体组件\n     * - 某些容器对子节点做稳定 key 推导\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 48,
+            "className": "SparkNodeProps",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "children",
+          "schema": {
+            "title": "SparkNodeChildren"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 原始子节点载荷，必须严格对齐 `SparkNode.children` 的运行时形态。\n     *\n     * 注意：\n     * - 这里不只会出现结构化 `SparkNode`\n     * - 还可能出现字符串、数字等文本子节点\n     * - 只接受结构节点的组件，必须在本地显式收窄，而不能在共享层提前写死为 `SparkNode[]`\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 57,
+            "className": "SparkNodeProps",
+            "memberName": "children",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "permissionDeniedMode",
+          "schema": {
+            "title": "'disable' | 'hide'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 权限不足时的呈现策略。\n     * - `disable`：保留可见但禁用（默认）\n     * - `hide`：直接隐藏组件\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 63,
+            "className": "SparkNodeProps",
+            "memberName": "permissionDeniedMode",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkTitleContentProps": {
+      "kind": "SparkTitleContentProps",
+      "className": "SparkTitleContentProps",
+      "jsdoc": "/**\n * 标题 + 内容文本语义（容器/展示组件复用）。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 标题位文本。\n     * 通常用于卡片头、统计标题、面板标题等“主说明”区域。\n     */\n    title?: string;\n    /**\n     * 主内容文本。\n     * 通常用于正文、摘要、补充说明，和 `title` 形成“标题 + 内容”的基础展示模型。\n     */\n    content?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 68,
+        "className": "SparkTitleContentProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 标题位文本。\n     * 通常用于卡片头、统计标题、面板标题等“主说明”区域。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 73,
+            "className": "SparkTitleContentProps",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "content",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 主内容文本。\n     * 通常用于正文、摘要、补充说明，和 `title` 形成“标题 + 内容”的基础展示模型。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 78,
+            "className": "SparkTitleContentProps",
+            "memberName": "content",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkDataDisplayProps": {
+      "kind": "SparkDataDisplayProps",
+      "className": "SparkDataDisplayProps",
+      "jsdoc": "/**\n * 展示组件值语义。\n *\n * 适用于只读 display 组件：\n * - 可以直接接收显式 `value`\n * - 也可以通过 `field` 从当前上下文数据读取值\n *\n * 注意：\n * - 这里只描述“值来源”语义，不包含字段编辑语义\n * - 组件自身仍应显式 `extends SparkNodeProps`，保持 props 入口可读\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 显式展示值。\n     *\n     * 适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。\n     */\n    value?: TValue;\n    /** DataView 定位键，用于从页面数据空间读取展示值。 */\n    dataViewKey?: string;\n    /** DataView 成员枚举值。 */\n    dataMember?: DataMember | `${DataMember}`;\n    /** DataView 成员内部业务字段或点路径。 */\n    dataField?: string;\n    /**\n     * 数据字段绑定键。\n     *\n     * 常见语义是从当前上下文数据中读取 `currentRow[field]`，\n     * 用于详情展示、只读文本渲染或行内展示等场景。\n     */\n    field?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 96,
+        "className": "SparkDataDisplayProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "value",
+          "schema": {
+            "title": "TValue"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 显式展示值。\n     *\n     * 适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 102,
+            "className": "SparkDataDisplayProps",
+            "memberName": "value",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "dataViewKey",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** DataView 定位键，用于从页面数据空间读取展示值。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 104,
+            "className": "SparkDataDisplayProps",
+            "memberName": "dataViewKey",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "dataMember",
+          "schema": {
+            "title": "DataMember | `${DataMember}`"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** DataView 成员枚举值。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 106,
+            "className": "SparkDataDisplayProps",
+            "memberName": "dataMember",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "dataField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** DataView 成员内部业务字段或点路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 108,
+            "className": "SparkDataDisplayProps",
+            "memberName": "dataField",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "field",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 数据字段绑定键。\n     *\n     * 常见语义是从当前上下文数据中读取 `currentRow[field]`，\n     * 用于详情展示、只读文本渲染或行内展示等场景。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 115,
+            "className": "SparkDataDisplayProps",
+            "memberName": "field",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkFieldSemanticProps": {
+      "kind": "SparkFieldSemanticProps",
+      "className": "SparkFieldSemanticProps",
+      "jsdoc": "/**\n * 字段语义层（无根）。\n *\n * 只描述 field 组件自己的值/标签/占位等编辑语义，\n * 不引入 `SparkNodeProps`，以便具体组件能够显式挂在根层上而不形成重复继承。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 字段宽度。\n     *\n     * 主要用于输入类、选择类、文件类字段的控件宽度控制。\n     * 这里统一约定为数值宽度，由具体组件决定如何映射到样式层。\n     */\n    width?: number;\n    /**\n     * 表格列是否允许拖动列宽。\n     *\n     * 字段作为 r-table 列渲染时映射到 `el-table-column` 的 `resizable`。\n     */\n    resizable?: boolean;\n    /**\n     * 是否允许清空当前值。\n     *\n     * 适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n     * 具体组件可按自身能力决定是否真正消费该配置。\n     */\n    clearable?: boolean;\n    /**\n     * 直接传入的受控字段值。\n     *\n     * 对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。\n     */\n    modelValue?: TValue;\n    /**\n     * 跨框架配置模型值。\n     *\n     * 页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。\n     */\n    value?: TValue;\n    /**\n     * 字段绑定名。\n     *\n     * 常见语义是从当前上下文数据中读取 `currentRow[field]`，\n     * 也可作为表单写回、明细展示、列渲染时的字段定位键。\n     */\n    field?: string;\n    /**\n     * 展示标签。\n     * 常用于表单项标题、详情项名称、字段说明等“人类可读”的字段名展示。\n     */\n    label?: string;\n    /**\n     * 只读状态。\n     *\n     * 表示组件仍可见、通常仍参与布局，但不允许用户修改值；\n     * 它与完全禁用或隐藏是不同层级的语义。\n     */\n    readonly?: boolean;\n    /**\n     * 占位文案。\n     * 当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。\n     */\n    placeholder?: string;\n    /**\n     * 字段值变更回调。\n     *\n     * 统一由字段控制层透传给事件分发器，替代隐式监听提取。\n     */\n    onChange?: (...args: unknown[]) => void | Promise<void>;\n    /**\n     * 表头/详情标题对齐方向。\n     * 用于表格表头及详情项标题的水平对齐控制。\n     */\n    titleAlign?: 'left' | 'center' | 'right';\n    /**\n     * 值区对齐方向。\n     * 用于表格单元格及详情项值区的水平对齐控制。\n     */\n    valueAlign?: 'left' | 'center' | 'right';\n    /**\n     * 表格表头单元格 CSS 类名。\n     * 直接映射到 `el-table-column` 的 `label-class-name`。\n     */\n    headerCellClassName?: string;\n    /**\n     * 表格单元格 CSS 类名。\n     * 直接映射到 `el-table-column` 的 `class-name`。\n     */\n    cellClassName?: string;\n    /**\n     * 详情/表单标题 CSS 类名。\n     */\n    titleClassName?: string;\n    /**\n     * 详情/表格值区 CSS 类名。\n     */\n    valueClassName?: string;\n    /**\n     * 是否允许排序。\n     * - true: 前端排序\n     * - 'custom': 服务端排序\n     * - false: 禁用排序\n     */\n    sortable?: boolean | 'custom';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 123,
+        "className": "SparkFieldSemanticProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "width",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 字段宽度。\n     *\n     * 主要用于输入类、选择类、文件类字段的控件宽度控制。\n     * 这里统一约定为数值宽度，由具体组件决定如何映射到样式层。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 130,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "width",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "resizable",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 表格列是否允许拖动列宽。\n     *\n     * 字段作为 r-table 列渲染时映射到 `el-table-column` 的 `resizable`。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 136,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "resizable",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "clearable",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否允许清空当前值。\n     *\n     * 适用于输入类、选择类、时间类、文件类等可回到“空值”状态的字段。\n     * 具体组件可按自身能力决定是否真正消费该配置。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 143,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "clearable",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "modelValue",
+          "schema": {
+            "title": "TValue"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 直接传入的受控字段值。\n     *\n     * 对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 149,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "modelValue",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "value",
+          "schema": {
+            "title": "TValue"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 跨框架配置模型值。\n     *\n     * 页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 155,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "value",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "field",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 字段绑定名。\n     *\n     * 常见语义是从当前上下文数据中读取 `currentRow[field]`，\n     * 也可作为表单写回、明细展示、列渲染时的字段定位键。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 162,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "field",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "label",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 展示标签。\n     * 常用于表单项标题、详情项名称、字段说明等“人类可读”的字段名展示。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 167,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "label",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "readonly",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 只读状态。\n     *\n     * 表示组件仍可见、通常仍参与布局，但不允许用户修改值；\n     * 它与完全禁用或隐藏是不同层级的语义。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 174,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "readonly",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "placeholder",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 占位文案。\n     * 当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 179,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "placeholder",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onChange",
+          "schema": {
+            "title": "(...args: unknown[]) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 字段值变更回调。\n     *\n     * 统一由字段控制层透传给事件分发器，替代隐式监听提取。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 185,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "onChange",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "titleAlign",
+          "schema": {
+            "title": "'left' | 'center' | 'right'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 表头/详情标题对齐方向。\n     * 用于表格表头及详情项标题的水平对齐控制。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 190,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "titleAlign",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "valueAlign",
+          "schema": {
+            "title": "'left' | 'center' | 'right'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 值区对齐方向。\n     * 用于表格单元格及详情项值区的水平对齐控制。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 195,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "valueAlign",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "headerCellClassName",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 表格表头单元格 CSS 类名。\n     * 直接映射到 `el-table-column` 的 `label-class-name`。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 200,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "headerCellClassName",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "cellClassName",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 表格单元格 CSS 类名。\n     * 直接映射到 `el-table-column` 的 `class-name`。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 205,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "cellClassName",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "titleClassName",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 详情/表单标题 CSS 类名。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 209,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "titleClassName",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "valueClassName",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 详情/表格值区 CSS 类名。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 213,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "valueClassName",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "sortable",
+          "schema": {
+            "title": "boolean | 'custom'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否允许排序。\n     * - true: 前端排序\n     * - 'custom': 服务端排序\n     * - false: 禁用排序\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 220,
+            "className": "SparkFieldSemanticProps",
+            "memberName": "sortable",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkPrimaryActionTextProps": {
+      "kind": "SparkPrimaryActionTextProps",
+      "className": "SparkPrimaryActionTextProps",
+      "jsdoc": "/**\n * 主动作按钮文案。\n *\n * 适用于带显式主操作按钮的字段，\n * 例如“选择”“上传”“浏览文件”。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 主动作按钮文案。\n     */\n    buttonText?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 228,
+        "className": "SparkPrimaryActionTextProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "buttonText",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 主动作按钮文案。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 232,
+            "className": "SparkPrimaryActionTextProps",
+            "memberName": "buttonText",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkReadonlyActionTextProps": {
+      "kind": "SparkReadonlyActionTextProps",
+      "className": "SparkReadonlyActionTextProps",
+      "jsdoc": "/**\n * 只读/查看类动作按钮文案。\n *\n * 适用于字段在可编辑与只读模式之间切换时，\n * 主动作按钮文本也需要跟随切换的场景。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 只读或查看模式下的主动作按钮文案。\n     */\n    readonlyButtonText?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 240,
+        "className": "SparkReadonlyActionTextProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "readonlyButtonText",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 只读或查看模式下的主动作按钮文案。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 244,
+            "className": "SparkReadonlyActionTextProps",
+            "memberName": "readonlyButtonText",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkMultilineRowsProps": {
+      "kind": "SparkMultilineRowsProps",
+      "className": "SparkMultilineRowsProps",
+      "jsdoc": "/**\n * 多行输入可见行数语义。\n *\n * 适用于 textarea、mention 的多行输入模式、\n * 以及带源码编辑区的 html-editor 这类“以文本区显示行数”为主的输入组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 多行输入的可见行数。\n     *\n     * 该值通常直接映射到底层 textarea 类组件的 `rows` 属性。\n     */\n    rows?: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 252,
+        "className": "SparkMultilineRowsProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "rows",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 多行输入的可见行数。\n     *\n     * 该值通常直接映射到底层 textarea 类组件的 `rows` 属性。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 258,
+            "className": "SparkMultilineRowsProps",
+            "memberName": "rows",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkMultilineFieldProps": {
+      "kind": "SparkMultilineFieldProps",
+      "className": "SparkMultilineFieldProps",
+      "jsdoc": "/**\n * 多行字段语义。\n *\n * 适用于 textarea、mention、html-editor 这类建立在字段语义之上，\n * 同时复用多行行数配置的输入组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkFieldSemanticProps<TValue> & SparkMultilineRowsProps",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkFieldSemanticProps<TValue>",
+          "targetName": "SparkFieldSemanticProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkMultilineRowsProps",
+          "targetName": "SparkMultilineRowsProps"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 266,
+        "className": "SparkMultilineFieldProps",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkNumericMaxProps": {
+      "kind": "SparkNumericMaxProps",
+      "className": "SparkNumericMaxProps",
+      "jsdoc": "/**\n * 数值上界语义。\n *\n * 适用于评分、数字输入、滑块等需要声明“最大允许值”或“最大档位”的数值字段。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 最大值。\n     */\n    max?: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 272,
+        "className": "SparkNumericMaxProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "max",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 最大值。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 276,
+            "className": "SparkNumericMaxProps",
+            "memberName": "max",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNumericBoundsProps": {
+      "kind": "SparkNumericBoundsProps",
+      "className": "SparkNumericBoundsProps",
+      "jsdoc": "/**\n * 数值区间边界语义。\n *\n * 适用于同时需要声明最小值和最大值的数值字段，\n * 例如 number / slider 这类连续区间输入组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNumericMaxProps & {\n    /**\n       * 最小值。\n       */\n    min?: number;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNumericMaxProps",
+          "targetName": "SparkNumericMaxProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /**\n       * 最小值。\n       */\n    min?: number;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 284,
+        "className": "SparkNumericBoundsProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "min",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n       * 最小值。\n       */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 288,
+            "className": "SparkNumericBoundsProps",
+            "memberName": "min",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkMaxNumericFieldProps": {
+      "kind": "SparkMaxNumericFieldProps",
+      "className": "SparkMaxNumericFieldProps",
+      "jsdoc": "/**\n * 有上限的数值字段语义。\n *\n * 适用于 rate 这类只声明最大档位、但不要求最小值边界的数值字段。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkFieldSemanticProps<TValue> & SparkNumericMaxProps",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkFieldSemanticProps<TValue>",
+          "targetName": "SparkFieldSemanticProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkNumericMaxProps",
+          "targetName": "SparkNumericMaxProps"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 295,
+        "className": "SparkMaxNumericFieldProps",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkBoundedFieldProps": {
+      "kind": "SparkBoundedFieldProps",
+      "className": "SparkBoundedFieldProps",
+      "jsdoc": "/**\n * 有上下界的数值字段语义。\n *\n * 适用于 slider、number 这类需要共同声明最小值和最大值的字段组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkFieldSemanticProps<TValue> & SparkNumericBoundsProps",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkFieldSemanticProps<TValue>",
+          "targetName": "SparkFieldSemanticProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkNumericBoundsProps",
+          "targetName": "SparkNumericBoundsProps"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 301,
+        "className": "SparkBoundedFieldProps",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkRangeNumericFieldProps": {
+      "kind": "SparkRangeNumericFieldProps",
+      "className": "SparkRangeNumericFieldProps",
+      "jsdoc": "/**\n * 支持区间筛选的数值字段语义。\n *\n * 适用于在普通数值输入与范围筛选之间切换的 number 类组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkBoundedFieldProps<TValue> & SparkRangeFilterProps",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkBoundedFieldProps<TValue>",
+          "targetName": "SparkBoundedFieldProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkRangeFilterProps",
+          "targetName": "SparkRangeFilterProps"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 307,
+        "className": "SparkRangeNumericFieldProps",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkFileFieldProps": {
+      "kind": "SparkFileFieldProps",
+      "className": "SparkFileFieldProps",
+      "jsdoc": "/**\n * 文件字段核心语义。\n *\n * 用于“字段值本身是文件路径/文件名字符串”的场景，\n * 统一收口文件类型过滤、字符串拼接规则，以及主动作按钮文案。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkFieldSemanticProps<TValue> & SparkPrimaryActionTextProps & {\n    /**\n       * 文件类型过滤条件。\n       *\n       * 一般透传给文件浏览/上传能力，例如 `image/*`、`.pdf,.docx`。\n       */\n    accept?: string;\n    /**\n     * 多文件字符串分隔符。\n     *\n     * 当一个字段以单个字符串承载多个文件值时，用它拼接文件名或路径。\n     */\n    separator?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkFieldSemanticProps<TValue>",
+          "targetName": "SparkFieldSemanticProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkPrimaryActionTextProps",
+          "targetName": "SparkPrimaryActionTextProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /**\n       * 文件类型过滤条件。\n       *\n       * 一般透传给文件浏览/上传能力，例如 `image/*`、`.pdf,.docx`。\n       */\n    accept?: string;\n    /**\n     * 多文件字符串分隔符。\n     *\n     * 当一个字段以单个字符串承载多个文件值时，用它拼接文件名或路径。\n     */\n    separator?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 314,
+        "className": "SparkFileFieldProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "accept",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n       * 文件类型过滤条件。\n       *\n       * 一般透传给文件浏览/上传能力，例如 `image/*`、`.pdf,.docx`。\n       */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 320,
+            "className": "SparkFileFieldProps",
+            "memberName": "accept",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "separator",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 多文件字符串分隔符。\n     *\n     * 当一个字段以单个字符串承载多个文件值时，用它拼接文件名或路径。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 326,
+            "className": "SparkFileFieldProps",
+            "memberName": "separator",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkFileUploadActionProps": {
+      "kind": "SparkFileUploadActionProps",
+      "className": "SparkFileUploadActionProps",
+      "jsdoc": "/**\n * 文件上传/浏览切换动作语义。\n *\n * 适用于既可能上传，也可能只读浏览的文件字段。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkReadonlyActionTextProps & {\n    /**\n       * 上传目标地址。\n       *\n       * 当值为空或 `#` 时，字段通常会退化为纯浏览模式。\n       */\n    action?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkReadonlyActionTextProps",
+          "targetName": "SparkReadonlyActionTextProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /**\n       * 上传目标地址。\n       *\n       * 当值为空或 `#` 时，字段通常会退化为纯浏览模式。\n       */\n    action?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 334,
+        "className": "SparkFileUploadActionProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "action",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n       * 上传目标地址。\n       *\n       * 当值为空或 `#` 时，字段通常会退化为纯浏览模式。\n       */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 340,
+            "className": "SparkFileUploadActionProps",
+            "memberName": "action",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkUploadFieldProps": {
+      "kind": "SparkUploadFieldProps",
+      "className": "SparkUploadFieldProps",
+      "jsdoc": "/**\n * 上传类文件字段语义。\n *\n * 适用于值仍是文件字段，但交互上需要上传目标地址与文件字段本体同时存在的组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkFileFieldProps<TValue> & SparkFileUploadActionProps",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkFileFieldProps<TValue>",
+          "targetName": "SparkFileFieldProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkFileUploadActionProps",
+          "targetName": "SparkFileUploadActionProps"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 347,
+        "className": "SparkUploadFieldProps",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkFilePickerFieldProps": {
+      "kind": "SparkFilePickerFieldProps",
+      "className": "SparkFilePickerFieldProps",
+      "jsdoc": "/**\n * 可选择多个文件，并支持上传/浏览双动作的文件字段语义。\n *\n * 适用于文件路径选择器、图片选择器这类“值仍是字符串，\n * 但交互上同时支持上传与浏览”的文件字段。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkFileFieldProps<TValue> & SparkFileUploadActionProps & {\n    /**\n       * 是否允许一次选择多个文件。\n       */\n    multiple?: boolean;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkFileFieldProps<TValue>",
+          "targetName": "SparkFileFieldProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkFileUploadActionProps",
+          "targetName": "SparkFileUploadActionProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /**\n       * 是否允许一次选择多个文件。\n       */\n    multiple?: boolean;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 354,
+        "className": "SparkFilePickerFieldProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "multiple",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n       * 是否允许一次选择多个文件。\n       */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 358,
+            "className": "SparkFilePickerFieldProps",
+            "memberName": "multiple",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkTemporalPickerProps": {
+      "kind": "SparkTemporalPickerProps",
+      "className": "SparkTemporalPickerProps",
+      "jsdoc": "/**\n * 时间类选择器的通用交互语义。\n *\n * 适用于 date-picker / time-picker 这类既可能选择单值，\n * 也可能选择范围值的时间输入组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkFieldSemanticProps<TValue> & {\n    /**\n       * 显示格式。\n       *\n       * 只影响控件展示层，不直接决定底层实际写回值的格式。\n       */\n    format?: string;\n    /**\n     * 范围起点占位文案。\n     */\n    startPlaceholder?: string;\n    /**\n     * 范围终点占位文案。\n     */\n    endPlaceholder?: string;\n    /**\n     * 范围值中间的展示分隔文案。\n     */\n    rangeSeparator?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkFieldSemanticProps<TValue>",
+          "targetName": "SparkFieldSemanticProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /**\n       * 显示格式。\n       *\n       * 只影响控件展示层，不直接决定底层实际写回值的格式。\n       */\n    format?: string;\n    /**\n     * 范围起点占位文案。\n     */\n    startPlaceholder?: string;\n    /**\n     * 范围终点占位文案。\n     */\n    endPlaceholder?: string;\n    /**\n     * 范围值中间的展示分隔文案。\n     */\n    rangeSeparator?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 366,
+        "className": "SparkTemporalPickerProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "format",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n       * 显示格式。\n       *\n       * 只影响控件展示层，不直接决定底层实际写回值的格式。\n       */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 372,
+            "className": "SparkTemporalPickerProps",
+            "memberName": "format",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "startPlaceholder",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 范围起点占位文案。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 376,
+            "className": "SparkTemporalPickerProps",
+            "memberName": "startPlaceholder",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "endPlaceholder",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 范围终点占位文案。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 380,
+            "className": "SparkTemporalPickerProps",
+            "memberName": "endPlaceholder",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "rangeSeparator",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 范围值中间的展示分隔文案。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 384,
+            "className": "SparkTemporalPickerProps",
+            "memberName": "rangeSeparator",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkRangeFilterProps": {
+      "kind": "SparkRangeFilterProps",
+      "className": "SparkRangeFilterProps",
+      "jsdoc": "/**\n * 范围过滤字段语义。\n *\n * 适用于既可作为普通输入字段，也可切换到“区间筛选”模式的组件，\n * 例如 number/date 这类在查询表单里支持单值与范围值两种交互的字段。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 过滤模式。\n     * 当值为 `range` 时，组件通常切换到范围筛选 UI。\n     */\n    filterMode?: 'range' | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 392,
+        "className": "SparkRangeFilterProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "filterMode",
+          "schema": {
+            "title": "'range' | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 过滤模式。\n     * 当值为 `range` 时，组件通常切换到范围筛选 UI。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 397,
+            "className": "SparkRangeFilterProps",
+            "memberName": "filterMode",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkRangeTemporalFieldProps": {
+      "kind": "SparkRangeTemporalFieldProps",
+      "className": "SparkRangeTemporalFieldProps",
+      "jsdoc": "/**\n * 支持范围筛选的时间字段语义。\n *\n * 适用于 date/date-range 一类既保留时间选择器能力，\n * 又能切换到范围筛选模式的字段组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkTemporalPickerProps<TValue> & SparkRangeFilterProps",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkTemporalPickerProps<TValue>",
+          "targetName": "SparkTemporalPickerProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkRangeFilterProps",
+          "targetName": "SparkRangeFilterProps"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 405,
+        "className": "SparkRangeTemporalFieldProps",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkOptionButtonStyleProps": {
+      "kind": "SparkOptionButtonStyleProps",
+      "className": "SparkOptionButtonStyleProps",
+      "jsdoc": "/**\n * 选项按钮样式语义。\n *\n * 适用于同一组选项既可以普通项渲染，\n * 也可以切换成“按钮式选项”渲染的字段组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 是否启用按钮样式。\n     *\n     * 例如把 radio 渲染成 `el-radio-button`，\n     * 或把 checkbox-group 渲染成 `el-checkbox-button`。\n     */\n    buttonStyle?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 412,
+        "className": "SparkOptionButtonStyleProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "buttonStyle",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否启用按钮样式。\n     *\n     * 例如把 radio 渲染成 `el-radio-button`，\n     * 或把 checkbox-group 渲染成 `el-checkbox-button`。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 419,
+            "className": "SparkOptionButtonStyleProps",
+            "memberName": "buttonStyle",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkHierarchicalSelectionProps": {
+      "kind": "SparkHierarchicalSelectionProps",
+      "className": "SparkHierarchicalSelectionProps",
+      "jsdoc": "/**\n * 层级选择严格模式语义。\n *\n * 适用于树形/级联类选择组件，用来声明父子节点是否保持联动选择。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 是否启用严格选择。\n     *\n     * 开启后，父子节点通常不再自动联动，\n     * 组件会把每个节点视作独立可选项。\n     */\n    checkStrictly?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 426,
+        "className": "SparkHierarchicalSelectionProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "checkStrictly",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否启用严格选择。\n     *\n     * 开启后，父子节点通常不再自动联动，\n     * 组件会把每个节点视作独立可选项。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 433,
+            "className": "SparkHierarchicalSelectionProps",
+            "memberName": "checkStrictly",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkOptionValueMode": {
+      "kind": "SparkOptionValueMode",
+      "className": "SparkOptionValueMode",
+      "jsdoc": "/**\n * 选项字段主值持久化模式。\n *\n * - `auto`：尽量保持当前宿主字段已有的值形态\n * - `array`：始终以数组值持久化\n * - `separated-string`：始终以分隔字符串持久化，分隔规则由 `valueSeparator` 决定\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "'auto' | 'array' | 'separated-string'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'auto'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'array'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'separated-string'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 442,
+        "className": "SparkOptionValueMode",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkOptionFieldProps": {
+      "kind": "SparkOptionFieldProps",
+      "className": "SparkOptionFieldProps",
+      "jsdoc": "/**\n * 带选项字段属性（第三层）：\n * 为具备 field 语义的“选项类字段组件”统一收口静态选项、动态选项解析和常见行为开关。\n *\n * 适用范围：\n * - select / multi-select / radio / checkbox-group\n * - cascader / tree-select / transfer\n * - entity-picker / icon-picker 等基于候选项选择值的字段组件\n *\n * 说明：\n * - `options / optionLabelField / optionValueField / optionDisabledField / optionChildrenField` 继承自 `SparkOptionSourceProps`\n * - `options` 表示本地静态候选项入口；若组件同时提供 `optionDataViewKey`，运行时通常先解析动态数据源，再在缺失时回退到本地 `options`\n * - `optionDataViewKey` 负责指向动态选项数据源，而不是选项对象内部的主键字段\n * - 某些组件可通过为 `SparkOptionFieldProps<TValue, TOption>` 传入更具体的 `TOption` 收窄本地 `options` 类型，无需在组件 props 中重复声明 `options`\n * - 如果某组件只有“候选项结构”语义，而没有 field/value/placeholder 等字段语义，可直接复用 `SparkOptionSourceProps`\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkFieldSemanticProps<TValue> & SparkOptionSourceProps<TOption> & {\n    /**\n       * @internal 运行时数据线，由框架注入，不属于页面配置。\n       *\n       * 作用：\n       * - 为字段组件提供当前 DataView 上下文\n       * - 让组件可以结合 `optionDataViewKey` 等配置解析出真实选项列表\n       */\n    dataSource?: DataView;\n    /**\n     * 选项 DataView 定位键。\n     *\n     * 通常指向某个 DataView，例如 `Categories@default`，\n     * 组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。\n     */\n    optionDataViewKey?: string;\n    /** 选项来源 DataView 成员，默认 rows。 */\n    optionDataMember?: DataMember | `${DataMember}`;\n    /** 选项来源成员内部字段或路径。 */\n    optionDataField?: string;\n    /**\n     * 值分隔符。\n     *\n     * 当组件处于多选语义，但主字段 `field` 选择以单个字符串而不是数组形式持久化时，\n     * 使用该分隔符把多个候选值序列化到主字段中。\n     *\n     * 示例：\n     * - 当前选中值为 `[101, 102]`\n     * - `valueSeparator` 为 `,`\n     * - 最终写入 `field` 为 `101,102`\n     */\n    valueSeparator?: string;\n    /**\n     * 主值持久化模式。\n     *\n     * 用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n     * 还是按 `valueSeparator` 序列化成单个字符串。\n     */\n    valueMode?: SparkOptionValueMode;\n    /**\n     * 文本分隔符。\n     *\n     * 当组件把候选项文本额外写入 `textStorageField`，且当前选择包含多个候选项时，\n     * 使用该分隔符拼接展示文本。\n     */\n    textSeparator?: string;\n    /**\n     * 文本储存字段。\n     *\n     * 主字段 `field` 仍负责持久化候选值；`textStorageField` 仅用于额外保存候选项文本，\n     * 例如把选中的 ID 存到 `userIds`，同时把姓名串存到 `userNames`。\n     */\n    textStorageField?: string;\n    /**\n     * 是否允许在候选项中搜索。\n     * 一般用于候选集较大、需要关键字过滤的组件。\n     */\n    filterable?: boolean;\n    /**\n     * 是否启用多选模式。\n     * 开启后，组件的值语义通常从单值切换为数组值。\n     */\n    multiple?: boolean;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkFieldSemanticProps<TValue>",
+          "targetName": "SparkFieldSemanticProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkOptionSourceProps<TOption>",
+          "targetName": "SparkOptionSourceProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /**\n       * @internal 运行时数据线，由框架注入，不属于页面配置。\n       *\n       * 作用：\n       * - 为字段组件提供当前 DataView 上下文\n       * - 让组件可以结合 `optionDataViewKey` 等配置解析出真实选项列表\n       */\n    dataSource?: DataView;\n    /**\n     * 选项 DataView 定位键。\n     *\n     * 通常指向某个 DataView，例如 `Categories@default`，\n     * 组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。\n     */\n    optionDataViewKey?: string;\n    /** 选项来源 DataView 成员，默认 rows。 */\n    optionDataMember?: DataMember | `${DataMember}`;\n    /** 选项来源成员内部字段或路径。 */\n    optionDataField?: string;\n    /**\n     * 值分隔符。\n     *\n     * 当组件处于多选语义，但主字段 `field` 选择以单个字符串而不是数组形式持久化时，\n     * 使用该分隔符把多个候选值序列化到主字段中。\n     *\n     * 示例：\n     * - 当前选中值为 `[101, 102]`\n     * - `valueSeparator` 为 `,`\n     * - 最终写入 `field` 为 `101,102`\n     */\n    valueSeparator?: string;\n    /**\n     * 主值持久化模式。\n     *\n     * 用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n     * 还是按 `valueSeparator` 序列化成单个字符串。\n     */\n    valueMode?: SparkOptionValueMode;\n    /**\n     * 文本分隔符。\n     *\n     * 当组件把候选项文本额外写入 `textStorageField`，且当前选择包含多个候选项时，\n     * 使用该分隔符拼接展示文本。\n     */\n    textSeparator?: string;\n    /**\n     * 文本储存字段。\n     *\n     * 主字段 `field` 仍负责持久化候选值；`textStorageField` 仅用于额外保存候选项文本，\n     * 例如把选中的 ID 存到 `userIds`，同时把姓名串存到 `userNames`。\n     */\n    textStorageField?: string;\n    /**\n     * 是否允许在候选项中搜索。\n     * 一般用于候选集较大、需要关键字过滤的组件。\n     */\n    filterable?: boolean;\n    /**\n     * 是否启用多选模式。\n     * 开启后，组件的值语义通常从单值切换为数组值。\n     */\n    multiple?: boolean;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 459,
+        "className": "SparkOptionFieldProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "dataSource",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n       * @internal 运行时数据线，由框架注入，不属于页面配置。\n       *\n       * 作用：\n       * - 为字段组件提供当前 DataView 上下文\n       * - 让组件可以结合 `optionDataViewKey` 等配置解析出真实选项列表\n       */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 467,
+            "className": "SparkOptionFieldProps",
+            "memberName": "dataSource",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "optionDataViewKey",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 选项 DataView 定位键。\n     *\n     * 通常指向某个 DataView，例如 `Categories@default`，\n     * 组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 474,
+            "className": "SparkOptionFieldProps",
+            "memberName": "optionDataViewKey",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "optionDataMember",
+          "schema": {
+            "title": "DataMember | `${DataMember}`"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 选项来源 DataView 成员，默认 rows。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 476,
+            "className": "SparkOptionFieldProps",
+            "memberName": "optionDataMember",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "optionDataField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 选项来源成员内部字段或路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 478,
+            "className": "SparkOptionFieldProps",
+            "memberName": "optionDataField",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "valueSeparator",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 值分隔符。\n     *\n     * 当组件处于多选语义，但主字段 `field` 选择以单个字符串而不是数组形式持久化时，\n     * 使用该分隔符把多个候选值序列化到主字段中。\n     *\n     * 示例：\n     * - 当前选中值为 `[101, 102]`\n     * - `valueSeparator` 为 `,`\n     * - 最终写入 `field` 为 `101,102`\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 490,
+            "className": "SparkOptionFieldProps",
+            "memberName": "valueSeparator",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "valueMode",
+          "schema": {
+            "title": "SparkOptionValueMode"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 主值持久化模式。\n     *\n     * 用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n     * 还是按 `valueSeparator` 序列化成单个字符串。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 497,
+            "className": "SparkOptionFieldProps",
+            "memberName": "valueMode",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "textSeparator",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 文本分隔符。\n     *\n     * 当组件把候选项文本额外写入 `textStorageField`，且当前选择包含多个候选项时，\n     * 使用该分隔符拼接展示文本。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 504,
+            "className": "SparkOptionFieldProps",
+            "memberName": "textSeparator",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "textStorageField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 文本储存字段。\n     *\n     * 主字段 `field` 仍负责持久化候选值；`textStorageField` 仅用于额外保存候选项文本，\n     * 例如把选中的 ID 存到 `userIds`，同时把姓名串存到 `userNames`。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 511,
+            "className": "SparkOptionFieldProps",
+            "memberName": "textStorageField",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "filterable",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否允许在候选项中搜索。\n     * 一般用于候选集较大、需要关键字过滤的组件。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 516,
+            "className": "SparkOptionFieldProps",
+            "memberName": "filterable",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "multiple",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否启用多选模式。\n     * 开启后，组件的值语义通常从单值切换为数组值。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 521,
+            "className": "SparkOptionFieldProps",
+            "memberName": "multiple",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkButtonOptionFieldProps": {
+      "kind": "SparkButtonOptionFieldProps",
+      "className": "SparkButtonOptionFieldProps",
+      "jsdoc": "/**\n * 按钮化选项字段语义。\n *\n * 适用于 radio / checkbox-group 这类既是选项字段，\n * 又支持按钮式渲染的组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkOptionFieldProps<TValue, TOption> & SparkOptionButtonStyleProps",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkOptionFieldProps<TValue, TOption>",
+          "targetName": "SparkOptionFieldProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkOptionButtonStyleProps",
+          "targetName": "SparkOptionButtonStyleProps"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 529,
+        "className": "SparkButtonOptionFieldProps",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkHierarchicalOptionFieldProps": {
+      "kind": "SparkHierarchicalOptionFieldProps",
+      "className": "SparkHierarchicalOptionFieldProps",
+      "jsdoc": "/**\n * 层级选项字段语义。\n *\n * 适用于 cascader / tree-select 这类既是选项字段，\n * 又需要父子选择联动控制的组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkOptionFieldProps<TValue, TOption> & SparkHierarchicalSelectionProps",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkOptionFieldProps<TValue, TOption>",
+          "targetName": "SparkOptionFieldProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkHierarchicalSelectionProps",
+          "targetName": "SparkHierarchicalSelectionProps"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 536,
+        "className": "SparkHierarchicalOptionFieldProps",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkOptionSourceProps": {
+      "kind": "SparkOptionSourceProps",
+      "className": "SparkOptionSourceProps",
+      "jsdoc": "/**\n * 选项源配置（源层通用）：\n * 只描述“候选项本身的结构”，不包含 field 语义，也不负责动态 DataViewKey 绑定。\n *\n * 适合：\n * - 静态枚举\n * - 小规模本地 options\n * - 构建期即可确定的树形/级联候选项\n *\n * 注意：\n * - 这里的 `options` 只是在类型层描述“本地直接传入的候选项”\n * - 若具体字段组件还支持 `optionDataViewKey`，动态候选项会在运行时由共享解析链补进来，而不是受这里的静态类型声明限制\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 可选项数组。\n     * 通常用于静态枚举场景，例如状态、性别、开关类型等固定候选列表。\n     */\n    options?: TOption[];\n    /**\n     * 选项显示字段。\n     * 指定从选项对象的哪个字段读取展示文本。\n     */\n    optionLabelField?: string;\n    /**\n     * 选项值字段。\n      * 指定从选项对象的哪个字段读取最终写入字段主值的值。\n     */\n    optionValueField?: string;\n    /**\n     * 选项禁用字段。\n     * 指定从选项对象的哪个字段读取“当前候选项是否不可选”的布尔状态。\n     */\n    optionDisabledField?: string;\n    /**\n     * 子级字段名。\n     * 用于树形选择、级联选择等嵌套选项结构，指定子节点数组所在字段。\n     */\n    optionChildrenField?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 550,
+        "className": "SparkOptionSourceProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "options",
+          "schema": {
+            "type": "array",
+            "title": "TOption[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 可选项数组。\n     * 通常用于静态枚举场景，例如状态、性别、开关类型等固定候选列表。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 555,
+            "className": "SparkOptionSourceProps",
+            "memberName": "options",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "optionLabelField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 选项显示字段。\n     * 指定从选项对象的哪个字段读取展示文本。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 560,
+            "className": "SparkOptionSourceProps",
+            "memberName": "optionLabelField",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "optionValueField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 选项值字段。\n      * 指定从选项对象的哪个字段读取最终写入字段主值的值。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 565,
+            "className": "SparkOptionSourceProps",
+            "memberName": "optionValueField",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "optionDisabledField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 选项禁用字段。\n     * 指定从选项对象的哪个字段读取“当前候选项是否不可选”的布尔状态。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 570,
+            "className": "SparkOptionSourceProps",
+            "memberName": "optionDisabledField",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "optionChildrenField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 子级字段名。\n     * 用于树形选择、级联选择等嵌套选项结构，指定子节点数组所在字段。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 575,
+            "className": "SparkOptionSourceProps",
+            "memberName": "optionChildrenField",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkFloatingLayerProps": {
+      "kind": "SparkFloatingLayerProps",
+      "className": "SparkFloatingLayerProps",
+      "jsdoc": "/**\n * 浮层行为配置（容器层通用）：\n * 提供 popover、tooltip、dropdown 一类“挂载到目标元素附近”的浮层组件共通行为。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 浮层位置。\n     * 一般透传给底层 UI 库的 placement 语义，例如 top / bottom-start / right-end。\n     */\n    placement?: string;\n    /**\n     * 浮层主题。\n     * 通常对应浅色或深色两套视觉风格。\n     */\n    effect?: 'dark' | 'light';\n    /**\n     * 浮层与锚点之间的偏移量。\n     * 用于微调视觉距离，避免贴边或遮挡。\n     */\n    offset?: number;\n    /**\n     * 显示延迟，单位毫秒。\n     * 常用于 hover 浮层，避免鼠标轻扫时频繁闪现。\n     */\n    showAfter?: number;\n    /**\n     * 隐藏延迟，单位毫秒。\n     * 常用于改善 hover 离开时的交互容错。\n     */\n    hideAfter?: number;\n    /**\n     * 是否显示箭头。\n     * 用于增强浮层与目标元素之间的视觉指向关系。\n     */\n    showArrow?: boolean;\n    /**\n     * 浮层根节点附加 class。\n     * 供页面或主题层覆盖局部样式时使用。\n     */\n    popperClass?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 581,
+        "className": "SparkFloatingLayerProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "placement",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 浮层位置。\n     * 一般透传给底层 UI 库的 placement 语义，例如 top / bottom-start / right-end。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 586,
+            "className": "SparkFloatingLayerProps",
+            "memberName": "placement",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "effect",
+          "schema": {
+            "title": "'dark' | 'light'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 浮层主题。\n     * 通常对应浅色或深色两套视觉风格。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 591,
+            "className": "SparkFloatingLayerProps",
+            "memberName": "effect",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "offset",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 浮层与锚点之间的偏移量。\n     * 用于微调视觉距离，避免贴边或遮挡。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 596,
+            "className": "SparkFloatingLayerProps",
+            "memberName": "offset",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "showAfter",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 显示延迟，单位毫秒。\n     * 常用于 hover 浮层，避免鼠标轻扫时频繁闪现。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 601,
+            "className": "SparkFloatingLayerProps",
+            "memberName": "showAfter",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "hideAfter",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 隐藏延迟，单位毫秒。\n     * 常用于改善 hover 离开时的交互容错。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 606,
+            "className": "SparkFloatingLayerProps",
+            "memberName": "hideAfter",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "showArrow",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否显示箭头。\n     * 用于增强浮层与目标元素之间的视觉指向关系。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 611,
+            "className": "SparkFloatingLayerProps",
+            "memberName": "showArrow",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "popperClass",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 浮层根节点附加 class。\n     * 供页面或主题层覆盖局部样式时使用。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 616,
+            "className": "SparkFloatingLayerProps",
+            "memberName": "popperClass",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkGridLayoutProps": {
+      "kind": "SparkGridLayoutProps",
+      "className": "SparkGridLayoutProps",
+      "jsdoc": "/**\n * Grid 布局容器语义。\n *\n * 适用于 form、detail、dialog、section 等需要统一声明内容区 CSS Grid 布局的容器。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** CSS Grid 列数 */\n    gridColumns?: number;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 627,
+        "className": "SparkGridLayoutProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "gridColumns",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** CSS Grid 列数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 629,
+            "className": "SparkGridLayoutProps",
+            "memberName": "gridColumns",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "gridGap",
+          "schema": {
+            "title": "number | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 栅格间距 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 631,
+            "className": "SparkGridLayoutProps",
+            "memberName": "gridGap",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 栅格行高 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 633,
+            "className": "SparkGridLayoutProps",
+            "memberName": "gridAutoRows",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkTableModelProps": {
+      "kind": "SparkTableModelProps",
+      "className": "SparkTableModelProps",
+      "jsdoc": "/**\n * 表级模型属性（第五层）：\n * 用于 DataView 驱动的数据容器，描述它们和页面数据空间的连接点。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * @internal 运行时数据线，由框架注入，不属于页面配置。\n     *\n     * 它代表当前容器实际绑定到的 DataView。\n     */\n    dataSource?: DataView;\n    /**\n     * DataView 定位键。\n     * 固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。\n     */\n    dataViewKey?: string;\n    /** DataView 成员枚举值，用于读取 DataView 输出成员。 */\n    dataMember?: DataMember | `${DataMember}`;\n    /** DataView 成员内部业务字段或点路径。 */\n    dataField?: string;\n    /** 是否显示 DataView 元信息栏。 */\n    showDataViewMeta?: boolean;\n    /** 是否显示全量聚合摘要。 */\n    showAggregateSummary?: boolean;\n    /** 是否显示选区聚合摘要。 */\n    showSelectionSummary?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 639,
+        "className": "SparkTableModelProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "dataSource",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * @internal 运行时数据线，由框架注入，不属于页面配置。\n     *\n     * 它代表当前容器实际绑定到的 DataView。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 645,
+            "className": "SparkTableModelProps",
+            "memberName": "dataSource",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "dataViewKey",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * DataView 定位键。\n     * 固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 650,
+            "className": "SparkTableModelProps",
+            "memberName": "dataViewKey",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "dataMember",
+          "schema": {
+            "title": "DataMember | `${DataMember}`"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** DataView 成员枚举值，用于读取 DataView 输出成员。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 652,
+            "className": "SparkTableModelProps",
+            "memberName": "dataMember",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "dataField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** DataView 成员内部业务字段或点路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 654,
+            "className": "SparkTableModelProps",
+            "memberName": "dataField",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "showDataViewMeta",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否显示 DataView 元信息栏。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 656,
+            "className": "SparkTableModelProps",
+            "memberName": "showDataViewMeta",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "showAggregateSummary",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否显示全量聚合摘要。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 658,
+            "className": "SparkTableModelProps",
+            "memberName": "showAggregateSummary",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "showSelectionSummary",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否显示选区聚合摘要。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 660,
+            "className": "SparkTableModelProps",
+            "memberName": "showSelectionSummary",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkCrudEventProps": {
+      "kind": "SparkCrudEventProps",
+      "className": "SparkCrudEventProps",
+      "jsdoc": "/**\n * 数据容器 CRUD 事件（统一命名层）。\n * 为表格、列表等可编辑容器提供统一命名的增删改动作入口。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 新增动作回调。\n     * 常由工具栏“新增”按钮、空态入口或快捷动作触发。\n     */\n    onAddRow?: AddRowHandler;\n    /**\n     * 编辑动作回调。\n     * 通常用于编辑当前行、双击行编辑或弹出编辑表单。\n     */\n    onEditRow?: EditRowHandler;\n    /**\n     * 删除动作回调。\n     * 常用于删除当前行、批量删除所选行，或触发删除确认流程。\n     */\n    onRemoveRow?: RemoveRowHandler;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 666,
+        "className": "SparkCrudEventProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "onAddRow",
+          "schema": {
+            "title": "AddRowHandler"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 新增动作回调。\n     * 常由工具栏“新增”按钮、空态入口或快捷动作触发。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 671,
+            "className": "SparkCrudEventProps",
+            "memberName": "onAddRow",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onEditRow",
+          "schema": {
+            "title": "EditRowHandler"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 编辑动作回调。\n     * 通常用于编辑当前行、双击行编辑或弹出编辑表单。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 676,
+            "className": "SparkCrudEventProps",
+            "memberName": "onEditRow",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onRemoveRow",
+          "schema": {
+            "title": "RemoveRowHandler"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 删除动作回调。\n     * 常用于删除当前行、批量删除所选行，或触发删除确认流程。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 681,
+            "className": "SparkCrudEventProps",
+            "memberName": "onRemoveRow",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkRowInteractionEventProps": {
+      "kind": "SparkRowInteractionEventProps",
+      "className": "SparkRowInteractionEventProps",
+      "jsdoc": "/**\n * 行交互事件（统一命名层）。\n * 用于承接用户对数据行的常见交互行为，并向上层暴露稳定的事件名。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 行点击回调。\n     * 用户点击某一行时触发，常用于详情联动、主子表级联或进入编辑态。\n     */\n    onRowClick?: RowClickHandler;\n    /**\n     * 选中集合变化回调。\n     * 多选表格或勾选容器在选中项增减后触发。\n     */\n    onSelectionChange?: RowSelectionHandler;\n    /**\n     * 当前行变化回调。\n     * 当前高亮行、焦点行或主选择行切换时触发。\n     */\n    onCurrentChange?: CurrentRowChangeHandler;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 687,
+        "className": "SparkRowInteractionEventProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "onRowClick",
+          "schema": {
+            "title": "RowClickHandler"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 行点击回调。\n     * 用户点击某一行时触发，常用于详情联动、主子表级联或进入编辑态。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 692,
+            "className": "SparkRowInteractionEventProps",
+            "memberName": "onRowClick",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onSelectionChange",
+          "schema": {
+            "title": "RowSelectionHandler"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 选中集合变化回调。\n     * 多选表格或勾选容器在选中项增减后触发。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 697,
+            "className": "SparkRowInteractionEventProps",
+            "memberName": "onSelectionChange",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onCurrentChange",
+          "schema": {
+            "title": "CurrentRowChangeHandler"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 当前行变化回调。\n     * 当前高亮行、焦点行或主选择行切换时触发。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 702,
+            "className": "SparkRowInteractionEventProps",
+            "memberName": "onCurrentChange",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkCrudDataContainerProps": {
+      "kind": "SparkCrudDataContainerProps",
+      "className": "SparkCrudDataContainerProps",
+      "jsdoc": "/**\n *\n * 在数据容器基础上增加统一 CRUD 动作入口，适用于 form、detail、list、tree、table。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkTableModelProps & SparkCrudEventProps",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkTableModelProps",
+          "targetName": "SparkTableModelProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkCrudEventProps",
+          "targetName": "SparkCrudEventProps"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 712,
+        "className": "SparkCrudDataContainerProps",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkInteractiveDataContainerProps": {
+      "kind": "SparkInteractiveDataContainerProps",
+      "className": "SparkInteractiveDataContainerProps",
+      "jsdoc": "/**\n *\n * 在可编辑数据容器基础上继续收口行点击、选中集合变化、当前行变化等交互事件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkCrudDataContainerProps & SparkRowInteractionEventProps",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkCrudDataContainerProps",
+          "targetName": "SparkCrudDataContainerProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkRowInteractionEventProps",
+          "targetName": "SparkRowInteractionEventProps"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 717,
+        "className": "SparkInteractiveDataContainerProps",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkVisibilityEventProps": {
+      "kind": "SparkVisibilityEventProps",
+      "className": "SparkVisibilityEventProps",
+      "jsdoc": "/**\n * 可见性生命周期事件（统一命名层）。\n * 适用于 dialog、drawer、popover 等具备显隐状态的组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 打开动作触发时回调。\n     * 一般用于进入显示流程前准备数据或记录埋点。\n     */\n    onOpen?: () => void;\n    /**\n     * 关闭动作触发时回调。\n     * 一般用于执行关闭确认、清理临时状态或通知外层。\n     */\n    onClose?: () => void;\n    /**\n     * 打开完成后回调。\n     * 适合执行依赖 DOM 已稳定可见的逻辑，例如 autofocus 或尺寸测量。\n     */\n    onOpened?: () => void;\n    /**\n     * 关闭完成后回调。\n     * 适合做最终清理、销毁临时资源或恢复外层页面状态。\n     */\n    onClosed?: () => void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 722,
+        "className": "SparkVisibilityEventProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "onOpen",
+          "schema": {
+            "title": "() => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 打开动作触发时回调。\n     * 一般用于进入显示流程前准备数据或记录埋点。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 727,
+            "className": "SparkVisibilityEventProps",
+            "memberName": "onOpen",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onClose",
+          "schema": {
+            "title": "() => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 关闭动作触发时回调。\n     * 一般用于执行关闭确认、清理临时状态或通知外层。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 732,
+            "className": "SparkVisibilityEventProps",
+            "memberName": "onClose",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onOpened",
+          "schema": {
+            "title": "() => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 打开完成后回调。\n     * 适合执行依赖 DOM 已稳定可见的逻辑，例如 autofocus 或尺寸测量。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 737,
+            "className": "SparkVisibilityEventProps",
+            "memberName": "onOpened",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onClosed",
+          "schema": {
+            "title": "() => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 关闭完成后回调。\n     * 适合做最终清理、销毁临时资源或恢复外层页面状态。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 742,
+            "className": "SparkVisibilityEventProps",
+            "memberName": "onClosed",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkVisibilityContainerProps": {
+      "kind": "SparkVisibilityContainerProps",
+      "className": "SparkVisibilityContainerProps",
+      "jsdoc": "/**\n * 显隐容器语义。\n *\n * 适用于 dialog、drawer 这类公开显隐生命周期事件的容器组件。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkVisibilityEventProps & {\n    /**\n       * 跨框架显隐配置值。\n       *\n       * 页面配置可继续使用 `value` 表达容器显隐；Vue 渲染适配层会在下发组件前映射为 `modelValue`。\n       */\n    value?: boolean;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkVisibilityEventProps",
+          "targetName": "SparkVisibilityEventProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /**\n       * 跨框架显隐配置值。\n       *\n       * 页面配置可继续使用 `value` 表达容器显隐；Vue 渲染适配层会在下发组件前映射为 `modelValue`。\n       */\n    value?: boolean;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+        "line": 749,
+        "className": "SparkVisibilityContainerProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "value",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n       * 跨框架显隐配置值。\n       *\n       * 页面配置可继续使用 `value` 表达容器显隐；Vue 渲染适配层会在下发组件前映射为 `modelValue`。\n       */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/shared-types.d.ts",
+            "line": 755,
+            "className": "SparkVisibilityContainerProps",
+            "memberName": "value",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.594Z"
+}

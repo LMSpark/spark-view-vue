@@ -31,13 +31,62 @@ function resolveMovedNode(response: { node?: FlatTreeNode } | FlatTreeNode): Fla
   throw new Error('[TreeManager] move endpoint returned invalid node')
 }
 
-export type TreeManagerOptions = {
-  config: TreeConfig
-  api?: TreeApi
-  initialNodes?: FlatTreeNode[]
-  httpClient?: HttpClientBase
-  endpointContextProvider?: () => Record<string, unknown>}
+function assertFlatTreeNodeArray(nodes: unknown[]): FlatTreeNode[] {
+  const result: FlatTreeNode[] = []
+  for (const item of nodes) {
+    if (!isFlatTreeNode(item)) {
+      throw new Error('TreeManager.fromJson: 节点数组包含无效项')
+    }
+    result.push(item)
+  }
+  return result
+}
 
+function parseFlatTreeNodesInput(
+  json: FlatTreeNode[] | Record<string, unknown> | string,
+): FlatTreeNode[] {
+  if (typeof json === 'string') {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(json)
+    } catch {
+      throw new Error('TreeManager.fromJson: 无效的 JSON 数据')
+    }
+    if (Array.isArray(parsed)) {
+      return assertFlatTreeNodeArray(parsed)
+    }
+    if (isRecord(parsed)) {
+      return parseFlatTreeNodesInput(parsed)
+    }
+    throw new Error('TreeManager.fromJson: JSON 必须解析为节点数组或对象')
+  }
+  if (Array.isArray(json)) {
+    return assertFlatTreeNodeArray(json)
+  }
+  const wrappedNodes = json['nodes']
+  if (Array.isArray(wrappedNodes)) {
+    return assertFlatTreeNodeArray(wrappedNodes)
+  }
+  if (isFlatTreeNode(json)) {
+    return [json]
+  }
+  throw new Error('TreeManager.fromJson: 无法识别的输入结构')
+}
+
+/** Tree Manager Options 的调用配置。 */
+export type TreeManagerOptions = {
+    /** 配置对象。 */
+config: TreeConfig
+    /** api 字段。 */
+api?: TreeApi
+    /** initial Nodes 字段。 */
+initialNodes?: FlatTreeNode[]
+    /** http Client 字段。 */
+httpClient?: HttpClientBase
+    /** endpoint Context Provider 回调。 */
+endpointContextProvider?: () => Record<string, unknown>}
+
+/** Fetch Nested Input 的输入数据。 */
 export type FetchNestedInput = Readonly<{
   rootId?: string | number | null | undefined
   limit?: number | undefined
@@ -178,6 +227,23 @@ export class TreeManager {
   }
 
   /**
+   * 从 JSON 恢复树缓存（与 toJson 输出格式对应：FlatTreeNode[]）。
+   *
+   * @param json 节点数组、松散对象或 JSON 字符串
+   * @param options TreeManager 构造选项（config 必填）
+   */
+  static fromJson(
+    json: FlatTreeNode[] | Record<string, unknown> | string,
+    options: TreeManagerOptions,
+  ): TreeManager {
+    const nodes = parseFlatTreeNodesInput(json)
+    return new TreeManager({
+      ...options,
+      initialNodes: nodes,
+    })
+  }
+
+  /**
    * 将所有扁平节点序列化为 JSON 字符串（用于导出）
    */
   toJson(): string {
@@ -285,7 +351,8 @@ export class TreeManager {
     this.addNodesToCache(Object.values(result))
   }
 
-  async moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<FlatTreeNode> {
+    /** 执行 move Node 操作。 */
+async moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<FlatTreeNode> {
     const existing = this.cache[nodeId]
     if (!existing) throw new Error(`[TreeManager] 节点不存在: ${String(nodeId)}`)
 

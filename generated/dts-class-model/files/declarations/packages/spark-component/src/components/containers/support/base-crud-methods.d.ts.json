@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/support/base-crud-methods.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/support/base-crud-methods",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/support/base-crud-methods.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/support/base-crud-methods.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/support/base-crud-methods",
+    "jsdoc": "BaseContainerApi 通用实现工厂\nForm / Detail / List 可直接展开使用；Table 展开后覆盖 setCurrentRow / setCurrentRowById。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.268Z"
+}

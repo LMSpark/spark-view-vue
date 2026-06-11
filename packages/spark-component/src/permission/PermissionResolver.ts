@@ -19,10 +19,13 @@ import type { FieldRenderConfig, FieldRenderState } from './FieldRenderHelper'
 
 // ── 动作权限上下文 ──
 
+/** Permission Action Context 的运行上下文。 */
 export type PermissionActionContext = ScriptPermissionActionContext & {
-  permissionMode?: NavPermissionMode | undefined
+    /** permission Mode 字段。 */
+permissionMode?: NavPermissionMode | undefined
 }
 
+/** Permission Action Name 的语义模型。 */
 export type PermissionActionName =
   | 'create'
   | 'import'
@@ -31,6 +34,7 @@ export type PermissionActionName =
   | 'delete'
   | 'edit'
 
+/** Permission Action 的语义模型。 */
 export type PermissionAction = PermissionActionName | (string & {})
 
 type ResolvedPermAction = {
@@ -107,6 +111,7 @@ export function isPermittedAction(
 
 // ── 字段权限状态解析 ──
 
+/** Resolve Field Permission State Input 的输入数据。 */
 export type ResolveFieldPermissionStateInput = Readonly<{
   field: string | undefined
   row: DataRow | null | undefined

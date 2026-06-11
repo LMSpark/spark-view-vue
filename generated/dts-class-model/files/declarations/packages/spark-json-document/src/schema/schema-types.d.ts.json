@@ -1,0 +1,504 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:schema/schema-types",
+    "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+    "sourceFile": "packages/spark-json-document/src/schema/schema-types.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "schema/schema-types",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\nschema/schema-types.ts — JSON Schema 类型定义（单一事实源 SSOT）\n═══════════════════════════════════════════════════════════════\n【架构定位】最底层基础类型，被 schema/ 内部模块和外部消费方共同依赖。\n本文件不依赖包内任何其他模块。\n【设计决策】\n- 使用标准 JSON Schema (Draft 2020-12 子集)，不再使用项目私有 DSL。\n- 统一命名为 JsonSchema/JsonSchemaObject（去掉旧 Ai 前缀）。\n- 旧 AiJsonSchema/AiJsonSchemaObject 在 spark-ai/json 中保留为 deprecated alias。\n═══════════════════════════════════════════════════════════════\n类型层级（自底向上）：\nJsonSchemaType     — JSON Schema type 字段允许的字符串枚举\nJsonSchema         — Schema 节点（boolean | JsonSchemaObject）\n└─ JsonSchemaObject — 完整 Schema 节点（type/properties/items 等）\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "JsonSchemaType",
+      "JsonSchema",
+      "JsonSchemaObject"
+    ]
+  },
+  "symbols": [
+    "JsonSchemaType",
+    "JsonSchema",
+    "JsonSchemaObject"
+  ],
+  "models": {
+    "JsonSchemaType": {
+      "kind": "JsonSchemaType",
+      "className": "JsonSchemaType",
+      "jsdoc": "/**\n * JSON Schema type 字段允许的类型字符串。\n * 支持联合类型数组，如 ['string', 'null'] 表示可选字符串。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "'null' | 'boolean' | 'object' | 'array' | 'number' | 'integer' | 'string'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'null'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'boolean'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'object'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'array'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'number'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'integer'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'string'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+        "line": 27,
+        "className": "JsonSchemaType",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "JsonSchema": {
+      "kind": "JsonSchema",
+      "className": "JsonSchema",
+      "jsdoc": "/**\n * JSON Schema 节点。\n * - `true` : 接受任意值（无约束）\n * - `false`: 拒绝任何值（用于禁止某字段）\n * - `JsonSchemaObject`: 完整约束节点\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "boolean | JsonSchemaObject",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "boolean"
+        },
+        {
+          "kind": "union",
+          "typeText": "JsonSchemaObject",
+          "targetName": "JsonSchemaObject"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+        "line": 34,
+        "className": "JsonSchema",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "JsonSchemaObject": {
+      "kind": "JsonSchemaObject",
+      "className": "JsonSchemaObject",
+      "jsdoc": "/**\n * 标准 JSON Schema 节点（Draft 2020-12 常用子集）。\n *\n * 覆盖以下特性：\n *   - 类型声明：type / title / description\n *   - 对象约束：properties / required / additionalProperties\n *   - 数组约束：items / prefixItems\n *   - 枚举/常量：enum / const\n *   - 组合校验：oneOf / anyOf / allOf / not\n *   - 字符串校验：maxLength / minLength / pattern / format\n *   - 数字校验：minimum / maximum\n *   - 引用与示例：$ref / default / examples\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 保留标准 JSON Schema 扩展关键字与 resultSchema 文档型字段 */\n    readonly [keyword: string]: unknown;\n    /** JSON Reference，引用另一个 schema（可选） */\n    readonly $ref?: string;\n    /** 数据类型，支持联合类型数组 */\n    readonly type?: JsonSchemaType | readonly JsonSchemaType[];\n    /** 类型标题（可选） */\n    readonly title?: string;\n    /** 类型描述，会展示给 LLM */\n    readonly description?: string;\n    /** 属性定义：属性名 → Schema */\n    readonly properties?: Readonly<Record<string, JsonSchema>>;\n    /** 必填属性名列表 */\n    readonly required?: readonly string[];\n    /** 是否允许额外属性：false=拒绝，true=接受任意，JsonSchema=按 schema 校验 */\n    readonly additionalProperties?: JsonSchema;\n    /** 数组项 Schema（普通数组） */\n    readonly items?: JsonSchema;\n    /** 元组前缀项 Schema（固定长度元组） */\n    readonly prefixItems?: readonly JsonSchema[];\n    /** 枚举值列表，值必须是有效 JSON 类型 */\n    readonly enum?: ReadonlyArray<string | number | boolean | null>;\n    /** 常量值 */\n    readonly const?: string | number | boolean | null;\n    /** 默认值 */\n    readonly default?: unknown;\n    /** 示例值列表 */\n    readonly examples?: readonly unknown[];\n    /** 必须匹配其中一个 */\n    readonly oneOf?: readonly JsonSchema[];\n    /** 匹配任意一个 */\n    readonly anyOf?: readonly JsonSchema[];\n    /** 必须匹配所有 */\n    readonly allOf?: readonly JsonSchema[];\n    /** 不能匹配此 schema */\n    readonly not?: JsonSchema;\n    /** 最大长度 */\n    readonly maxLength?: number;\n    /** 最小长度 */\n    readonly minLength?: number;\n    /** 正则表达式模式 */\n    readonly pattern?: string;\n    /** 格式（如 email、date-time、uri 等） */\n    readonly format?: string;\n    /** 最小值 */\n    readonly minimum?: number;\n    /** 最大值 */\n    readonly maximum?: number;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+        "line": 48,
+        "className": "JsonSchemaObject",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "$ref",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** JSON Reference，引用另一个 schema（可选） */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 52,
+            "className": "JsonSchemaObject",
+            "memberName": "$ref",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "type",
+          "schema": {
+            "type": "array",
+            "title": "JsonSchemaType | readonly JsonSchemaType[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 数据类型，支持联合类型数组 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 54,
+            "className": "JsonSchemaObject",
+            "memberName": "type",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 类型标题（可选） */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 56,
+            "className": "JsonSchemaObject",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "description",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 类型描述，会展示给 LLM */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 58,
+            "className": "JsonSchemaObject",
+            "memberName": "description",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "properties",
+          "schema": {
+            "title": "Readonly<Record<string, JsonSchema>>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 属性定义：属性名 → Schema */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 60,
+            "className": "JsonSchemaObject",
+            "memberName": "properties",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "required",
+          "schema": {
+            "type": "array",
+            "title": "readonly string[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 必填属性名列表 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 62,
+            "className": "JsonSchemaObject",
+            "memberName": "required",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "additionalProperties",
+          "schema": {
+            "title": "JsonSchema"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否允许额外属性：false=拒绝，true=接受任意，JsonSchema=按 schema 校验 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 64,
+            "className": "JsonSchemaObject",
+            "memberName": "additionalProperties",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "items",
+          "schema": {
+            "title": "JsonSchema"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 数组项 Schema（普通数组） */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 66,
+            "className": "JsonSchemaObject",
+            "memberName": "items",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "prefixItems",
+          "schema": {
+            "type": "array",
+            "title": "readonly JsonSchema[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 元组前缀项 Schema（固定长度元组） */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 68,
+            "className": "JsonSchemaObject",
+            "memberName": "prefixItems",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "enum",
+          "schema": {
+            "title": "ReadonlyArray<string | number | boolean | null>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 枚举值列表，值必须是有效 JSON 类型 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 70,
+            "className": "JsonSchemaObject",
+            "memberName": "enum",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "const",
+          "schema": {
+            "title": "string | number | boolean | null"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 常量值 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 72,
+            "className": "JsonSchemaObject",
+            "memberName": "const",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "default",
+          "schema": {
+            "title": "unknown"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 默认值 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 74,
+            "className": "JsonSchemaObject",
+            "memberName": "default",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "examples",
+          "schema": {
+            "type": "array",
+            "title": "readonly unknown[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 示例值列表 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 76,
+            "className": "JsonSchemaObject",
+            "memberName": "examples",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "oneOf",
+          "schema": {
+            "type": "array",
+            "title": "readonly JsonSchema[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 必须匹配其中一个 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 78,
+            "className": "JsonSchemaObject",
+            "memberName": "oneOf",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "anyOf",
+          "schema": {
+            "type": "array",
+            "title": "readonly JsonSchema[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 匹配任意一个 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 80,
+            "className": "JsonSchemaObject",
+            "memberName": "anyOf",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "allOf",
+          "schema": {
+            "type": "array",
+            "title": "readonly JsonSchema[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 必须匹配所有 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 82,
+            "className": "JsonSchemaObject",
+            "memberName": "allOf",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "not",
+          "schema": {
+            "title": "JsonSchema"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 不能匹配此 schema */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 84,
+            "className": "JsonSchemaObject",
+            "memberName": "not",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "maxLength",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 最大长度 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 86,
+            "className": "JsonSchemaObject",
+            "memberName": "maxLength",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "minLength",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 最小长度 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 88,
+            "className": "JsonSchemaObject",
+            "memberName": "minLength",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "pattern",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 正则表达式模式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 90,
+            "className": "JsonSchemaObject",
+            "memberName": "pattern",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "format",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 格式（如 email、date-time、uri 等） */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 92,
+            "className": "JsonSchemaObject",
+            "memberName": "format",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "minimum",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 最小值 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 94,
+            "className": "JsonSchemaObject",
+            "memberName": "minimum",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "maximum",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 最大值 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts",
+            "line": 96,
+            "className": "JsonSchemaObject",
+            "memberName": "maximum",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.848Z"
+}

@@ -12,8 +12,10 @@ import type {
 } from './ai-api-object-metadata-schema'
 import { dereferenceModuleMetadataSchemas } from './json-schema-dereference'
 
+/** Json Schema Object 的语义模型。 */
 type JsonSchemaObject = Readonly<Record<string, unknown>>
 
+/** Resolve Module Metadata Json Options 的调用配置。 */
 export type ResolveModuleMetadataJsonOptions = Readonly<{
   schemaDefs?: Readonly<Record<string, JsonSchemaObject>>
   /** @default false — true 时在注册前 inline #/$defs/*；false 时留给 AJV 2020 解析。 */

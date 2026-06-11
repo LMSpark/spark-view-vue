@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/tool-loop-runner.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/tool-loop/tool-loop-runner",
+    "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/tool-loop-runner.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/tool-loop/tool-loop-runner.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/tool-loop/tool-loop-runner",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\nagent/tool-loop/tool-loop-runner.ts — AI Host 工具循环执行器\n═══════════════════════════════════════════════════════════════\n【架构定位】Agent 层的核心编排引擎。负责\"用户消息 → AI 推理 →\n工具调用 → AI 再推理\"的完整闭环。每个 turn 内可执行多轮（round）\n工具调用，直到 LLM 自然结束、业务终止或达到上限。\n【核心类】\nAiAgentToolLoopRunner — 工具循环执行器\n├─ runToolLoop()              — 主循环入口\n├─ completeLifecycleDirective  — 生命周期终止流程\n└─ appendMessagesToTransport   — 消息同步到传输层\n【单轮执行流程】\n1. 构建系统提示词（业务 systemPrompt + 请求 systemPrompt + 知识快照）\n2. 提取最新用户消息 → 发送给 LLM（turnCallbacks.executeTurn）\n3. LLM 返回文本 + 工具调用列表\n4. 依次执行工具调用（toolCallExecutor.execute）\n5. 将 assistant(tool_calls) + tool 结果 append 到后端会话\n6. 检查生命周期指令：continue → 下一轮；complete/abort → 结束\n7. 结束时：发送最终消息 → appendMessages → stopSession → 释放实例\n【终止条件】\n· LLM 不再返回工具调用（自然结束）\n· 业务生命周期回调返回 complete/abort（业务主动终止）\n· 达到 maxToolRounds 上限（安全阀）\n【消费方】business-session.ts（AiAgentMessageSender.send）\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentToolLoopInput",
+      "AiAgentToolLoopRunner"
+    ]
+  },
+  "symbols": [
+    "AiAgentToolLoopInput",
+    "AiAgentToolLoopRunner"
+  ],
+  "models": {
+    "AiAgentToolLoopInput": {
+      "kind": "AiAgentToolLoopInput",
+      "className": "AiAgentToolLoopInput",
+      "jsdoc": "/** 工具循环的输入参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    registration: AiAgentRegistration<TInput>;\n    scope: AiAgentScope;\n    request: AiAgentChatRequest;\n    turn: AiAgentTurnMeta;\n    /** 清除 session 选中缓存（业务切换时由 session 层传入） */\n    clearSelected: () => void;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    registration: AiAgentRegistration<TInput>;\n    scope: AiAgentScope;\n    request: AiAgentChatRequest;\n    turn: AiAgentTurnMeta;\n    /** 清除 session 选中缓存（业务切换时由 session 层传入） */\n    clearSelected: () => void;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/tool-loop/tool-loop-runner.d.ts",
+        "line": 40,
+        "className": "AiAgentToolLoopInput",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentToolLoopRunner": {
+      "kind": "AiAgentToolLoopRunner",
+      "className": "AiAgentToolLoopRunner",
+      "jsdoc": "/** Ai Agent Tool Loop Runner 的语义模型。 */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/tool-loop/tool-loop-runner.d.ts",
+        "line": 49,
+        "className": "AiAgentToolLoopRunner",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "callbacks": {
+              "title": "AiAgentTurnCallbacks"
+            },
+            "maxToolRounds": {
+              "title": "number | undefined"
+            }
+          },
+          "required": [
+            "callbacks",
+            "maxToolRounds"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Ai Agent Tool Loop Runner 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-ai/src/agent/tool-loop/tool-loop-runner.d.ts",
+          "line": 54,
+          "className": "AiAgentToolLoopRunner",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "runToolLoop",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "title": "AiAgentToolLoopInput<TInput>"
+              }
+            },
+            "required": [
+              "input"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/**\n     * 执行工具循环主流程。\n     *\n     * 每轮（round）：\n     *   1. 读取 ClassModel 固定协议工具规约\n     *   2. 发送 LLM 诊断事件（llm-request）\n     *   3. 调用 turnCallbacks.executeTurn 获取 AI 响应\n     *   4. 将 AI 文本回复写入 sessionStore\n     *   5. 若无工具调用 → 自然结束\n     *   6. 依次执行每个工具调用，收集 toolMessage 和 lifecycleDirective\n     *   7. 若 lifecycleDirective ≠ 'continue' → 进入生命周期终止流程\n     *   8. 否则把本轮消息 append 到 V4 后端会话，下一轮用空 messages 续写 session 历史\n     */",
+          "paramsTypeText": "input: Readonly<{ registration: AiAgentRegistration<TInput>; scope: AiAgentScope; request: Readonly<{ historyMsgs: readonly AiAgentChatMessage[]; turn?: Readonly<{ turnId: string; seq: number; baseRevision: number; queuedAt: string; startedAt: string; maxParallelTurns: number; }> | undefined; systemPrompt?: string | undefined; signal?: AbortSignal | undefined; onReasoning?: ((reasoning: string) => void) | undefined; onDelta?: ((delta: string) => void) | undefined; onUsage?: ((usageRaw: Record<string, unknown>) => void) | undefined; onStreamEvent?: ((event: Readonly<{ type: string; data: unknown; turnKey: string; streamKey: string; scope: { readonly businessRegistrationId: string; readonly businessInstanceId: string; readonly eventModuleId: string; readonly turnId: string; }; }>) => void) | undefined; onToolCall?: ((record: Readonly<{ toolName: string; args: unknown; turnId: string; round: number; callId?: string | undefined; status: \"success\" | \"error\"; result: AiAgentFunctionCallResult<unknown>; durationMs: number; }>) => void) | undefined; beforeFunctionCall?: ((options: AiAgentBeforeFunctionCallOptions) => Readonly<{ status: AiAgentBeforeFunctionCallStatus; reason?: string | undefined; fix?: string | undefined; finalAssistantMessage?: string | undefined; releaseInstance?: boolean | undefined; }> | Promise<Readonly<{ status: AiAgentBeforeFunctionCallStatus; reason?: string | undefined; fix?: string | undefined; finalAssistantMessage?: string | undefined; releaseInstance?: boolean | undefined; }>>) | undefined; }>; turn: Readonly<{ turnId: string; seq: number; baseRevision: number; queuedAt: string; startedAt: string; maxParallelTurns: number; }>; clearSelected: () => void; }>",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/tool-loop/tool-loop-runner.d.ts",
+            "line": 68,
+            "className": "AiAgentToolLoopRunner",
+            "memberName": "runToolLoop",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.789Z"
+}

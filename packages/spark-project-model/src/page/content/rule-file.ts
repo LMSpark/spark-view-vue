@@ -1,16 +1,27 @@
 /**
+ * @module @spark-appworks/spark-project-model:page/content/rule-file
+ * @spark-appworks/spark-project-model 的 page/content/rule-file 模块。
+ * 导出 ClassModel symbol: PageRuleFile（共 1 个 symbol）。
+ */
+/**
  * PageRuleFile——rule.json 的内存模型，负责节点树的读写与撤销重做。
  */
 import { getSparkNodeChildren, SparkNodeTree } from '@spark-appworks/spark-data'
 import type { SparkNodeTree as SparkNodeTreeModel, SparkNode } from '@spark-appworks/spark-data'
 import { parseRuleText, serializeRuleTree } from '../page-file'
 
+/** Page Rule File 的语义模型。 */
 export class PageRuleFile {
-  tree: SparkNodeTreeModel = SparkNodeTree.fromPageChildren([])
+    /** tree 字段。 */
+tree: SparkNodeTreeModel = SparkNodeTree.fromPageChildren([])
 
   private dirty = false
 
-  constructor(readonly pageId: string) {}
+    /** 创建 Page Rule File 实例。 */
+constructor(
+    /** 页面 ID，用于标识当前 rule.json 所属页面。 */
+    readonly pageId: string,
+  ) {}
 
   get root(): SparkNode { return this.tree.root }
   get children(): SparkNode[] { return getSparkNodeChildren(this.root.children) }
@@ -18,33 +29,40 @@ export class PageRuleFile {
   get canUndo(): boolean { return this.tree.canUndo }
   get canRedo(): boolean { return this.tree.canRedo }
 
-  getText(): string { return serializeRuleTree(this.root) }
+    /** get Text 文本。 */
+getText(): string { return serializeRuleTree(this.root) }
 
-  setText(text: string): void {
+    /** set Text 文本。 */
+setText(text: string): void {
     if (text === this.getText()) return
     this.tree.replaceRoot(parseRuleText(text))
     this.dirty = true
   }
 
-  loadText(text: string): void {
+    /** load Text 文本。 */
+loadText(text: string): void {
     this.tree = SparkNodeTree.fromJson(parseRuleText(text))
     this.dirty = false
   }
 
-  markSaved(): void {
+    /** 执行 mark Saved 操作。 */
+markSaved(): void {
     this.dirty = false
   }
 
-  getTree(): SparkNodeTreeModel {
+    /** 读取 Tree。 */
+getTree(): SparkNodeTreeModel {
     return this.tree
   }
 
-  replaceTree(tree: SparkNodeTreeModel): void {
+    /** 执行 replace Tree 操作。 */
+replaceTree(tree: SparkNodeTreeModel): void {
     this.tree = tree
     this.dirty = true
   }
 
-  async editTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
+    /** 执行 edit Tree 操作。 */
+async editTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
     const beforeText = this.getText()
     const tree = this.getTree()
     await run(tree)
@@ -52,16 +70,17 @@ export class PageRuleFile {
     this.replaceTree(tree)
   }
 
-  undo(): boolean {
+    /** 执行 undo 操作。 */
+undo(): boolean {
     const ok = this.tree.undo() !== null
     if (ok) this.dirty = true
     return ok
   }
 
-  redo(): boolean {
+    /** 执行 redo 操作。 */
+redo(): boolean {
     const ok = this.tree.redo() !== null
     if (ok) this.dirty = true
     return ok
   }
 }
-

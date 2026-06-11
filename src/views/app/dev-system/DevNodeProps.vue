@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/dev-system/DevNodeProps
+app 的 views/app/dev-system/DevNodeProps 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="dev-node-props">
     <!-- 自动保存状态指示器 -->

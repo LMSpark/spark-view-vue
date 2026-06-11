@@ -119,10 +119,12 @@ type AiAgentToolLoopInput<TInput extends AiJsonParams = AiJsonParams> = Readonly
 
 /* ── 工具循环执行器 ────────────────────────────────────────── */
 
+/** Ai Agent Tool Loop Runner 的语义模型。 */
 export class AiAgentToolLoopRunner {
   private readonly toolCallExecutor = new AiAgentToolCallExecutor()
 
-  public constructor(
+    /** 创建 Ai Agent Tool Loop Runner 实例。 */
+public constructor(
     private readonly callbacks: AiAgentTurnCallbacks,
     private readonly maxToolRounds: number | undefined,
   ) {}

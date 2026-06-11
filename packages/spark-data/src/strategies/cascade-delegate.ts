@@ -17,6 +17,7 @@ import { getParentRows } from '../core/utils'
 
 const logger = Logger('DataView:Cascade')
 
+/** Cascade Delegate 的语义模型。 */
 export class CascadeDelegate {
   /** 级联取消订阅句柄 */
   private cascadeUnsubscribers: Array<() => void> = []
@@ -28,7 +29,8 @@ export class CascadeDelegate {
   /** 级联请求 ID 计数器 */
   private nextCascadeRequestId = 0
 
-  constructor(
+    /** 创建 Cascade Delegate 实例。 */
+constructor(
     private host: DataView,
   ) {}
 

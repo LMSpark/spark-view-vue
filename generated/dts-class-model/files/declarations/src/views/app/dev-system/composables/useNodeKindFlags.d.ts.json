@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/views/app/dev-system/composables/useNodeKindFlags.d.ts",
+  "module": {
+    "name": "app:views/app/dev-system/composables/useNodeKindFlags",
+    "sourcePath": "declarations/src/views/app/dev-system/composables/useNodeKindFlags.d.ts",
+    "sourceFile": "src/views/app/dev-system/composables/useNodeKindFlags.ts",
+    "packageName": "app",
+    "modulePath": "views/app/dev-system/composables/useNodeKindFlags",
+    "jsdoc": "@module app:views/app/dev-system/composables/useNodeKindFlags\napp 的 views/app/dev-system/composables/useNodeKindFlags 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.126Z"
+}

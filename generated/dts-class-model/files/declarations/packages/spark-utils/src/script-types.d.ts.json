@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/script-types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:script-types",
+    "sourcePath": "declarations/packages/spark-utils/src/script-types.d.ts",
+    "sourceFile": "packages/spark-utils/src/script-types.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "script-types",
+    "jsdoc": "页面脚本共享类型 — 框架无关的基础数据结构\n这些类型原是 spark-project-model 中 `script-context-types.ts` 的 InScript 类型，\n提取到 spark-utils 以在更底层复用。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "FieldRenderConfig",
+      "ComponentInstanceSnapshot",
+      "ContextItem",
+      "ContextSnapshot"
+    ]
+  },
+  "symbols": [
+    "FieldRenderConfig",
+    "ComponentInstanceSnapshot",
+    "ContextItem",
+    "ContextSnapshot"
+  ],
+  "models": {
+    "FieldRenderConfig": {
+      "kind": "FieldRenderConfig",
+      "className": "FieldRenderConfig",
+      "jsdoc": "/** 字段渲染配置（脚本可见） */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** field 字段。 */\n    field: string;\n    /** 是否可见。 */\n    visible?: boolean;\n    /** editable 字段。 */\n    editable?: boolean;\n    /** 展示标签。 */\n    label?: string;\n    /** width 字段。 */\n    width?: number | string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+        "line": 8,
+        "className": "FieldRenderConfig",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "field",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** field 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 10,
+            "className": "FieldRenderConfig",
+            "memberName": "field",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "visible",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否可见。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 12,
+            "className": "FieldRenderConfig",
+            "memberName": "visible",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "editable",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** editable 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 14,
+            "className": "FieldRenderConfig",
+            "memberName": "editable",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "label",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 展示标签。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 16,
+            "className": "FieldRenderConfig",
+            "memberName": "label",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "width",
+          "schema": {
+            "title": "number | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** width 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 18,
+            "className": "FieldRenderConfig",
+            "memberName": "width",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ComponentInstanceSnapshot": {
+      "kind": "ComponentInstanceSnapshot",
+      "className": "ComponentInstanceSnapshot",
+      "jsdoc": "/** 页面组件实例快照（脚本只读元数据） */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** 类型标识。 */\n    type: string;\n    /** 组件属性集合。 */\n    props?: Record<string, unknown>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+        "line": 21,
+        "className": "ComponentInstanceSnapshot",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 唯一标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 23,
+            "className": "ComponentInstanceSnapshot",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "type",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 类型标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 25,
+            "className": "ComponentInstanceSnapshot",
+            "memberName": "type",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "props",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 组件属性集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 27,
+            "className": "ComponentInstanceSnapshot",
+            "memberName": "props",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ContextItem": {
+      "kind": "ContextItem",
+      "className": "ContextItem",
+      "jsdoc": "/** 模块上下文选项 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string | number;\n    /** 显示标题。 */\n    title: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+        "line": 30,
+        "className": "ContextItem",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "schema": {
+            "title": "string | number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 唯一标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 32,
+            "className": "ContextItem",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 显示标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 34,
+            "className": "ContextItem",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ContextSnapshot": {
+      "kind": "ContextSnapshot",
+      "className": "ContextSnapshot",
+      "jsdoc": "/** 模块级上下文快照 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** selected 字段。 */\n    selected: string | number | null;\n    /** items 字段。 */\n    items: readonly ContextItem[];\n    /** node Id 标识。 */\n    nodeId: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+        "line": 37,
+        "className": "ContextSnapshot",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "selected",
+          "schema": {
+            "title": "string | number | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** selected 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 39,
+            "className": "ContextSnapshot",
+            "memberName": "selected",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "items",
+          "schema": {
+            "type": "array",
+            "title": "readonly ContextItem[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** items 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 41,
+            "className": "ContextSnapshot",
+            "memberName": "items",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "nodeId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** node Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/script-types.d.ts",
+            "line": 43,
+            "className": "ContextSnapshot",
+            "memberName": "nodeId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.027Z"
+}

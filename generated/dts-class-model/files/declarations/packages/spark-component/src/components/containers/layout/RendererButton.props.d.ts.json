@@ -1,0 +1,845 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererButton.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererButton.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererButton.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererButton.props\nRendererButton 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: RButtonProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RButtonProps"
+    ],
+    "componentName": "RendererButton",
+    "componentType": "r-button",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "RButtonProps"
+  ],
+  "models": {
+    "RButtonProps": {
+      "kind": "RButtonProps",
+      "className": "RButtonProps",
+      "jsdoc": "/** RButton Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /**\n     * CRUD 或页面动作名，由宿主内置 action runner 接管执行。\n     * 新建申请、提交新单据等“创建一条新记录”的按钮优先使用 append-row，并用 dataViewKey 指向目标列表/待处理视图。\n     * append-row/prompt-append 会读取按钮当前作用域行、appendPayload、inheritFields 和 inheritFieldMap。\n     */\n    action?: BuiltinActionName;\n    /**\n     * 目标 DataViewKey；不写时使用按钮所在容器提供的数据视图。\n     * append-row/patch/delete/refresh 等动作会优先作用于这个 DataView。\n     * 格式示例：table@viewId。\n     */\n    dataViewKey?: string;\n    /**\n     * 目标行主键字段名。\n     * @default \"id\"\n     */\n    idField?: string;\n    /**\n     * append-row/prompt-append 新行初始字段值。\n     * 适合写入固定状态，例如 {\"status\":\"pending\"}。\n     * @default {}\n     */\n    appendPayload?: Record<string, unknown>;\n    /**\n     * append-row/prompt-append 从当前作用域行复制到新行的字段名。\n     * 表单提交到待处理列表时，用它把 currentRow 中的申请人、日期、事由等字段复制到目标视图。\n     * @default []\n     */\n    inheritFields?: string[];\n    /**\n     * append-row/prompt-append 从当前作用域行复制并重命名的字段映射。\n     * key 是源字段，value 是新行目标字段。\n     * @default {}\n     */\n    inheritFieldMap?: Record<string, string>;\n    /**\n     * 新增成功后是否将新行设为目标视图 currentRow。\n     * @default false\n     */\n    setCurrentRowOnSuccess?: boolean;\n    /**\n     * patch-row/patch-current/patch-selected 的静态更新字段。\n     * 用于批量写入固定值，例如 {\"status\":\"approved\"}。\n     * @default {}\n     */\n    patch?: Record<string, unknown>;\n    /**\n     * prompt/patch/set-field 使用的单字段名。\n     * field/value 成对出现时，只更新一个字段。\n     */\n    field?: string;\n    /**\n     * patch/set-field 使用的单字段值。\n     * 与 field 配合使用。\n     */\n    value?: unknown;\n    /**\n     * 当前内置动作成功后的链式动作。\n     * 例如 append-row 成功后再 patch-current 清空草稿表单。\n     */\n    then?: ActionDescriptor;\n    /**\n     * 操作成功后的提示文案。\n     * @default \"\"\n     */\n    successMessage?: string;\n    /**\n     * 操作失败后的提示文案。\n     * @default \"\"\n     */\n    failureMessage?: string;\n    /**\n     * 数据源为空或目标行不存在时的提示文案。\n     * @default \"\"\n     */\n    emptyMessage?: string;\n    /**\n     * 运行时异常时的提示文案。\n     * @default \"\"\n     */\n    errorMessage?: string;\n    /**\n     * 表单校验失败时的提示文案。\n     * @default \"\"\n     */\n    validateMessage?: string;\n    /**\n     * 操作前确认文案；空字符串表示跳过确认。\n     * @default \"\"\n     */\n    confirmMessage?: string;\n    /**\n     * 操作前确认标题。\n     * @default \"\"\n     */\n    confirmTitle?: string;\n    /**\n     * 操作前确认类型。\n     * 由 UI 消息组件解释，常见值为 warning、info、success、error。\n     * @default \"warning\"\n     */\n    confirmType?: string;\n    /**\n     * 静默模式；成功/失败提示不展示。\n     * @default false\n     */\n    silent?: boolean;\n    /**\n     * 当前行字段值匹配此对象时禁用按钮。\n     * 常用于 status 等字段控制操作可用性。\n     * @default {}\n     */\n    disabledWhenRow?: Record<string, unknown>;\n    /**\n     * 样式模板名。\n     * 常见值如 primary、toolbar-danger、icon-add。\n     */\n    template?: string;\n    /**\n     * 按钮文本。\n     * @default \"\"\n     */\n    label?: string;\n    /**\n     * 按钮类型。\n     * 传给底层按钮组件的视觉类型。\n     */\n    buttonType?: string;\n    /**\n     * 按钮尺寸。\n     * Element Plus 按钮尺寸只允许 default、small、large。\n     * @default \"default\"\n     */\n    buttonSize?: string;\n    /**\n     * 是否朴素按钮。\n     * @default false\n     */\n    plain?: boolean;\n    /**\n     * 是否文本按钮。\n     * @default false\n     */\n    text?: boolean;\n    /**\n     * 文本按钮是否显示背景。\n     * @default false\n     */\n    bg?: boolean;\n    /**\n     * 是否链接风格。\n     * @default false\n     */\n    link?: boolean;\n    /**\n     * 是否圆角。\n     * @default false\n     */\n    round?: boolean;\n    /**\n     * 是否圆形按钮。\n     * @default false\n     */\n    circle?: boolean;\n    /**\n     * 是否加载中。\n     * @default false\n     */\n    loading?: boolean;\n    /**\n     * 图标名称。\n     * 使用当前图标注册表中的图标名。\n     */\n    icon?: string;\n    /**\n     * 中文按钮文案是否自动插空格。\n     * @default false\n     */\n    autoInsertSpace?: boolean;\n    /**\n     * 自定义颜色。\n     * 传给底层按钮组件的颜色值。\n     */\n    color?: string;\n    /**\n     * 是否使用深色主题。\n     * @default false\n     */\n    dark?: boolean;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /**\n     * CRUD 或页面动作名，由宿主内置 action runner 接管执行。\n     * 新建申请、提交新单据等“创建一条新记录”的按钮优先使用 append-row，并用 dataViewKey 指向目标列表/待处理视图。\n     * append-row/prompt-append 会读取按钮当前作用域行、appendPayload、inheritFields 和 inheritFieldMap。\n     */\n    action?: BuiltinActionName;\n    /**\n     * 目标 DataViewKey；不写时使用按钮所在容器提供的数据视图。\n     * append-row/patch/delete/refresh 等动作会优先作用于这个 DataView。\n     * 格式示例：table@viewId。\n     */\n    dataViewKey?: string;\n    /**\n     * 目标行主键字段名。\n     * @default \"id\"\n     */\n    idField?: string;\n    /**\n     * append-row/prompt-append 新行初始字段值。\n     * 适合写入固定状态，例如 {\"status\":\"pending\"}。\n     * @default {}\n     */\n    appendPayload?: Record<string, unknown>;\n    /**\n     * append-row/prompt-append 从当前作用域行复制到新行的字段名。\n     * 表单提交到待处理列表时，用它把 currentRow 中的申请人、日期、事由等字段复制到目标视图。\n     * @default []\n     */\n    inheritFields?: string[];\n    /**\n     * append-row/prompt-append 从当前作用域行复制并重命名的字段映射。\n     * key 是源字段，value 是新行目标字段。\n     * @default {}\n     */\n    inheritFieldMap?: Record<string, string>;\n    /**\n     * 新增成功后是否将新行设为目标视图 currentRow。\n     * @default false\n     */\n    setCurrentRowOnSuccess?: boolean;\n    /**\n     * patch-row/patch-current/patch-selected 的静态更新字段。\n     * 用于批量写入固定值，例如 {\"status\":\"approved\"}。\n     * @default {}\n     */\n    patch?: Record<string, unknown>;\n    /**\n     * prompt/patch/set-field 使用的单字段名。\n     * field/value 成对出现时，只更新一个字段。\n     */\n    field?: string;\n    /**\n     * patch/set-field 使用的单字段值。\n     * 与 field 配合使用。\n     */\n    value?: unknown;\n    /**\n     * 当前内置动作成功后的链式动作。\n     * 例如 append-row 成功后再 patch-current 清空草稿表单。\n     */\n    then?: ActionDescriptor;\n    /**\n     * 操作成功后的提示文案。\n     * @default \"\"\n     */\n    successMessage?: string;\n    /**\n     * 操作失败后的提示文案。\n     * @default \"\"\n     */\n    failureMessage?: string;\n    /**\n     * 数据源为空或目标行不存在时的提示文案。\n     * @default \"\"\n     */\n    emptyMessage?: string;\n    /**\n     * 运行时异常时的提示文案。\n     * @default \"\"\n     */\n    errorMessage?: string;\n    /**\n     * 表单校验失败时的提示文案。\n     * @default \"\"\n     */\n    validateMessage?: string;\n    /**\n     * 操作前确认文案；空字符串表示跳过确认。\n     * @default \"\"\n     */\n    confirmMessage?: string;\n    /**\n     * 操作前确认标题。\n     * @default \"\"\n     */\n    confirmTitle?: string;\n    /**\n     * 操作前确认类型。\n     * 由 UI 消息组件解释，常见值为 warning、info、success、error。\n     * @default \"warning\"\n     */\n    confirmType?: string;\n    /**\n     * 静默模式；成功/失败提示不展示。\n     * @default false\n     */\n    silent?: boolean;\n    /**\n     * 当前行字段值匹配此对象时禁用按钮。\n     * 常用于 status 等字段控制操作可用性。\n     * @default {}\n     */\n    disabledWhenRow?: Record<string, unknown>;\n    /**\n     * 样式模板名。\n     * 常见值如 primary、toolbar-danger、icon-add。\n     */\n    template?: string;\n    /**\n     * 按钮文本。\n     * @default \"\"\n     */\n    label?: string;\n    /**\n     * 按钮类型。\n     * 传给底层按钮组件的视觉类型。\n     */\n    buttonType?: string;\n    /**\n     * 按钮尺寸。\n     * Element Plus 按钮尺寸只允许 default、small、large。\n     * @default \"default\"\n     */\n    buttonSize?: string;\n    /**\n     * 是否朴素按钮。\n     * @default false\n     */\n    plain?: boolean;\n    /**\n     * 是否文本按钮。\n     * @default false\n     */\n    text?: boolean;\n    /**\n     * 文本按钮是否显示背景。\n     * @default false\n     */\n    bg?: boolean;\n    /**\n     * 是否链接风格。\n     * @default false\n     */\n    link?: boolean;\n    /**\n     * 是否圆角。\n     * @default false\n     */\n    round?: boolean;\n    /**\n     * 是否圆形按钮。\n     * @default false\n     */\n    circle?: boolean;\n    /**\n     * 是否加载中。\n     * @default false\n     */\n    loading?: boolean;\n    /**\n     * 图标名称。\n     * 使用当前图标注册表中的图标名。\n     */\n    icon?: string;\n    /**\n     * 中文按钮文案是否自动插空格。\n     * @default false\n     */\n    autoInsertSpace?: boolean;\n    /**\n     * 自定义颜色。\n     * 传给底层按钮组件的颜色值。\n     */\n    color?: string;\n    /**\n     * 是否使用深色主题。\n     * @default false\n     */\n    dark?: boolean;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+        "line": 10,
+        "className": "RButtonProps",
+        "declarationKind": "type",
+        "componentName": "RendererButton",
+        "componentType": "r-button",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "action",
+          "schema": {
+            "title": "BuiltinActionName"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * CRUD 或页面动作名，由宿主内置 action runner 接管执行。\n     * 新建申请、提交新单据等“创建一条新记录”的按钮优先使用 append-row，并用 dataViewKey 指向目标列表/待处理视图。\n     * append-row/prompt-append 会读取按钮当前作用域行、appendPayload、inheritFields 和 inheritFieldMap。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 16,
+            "className": "RButtonProps",
+            "memberName": "action",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "dataViewKey",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 目标 DataViewKey；不写时使用按钮所在容器提供的数据视图。\n     * append-row/patch/delete/refresh 等动作会优先作用于这个 DataView。\n     * 格式示例：table@viewId。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 22,
+            "className": "RButtonProps",
+            "memberName": "dataViewKey",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "idField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 目标行主键字段名。\n     * @default \"id\"\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 27,
+            "className": "RButtonProps",
+            "memberName": "idField",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "appendPayload",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * append-row/prompt-append 新行初始字段值。\n     * 适合写入固定状态，例如 {\"status\":\"pending\"}。\n     * @default {}\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 33,
+            "className": "RButtonProps",
+            "memberName": "appendPayload",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "inheritFields",
+          "schema": {
+            "type": "array",
+            "title": "string[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * append-row/prompt-append 从当前作用域行复制到新行的字段名。\n     * 表单提交到待处理列表时，用它把 currentRow 中的申请人、日期、事由等字段复制到目标视图。\n     * @default []\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 39,
+            "className": "RButtonProps",
+            "memberName": "inheritFields",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "inheritFieldMap",
+          "schema": {
+            "title": "Record<string, string>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * append-row/prompt-append 从当前作用域行复制并重命名的字段映射。\n     * key 是源字段，value 是新行目标字段。\n     * @default {}\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 45,
+            "className": "RButtonProps",
+            "memberName": "inheritFieldMap",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "setCurrentRowOnSuccess",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 新增成功后是否将新行设为目标视图 currentRow。\n     * @default false\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 50,
+            "className": "RButtonProps",
+            "memberName": "setCurrentRowOnSuccess",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "patch",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * patch-row/patch-current/patch-selected 的静态更新字段。\n     * 用于批量写入固定值，例如 {\"status\":\"approved\"}。\n     * @default {}\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 56,
+            "className": "RButtonProps",
+            "memberName": "patch",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "field",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * prompt/patch/set-field 使用的单字段名。\n     * field/value 成对出现时，只更新一个字段。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 61,
+            "className": "RButtonProps",
+            "memberName": "field",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "value",
+          "schema": {
+            "title": "unknown"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * patch/set-field 使用的单字段值。\n     * 与 field 配合使用。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 66,
+            "className": "RButtonProps",
+            "memberName": "value",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "then",
+          "schema": {
+            "title": "ActionDescriptor"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 当前内置动作成功后的链式动作。\n     * 例如 append-row 成功后再 patch-current 清空草稿表单。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 71,
+            "className": "RButtonProps",
+            "memberName": "then",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "successMessage",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 操作成功后的提示文案。\n     * @default \"\"\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 76,
+            "className": "RButtonProps",
+            "memberName": "successMessage",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "failureMessage",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 操作失败后的提示文案。\n     * @default \"\"\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 81,
+            "className": "RButtonProps",
+            "memberName": "failureMessage",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "emptyMessage",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 数据源为空或目标行不存在时的提示文案。\n     * @default \"\"\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 86,
+            "className": "RButtonProps",
+            "memberName": "emptyMessage",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "errorMessage",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 运行时异常时的提示文案。\n     * @default \"\"\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 91,
+            "className": "RButtonProps",
+            "memberName": "errorMessage",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "validateMessage",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 表单校验失败时的提示文案。\n     * @default \"\"\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 96,
+            "className": "RButtonProps",
+            "memberName": "validateMessage",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "confirmMessage",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 操作前确认文案；空字符串表示跳过确认。\n     * @default \"\"\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 101,
+            "className": "RButtonProps",
+            "memberName": "confirmMessage",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "confirmTitle",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 操作前确认标题。\n     * @default \"\"\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 106,
+            "className": "RButtonProps",
+            "memberName": "confirmTitle",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "confirmType",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 操作前确认类型。\n     * 由 UI 消息组件解释，常见值为 warning、info、success、error。\n     * @default \"warning\"\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 112,
+            "className": "RButtonProps",
+            "memberName": "confirmType",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "silent",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 静默模式；成功/失败提示不展示。\n     * @default false\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 117,
+            "className": "RButtonProps",
+            "memberName": "silent",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "disabledWhenRow",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 当前行字段值匹配此对象时禁用按钮。\n     * 常用于 status 等字段控制操作可用性。\n     * @default {}\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 123,
+            "className": "RButtonProps",
+            "memberName": "disabledWhenRow",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "template",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 样式模板名。\n     * 常见值如 primary、toolbar-danger、icon-add。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 128,
+            "className": "RButtonProps",
+            "memberName": "template",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "label",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 按钮文本。\n     * @default \"\"\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 133,
+            "className": "RButtonProps",
+            "memberName": "label",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "buttonType",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 按钮类型。\n     * 传给底层按钮组件的视觉类型。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 138,
+            "className": "RButtonProps",
+            "memberName": "buttonType",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "buttonSize",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 按钮尺寸。\n     * Element Plus 按钮尺寸只允许 default、small、large。\n     * @default \"default\"\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 144,
+            "className": "RButtonProps",
+            "memberName": "buttonSize",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "plain",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否朴素按钮。\n     * @default false\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 149,
+            "className": "RButtonProps",
+            "memberName": "plain",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "text",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否文本按钮。\n     * @default false\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 154,
+            "className": "RButtonProps",
+            "memberName": "text",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "bg",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 文本按钮是否显示背景。\n     * @default false\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 159,
+            "className": "RButtonProps",
+            "memberName": "bg",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "link",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否链接风格。\n     * @default false\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 164,
+            "className": "RButtonProps",
+            "memberName": "link",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "round",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否圆角。\n     * @default false\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 169,
+            "className": "RButtonProps",
+            "memberName": "round",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "circle",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否圆形按钮。\n     * @default false\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 174,
+            "className": "RButtonProps",
+            "memberName": "circle",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "loading",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否加载中。\n     * @default false\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 179,
+            "className": "RButtonProps",
+            "memberName": "loading",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "icon",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 图标名称。\n     * 使用当前图标注册表中的图标名。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 184,
+            "className": "RButtonProps",
+            "memberName": "icon",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "autoInsertSpace",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 中文按钮文案是否自动插空格。\n     * @default false\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 189,
+            "className": "RButtonProps",
+            "memberName": "autoInsertSpace",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "color",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 自定义颜色。\n     * 传给底层按钮组件的颜色值。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 194,
+            "className": "RButtonProps",
+            "memberName": "color",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "dark",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 是否使用深色主题。\n     * @default false\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+            "line": 199,
+            "className": "RButtonProps",
+            "memberName": "dark",
+            "declarationKind": "interface",
+            "componentName": "RendererButton",
+            "componentType": "r-button",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.134Z"
+}

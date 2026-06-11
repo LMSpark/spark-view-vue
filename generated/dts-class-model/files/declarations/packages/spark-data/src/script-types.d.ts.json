@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/script-types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:script-types",
+    "sourcePath": "declarations/packages/spark-data/src/script-types.d.ts",
+    "sourceFile": "packages/spark-data/src/script-types.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "script-types",
+    "jsdoc": "页面脚本共享类型 — 依赖 spark-data 类型的数据结构\n这些类型原是 spark-project-model 中 `script-context-types.ts` 的 InScript 类型，\n提取到 spark-data 以在正确层级复用。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PermissionActionContext",
+      "FieldRenderState"
+    ]
+  },
+  "symbols": [
+    "PermissionActionContext",
+    "FieldRenderState"
+  ],
+  "models": {
+    "PermissionActionContext": {
+      "kind": "PermissionActionContext",
+      "className": "PermissionActionContext",
+      "jsdoc": "/** 权限动作上下文（脚本可用） */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** model Permission 字段。 */\n    modelPermission?: ModelPermission;\n    /** 当前行数据。 */\n    row?: DataRow | null;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/script-types.d.ts",
+        "line": 9,
+        "className": "PermissionActionContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "modelPermission",
+          "schema": {
+            "title": "ModelPermission"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** model Permission 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/script-types.d.ts",
+            "line": 11,
+            "className": "PermissionActionContext",
+            "memberName": "modelPermission",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "row",
+          "schema": {
+            "title": "DataRow | null"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前行数据。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/script-types.d.ts",
+            "line": 13,
+            "className": "PermissionActionContext",
+            "memberName": "row",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "FieldRenderState": {
+      "kind": "FieldRenderState",
+      "className": "FieldRenderState",
+      "jsdoc": "/** 字段渲染状态（脚本可用） */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** field 字段。 */\n    field: string;\n    /** visibility 字段。 */\n    visibility: FieldVisibility;\n    /** readable 字段。 */\n    readable: boolean;\n    /** editable 字段。 */\n    editable: boolean;\n    /** display Value 字段。 */\n    displayValue: string | undefined;\n    /** 是否 should Render。 */\n    shouldRender: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/script-types.d.ts",
+        "line": 16,
+        "className": "FieldRenderState",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "field",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** field 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/script-types.d.ts",
+            "line": 18,
+            "className": "FieldRenderState",
+            "memberName": "field",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "visibility",
+          "schema": {
+            "title": "FieldVisibility"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** visibility 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/script-types.d.ts",
+            "line": 20,
+            "className": "FieldRenderState",
+            "memberName": "visibility",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "readable",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** readable 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/script-types.d.ts",
+            "line": 22,
+            "className": "FieldRenderState",
+            "memberName": "readable",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "editable",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** editable 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/script-types.d.ts",
+            "line": 24,
+            "className": "FieldRenderState",
+            "memberName": "editable",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "displayValue",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** display Value 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/script-types.d.ts",
+            "line": 26,
+            "className": "FieldRenderState",
+            "memberName": "displayValue",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "shouldRender",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 是否 should Render。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/script-types.d.ts",
+            "line": 28,
+            "className": "FieldRenderState",
+            "memberName": "shouldRender",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.769Z"
+}

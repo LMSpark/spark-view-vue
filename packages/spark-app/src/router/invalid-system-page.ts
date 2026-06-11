@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-app:router/invalid-system-page
+ * @spark-appworks/spark-app 的 router/invalid-system-page 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import { computed, defineComponent, h } from 'vue'
 import { useRoute } from 'vue-router'
 

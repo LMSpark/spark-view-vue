@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/dev-system/DevSiteTree
+app 的 views/app/dev-system/DevSiteTree 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="dev-tree">
     <div class="dev-tree__toolbar">

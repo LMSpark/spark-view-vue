@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/data-views/index",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/index.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/data-views/index.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/data-views/index",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/index\n@spark-appworks/spark-component:components/containers/data-views/index 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [],
+    "componentLevel": "table-level",
+    "componentLayer": "data-view-container",
+    "componentDirectory": "containers/data-views"
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.028Z"
+}

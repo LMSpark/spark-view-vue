@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:agent/business/business-kit
+ * @spark-appworks/spark-ai 的 agent/business/business-kit 模块。
+ * 导出 ClassModel symbol: AiBusinessIdOptions, AiBusinessInputOptions, CreateSimpleInputContractOptions（共 3 个 symbol）。
+ */
 import type {
   AiJsonParams,
   AiJsonSchemaObject,
@@ -8,10 +13,12 @@ import type {
   AiAgentOrchestrationPlan,
 } from './business-task'
 
+/** Ai Business Id Options 的调用配置。 */
 export type AiBusinessIdOptions = Readonly<{
   businessId: string
 }>
 
+/** Ai Business Input Options 的调用配置。 */
 export type AiBusinessInputOptions<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
   paramsSchema: AiJsonSchemaObject
   identityField: keyof TInput & string
@@ -22,6 +29,7 @@ export type AiBusinessInputOptions<TInput extends AiJsonParams = AiJsonParams> =
   readonlySteps?: readonly string[] | ((input: TInput) => readonly string[] | undefined)
 }>
 
+/** Create Simple Input Contract Options 的调用配置。 */
 export type CreateSimpleInputContractOptions<TInput extends AiJsonParams = AiJsonParams> =
   AiBusinessIdOptions & AiBusinessInputOptions<TInput>
 

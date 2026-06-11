@@ -78,6 +78,7 @@ export function getFieldVisibility(field: string, row: DataRow, permissionMode?:
   return FieldVisibility.Visible
 }
 
+/** Field Mask Input 的输入数据。 */
 export type FieldMaskInput = Readonly<{
   field: string,
   value: unknown,

@@ -1,0 +1,560 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:core/useSparkComponent",
+    "sourcePath": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+    "sourceFile": "packages/spark-component/src/core/useSparkComponent.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "core/useSparkComponent",
+    "jsdoc": "@module @spark-appworks/spark-component:core/useSparkComponent\n@spark-appworks/spark-component 的 core/useSparkComponent 模块。\n导出 ClassModel symbol: CapabilityKey, CapabilityContext, LoggerApi, SparkCapabilityConsumer, UseSparkComponentReturn, UseSparkPageComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions 等（共 11 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "CapabilityKey",
+      "CapabilityContext",
+      "LoggerApi",
+      "SparkCapabilityConsumer",
+      "UseSparkComponentReturn",
+      "UseSparkPageComponentReturn",
+      "UseSparkCapabilityReaderReturn",
+      "UseSparkComponentOptions",
+      "HostTypeResolverOptions",
+      "ResolvedHostType",
+      "SparkNodeInput"
+    ]
+  },
+  "symbols": [
+    "CapabilityKey",
+    "CapabilityContext",
+    "LoggerApi",
+    "SparkCapabilityConsumer",
+    "UseSparkComponentReturn",
+    "UseSparkPageComponentReturn",
+    "UseSparkCapabilityReaderReturn",
+    "UseSparkComponentOptions",
+    "HostTypeResolverOptions",
+    "ResolvedHostType",
+    "SparkNodeInput"
+  ],
+  "models": {
+    "CapabilityKey": {
+      "kind": "CapabilityKey",
+      "className": "CapabilityKey",
+      "jsdoc": "/** Capability Key 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkUtils.CapabilityKey<T>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "SparkUtils.CapabilityKey<T>",
+          "targetName": "SparkUtils.CapabilityKey"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+        "line": 4,
+        "className": "CapabilityKey",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "CapabilityContext": {
+      "kind": "CapabilityContext",
+      "className": "CapabilityContext",
+      "jsdoc": "/** Capability Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkUtils.CapabilityContext",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "SparkUtils.CapabilityContext",
+          "targetName": "SparkUtils.CapabilityContext"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+        "line": 6,
+        "className": "CapabilityContext",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "LoggerApi": {
+      "kind": "LoggerApi",
+      "className": "LoggerApi",
+      "jsdoc": "/** Logger Api 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkUtils.LoggerApi",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "SparkUtils.LoggerApi",
+          "targetName": "SparkUtils.LoggerApi"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+        "line": 8,
+        "className": "LoggerApi",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkCapabilityConsumer": {
+      "kind": "SparkCapabilityConsumer",
+      "className": "SparkCapabilityConsumer",
+      "jsdoc": "/** Spark Capability Consumer 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkUtils.SparkCapabilityConsumer",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "SparkUtils.SparkCapabilityConsumer",
+          "targetName": "SparkUtils.SparkCapabilityConsumer"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+        "line": 10,
+        "className": "SparkCapabilityConsumer",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "UseSparkComponentReturn": {
+      "kind": "UseSparkComponentReturn",
+      "className": "UseSparkComponentReturn",
+      "jsdoc": "/**\n * 组件上下文完整返回 — 容器 / 字段 / 页面组件的标准上下文入口。\n *\n * `provider` — provider 查询接口：\n *   - `nearestCapabilityProvider(key)` — 按能力键查最近 provider context\n *   - `nearestCapabilityProviderByKeys(keys)` — 按能力键集合查最近 provider context\n *\n * 容器可通过上下文 type 语义驱动子级渲染模式，子级按需消费并自决。\n * 子级独立自决：收到能力后，自己决定何时消费、如何使用，保持渲染自主权。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** provider 字段。 */\n    provider: {\n        nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null;\n        nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null;\n    };\n    /** 是否 is Visible。 */\n    isVisible: {\n        readonly value: boolean;\n    };\n    /** 是否 is Disabled。 */\n    isDisabled: {\n        readonly value: boolean;\n    };\n    /** resolved Props 字段。 */\n    resolvedProps: {\n        readonly value: Record<string, unknown>;\n    };\n    /** spark Provide 字段。 */\n    sparkProvide: {\n        <T>(name: CapabilityKey<T>, implementation: T): void;\n    };\n    /** spark Remove 回调。 */\n    sparkRemove: <T>(name: CapabilityKey<T>) => void;\n    /** spark Consume 字段。 */\n    sparkConsume: SparkCapabilityConsumer;\n    /** 诊断日志接口。 */\n    logger: LoggerApi;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+        "line": 21,
+        "className": "UseSparkComponentReturn",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "provider",
+          "schema": {
+            "title": "{\n        nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null;\n        nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null;\n    }"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** provider 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 23,
+            "className": "UseSparkComponentReturn",
+            "memberName": "provider",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "isVisible",
+          "schema": {
+            "title": "{\n        readonly value: boolean;\n    }"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 是否 is Visible。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 28,
+            "className": "UseSparkComponentReturn",
+            "memberName": "isVisible",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "isDisabled",
+          "schema": {
+            "title": "{\n        readonly value: boolean;\n    }"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 是否 is Disabled。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 32,
+            "className": "UseSparkComponentReturn",
+            "memberName": "isDisabled",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "resolvedProps",
+          "schema": {
+            "title": "{\n        readonly value: Record<string, unknown>;\n    }"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** resolved Props 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 36,
+            "className": "UseSparkComponentReturn",
+            "memberName": "resolvedProps",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "sparkProvide",
+          "schema": {
+            "title": "{\n        <T>(name: CapabilityKey<T>, implementation: T): void;\n    }"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** spark Provide 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 40,
+            "className": "UseSparkComponentReturn",
+            "memberName": "sparkProvide",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "sparkRemove",
+          "schema": {
+            "title": "<T>(name: CapabilityKey<T>) => void"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** spark Remove 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 44,
+            "className": "UseSparkComponentReturn",
+            "memberName": "sparkRemove",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "sparkConsume",
+          "schema": {
+            "title": "SparkCapabilityConsumer"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** spark Consume 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 46,
+            "className": "UseSparkComponentReturn",
+            "memberName": "sparkConsume",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "logger",
+          "schema": {
+            "title": "LoggerApi"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 诊断日志接口。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 48,
+            "className": "UseSparkComponentReturn",
+            "memberName": "logger",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "UseSparkPageComponentReturn": {
+      "kind": "UseSparkPageComponentReturn",
+      "className": "UseSparkPageComponentReturn",
+      "jsdoc": "/** Use Spark Page Component Return 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "UseSparkComponentReturn & {\n    /** register Api 回调。 */\n    registerApi: (api: unknown) => void;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "UseSparkComponentReturn",
+          "targetName": "UseSparkComponentReturn"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** register Api 回调。 */\n    registerApi: (api: unknown) => void;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+        "line": 51,
+        "className": "UseSparkPageComponentReturn",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "registerApi",
+          "schema": {
+            "title": "(api: unknown) => void"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** register Api 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 53,
+            "className": "UseSparkPageComponentReturn",
+            "memberName": "registerApi",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "UseSparkCapabilityReaderReturn": {
+      "kind": "UseSparkCapabilityReaderReturn",
+      "className": "UseSparkCapabilityReaderReturn",
+      "jsdoc": "/**\n * 轻量消费返回 — 仅消费能力、查询 provider，不创建自身上下文。\n * 由 `useSparkConsume()` 返回，供只需读取上下文的组件使用。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** provider 字段。 */\n    provider: {\n        nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null;\n        nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null;\n    };\n    /** spark Consume 字段。 */\n    sparkConsume: SparkCapabilityConsumer;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+        "line": 59,
+        "className": "UseSparkCapabilityReaderReturn",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "provider",
+          "schema": {
+            "title": "{\n        nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null;\n        nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null;\n    }"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** provider 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 61,
+            "className": "UseSparkCapabilityReaderReturn",
+            "memberName": "provider",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "sparkConsume",
+          "schema": {
+            "title": "SparkCapabilityConsumer"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** spark Consume 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 66,
+            "className": "UseSparkCapabilityReaderReturn",
+            "memberName": "sparkConsume",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "UseSparkComponentOptions": {
+      "kind": "UseSparkComponentOptions",
+      "className": "UseSparkComponentOptions",
+      "jsdoc": "/** Use Spark Component Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** parent Context 字段。 */\n    parentContext?: CapabilityContext;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+        "line": 69,
+        "className": "UseSparkComponentOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "parentContext",
+          "schema": {
+            "title": "CapabilityContext"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** parent Context 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 71,
+            "className": "UseSparkComponentOptions",
+            "memberName": "parentContext",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "HostTypeResolverOptions": {
+      "kind": "HostTypeResolverOptions",
+      "className": "HostTypeResolverOptions",
+      "jsdoc": "/** Host Type Resolver Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** host Types 字段。 */\n    hostTypes?: readonly string[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+        "line": 74,
+        "className": "HostTypeResolverOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "hostTypes",
+          "schema": {
+            "type": "array",
+            "title": "readonly string[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** host Types 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 76,
+            "className": "HostTypeResolverOptions",
+            "memberName": "hostTypes",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ResolvedHostType": {
+      "kind": "ResolvedHostType",
+      "className": "ResolvedHostType",
+      "jsdoc": "/** Resolved Host Type 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** host Type 字段。 */\n    hostType: string | null;\n    /** parent Context 字段。 */\n    parentContext: CapabilityContext | null;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+        "line": 79,
+        "className": "ResolvedHostType",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "hostType",
+          "schema": {
+            "title": "string | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** host Type 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 81,
+            "className": "ResolvedHostType",
+            "memberName": "hostType",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "parentContext",
+          "schema": {
+            "title": "CapabilityContext | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** parent Context 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 83,
+            "className": "ResolvedHostType",
+            "memberName": "parentContext",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SparkNodeInput": {
+      "kind": "SparkNodeInput",
+      "className": "SparkNodeInput",
+      "jsdoc": "/** Spark Node Input 的输入数据。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 类型标识。 */\n    type: string;\n    /** 组件属性集合。 */\n    props?: Record<string, unknown> | undefined;\n    /** 子节点集合。 */\n    children?: SparkNode['children'] | undefined;\n    /** 唯一标识。 */\n    id?: string | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+        "line": 86,
+        "className": "SparkNodeInput",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "type",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 类型标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 88,
+            "className": "SparkNodeInput",
+            "memberName": "type",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "props",
+          "schema": {
+            "title": "Record<string, unknown> | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 组件属性集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 90,
+            "className": "SparkNodeInput",
+            "memberName": "props",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "children",
+          "schema": {
+            "title": "SparkNode['children'] | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 子节点集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 92,
+            "className": "SparkNodeInput",
+            "memberName": "children",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "id",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 唯一标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+            "line": 94,
+            "className": "SparkNodeInput",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.613Z"
+}

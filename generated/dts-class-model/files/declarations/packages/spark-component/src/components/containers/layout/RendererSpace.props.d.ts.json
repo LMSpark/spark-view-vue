@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererSpace.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererSpace.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererSpace.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererSpace.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererSpace.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererSpace.props\nRendererSpace 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: RSpaceProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RSpaceProps"
+    ],
+    "componentName": "RendererSpace",
+    "componentType": "r-space",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "RSpaceProps"
+  ],
+  "models": {
+    "RSpaceProps": {
+      "kind": "RSpaceProps",
+      "className": "RSpaceProps",
+      "jsdoc": "/** RSpace Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 主轴方向 */\n    direction?: 'horizontal' | 'vertical';\n    /** 间距 */\n    size?: number | string;\n    /** 是否自动换行 */\n    wrap?: boolean;\n    /** 是否填充父容器 */\n    fill?: boolean;\n    /** 交叉轴对齐方式 */\n    alignment?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline';\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 主轴方向 */\n    direction?: 'horizontal' | 'vertical';\n    /** 间距 */\n    size?: number | string;\n    /** 是否自动换行 */\n    wrap?: boolean;\n    /** 是否填充父容器 */\n    fill?: boolean;\n    /** 交叉轴对齐方式 */\n    alignment?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline';\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSpace.props.d.ts",
+        "line": 9,
+        "className": "RSpaceProps",
+        "declarationKind": "type",
+        "componentName": "RendererSpace",
+        "componentType": "r-space",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "direction",
+          "schema": {
+            "title": "'horizontal' | 'vertical'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 主轴方向 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSpace.props.d.ts",
+            "line": 11,
+            "className": "RSpaceProps",
+            "memberName": "direction",
+            "declarationKind": "interface",
+            "componentName": "RendererSpace",
+            "componentType": "r-space",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "size",
+          "schema": {
+            "title": "number | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 间距 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSpace.props.d.ts",
+            "line": 13,
+            "className": "RSpaceProps",
+            "memberName": "size",
+            "declarationKind": "interface",
+            "componentName": "RendererSpace",
+            "componentType": "r-space",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "wrap",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否自动换行 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSpace.props.d.ts",
+            "line": 15,
+            "className": "RSpaceProps",
+            "memberName": "wrap",
+            "declarationKind": "interface",
+            "componentName": "RendererSpace",
+            "componentType": "r-space",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "fill",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否填充父容器 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSpace.props.d.ts",
+            "line": 17,
+            "className": "RSpaceProps",
+            "memberName": "fill",
+            "declarationKind": "interface",
+            "componentName": "RendererSpace",
+            "componentType": "r-space",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "alignment",
+          "schema": {
+            "title": "'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 交叉轴对齐方式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSpace.props.d.ts",
+            "line": 19,
+            "className": "RSpaceProps",
+            "memberName": "alignment",
+            "declarationKind": "interface",
+            "componentName": "RendererSpace",
+            "componentType": "r-space",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.196Z"
+}

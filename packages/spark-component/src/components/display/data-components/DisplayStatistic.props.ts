@@ -1,5 +1,12 @@
+/**
+ * @module @spark-appworks/spark-component:components/display/data-components/DisplayStatistic.props
+ * DisplayStatistic 模块，属于 SPARK component display/data-display。
+ * 组件目录: display/data-components。
+ * 导出 ClassModel symbol: RStatisticProps（共 1 个 symbol）。
+ */
 import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
+/** RStatistic Props 的属性契约。 */
 export type RStatisticProps = SparkNodeProps & SparkDataDisplayProps<number | string> & {
   /** 统计标题 */
     title?: string

@@ -1,0 +1,341 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:page/actions/button-templates",
+    "sourcePath": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+    "sourceFile": "packages/spark-component/src/page/actions/button-templates.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/actions/button-templates",
+    "jsdoc": "r-button 模板预设系统\n三层解析优先级（从低到高）：\n1. action 自动推导的默认模板\n2. template 预设\n3. 用户显式 props（最高优先级）\n容器可额外注入 buttonSize/text 等默认值（行操作自动 small+text）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ButtonTemplateProps",
+      "ResolvedButtonStyle"
+    ]
+  },
+  "symbols": [
+    "ButtonTemplateProps",
+    "ResolvedButtonStyle"
+  ],
+  "models": {
+    "ButtonTemplateProps": {
+      "kind": "ButtonTemplateProps",
+      "className": "ButtonTemplateProps",
+      "jsdoc": "/** Button Template Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** button Type 字段。 */\n    buttonType?: 'primary' | 'success' | 'warning' | 'danger' | 'info';\n    /** plain 字段。 */\n    plain?: boolean;\n    /** 展示文本。 */\n    text?: boolean;\n    /** link 字段。 */\n    link?: boolean;\n    /** round 字段。 */\n    round?: boolean;\n    /** circle 字段。 */\n    circle?: boolean;\n    /** button Size 大小。 */\n    buttonSize?: 'large' | 'default' | 'small';\n    /** icon 字段。 */\n    icon?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+        "line": 13,
+        "className": "ButtonTemplateProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "buttonType",
+          "schema": {
+            "title": "'primary' | 'success' | 'warning' | 'danger' | 'info'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** button Type 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 15,
+            "className": "ButtonTemplateProps",
+            "memberName": "buttonType",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "plain",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** plain 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 17,
+            "className": "ButtonTemplateProps",
+            "memberName": "plain",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "text",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 展示文本。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 19,
+            "className": "ButtonTemplateProps",
+            "memberName": "text",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "link",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** link 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 21,
+            "className": "ButtonTemplateProps",
+            "memberName": "link",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "round",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** round 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 23,
+            "className": "ButtonTemplateProps",
+            "memberName": "round",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "circle",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** circle 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 25,
+            "className": "ButtonTemplateProps",
+            "memberName": "circle",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "buttonSize",
+          "schema": {
+            "title": "'large' | 'default' | 'small'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** button Size 大小。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 27,
+            "className": "ButtonTemplateProps",
+            "memberName": "buttonSize",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "icon",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** icon 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 29,
+            "className": "ButtonTemplateProps",
+            "memberName": "icon",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ResolvedButtonStyle": {
+      "kind": "ResolvedButtonStyle",
+      "className": "ResolvedButtonStyle",
+      "jsdoc": "/** Resolved Button Style 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** button Type 字段。 */\n    buttonType: string;\n    /** button Size 大小。 */\n    buttonSize: string;\n    /** plain 字段。 */\n    plain: boolean;\n    /** 展示文本。 */\n    text: boolean;\n    /** link 字段。 */\n    link: boolean;\n    /** round 字段。 */\n    round: boolean;\n    /** circle 字段。 */\n    circle: boolean;\n    /** icon 字段。 */\n    icon: string | undefined;\n    /** 展示标签。 */\n    label: string | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+        "line": 32,
+        "className": "ResolvedButtonStyle",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "buttonType",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** button Type 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 34,
+            "className": "ResolvedButtonStyle",
+            "memberName": "buttonType",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "buttonSize",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** button Size 大小。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 36,
+            "className": "ResolvedButtonStyle",
+            "memberName": "buttonSize",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "plain",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** plain 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 38,
+            "className": "ResolvedButtonStyle",
+            "memberName": "plain",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "text",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 展示文本。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 40,
+            "className": "ResolvedButtonStyle",
+            "memberName": "text",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "link",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** link 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 42,
+            "className": "ResolvedButtonStyle",
+            "memberName": "link",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "round",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** round 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 44,
+            "className": "ResolvedButtonStyle",
+            "memberName": "round",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "circle",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** circle 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 46,
+            "className": "ResolvedButtonStyle",
+            "memberName": "circle",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "icon",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** icon 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 48,
+            "className": "ResolvedButtonStyle",
+            "memberName": "icon",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "label",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 展示标签。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+            "line": 50,
+            "className": "ResolvedButtonStyle",
+            "memberName": "label",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.626Z"
+}

@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/RendererForm/RendererForm.props
+ * RendererForm 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: RFormProps（共 1 个 symbol）。
+ */
 import type { DataMember, DataView } from '@spark-appworks/spark-data'
 import type {
   SparkCrudDataContainerProps,

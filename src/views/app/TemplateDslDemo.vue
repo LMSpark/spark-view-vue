@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/TemplateDslDemo
+app 的 views/app/TemplateDslDemo 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <section class="template-dsl-demo">
     <el-card shadow="never" class="template-dsl-demo__card">

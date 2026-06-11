@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/fields/context/dataViewEditing",
+    "sourcePath": "declarations/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
+    "sourceFile": "packages/spark-component/src/components/fields/context/dataViewEditing.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/fields/context/dataViewEditing",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/context/dataViewEditing\n@spark-appworks/spark-component 的 components/fields/context/dataViewEditing 模块。\n导出 ClassModel symbol: DataViewEditingEventName, DataViewEditingEvents, DataViewEditingSource, DataViewEditingWriteInput（共 4 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "DataViewEditingEventName",
+      "DataViewEditingEvents",
+      "DataViewEditingSource",
+      "DataViewEditingWriteInput"
+    ]
+  },
+  "symbols": [
+    "DataViewEditingEventName",
+    "DataViewEditingEvents",
+    "DataViewEditingSource",
+    "DataViewEditingWriteInput"
+  ],
+  "models": {
+    "DataViewEditingEventName": {
+      "kind": "DataViewEditingEventName",
+      "className": "DataViewEditingEventName",
+      "jsdoc": "/** Data View Editing Event Name 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'editingFieldChanged' | 'editingChanged' | 'rowsChanged' | 'currentRowChanged' | 'selectedRowsChanged' | 'cleared'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'editingFieldChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'editingChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'rowsChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'currentRowChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'selectedRowsChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'cleared'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
+        "line": 8,
+        "className": "DataViewEditingEventName",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DataViewEditingEvents": {
+      "kind": "DataViewEditingEvents",
+      "className": "DataViewEditingEvents",
+      "jsdoc": "/** Data View Editing Events 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    on(eventName: DataViewEditingEventName, handler: () => void): void;\n    off(eventName: DataViewEditingEventName, handler: () => void): void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
+        "line": 10,
+        "className": "DataViewEditingEvents",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DataViewEditingSource": {
+      "kind": "DataViewEditingSource",
+      "className": "DataViewEditingSource",
+      "jsdoc": "/** Data View Editing Source 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    getPkKey(row: DataRow): string | number | undefined;\n    hasEditingChanges(id?: string | number): boolean;\n    getEditingRow(id: string | number): DataRow | null;\n    updateEditingValue(id: string | number, field: string, value: unknown): DataRow;\n    /** events 字段。 */\n    events?: DataViewEditingEvents;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
+        "line": 15,
+        "className": "DataViewEditingSource",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "events",
+          "schema": {
+            "title": "DataViewEditingEvents"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** events 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
+            "line": 21,
+            "className": "DataViewEditingSource",
+            "memberName": "events",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataViewEditingWriteInput": {
+      "kind": "DataViewEditingWriteInput",
+      "className": "DataViewEditingWriteInput",
+      "jsdoc": "/** Data View Editing Write Input 的输入数据。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    source: unknown;\n    row: DataRow | null;\n    field: string;\n    value: unknown;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    source: unknown;\n    row: DataRow | null;\n    field: string;\n    value: unknown;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
+        "line": 26,
+        "className": "DataViewEditingWriteInput",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.410Z"
+}

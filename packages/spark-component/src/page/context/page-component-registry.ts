@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:page/context/page-component-registry
+ * @spark-appworks/spark-component 的 page/context/page-component-registry 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import type {
   PageComponentApiEntry,
   PageComponentInstanceEntry,

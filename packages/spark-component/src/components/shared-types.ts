@@ -15,6 +15,7 @@ import type {
   CurrentRowChangeHandler,
 } from './containers/support'
 
+/** Value Ref 的引用结构。 */
 export type ValueRef<T> = {
   /**
    * 当前持有的值。

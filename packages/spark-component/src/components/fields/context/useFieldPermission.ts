@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/context/useFieldPermission
+ * @spark-appworks/spark-component 的 components/fields/context/useFieldPermission 模块。
+ * 导出 ClassModel symbol: OptionalWithUndefined, FieldPermissionProps, UseFieldPermissionOptions（共 3 个 symbol）。
+ */
 import { computed, getCurrentInstance } from 'vue'
 import { FieldVisibility } from '@spark-appworks/spark-data'
 import type { DataColumn } from '@spark-appworks/spark-data'
@@ -11,19 +16,28 @@ import type { FormItemRule } from '../columnFormRules'
 import { useActiveFieldRow } from './useActiveFieldRow'
 import { writeDataViewEditingValue } from './dataViewEditing'
 
+/** Optional With Undefined 的语义模型。 */
 type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
+/** Field Permission Props 的属性契约。 */
 export type FieldPermissionProps<TValue> = OptionalWithUndefined<Omit<Pick<SparkFieldSemanticProps, 'field' | 'label' | 'modelValue' | 'value'>, 'modelValue' | 'value'>> & {
-  modelValue?: TValue | undefined
-    value?: TValue | undefined}
+    /** model Value 字段。 */
+modelValue?: TValue | undefined
+        /** 当前值。 */
+value?: TValue | undefined}
 
+/** Use Field Permission Options 的调用配置。 */
 type UseFieldPermissionOptions<TValue> = {
-  props: FieldPermissionProps<TValue>
-  type: string
-  fallbackValue: TValue
-  formatDisplay?: (value: unknown) => string
+    /** 组件属性集合。 */
+props: FieldPermissionProps<TValue>
+    /** 类型标识。 */
+type: string
+    /** fallback Value 字段。 */
+fallbackValue: TValue
+    /** format Display 回调。 */
+formatDisplay?: (value: unknown) => string
   /**
    * 运行时类型校正函数。
    *

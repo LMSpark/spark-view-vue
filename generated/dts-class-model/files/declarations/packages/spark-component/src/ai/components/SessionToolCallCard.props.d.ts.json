@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionToolCallCard.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/SessionToolCallCard.props",
+    "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionToolCallCard.props.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/SessionToolCallCard.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/SessionToolCallCard.props",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/SessionToolCallCard.props\n@spark-appworks/spark-component 的 ai/components/SessionToolCallCard.props 模块。\n导出 ClassModel symbol: SessionToolCallCardProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SessionToolCallCardProps"
+    ]
+  },
+  "symbols": [
+    "SessionToolCallCardProps"
+  ],
+  "models": {
+    "SessionToolCallCardProps": {
+      "kind": "SessionToolCallCardProps",
+      "className": "SessionToolCallCardProps",
+      "jsdoc": "/** Session Tool Call Card Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    toolCall: ToolCallDisplayItem;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    toolCall: ToolCallDisplayItem;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/ai/components/SessionToolCallCard.props.d.ts",
+        "line": 8,
+        "className": "SessionToolCallCardProps",
+        "declarationKind": "type",
+        "componentName": "SessionToolCallCard"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.016Z"
+}

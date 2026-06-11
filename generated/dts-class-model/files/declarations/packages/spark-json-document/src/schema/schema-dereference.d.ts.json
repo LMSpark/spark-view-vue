@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-dereference.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:schema/schema-dereference",
+    "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-dereference.d.ts",
+    "sourceFile": "packages/spark-json-document/src/schema/schema-dereference.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "schema/schema-dereference",
+    "jsdoc": "Resolve JSON Schema #/$defs/* $ref against a document-level defs map.\n生产校验优先 JsonSchemaValidator + schemaDefs（AJV 2020）；本模块用于 inline 或测试。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "JsonSchemaDefs"
+    ]
+  },
+  "symbols": [
+    "JsonSchemaDefs"
+  ],
+  "models": {
+    "JsonSchemaDefs": {
+      "kind": "JsonSchemaDefs",
+      "className": "JsonSchemaDefs",
+      "jsdoc": "/** Json Schema Defs 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<Record<string, JsonSchemaObject>>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<Record<string, JsonSchemaObject>>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-json-document/src/schema/schema-dereference.d.ts",
+        "line": 8,
+        "className": "JsonSchemaDefs",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.839Z"
+}

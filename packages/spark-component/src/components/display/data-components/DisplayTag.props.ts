@@ -1,7 +1,15 @@
+/**
+ * @module @spark-appworks/spark-component:components/display/data-components/DisplayTag.props
+ * DisplayTag 模块，属于 SPARK component display/data-display。
+ * 组件目录: display/data-components。
+ * 导出 ClassModel symbol: TagType, RTagProps（共 2 个 symbol）。
+ */
 import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
+/** Tag Type 的语义模型。 */
 export type TagType = 'success' | 'info' | 'warning' | 'danger'
 
+/** RTag Props 的属性契约。 */
 export type RTagProps = SparkNodeProps & SparkDataDisplayProps<string> & {
   /** 显式内容，优先级高于 value/field */
     content?: string

@@ -9,6 +9,7 @@
 
 import type { DataRow, AggregateColumnConfig, AggregateType, AggregateResultRow } from '../types'
 
+/** Aggregate Delegate Options 的调用配置。 */
 type AggregateDelegateOptions = {
   /** 返回当前视图聚合配置（每次调用时读取，支持运行时动态配置）。 */
   readonly getAggregates: () => Record<string, AggregateColumnConfig>
@@ -18,8 +19,10 @@ type AggregateDelegateOptions = {
   readonly emitSelectionSummaryChanged: () => void
 }
 
+/** Aggregate Recompute Options 的调用配置。 */
 type AggregateRecomputeOptions = {
-  readonly emit?: boolean
+    /** emit 字段。 */
+readonly emit?: boolean
 }
 
 // ─────────────────────────────────────────────
@@ -123,7 +126,8 @@ export class AggregateDelegate {
   private readonly emitSummaryChanged: () => void
   private readonly emitSelectionSummaryChanged: () => void
 
-  constructor(options: AggregateDelegateOptions) {
+    /** 创建 Aggregate Delegate 实例。 */
+constructor(options: AggregateDelegateOptions) {
     this.getAggregates = options.getAggregates
     this.emitSummaryChanged = options.emitSummaryChanged
     this.emitSelectionSummaryChanged = options.emitSelectionSummaryChanged

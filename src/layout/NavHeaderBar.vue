@@ -1,3 +1,8 @@
+<!--
+@module app:layout/NavHeaderBar
+app 的 layout/NavHeaderBar 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <nav class="nav-header-bar">
     <template v-for="item in props.items" :key="item.id">

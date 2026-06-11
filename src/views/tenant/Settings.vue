@@ -1,3 +1,8 @@
+<!--
+@module app:views/tenant/Settings
+app 的 views/tenant/Settings 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="settings-page">
     <el-page-header content="系统设置" @back="$router.go(-1)">

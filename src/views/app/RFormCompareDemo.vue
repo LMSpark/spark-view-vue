@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/RFormCompareDemo
+app 的 views/app/RFormCompareDemo 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="r-form-compare-demo">
     <header class="r-form-compare-demo__hero">

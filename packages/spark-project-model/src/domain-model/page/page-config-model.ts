@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-project-model:domain-model/page/page-config-model
+ * @spark-appworks/spark-project-model 的 domain-model/page/page-config-model 模块。
+ * 导出 ClassModel symbol: PageConfigModel（共 1 个 symbol）。
+ */
 import { SparkAIModel } from '@spark-appworks/spark-utils'
 import type { PageContentLoader } from '../../io/page-content-loader'
 import type { PageFileApi } from '../../io/page-file-api'
@@ -45,11 +50,16 @@ import type { PageContentLoadResult, PageNodeFileName } from '../../page/page-fi
  * - 新建页：先 `PageFileApi.createFiles` 建目录（Workspace 编排），再 `load` 或 `new PageConfigModel`。
  */
 export class PageConfigModel extends SparkAIModel {
-  pageId: string
-  ruleJson: string
-  pageDataJson: string
-  script: string
-  style: string
+    /** page Id 标识。 */
+pageId: string
+    /** rule Json 字段。 */
+ruleJson: string
+    /** page Data Json 字段。 */
+pageDataJson: string
+    /** script 字段。 */
+script: string
+    /** style 字段。 */
+style: string
 
   /**
    * @param options.pageId 配置页 id，与导航节点 id 一致。
@@ -73,7 +83,8 @@ export class PageConfigModel extends SparkAIModel {
     this.style = options.style ?? ''
   }
 
-  toJson(): Record<string, unknown> {
+    /** 执行 to Json 操作。 */
+toJson(): Record<string, unknown> {
     return {
       pageId: this.pageId,
       ruleJson: this.ruleJson,

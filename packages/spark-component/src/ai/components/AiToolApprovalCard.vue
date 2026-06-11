@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-component:ai/components/AiToolApprovalCard
+@spark-appworks/spark-component 的 ai/components/AiToolApprovalCard 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-card :class="$style['approval-card']" shadow="never">
     <div :class="$style['approval-card__header']">

@@ -83,12 +83,18 @@ type AiAgentTaskRegistry<TInput extends AiJsonParams = AiJsonParams> = Readonly<
  * 标准 LLM 对话请求，自动拼接业务 systemPrompt + 编排 systemPrompt。
  */
 export class AiAgentTask<TInput extends AiJsonParams = AiJsonParams> {
-  public readonly target: AiAgentTarget
+    /** 目标对象。 */
+public readonly target: AiAgentTarget
 
-  public constructor(
+    /** 创建 Ai Agent Task 实例。 */
+public constructor(
+    /** 注册业务 kind ID，用于查找对应 input contract 和 registration。 */
     public readonly kindID: string,
+    /** 通过 input contract normalize 后的任务输入。 */
     public readonly normalizedInput: TInput,
+    /** 当前任务的业务作用域，贯穿 session 和 tool loop。 */
     public readonly scope: AiAgentScope,
+    /** 当前任务生成 LLM 请求时使用的编排计划。 */
     public readonly orchestration: AiAgentOrchestrationPlan,
   ) {
     this.target = new AiAgentTarget(scope.businessRegistrationId, scope.businessInstanceId)

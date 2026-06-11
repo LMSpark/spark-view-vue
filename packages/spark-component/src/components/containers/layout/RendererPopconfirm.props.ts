@@ -1,5 +1,12 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/layout/RendererPopconfirm.props
+ * RendererPopconfirm 模块，属于 SPARK component container/layout-container。
+ * 组件目录: containers/layout。
+ * 导出 ClassModel symbol: RPopconfirmProps（共 1 个 symbol）。
+ */
 import type { SparkNodeProps } from '../../shared-types'
 
+/** RPopconfirm Props 的属性契约。 */
 export type RPopconfirmProps = SparkNodeProps & {
   /** 确认框标题 */
     title?: string

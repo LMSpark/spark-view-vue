@@ -1,4 +1,9 @@
 /**
+ * @module @spark-appworks/spark-app:navigation/page-cache
+ * @spark-appworks/spark-app 的 navigation/page-cache 模块。
+ * 导出 ClassModel symbol: PageCacheSource, PageCacheHandle（共 2 个 symbol）。
+ */
+/**
  * 页面配置缓存管理（spark-app 内聚）
  */
 
@@ -7,6 +12,7 @@ type PageCacheSource = {
   clearAllCache(): { size: number; keys: string[] }
   getCacheStats(): { size: number; keys: string[] }}
 
+/** Page Cache Handle 的语义模型。 */
 export type PageCacheHandle = {
   clearPageCache(pageId: string): void
   clearAllCache(): { size: number; keys: string[] }

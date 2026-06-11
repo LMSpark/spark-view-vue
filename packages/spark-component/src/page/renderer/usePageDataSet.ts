@@ -23,7 +23,8 @@ import type { DataSet } from '@spark-appworks/spark-data'
  * DataSet 管理选项接口
  */
 export type UsePageDataSetOptions = {
-  enableDataSet?: boolean}
+    /** 是否 enable Data Set。 */
+enableDataSet?: boolean}
 
 /** DataSet 管理返回值接口 */
 export type UsePageDataSetReturn = {
@@ -31,7 +32,8 @@ export type UsePageDataSetReturn = {
   readonly dataSet: DataSet | null
   /** 设置 DataSet 实例（必须是已编译好的 DataSet） */
   initDataSet: (ds: DataSet) => void
-  clearDataSet: () => void}
+    /** clear Data Set 回调。 */
+clearDataSet: () => void}
 
 /**
  * DataSet 管理 Hook

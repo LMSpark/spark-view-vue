@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-data:node-tree/index
+ * @spark-appworks/spark-data 的 node-tree/index 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 export type {
   SparkNode,
   SparkNodeChildren,

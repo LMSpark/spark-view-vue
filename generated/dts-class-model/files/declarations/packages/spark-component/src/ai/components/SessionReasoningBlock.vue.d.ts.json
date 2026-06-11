@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionReasoningBlock.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/SessionReasoningBlock",
+    "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionReasoningBlock.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/SessionReasoningBlock.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/SessionReasoningBlock",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/SessionReasoningBlock\n@spark-appworks/spark-component 的 ai/components/SessionReasoningBlock 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.012Z"
+}

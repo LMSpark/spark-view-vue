@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/navigation-sync.d.ts",
+  "module": {
+    "name": "app:services/navigation-sync",
+    "sourcePath": "declarations/src/services/navigation-sync.d.ts",
+    "sourceFile": "src/services/navigation-sync.ts",
+    "packageName": "app",
+    "modulePath": "services/navigation-sync",
+    "jsdoc": "已提交导航的统一同步 — 单次 DTO 灌入 committed ProjectModel，再投影到壳层 UI 与编辑宿主。\n运行时侧栏读 committed ProjectModel 的 snapshot 投影；DevSystem 读 editable ProjectModel。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ShellNavRootListener"
+    ]
+  },
+  "symbols": [
+    "ShellNavRootListener"
+  ],
+  "models": {
+    "ShellNavRootListener": {
+      "kind": "ShellNavRootListener",
+      "className": "ShellNavRootListener",
+      "jsdoc": "/** Shell Nav Root Listener 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "(navData: ProjectModelData | null) => void",
+      "provenance": {
+        "file": "declarations/src/services/navigation-sync.d.ts",
+        "line": 8,
+        "className": "ShellNavRootListener",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.079Z"
+}

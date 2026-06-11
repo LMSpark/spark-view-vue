@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-component:ai/components/AiToolApprovalPanel
+@spark-appworks/spark-component 的 ai/components/AiToolApprovalPanel 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div :class="$style['approval-panel']">
     <template v-if="pending.length === 0">

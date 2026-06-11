@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/config/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:config/index",
+    "sourcePath": "declarations/packages/spark-app/src/config/index.d.ts",
+    "sourceFile": "packages/spark-app/src/config/index.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "config/index",
+    "jsdoc": "Configuration Manager\n配置管理（环境变量 + 远程配置 + 多租户）",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.911Z"
+}

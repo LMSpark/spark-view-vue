@@ -1,9 +1,15 @@
+/**
+ * @module @spark-appworks/spark-app:ai/tool-approval-bridge
+ * @spark-appworks/spark-app 的 ai/tool-approval-bridge 模块。
+ * 导出 ClassModel symbol: AiToolApprovalRequest, AiToolApprovalBridgeSnapshot, AiToolApprovalBridgeListener, AiToolApprovalRequestIdFactory, AiToolApprovalBridgeOptions, AiToolApprovalBridge（共 6 个 symbol）。
+ */
 import type {
   AiAgentBeforeFunctionCallDirective,
   AiAgentBeforeFunctionCallOptions,
 } from '@spark-appworks/spark-ai/agent'
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 
+/** Ai Tool Approval Request 的语义模型。 */
 export type AiToolApprovalRequest = Readonly<{
   id: string
   moduleId: string
@@ -14,16 +20,20 @@ export type AiToolApprovalRequest = Readonly<{
   requestedAt: number
 }>
 
+/** Ai Tool Approval Bridge Snapshot 的语义模型。 */
 export type AiToolApprovalBridgeSnapshot = Readonly<{
   pending: readonly AiToolApprovalRequest[]
 }>
 
+/** Ai Tool Approval Bridge Listener 的语义模型。 */
 export type AiToolApprovalBridgeListener = (snapshot: AiToolApprovalBridgeSnapshot) => void
 
+/** Ai Tool Approval Request Id Factory 的语义模型。 */
 export type AiToolApprovalRequestIdFactory = Readonly<{
   createId(options: AiAgentBeforeFunctionCallOptions, sequence: number): string
 }>
 
+/** Ai Tool Approval Bridge Options 的调用配置。 */
 export type AiToolApprovalBridgeOptions = Readonly<{
   now?: () => number
   idFactory?: AiToolApprovalRequestIdFactory
@@ -36,6 +46,7 @@ type PendingToolApproval = Readonly<{
 
 const DEFAULT_ABORT_REASON = '审批已取消。'
 
+/** Ai Tool Approval Bridge 的语义模型。 */
 export class AiToolApprovalBridge {
   private readonly pending = new Map<string, PendingToolApproval>()
   private readonly listeners = new Set<AiToolApprovalBridgeListener>()
@@ -43,12 +54,14 @@ export class AiToolApprovalBridge {
   private readonly idFactory: AiToolApprovalRequestIdFactory
   private nextSequence = 1
 
-  public constructor(options: AiToolApprovalBridgeOptions = {}) {
+    /** 创建 Ai Tool Approval Bridge 实例。 */
+public constructor(options: AiToolApprovalBridgeOptions = {}) {
     this.now = options.now ?? Date.now
     this.idFactory = options.idFactory ?? defaultApprovalRequestIdFactory
   }
 
-  public readonly beforeFunctionCall = (
+    /** before Function Call 字段。 */
+public readonly beforeFunctionCall = (
     options: AiAgentBeforeFunctionCallOptions,
   ): Promise<AiAgentBeforeFunctionCallDirective> => {
     const sequence = this.nextSequence
@@ -65,11 +78,13 @@ export class AiToolApprovalBridge {
     })
   }
 
-  public listPending(): readonly AiToolApprovalRequest[] {
+    /** 执行 list Pending 操作。 */
+public listPending(): readonly AiToolApprovalRequest[] {
     return [...this.pending.values()].map((item) => item.request)
   }
 
-  public decide(requestId: string, directive: AiAgentBeforeFunctionCallDirective): boolean {
+    /** 执行 decide 操作。 */
+public decide(requestId: string, directive: AiAgentBeforeFunctionCallDirective): boolean {
     const item = this.pending.get(requestId)
     if (item === undefined) return false
     this.pending.delete(requestId)
@@ -78,7 +93,8 @@ export class AiToolApprovalBridge {
     return true
   }
 
-  public readonly cancelPending = (reason = DEFAULT_ABORT_REASON): number => {
+    /** cancel Pending 字段。 */
+public readonly cancelPending = (reason = DEFAULT_ABORT_REASON): number => {
     const items = [...this.pending.values()]
     for (const item of items) {
       this.pending.delete(item.request.id)
@@ -88,7 +104,8 @@ export class AiToolApprovalBridge {
     return items.length
   }
 
-  public subscribe(listener: AiToolApprovalBridgeListener): () => void {
+    /** 执行 subscribe 操作。 */
+public subscribe(listener: AiToolApprovalBridgeListener): () => void {
     this.listeners.add(listener)
     listener(this.createSnapshot())
     return () => {

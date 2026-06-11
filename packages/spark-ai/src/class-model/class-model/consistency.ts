@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/class-model/consistency
+ * @spark-appworks/spark-ai 的 class-model/class-model/consistency 模块。
+ * 导出 ClassModel symbol: ClassModelBuildConsistencyIssue（共 1 个 symbol）。
+ */
 import type { ClassModel, ClassModelDocument } from './types'
 import {
   collectModuleApiKinds,
@@ -10,6 +15,7 @@ import {
   renderMethodSignature,
 } from './signature-renderer'
 
+/** Class Model Build Consistency Issue 的语义模型。 */
 export type ClassModelBuildConsistencyIssue = Readonly<{
   code: string
   path: string

@@ -1,10 +1,19 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/zero-code-shared
+ * @spark-appworks/spark-component:components/containers/data-views/zero-code-shared 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: CreateContainerCrudContextOptions（共 1 个 symbol）。
+ */
 import type { DataView } from '@spark-appworks/spark-data'
 import { createBaseCrudMethods, createCrudDispatcher } from '../support/index.js'
 import type { ValueRef } from '../../shared-types.js'
 
+/** Create Container Crud Context Options 的调用配置。 */
 type CreateContainerCrudContextOptions = {
-  props: Readonly<Record<string, unknown>>
-  resolvedView: ValueRef<DataView | null>
+    /** 组件属性集合。 */
+props: Readonly<Record<string, unknown>>
+    /** resolved View 字段。 */
+resolvedView: ValueRef<DataView | null>
   /** CRUD 事件默认处理器；直接沿用 createCrudDispatcher 的第二个参数契约。 */
   eventDefaults?: Parameters<typeof createCrudDispatcher>[1]}
 

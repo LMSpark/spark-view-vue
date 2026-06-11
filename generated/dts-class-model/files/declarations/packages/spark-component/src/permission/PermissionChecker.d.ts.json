@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/permission/PermissionChecker.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:permission/PermissionChecker",
+    "sourcePath": "declarations/packages/spark-component/src/permission/PermissionChecker.d.ts",
+    "sourceFile": "packages/spark-component/src/permission/PermissionChecker.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "permission/PermissionChecker",
+    "jsdoc": "权限检查器 — 纯函数集\n提供模型级、实例级和字段级的权限验证。\n字段脱敏规则也统一收口于此，避免权限判断分散在 data 层与组件层。\npermissionMode 语义：\n- 'none'      → 不控制：跳过所有权限检查，一切可见/可编辑\n- 'masked'    → 可见+脱敏：权限数据正常应用，但字段可见性下限为 Masked（Hidden→Masked）\n- 'invisible' → 后端控制导航可见性，前端权限检查正常执行",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "FieldMaskInput"
+    ]
+  },
+  "symbols": [
+    "FieldMaskInput"
+  ],
+  "models": {
+    "FieldMaskInput": {
+      "kind": "FieldMaskInput",
+      "className": "FieldMaskInput",
+      "jsdoc": "/** Field Mask Input 的输入数据。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    field: string;\n    value: unknown;\n    row: DataRow;\n    permissionMode?: NavPermissionMode | undefined;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    field: string;\n    value: unknown;\n    row: DataRow;\n    permissionMode?: NavPermissionMode | undefined;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/permission/PermissionChecker.d.ts",
+        "line": 25,
+        "className": "FieldMaskInput",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.670Z"
+}

@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/ai-model.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:ai-model",
+    "sourcePath": "declarations/packages/spark-utils/src/ai-model.d.ts",
+    "sourceFile": "packages/spark-utils/src/ai-model.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "ai-model",
+    "jsdoc": "@see docs/ai/AI_MODEL_SPEC.md",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SparkAIModel"
+    ]
+  },
+  "symbols": [
+    "SparkAIModel"
+  ],
+  "models": {
+    "SparkAIModel": {
+      "kind": "SparkAIModel",
+      "className": "SparkAIModel",
+      "jsdoc": "/** AI 可编辑模型协议基类。协议只强制 toJson；save/load/fromJson 由子类按需添加。 */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-utils/src/ai-model.d.ts",
+        "line": 3,
+        "className": "SparkAIModel",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "_options": {
+              "title": "Record<string, unknown>"
+            }
+          },
+          "required": [
+            "_options"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Spark AIModel 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-utils/src/ai-model.d.ts",
+          "line": 5,
+          "className": "SparkAIModel",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "toJson",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Record<string, unknown>"
+          },
+          "returnTypeText": "Record<string, unknown>",
+          "jsdoc": "/** 执行 to Json 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/ai-model.d.ts",
+            "line": 7,
+            "className": "SparkAIModel",
+            "memberName": "toJson",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.987Z"
+}

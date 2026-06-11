@@ -9,8 +9,10 @@ import { getUser, isPlatformAdminUser } from './auth'
 import { parseTenantScope, type TenantProjectScope } from './tenant-scope'
 
 export type ProjectApiScope = {
-  tenantId?: string
-  projectId: string
+    /** tenant Id 标识。 */
+tenantId?: string
+    /** project Id 标识。 */
+projectId: string
 }
 
 function resolveTenantId(tenantId?: string): string {

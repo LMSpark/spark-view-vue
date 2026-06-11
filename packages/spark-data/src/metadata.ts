@@ -1,14 +1,80 @@
+/**
+ * @module @spark-appworks/spark-data:metadata
+ * @spark-appworks/spark-data 的 metadata 模块。
+ * 导出 ClassModel symbol: TableMetadataLike（共 1 个 symbol）。
+ */
+import { isRecord } from '@spark-appworks/spark-utils'
 import type { DataSetMetadata, TableMetadata, ViewMetadata } from './types'
 
+/** Table Metadata Like 的语义模型。 */
 type TableMetadataLike = Omit<TableMetadata, 'tableName'> & {
-  tableName?: string}
+    /** 数据表名。 */
+tableName?: string}
 
-function normalizeViewMetadata(
-  view: ViewMetadata,
+function isTableMetadataLike(value: unknown): value is TableMetadataLike {
+  if (!isRecord(value)) return false
+  if (!Array.isArray(value['columns'])) return false
+  const views = value['views']
+  return isRecord(views) && isRecord(views['default'])
+}
+
+/**
+ * 解析表元数据输入（对象、松散对象或 JSON 字符串）为规范 TableMetadata。
+ */
+export function parseTableMetadataInput(
+  data: TableMetadata | Record<string, unknown> | string,
+): TableMetadata {
+  if (typeof data === 'string') {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(data)
+    } catch {
+      throw new Error('DataTable.fromJson: 无效的 JSON 数据')
+    }
+    if (!isTableMetadataLike(parsed)) {
+      throw new Error('DataTable.fromJson: JSON 缺少 columns 或 views.default')
+    }
+    return normalizeTableMetadata(parsed)
+  }
+  if (!isTableMetadataLike(data)) {
+    throw new Error('DataTable.fromJson: 缺少 columns 或 views.default')
+  }
+  return normalizeTableMetadata(data)
+}
+
+/**
+ * 解析视图元数据输入（对象、松散对象或 JSON 字符串）。
+ */
+export function parseViewMetadataInput(
+  data: ViewMetadata | Record<string, unknown> | string,
   tableName: string,
   viewId: string,
 ): ViewMetadata {
-  const normalized: ViewMetadata = { ...view }
+  if (typeof data === 'string') {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(data)
+    } catch {
+      throw new Error('DataView.fromJson: 无效的 JSON 数据')
+    }
+    if (!isRecord(parsed)) {
+      throw new Error('DataView.fromJson: JSON 必须解析为对象')
+    }
+    return normalizeViewMetadata(parsed, tableName, viewId)
+  }
+  if (isRecord(data)) {
+    return normalizeViewMetadata(data, tableName, viewId)
+  }
+  return normalizeViewMetadata(data, tableName, viewId)
+}
+
+function normalizeViewMetadata(
+  view: ViewMetadata | Record<string, unknown>,
+  tableName: string,
+  viewId: string,
+): ViewMetadata {
+  const normalized: ViewMetadata = { tableName, viewId }
+  Object.assign(normalized, view)
   normalized.tableName ??= tableName
   normalized.viewId ??= viewId
   return normalized

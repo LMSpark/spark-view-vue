@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/dev-system/DevSystem
+app 的 views/app/dev-system/DevSystem 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="dev-system">
     <!-- ═══ 顶栏 ═══ -->

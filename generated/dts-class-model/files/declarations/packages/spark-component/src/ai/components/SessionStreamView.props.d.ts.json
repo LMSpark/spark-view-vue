@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionStreamView.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/SessionStreamView.props",
+    "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionStreamView.props.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/SessionStreamView.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/SessionStreamView.props",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/SessionStreamView.props\n@spark-appworks/spark-component 的 ai/components/SessionStreamView.props 模块。\n导出 ClassModel symbol: SessionStreamViewProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SessionStreamViewProps"
+    ]
+  },
+  "symbols": [
+    "SessionStreamViewProps"
+  ],
+  "models": {
+    "SessionStreamViewProps": {
+      "kind": "SessionStreamViewProps",
+      "className": "SessionStreamViewProps",
+      "jsdoc": "/** Session Stream View Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    emptyText?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    emptyText?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/ai/components/SessionStreamView.props.d.ts",
+        "line": 8,
+        "className": "SessionStreamViewProps",
+        "declarationKind": "type",
+        "componentName": "SessionStreamView"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.013Z"
+}

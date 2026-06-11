@@ -1,0 +1,370 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererSection/RendererSection.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererSection/RendererSection.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererSection/RendererSection.props\nRendererSection 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: RSectionProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RSectionProps"
+    ],
+    "componentName": "RendererSection",
+    "componentType": "r-section",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "RSectionProps"
+  ],
+  "models": {
+    "RSectionProps": {
+      "kind": "RSectionProps",
+      "className": "RSectionProps",
+      "jsdoc": "/** RSection Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & SparkGridLayoutProps & {\n    /** 结构化头部 */\n    header?: RHeaderProps;\n    /** 分区标题 */\n    title?: string;\n    /** 分区描述 */\n    description?: string;\n    /** 是否可折叠 */\n    collapsible?: boolean;\n    /** 默认折叠 */\n    defaultCollapsed?: boolean;\n    /** 显示边框 */\n    bordered?: boolean;\n    /** 使用卡片样式 */\n    useCard?: boolean;\n    /** 卡片阴影模式 */\n    cardShadow?: 'always' | 'hover' | 'never';\n    /** 内容区 CSS 类名 */\n    bodyClass?: string;\n    /** 展开文案 */\n    expandText?: string;\n    /** 收起文案 */\n    collapseText?: string;\n    /** 显示切换图标 */\n    showToggleIcon?: boolean;\n    /** 展开图标文案 */\n    expandIconText?: string;\n    /** 收起图标文案 */\n    collapseIconText?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkGridLayoutProps",
+          "targetName": "SparkGridLayoutProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 结构化头部 */\n    header?: RHeaderProps;\n    /** 分区标题 */\n    title?: string;\n    /** 分区描述 */\n    description?: string;\n    /** 是否可折叠 */\n    collapsible?: boolean;\n    /** 默认折叠 */\n    defaultCollapsed?: boolean;\n    /** 显示边框 */\n    bordered?: boolean;\n    /** 使用卡片样式 */\n    useCard?: boolean;\n    /** 卡片阴影模式 */\n    cardShadow?: 'always' | 'hover' | 'never';\n    /** 内容区 CSS 类名 */\n    bodyClass?: string;\n    /** 展开文案 */\n    expandText?: string;\n    /** 收起文案 */\n    collapseText?: string;\n    /** 显示切换图标 */\n    showToggleIcon?: boolean;\n    /** 展开图标文案 */\n    expandIconText?: string;\n    /** 收起图标文案 */\n    collapseIconText?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+        "line": 10,
+        "className": "RSectionProps",
+        "declarationKind": "type",
+        "componentName": "RendererSection",
+        "componentType": "r-section",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "header",
+          "schema": {
+            "title": "RHeaderProps"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 结构化头部 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 12,
+            "className": "RSectionProps",
+            "memberName": "header",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 分区标题 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 14,
+            "className": "RSectionProps",
+            "memberName": "title",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "description",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 分区描述 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 16,
+            "className": "RSectionProps",
+            "memberName": "description",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "collapsible",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否可折叠 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 18,
+            "className": "RSectionProps",
+            "memberName": "collapsible",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "defaultCollapsed",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 默认折叠 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 20,
+            "className": "RSectionProps",
+            "memberName": "defaultCollapsed",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "bordered",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 显示边框 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 22,
+            "className": "RSectionProps",
+            "memberName": "bordered",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "useCard",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 使用卡片样式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 24,
+            "className": "RSectionProps",
+            "memberName": "useCard",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "cardShadow",
+          "schema": {
+            "title": "'always' | 'hover' | 'never'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 卡片阴影模式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 26,
+            "className": "RSectionProps",
+            "memberName": "cardShadow",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "bodyClass",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 内容区 CSS 类名 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 28,
+            "className": "RSectionProps",
+            "memberName": "bodyClass",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "expandText",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 展开文案 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 30,
+            "className": "RSectionProps",
+            "memberName": "expandText",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "collapseText",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 收起文案 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 32,
+            "className": "RSectionProps",
+            "memberName": "collapseText",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "showToggleIcon",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 显示切换图标 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 34,
+            "className": "RSectionProps",
+            "memberName": "showToggleIcon",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "expandIconText",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 展开图标文案 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 36,
+            "className": "RSectionProps",
+            "memberName": "expandIconText",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "collapseIconText",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 收起图标文案 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+            "line": 38,
+            "className": "RSectionProps",
+            "memberName": "collapseIconText",
+            "declarationKind": "interface",
+            "componentName": "RendererSection",
+            "componentType": "r-section",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.186Z"
+}

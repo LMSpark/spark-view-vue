@@ -8,6 +8,7 @@ import { getNavTree, refreshRoutes } from '@spark-appworks/spark-app'
 import { readAppProjectNavigationRoot, syncAppProjectModelFromNav } from '@/services/app-project-model'
 import { syncAppProjectWorkspaceFromNav } from '@/services/project-workspace'
 
+/** Shell Nav Root Listener 的语义模型。 */
 export type ShellNavRootListener = (navData: ProjectModelData | null) => void
 
 let shellNavRootListener: ShellNavRootListener | null = null

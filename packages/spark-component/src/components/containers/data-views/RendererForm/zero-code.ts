@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/RendererForm/zero-code
+ * RendererForm 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: RendererFormZeroCodeOptions（共 1 个 symbol）。
+ */
 import type { DataView } from '@spark-appworks/spark-data'
 import type { LoggerApi } from '@spark-appworks/spark-utils'
 import {
@@ -19,12 +25,18 @@ function isNativeFormLike(value: unknown): value is NativeFormLike {
     && (!('clearValidate' in value) || typeof value.clearValidate === 'function')
 }
 
+/** Renderer Form Zero Code Options 的调用配置。 */
 type RendererFormZeroCodeOptions = {
-  props: Readonly<Record<string, unknown>>
-  resolvedView: ValueRef<DataView | null>
-  formModel: Record<string, unknown>
-  nativeFormRef: ValueRef<unknown>
-  logger: LoggerApi}
+    /** 组件属性集合。 */
+props: Readonly<Record<string, unknown>>
+    /** resolved View 字段。 */
+resolvedView: ValueRef<DataView | null>
+    /** form Model 字段。 */
+formModel: Record<string, unknown>
+    /** native Form Ref 字段。 */
+nativeFormRef: ValueRef<unknown>
+    /** 诊断日志接口。 */
+logger: LoggerApi}
 
 export function createRendererFormZeroCode(options: RendererFormZeroCodeOptions) {
   const { props, resolvedView, formModel, nativeFormRef } = options

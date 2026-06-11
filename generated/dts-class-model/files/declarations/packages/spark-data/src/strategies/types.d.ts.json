@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/strategies/types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:strategies/types",
+    "sourcePath": "declarations/packages/spark-data/src/strategies/types.d.ts",
+    "sourceFile": "packages/spark-data/src/strategies/types.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "strategies/types",
+    "jsdoc": "@module @spark-appworks/spark-data:strategies/types\n@spark-appworks/spark-data 的 strategies/types 模块。\n导出 ClassModel symbol: CrudOperation, CrudLifecycleEvent, CrudLifecycleEventInput（共 3 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "CrudOperation",
+      "CrudLifecycleEvent",
+      "CrudLifecycleEventInput"
+    ]
+  },
+  "symbols": [
+    "CrudOperation",
+    "CrudLifecycleEvent",
+    "CrudLifecycleEventInput"
+  ],
+  "models": {
+    "CrudOperation": {
+      "kind": "CrudOperation",
+      "className": "CrudOperation",
+      "jsdoc": "/** CRUD 操作类型 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'retrieve' | 'create' | 'update' | 'delete' | 'batchCreate' | 'batchUpdate' | 'batchDelete' | 'import'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'retrieve'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'create'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'update'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'delete'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'batchCreate'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'batchUpdate'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'batchDelete'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'import'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/types.d.ts",
+        "line": 8,
+        "className": "CrudOperation",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "CrudLifecycleEvent": {
+      "kind": "CrudLifecycleEvent",
+      "className": "CrudLifecycleEvent",
+      "jsdoc": "/**\n * CRUD 生命周期事件\n *\n * - `before` 阶段：业务脚本可调用 `cancel()` 取消操作（如弹窗确认、权限二次校验）\n * - `after` 阶段：业务脚本可根据 result 执行联动（如刷新关联表、弹出提示）\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** operation 字段。 */\n    readonly operation: CrudOperation;\n    /** phase 字段。 */\n    readonly phase: 'before' | 'after';\n    /** 提交的数据（before 阶段为原始入参，after 阶段同前） */\n    readonly data: unknown;\n    /** 操作结果（仅 after 阶段） */\n    result?: CrudResult | undefined;\n    /** 是否已取消（仅 before 阶段有效） */\n    cancelled: boolean;\n    /** 取消操作（仅 before 阶段调用） */\n    cancel(): void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/types.d.ts",
+        "line": 15,
+        "className": "CrudLifecycleEvent",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "operation",
+          "schema": {
+            "title": "CrudOperation"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** operation 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/types.d.ts",
+            "line": 17,
+            "className": "CrudLifecycleEvent",
+            "memberName": "operation",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "phase",
+          "schema": {
+            "title": "'before' | 'after'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** phase 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/types.d.ts",
+            "line": 19,
+            "className": "CrudLifecycleEvent",
+            "memberName": "phase",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "data",
+          "schema": {
+            "title": "unknown"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 提交的数据（before 阶段为原始入参，after 阶段同前） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/types.d.ts",
+            "line": 21,
+            "className": "CrudLifecycleEvent",
+            "memberName": "data",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "result",
+          "schema": {
+            "title": "CrudResult | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 操作结果（仅 after 阶段） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/types.d.ts",
+            "line": 23,
+            "className": "CrudLifecycleEvent",
+            "memberName": "result",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "cancelled",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 是否已取消（仅 before 阶段有效） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/types.d.ts",
+            "line": 25,
+            "className": "CrudLifecycleEvent",
+            "memberName": "cancelled",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "CrudLifecycleEventInput": {
+      "kind": "CrudLifecycleEventInput",
+      "className": "CrudLifecycleEventInput",
+      "jsdoc": "/** Crud Lifecycle Event Input 的输入数据。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    operation: CrudOperation;\n    phase: 'before' | 'after';\n    data: unknown;\n    result?: CrudResult | undefined;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    operation: CrudOperation;\n    phase: 'before' | 'after';\n    data: unknown;\n    result?: CrudResult | undefined;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/types.d.ts",
+        "line": 30,
+        "className": "CrudLifecycleEventInput",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.803Z"
+}

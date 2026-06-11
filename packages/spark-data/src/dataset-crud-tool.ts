@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-data:dataset-crud-tool
+ * @spark-appworks/spark-data 的 dataset-crud-tool 模块。
+ * 导出 ClassModel symbol: DataSetCrudToolCreateTableOptions, DataSetCrudToolColumnUpdate, DataSetCrudToolUpdateTableOptions, RelationSelector, DataSetCrudToolTableNameParams, DataSetCrudToolReplaceFromJsonOptions, DataSetCrudToolColumnSelectorParams, DataSetCrudToolCreateColumnParams 等（共 33 个 symbol）。
+ */
 import { DataSet } from './dataset'
 import { SnapshotHistory, deepClone, isRecord } from '@spark-appworks/spark-utils'
 import { isDataRow } from './core/data-row-guards'
@@ -340,13 +345,16 @@ export class DataSetCrudTool {
   }
 
   /**
-   * 从已有 DataSet 实例创建工具类。
+   * 从已有 DataSet 实例或 JSON 快照创建工具类。
    */
-  static fromDataSet(dataSet: DataSet): DataSetCrudTool {
-    const tool = new DataSetCrudTool(dataSet.dataSetName)
-    tool._dataSet = dataSet
-    tool.initializeHistory()
-    return tool
+  static fromDataSet(source: DataSet | Record<string, unknown> | string): DataSetCrudTool {
+    if (source instanceof DataSet) {
+      const tool = new DataSetCrudTool(source.dataSetName)
+      tool._dataSet = source
+      tool.initializeHistory()
+      return tool
+    }
+    return DataSetCrudTool.fromJson(source)
   }
 
   /**

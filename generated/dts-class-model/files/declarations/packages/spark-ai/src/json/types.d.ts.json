@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/json/types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:json/types",
+    "sourcePath": "declarations/packages/spark-ai/src/json/types.d.ts",
+    "sourceFile": "packages/spark-ai/src/json/types.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "json/types",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\njson/types.ts — AI JSON Schema 类型（deprecated re-export 层）\n═══════════════════════════════════════════════════════════════\n【迁移说明】\n所有 JSON 值/Schema 类型已统一到 @spark-appworks/spark-json-document。\n本文件仅保留旧名称作为 deprecated alias，消费方应迁移到新名称：\nAiJsonValue       → JsonValue\nAiJsonObject      → JsonObject\nAiJsonParams      → JsonParams\nAiJsonParamShape  → JsonParamShape\nAiJsonSchemaType  → JsonSchemaType\nAiJsonSchema      → JsonSchema\nAiJsonSchemaObject → JsonSchemaObject\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.880Z"
+}

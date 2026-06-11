@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:runtime/index
+ * @spark-appworks/spark-component 的 runtime/index 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 export {
   PAGE_RUNTIME_SERVICES,
 } from './app-services'

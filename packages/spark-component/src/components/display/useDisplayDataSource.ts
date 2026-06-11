@@ -11,15 +11,23 @@ import { useSparkConsume, DATA_ROW, DATA_SOURCE } from '../internal'
 import { PAGE_DATASET } from '../internal'
 import { diagnoseDataViewMember, resolveDataViewMember, type DataMember } from '@spark-appworks/spark-data'
 
+/** Display Data Props 的属性契约。 */
 type DisplayDataProps = {
-  dataViewKey?: string | undefined
-  dataMember?: DataMember | `${DataMember}` | undefined
-  dataField?: string | undefined
-  field?: string | undefined
-  value?: unknown}
+    /** DataView 定位键。 */
+dataViewKey?: string | undefined
+    /** DataView 成员名。 */
+dataMember?: DataMember | `${DataMember}` | undefined
+    /** DataView 成员字段路径。 */
+dataField?: string | undefined
+    /** field 字段。 */
+field?: string | undefined
+    /** 当前值。 */
+value?: unknown}
 
+/** Use Display Data Source Return 的语义模型。 */
 type UseDisplayDataSourceReturn = {
-  resolvedValue: ComputedRef<unknown>}
+    /** resolved Value 字段。 */
+resolvedValue: ComputedRef<unknown>}
 
 export function useDisplayDataSource(props: DisplayDataProps): UseDisplayDataSourceReturn {
   const { sparkConsume } = useSparkConsume()

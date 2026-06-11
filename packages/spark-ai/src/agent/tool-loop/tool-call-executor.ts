@@ -120,6 +120,7 @@ type ResolveBeforeFunctionCallDirectiveInput<TInput extends AiJsonParams = AiJso
 
 /* ── 工具调用执行器 ────────────────────────────────────────── */
 
+/** Ai Agent Tool Call Executor 的语义模型。 */
 export class AiAgentToolCallExecutor {
   /**
    * 执行单次工具调用。

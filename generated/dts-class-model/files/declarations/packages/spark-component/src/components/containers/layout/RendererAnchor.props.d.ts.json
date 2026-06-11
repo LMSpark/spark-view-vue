@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchor.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererAnchor.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchor.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererAnchor.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererAnchor.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererAnchor.props\nRendererAnchor 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: RAnchorProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RAnchorProps"
+    ],
+    "componentName": "RendererAnchor",
+    "componentType": "r-anchor",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "RAnchorProps"
+  ],
+  "models": {
+    "RAnchorProps": {
+      "kind": "RAnchorProps",
+      "className": "RAnchorProps",
+      "jsdoc": "/** RAnchor Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 滚动容器选择器 */\n    container?: string;\n    /** 偏移量 */\n    offset?: number;\n    /** 边界值 */\n    bound?: number;\n    /** 滚动动画时长 */\n    duration?: number;\n    /** 是否显示标记 */\n    marker?: boolean;\n    /** 排列方向 */\n    direction?: 'vertical' | 'horizontal';\n    /** 锚点类型（避免与 SparkNode.type 冲突） */\n    anchorType?: 'default' | 'underline';\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 滚动容器选择器 */\n    container?: string;\n    /** 偏移量 */\n    offset?: number;\n    /** 边界值 */\n    bound?: number;\n    /** 滚动动画时长 */\n    duration?: number;\n    /** 是否显示标记 */\n    marker?: boolean;\n    /** 排列方向 */\n    direction?: 'vertical' | 'horizontal';\n    /** 锚点类型（避免与 SparkNode.type 冲突） */\n    anchorType?: 'default' | 'underline';\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchor.props.d.ts",
+        "line": 9,
+        "className": "RAnchorProps",
+        "declarationKind": "type",
+        "componentName": "RendererAnchor",
+        "componentType": "r-anchor",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "container",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 滚动容器选择器 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchor.props.d.ts",
+            "line": 11,
+            "className": "RAnchorProps",
+            "memberName": "container",
+            "declarationKind": "interface",
+            "componentName": "RendererAnchor",
+            "componentType": "r-anchor",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "offset",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 偏移量 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchor.props.d.ts",
+            "line": 13,
+            "className": "RAnchorProps",
+            "memberName": "offset",
+            "declarationKind": "interface",
+            "componentName": "RendererAnchor",
+            "componentType": "r-anchor",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "bound",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 边界值 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchor.props.d.ts",
+            "line": 15,
+            "className": "RAnchorProps",
+            "memberName": "bound",
+            "declarationKind": "interface",
+            "componentName": "RendererAnchor",
+            "componentType": "r-anchor",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "duration",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 滚动动画时长 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchor.props.d.ts",
+            "line": 17,
+            "className": "RAnchorProps",
+            "memberName": "duration",
+            "declarationKind": "interface",
+            "componentName": "RendererAnchor",
+            "componentType": "r-anchor",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "marker",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否显示标记 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchor.props.d.ts",
+            "line": 19,
+            "className": "RAnchorProps",
+            "memberName": "marker",
+            "declarationKind": "interface",
+            "componentName": "RendererAnchor",
+            "componentType": "r-anchor",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "direction",
+          "schema": {
+            "title": "'vertical' | 'horizontal'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 排列方向 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchor.props.d.ts",
+            "line": 21,
+            "className": "RAnchorProps",
+            "memberName": "direction",
+            "declarationKind": "interface",
+            "componentName": "RendererAnchor",
+            "componentType": "r-anchor",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "anchorType",
+          "schema": {
+            "title": "'default' | 'underline'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 锚点类型（避免与 SparkNode.type 冲突） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchor.props.d.ts",
+            "line": 23,
+            "className": "RAnchorProps",
+            "memberName": "anchorType",
+            "declarationKind": "interface",
+            "componentName": "RendererAnchor",
+            "componentType": "r-anchor",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.125Z"
+}

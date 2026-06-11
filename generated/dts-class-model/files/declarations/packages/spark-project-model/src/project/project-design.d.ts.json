@@ -1,0 +1,579 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:project/project-design",
+    "sourcePath": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+    "sourceFile": "packages/spark-project-model/src/project/project-design.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "project/project-design",
+    "jsdoc": "ProjectDesign — 项目设计内容：元数据 + 节点树 + 配置页 Map。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ProjectDesignNodeEditResult",
+      "ProjectDesign"
+    ]
+  },
+  "symbols": [
+    "ProjectDesignNodeEditResult",
+    "ProjectDesign"
+  ],
+  "models": {
+    "ProjectDesignNodeEditResult": {
+      "kind": "ProjectDesignNodeEditResult",
+      "className": "ProjectDesignNodeEditResult",
+      "jsdoc": "/** Project Design Node Edit Result 的返回结果。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** node 字段。 */\n    node: TNode;\n    /** 操作结果。 */\n    result: NavigationNodeDraftApplyResult;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+        "line": 10,
+        "className": "ProjectDesignNodeEditResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "node",
+          "schema": {
+            "title": "TNode"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** node 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 12,
+            "className": "ProjectDesignNodeEditResult",
+            "memberName": "node",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "result",
+          "schema": {
+            "title": "NavigationNodeDraftApplyResult"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 操作结果。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 14,
+            "className": "ProjectDesignNodeEditResult",
+            "memberName": "result",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectDesign": {
+      "kind": "ProjectDesign",
+      "className": "ProjectDesign",
+      "jsdoc": "/**\n * 项目设计根：项目元数据、导航节点树与配置页缓存。\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+        "line": 19,
+        "className": "ProjectDesign",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "title": "ProjectModelInitOptions"
+            }
+          },
+          "required": [
+            "options"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Project Design 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+          "line": 36,
+          "className": "ProjectDesign",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "getChildNodes",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "TNode[]",
+            "items": true
+          },
+          "returnTypeText": "TNode[]",
+          "jsdoc": "/** 读取 Child Nodes。 */",
+          "paramsTypeText": "nodeId?: string | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 53,
+            "className": "ProjectDesign",
+            "memberName": "getChildNodes",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "forEachNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "callback": {
+                "title": "(node: TNode) => void"
+              }
+            },
+            "required": [
+              "callback"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 for Each Node 操作。 */",
+          "paramsTypeText": "callback: (node: TNode) => void",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 56,
+            "className": "ProjectDesign",
+            "memberName": "forEachNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "replaceNavigationRoot",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "root": {
+                "title": "ProjectModelData"
+              }
+            },
+            "required": [
+              "root"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectModelData"
+          },
+          "returnTypeText": "ProjectModelData",
+          "jsdoc": "/** 执行 replace Navigation Root 操作。 */",
+          "paramsTypeText": "root: ProjectModelData",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 58,
+            "className": "ProjectDesign",
+            "memberName": "replaceNavigationRoot",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "replaceProjectInfo",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "project": {
+                "title": "ProjectInfoInput"
+              }
+            },
+            "required": [
+              "project"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectInfo"
+          },
+          "returnTypeText": "ProjectInfo",
+          "jsdoc": "/** 执行 replace Project Info 操作。 */",
+          "paramsTypeText": "project: ProjectInfoInput",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 60,
+            "className": "ProjectDesign",
+            "memberName": "replaceProjectInfo",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "replaceNavigationChildren",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "children": {
+                "type": "array",
+                "title": "ProjectNodeData[]",
+                "items": true
+              }
+            },
+            "required": [
+              "children"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectModelData"
+          },
+          "returnTypeText": "ProjectModelData",
+          "jsdoc": "/** 执行 replace Navigation Children 操作。 */",
+          "paramsTypeText": "children: ProjectNodeData[]",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 62,
+            "className": "ProjectDesign",
+            "memberName": "replaceNavigationChildren",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "findNodeById",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "nodeId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "TNode | null"
+          },
+          "returnTypeText": "TNode | null",
+          "jsdoc": "/** find Node By Id 标识。 */",
+          "paramsTypeText": "nodeId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 64,
+            "className": "ProjectDesign",
+            "memberName": "findNodeById",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "findNodeLocation",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "nodeId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectNodeLocation | null"
+          },
+          "returnTypeText": "ProjectNodeLocation | null",
+          "jsdoc": "/** 执行 find Node Location 操作。 */",
+          "paramsTypeText": "nodeId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 66,
+            "className": "ProjectDesign",
+            "memberName": "findNodeLocation",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "findConfigPageByPageId",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "pageId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ConfigPageNode | null"
+          },
+          "returnTypeText": "ConfigPageNode | null",
+          "jsdoc": "/** find Config Page By Page Id 标识。 */",
+          "paramsTypeText": "pageId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 68,
+            "className": "ProjectDesign",
+            "memberName": "findConfigPageByPageId",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "applyNavigationNodeEdit",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "title": "NavigationNodeDraft"
+              }
+            },
+            "required": [
+              "input"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectDesignNodeEditResult<TNode>"
+          },
+          "returnTypeText": "ProjectDesignNodeEditResult<TNode>",
+          "jsdoc": "/** 执行 apply Navigation Node Edit 操作。 */",
+          "paramsTypeText": "input: NavigationNodeDraft",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 70,
+            "className": "ProjectDesign",
+            "memberName": "applyNavigationNodeEdit",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "openPageDesign",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "pageId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ConfigPageNode"
+          },
+          "returnTypeText": "ConfigPageNode",
+          "jsdoc": "/** 执行 open Page Design 操作。 */",
+          "paramsTypeText": "pageId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 72,
+            "className": "ProjectDesign",
+            "memberName": "openPageDesign",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "closePageDesign",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "pageId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 close Page Design 操作。 */",
+          "paramsTypeText": "pageId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 74,
+            "className": "ProjectDesign",
+            "memberName": "closePageDesign",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "readPageSummaries",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "ProjectPageNodeSummary[]",
+            "items": true
+          },
+          "returnTypeText": "ProjectPageNodeSummary[]",
+          "jsdoc": "/** 执行 read Page Summaries 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 76,
+            "className": "ProjectDesign",
+            "memberName": "readPageSummaries",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "addRootModule",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "createId": {
+                "title": "() => string"
+              }
+            },
+            "required": [
+              "createId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectNodeData"
+          },
+          "returnTypeText": "ProjectNodeData",
+          "jsdoc": "/** 执行 add Root Module 操作。 */",
+          "paramsTypeText": "createId: () => string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 78,
+            "className": "ProjectDesign",
+            "memberName": "addRootModule",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "addChildPage",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "createId": {
+                "title": "() => string"
+              },
+              "parent": {
+                "title": "ProjectNodeData | null"
+              }
+            },
+            "required": [
+              "createId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectNodeData"
+          },
+          "returnTypeText": "ProjectNodeData",
+          "jsdoc": "/** 执行 add Child Page 操作。 */",
+          "paramsTypeText": "createId: () => string, parent?: ProjectNodeData | null | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 80,
+            "className": "ProjectDesign",
+            "memberName": "addChildPage",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "removeNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "nodeId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectNodeData | null"
+          },
+          "returnTypeText": "ProjectNodeData | null",
+          "jsdoc": "/** 删除 Node。 */",
+          "paramsTypeText": "nodeId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 82,
+            "className": "ProjectDesign",
+            "memberName": "removeNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "refreshNavRefs",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 refresh Nav Refs 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 84,
+            "className": "ProjectDesign",
+            "memberName": "refreshNavRefs",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "toTree",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "ProjectNodeData[]",
+            "items": true
+          },
+          "returnTypeText": "ProjectNodeData[]",
+          "jsdoc": "/** 执行 to Tree 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-design.d.ts",
+            "line": 86,
+            "className": "ProjectDesign",
+            "memberName": "toTree",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.965Z"
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/ai-turn-bridge.d.ts",
+  "module": {
+    "name": "app:services/ai-turn-bridge",
+    "sourcePath": "declarations/src/services/ai-turn-bridge.d.ts",
+    "sourceFile": "src/services/ai-turn-bridge.ts",
+    "packageName": "app",
+    "modulePath": "services/ai-turn-bridge",
+    "jsdoc": "APP-owned AI turn bridge.\nHTTP commands and APP SSE subscription stay in src/services; spark-ai only\nreceives callbacks and aggregates events.",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiTurnBridgeDiagnostic",
+      "AiAgentTurnBridgeOptions"
+    ]
+  },
+  "symbols": [
+    "AiTurnBridgeDiagnostic",
+    "AiAgentTurnBridgeOptions"
+  ],
+  "models": {
+    "AiTurnBridgeDiagnostic": {
+      "kind": "AiTurnBridgeDiagnostic",
+      "className": "AiTurnBridgeDiagnostic",
+      "jsdoc": "/** Ai Turn Bridge Diagnostic 的诊断信息。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    at: number;\n    type: string;\n    sessionId?: string;\n    turnId?: string;\n    message?: string;\n    details?: Record<string, unknown>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    at: number;\n    type: string;\n    sessionId?: string;\n    turnId?: string;\n    message?: string;\n    details?: Record<string, unknown>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/ai-turn-bridge.d.ts",
+        "line": 9,
+        "className": "AiTurnBridgeDiagnostic",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentTurnBridgeOptions": {
+      "kind": "AiAgentTurnBridgeOptions",
+      "className": "AiAgentTurnBridgeOptions",
+      "jsdoc": "/** Ai Agent Turn Bridge Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    transport?: 'app-sse' | 'session-turn';\n    timeoutMs?: number;\n    idleTimeoutMs?: number;\n    windowSize?: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    transport?: 'app-sse' | 'session-turn';\n    timeoutMs?: number;\n    idleTimeoutMs?: number;\n    windowSize?: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/ai-turn-bridge.d.ts",
+        "line": 18,
+        "className": "AiAgentTurnBridgeOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.071Z"
+}

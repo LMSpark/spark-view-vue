@@ -19,6 +19,7 @@ import { isRecord } from '@spark-appworks/spark-utils'
 import type { AiJsonParams } from '../../json'
 import type { AiAgentRegistration } from './registration-types'
 
+/** Ai Agent Registry 的语义模型。 */
 export class AiAgentRegistry<TInput extends AiJsonParams = AiJsonParams> {
   /** moduleId → AiAgentRegistration */
   private readonly registrations = new Map<string, AiAgentRegistration<TInput>>()

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/page/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:page/index",
+    "sourcePath": "declarations/packages/spark-component/src/page/index.d.ts",
+    "sourceFile": "packages/spark-component/src/page/index.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/index",
+    "jsdoc": "页面编排层入口。\n仅聚合页面渲染、页面数据集生命周期以及页面上下文类型。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.646Z"
+}

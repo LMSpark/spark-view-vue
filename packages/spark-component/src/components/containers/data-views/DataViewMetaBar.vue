@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/data-views/DataViewMetaBar
+@spark-appworks/spark-component:components/containers/data-views/DataViewMetaBar 模块，属于 SPARK component table-level/data-view-container。
+组件目录: containers/data-views。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div v-if="visible" class="spark-data-view-meta" data-testid="data-view-meta">
     <span class="spark-data-view-meta__item">行数 {{ rowCount }}</span>

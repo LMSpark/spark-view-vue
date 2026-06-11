@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/display/data-components/DisplayText
+DisplayText 模块，属于 SPARK component display/data-display。
+组件目录: display/data-components。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <component
     :is="tag"

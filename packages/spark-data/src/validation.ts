@@ -54,7 +54,8 @@ export type DataSchema = {
  * 基于数据模式（列定义 + 自定义规则）校验行数据
  */
 export class DataValidator {
-  constructor(private schema: DataSchema) {}
+    /** 创建 Data Validator 实例。 */
+constructor(private schema: DataSchema) {}
 
   /**
    * 校验单行数据

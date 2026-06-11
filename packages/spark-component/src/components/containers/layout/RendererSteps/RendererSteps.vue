@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/layout/RendererSteps/RendererSteps
+RendererSteps 模块，属于 SPARK component container/layout-container。
+组件目录: containers/layout。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div :class="['renderer-steps-layout', `renderer-steps-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-steps-toolbar', toolbarClassValue]">

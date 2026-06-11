@@ -1,3 +1,8 @@
+<!--
+@module app:layout/ThemeConfigurator
+app 的 layout/ThemeConfigurator 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-drawer
     :model-value="modelValue"

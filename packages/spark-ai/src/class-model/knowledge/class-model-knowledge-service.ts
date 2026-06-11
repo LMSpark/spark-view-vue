@@ -1,5 +1,10 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/knowledge/class-model-knowledge-service
+ * @spark-appworks/spark-ai 的 class-model/knowledge/class-model-knowledge-service 模块。
+ * 导出 ClassModel symbol: ClassModelKnowledgeQueryInput, ClassModelModelGuideInput, ClassModelAttributeGuideInput, ClassModelMethodGuideInput, ClassModelKnowledgeProvider, ClassModelKnowledgeServiceOptions, ClassModelKnowledgeService（共 7 个 symbol）。
+ */
 import type { AiJsonValue } from '../../json'
-import type { ClassModel, ClassModelDocument } from '../class-model'
+import type { ClassModel, ClassModelDocument, SourceProvenanceMeta } from '../class-model'
 import type { DtsClassModelSurfaceDocument } from '../class-model/dts-surface-types'
 import { jsonSchemaToTypeText } from '../class-model/json-schema-to-type'
 import {
@@ -16,26 +21,31 @@ import {
   renderModelGuide,
 } from '../projection'
 
+/** Class Model Knowledge Query Input 的输入数据。 */
 export type ClassModelKnowledgeQueryInput = Readonly<{
   kind?: string
   keyword?: string
   includeMembers: boolean
 }>
 
+/** Class Model Model Guide Input 的输入数据。 */
 export type ClassModelModelGuideInput = Readonly<{
   kind: string
 }>
 
+/** Class Model Attribute Guide Input 的输入数据。 */
 export type ClassModelAttributeGuideInput = Readonly<{
   kind: string
   attributeName: string
 }>
 
+/** Class Model Method Guide Input 的输入数据。 */
 export type ClassModelMethodGuideInput = Readonly<{
   kind: string
   methodName: string
 }>
 
+/** Class Model Knowledge Provider 的语义模型。 */
 export type ClassModelKnowledgeProvider = Readonly<{
   query(input: ClassModelKnowledgeQueryInput): AiJsonValue | Promise<AiJsonValue>
   modelGuide(input: ClassModelModelGuideInput): string | Promise<string>
@@ -43,6 +53,7 @@ export type ClassModelKnowledgeProvider = Readonly<{
   methodGuide(input: ClassModelMethodGuideInput): string | Promise<string>
 }>
 
+/** Class Model Knowledge Service Options 的调用配置。 */
 export type ClassModelKnowledgeServiceOptions = Readonly<{
   document?: ClassModelDocument
   surface?: DtsClassModelSurfaceDocument
@@ -53,14 +64,17 @@ type KnowledgeBackend =
   | Readonly<{ mode: 'document'; document: ClassModelDocument }>
   | Readonly<{ mode: 'surface'; surface: DtsClassModelSurfaceDocument; rootClassName: string }>
 
+/** Class Model Knowledge Service 的语义模型。 */
 export class ClassModelKnowledgeService implements ClassModelKnowledgeProvider {
   private readonly backend: KnowledgeBackend
 
-  public constructor(options: ClassModelKnowledgeServiceOptions) {
+    /** 创建 Class Model Knowledge Service 实例。 */
+public constructor(options: ClassModelKnowledgeServiceOptions) {
     this.backend = resolveBackend(options)
   }
 
-  public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
+    /** 查询参数。 */
+public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
     const keyword = input.keyword?.toLowerCase()
     if (this.backend.mode === 'surface') {
       const { surface, rootClassName } = this.backend
@@ -72,6 +86,8 @@ export class ClassModelKnowledgeService implements ClassModelKnowledgeProvider {
           kind: model.kind,
           className: model.className,
           summary: summarizeJsDoc(model.jsdoc),
+          ...declarationRelationsProperty(model),
+          ...componentProfileProperty(model.provenance),
           ...(input.includeMembers
             ? {
                 attributes: model.attributes.map(attribute => ({
@@ -102,6 +118,7 @@ export class ClassModelKnowledgeService implements ClassModelKnowledgeProvider {
         kind: model.kind,
         className: model.className,
         summary: summarizeJsDoc(model.jsdoc),
+        ...componentProfileProperty(model.provenance),
         ...(input.includeMembers
           ? {
               attributes: model.attributes.map(attribute => ({
@@ -124,7 +141,8 @@ export class ClassModelKnowledgeService implements ClassModelKnowledgeProvider {
     }
   }
 
-  public modelGuide(input: ClassModelModelGuideInput): string {
+    /** 执行 model Guide 操作。 */
+public modelGuide(input: ClassModelModelGuideInput): string {
     if (this.backend.mode === 'surface') {
       return renderSurfaceClassModel(readSurfaceModel(this.backend.surface, input.kind))
     }
@@ -134,12 +152,14 @@ export class ClassModelKnowledgeService implements ClassModelKnowledgeProvider {
     }).text
   }
 
-  public attributeGuide(input: ClassModelAttributeGuideInput): string {
+    /** 执行 attribute Guide 操作。 */
+public attributeGuide(input: ClassModelAttributeGuideInput): string {
     if (this.backend.mode === 'surface') {
       const model = readSurfaceModel(this.backend.surface, input.kind)
       const attribute = model.attributes.find(candidate => candidate.name === input.attributeName)
       if (attribute === undefined) throw new Error(`ClassModel attribute not found: ${input.kind}.${input.attributeName}`)
       return [
+        renderComponentProfile(model.provenance),
         model.jsdoc.trim(),
         `class ${model.className} {`,
         indent(`${attribute.writable ? '' : 'readonly '}${attribute.name}: ${jsonSchemaToTypeText(attribute.schema)}`),
@@ -153,12 +173,14 @@ export class ClassModelKnowledgeService implements ClassModelKnowledgeProvider {
     }).text
   }
 
-  public methodGuide(input: ClassModelMethodGuideInput): string {
+    /** 执行 method Guide 操作。 */
+public methodGuide(input: ClassModelMethodGuideInput): string {
     if (this.backend.mode === 'surface') {
       const model = readSurfaceModel(this.backend.surface, input.kind)
       const method = model.methods.find(candidate => candidate.name === input.methodName)
       if (method === undefined) throw new Error(`ClassModel method not found: ${input.kind}.${input.methodName}`)
       const chunks = [
+        renderComponentProfile(model.provenance),
         model.jsdoc.trim(),
         `class ${model.className} {`,
         indent(renderSurfaceMethod(method)),
@@ -213,6 +235,9 @@ function listReachableSurfaceClassNames(
 
 function listSurfaceLinkedClassNames(surface: DtsClassModelSurfaceDocument, model: ClassModel): readonly string[] {
   const linked = new Set<string>()
+  for (const relation of model.declarationRelations ?? []) {
+    collectTypeRefs(surface, linked, relation.targetName ?? relation.typeText)
+  }
   for (const attribute of model.attributes) collectTypeRefs(surface, linked, schemaTitle(attribute.schema))
   for (const method of model.methods) {
     collectTypeRefs(surface, linked, method.paramsTypeText)
@@ -237,6 +262,8 @@ function schemaTitle(schema: ClassModel['attributes'][number]['schema'] | undefi
 
 function renderSurfaceClassModel(model: ClassModel): string {
   const parts = [
+    renderComponentProfile(model.provenance),
+    renderDeclarationRelations(model),
     model.jsdoc.trim(),
     `class ${model.className} {`,
     ...model.attributes.map(attribute => indent(`${attribute.writable ? '' : 'readonly '}${attribute.name}: ${jsonSchemaToTypeText(attribute.schema)}`)),
@@ -244,6 +271,83 @@ function renderSurfaceClassModel(model: ClassModel): string {
     '}',
   ]
   return parts.filter(part => part.length > 0).join('\n')
+}
+
+function declarationRelationsProperty(
+  model: ClassModel,
+): { declarationRelations?: DeclarationRelationQueryRecord[] } {
+  const relations = model.declarationRelations
+  return relations === undefined || relations.length === 0
+    ? {}
+    : {
+        declarationRelations: relations.map(relation => ({
+          kind: relation.kind,
+          typeText: relation.typeText,
+          ...(relation.targetName === undefined ? {} : { targetName: relation.targetName }),
+        })),
+      }
+}
+
+type DeclarationRelationQueryRecord = Readonly<{
+  kind: string
+  typeText: string
+  targetName?: string
+}>
+
+function renderDeclarationRelations(model: ClassModel): string {
+  const lines: string[] = []
+  if (model.declarationTypeText !== undefined) {
+    lines.push(`DTS declaration: ${model.className} = ${model.declarationTypeText}`)
+  }
+  for (const relation of model.declarationRelations ?? []) {
+    lines.push(`DTS relation: ${relation.kind} ${relation.typeText}`)
+  }
+  if (lines.length === 0) return ''
+  return [
+    '/**',
+    ...lines.map(line => ` * ${line}`),
+    ' */',
+  ].join('\n')
+}
+
+type ComponentProfile = Readonly<{
+  name?: string
+  type?: string
+  level?: string
+  layer?: string
+  directory?: string
+}>
+
+function componentProfileProperty(
+  provenance: SourceProvenanceMeta | undefined,
+): { component?: ComponentProfile } {
+  const component = componentProfile(provenance)
+  return component === undefined ? {} : { component }
+}
+
+function componentProfile(provenance: SourceProvenanceMeta | undefined): ComponentProfile | undefined {
+  if (provenance === undefined) return undefined
+  const component: ComponentProfile = {
+    ...(provenance.componentName === undefined ? {} : { name: provenance.componentName }),
+    ...(provenance.componentType === undefined ? {} : { type: provenance.componentType }),
+    ...(provenance.componentLevel === undefined ? {} : { level: provenance.componentLevel }),
+    ...(provenance.componentLayer === undefined ? {} : { layer: provenance.componentLayer }),
+    ...(provenance.componentDirectory === undefined ? {} : { directory: provenance.componentDirectory }),
+  }
+  return Object.keys(component).length === 0 ? undefined : component
+}
+
+function renderComponentProfile(provenance: SourceProvenanceMeta | undefined): string {
+  const component = componentProfile(provenance)
+  if (component === undefined) return ''
+  const parts = [
+    component.type === undefined ? undefined : `type=${component.type}`,
+    component.name === undefined ? undefined : `name=${component.name}`,
+    component.level === undefined ? undefined : `level=${component.level}`,
+    component.layer === undefined ? undefined : `layer=${component.layer}`,
+    component.directory === undefined ? undefined : `directory=${component.directory}`,
+  ].filter(part => part !== undefined)
+  return `/** SPARK component ${parts.join('; ')} */`
 }
 
 function renderSurfaceMethod(method: ClassModel['methods'][number]): string {
@@ -261,6 +365,11 @@ function modelMatchesKeyword(model: ProjectedModel, keyword: string): boolean {
     model.kind,
     model.className,
     summarizeJsDoc(model.jsdoc),
+    model.provenance?.componentName ?? '',
+    model.provenance?.componentType ?? '',
+    model.provenance?.componentLevel ?? '',
+    model.provenance?.componentLayer ?? '',
+    model.provenance?.componentDirectory ?? '',
     ...model.attributes.flatMap(attribute => [attribute.name, summarizeJsDoc(attribute.jsdoc)]),
     ...model.methods.flatMap(method => [method.name, summarizeJsDoc(method.jsdoc)]),
   ]

@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/navigation/nav-access.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:navigation/nav-access",
+    "sourcePath": "declarations/packages/spark-app/src/navigation/nav-access.d.ts",
+    "sourceFile": "packages/spark-app/src/navigation/nav-access.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "navigation/nav-access",
+    "jsdoc": "DynamicRouter 导航访问模块（基础设施层）\n提供对 DynamicRouter 实例的模块级同步访问，用于非组件上下文（路由守卫、登录跳转等）。\nstart.ts 在启动时通过 setDynamicRouter() 注入实例，后续通过导出函数读取。\n与 useNavigation.ts 的关系：\n- nav-access：同步、无 Vue 依赖、用于基础设施层（main.ts 路由守卫、LoginView 跳转）\n- useNavigation：响应式 Vue composable、用于组件树内 UI 渲染和导航操作",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "DynamicRouterAccess",
+      "NavAccessOptions"
+    ]
+  },
+  "symbols": [
+    "DynamicRouterAccess",
+    "NavAccessOptions"
+  ],
+  "models": {
+    "DynamicRouterAccess": {
+      "kind": "DynamicRouterAccess",
+      "className": "DynamicRouterAccess",
+      "jsdoc": "/** DynamicRouter 公共 API 子集（仅导航相关） */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    refreshRoutes(): Promise<ProjectModelData | null>;\n    getNavTree(): ProjectModelData | null;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/navigation/nav-access.d.ts",
+        "line": 13,
+        "className": "DynamicRouterAccess",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "NavAccessOptions": {
+      "kind": "NavAccessOptions",
+      "className": "NavAccessOptions",
+      "jsdoc": "/** 初始化选项 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 导航树未加载时的回退首页路径（默认 '/dashboard'） */\n    defaultHomePath?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/navigation/nav-access.d.ts",
+        "line": 18,
+        "className": "NavAccessOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "defaultHomePath",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 导航树未加载时的回退首页路径（默认 '/dashboard'） */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/navigation/nav-access.d.ts",
+            "line": 20,
+            "className": "NavAccessOptions",
+            "memberName": "defaultHomePath",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.933Z"
+}

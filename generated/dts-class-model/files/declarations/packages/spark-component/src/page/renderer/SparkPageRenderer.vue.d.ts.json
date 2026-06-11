@@ -1,0 +1,370 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:page/renderer/SparkPageRenderer",
+    "sourcePath": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/page/renderer/SparkPageRenderer.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/renderer/SparkPageRenderer",
+    "jsdoc": "@module @spark-appworks/spark-component:page/renderer/SparkPageRenderer\n@spark-appworks/spark-component 的 page/renderer/SparkPageRenderer 模块。\n导出 ClassModel symbol: PageRuntimeErrorPhase, PageRuntimeErrorPayload, Props（共 3 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "PageRuntimeErrorPhase",
+      "PageRuntimeErrorPayload",
+      "Props"
+    ]
+  },
+  "symbols": [
+    "PageRuntimeErrorPhase",
+    "PageRuntimeErrorPayload",
+    "Props"
+  ],
+  "models": {
+    "PageRuntimeErrorPhase": {
+      "kind": "PageRuntimeErrorPhase",
+      "className": "PageRuntimeErrorPhase",
+      "jsdoc": "/** 页面运行时错误发生阶段。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'load' | 'script-compile' | 'init' | 'script-function' | 'render'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'load'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'script-compile'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'init'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'script-function'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'render'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+        "line": 9,
+        "className": "PageRuntimeErrorPhase",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "PageRuntimeErrorPayload": {
+      "kind": "PageRuntimeErrorPayload",
+      "className": "PageRuntimeErrorPayload",
+      "jsdoc": "/** 页面运行时错误上报载荷。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 发生错误的页面运行阶段。 */\n    phase: PageRuntimeErrorPhase;\n    /** 面向用户和日志的错误消息。 */\n    message: string;\n    /** 出错页面 ID。 */\n    pageId: string;\n    /** 错误发生时间。 */\n    at: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+        "line": 11,
+        "className": "PageRuntimeErrorPayload",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "phase",
+          "schema": {
+            "title": "PageRuntimeErrorPhase"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 发生错误的页面运行阶段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 13,
+            "className": "PageRuntimeErrorPayload",
+            "memberName": "phase",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "message",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 面向用户和日志的错误消息。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 15,
+            "className": "PageRuntimeErrorPayload",
+            "memberName": "message",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 出错页面 ID。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 17,
+            "className": "PageRuntimeErrorPayload",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "at",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 错误发生时间。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 19,
+            "className": "PageRuntimeErrorPayload",
+            "memberName": "at",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "Props": {
+      "kind": "Props",
+      "className": "Props",
+      "jsdoc": "/**\n * SparkPageRenderer props — 对齐 h(type, props, children) 三段式。\n *\n * - type     = 'spark-page'（withDefaults 设定默认值）\n * - props    = pageNode / pageId / enable* / 钩子等（本接口所有字段）\n * - children = rule.json 经 buildPageChildren 归并后由渲染器内部生成，不作为外部输入\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "Omit<SparkNode, 'type'> & {\n    /** 组件类型（withDefaults 默认 'spark-page'，外部调用无需显式传入） */\n    type?: string;\n    /** 页面节点唯一入口；渲染器只消费 PageNode 内存态。 */\n    pageNode: PageNodeLike;\n    /** 外部变更版本号；同一 PageNode 内存内容变化时触发重渲染。 */\n    pageNodeRevision?: number;\n    /** 页面唯一标识符（可选校验值；默认取 pageNode.pageId） */\n    pageId?: string;\n    /** 是否启用 CSS 作用域隔离 @default true */\n    enableCssScope?: boolean;\n    /** 是否启用 DataSet 自动初始化 @default true */\n    enableDataSet?: boolean;\n    /** UI 消息服务接口 */\n    messageService?: PageServiceOverrides['messageService'];\n    /** UI 确认对话框服务接口 */\n    confirmService?: PageServiceOverrides['confirmService'];\n    /** 页面加载前钩子（loadNodeProps 之前） */\n    beforeLoad?: (pageId: string) => void | Promise<void>;\n    /** 页面加载后钩子（applyNodeProps 之后） */\n    afterLoad?: (state: PageNodeRenderConfig) => void | Promise<void>;\n    /** 错误处理函数 */\n    onError?: (error: Error) => void;\n    /** 运行时错误回调（供外层采集脚本编译/初始化/加载错误）。 */\n    onRuntimeError?: (payload: PageRuntimeErrorPayload) => void;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "Omit<SparkNode, 'type'>",
+          "targetName": "Omit"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 组件类型（withDefaults 默认 'spark-page'，外部调用无需显式传入） */\n    type?: string;\n    /** 页面节点唯一入口；渲染器只消费 PageNode 内存态。 */\n    pageNode: PageNodeLike;\n    /** 外部变更版本号；同一 PageNode 内存内容变化时触发重渲染。 */\n    pageNodeRevision?: number;\n    /** 页面唯一标识符（可选校验值；默认取 pageNode.pageId） */\n    pageId?: string;\n    /** 是否启用 CSS 作用域隔离 @default true */\n    enableCssScope?: boolean;\n    /** 是否启用 DataSet 自动初始化 @default true */\n    enableDataSet?: boolean;\n    /** UI 消息服务接口 */\n    messageService?: PageServiceOverrides['messageService'];\n    /** UI 确认对话框服务接口 */\n    confirmService?: PageServiceOverrides['confirmService'];\n    /** 页面加载前钩子（loadNodeProps 之前） */\n    beforeLoad?: (pageId: string) => void | Promise<void>;\n    /** 页面加载后钩子（applyNodeProps 之后） */\n    afterLoad?: (state: PageNodeRenderConfig) => void | Promise<void>;\n    /** 错误处理函数 */\n    onError?: (error: Error) => void;\n    /** 运行时错误回调（供外层采集脚本编译/初始化/加载错误）。 */\n    onRuntimeError?: (payload: PageRuntimeErrorPayload) => void;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+        "line": 28,
+        "className": "Props",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "type",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 组件类型（withDefaults 默认 'spark-page'，外部调用无需显式传入） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 30,
+            "className": "Props",
+            "memberName": "type",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "pageNode",
+          "schema": {
+            "title": "PageNodeLike"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 页面节点唯一入口；渲染器只消费 PageNode 内存态。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 32,
+            "className": "Props",
+            "memberName": "pageNode",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "pageNodeRevision",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 外部变更版本号；同一 PageNode 内存内容变化时触发重渲染。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 34,
+            "className": "Props",
+            "memberName": "pageNodeRevision",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 页面唯一标识符（可选校验值；默认取 pageNode.pageId） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 36,
+            "className": "Props",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "enableCssScope",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否启用 CSS 作用域隔离 @default true */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 38,
+            "className": "Props",
+            "memberName": "enableCssScope",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "enableDataSet",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否启用 DataSet 自动初始化 @default true */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 40,
+            "className": "Props",
+            "memberName": "enableDataSet",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "messageService",
+          "schema": {
+            "title": "PageServiceOverrides['messageService']"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** UI 消息服务接口 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 42,
+            "className": "Props",
+            "memberName": "messageService",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "confirmService",
+          "schema": {
+            "title": "PageServiceOverrides['confirmService']"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** UI 确认对话框服务接口 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 44,
+            "className": "Props",
+            "memberName": "confirmService",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "beforeLoad",
+          "schema": {
+            "title": "(pageId: string) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 页面加载前钩子（loadNodeProps 之前） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 46,
+            "className": "Props",
+            "memberName": "beforeLoad",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "afterLoad",
+          "schema": {
+            "title": "(state: PageNodeRenderConfig) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 页面加载后钩子（applyNodeProps 之后） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 48,
+            "className": "Props",
+            "memberName": "afterLoad",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onError",
+          "schema": {
+            "title": "(error: Error) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 错误处理函数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 50,
+            "className": "Props",
+            "memberName": "onError",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onRuntimeError",
+          "schema": {
+            "title": "(payload: PageRuntimeErrorPayload) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 运行时错误回调（供外层采集脚本编译/初始化/加载错误）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+            "line": 52,
+            "className": "Props",
+            "memberName": "onRuntimeError",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.653Z"
+}

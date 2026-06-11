@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/layout/RendererDrawer/RendererDrawer.props
+ * RendererDrawer 模块，属于 SPARK component container/layout-container。
+ * 组件目录: containers/layout。
+ * 导出 ClassModel symbol: RDrawerProps（共 1 个 symbol）。
+ */
 import type {
   SparkGridLayoutProps,
   SparkNodeProps,
@@ -6,6 +12,7 @@ import type {
 import type { RFooterProps } from '../../zones/RendererFooter.types'
 import type { RHeaderProps } from '../../zones/RendererHeader.types'
 
+/** RDrawer Props 的属性契约。 */
 export type RDrawerProps = SparkNodeProps & SparkVisibilityContainerProps & SparkGridLayoutProps & {
   /** 结构化头部 */
     header?: RHeaderProps

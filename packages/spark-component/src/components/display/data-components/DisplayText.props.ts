@@ -1,5 +1,12 @@
+/**
+ * @module @spark-appworks/spark-component:components/display/data-components/DisplayText.props
+ * DisplayText 模块，属于 SPARK component display/data-display。
+ * 组件目录: display/data-components。
+ * 导出 ClassModel symbol: RTextDisplayProps（共 1 个 symbol）。
+ */
 import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
+/** RText Display Props 的属性契约。 */
 export type RTextDisplayProps = SparkNodeProps & SparkDataDisplayProps<unknown> & {
   /** 包裹标签名，如 span/div */
     tag?: string

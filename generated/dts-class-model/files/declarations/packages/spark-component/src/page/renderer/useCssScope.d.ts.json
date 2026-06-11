@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/page/renderer/useCssScope.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:page/renderer/useCssScope",
+    "sourcePath": "declarations/packages/spark-component/src/page/renderer/useCssScope.d.ts",
+    "sourceFile": "packages/spark-component/src/page/renderer/useCssScope.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/renderer/useCssScope",
+    "jsdoc": "@module @spark-appworks/spark-component:page/renderer/useCssScope\n@spark-appworks/spark-component 的 page/renderer/useCssScope 模块。\n导出 ClassModel symbol: UseCssScopeOptions（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "UseCssScopeOptions"
+    ]
+  },
+  "symbols": [
+    "UseCssScopeOptions"
+  ],
+  "models": {
+    "UseCssScopeOptions": {
+      "kind": "UseCssScopeOptions",
+      "className": "UseCssScopeOptions",
+      "jsdoc": "/**\n * CSS 作用域 Composable\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 是否 enable Scope。 */\n    enableScope?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/page/renderer/useCssScope.d.ts",
+        "line": 9,
+        "className": "UseCssScopeOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "enableScope",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否 enable Scope。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/useCssScope.d.ts",
+            "line": 11,
+            "className": "UseCssScopeOptions",
+            "memberName": "enableScope",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.655Z"
+}

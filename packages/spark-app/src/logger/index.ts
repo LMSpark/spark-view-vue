@@ -255,6 +255,7 @@ export function getGlobalTransportCount(): number {
 
 // ─── 批量 HTTP 传输器配置 ─────────────────────────────────────────────────────
 
+/** Batch Transport Options 的调用配置。 */
 export type BatchTransportOptions = {
   /** 远程端点 URL */
   endpoint: string
@@ -382,7 +383,8 @@ class AppLogger {
   private config: Required<Pick<AppLoggerConfig, 'level' | 'enableColors' | 'showTimestamp' | 'prefix' | 'suppressErrorConsoleTrace'>>
   private transports: LogTransport[] = []
 
-  constructor(config: AppLoggerConfig = {}) {
+    /** 创建 App Logger 实例。 */
+constructor(config: AppLoggerConfig = {}) {
     this.config = {
       level: config.level ?? (import.meta.env.PROD ? 'info' : 'debug'),
       enableColors: config.enableColors ?? true,

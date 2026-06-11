@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/options/option-source
+ * @spark-appworks/spark-component 的 components/fields/options/option-source 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import { SparkData, type DataView, type FlatTreeNode } from '@spark-appworks/spark-data'
 
 export function buildOptionSourceFromView(

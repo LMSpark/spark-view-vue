@@ -1,4 +1,9 @@
 <!--
+@module app:views/app/dev-system/DevDataSetDesigner
+app 的 views/app/dev-system/DevDataSetDesigner 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
+<!--
   DevDataSetDesigner — DataSet 可视化设计器
 
   功能：

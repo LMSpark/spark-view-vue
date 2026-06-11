@@ -1,18 +1,33 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/options/option-normalization
+ * @spark-appworks/spark-component 的 components/fields/options/option-normalization 模块。
+ * 导出 ClassModel symbol: FieldOption, NormalizeOptionFields（共 2 个 symbol）。
+ */
 // 这里不再为 JS 基础类型保留导出别名，选项值直接使用原生联合类型。
 
 import { isRecord } from '@spark-appworks/spark-utils'
 
+/** Field Option 的语义模型。 */
 export type FieldOption = {
-  label: string
-  value: string | number | boolean
-  disabled?: boolean
-  children?: FieldOption[]}
+    /** 展示标签。 */
+label: string
+    /** 当前值。 */
+value: string | number | boolean
+    /** 是否禁用。 */
+disabled?: boolean
+    /** 子节点集合。 */
+children?: FieldOption[]}
 
+/** Normalize Option Fields 的语义模型。 */
 export type NormalizeOptionFields = {
-  labelField: string
-  valueField: string
-  childrenField: string
-  disabledField: string}
+    /** label Field 字段。 */
+labelField: string
+    /** value Field 字段。 */
+valueField: string
+    /** children Field 字段。 */
+childrenField: string
+    /** disabled Field 字段。 */
+disabledField: string}
 
 function isFieldOptionValue(value: unknown): value is string | number | boolean {
   return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'

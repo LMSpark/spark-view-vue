@@ -1,4 +1,9 @@
 /**
+ * @module @spark-appworks/spark-data:core/url-template
+ * @spark-appworks/spark-data 的 core/url-template 模块。
+ * 导出 ClassModel symbol: ResolvedUrl（共 1 个 symbol）。
+ */
+/**
  * URL 模板解析工具
  *
  * 统一支持两种路径参数风格：

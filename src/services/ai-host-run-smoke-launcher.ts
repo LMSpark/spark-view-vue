@@ -1,4 +1,9 @@
 /**
+ * @module app:services/ai-host-run-smoke-launcher
+ * app 的 services/ai-host-run-smoke-launcher 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
+/**
  * Dev-only browser launcher for APP SSE Host Run smoke flows.
  *
  * The launcher is intentionally generic: scenario-specific requirements live
@@ -337,7 +342,9 @@ function logSmokeStage(requestId: string, stage: string): void {
 }
 
 function readSparkDevRouter(): SparkDevRouter | undefined {
-  const router = window.__sparkDev?.router
+  const sparkDev: unknown = Reflect.get(window, '__sparkDev')
+  if (!isRecord(sparkDev)) return undefined
+  const router = sparkDev['router']
   return isSparkDevRouter(router) ? router : undefined
 }
 
@@ -348,12 +355,6 @@ function isSparkDevRouter(value: unknown): value is SparkDevRouter {
 type SparkDevRouter = Readonly<{
   replace(to: { path: string; query?: Record<string, string> }): Promise<unknown>
 }>
-
-declare global {
-  interface Window {
-    __sparkDev?: Readonly<{ router?: unknown }>
-  }
-}
 
 function isAppSseNotConnected(error: unknown): boolean {
   if (!isRecord(error)) return false

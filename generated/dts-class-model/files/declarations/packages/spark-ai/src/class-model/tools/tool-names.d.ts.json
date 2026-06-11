@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/tools/tool-names.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/tools/tool-names",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/tools/tool-names.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/tools/tool-names.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/tools/tool-names",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/tools/tool-names\n@spark-appworks/spark-ai 的 class-model/tools/tool-names 模块。\n导出 ClassModel symbol: ClassModelToolName（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ClassModelToolName"
+    ]
+  },
+  "symbols": [
+    "ClassModelToolName"
+  ],
+  "models": {
+    "ClassModelToolName": {
+      "kind": "ClassModelToolName",
+      "className": "ClassModelToolName",
+      "jsdoc": "/** Class Model Tool Name 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "typeof CLASS_MODEL_TOOL_NAMES[keyof typeof CLASS_MODEL_TOOL_NAMES]",
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/tools/tool-names.d.ts",
+        "line": 22,
+        "className": "ClassModelToolName",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.871Z"
+}

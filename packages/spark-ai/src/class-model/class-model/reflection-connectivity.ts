@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/class-model/reflection-connectivity
+ * @spark-appworks/spark-ai 的 class-model/class-model/reflection-connectivity 模块。
+ * 导出 ClassModel symbol: ClassModelReflectionConnectivityIssue（共 1 个 symbol）。
+ */
 import type { AiApiAttributeMetadata, AiApiObjectMetadata, AiModuleMetadataJson } from '../metadata'
 import type { ClassModelDocument } from './types'
 import {
@@ -6,6 +11,7 @@ import {
   resolveModuleApi,
 } from './model-projection'
 
+/** Class Model Reflection Connectivity Issue 的语义模型。 */
 export type ClassModelReflectionConnectivityIssue = Readonly<{
   code: string
   path: string

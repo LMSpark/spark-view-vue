@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:io/project-reference-client",
+    "sourcePath": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+    "sourceFile": "packages/spark-project-model/src/io/project-reference-client.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "io/project-reference-client",
+    "jsdoc": "@module @spark-appworks/spark-project-model:io/project-reference-client\n@spark-appworks/spark-project-model 的 io/project-reference-client 模块。\n导出 ClassModel symbol: ProjectReferenceClientOptions, ProjectSummary, ProjectPageReference, ListProjectReferencesOptions, ProjectReferenceClient（共 5 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ProjectReferenceClientOptions",
+      "ProjectSummary",
+      "ProjectPageReference",
+      "ListProjectReferencesOptions",
+      "ProjectReferenceClient"
+    ]
+  },
+  "symbols": [
+    "ProjectReferenceClientOptions",
+    "ProjectSummary",
+    "ProjectPageReference",
+    "ListProjectReferencesOptions",
+    "ProjectReferenceClient"
+  ],
+  "models": {
+    "ProjectReferenceClientOptions": {
+      "kind": "ProjectReferenceClientOptions",
+      "className": "ProjectReferenceClientOptions",
+      "jsdoc": "/** Project Reference Client Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** http 字段。 */\n    http: HttpClientBase;\n    /** get Projects Api 回调。 */\n    getProjectsApi: () => string;\n    /** get Project Navigation Api 回调。 */\n    getProjectNavigationApi: (projectId: string) => string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+        "line": 9,
+        "className": "ProjectReferenceClientOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "http",
+          "schema": {
+            "title": "HttpClientBase"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** http 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+            "line": 11,
+            "className": "ProjectReferenceClientOptions",
+            "memberName": "http",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "getProjectsApi",
+          "schema": {
+            "title": "() => string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** get Projects Api 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+            "line": 13,
+            "className": "ProjectReferenceClientOptions",
+            "memberName": "getProjectsApi",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "getProjectNavigationApi",
+          "schema": {
+            "title": "(projectId: string) => string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** get Project Navigation Api 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+            "line": 15,
+            "className": "ProjectReferenceClientOptions",
+            "memberName": "getProjectNavigationApi",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectSummary": {
+      "kind": "ProjectSummary",
+      "className": "ProjectSummary",
+      "jsdoc": "/** Project Summary 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** project Id 标识。 */\n    projectId: string;\n    /** 显示或业务名称。 */\n    name: string;\n    /** icon 字段。 */\n    icon: string;\n    /** description 字段。 */\n    description: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+        "line": 18,
+        "className": "ProjectSummary",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "projectId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** project Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+            "line": 20,
+            "className": "ProjectSummary",
+            "memberName": "projectId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "name",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 显示或业务名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+            "line": 22,
+            "className": "ProjectSummary",
+            "memberName": "name",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "icon",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** icon 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+            "line": 24,
+            "className": "ProjectSummary",
+            "memberName": "icon",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "description",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** description 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+            "line": 26,
+            "className": "ProjectSummary",
+            "memberName": "description",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectPageReference": {
+      "kind": "ProjectPageReference",
+      "className": "ProjectPageReference",
+      "jsdoc": "/** Project Page Reference 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "ProjectPageNodeSummary & {\n    /** project Id 标识。 */\n    projectId: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "ProjectPageNodeSummary",
+          "targetName": "ProjectPageNodeSummary"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** project Id 标识。 */\n    projectId: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+        "line": 29,
+        "className": "ProjectPageReference",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "projectId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** project Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+            "line": 31,
+            "className": "ProjectPageReference",
+            "memberName": "projectId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ListProjectReferencesOptions": {
+      "kind": "ListProjectReferencesOptions",
+      "className": "ListProjectReferencesOptions",
+      "jsdoc": "/** List Project References Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** exclude Project Id 标识。 */\n    excludeProjectId?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+        "line": 34,
+        "className": "ListProjectReferencesOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "excludeProjectId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** exclude Project Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+            "line": 36,
+            "className": "ListProjectReferencesOptions",
+            "memberName": "excludeProjectId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectReferenceClient": {
+      "kind": "ProjectReferenceClient",
+      "className": "ProjectReferenceClient",
+      "jsdoc": "/** Project Reference Client 的语义模型。 */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+        "line": 39,
+        "className": "ProjectReferenceClient",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "title": "ProjectReferenceClientOptions"
+            }
+          },
+          "required": [
+            "options"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Project Reference Client 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+          "line": 44,
+          "className": "ProjectReferenceClient",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "listProjects",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "ListProjectReferencesOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<ProjectSummary[]>"
+          },
+          "returnTypeText": "Promise<ProjectSummary[]>",
+          "jsdoc": "/** 执行 list Projects 操作。 */",
+          "paramsTypeText": "options?: ListProjectReferencesOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+            "line": 46,
+            "className": "ProjectReferenceClient",
+            "memberName": "listProjects",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "listProjectPages",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "projectId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<ProjectPageReference[]>"
+          },
+          "returnTypeText": "Promise<ProjectPageReference[]>",
+          "jsdoc": "/** 执行 list Project Pages 操作。 */",
+          "paramsTypeText": "projectId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts",
+            "line": 48,
+            "className": "ProjectReferenceClient",
+            "memberName": "listProjectPages",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.895Z"
+}

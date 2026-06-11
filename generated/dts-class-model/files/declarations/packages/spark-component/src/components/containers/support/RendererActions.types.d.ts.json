@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/support/RendererActions.types",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/support/RendererActions.types.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/support/RendererActions.types",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/support/RendererActions.types\n@spark-appworks/spark-component 的 components/containers/support/RendererActions.types 模块。\n导出 ClassModel symbol: ActionsAlign, ActionsPosition, PermissionDeniedBehavior, RendererActionsProps（共 4 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ActionsAlign",
+      "ActionsPosition",
+      "PermissionDeniedBehavior",
+      "RendererActionsProps"
+    ]
+  },
+  "symbols": [
+    "ActionsAlign",
+    "ActionsPosition",
+    "PermissionDeniedBehavior",
+    "RendererActionsProps"
+  ],
+  "models": {
+    "ActionsAlign": {
+      "kind": "ActionsAlign",
+      "className": "ActionsAlign",
+      "jsdoc": "/** 动作区内容对齐方式。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'left' | 'center' | 'right'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'left'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'center'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'right'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+        "line": 7,
+        "className": "ActionsAlign",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ActionsPosition": {
+      "kind": "ActionsPosition",
+      "className": "ActionsPosition",
+      "jsdoc": "/** 动作区停靠位置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'left' | 'right'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'left'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'right'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+        "line": 9,
+        "className": "ActionsPosition",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "PermissionDeniedBehavior": {
+      "kind": "PermissionDeniedBehavior",
+      "className": "PermissionDeniedBehavior",
+      "jsdoc": "/** 权限不足时的动作呈现策略。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'hide' | 'disable'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'hide'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'disable'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+        "line": 18,
+        "className": "PermissionDeniedBehavior",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "RendererActionsProps": {
+      "kind": "RendererActionsProps",
+      "className": "RendererActionsProps",
+      "jsdoc": "/**\n * 表格行动作列配置属性。\n *\n * 用于 `r-table` 的 `actions` 属性，描述行动作操作列的列元数据与子动作节点。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 行动作列停靠位置（列在表格的左侧或右侧） */\n    position?: ActionsPosition;\n    /** 操作列单元格文本对齐方式 */\n    align?: ActionsAlign;\n    /** 列固定策略 */\n    fixed?: boolean | ActionsPosition;\n    /** 列标题文本 */\n    label?: string;\n    /** 列宽度 */\n    width?: number | string;\n    /** 列附加 CSS class */\n    class?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 行动作列停靠位置（列在表格的左侧或右侧） */\n    position?: ActionsPosition;\n    /** 操作列单元格文本对齐方式 */\n    align?: ActionsAlign;\n    /** 列固定策略 */\n    fixed?: boolean | ActionsPosition;\n    /** 列标题文本 */\n    label?: string;\n    /** 列宽度 */\n    width?: number | string;\n    /** 列附加 CSS class */\n    class?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+        "line": 25,
+        "className": "RendererActionsProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "position",
+          "schema": {
+            "title": "ActionsPosition"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 行动作列停靠位置（列在表格的左侧或右侧） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+            "line": 27,
+            "className": "RendererActionsProps",
+            "memberName": "position",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "align",
+          "schema": {
+            "title": "ActionsAlign"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 操作列单元格文本对齐方式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+            "line": 29,
+            "className": "RendererActionsProps",
+            "memberName": "align",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "fixed",
+          "schema": {
+            "title": "boolean | ActionsPosition"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 列固定策略 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+            "line": 31,
+            "className": "RendererActionsProps",
+            "memberName": "fixed",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "label",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 列标题文本 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+            "line": 33,
+            "className": "RendererActionsProps",
+            "memberName": "label",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "width",
+          "schema": {
+            "title": "number | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 列宽度 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+            "line": 35,
+            "className": "RendererActionsProps",
+            "memberName": "width",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "class",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 列附加 CSS class */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+            "line": 37,
+            "className": "RendererActionsProps",
+            "memberName": "class",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.278Z"
+}

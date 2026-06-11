@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/ai-host-run-prepare.d.ts",
+  "module": {
+    "name": "app:services/ai-host-run-prepare",
+    "sourcePath": "declarations/src/services/ai-host-run-prepare.d.ts",
+    "sourceFile": "src/services/ai-host-run-prepare.ts",
+    "packageName": "app",
+    "modulePath": "services/ai-host-run-prepare",
+    "jsdoc": "@module app:services/ai-host-run-prepare\napp 的 services/ai-host-run-prepare 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.066Z"
+}

@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererPageHeader.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererPageHeader.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererPageHeader.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererPageHeader.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererPageHeader.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererPageHeader.props\nRendererPageHeader 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: RPageHeaderProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RPageHeaderProps"
+    ],
+    "componentName": "RendererPageHeader",
+    "componentType": "r-page-header",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "RPageHeaderProps"
+  ],
+  "models": {
+    "RPageHeaderProps": {
+      "kind": "RPageHeaderProps",
+      "className": "RPageHeaderProps",
+      "jsdoc": "/** RPage Header Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & SparkTitleContentProps & {\n    /** 图标名称 */\n    icon?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkTitleContentProps",
+          "targetName": "SparkTitleContentProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 图标名称 */\n    icon?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/layout/RendererPageHeader.props.d.ts",
+        "line": 9,
+        "className": "RPageHeaderProps",
+        "declarationKind": "type",
+        "componentName": "RendererPageHeader",
+        "componentType": "r-page-header",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "icon",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 图标名称 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererPageHeader.props.d.ts",
+            "line": 11,
+            "className": "RPageHeaderProps",
+            "memberName": "icon",
+            "declarationKind": "interface",
+            "componentName": "RendererPageHeader",
+            "componentType": "r-page-header",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.178Z"
+}

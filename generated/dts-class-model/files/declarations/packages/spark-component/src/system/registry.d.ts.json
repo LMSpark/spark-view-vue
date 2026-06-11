@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/system/registry.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:system/registry",
+    "sourcePath": "declarations/packages/spark-component/src/system/registry.d.ts",
+    "sourceFile": "packages/spark-component/src/system/registry.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "system/registry",
+    "jsdoc": "SPARK 组件注册表\n- `createComponentRegistry()` 创建隔离实例（测试/多实例）\n- `getGlobalRegistry()` 返回应用级单例",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.687Z"
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-attach.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:schema/schema-attach",
+    "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-attach.d.ts",
+    "sourceFile": "packages/spark-json-document/src/schema/schema-attach.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "schema/schema-attach",
+    "jsdoc": "Attach document-level $defs to a schema root for AJV 2020 $ref resolution.",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.835Z"
+}

@@ -1,0 +1,287 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:ai/tool-approval-bridge",
+    "sourcePath": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+    "sourceFile": "packages/spark-app/src/ai/tool-approval-bridge.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "ai/tool-approval-bridge",
+    "jsdoc": "@module @spark-appworks/spark-app:ai/tool-approval-bridge\n@spark-appworks/spark-app 的 ai/tool-approval-bridge 模块。\n导出 ClassModel symbol: AiToolApprovalRequest, AiToolApprovalBridgeSnapshot, AiToolApprovalBridgeListener, AiToolApprovalRequestIdFactory, AiToolApprovalBridgeOptions, AiToolApprovalBridge（共 6 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiToolApprovalRequest",
+      "AiToolApprovalBridgeSnapshot",
+      "AiToolApprovalBridgeListener",
+      "AiToolApprovalRequestIdFactory",
+      "AiToolApprovalBridgeOptions",
+      "AiToolApprovalBridge"
+    ]
+  },
+  "symbols": [
+    "AiToolApprovalRequest",
+    "AiToolApprovalBridgeSnapshot",
+    "AiToolApprovalBridgeListener",
+    "AiToolApprovalRequestIdFactory",
+    "AiToolApprovalBridgeOptions",
+    "AiToolApprovalBridge"
+  ],
+  "models": {
+    "AiToolApprovalRequest": {
+      "kind": "AiToolApprovalRequest",
+      "className": "AiToolApprovalRequest",
+      "jsdoc": "/** Ai Tool Approval Request 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    id: string;\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n    toolName: string;\n    args: AiJsonParams;\n    requestedAt: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    id: string;\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n    toolName: string;\n    args: AiJsonParams;\n    requestedAt: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+        "line": 9,
+        "className": "AiToolApprovalRequest",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiToolApprovalBridgeSnapshot": {
+      "kind": "AiToolApprovalBridgeSnapshot",
+      "className": "AiToolApprovalBridgeSnapshot",
+      "jsdoc": "/** Ai Tool Approval Bridge Snapshot 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    pending: readonly AiToolApprovalRequest[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    pending: readonly AiToolApprovalRequest[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+        "line": 19,
+        "className": "AiToolApprovalBridgeSnapshot",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiToolApprovalBridgeListener": {
+      "kind": "AiToolApprovalBridgeListener",
+      "className": "AiToolApprovalBridgeListener",
+      "jsdoc": "/** Ai Tool Approval Bridge Listener 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "(snapshot: AiToolApprovalBridgeSnapshot) => void",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+        "line": 23,
+        "className": "AiToolApprovalBridgeListener",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiToolApprovalRequestIdFactory": {
+      "kind": "AiToolApprovalRequestIdFactory",
+      "className": "AiToolApprovalRequestIdFactory",
+      "jsdoc": "/** Ai Tool Approval Request Id Factory 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    createId(options: AiAgentBeforeFunctionCallOptions, sequence: number): string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    createId(options: AiAgentBeforeFunctionCallOptions, sequence: number): string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+        "line": 25,
+        "className": "AiToolApprovalRequestIdFactory",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiToolApprovalBridgeOptions": {
+      "kind": "AiToolApprovalBridgeOptions",
+      "className": "AiToolApprovalBridgeOptions",
+      "jsdoc": "/** Ai Tool Approval Bridge Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    now?: () => number;\n    idFactory?: AiToolApprovalRequestIdFactory;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    now?: () => number;\n    idFactory?: AiToolApprovalRequestIdFactory;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+        "line": 29,
+        "className": "AiToolApprovalBridgeOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiToolApprovalBridge": {
+      "kind": "AiToolApprovalBridge",
+      "className": "AiToolApprovalBridge",
+      "jsdoc": "/** Ai Tool Approval Bridge 的语义模型。 */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+        "line": 34,
+        "className": "AiToolApprovalBridge",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "title": "AiToolApprovalBridgeOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Ai Tool Approval Bridge 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+          "line": 41,
+          "className": "AiToolApprovalBridge",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [
+        {
+          "name": "beforeFunctionCall",
+          "schema": {
+            "title": "(options: AiAgentBeforeFunctionCallOptions) => Promise<AiAgentBeforeFunctionCallDirective>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** before Function Call 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+            "line": 43,
+            "className": "AiToolApprovalBridge",
+            "memberName": "beforeFunctionCall",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "cancelPending",
+          "schema": {
+            "title": "(reason?: string) => number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** cancel Pending 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+            "line": 49,
+            "className": "AiToolApprovalBridge",
+            "memberName": "cancelPending",
+            "declarationKind": "class"
+          }
+        }
+      ],
+      "methods": [
+        {
+          "name": "listPending",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "readonly AiToolApprovalRequest[]",
+            "items": true
+          },
+          "returnTypeText": "readonly AiToolApprovalRequest[]",
+          "jsdoc": "/** 执行 list Pending 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+            "line": 45,
+            "className": "AiToolApprovalBridge",
+            "memberName": "listPending",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "decide",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "requestId": {
+                "type": "string",
+                "title": "string"
+              },
+              "directive": {
+                "title": "AiAgentBeforeFunctionCallDirective"
+              }
+            },
+            "required": [
+              "requestId",
+              "directive"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/** 执行 decide 操作。 */",
+          "paramsTypeText": "requestId: string, directive: AiAgentBeforeFunctionCallDirective",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+            "line": 47,
+            "className": "AiToolApprovalBridge",
+            "memberName": "decide",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "subscribe",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "listener": {
+                "title": "AiToolApprovalBridgeListener"
+              }
+            },
+            "required": [
+              "listener"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "() => void"
+          },
+          "returnTypeText": "() => void",
+          "jsdoc": "/** 执行 subscribe 操作。 */",
+          "paramsTypeText": "listener: AiToolApprovalBridgeListener",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+            "line": 51,
+            "className": "AiToolApprovalBridge",
+            "memberName": "subscribe",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.886Z"
+}

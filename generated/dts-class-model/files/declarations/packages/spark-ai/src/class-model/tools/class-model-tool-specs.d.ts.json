@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/tools/class-model-tool-specs.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/tools/class-model-tool-specs",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/tools/class-model-tool-specs.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/tools/class-model-tool-specs.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/tools/class-model-tool-specs",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/tools/class-model-tool-specs\n@spark-appworks/spark-ai 的 class-model/tools/class-model-tool-specs 模块。\n导出 ClassModel symbol: ClassModelToolSpec（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ClassModelToolSpec"
+    ]
+  },
+  "symbols": [
+    "ClassModelToolSpec"
+  ],
+  "models": {
+    "ClassModelToolSpec": {
+      "kind": "ClassModelToolSpec",
+      "className": "ClassModelToolSpec",
+      "jsdoc": "/** Class Model Tool Spec 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n    };\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n    };\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/tools/class-model-tool-specs.d.ts",
+        "line": 8,
+        "className": "ClassModelToolSpec",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.866Z"
+}

@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/zones/RendererEditor
+RendererEditor 模块，属于 SPARK component container/zone-container。
+组件目录: containers/zones。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div v-if="children.length > 0" class="renderer-editor">
     <SparkComponentRenderer

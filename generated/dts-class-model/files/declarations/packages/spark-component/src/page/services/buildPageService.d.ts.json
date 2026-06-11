@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/page/services/buildPageService.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:page/services/buildPageService",
+    "sourcePath": "declarations/packages/spark-component/src/page/services/buildPageService.d.ts",
+    "sourceFile": "packages/spark-component/src/page/services/buildPageService.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/services/buildPageService",
+    "jsdoc": "PAGE_SERVICE 能力构建工厂\n构建 PageServiceCapability 实现，\n优先使用 props 注入的 UI 服务（测试/Storybook），回退到 Element Plus。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageServiceOverrides"
+    ]
+  },
+  "symbols": [
+    "PageServiceOverrides"
+  ],
+  "models": {
+    "PageServiceOverrides": {
+      "kind": "PageServiceOverrides",
+      "className": "PageServiceOverrides",
+      "jsdoc": "/** 可选的外部 UI 服务注入（测试 / Storybook 用） */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** message Service 回调。 */\n    messageService?: {\n        success: (msg: string) => void;\n        warning: (msg: string) => void;\n        error: (msg: string) => void;\n        info: (msg: string) => void;\n    } | undefined;\n    /** confirm Service 回调。 */\n    confirmService?: {\n        confirm: (msg: string, title?: string) => Promise<unknown>;\n        alert: (msg: string, title?: string) => Promise<unknown>;\n        prompt?: (msg: string, title?: string) => Promise<string | null>;\n    } | undefined;\n    /** page Service 字段。 */\n    pageService?: Partial<PageServiceCapability> | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/page/services/buildPageService.d.ts",
+        "line": 10,
+        "className": "PageServiceOverrides",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "messageService",
+          "schema": {
+            "title": "{\n        success: (msg: string) => void;\n        warning: (msg: string) => void;\n        error: (msg: string) => void;\n        info: (msg: string) => void;\n    } | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** message Service 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/services/buildPageService.d.ts",
+            "line": 12,
+            "className": "PageServiceOverrides",
+            "memberName": "messageService",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "confirmService",
+          "schema": {
+            "title": "{\n        confirm: (msg: string, title?: string) => Promise<unknown>;\n        alert: (msg: string, title?: string) => Promise<unknown>;\n        prompt?: (msg: string, title?: string) => Promise<string | null>;\n    } | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** confirm Service 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/services/buildPageService.d.ts",
+            "line": 19,
+            "className": "PageServiceOverrides",
+            "memberName": "confirmService",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "pageService",
+          "schema": {
+            "title": "Partial<PageServiceCapability> | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** page Service 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/services/buildPageService.d.ts",
+            "line": 25,
+            "className": "PageServiceOverrides",
+            "memberName": "pageService",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.662Z"
+}

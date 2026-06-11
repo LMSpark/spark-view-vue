@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/fields/data-components/FieldAutocomplete
+FieldAutocomplete 模块，属于 SPARK component field-level/data-field。
+组件目录: fields/data-components。
+导出 ClassModel symbol: SuggestionItem（共 1 个 symbol）。
+-->
 <template>
   <FieldContextRenderer v-bind="fieldCtx">
     <template #form>
@@ -27,6 +33,7 @@ import { coerceStringValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RAutocompleteProps } from './FieldAutocomplete.props'
 
+/** 自动补全候选项的通用数据结构。 */
 type SuggestionItem = {
   [key: string]: unknown}
 

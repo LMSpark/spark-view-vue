@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/composables/useTenantRouter.d.ts",
+  "module": {
+    "name": "app:composables/useTenantRouter",
+    "sourcePath": "declarations/src/composables/useTenantRouter.d.ts",
+    "sourceFile": "src/composables/useTenantRouter.ts",
+    "packageName": "app",
+    "modulePath": "composables/useTenantRouter",
+    "jsdoc": "@module app:composables/useTenantRouter\napp 的 composables/useTenantRouter 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.044Z"
+}

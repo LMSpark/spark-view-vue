@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/support/crud-result-helpers.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/support/crud-result-helpers",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/support/crud-result-helpers.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/support/crud-result-helpers.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/support/crud-result-helpers",
+    "jsdoc": "CrudResult 类型守卫与工具函数。\nbuiltin-action-handler.ts 和 page/actions/action-executor.ts 共享。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.272Z"
+}

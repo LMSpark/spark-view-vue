@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/view-data-source
+ * @spark-appworks/spark-component:components/containers/data-views/view-data-source 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: DataSourceLoggerLike, UseContainerDataSourceOptions, UseContainerDataSourceEffectsOptions, ContainerDataSourceState（共 4 个 symbol）。
+ */
 import { computed, toValue, watch } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter } from 'vue'
 import {
@@ -44,33 +50,61 @@ function isDataView(value: unknown): value is DataView {
     && typeof Reflect.get(value, 'dataTable') === 'object'
 }
 
+/** 容器解析 DataView 或派生数据源时使用的统一输入。 */
 type UseContainerDataSourceOptions<TSource> = {
+  /** 显式 DataView 定位键，格式为 table@viewId 或带作用域的 #scope@table@viewId。 */
   dataViewKey: MaybeRefOrGetter<string | undefined>
+  /** 从上级 DataView 上下文读取的成员名，例如 currentRow、rows 或 selectedRows。 */
   contextDataMember?: MaybeRefOrGetter<DataMember | `${DataMember}` | undefined>
+  /** 在 contextDataMember 解析结果上继续读取的字段路径。 */
   contextDataField?: MaybeRefOrGetter<string | undefined>
+  /** capability 消费入口，用于读取 PAGE_DATASET。 */
   sparkConsume: SparkCapabilityConsumer
+  /** 将解析到的 DataView 映射成容器实际消费的数据源形态。 */
   mapView: (view: DataView) => TSource
+  /** 外部显式传入的数据源；优先级高于 dataViewKey。 */
   externalDataSource?: MaybeRefOrGetter<TSource | undefined>
+  /** 父级容器传入的数据源；显式来源和上下文都缺失时使用。 */
   inheritedDataSource?: MaybeRefOrGetter<TSource | null | undefined>
+  /** 将解析出的数据源提供给子级容器或字段。 */
   provideDataSource?: (source: TSource) => void
+  /** 容器数据源解析诊断日志。 */
   logger?: DataSourceLoggerLike
+  /** 日志前缀，用于区分不同容器实例。 */
   logPrefix?: string
+  /** 跳过 provide、autoLoad 和诊断副作用，仅保留解析结果。 */
   skipEffects?: boolean
+  /** 跳过向下提供数据源的副作用。 */
   skipProvideEffect?: boolean
-  skipAutoLoadEffect?: boolean}
+  /** 跳过 DataView 自动加载副作用。 */
+  skipAutoLoadEffect?: boolean
+}
 
+/** 容器数据源解析后的副作用配置。 */
 type UseContainerDataSourceEffectsOptions<TSource> = {
+  /** 已解析的数据源 ref。 */
   resolvedView: ComputedRef<TSource | null>
+  /** dataViewKey 或 dataMember 解析诊断。 */
   diagnostic?: ComputedRef<DataViewKeyDiagnostic | DataViewMemberDiagnostic | null>
+  /** 向下游提供数据源的回调。 */
   provideDataSource?: (source: TSource) => void
+  /** 副作用阶段使用的诊断日志。 */
   logger: DataSourceLoggerLike
+  /** 副作用日志前缀。 */
   logPrefix: string
+  /** 是否跳过 provideDataSource 副作用。 */
   skipProvideEffect?: boolean
-  skipAutoLoadEffect?: boolean}
+  /** 是否跳过 DataView requestData 自动加载。 */
+  skipAutoLoadEffect?: boolean
+}
 
+/** 容器解析后的数据源和行上下文结果。 */
 export type ContainerDataSourceState<TSource> = {
+  /** 容器最终解析到的数据源；解析失败时为空。 */
   resolvedView: ComputedRef<TSource | null>
-  resolvedDataRow: ComputedRef<DataRow | null>}
+  /** 容器最终解析到的行上下文。 */
+  resolvedDataRow: ComputedRef<DataRow | null>
+}
 
 function useContainerDataSourceCore<TSource>(options: UseContainerDataSourceOptions<TSource>): ContainerDataSourceState<TSource> {
   const pageDataSet = options.sparkConsume(PAGE_DATASET)

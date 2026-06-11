@@ -1,7 +1,16 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/class-model/read-dts-class-model-bundle-json
+ * @spark-appworks/spark-ai 的 class-model/class-model/read-dts-class-model-bundle-json 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
 import type {
   AttributeMeta,
   ClassModel,
+  ClassModelDeclarationRelation,
+  ClassModelDeclarationRelationKind,
+  ComponentClassModelLayer,
+  ComponentClassModelLevel,
   ConstructorMeta,
   MethodMeta,
   SourceProvenanceMeta,
@@ -11,6 +20,8 @@ import type {
   DtsClassModelBundleFileEntry,
   DtsClassModelBundleManifest,
   DtsClassModelDuplicateRecord,
+  DtsFileModuleJsDocSource,
+  DtsFileModuleSemanticMeta,
   DtsFileProjectionDocument,
 } from './dts-bundle-types'
 import {
@@ -37,6 +48,40 @@ const SHAPE_KINDS = new Set<NonNullable<ClassModel['shapeKind']>>([
   'function',
   'const',
   'component',
+])
+
+const COMPONENT_LEVELS = new Set<ComponentClassModelLevel>([
+  'table-level',
+  'container',
+  'field-level',
+  'display',
+  'infrastructure',
+])
+
+const COMPONENT_LAYERS = new Set<ComponentClassModelLayer>([
+  'data-view-container',
+  'layout-container',
+  'zone-container',
+  'data-field',
+  'field-support',
+  'data-display',
+  'static-display',
+  'editor',
+  'support',
+])
+
+const DECLARATION_RELATION_KINDS = new Set<ClassModelDeclarationRelationKind>([
+  'alias',
+  'intersection',
+  'union',
+  'extends',
+  'implements',
+])
+
+const MODULE_JSDOC_SOURCES = new Set<DtsFileModuleJsDocSource>([
+  'leading-jsdoc',
+  'source-file-jsdoc',
+  'inferred',
 ])
 
 type DeclarationKindReadCommand<T extends string> = Readonly<{
@@ -104,25 +149,112 @@ export function readDtsFileProjectionDocument(value: unknown): DtsFileProjection
     throw new Error(`Unsupported DTS file projection schemaVersion: ${String(schemaVersion)}`)
   }
   const generatedAt = readOptionalString(record, 'generatedAt', 'projection.generatedAt')
+  const sourcePath = readRequiredString(record, 'sourcePath', 'projection.sourcePath')
+  const symbols = readRequiredStringArray(record, 'symbols', 'projection.symbols')
+  const models = readRequiredStringKeyedRecord({
+    record,
+    field: 'models',
+    path: 'projection.models',
+    parseEntry: parseClassModel,
+  })
+  const module = readOptionalModuleMeta(record, 'module', 'projection.module')
+    ?? createLegacyModuleMeta(sourcePath, symbols)
   return {
     schemaVersion: DTS_FILE_PROJECTION_VERSION,
-    sourcePath: readRequiredString(record, 'sourcePath', 'projection.sourcePath'),
-    symbols: readRequiredStringArray(record, 'symbols', 'projection.symbols'),
-    models: readRequiredStringKeyedRecord({
-      record,
-      field: 'models',
-      path: 'projection.models',
-      parseEntry: parseClassModel,
-    }),
+    sourcePath,
+    module,
+    symbols,
+    models,
     ...(generatedAt === undefined ? {} : { generatedAt }),
   }
 }
 
 function parseBundleFileEntry(value: unknown, path: string): DtsClassModelBundleFileEntry {
   const record = requireJsonRecord(value, path)
+  const file = readRequiredString(record, 'file', `${path}.file`)
+  const module = readOptionalModuleMeta(record, 'module', `${path}.module`)
+    ?? createLegacyModuleMeta(path.replace(/^manifest\.files\./u, ''), [])
   return {
-    file: readRequiredString(record, 'file', `${path}.file`),
+    file,
+    module,
   }
+}
+
+function readOptionalModuleMeta(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): DtsFileModuleSemanticMeta | undefined {
+  if (!Object.hasOwn(record, field)) return undefined
+  return parseModuleMeta(record[field], path)
+}
+
+function parseModuleMeta(value: unknown, path: string): DtsFileModuleSemanticMeta {
+  const record = requireJsonRecord(value, path)
+  const packageName = readOptionalString(record, 'packageName', `${path}.packageName`)
+  const componentName = readOptionalString(record, 'componentName', `${path}.componentName`)
+  const componentType = readOptionalString(record, 'componentType', `${path}.componentType`)
+  const componentLevel = readOptionalDeclarationKind({
+    record,
+    field: 'componentLevel',
+    path: `${path}.componentLevel`,
+    allowed: COMPONENT_LEVELS,
+  })
+  const componentLayer = readOptionalDeclarationKind({
+    record,
+    field: 'componentLayer',
+    path: `${path}.componentLayer`,
+    allowed: COMPONENT_LAYERS,
+  })
+  const componentDirectory = readOptionalString(record, 'componentDirectory', `${path}.componentDirectory`)
+  return {
+    name: readRequiredString(record, 'name', `${path}.name`),
+    sourcePath: readRequiredString(record, 'sourcePath', `${path}.sourcePath`),
+    sourceFile: readRequiredString(record, 'sourceFile', `${path}.sourceFile`),
+    ...(packageName === undefined ? {} : { packageName }),
+    modulePath: readRequiredString(record, 'modulePath', `${path}.modulePath`),
+    jsdoc: readRequiredString(record, 'jsdoc', `${path}.jsdoc`),
+    jsdocSource: readRequiredDeclarationKind({
+      record,
+      field: 'jsdocSource',
+      path: `${path}.jsdocSource`,
+      allowed: MODULE_JSDOC_SOURCES,
+    }),
+    symbols: readRequiredStringArray(record, 'symbols', `${path}.symbols`),
+    ...(componentName === undefined ? {} : { componentName }),
+    ...(componentType === undefined ? {} : { componentType }),
+    ...(componentLevel === undefined ? {} : { componentLevel }),
+    ...(componentLayer === undefined ? {} : { componentLayer }),
+    ...(componentDirectory === undefined ? {} : { componentDirectory }),
+  }
+}
+
+function createLegacyModuleMeta(sourcePath: string, symbols: readonly string[]): DtsFileModuleSemanticMeta {
+  const sourceFile = sourceFileFromDeclarationFile(sourcePath)
+  const modulePath = sourceFile.replace(/^packages\/[^/]+\/src\//u, '').replace(/^src\//u, '').replace(/\.vue$|\.ts$/u, '')
+  const packageMatch = /^packages\/([^/]+)\/src\//u.exec(sourceFile)
+  const packageName = packageMatch?.[1] === undefined
+    ? sourceFile.startsWith('src/') ? 'app' : undefined
+    : `@spark-appworks/${packageMatch[1]}`
+  return {
+    name: packageName === undefined ? modulePath : `${packageName}:${modulePath}`,
+    sourcePath,
+    sourceFile,
+    ...(packageName === undefined ? {} : { packageName }),
+    modulePath,
+    jsdoc: `${packageName ?? 'workspace'} 的 ${modulePath} 模块。`,
+    jsdocSource: 'inferred',
+    symbols,
+  }
+}
+
+function sourceFileFromDeclarationFile(declarationFile: string): string {
+  const sourcePath = declarationFile.startsWith('declarations/')
+    ? declarationFile.slice('declarations/'.length)
+    : declarationFile
+  if (sourcePath.endsWith('.vue.d.ts')) return sourcePath.slice(0, -'.d.ts'.length)
+  if (sourcePath.endsWith('.d.ts')) return `${sourcePath.slice(0, -'.d.ts'.length)}.ts`
+  return sourcePath
 }
 
 function parseBundleClassEntry(value: unknown, path: string): DtsClassModelBundleClassEntry {
@@ -145,6 +277,12 @@ function parseDuplicateRecord(value: unknown, path: string): DtsClassModelDuplic
 function parseClassModel(value: unknown, path: string): ClassModel {
   const record = requireJsonRecord(value, path)
   const declarationTypeText = readOptionalString(record, 'declarationTypeText', `${path}.declarationTypeText`)
+  const declarationRelations = readOptionalArray({
+    record,
+    field: 'declarationRelations',
+    path: `${path}.declarationRelations`,
+    parseEntry: parseDeclarationRelation,
+  })
   const shapeKind = readOptionalDeclarationKind({
     record,
     field: 'shapeKind',
@@ -158,6 +296,7 @@ function parseClassModel(value: unknown, path: string): ClassModel {
     className: readRequiredString(record, 'className', `${path}.className`),
     jsdoc: readRequiredString(record, 'jsdoc', `${path}.jsdoc`),
     ...(declarationTypeText === undefined ? {} : { declarationTypeText }),
+    ...(declarationRelations === undefined ? {} : { declarationRelations }),
     ...(shapeKind === undefined ? {} : { shapeKind }),
     ...(provenance === undefined ? {} : { provenance }),
     ...(constructorMeta === undefined ? {} : { constructorMeta }),
@@ -173,6 +312,21 @@ function parseClassModel(value: unknown, path: string): ClassModel {
       path: `${path}.methods`,
       parseEntry: parseMethodMeta,
     }),
+  }
+}
+
+function parseDeclarationRelation(value: unknown, path: string): ClassModelDeclarationRelation {
+  const record = requireJsonRecord(value, path)
+  const targetName = readOptionalString(record, 'targetName', `${path}.targetName`)
+  return {
+    kind: readRequiredDeclarationKind({
+      record,
+      field: 'kind',
+      path: `${path}.kind`,
+      allowed: DECLARATION_RELATION_KINDS,
+    }),
+    typeText: readRequiredString(record, 'typeText', `${path}.typeText`),
+    ...(targetName === undefined ? {} : { targetName }),
   }
 }
 
@@ -241,6 +395,20 @@ function parseSourceProvenance(value: unknown, path: string): SourceProvenanceMe
   const memberName = readOptionalString(record, 'memberName', `${path}.memberName`)
   const typeEntryFile = readOptionalString(record, 'typeEntryFile', `${path}.typeEntryFile`)
   const componentName = readOptionalString(record, 'componentName', `${path}.componentName`)
+  const componentType = readOptionalString(record, 'componentType', `${path}.componentType`)
+  const componentLevel = readOptionalDeclarationKind({
+    record,
+    field: 'componentLevel',
+    path: `${path}.componentLevel`,
+    allowed: COMPONENT_LEVELS,
+  })
+  const componentLayer = readOptionalDeclarationKind({
+    record,
+    field: 'componentLayer',
+    path: `${path}.componentLayer`,
+    allowed: COMPONENT_LAYERS,
+  })
+  const componentDirectory = readOptionalString(record, 'componentDirectory', `${path}.componentDirectory`)
   const declarationKind = readOptionalDeclarationKind({
     record,
     field: 'declarationKind',
@@ -254,6 +422,10 @@ function parseSourceProvenance(value: unknown, path: string): SourceProvenanceMe
     ...(memberName === undefined ? {} : { memberName }),
     ...(typeEntryFile === undefined ? {} : { typeEntryFile }),
     ...(componentName === undefined ? {} : { componentName }),
+    ...(componentType === undefined ? {} : { componentType }),
+    ...(componentLevel === undefined ? {} : { componentLevel }),
+    ...(componentLayer === undefined ? {} : { componentLayer }),
+    ...(componentDirectory === undefined ? {} : { componentDirectory }),
     ...(declarationKind === undefined ? {} : { declarationKind }),
   }
 }
@@ -261,8 +433,15 @@ function parseSourceProvenance(value: unknown, path: string): SourceProvenanceMe
 function readOptionalDeclarationKind<T extends string>(
   command: DeclarationKindReadCommand<T>,
 ): T | undefined {
-  const { record, field, path, allowed } = command
+  const { record, field } = command
   if (!Object.hasOwn(record, field)) return undefined
+  return readRequiredDeclarationKind(command)
+}
+
+function readRequiredDeclarationKind<T extends string>(
+  command: DeclarationKindReadCommand<T>,
+): T {
+  const { record, field, path, allowed } = command
   const value = record[field]
   if (typeof value !== 'string') {
     throw new Error(`${path} must be a string.`)

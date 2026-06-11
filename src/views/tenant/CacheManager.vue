@@ -1,3 +1,8 @@
+<!--
+@module app:views/tenant/CacheManager
+app 的 views/tenant/CacheManager 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="cache-manager">
     <el-page-header content="缓存管理" @back="$router.go(-1)">

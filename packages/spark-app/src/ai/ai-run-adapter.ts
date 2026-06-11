@@ -16,6 +16,7 @@ import type {
 } from '@spark-appworks/spark-ai/agent'
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 
+/** Ai Run Trace Sink 的语义模型。 */
 export type AiRunTraceSink = Readonly<{
   appendUserMessage(content: string): void
   appendEvent(event: AiAgentStreamEvent): void
@@ -40,13 +41,18 @@ export const noopTraceSink: AiRunTraceSink = Object.freeze({
   reset: () => undefined,
 })
 
+/** Ai Run Error Formatter 的语义模型。 */
 export type AiRunErrorFormatter = (error: unknown) => string
+/** Ai Run Before Function Call 的语义模型。 */
 export type AiRunBeforeFunctionCall = (
   options: AiAgentBeforeFunctionCallOptions,
 ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
+/** Ai Run Abort Handler 的回调函数契约。 */
 export type AiRunAbortHandler = (reason: string) => void
+/** Ai Run Adapter Run Status 的语义模型。 */
 export type AiRunAdapterRunStatus = 'completed' | 'aborted'
 
+/** Ai Run Host 的语义模型。 */
 export type AiRunHost = Readonly<{
   run<TInput extends AiJsonParams>(
     alias: string,
@@ -55,10 +61,12 @@ export type AiRunHost = Readonly<{
   ): Promise<AiAgentHostRunResult>
 }>
 
+/** Ai Run Adapter Options 的调用配置。 */
 export type AiRunAdapterOptions = Readonly<{
   formatError?: AiRunErrorFormatter
 }>
 
+/** Ai Run Adapter Command 的命令参数。 */
 export type AiRunAdapterCommand<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
   host: AiRunHost
   alias: string
@@ -69,6 +77,7 @@ export type AiRunAdapterCommand<TInput extends AiJsonParams = AiJsonParams> = Re
   userMessage?: string
 }>
 
+/** Ai Run Adapter State 的运行状态。 */
 export type AiRunAdapterState = Readonly<{
   isRunning(): boolean
   abort(reason?: string): void

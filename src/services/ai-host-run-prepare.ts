@@ -1,3 +1,8 @@
+/**
+ * @module app:services/ai-host-run-prepare
+ * app 的 services/ai-host-run-prepare 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import type { AiHostRunPrepare, AiHostRunTarget } from '@/services/ai-host-run-bridge'
 
 /** 串联多个 Host Run prepare；各业务 alias 只处理自己的 event，其余透传。 */

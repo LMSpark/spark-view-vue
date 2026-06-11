@@ -25,17 +25,20 @@ import {
   type AiHostRunResultStatus,
 } from '@/services/sse-events'
 
+/** Ai Host Run Target 的语义模型。 */
 export type AiHostRunTarget = Readonly<{
   has(alias: string): boolean
   dryRun(alias: string, args: unknown): AiAgentHostDryRunResult
   run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>
 }>
 
+/** Ai Host Run Prepare 的语义模型。 */
 export type AiHostRunPrepare<THost extends AiHostRunTarget = AiHostRunTarget> = (
   event: AiHostRunRequestEvent,
   host: THost,
 ) => AiHostRunTarget | Promise<AiHostRunTarget>
 
+/** Ai Host Run Bridge Options 的调用配置。 */
 export type AiHostRunBridgeOptions<THost extends AiHostRunTarget = AiHostRunTarget> = Readonly<{
   host: THost
   prepareRun?: AiHostRunPrepare<THost>
@@ -43,6 +46,7 @@ export type AiHostRunBridgeOptions<THost extends AiHostRunTarget = AiHostRunTarg
   maxParallelRuns?: number
 }>
 
+/** Ai Host Run Bridge 的语义模型。 */
 export type AiHostRunBridge = Readonly<{
   start(): () => void
 }>

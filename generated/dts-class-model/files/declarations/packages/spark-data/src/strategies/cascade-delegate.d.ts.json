@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/strategies/cascade-delegate.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:strategies/cascade-delegate",
+    "sourcePath": "declarations/packages/spark-data/src/strategies/cascade-delegate.d.ts",
+    "sourceFile": "packages/spark-data/src/strategies/cascade-delegate.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "strategies/cascade-delegate",
+    "jsdoc": "CascadeDelegate — 级联订阅委托\n从 DataView 提取的级联职责：\n- 订阅父视图独立事件（currentRowChanged / selectedRowsChanged / rowsChanged / cleared）\n- 按 dependencyType 选择订阅哪些事件\n- 响应源数据变化：清空 or 重新请求\n- 可取消的级联请求管理\n遵循 SOLID：子订阅父，父不知子。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "CascadeDelegate"
+    ]
+  },
+  "symbols": [
+    "CascadeDelegate"
+  ],
+  "models": {
+    "CascadeDelegate": {
+      "kind": "CascadeDelegate",
+      "className": "CascadeDelegate",
+      "jsdoc": "/** Cascade Delegate 的语义模型。 */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/cascade-delegate.d.ts",
+        "line": 14,
+        "className": "CascadeDelegate",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "title": "DataView"
+            }
+          },
+          "required": [
+            "host"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Cascade Delegate 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-data/src/strategies/cascade-delegate.d.ts",
+          "line": 23,
+          "className": "CascadeDelegate",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "setupCascade",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 建立级联监听\n     *\n    * 沿 parent 链找到 DataSet → 查询以本视图为 child 的关系 →\n    * 按 dependencyType 订阅对应的父视图独立事件。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/cascade-delegate.d.ts",
+            "line": 30,
+            "className": "CascadeDelegate",
+            "memberName": "setupCascade",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "teardownCascade",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 清理全部级联订阅 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/cascade-delegate.d.ts",
+            "line": 32,
+            "className": "CascadeDelegate",
+            "memberName": "teardownCascade",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "cancelPendingRequest",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 取消待处理的级联请求 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/cascade-delegate.d.ts",
+            "line": 34,
+            "className": "CascadeDelegate",
+            "memberName": "cancelPendingRequest",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "destroy",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 销毁 — 清理订阅 + 取消待处理请求 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/cascade-delegate.d.ts",
+            "line": 43,
+            "className": "CascadeDelegate",
+            "memberName": "destroy",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.782Z"
+}

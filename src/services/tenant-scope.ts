@@ -1,6 +1,14 @@
+/**
+ * @module app:services/tenant-scope
+ * app 的 services/tenant-scope 模块。
+ * 导出 ClassModel symbol: TenantProjectScope（共 1 个 symbol）。
+ */
+/** Tenant Project Scope 的语义模型。 */
 export type TenantProjectScope = {
-  tenantId: string
-  projectId: string}
+    /** tenant Id 标识。 */
+tenantId: string
+    /** project Id 标识。 */
+projectId: string}
 
 const TENANT_SCOPE_PREFIX_RE = /^\/t\/([^/]+)\/([^/]+)(?:\/|$)/
 const TENANT_SCOPE_STRIP_RE = /^\/t\/[^/]+\/[^/]+/

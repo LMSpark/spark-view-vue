@@ -77,9 +77,12 @@ export type ActionFormApi = {
  * - `formApi`：仅 submit-current-form 动作需要，由表单容器注入
  */
 export type ActionExecutionScope = {
-  row?: DataRow
-  index?: number
-  formApi?: ActionFormApi}
+    /** 当前行数据。 */
+row?: DataRow
+    /** index 字段。 */
+index?: number
+    /** form Api 字段。 */
+formApi?: ActionFormApi}
 
 // ── ActionDescriptor 联合类型（判别联合，14 种动作） ──────────────────────
 
@@ -149,7 +152,8 @@ type ActionDescriptorBase = {
 
 /** 展示一条消息通知（不阻塞，立即返回）。 */
 export type ShowMessageAction = ActionDescriptorBase & {
-  action: 'show-message'
+    /** action 字段。 */
+action: 'show-message'
     /** 消息文案（不支持插值） */
     message: string
     /** 消息类型，默认 `'info'` */
@@ -157,7 +161,8 @@ export type ShowMessageAction = ActionDescriptorBase & {
 
 /** 展示确认对话框（阻塞，等待用户选择后执行对应分支）。 */
 export type ShowConfirmAction = ActionDescriptorBase & {
-  action: 'confirm'
+    /** action 字段。 */
+action: 'confirm'
     /** 确认对话框正文 */
     message: string
     /** 对话框标题 */
@@ -171,13 +176,17 @@ export type ShowConfirmAction = ActionDescriptorBase & {
 
 /** 展示 Alert 对话框（只有"确认"按钮，阻塞）。 */
 export type ShowAlertAction = ActionDescriptorBase & {
-  action: 'alert'
-    message: string
-    title?: string}
+    /** action 字段。 */
+action: 'alert'
+        /** 用户可读消息。 */
+message: string
+        /** 显示标题。 */
+title?: string}
 
 /** 路由跳转（通过 RouterLike 接口，不直接依赖 vue-router）。 */
 export type NavigateAction = ActionDescriptorBase & {
-  action: 'navigate'
+    /** action 字段。 */
+action: 'navigate'
     /**
      * 目标路径。
      * 支持 `{field}` 从触发事件的 row 插值，例如 `/detail/{id}`。
@@ -186,7 +195,8 @@ export type NavigateAction = ActionDescriptorBase & {
 
 /** 发射自定义事件，触发容器（如 Drawer/Dialog）打开指定目标。 */
 export type OpenAction = ActionDescriptorBase & {
-  action: 'open'
+    /** action 字段。 */
+action: 'open'
     /** 容器标识，由容器的 `name` prop 匹配 */
     target: string}
 
@@ -197,7 +207,8 @@ export type OpenAction = ActionDescriptorBase & {
  * 与 patch 的区别：不带 ActionUiDecorator，语义上是"配置驱动的字段赋值"。
  */
 export type SetFieldAction = ActionDescriptorBase & {
-  action: 'set-field'
+    /** action 字段。 */
+action: 'set-field'
     /** 可选 DataViewKey，省略时使用容器作用域 DataView 的 currentRow */
     dataViewKey?: string
     /** 目标字段名 */
@@ -227,7 +238,8 @@ export type ActionPromptConfig = {
 
 /** 追加新行动作。 */
 export type AppendRowAction = ActionDescriptorBase & ActionUiDecorator & {
-  action: 'append-row'
+    /** action 字段。 */
+action: 'append-row'
     /** 目标 DataViewKey；省略时使用容器作用域 DataView */
     dataViewKey?: string
     /** 新行初始字段值（会与 inheritFields 合并，idField 不足时自动生成） */
@@ -245,18 +257,25 @@ export type AppendRowAction = ActionDescriptorBase & ActionUiDecorator & {
 
 /** 删除行动作（支持单行/当前行/选中行批量）。 */
 export type DeleteAction = ActionDescriptorBase & ActionUiDecorator & {
-  action: 'delete'
+    /** action 字段。 */
+action: 'delete'
     /** 删除目标：`scope`=行内当前行，`current`=视图 currentRow，`selected`=批量删除 */
     target: ActionRowTarget
-    dataViewKey?: string
-    idField?: string}
+        /** DataView 定位键。 */
+dataViewKey?: string
+        /** id Field 字段。 */
+idField?: string}
 
 /** 更新行字段动作（支持静态 patch、单字段赋值、Prompt 输入三种模式）。 */
 export type PatchAction = ActionDescriptorBase & ActionUiDecorator & {
-  action: 'patch'
-    target: ActionRowTarget
-    dataViewKey?: string
-    idField?: string
+    /** action 字段。 */
+action: 'patch'
+        /** 目标对象。 */
+target: ActionRowTarget
+        /** DataView 定位键。 */
+dataViewKey?: string
+        /** id Field 字段。 */
+idField?: string
     /** 静态 patch 对象（多字段批量赋值，与 field/value 互斥） */
     patch?: Record<string, unknown>
     /** 单字段名（与 value 搭配，优先级低于 patch） */
@@ -268,11 +287,14 @@ export type PatchAction = ActionDescriptorBase & ActionUiDecorator & {
 
 /** 移动树节点动作（要求 DataView 是树视图并实现 moveTreeNode API）。 */
 export type MoveAction = ActionDescriptorBase & ActionUiDecorator & {
-  action: 'move'
+    /** action 字段。 */
+action: 'move'
     /** 移动目标：`scope`=行内当前行，`current`=视图 currentRow */
     target: 'scope' | 'current'
-    dataViewKey?: string
-    idField?: string
+        /** DataView 定位键。 */
+dataViewKey?: string
+        /** id Field 字段。 */
+idField?: string
     /** 静态目标父节点 ID（null 表示移到根节点） */
     newParentId?: string | number | null
     /** 目标父节点来源：`field`=从 row 字段读，`scope`=用 scope.row 作为父节点 */
@@ -284,9 +306,12 @@ export type MoveAction = ActionDescriptorBase & ActionUiDecorator & {
 
 /** 展示行数据消息（适合调试/只读信息场景）。 */
 export type MessageRowAction = ActionDescriptorBase & ActionUiDecorator & {
-  action: 'message-row'
-    target: 'scope' | 'current'
-    dataViewKey?: string
+    /** action 字段。 */
+action: 'message-row'
+        /** 目标对象。 */
+target: 'scope' | 'current'
+        /** DataView 定位键。 */
+dataViewKey?: string
     /** 自定义消息模板，支持 `{field}` 插值（优先于 messageFields） */
     message?: string
     /** 展示哪些字段（格式：`字段: 值 | 字段: 值`） */
@@ -296,30 +321,43 @@ export type MessageRowAction = ActionDescriptorBase & ActionUiDecorator & {
 
 /** 刷新数据视图（重新触发远程加载）。 */
 export type RefreshAction = ActionDescriptorBase & ActionUiDecorator & {
-  action: 'refresh'
-    dataViewKey?: string}
+    /** action 字段。 */
+action: 'refresh'
+        /** DataView 定位键。 */
+dataViewKey?: string}
 
 /** 清空数据视图的所有行（本地操作，不发远程请求）。 */
 export type ClearRowsAction = ActionDescriptorBase & ActionUiDecorator & {
-  action: 'clear-rows'
-    dataViewKey?: string}
+    /** action 字段。 */
+action: 'clear-rows'
+        /** DataView 定位键。 */
+dataViewKey?: string}
 
 /** 提交当前表单（读取 formApi 数据，调用 editRowById 保存）。 */
 export type SubmitCurrentFormAction = ActionDescriptorBase & ActionUiDecorator & {
-  action: 'submit-current-form'
-    dataViewKey?: string
-    idField?: string
+    /** action 字段。 */
+action: 'submit-current-form'
+        /** DataView 定位键。 */
+dataViewKey?: string
+        /** id Field 字段。 */
+idField?: string
     /** 表单校验失败时的提示文案 */
     validateMessage?: string}
 
 /** 提交当前 DataSet 范围内的 staged/editing 变更。 */
 export type SaveDataSetAction = ActionDescriptorBase & ActionUiDecorator & {
-  action: 'save-dataset'
-    mode?: DataSetSaveChangesMode
-    requestId?: string
-    requestIdStrategy?: 'auto'
-    applyEditingRows?: boolean
-    views?: DataSetSaveChangesViewSelector[]}
+    /** action 字段。 */
+action: 'save-dataset'
+        /** mode 字段。 */
+mode?: DataSetSaveChangesMode
+        /** request Id 标识。 */
+requestId?: string
+        /** request Id Strategy 字段。 */
+requestIdStrategy?: 'auto'
+        /** apply Editing Rows 字段。 */
+applyEditingRows?: boolean
+        /** views 字段。 */
+views?: DataSetSaveChangesViewSelector[]}
 
 // ── 类型守卫 ──────────────────────────────────────────────────────────────
 
@@ -362,7 +400,8 @@ export type ActionExecutionContext = {
  * 通知容器跳过其内置处理（例如内联编辑的行确认）。
  */
 export type ActionExecutionControl = {
-  cancel: CancellableControl['cancel']}
+    /** cancel 字段。 */
+cancel: CancellableControl['cancel']}
 
 /**
  * 路由器最小接口，隔离对 vue-router 的直接依赖。

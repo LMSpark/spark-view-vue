@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/logger.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:logger",
+    "sourcePath": "declarations/packages/spark-utils/src/logger.d.ts",
+    "sourceFile": "packages/spark-utils/src/logger.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "logger",
+    "jsdoc": "@module @spark-appworks/spark-utils:logger\n@spark-appworks/spark-utils 的 logger 模块。\n导出 ClassModel symbol: LogLevel, LoggerApi, LogTransport（共 3 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "LogLevel",
+      "LoggerApi",
+      "LogTransport"
+    ]
+  },
+  "symbols": [
+    "LogLevel",
+    "LoggerApi",
+    "LogTransport"
+  ],
+  "models": {
+    "LogLevel": {
+      "kind": "LogLevel",
+      "className": "LogLevel",
+      "jsdoc": "/** 日志级别 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'debug' | 'info' | 'warn' | 'error'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'debug'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'info'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'warn'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'error'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-utils/src/logger.d.ts",
+        "line": 7,
+        "className": "LogLevel",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "LoggerApi": {
+      "kind": "LoggerApi",
+      "className": "LoggerApi",
+      "jsdoc": "/** Logger API */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    debug(...args: unknown[]): void;\n    info(...args: unknown[]): void;\n    warn(...args: unknown[]): void;\n    error(...args: unknown[]): void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-utils/src/logger.d.ts",
+        "line": 9,
+        "className": "LoggerApi",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "LogTransport": {
+      "kind": "LogTransport",
+      "className": "LogTransport",
+      "jsdoc": "/**\n * 日志传输器接口（与 spark-app LogTransport 结构兼容）\n *\n * spark-utils 是最底层包，此接口定义为传输器的基础契约。\n * spark-app 的 LogTransport 扩展了 `flush?()` / `destroy?()`，但 send 签名一致，\n * 因此同一个 transport 实例可同时注册到两个系统。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    send(level: LogLevel, message: string, meta?: Record<string, unknown>): void | Promise<void>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-utils/src/logger.d.ts",
+        "line": 22,
+        "className": "LogTransport",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.025Z"
+}

@@ -1,33 +1,58 @@
+/**
+ * @module @spark-appworks/spark-component:components/support/beforeRender
+ * @spark-appworks/spark-component:components/support/beforeRender 模块，属于 SPARK component infrastructure/support。
+ * 组件目录: support。
+ * 导出 ClassModel symbol: BeforeRenderContext, BeforeRenderState, MergeBeforeRenderOptions（共 3 个 symbol）。
+ */
 import type { DataRow, DataView, ModelPermission } from '@spark-appworks/spark-data'
 import { isRecord } from '@spark-appworks/spark-utils'
 import type { SparkNode, SparkNodeChildren } from '../../core/types.js'
 
 export const BEFORE_RENDER_RESOLVED_PROP = '$beforeRenderResolved'
 
+/** onBeforeRender 同步钩子接收到的节点渲染上下文。 */
 export type BeforeRenderContext = {
+  /** 当前节点 id。 */
   id?: string | undefined
+  /** 当前节点组件类型。 */
   type: string
+  /** 当前节点 props 的安全副本，不包含 onBeforeRender 和内部标记。 */
   props: Record<string, unknown>
+  /** 当前节点子节点配置。 */
   children?: SparkNodeChildren | undefined
+  /** 当前节点所在行上下文。 */
   row?: DataRow | null | undefined
+  /** 当前节点绑定的任意业务数据。 */
   data?: unknown
+  /** 当前节点在重复渲染集合中的索引。 */
   index?: number | undefined
+  /** 当前节点可访问的 DataView 数据源。 */
   dataSource?: DataView | null | undefined
+  /** 当前节点所在模型的权限配置。 */
   modelPermission?: ModelPermission | undefined
+  /** 当前渲染宿主信息。 */
   host?: {
+    /** 宿主组件类型；缺失时为空。 */
     type: string | null
-  } | undefined}
+  } | undefined
+}
 
+/** onBeforeRender 解析后的渲染决策。 */
 export type BeforeRenderState = {
+  /** 节点最终是否可见。 */
   visible: boolean
-  propsPatch: Record<string, unknown>}
+  /** 需要合并回节点 props 的补丁。 */
+  propsPatch: Record<string, unknown>
+}
 
 type BeforeRenderHandler = {
   (context: BeforeRenderContext): unknown}
 
+/** 合并 beforeRender 补丁时的控制选项。 */
 type MergeBeforeRenderOptions = {
-
-  markResolved?: boolean}
+  /** 是否写入内部已解析标记，避免同一节点重复执行 onBeforeRender。 */
+  markResolved?: boolean
+}
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
   return isRecord(value) && typeof value['then'] === 'function'

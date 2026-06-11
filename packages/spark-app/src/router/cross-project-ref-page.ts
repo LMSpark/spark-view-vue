@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-app:router/cross-project-ref-page
+ * @spark-appworks/spark-app 的 router/cross-project-ref-page 模块。
+ * 导出 ClassModel symbol: CrossProjectRefPageRouteProps（共 1 个 symbol）。
+ */
 import { computed, defineComponent, h, ref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { SparkPageRenderer } from '@spark-appworks/spark-component'
@@ -25,12 +30,18 @@ type ResolvedRefTarget = {
   refPath: string | null
   pageId: string | null}
 
+/** Cross Project Ref Page Route Props 的属性契约。 */
 export type CrossProjectRefPageRouteProps = {
-  pageContentLoader: PageContentLoader
-  tenantId?: string | undefined
-  hostProjectId?: string | undefined
-  routePath?: string | undefined
-  routeMeta?: Record<string, unknown> | undefined}
+    /** page Content Loader 字段。 */
+pageContentLoader: PageContentLoader
+    /** tenant Id 标识。 */
+tenantId?: string | undefined
+    /** host Project Id 标识。 */
+hostProjectId?: string | undefined
+    /** route Path 路径。 */
+routePath?: string | undefined
+    /** route Meta 字段。 */
+routeMeta?: Record<string, unknown> | undefined}
 
 type ScopedHttpClientOptions = {
   baseClient: HttpClientBase

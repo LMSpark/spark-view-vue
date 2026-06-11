@@ -27,6 +27,7 @@ import type {
 // 第 1 节 · 公共 DTO
 // ═══════════════════════════════════════════════════════════════
 
+/** Ai Agent Session Summary 的语义模型。 */
 export type AiAgentSessionSummary = Readonly<{
   status: string | null
   historyCount: number
@@ -37,6 +38,7 @@ export type AiAgentSessionSummary = Readonly<{
   lastAssistantText: string
 }>
 
+/** Ai Agent Session Transcript Entry 的语义模型。 */
 export type AiAgentSessionTranscriptEntry = Readonly<{
   seq: number | null
   id: string
@@ -52,6 +54,7 @@ export type AiAgentSessionTranscriptEntry = Readonly<{
   result?: string
 }>
 
+/** Ai Agent Session Transcript Options 的调用配置。 */
 export type AiAgentSessionTranscriptOptions = Readonly<{
   contentLimit?: number
 }>

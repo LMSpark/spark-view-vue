@@ -6,6 +6,7 @@
 
 import type { AiApiObjectMetadata } from './ai-api-object-metadata-schema'
 
+/** Api Object Validation Finding 的语义模型。 */
 export type ApiObjectValidationFinding = Readonly<{
   level: 'error' | 'warn'
   rule: string
@@ -13,9 +14,13 @@ export type ApiObjectValidationFinding = Readonly<{
   fix?: string
 }>
 
+/** Ai Api Object Metadata Validation Error 的错误信息。 */
 export class AiApiObjectMetadataValidationError extends Error {
-  public constructor(
+    /** 创建 Ai Api Object Metadata Validation Error 实例。 */
+public constructor(
+    /** 校验失败的 API object kind。 */
     public readonly kind: string,
+    /** 该 API object 上收集到的全部校验发现。 */
     public readonly findings: readonly ApiObjectValidationFinding[],
   ) {
     super(`API object metadata validation failed for "${kind}": ${findings.map(f => f.message).join('; ')}`)

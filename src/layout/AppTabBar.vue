@@ -1,3 +1,8 @@
+<!--
+@module app:layout/AppTabBar
+app 的 layout/AppTabBar 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="app-tab-bar">
     <div class="app-tab-bar__tabs">

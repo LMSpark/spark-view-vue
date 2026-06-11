@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-data:core/platform-scoped-url
+ * @spark-appworks/spark-data 的 core/platform-scoped-url 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 const ABSOLUTE_URL_RE = /^[a-z][a-z\d+\-.]*:/i
 const PLATFORM_SCOPED_RESOURCE_RE = /^\/(?:api\/)?(?:navigation|data|pages-config)(?:\/|$)/
 const SCOPED_PREFIX_RE = /^\/(?:api\/)?tenants\/[^/]+\/projects\/[^/]+(?:\/|$)/

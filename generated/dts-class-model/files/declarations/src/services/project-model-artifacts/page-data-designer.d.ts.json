@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+  "module": {
+    "name": "app:services/project-model-artifacts/page-data-designer",
+    "sourcePath": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+    "sourceFile": "src/services/project-model-artifacts/page-data-designer.ts",
+    "packageName": "app",
+    "modulePath": "services/project-model-artifacts/page-data-designer",
+    "jsdoc": "DevSystem DataSet 设计器制品：JSON Schema、画布投影与 UI 状态对账。\n属于应用层，不属于 spark-project-model 领域包。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageDataEditorMode",
+      "DesignerColumnProjection",
+      "DesignerTableProjection",
+      "DesignerRelationProjection",
+      "DesignerTableUiState",
+      "LayoutForNewTable",
+      "DesignerTableUiStateReconcileInput"
+    ]
+  },
+  "symbols": [
+    "PageDataEditorMode",
+    "DesignerColumnProjection",
+    "DesignerTableProjection",
+    "DesignerRelationProjection",
+    "DesignerTableUiState",
+    "LayoutForNewTable",
+    "DesignerTableUiStateReconcileInput"
+  ],
+  "models": {
+    "PageDataEditorMode": {
+      "kind": "PageDataEditorMode",
+      "className": "PageDataEditorMode",
+      "jsdoc": "/** Page Data Editor Mode 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'tree' | 'text' | 'table'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'tree'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'text'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'table'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+        "line": 7,
+        "className": "PageDataEditorMode",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DesignerColumnProjection": {
+      "kind": "DesignerColumnProjection",
+      "className": "DesignerColumnProjection",
+      "jsdoc": "/** Designer Column Projection 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "DataColumn & {\n    /** 唯一标识。 */\n    id: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "DataColumn",
+          "targetName": "DataColumn"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 唯一标识。 */\n    id: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+        "line": 11,
+        "className": "DesignerColumnProjection",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 唯一标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+            "line": 13,
+            "className": "DesignerColumnProjection",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DesignerTableProjection": {
+      "kind": "DesignerTableProjection",
+      "className": "DesignerTableProjection",
+      "jsdoc": "/** Designer Table Projection 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Omit<TableMetadata, 'columns'> & {\n    /** 唯一标识。 */\n    id: string;\n    /** x 字段。 */\n    x: number;\n    /** y 字段。 */\n    y: number;\n    /** 列定义集合。 */\n    columns: DesignerColumnProjection[];\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "Omit<TableMetadata, 'columns'>",
+          "targetName": "Omit"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** x 字段。 */\n    x: number;\n    /** y 字段。 */\n    y: number;\n    /** 列定义集合。 */\n    columns: DesignerColumnProjection[];\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+        "line": 16,
+        "className": "DesignerTableProjection",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 唯一标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+            "line": 18,
+            "className": "DesignerTableProjection",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "x",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** x 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+            "line": 20,
+            "className": "DesignerTableProjection",
+            "memberName": "x",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "y",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** y 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+            "line": 22,
+            "className": "DesignerTableProjection",
+            "memberName": "y",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "columns",
+          "schema": {
+            "type": "array",
+            "title": "DesignerColumnProjection[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 列定义集合。 */",
+          "provenance": {
+            "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+            "line": 24,
+            "className": "DesignerTableProjection",
+            "memberName": "columns",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DesignerRelationProjection": {
+      "kind": "DesignerRelationProjection",
+      "className": "DesignerRelationProjection",
+      "jsdoc": "/** Designer Relation Projection 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "TableRelation & {\n    /** relation Type 字段。 */\n    relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many';\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "TableRelation",
+          "targetName": "TableRelation"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** relation Type 字段。 */\n    relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many';\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+        "line": 27,
+        "className": "DesignerRelationProjection",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "relationType",
+          "schema": {
+            "title": "'one-to-many' | 'one-to-one' | 'many-to-many'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** relation Type 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+            "line": 29,
+            "className": "DesignerRelationProjection",
+            "memberName": "relationType",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DesignerTableUiState": {
+      "kind": "DesignerTableUiState",
+      "className": "DesignerTableUiState",
+      "jsdoc": "/** Designer Table Ui State 的运行状态。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** x 字段。 */\n    x: number;\n    /** y 字段。 */\n    y: number;\n    /** column Ids 字段。 */\n    columnIds: Record<string, string>;\n}",
+      "provenance": {
+        "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+        "line": 32,
+        "className": "DesignerTableUiState",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 唯一标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+            "line": 34,
+            "className": "DesignerTableUiState",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "x",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** x 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+            "line": 36,
+            "className": "DesignerTableUiState",
+            "memberName": "x",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "y",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** y 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+            "line": 38,
+            "className": "DesignerTableUiState",
+            "memberName": "y",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "columnIds",
+          "schema": {
+            "title": "Record<string, string>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** column Ids 字段。 */",
+          "provenance": {
+            "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+            "line": 40,
+            "className": "DesignerTableUiState",
+            "memberName": "columnIds",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "LayoutForNewTable": {
+      "kind": "LayoutForNewTable",
+      "className": "LayoutForNewTable",
+      "jsdoc": "/** Layout For New Table 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "(tableName: string, newIndex: number) => {\n    x: number;\n    y: number;\n}",
+      "provenance": {
+        "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+        "line": 43,
+        "className": "LayoutForNewTable",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DesignerTableUiStateReconcileInput": {
+      "kind": "DesignerTableUiStateReconcileInput",
+      "className": "DesignerTableUiStateReconcileInput",
+      "jsdoc": "/** Designer Table Ui State Reconcile Input 的输入数据。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    metadata: DataSetMetadata;\n    currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>;\n    createId: () => string;\n    layoutForNewTable?: LayoutForNewTable | undefined;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    metadata: DataSetMetadata;\n    currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>;\n    createId: () => string;\n    layoutForNewTable?: LayoutForNewTable | undefined;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
+        "line": 48,
+        "className": "DesignerTableUiStateReconcileInput",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.094Z"
+}

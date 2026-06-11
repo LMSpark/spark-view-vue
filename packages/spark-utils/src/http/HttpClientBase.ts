@@ -53,13 +53,20 @@ const ABSOLUTE_URL_RE = /^[a-z][a-z\d+\-.]*:\/\//i
 
 // ==================== 抽象基类 ====================
 
+/** Http Client Base 的语义模型。 */
 export abstract class HttpClientBase {
   private cache = new Map<string, CacheItem>()
   private reqInterceptors: RequestInterceptor[] = []
   private resInterceptors: ResponseInterceptor[] = []
-  protected readonly logger: ReturnType<typeof Logger>
+    /** 诊断日志接口。 */
+protected readonly logger: ReturnType<typeof Logger>
 
-  constructor(protected defaults: Partial<RequestConfig> = {}, loggerName = 'Http') {
+    /** 创建 Http Client Base 实例。 */
+constructor(
+    /** 当前 HTTP 客户端实例的默认请求配置。 */
+    protected defaults: Partial<RequestConfig> = {},
+    loggerName = 'Http',
+  ) {
     this.logger = Logger(loggerName)
   }
 
@@ -89,7 +96,8 @@ export abstract class HttpClientBase {
 
   // ==================== 拦截器 ====================
 
-  readonly interceptors = {
+    /** interceptors 字段。 */
+readonly interceptors = {
     request: {
       use: (interceptor: RequestInterceptor): (() => void) => {
         this.reqInterceptors.push(interceptor)
@@ -112,13 +120,15 @@ export abstract class HttpClientBase {
 
   // ==================== 核心请求（单一重试循环） ====================
 
-  async request<T = unknown>(config: RequestConfig): Promise<T>
+    /** 请求对象。 */
+async request<T = unknown>(config: RequestConfig): Promise<T>
   async request(config: RequestConfig): Promise<unknown> {
     const res = await this.requestWithRetry(config, true)
     return res.data
   }
 
-  async requestFull<T = unknown>(config: RequestConfig): Promise<HttpResponse<T>>
+    /** 执行 request Full 操作。 */
+async requestFull<T = unknown>(config: RequestConfig): Promise<HttpResponse<T>>
   async requestFull(config: RequestConfig): Promise<HttpResponse<unknown>> {
     return this.requestWithRetry(config, false)
   }
@@ -196,34 +206,40 @@ export abstract class HttpClientBase {
 
   // ==================== HTTP 快捷方法（单一来源） ====================
 
-  async get<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T>
+    /** 执行 get 操作。 */
+async get<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T>
   async get(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<unknown> {
     return this.request({ ...config, url, method: 'GET', ...(params !== undefined ? { params } : {}) })
   }
 
-  async post<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T>
+    /** 执行 post 操作。 */
+async post<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T>
   async post(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<unknown> {
     return this.request({ ...config, url, method: 'POST', data })
   }
 
-  async put<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T>
+    /** 执行 put 操作。 */
+async put<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T>
   async put(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<unknown> {
     return this.request({ ...config, url, method: 'PUT', data })
   }
 
-  async patch<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T>
+    /** 执行 patch 操作。 */
+async patch<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T>
   async patch(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<unknown> {
     return this.request({ ...config, url, method: 'PATCH', data })
   }
 
-  async delete<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T>
+    /** 执行 delete 操作。 */
+async delete<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T>
   async delete(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<unknown> {
     return this.request({ ...config, url, method: 'DELETE', ...(params !== undefined ? { params } : {}) })
   }
 
   // ==================== 缓存管理（单一来源） ====================
 
-  clearCache(url?: string): void {
+    /** 清空 Cache。 */
+clearCache(url?: string): void {
     if (url !== undefined) {
       for (const key of this.cache.keys()) {
         // key format: "METHOD:url" or "METHOD:url?{params}"
@@ -239,7 +255,8 @@ export abstract class HttpClientBase {
 
   // ==================== 拦截器链（单一来源） ====================
 
-  protected async applyRequestInterceptors(config: RequestConfig): Promise<RequestConfig> {
+    /** 执行 apply Request Interceptors 操作。 */
+protected async applyRequestInterceptors(config: RequestConfig): Promise<RequestConfig> {
     let cfg = config
     for (const i of this.reqInterceptors) {
       if (i.onRequest !== undefined) {
@@ -258,7 +275,8 @@ export abstract class HttpClientBase {
     return cfg
   }
 
-  protected async applyResponseInterceptors<T>(response: HttpResponse<T>): Promise<HttpResponse<T>> {
+    /** 执行 apply Response Interceptors 操作。 */
+protected async applyResponseInterceptors<T>(response: HttpResponse<T>): Promise<HttpResponse<T>> {
     let res = response
     for (const i of this.resInterceptors) {
       if (i.onResponse !== undefined) res = await i.onResponse(res)
@@ -266,7 +284,8 @@ export abstract class HttpClientBase {
     return res
   }
 
-  protected async applyResponseErrorInterceptors(error: RequestError): Promise<RequestError> {
+    /** 执行 apply Response Error Interceptors 操作。 */
+protected async applyResponseErrorInterceptors(error: RequestError): Promise<RequestError> {
     let current = error
     for (const i of this.resInterceptors) {
       if (i.onResponseError !== undefined) current = await i.onResponseError(current)
@@ -276,7 +295,8 @@ export abstract class HttpClientBase {
 
   // ==================== 配置合并 ====================
 
-  protected mergeConfig(config: RequestConfig): RequestConfig {
+    /** merge Config 配置。 */
+protected mergeConfig(config: RequestConfig): RequestConfig {
     const result: RequestConfig = {
       ...this.defaults,
       ...config,
@@ -319,11 +339,13 @@ export abstract class HttpClientBase {
 
   // ==================== 错误工具（单一来源） ====================
 
-  protected isRequestError(err: unknown): err is RequestError {
+    /** 是否 is Request Error。 */
+protected isRequestError(err: unknown): err is RequestError {
     return err instanceof Error && err.name === 'RequestError'
   }
 
-  protected buildRequestError(
+    /** build Request Error 错误信息。 */
+protected buildRequestError(
     message: string,
     config: RequestConfig,
     opts: { code?: string; status?: number; response?: unknown } = {}
@@ -338,7 +360,8 @@ export abstract class HttpClientBase {
     return result
   }
 
-  protected extractApiEnvelopeErrorMessage(body: unknown): string | undefined {
+    /** 执行 extract Api Envelope Error Message 操作。 */
+protected extractApiEnvelopeErrorMessage(body: unknown): string | undefined {
     if (!this.isApiEnvelope(body)) return undefined
     const message = body.error?.message
     if (typeof message === 'string' && message.trim() !== '') {
@@ -459,7 +482,8 @@ export abstract class HttpClientBase {
 
   // ==================== 延时工具（单一来源） ====================
 
-  protected delay(ms: number, signal?: AbortSignal): Promise<void> {
+    /** 执行 delay 操作。 */
+protected delay(ms: number, signal?: AbortSignal): Promise<void> {
     return new Promise((resolve, reject) => {
       if (signal?.aborted === true) { reject(signal.reason ?? new DOMException('Aborted', 'AbortError')); return }
       const onAbort = (): void => {

@@ -1,3 +1,8 @@
+<!--
+@module app:layout/AppLayout
+app 的 layout/AppLayout 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <!-- 首覆盖左：header 全宽置顶，sidebar 在下方 -->
   <div v-if="headerFirst" class="spark-layout spark-layout--header-first">

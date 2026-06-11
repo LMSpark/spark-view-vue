@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/runtime/index
+ * @spark-appworks/spark-component 的 components/containers/runtime/index 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 export {
   useContainerDataSource,
   useContainerDataSourceEffects,

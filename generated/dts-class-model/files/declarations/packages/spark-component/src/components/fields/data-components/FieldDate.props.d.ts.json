@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldDate.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/fields/data-components/FieldDate.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldDate.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/fields/data-components/FieldDate.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/fields/data-components/FieldDate.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/FieldDate.props\nFieldDate 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: DatePickerType, RDateProps（共 2 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "DatePickerType",
+      "RDateProps"
+    ],
+    "componentName": "FieldDate",
+    "componentType": "r-date",
+    "componentLevel": "field-level",
+    "componentLayer": "data-field",
+    "componentDirectory": "fields/data-components"
+  },
+  "symbols": [
+    "DatePickerType",
+    "RDateProps"
+  ],
+  "models": {
+    "DatePickerType": {
+      "kind": "DatePickerType",
+      "className": "DatePickerType",
+      "jsdoc": "/** Date Picker Type 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'year' | 'month' | 'date' | 'dates' | 'datetime' | 'week' | 'datetimerange' | 'daterange' | 'monthrange' | 'yearrange'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'year'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'month'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'date'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'dates'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'datetime'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'week'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'datetimerange'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'daterange'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'monthrange'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'yearrange'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldDate.props.d.ts",
+        "line": 9,
+        "className": "DatePickerType",
+        "declarationKind": "type",
+        "componentName": "FieldDate",
+        "componentType": "r-date",
+        "componentLevel": "field-level",
+        "componentLayer": "data-field",
+        "componentDirectory": "fields/data-components"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "RDateProps": {
+      "kind": "RDateProps",
+      "className": "RDateProps",
+      "jsdoc": "/** RDate Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & SparkRangeTemporalFieldProps<string | Date | Array<string | Date>> & {\n    /** 日期选择器模式。 */\n    dateType?: DatePickerType;\n    /** 提交值时使用的格式化模板。 */\n    valueFormat?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkRangeTemporalFieldProps<string | Date | Array<string | Date>>",
+          "targetName": "SparkRangeTemporalFieldProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 日期选择器模式。 */\n    dateType?: DatePickerType;\n    /** 提交值时使用的格式化模板。 */\n    valueFormat?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldDate.props.d.ts",
+        "line": 11,
+        "className": "RDateProps",
+        "declarationKind": "type",
+        "componentName": "FieldDate",
+        "componentType": "r-date",
+        "componentLevel": "field-level",
+        "componentLayer": "data-field",
+        "componentDirectory": "fields/data-components"
+      },
+      "attributes": [
+        {
+          "name": "dateType",
+          "schema": {
+            "title": "DatePickerType"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 日期选择器模式。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldDate.props.d.ts",
+            "line": 13,
+            "className": "RDateProps",
+            "memberName": "dateType",
+            "declarationKind": "interface",
+            "componentName": "FieldDate",
+            "componentType": "r-date",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "valueFormat",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 提交值时使用的格式化模板。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldDate.props.d.ts",
+            "line": 15,
+            "className": "RDateProps",
+            "memberName": "valueFormat",
+            "declarationKind": "interface",
+            "componentName": "FieldDate",
+            "componentType": "r-date",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.488Z"
+}

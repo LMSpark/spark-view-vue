@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/system/spark.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:system/spark",
+    "sourcePath": "declarations/packages/spark-component/src/system/spark.d.ts",
+    "sourceFile": "packages/spark-component/src/system/spark.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "system/spark",
+    "jsdoc": "SPARK 命名空间 — 统一 API 入口\n- `Spark.register(type, component)` — 注册单个已解析组件\n- `Spark.registerAll(components)` — 批量注册已解析组件\n- `Spark.createPlugin()` — 创建 Vue 插件\n- `Spark.createRegistry()` — 创建隔离注册表\n- `Spark.createSystem()` — 创建测试用隔离系统",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SparkSystem"
+    ]
+  },
+  "symbols": [
+    "SparkSystem"
+  ],
+  "models": {
+    "SparkSystem": {
+      "kind": "SparkSystem",
+      "className": "SparkSystem",
+      "jsdoc": "/** Spark.createSystem() 返回的隔离测试系统 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** registry 字段。 */\n    registry: ComponentRegistry;\n    /** root Context 字段。 */\n    rootContext: CapabilityContext;\n    createContext(config: Partial<CapabilityContext> & {\n        type: string;\n    }, parent?: CapabilityContext): CapabilityContext;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/system/spark.d.ts",
+        "line": 13,
+        "className": "SparkSystem",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "registry",
+          "schema": {
+            "title": "ComponentRegistry"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** registry 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/system/spark.d.ts",
+            "line": 15,
+            "className": "SparkSystem",
+            "memberName": "registry",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "rootContext",
+          "schema": {
+            "title": "CapabilityContext"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** root Context 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/system/spark.d.ts",
+            "line": 17,
+            "className": "SparkSystem",
+            "memberName": "rootContext",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.689Z"
+}

@@ -1,4 +1,9 @@
 /**
+ * @module @spark-appworks/spark-json-document:schema/schema-standardize
+ * @spark-appworks/spark-json-document 的 schema/schema-standardize 模块。
+ * 导出 ClassModel symbol: StandardJsonSchema, StandardJsonSchemaObject（共 2 个 symbol）。
+ */
+/**
  * Canonicalize JSON Schema fragments to Draft 2020-12 shapes used by spark-json-document.
  *
  * Every schema node — primitives, pooled $defs, arrays, objects — must pass this pass.
@@ -35,26 +40,44 @@ const SCHEMA_KEY_ORDER = [
   '$defs',
 ] as const
 
+/** Standard Json Schema 的语义模型。 */
 export type StandardJsonSchema = boolean | StandardJsonSchemaObject
 
+/** Standard Json Schema Object 的语义模型。 */
 export type StandardJsonSchemaObject = {
   [keyword: string]: unknown
-  $ref?: string
-  type?: string | readonly string[]
-  properties?: Readonly<Record<string, StandardJsonSchema>>
-  required?: readonly string[]
-  items?: StandardJsonSchema
-  prefixItems?: readonly StandardJsonSchema[]
-  additionalProperties?: StandardJsonSchema
-  enum?: readonly unknown[]
-  const?: unknown
-  anyOf?: readonly StandardJsonSchema[]
-  oneOf?: readonly StandardJsonSchema[]
-  allOf?: readonly StandardJsonSchema[]
-  not?: StandardJsonSchema
-  title?: string
-  description?: string
-  $defs?: Readonly<Record<string, StandardJsonSchema>>
+    /** $ref 字段。 */
+$ref?: string
+    /** 类型标识。 */
+type?: string | readonly string[]
+    /** properties 字段。 */
+properties?: Readonly<Record<string, StandardJsonSchema>>
+    /** 是否必填。 */
+required?: readonly string[]
+    /** items 字段。 */
+items?: StandardJsonSchema
+    /** prefix Items 字段。 */
+prefixItems?: readonly StandardJsonSchema[]
+    /** additional Properties 字段。 */
+additionalProperties?: StandardJsonSchema
+    /** enum 字段。 */
+enum?: readonly unknown[]
+    /** const 字段。 */
+const?: unknown
+    /** any Of 字段。 */
+anyOf?: readonly StandardJsonSchema[]
+    /** one Of 字段。 */
+oneOf?: readonly StandardJsonSchema[]
+    /** all Of 字段。 */
+allOf?: readonly StandardJsonSchema[]
+    /** not 字段。 */
+not?: StandardJsonSchema
+    /** 显示标题。 */
+title?: string
+    /** description 字段。 */
+description?: string
+    /** $defs 字段。 */
+$defs?: Readonly<Record<string, StandardJsonSchema>>
 }
 
 export function standardizeJsonSchema(value: unknown): StandardJsonSchema {

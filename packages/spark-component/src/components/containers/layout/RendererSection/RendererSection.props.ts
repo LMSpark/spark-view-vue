@@ -1,6 +1,13 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/layout/RendererSection/RendererSection.props
+ * RendererSection 模块，属于 SPARK component container/layout-container。
+ * 组件目录: containers/layout。
+ * 导出 ClassModel symbol: RSectionProps（共 1 个 symbol）。
+ */
 import type { SparkGridLayoutProps, SparkNodeProps } from '../../../shared-types'
 import type { RHeaderProps } from '../../zones/RendererHeader.types'
 
+/** RSection Props 的属性契约。 */
 export type RSectionProps = SparkNodeProps & SparkGridLayoutProps & {
   /** 结构化头部 */
     header?: RHeaderProps

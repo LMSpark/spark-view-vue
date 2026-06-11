@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-data:core/event-emitter
+ * @spark-appworks/spark-data 的 core/event-emitter 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import type { SparkEventEmitter } from '../types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

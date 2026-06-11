@@ -8,6 +8,7 @@
 import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '../chat/chat-types'
 import { previewAiAgentDiagnosticValue } from './session-diagnostics'
 
+/** Ai Agent Run Trace Tool Call 的语义模型。 */
 export type AiAgentRunTraceToolCall = Readonly<{
   toolName: string
   argsPreview: string
@@ -19,12 +20,14 @@ export type AiAgentRunTraceToolCall = Readonly<{
   durationMs: number
 }>
 
+/** Ai Agent Run Trace Reasoning 的语义模型。 */
 export type AiAgentRunTraceReasoning = Readonly<{
   text: string
   turnId: string
   collapsed: boolean
 }>
 
+/** Ai Agent Run Trace Entry 的语义模型。 */
 export type AiAgentRunTraceEntry =
   | Readonly<{ kind: 'user-message'; content: string; timestamp: number }>
   | Readonly<{ kind: 'assistant-delta'; content: string; turnId: string }>
@@ -34,6 +37,7 @@ export type AiAgentRunTraceEntry =
   | Readonly<{ kind: 'error'; message: string; timestamp: number }>
   | Readonly<{ kind: 'system-message'; content: string; timestamp: number }>
 
+/** Ai Agent Run Trace Snapshot 的语义模型。 */
 export type AiAgentRunTraceSnapshot = Readonly<{
   streamText: string
   reasoningText: string
@@ -43,14 +47,17 @@ export type AiAgentRunTraceSnapshot = Readonly<{
   toolCalls: readonly AiAgentRunTraceToolCall[]
 }>
 
+/** Ai Agent Run Trace Options 的调用配置。 */
 export type AiAgentRunTraceOptions = Readonly<{
   now?: () => number
   argsPreviewLimit?: number
   resultPreviewLimit?: number
 }>
 
+/** Ai Agent Run Trace Listener 的语义模型。 */
 export type AiAgentRunTraceListener = (snapshot: AiAgentRunTraceSnapshot) => void
 
+/** Ai Agent Run Trace 的语义模型。 */
 export type AiAgentRunTrace = Readonly<{
   snapshot(): AiAgentRunTraceSnapshot
   subscribe(listener: AiAgentRunTraceListener): () => void

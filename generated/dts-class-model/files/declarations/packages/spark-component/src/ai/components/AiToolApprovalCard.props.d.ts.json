@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/AiToolApprovalCard.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/AiToolApprovalCard.props",
+    "sourcePath": "declarations/packages/spark-component/src/ai/components/AiToolApprovalCard.props.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/AiToolApprovalCard.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/AiToolApprovalCard.props",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/AiToolApprovalCard.props\n@spark-appworks/spark-component 的 ai/components/AiToolApprovalCard.props 模块。\n导出 ClassModel symbol: AiToolApprovalCardProps, AiToolApprovalCardEmits（共 2 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiToolApprovalCardProps",
+      "AiToolApprovalCardEmits"
+    ]
+  },
+  "symbols": [
+    "AiToolApprovalCardProps",
+    "AiToolApprovalCardEmits"
+  ],
+  "models": {
+    "AiToolApprovalCardProps": {
+      "kind": "AiToolApprovalCardProps",
+      "className": "AiToolApprovalCardProps",
+      "jsdoc": "/** Ai Tool Approval Card Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    request: ToolApprovalDisplayItem;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    request: ToolApprovalDisplayItem;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/ai/components/AiToolApprovalCard.props.d.ts",
+        "line": 8,
+        "className": "AiToolApprovalCardProps",
+        "declarationKind": "type",
+        "componentName": "AiToolApprovalCard"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiToolApprovalCardEmits": {
+      "kind": "AiToolApprovalCardEmits",
+      "className": "AiToolApprovalCardEmits",
+      "jsdoc": "/** Ai Tool Approval Card Emits 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    allow: [id: string];\n    reject: [id: string, reason: string];\n    abort: [id: string, reason: string];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    allow: [id: string];\n    reject: [id: string, reason: string];\n    abort: [id: string, reason: string];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/ai/components/AiToolApprovalCard.props.d.ts",
+        "line": 12,
+        "className": "AiToolApprovalCardEmits",
+        "declarationKind": "type",
+        "componentName": "AiToolApprovalCard"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.997Z"
+}

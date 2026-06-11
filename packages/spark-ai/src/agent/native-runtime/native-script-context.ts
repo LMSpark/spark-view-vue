@@ -1,11 +1,19 @@
+/**
+ * @module @spark-appworks/spark-ai:agent/native-runtime/native-script-context
+ * @spark-appworks/spark-ai 的 agent/native-runtime/native-script-context 模块。
+ * 导出 ClassModel symbol: ScriptCallback, ScriptActionArg, AiNativePathContext, AiApiScriptContextCommand, ExecuteAiApiActionCommand, AiApiScriptActionFailure（共 6 个 symbol）。
+ */
 import { readJsonProperty } from '@spark-appworks/spark-json-document'
 import { AiJsonSchemaValidator, type AiJsonParams, type AiJsonSchemaValidateOptions } from '../../json'
 import { AiAgentToolResult, type AiAgentRuntimeHostContext } from '../tool-runtime'
 import type { AiApiActionMetadata, AiApiObjectMetadata, AiApiResultApiRef } from '../../class-model'
 
 type MethodTarget = Readonly<Record<string, unknown>>
+/** Script Callback 的语义模型。 */
 type ScriptCallback = (...args: readonly unknown[]) => unknown
+/** Script Action Arg 的语义模型。 */
 type ScriptActionArg = AiJsonParams | ScriptCallback
+/** Ai Native Path Context 的运行上下文。 */
 type AiNativePathContext = Readonly<{
   segments: readonly string[]
   host?: AiAgentRuntimeHostContext
@@ -24,6 +32,7 @@ type ResolvedValue = {
   value?: unknown
 }
 
+/** Ai Api Script Context Command 的命令参数。 */
 export type AiApiScriptContextCommand = Readonly<{
   instance: unknown
   api: AiApiObjectMetadata
@@ -31,6 +40,7 @@ export type AiApiScriptContextCommand = Readonly<{
   validateOptions?: AiJsonSchemaValidateOptions
 }>
 
+/** Execute Ai Api Action Command 的命令参数。 */
 export type ExecuteAiApiActionCommand = Readonly<{
   target: unknown
   action: AiApiActionMetadata
@@ -218,9 +228,13 @@ function wrapRawActionResult(raw: unknown): AiAgentToolResult<unknown> {
   return AiAgentToolResult.ok(raw)
 }
 
+/** Ai Api Script Action Failure 的语义模型。 */
 export class AiApiScriptActionFailure extends Error {
-  public constructor(
+    /** 创建 Ai Api Script Action Failure 实例。 */
+public constructor(
+    /** 执行失败的 API action 名称。 */
     public readonly actionName: string,
+    /** action 返回的失败工具结果。 */
     public readonly result: AiAgentToolResult<unknown>,
   ) {
     const first = result.checks?.[0]

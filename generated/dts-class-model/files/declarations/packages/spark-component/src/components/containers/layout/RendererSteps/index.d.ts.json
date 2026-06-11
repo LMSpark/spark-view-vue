@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererSteps/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererSteps/index",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererSteps/index.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererSteps/index.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererSteps/index",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererSteps/index\nRendererSteps 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [],
+    "componentName": "RendererSteps",
+    "componentType": "r-steps",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.200Z"
+}

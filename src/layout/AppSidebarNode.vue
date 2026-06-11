@@ -1,3 +1,8 @@
+<!--
+@module app:layout/AppSidebarNode
+app 的 layout/AppSidebarNode 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-sub-menu v-if="shouldRenderAsSubMenu(item)" :index="item.id">
     <template #title>

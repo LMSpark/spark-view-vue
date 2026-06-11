@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-resolution.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:schema/schema-resolution",
+    "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-resolution.d.ts",
+    "sourceFile": "packages/spark-json-document/src/schema/schema-resolution.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "schema/schema-resolution",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\nschema/schema-resolution.ts — JSON Schema 路径解析\n═══════════════════════════════════════════════════════════════\n根据 JsonPath 在 JSON Schema 中解析对应节点的元信息（title/description/required/enum）。\n支持 $ref 解析、oneOf 分支选择、items/properties/additionalProperties 导航。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "JsonSchemaInfo"
+    ]
+  },
+  "symbols": [
+    "JsonSchemaInfo"
+  ],
+  "models": {
+    "JsonSchemaInfo": {
+      "kind": "JsonSchemaInfo",
+      "className": "JsonSchemaInfo",
+      "jsdoc": "/** Schema 路径解析结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 显示标题。 */\n    title: string;\n    /** description 字段。 */\n    description: string;\n    /** 是否必填。 */\n    required: boolean;\n    /** enum Values 字段。 */\n    enumValues: string[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-json-document/src/schema/schema-resolution.d.ts",
+        "line": 11,
+        "className": "JsonSchemaInfo",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 显示标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-resolution.d.ts",
+            "line": 13,
+            "className": "JsonSchemaInfo",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "description",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** description 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-resolution.d.ts",
+            "line": 15,
+            "className": "JsonSchemaInfo",
+            "memberName": "description",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "required",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 是否必填。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-resolution.d.ts",
+            "line": 17,
+            "className": "JsonSchemaInfo",
+            "memberName": "required",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "enumValues",
+          "schema": {
+            "type": "array",
+            "title": "string[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** enum Values 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-json-document/src/schema/schema-resolution.d.ts",
+            "line": 19,
+            "className": "JsonSchemaInfo",
+            "memberName": "enumValues",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.845Z"
+}

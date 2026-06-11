@@ -122,16 +122,26 @@ type DataSetTransactionViewPlan = {
   viewResult: DataSetSaveChangesViewResult
   operations: DataSetTransactionOperationPlan[]}
 
+/** Data Set Config 的配置结构。 */
 type DataSetConfig = {
-  dataSetName: string
-  tables: Record<string, TableMetadata>
-  schemaVersion?: number | undefined
-  tableRelations?: TableRelation[] | undefined
-  viewDependencies?: ViewDependency[] | undefined
-  version?: number | undefined
-  pageId?: string | undefined
-  saveChanges?: DataSetSaveChangesConfig | undefined
-  layout?: DataSetMetadata['layout'] | undefined}
+    /** data Set Name 名称。 */
+dataSetName: string
+    /** tables 字段。 */
+tables: Record<string, TableMetadata>
+    /** schema Version 字段。 */
+schemaVersion?: number | undefined
+    /** table Relations 字段。 */
+tableRelations?: TableRelation[] | undefined
+    /** view Dependencies 字段。 */
+viewDependencies?: ViewDependency[] | undefined
+    /** version 字段。 */
+version?: number | undefined
+    /** page Id 标识。 */
+pageId?: string | undefined
+    /** save Changes 字段。 */
+saveChanges?: DataSetSaveChangesConfig | undefined
+    /** layout 字段。 */
+layout?: DataSetMetadata['layout'] | undefined}
 
 function emptyDataSetSaveChangesResult(viewCount: number): DataSetSaveChangesResult {
   return {
@@ -405,6 +415,7 @@ function expandRelations(
   })
 }
 
+/** Data Set 的语义模型。 */
 export class DataSet extends SparkAIModel implements DataSetContract {
 
   // ===== 属性定义 =====
@@ -542,15 +553,18 @@ export class DataSet extends SparkAIModel implements DataSetContract {
     this._sharedHttpClient = client
   }
 
-  setAppServices(appServices: DataSetAppServices): void {
+    /** 设置 App Services。 */
+setAppServices(appServices: DataSetAppServices): void {
     this._appServices = appServices
   }
 
-  setPageRoute(route: unknown): void {
+    /** 设置 Page Route。 */
+setPageRoute(route: unknown): void {
     this._pageRoute = route
   }
 
-  getRequestTemplateParams(): Record<string, unknown> {
+    /** 读取 Request Template Params。 */
+getRequestTemplateParams(): Record<string, unknown> {
     const result: Record<string, unknown> = {}
     const appServices = this._appServices
     const tenantFromService = pickFirstString(appServices?.tenant?.tenantId)
@@ -796,7 +810,8 @@ export class DataSet extends SparkAIModel implements DataSetContract {
     return this._parentRelIdx.get(`${childTable}:${childViewId}`) ?? []
   }
 
-  resolveDependencyFilter(rel: DataRelation): FilterExpression | undefined | null {
+    /** 解析 Dependency Filter。 */
+resolveDependencyFilter(rel: DataRelation): FilterExpression | undefined | null {
     const parentView = this.getView(rel.parentTable, rel.parentViewId ?? 'default')
     if (!parentView) return null
 
@@ -937,7 +952,8 @@ export class DataSet extends SparkAIModel implements DataSetContract {
     this._rebuildRelations(true)
   }
 
-  replaceFromJson(json: DataSetMetadata | Record<string, unknown> | string): void {
+    /** 执行 replace From Json 操作。 */
+replaceFromJson(json: DataSetMetadata | Record<string, unknown> | string): void {
     const normalized = normalizeDataSetMetadata(DataSet.fromJson(json).toJson())
 
     for (const table of Object.values(this.tables)) {
@@ -949,15 +965,18 @@ export class DataSet extends SparkAIModel implements DataSetContract {
     this._rebindActiveSubscriptions()
   }
 
-  listSnapshots(options?: DataSetHistoryListOptions): DataSetHistorySnapshot[] {
+    /** 执行 list Snapshots 操作。 */
+listSnapshots(options?: DataSetHistoryListOptions): DataSetHistorySnapshot[] {
     return listDataSetSnapshots(buildDataSetHistoryScope(this, options), options)
   }
 
-  getSnapshot(selector: DataSetSnapshotSelector, options?: DataSetHistoryListOptions): DataSetHistorySnapshot | null {
+    /** 读取 Snapshot。 */
+getSnapshot(selector: DataSetSnapshotSelector, options?: DataSetHistoryListOptions): DataSetHistorySnapshot | null {
     return getDataSetSnapshot(buildDataSetHistoryScope(this, options), selector, options)
   }
 
-  commitSnapshot(options?: DataSetCommitSnapshotOptions): DataSetHistorySnapshot {
+    /** 执行 commit Snapshot 操作。 */
+commitSnapshot(options?: DataSetCommitSnapshotOptions): DataSetHistorySnapshot {
     const latestHistoryVersion = this.listSnapshots(options)[0]?.version ?? 0
     const timestamp = options?.timestamp ?? Date.now()
     const nextVersion = options?.bumpVersion === false
@@ -995,7 +1014,8 @@ export class DataSet extends SparkAIModel implements DataSetContract {
     }
   }
 
-  restoreSnapshot(selector: DataSetSnapshotSelector, options?: DataSetHistoryListOptions): DataSetHistorySnapshot | null {
+    /** 执行 restore Snapshot 操作。 */
+restoreSnapshot(selector: DataSetSnapshotSelector, options?: DataSetHistoryListOptions): DataSetHistorySnapshot | null {
     const entry = this.getSnapshot(selector, options)
     if (!entry) return null
     this.replaceFromJson(entry.snapshot)

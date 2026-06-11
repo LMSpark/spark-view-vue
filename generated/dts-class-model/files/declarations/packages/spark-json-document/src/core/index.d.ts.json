@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/core/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:core/index",
+    "sourcePath": "declarations/packages/spark-json-document/src/core/index.d.ts",
+    "sourceFile": "packages/spark-json-document/src/core/index.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "core/index",
+    "jsdoc": "core/index.ts — JSON 基础类型与工具公共入口",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.828Z"
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-bridge.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:domain-model/navigation/navigation-row-bridge",
+    "sourcePath": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-bridge.d.ts",
+    "sourceFile": "packages/spark-project-model/src/domain-model/navigation/navigation-row-bridge.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "domain-model/navigation/navigation-row-bridge",
+    "jsdoc": "@module @spark-appworks/spark-project-model:domain-model/navigation/navigation-row-bridge\n@spark-appworks/spark-project-model 的 domain-model/navigation/navigation-row-bridge 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.864Z"
+}

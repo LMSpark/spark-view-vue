@@ -1,3 +1,8 @@
+<!--
+@module app:layout/AppHeader
+app 的 layout/AppHeader 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="app-header">
     <!-- 左侧：折叠按钮 + 标题 -->

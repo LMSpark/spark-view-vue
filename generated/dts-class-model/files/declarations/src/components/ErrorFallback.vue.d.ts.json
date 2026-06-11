@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/components/ErrorFallback.vue.d.ts",
+  "module": {
+    "name": "app:components/ErrorFallback",
+    "sourcePath": "declarations/src/components/ErrorFallback.vue.d.ts",
+    "sourceFile": "src/components/ErrorFallback.vue",
+    "packageName": "app",
+    "modulePath": "components/ErrorFallback",
+    "jsdoc": "@module app:components/ErrorFallback\napp 的 components/ErrorFallback 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.035Z"
+}

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererPopover.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererPopover",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererPopover.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererPopover.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererPopover",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererPopover\nRendererPopover 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [],
+    "componentName": "RendererPopover",
+    "componentType": "r-popover",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.184Z"
+}

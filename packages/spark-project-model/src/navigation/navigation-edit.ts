@@ -15,55 +15,92 @@ import type {
   ProjectNodeData,
 } from './project-node'
 
+/** Navigation Node Draft Node 的语义模型。 */
 export type NavigationNodeDraftNode = {
-  id: string
-  title: string
-  icon: string
-  nodeKind: NavNodeKind
-  dividerAfter: boolean
-  description: string
-  planningAttachmentRef: string
-  path: string
-  linkTarget: NonNullable<ProjectNodeData['linkTarget']>
-  childPlacement: string
-  order: number
-  hidden: boolean
-  disabled: boolean
-  refId: string
-  permissionMode: NavPermissionMode
-  planningStatus?: ProjectNodeData['planningStatus']
-  implGate?: ProjectNodeData['implGate']
-  upstreamContractsSatisfied?: boolean
+    /** 唯一标识。 */
+id: string
+    /** 显示标题。 */
+title: string
+    /** icon 字段。 */
+icon: string
+    /** node Kind 字段。 */
+nodeKind: NavNodeKind
+    /** divider After 字段。 */
+dividerAfter: boolean
+    /** description 字段。 */
+description: string
+    /** planning Attachment Ref 字段。 */
+planningAttachmentRef: string
+    /** 资源路径。 */
+path: string
+    /** link Target 字段。 */
+linkTarget: NonNullable<ProjectNodeData['linkTarget']>
+    /** child Placement 字段。 */
+childPlacement: string
+    /** order 字段。 */
+order: number
+    /** hidden 字段。 */
+hidden: boolean
+    /** 是否禁用。 */
+disabled: boolean
+    /** ref Id 标识。 */
+refId: string
+    /** permission Mode 字段。 */
+permissionMode: NavPermissionMode
+    /** planning Status 字段。 */
+planningStatus?: ProjectNodeData['planningStatus']
+    /** impl Gate 字段。 */
+implGate?: ProjectNodeData['implGate']
+    /** upstream Contracts Satisfied 字段。 */
+upstreamContractsSatisfied?: boolean
 }
 
+/** Navigation Node Patch 的语义模型。 */
 export type NavigationNodePatch = Partial<Omit<NavigationNodeDraftNode, 'id'>> & {
-  context?: string | NavContextItem[] | NavContextConfig
+    /** 运行上下文。 */
+context?: string | NavContextItem[] | NavContextConfig
 }
 
+/** Navigation Context Edit Config Dto 的语义模型。 */
 type NavigationContextEditConfigDto = {
-  placeholder: string
-  defaultValue: string
-  paramName: string
+    /** 占位提示文本。 */
+placeholder: string
+    /** default Value 字段。 */
+defaultValue: string
+    /** param Name 名称。 */
+paramName: string
 }
 
+/** Navigation Context Edit Dto 的语义模型。 */
 type NavigationContextEditDto = {
-  hasContext: boolean
-  items: Array<{ id: string; title: string }>
-  config: NavigationContextEditConfigDto
+    /** 是否 has Context。 */
+hasContext: boolean
+    /** items 字段。 */
+items: Array<{ id: string; title: string }>
+    /** 配置对象。 */
+config: NavigationContextEditConfigDto
 }
 
+/** Navigation Node Draft 的语义模型。 */
 export type NavigationNodeDraft = {
-  node: NavigationNodeDraftNode
-  context: NavigationContextEditDto
+    /** node 字段。 */
+node: NavigationNodeDraftNode
+    /** 运行上下文。 */
+context: NavigationContextEditDto
 }
 
+/** Navigation Node Draft Apply Result 的返回结果。 */
 export type NavigationNodeDraftApplyResult = {
-  patch: NavigationNodePatch & Pick<ProjectNodeData, 'title' | 'nodeKind'>
-  warnings: string[]
+    /** patch 字段。 */
+patch: NavigationNodePatch & Pick<ProjectNodeData, 'title' | 'nodeKind'>
+    /** warnings 字段。 */
+warnings: string[]
 }
 
+/** Navigation Node Patch Target 的语义模型。 */
 type NavigationNodePatchTarget = {
-  readonly id: string
+    /** 唯一标识。 */
+readonly id: string
   applyNavigationPatch(patch: ProjectNodeNavigationPatch): void
 }
 

@@ -36,8 +36,10 @@ import type { JsonSchema, JsonSchemaObject } from './schema-types'
 
 /** 单条校验问题 */
 export type JsonValidationIssue = {
-  path: string
-  message: string
+    /** 资源路径。 */
+path: string
+    /** 用户可读消息。 */
+message: string
 }
 
 /** 校验结果：ok + issues 列表 */
@@ -104,6 +106,7 @@ function unknownArrayParam(error: ErrorObject, key: string): readonly unknown[] 
 // 第 5 节 · JsonSchemaValidator — 核心校验器（全 static）
 // ═══════════════════════════════════════════════════════════════
 
+/** Json Schema Validator 的语义模型。 */
 export class JsonSchemaValidator {
   private constructor() {}
 

@@ -1,5 +1,12 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/layout/RendererDropdown.props
+ * RendererDropdown 模块，属于 SPARK component container/layout-container。
+ * 组件目录: containers/layout。
+ * 导出 ClassModel symbol: DropdownItem, RDropdownProps（共 2 个 symbol）。
+ */
 import type { SparkFloatingLayerProps, SparkNodeProps } from '../../shared-types'
 
+/** Dropdown Item 的语义模型。 */
 export type DropdownItem = {
   /** 菜单项文本 */
   label: string
@@ -12,6 +19,7 @@ export type DropdownItem = {
   /** 图标名称 */
   icon?: string}
 
+/** RDropdown Props 的属性契约。 */
 export type RDropdownProps = SparkNodeProps & SparkFloatingLayerProps & {
   /** 菜单项列表 */
     items?: DropdownItem[]

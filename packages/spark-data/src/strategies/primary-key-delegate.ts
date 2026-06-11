@@ -76,6 +76,7 @@ function coercePkValue(
   return String(value)
 }
 
+/** Primary Key Delegate 的语义模型。 */
 export class PrimaryKeyDelegate {
   /** 显式覆盖的主键字段名（undefined = 从 DataTable 列定义推导） */
   private _primaryKeyOverride?: string | undefined

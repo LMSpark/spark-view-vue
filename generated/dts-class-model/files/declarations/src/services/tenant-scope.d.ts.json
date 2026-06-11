@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/tenant-scope.d.ts",
+  "module": {
+    "name": "app:services/tenant-scope",
+    "sourcePath": "declarations/src/services/tenant-scope.d.ts",
+    "sourceFile": "src/services/tenant-scope.ts",
+    "packageName": "app",
+    "modulePath": "services/tenant-scope",
+    "jsdoc": "@module app:services/tenant-scope\napp 的 services/tenant-scope 模块。\n导出 ClassModel symbol: TenantProjectScope（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "TenantProjectScope"
+    ]
+  },
+  "symbols": [
+    "TenantProjectScope"
+  ],
+  "models": {
+    "TenantProjectScope": {
+      "kind": "TenantProjectScope",
+      "className": "TenantProjectScope",
+      "jsdoc": "/** Tenant Project Scope 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** project Id 标识。 */\n    projectId: string;\n}",
+      "provenance": {
+        "file": "declarations/src/services/tenant-scope.d.ts",
+        "line": 7,
+        "className": "TenantProjectScope",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "tenantId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** tenant Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/tenant-scope.d.ts",
+            "line": 9,
+            "className": "TenantProjectScope",
+            "memberName": "tenantId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "projectId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** project Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/tenant-scope.d.ts",
+            "line": 11,
+            "className": "TenantProjectScope",
+            "memberName": "projectId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.110Z"
+}

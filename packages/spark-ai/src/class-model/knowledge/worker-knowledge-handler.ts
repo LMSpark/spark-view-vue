@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-handler
+ * @spark-appworks/spark-ai 的 class-model/knowledge/worker-knowledge-handler 模块。
+ * 导出 ClassModel symbol: CreateClassModelKnowledgeWorkerApiOptions（共 1 个 symbol）。
+ */
 import { expose, type Endpoint } from 'comlink'
 import { DtsClassModelBundleLoader } from '../class-model/dts-class-model-bundle-loader'
 import { DtsBundleClassModelKnowledgeService } from './dts-bundle-class-model-knowledge-service'
@@ -9,6 +14,7 @@ import type {
   ClassModelKnowledgeWorkerInitInput,
 } from './worker-knowledge-api'
 
+/** Create Class Model Knowledge Worker Api Options 的调用配置。 */
 export type CreateClassModelKnowledgeWorkerApiOptions = Readonly<{
   fetchJson?: (url: string) => Promise<unknown>
 }>

@@ -33,15 +33,18 @@ import type {
 // 第 2 节 · 基础类型构造器 — 标量类型的快捷创建
 // ═══════════════════════════════════════════════════════════════
 
+/** String Schema Options 的调用配置。 */
 export type StringSchemaOptions = Readonly<{
   nullable?: boolean
   minLength?: number
 }>
 
+/** Number Schema Options 的调用配置。 */
 export type NumberSchemaOptions = Readonly<{
   nullable?: boolean
 }>
 
+/** Boolean Schema Options 的调用配置。 */
 export type BooleanSchemaOptions = Readonly<{
   nullable?: boolean
 }>
@@ -85,6 +88,7 @@ export function booleanSchema(description: string, options: BooleanSchemaOptions
 // 第 3 节 · 复合构造器 — 枚举 / 数组 / 对象
 // ═══════════════════════════════════════════════════════════════
 
+/** Enum Schema Options 的调用配置。 */
 export type EnumSchemaOptions = Readonly<{
   type?: 'string' | 'number'
   nullable?: boolean
@@ -113,6 +117,7 @@ export function arraySchema(items: JsonSchema = anySchema(), description?: strin
   }
 }
 
+/** Object Schema Options 的调用配置。 */
 export type ObjectSchemaOptions = Readonly<{
   required?: readonly string[]
   description?: string

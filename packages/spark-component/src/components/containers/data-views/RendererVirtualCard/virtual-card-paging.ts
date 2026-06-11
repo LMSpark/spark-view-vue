@@ -1,34 +1,64 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/RendererVirtualCard/virtual-card-paging
+ * RendererVirtualCard 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: VirtualCardViewportExpose, WheelPageEvent, VirtualCardPagingOptions（共 3 个 symbol）。
+ */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 import { RequestState, type DataRow, type DataView } from '@spark-appworks/spark-data'
 
+/** 虚拟卡片视口组件对分页逻辑暴露的滚动能力。 */
 type VirtualCardViewportExpose = {
+  /** 将视口滚动到指定像素位置。 */
   setScrollTop(value: number): void
+  /** 返回当前视口高度。 */
   viewportHeight(): number
+  /** 返回当前视口滚动位置。 */
   viewportScrollTop(): number
 }
 
+/** 只读取滚轮纵向位移的分页事件。 */
 type WheelPageEvent = {
+  /** 滚轮纵向滚动距离，正数向后翻页。 */
   deltaY: number
 }
 
+/** r-virtual-card 虚拟分页、缓存和预加载策略配置。 */
 type VirtualCardPagingOptions = {
+  /** 视口组件 ref，用于读取和设置滚动位置。 */
   viewportRef: Ref<VirtualCardViewportExpose | null>
+  /** 当前解析出的 DataView。 */
   resolvedView: ComputedRef<DataView | null>
+  /** 当前 DataView 行数据。 */
   rows: ComputedRef<readonly DataRow[]>
+  /** 当前查询总条数。 */
   total: ComputedRef<number>
+  /** DataView 当前页码。 */
   page: ComputedRef<number>
+  /** DataView 当前分页大小。 */
   pageSize: ComputedRef<number>
+  /** DataView 当前请求状态。 */
   requestState: ComputedRef<RequestState>
+  /** 桌面端单页虚拟高度。 */
   pageHeight: () => number
+  /** 移动端单页虚拟高度。 */
   mobilePageHeight: () => number
+  /** 切换移动端页高的视口宽度阈值。 */
   mobileBreakpoint: () => number
+  /** 当前页前后额外渲染的页数。 */
   overscanPages: () => number
+  /** 当前页前后预加载的页数。 */
   prefetchPages: () => number
+  /** 内存中最多保留的页缓存数量。 */
   maxCachedPages: () => number
+  /** 滚动停止后等待加载的毫秒数。 */
   settleDelay: () => number
+  /** 滚轮累计多少像素至少跳一页。 */
   wheelStepPx: () => number
+  /** 单次滚轮最多跳过的页数。 */
   maxWheelJumpPages: () => number
+  /** 通知外层切换到指定页。 */
   dispatchPageChange: (page: number) => Promise<void>
 }
 

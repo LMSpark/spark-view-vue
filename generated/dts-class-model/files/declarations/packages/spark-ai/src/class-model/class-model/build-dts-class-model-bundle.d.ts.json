@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/class-model/build-dts-class-model-bundle",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/class-model/build-dts-class-model-bundle",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/build-dts-class-model-bundle\n@spark-appworks/spark-ai 的 class-model/class-model/build-dts-class-model-bundle 模块。\n导出 ClassModel symbol: BuildDtsClassModelBundleProgressPhase, BuildDtsClassModelBundleProgress, BuildDtsClassModelBundleOptions, BuildDtsClassModelBundleResult（共 4 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "BuildDtsClassModelBundleProgressPhase",
+      "BuildDtsClassModelBundleProgress",
+      "BuildDtsClassModelBundleOptions",
+      "BuildDtsClassModelBundleResult"
+    ]
+  },
+  "symbols": [
+    "BuildDtsClassModelBundleProgressPhase",
+    "BuildDtsClassModelBundleProgress",
+    "BuildDtsClassModelBundleOptions",
+    "BuildDtsClassModelBundleResult"
+  ],
+  "models": {
+    "BuildDtsClassModelBundleProgressPhase": {
+      "kind": "BuildDtsClassModelBundleProgressPhase",
+      "className": "BuildDtsClassModelBundleProgressPhase",
+      "jsdoc": "/** Build Dts Class Model Bundle Progress Phase 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'create-program' | 'program-ready' | 'project-file' | 'write-semantic-gaps' | 'write-manifest' | 'done'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'create-program'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'program-ready'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'project-file'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'write-semantic-gaps'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'write-manifest'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'done'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
+        "line": 3,
+        "className": "BuildDtsClassModelBundleProgressPhase",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "BuildDtsClassModelBundleProgress": {
+      "kind": "BuildDtsClassModelBundleProgress",
+      "className": "BuildDtsClassModelBundleProgress",
+      "jsdoc": "/** Build Dts Class Model Bundle Progress 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    phase: BuildDtsClassModelBundleProgressPhase;\n    current?: number;\n    total?: number;\n    sourcePath?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    phase: BuildDtsClassModelBundleProgressPhase;\n    current?: number;\n    total?: number;\n    sourcePath?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
+        "line": 5,
+        "className": "BuildDtsClassModelBundleProgress",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "BuildDtsClassModelBundleOptions": {
+      "kind": "BuildDtsClassModelBundleOptions",
+      "className": "BuildDtsClassModelBundleOptions",
+      "jsdoc": "/** Build Dts Class Model Bundle Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    outputDir: string;\n    exportedOnly?: boolean;\n    onProgress?: (event: BuildDtsClassModelBundleProgress) => void;\n    progressInterval?: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    outputDir: string;\n    exportedOnly?: boolean;\n    onProgress?: (event: BuildDtsClassModelBundleProgress) => void;\n    progressInterval?: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
+        "line": 12,
+        "className": "BuildDtsClassModelBundleOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "BuildDtsClassModelBundleResult": {
+      "kind": "BuildDtsClassModelBundleResult",
+      "className": "BuildDtsClassModelBundleResult",
+      "jsdoc": "/** Build Dts Class Model Bundle Result 的返回结果。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    manifest: DtsClassModelBundleManifest;\n    manifestPath: string;\n    semanticLogPath: string;\n    semanticLogJsonPath: string;\n    semanticGapCount: number;\n    fileCount: number;\n    modelCount: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    manifest: DtsClassModelBundleManifest;\n    manifestPath: string;\n    semanticLogPath: string;\n    semanticLogJsonPath: string;\n    semanticGapCount: number;\n    fileCount: number;\n    modelCount: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
+        "line": 21,
+        "className": "BuildDtsClassModelBundleResult",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.804Z"
+}

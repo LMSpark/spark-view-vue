@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/schema/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:schema/index",
+    "sourcePath": "declarations/packages/spark-json-document/src/schema/index.d.ts",
+    "sourceFile": "packages/spark-json-document/src/schema/index.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "schema/index",
+    "jsdoc": "schema/index.ts — JSON Schema 公共入口\n【导出策略】类型和值分列导出，便于消费方按需导入 type-only。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.833Z"
+}

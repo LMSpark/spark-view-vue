@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/namespace.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:namespace",
+    "sourcePath": "declarations/packages/spark-app/src/namespace.d.ts",
+    "sourceFile": "packages/spark-app/src/namespace.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "namespace",
+    "jsdoc": "SparkApp Namespace\nL1 应用基础设施层 - 统一命名空间\n职责：提供应用层核心功能\n- bootstrap: 应用初始化流水线\n- context: 应用上下文管理（用户、租户、权限）\n- router: 路由守卫\n- error: 错误处理\n- config: 配置加载\n原则：L1 不依赖 L2/L4-L6，保持依赖方向正确",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.930Z"
+}

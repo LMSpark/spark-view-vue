@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:snapshot-history",
+    "sourcePath": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
+    "sourceFile": "packages/spark-utils/src/snapshot-history.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "snapshot-history",
+    "jsdoc": "@module @spark-appworks/spark-utils:snapshot-history\n@spark-appworks/spark-utils 的 snapshot-history 模块。\n导出 ClassModel symbol: SnapshotHistory（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SnapshotHistory"
+    ]
+  },
+  "symbols": [
+    "SnapshotHistory"
+  ],
+  "models": {
+    "SnapshotHistory": {
+      "kind": "SnapshotHistory",
+      "className": "SnapshotHistory",
+      "jsdoc": "/**\n * 通用快照历史管理器 — push / undo / redo / cursor。\n *\n * 设计目标：\n * 1. 纯 TypeScript，零框架依赖。\n * 2. 供 SparkNodeTree 和 DataSetCrudTool 共用，消除重复的 _history[] + _cursor 模式。\n * 3. 内存级轻量快照，非持久化（StorageAdapter 面向 localStorage，不同场景）。\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
+        "line": 14,
+        "className": "SnapshotHistory",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "_limit": {
+              "type": "number",
+              "title": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Snapshot History 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
+          "line": 19,
+          "className": "SnapshotHistory",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "push",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "snapshot": {
+                "title": "T"
+              }
+            },
+            "required": [
+              "snapshot"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 追加快照。截断 cursor 之后的前进条目（标准分支语义），超出限额时移除最旧条目。\n     */",
+          "paramsTypeText": "snapshot: T",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
+            "line": 23,
+            "className": "SnapshotHistory",
+            "memberName": "push",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "undo",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "T | null"
+          },
+          "returnTypeText": "T | null",
+          "jsdoc": "/**\n     * 撤销：cursor 后退一步，返回前一个快照；不可撤销时返回 null。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
+            "line": 27,
+            "className": "SnapshotHistory",
+            "memberName": "undo",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "redo",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "T | null"
+          },
+          "returnTypeText": "T | null",
+          "jsdoc": "/**\n     * 重做：cursor 前进一步，返回下一个快照；不可重做时返回 null。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
+            "line": 31,
+            "className": "SnapshotHistory",
+            "memberName": "redo",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "clear",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 清空全部历史。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
+            "line": 49,
+            "className": "SnapshotHistory",
+            "memberName": "clear",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.030Z"
+}

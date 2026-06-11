@@ -1,4 +1,9 @@
 /**
+ * @module app:views/app/dev-system/useDevState
+ * app 的 views/app/dev-system/useDevState 模块。
+ * 导出 ClassModel symbol: DevPageFileName, PageConfigPageSummary, NavigationNodeDraftNode, RunPageDesignAiOptions, EditableProjectOption, StatusMessage, DevContextConfig, DevWorkspaceTab 等（共 9 个 symbol）。
+ */
+/**
  * DevSystem — 当前编辑 scope 的导航设计器状态。
  *
  * 本质：经 `ProjectModel` 领域实例编辑 `{ tenantId, projectId }` 指向的项目模型。
@@ -47,18 +52,24 @@ import { getUser } from '@/services/auth'
 import { getProjectApi } from '@/services/api-paths'
 import { http } from '@/services/http'
 
+/** Dev Page File Name 的语义模型。 */
 export type DevPageFileName = Extract<PageNodeFileName, string>
+/** Page Config Page Summary 的语义模型。 */
 export type PageConfigPageSummary = {
   [Key in keyof ProjectPageNodeSummary]: ProjectPageNodeSummary[Key]
 }
+/** Navigation Node Draft Node 的语义模型。 */
 export type NavigationNodeDraftNode = {
   [Key in keyof ProjectNavigationNodeDraftNode]: ProjectNavigationNodeDraftNode[Key]
 }
+/** Run Page Design Ai Options 的调用配置。 */
 export type RunPageDesignAiOptions = {
   [Key in keyof PageDesignAiRunOptions]: PageDesignAiRunOptions[Key]
 }
+/** Editable Project Option 的语义模型。 */
 export type EditableProjectOption = ProjectSummary & {
-  tenantId: string
+    /** tenant Id 标识。 */
+tenantId: string
 }
 
 function createLiveTargetProxy<T extends object>(readTarget: () => T): T {
@@ -92,16 +103,25 @@ function createLiveTargetProxy<T extends object>(readTarget: () => T): T {
 // 类型
 // ═══════════════════════════════════════════════════════════
 
+/** Status Message 的语义模型。 */
 export type StatusMessage = {
-  text: string
-  type: 'success' | 'warning' | 'error' | 'info'
-  time: string}
+    /** 展示文本。 */
+text: string
+    /** 类型标识。 */
+type: 'success' | 'warning' | 'error' | 'info'
+    /** time 字段。 */
+time: string}
 
+/** Dev Context Config 的配置结构。 */
 export type DevContextConfig = {
-  placeholder: string
-  defaultValue: string
-  paramName: string}
+    /** 占位提示文本。 */
+placeholder: string
+    /** default Value 字段。 */
+defaultValue: string
+    /** param Name 名称。 */
+paramName: string}
 
+/** Dev Workspace Tab 的语义模型。 */
 export type DevWorkspaceTab = 'props' | 'preview' | DevPageFileName
 
 // ═══════════════════════════════════════════════════════════
@@ -1257,4 +1277,5 @@ export function useDevState() {
   }
 }
 
+/** Dev State 的运行状态。 */
 export type DevState = ReturnType<typeof useDevState>

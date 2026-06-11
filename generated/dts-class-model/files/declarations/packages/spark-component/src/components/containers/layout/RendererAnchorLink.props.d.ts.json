@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchorLink.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererAnchorLink.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchorLink.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererAnchorLink.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererAnchorLink.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererAnchorLink.props\nRendererAnchorLink 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: RAnchorLinkProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RAnchorLinkProps"
+    ],
+    "componentName": "RendererAnchorLink",
+    "componentType": "r-anchor-link",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "RAnchorLinkProps"
+  ],
+  "models": {
+    "RAnchorLinkProps": {
+      "kind": "RAnchorLinkProps",
+      "className": "RAnchorLinkProps",
+      "jsdoc": "/** RAnchor Link Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 锚点链接 */\n    href?: string;\n    /** 链接标题 */\n    title?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 锚点链接 */\n    href?: string;\n    /** 链接标题 */\n    title?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchorLink.props.d.ts",
+        "line": 9,
+        "className": "RAnchorLinkProps",
+        "declarationKind": "type",
+        "componentName": "RendererAnchorLink",
+        "componentType": "r-anchor-link",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "href",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 锚点链接 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchorLink.props.d.ts",
+            "line": 11,
+            "className": "RAnchorLinkProps",
+            "memberName": "href",
+            "declarationKind": "interface",
+            "componentName": "RendererAnchorLink",
+            "componentType": "r-anchor-link",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 链接标题 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererAnchorLink.props.d.ts",
+            "line": 13,
+            "className": "RAnchorLinkProps",
+            "memberName": "title",
+            "declarationKind": "interface",
+            "componentName": "RendererAnchorLink",
+            "componentType": "r-anchor-link",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.128Z"
+}

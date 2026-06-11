@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/AiToolApprovalPanel.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/AiToolApprovalPanel.props",
+    "sourcePath": "declarations/packages/spark-component/src/ai/components/AiToolApprovalPanel.props.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/AiToolApprovalPanel.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/AiToolApprovalPanel.props",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/AiToolApprovalPanel.props\n@spark-appworks/spark-component 的 ai/components/AiToolApprovalPanel.props 模块。\n导出 ClassModel symbol: AiToolApprovalPanelProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiToolApprovalPanelProps"
+    ]
+  },
+  "symbols": [
+    "AiToolApprovalPanelProps"
+  ],
+  "models": {
+    "AiToolApprovalPanelProps": {
+      "kind": "AiToolApprovalPanelProps",
+      "className": "AiToolApprovalPanelProps",
+      "jsdoc": "/** Ai Tool Approval Panel Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    pending: readonly ToolApprovalDisplayItem[];\n    emptyText?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    pending: readonly ToolApprovalDisplayItem[];\n    emptyText?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/ai/components/AiToolApprovalPanel.props.d.ts",
+        "line": 8,
+        "className": "AiToolApprovalPanelProps",
+        "declarationKind": "type",
+        "componentName": "AiToolApprovalPanel"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.000Z"
+}

@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-component:ai/components/SessionDiagnosticsPanel
+@spark-appworks/spark-component 的 ai/components/SessionDiagnosticsPanel 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-card :class="$style['diagnostics-panel']" shadow="never">
     <template #header>

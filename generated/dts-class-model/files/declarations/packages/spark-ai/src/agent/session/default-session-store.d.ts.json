@@ -1,0 +1,284 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/session/default-session-store",
+    "sourcePath": "declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/session/default-session-store.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/session/default-session-store",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\nhost/session/default-session-store.ts — 内存会话存储实现\n═══════════════════════════════════════════════════════════════\n【架构定位】AiAgentSessionStore 的默认实现。纯内存存储，不持久化。\n适合单页应用内的会话管理。业务方可通过继承 AiAgentSessionStore\n替换为 localStorage / IndexedDB / 服务端存储。\n【设计要点】\n- 内部 MutableSession 可变，对外暴露的 AiAgentSessionRecord 只读（clone 返回）\n- sessionKey = \"moduleId\\0moduleInstanceId\"（用 null 字符分隔，避免碰撞）\n- 每条历史记录都有全局递增 seq 和基于 instanceId 的唯一 id\n- cloneUnknown 通过 JSON 序列化/反序列化实现深拷贝（不可序列化的值保留引用）\n- 若 sessionStore 被复用（同一 key 再次 startSession），复用已有 session 并重置为 Started\n【消费方】business-registry（默认注入）、业务方自定义存储\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "DefaultAiAgentSessionStoreOptions",
+      "DefaultAiAgentSessionStore"
+    ]
+  },
+  "symbols": [
+    "DefaultAiAgentSessionStoreOptions",
+    "DefaultAiAgentSessionStore"
+  ],
+  "models": {
+    "DefaultAiAgentSessionStoreOptions": {
+      "kind": "DefaultAiAgentSessionStoreOptions",
+      "className": "DefaultAiAgentSessionStoreOptions",
+      "jsdoc": "/** 存储选项：允许注入自定义时间源（便于测试） */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    now?: () => number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    now?: () => number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+        "line": 23,
+        "className": "DefaultAiAgentSessionStoreOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DefaultAiAgentSessionStore": {
+      "kind": "DefaultAiAgentSessionStore",
+      "className": "DefaultAiAgentSessionStore",
+      "jsdoc": "/** Default Ai Agent Session Store 的语义模型。 */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "AiAgentSessionStore",
+          "targetName": "AiAgentSessionStore"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+        "line": 27,
+        "className": "DefaultAiAgentSessionStore",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "title": "DefaultAiAgentSessionStoreOptions"
+            }
+          },
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Default Ai Agent Session Store 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+          "line": 35,
+          "className": "DefaultAiAgentSessionStore",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "startSession",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "required": [
+              "context"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "AiAgentSessionRecord"
+          },
+          "returnTypeText": "AiAgentSessionRecord",
+          "jsdoc": "/** 启动会话：创建新记录或复用已有记录 */",
+          "paramsTypeText": "context: AiAgentRuntimeContext",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+            "line": 37,
+            "className": "DefaultAiAgentSessionStore",
+            "memberName": "startSession",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "stopSession",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "title": "AiAgentRuntimeContext"
+              },
+              "reason": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "context"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "AiAgentSessionRecord | null"
+          },
+          "returnTypeText": "AiAgentSessionRecord | null",
+          "jsdoc": "/** 停止会话 */",
+          "paramsTypeText": "context: AiAgentRuntimeContext, reason?: string | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+            "line": 39,
+            "className": "DefaultAiAgentSessionStore",
+            "memberName": "stopSession",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getSession",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "required": [
+              "context"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "AiAgentSessionRecord | null"
+          },
+          "returnTypeText": "AiAgentSessionRecord | null",
+          "jsdoc": "/** 获取会话记录 */",
+          "paramsTypeText": "context: AiAgentRuntimeContext",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+            "line": 41,
+            "className": "DefaultAiAgentSessionStore",
+            "memberName": "getSession",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "listSessions",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "readonly AiAgentSessionRecord[]",
+            "items": true
+          },
+          "returnTypeText": "readonly AiAgentSessionRecord[]",
+          "jsdoc": "/** 列出所有会话（按 startedAt 升序） */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+            "line": 43,
+            "className": "DefaultAiAgentSessionStore",
+            "memberName": "listSessions",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getSessionHistory",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "required": [
+              "context"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "readonly AiAgentHistoryEntry[]",
+            "items": true
+          },
+          "returnTypeText": "readonly AiAgentHistoryEntry[]",
+          "jsdoc": "/** 获取会话历史（返回深拷贝） */",
+          "paramsTypeText": "context: AiAgentRuntimeContext",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+            "line": 45,
+            "className": "DefaultAiAgentSessionStore",
+            "memberName": "getSessionHistory",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "appendMessage",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "AiAgentAppendMessageOptions"
+              }
+            },
+            "required": [
+              "options"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "AiAgentMessageHistoryEntry"
+          },
+          "returnTypeText": "AiAgentMessageHistoryEntry",
+          "jsdoc": "/** 追加消息条目 */",
+          "paramsTypeText": "options: AiAgentAppendMessageOptions",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+            "line": 47,
+            "className": "DefaultAiAgentSessionStore",
+            "memberName": "appendMessage",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "appendFunctionCall",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "AiAgentAppendFunctionCallOptions"
+              }
+            },
+            "required": [
+              "options"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "AiAgentFunctionCallHistoryEntry"
+          },
+          "returnTypeText": "AiAgentFunctionCallHistoryEntry",
+          "jsdoc": "/** 追加工具调用条目 */",
+          "paramsTypeText": "options: AiAgentAppendFunctionCallOptions",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts",
+            "line": 49,
+            "className": "DefaultAiAgentSessionStore",
+            "memberName": "appendFunctionCall",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.766Z"
+}

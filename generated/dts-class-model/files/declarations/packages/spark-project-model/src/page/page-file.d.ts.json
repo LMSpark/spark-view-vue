@@ -1,0 +1,378 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:page/page-file",
+    "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+    "sourceFile": "packages/spark-project-model/src/page/page-file.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "page/page-file",
+    "jsdoc": "页面四文件：路径常量、IO 类型、文本 parse/serialize。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageNodeFileName",
+      "PageNodeLoadOptions",
+      "PageContentLoadResult",
+      "PageNodeFileVersionSummary",
+      "PageFileCreateOptions"
+    ]
+  },
+  "symbols": [
+    "PageNodeFileName",
+    "PageNodeLoadOptions",
+    "PageContentLoadResult",
+    "PageNodeFileVersionSummary",
+    "PageFileCreateOptions"
+  ],
+  "models": {
+    "PageNodeFileName": {
+      "kind": "PageNodeFileName",
+      "className": "PageNodeFileName",
+      "jsdoc": "/** Page Node File Name 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "typeof PAGE_NODE_FILE_NAMES[number]",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+        "line": 6,
+        "className": "PageNodeFileName",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "PageNodeLoadOptions": {
+      "kind": "PageNodeLoadOptions",
+      "className": "PageNodeLoadOptions",
+      "jsdoc": "/** Page Node Load Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** force Reload 字段。 */\n    forceReload?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+        "line": 8,
+        "className": "PageNodeLoadOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "forceReload",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** force Reload 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 10,
+            "className": "PageNodeLoadOptions",
+            "memberName": "forceReload",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "PageContentLoadResult": {
+      "kind": "PageContentLoadResult",
+      "className": "PageContentLoadResult",
+      "jsdoc": "/** Page Content Load Result 的返回结果。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** success 字段。 */\n    success: boolean;\n    /** 业务数据载荷。 */\n    data?: T;\n    /** 错误对象或错误信息。 */\n    error?: string;\n    /** reason 字段。 */\n    reason?: string;\n    /** 来源对象。 */\n    source?: 'remote';\n    /** 事件时间戳。 */\n    timestamp?: number;\n    /** source Timestamp 字段。 */\n    sourceTimestamp?: string;\n    /** from Cache 字段。 */\n    fromCache?: boolean;\n    /** not Modified 字段。 */\n    notModified?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+        "line": 15,
+        "className": "PageContentLoadResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "success",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** success 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 17,
+            "className": "PageContentLoadResult",
+            "memberName": "success",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "data",
+          "schema": {
+            "title": "T"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 业务数据载荷。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 19,
+            "className": "PageContentLoadResult",
+            "memberName": "data",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "error",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 错误对象或错误信息。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 21,
+            "className": "PageContentLoadResult",
+            "memberName": "error",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "reason",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** reason 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 23,
+            "className": "PageContentLoadResult",
+            "memberName": "reason",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "source",
+          "schema": {
+            "title": "'remote'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 来源对象。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 25,
+            "className": "PageContentLoadResult",
+            "memberName": "source",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "timestamp",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 事件时间戳。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 27,
+            "className": "PageContentLoadResult",
+            "memberName": "timestamp",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "sourceTimestamp",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** source Timestamp 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 29,
+            "className": "PageContentLoadResult",
+            "memberName": "sourceTimestamp",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "fromCache",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** from Cache 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 31,
+            "className": "PageContentLoadResult",
+            "memberName": "fromCache",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "notModified",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** not Modified 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 33,
+            "className": "PageContentLoadResult",
+            "memberName": "notModified",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "PageNodeFileVersionSummary": {
+      "kind": "PageNodeFileVersionSummary",
+      "className": "PageNodeFileVersionSummary",
+      "jsdoc": "/** Page Node File Version Summary 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** version 字段。 */\n    version: number;\n    /** 创建时间。 */\n    createdAt: string;\n    /** 是否 is Current。 */\n    isCurrent: boolean;\n    /** modified By 字段。 */\n    modifiedBy: string | null;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+        "line": 36,
+        "className": "PageNodeFileVersionSummary",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "version",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** version 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 38,
+            "className": "PageNodeFileVersionSummary",
+            "memberName": "version",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "createdAt",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 创建时间。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 40,
+            "className": "PageNodeFileVersionSummary",
+            "memberName": "createdAt",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "isCurrent",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 是否 is Current。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 42,
+            "className": "PageNodeFileVersionSummary",
+            "memberName": "isCurrent",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "modifiedBy",
+          "schema": {
+            "title": "string | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** modified By 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 44,
+            "className": "PageNodeFileVersionSummary",
+            "memberName": "modifiedBy",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "PageFileCreateOptions": {
+      "kind": "PageFileCreateOptions",
+      "className": "PageFileCreateOptions",
+      "jsdoc": "/** Page File Create Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 显示标题。 */\n    title?: string;\n    /** icon 字段。 */\n    icon?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+        "line": 47,
+        "className": "PageFileCreateOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 显示标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 49,
+            "className": "PageFileCreateOptions",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "icon",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** icon 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+            "line": 51,
+            "className": "PageFileCreateOptions",
+            "memberName": "icon",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.955Z"
+}

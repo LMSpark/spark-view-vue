@@ -27,40 +27,59 @@ export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
 const PAGE_DESIGN_ROOT_CLASS_NAME = 'ProjectModel'
 
+/** Page Design Run Mode 的语义模型。 */
 export type PageDesignRunMode = 'create' | 'update' | 'fix'
 
+/** Page Design Allowed Operations 的语义模型。 */
 export type PageDesignAllowedOperations = {
-  nodeTree?: boolean
-  dataSet?: boolean
-  script?: boolean
-  style?: boolean
-  navigation?: boolean
+    /** node Tree 字段。 */
+nodeTree?: boolean
+    /** data Set 字段。 */
+dataSet?: boolean
+    /** script 字段。 */
+script?: boolean
+    /** style 字段。 */
+style?: boolean
+    /** navigation 字段。 */
+navigation?: boolean
 }
 
+/** Page Design Run Input 的输入数据。 */
 export type PageDesignRunInput = {
-  pageId: string
-  description: string
+    /** page Id 标识。 */
+pageId: string
+    /** description 字段。 */
+description: string
   /** readPlanningProjection 的 effectiveDescription；runner 必填。 */
   effectiveDescription: string
   /** 项目根 path 段 id；用于 systemPrompt 给出 concrete /project[id] 示例。 */
   projectId?: string
-  planningTitle?: string
-  planningPath?: string
-  mode?: PageDesignRunMode
-  allowedOperations?: PageDesignAllowedOperations
-  preserveExistingInteractions?: boolean
+    /** planning Title 字段。 */
+planningTitle?: string
+    /** planning Path 路径。 */
+planningPath?: string
+    /** mode 字段。 */
+mode?: PageDesignRunMode
+    /** allowed Operations 字段。 */
+allowedOperations?: PageDesignAllowedOperations
+    /** preserve Existing Interactions 字段。 */
+preserveExistingInteractions?: boolean
   /** 未声明 implGate 时 fail-fast；生产 runner 建议 true。 */
   strictImplGate?: boolean
 }
 
+/** Resolve Page Design Planning Context Options 的调用配置。 */
 export type ResolvePageDesignPlanningContextOptions = {
   /** 仅 e2e/脚手架：投影为空时用本轮 description 兜底。生产 runner 勿传。 */
   fallbackDescription?: string
 }
 
+/** Ensure Page Design Business Options 的调用配置。 */
 export type EnsurePageDesignBusinessOptions = {
-  host: AiAgentHost
-  getPageDesignEditor: (context: { moduleInstanceId: string }) => ProjectWorkspace
+    /** 宿主运行时信息。 */
+host: AiAgentHost
+    /** get Page Design Editor 回调。 */
+getPageDesignEditor: (context: { moduleInstanceId: string }) => ProjectWorkspace
 }
 
 

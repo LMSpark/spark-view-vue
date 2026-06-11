@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/core/url-template.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:core/url-template",
+    "sourcePath": "declarations/packages/spark-data/src/core/url-template.d.ts",
+    "sourceFile": "packages/spark-data/src/core/url-template.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "core/url-template",
+    "jsdoc": "@module @spark-appworks/spark-data:core/url-template\n@spark-appworks/spark-data 的 core/url-template 模块。\n导出 ClassModel symbol: ResolvedUrl（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ResolvedUrl"
+    ]
+  },
+  "symbols": [
+    "ResolvedUrl"
+  ],
+  "models": {
+    "ResolvedUrl": {
+      "kind": "ResolvedUrl",
+      "className": "ResolvedUrl",
+      "jsdoc": "/**\n * URL 模板解析工具\n *\n * 统一支持两种路径参数风格：\n * - Express 风格：`/users/:id/orders/:orderId`\n * - 花括号风格：`/users/{id}/orders/{orderId}`\n *\n * 解析后返回替换后的 URL 及未被模板消费的剩余参数。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 替换路径参数后的 URL */\n    url: string;\n    /** 未被 URL 模板消费的剩余参数（可用于 query/body） */\n    rest: Record<string, unknown>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/core/url-template.d.ts",
+        "line": 15,
+        "className": "ResolvedUrl",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "url",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 替换路径参数后的 URL */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/core/url-template.d.ts",
+            "line": 17,
+            "className": "ResolvedUrl",
+            "memberName": "url",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "rest",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 未被 URL 模板消费的剩余参数（可用于 query/body） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/core/url-template.d.ts",
+            "line": 19,
+            "className": "ResolvedUrl",
+            "memberName": "rest",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.701Z"
+}

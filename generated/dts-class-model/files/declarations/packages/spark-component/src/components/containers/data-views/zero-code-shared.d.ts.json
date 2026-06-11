@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/zero-code-shared.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/data-views/zero-code-shared",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/zero-code-shared.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/data-views/zero-code-shared.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/data-views/zero-code-shared",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/zero-code-shared\n@spark-appworks/spark-component:components/containers/data-views/zero-code-shared 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: CreateContainerCrudContextOptions（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "CreateContainerCrudContextOptions"
+    ],
+    "componentLevel": "table-level",
+    "componentLayer": "data-view-container",
+    "componentDirectory": "containers/data-views"
+  },
+  "symbols": [
+    "CreateContainerCrudContextOptions"
+  ],
+  "models": {
+    "CreateContainerCrudContextOptions": {
+      "kind": "CreateContainerCrudContextOptions",
+      "className": "CreateContainerCrudContextOptions",
+      "jsdoc": "/** Create Container Crud Context Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: Readonly<Record<string, unknown>>;\n    /** resolved View 字段。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** CRUD 事件默认处理器；直接沿用 createCrudDispatcher 的第二个参数契约。 */\n    eventDefaults?: Parameters<typeof createCrudDispatcher>[1];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/zero-code-shared.d.ts",
+        "line": 11,
+        "className": "CreateContainerCrudContextOptions",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "props",
+          "schema": {
+            "title": "Readonly<Record<string, unknown>>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 组件属性集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/zero-code-shared.d.ts",
+            "line": 13,
+            "className": "CreateContainerCrudContextOptions",
+            "memberName": "props",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "resolvedView",
+          "schema": {
+            "title": "ValueRef<DataView | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** resolved View 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/zero-code-shared.d.ts",
+            "line": 15,
+            "className": "CreateContainerCrudContextOptions",
+            "memberName": "resolvedView",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "eventDefaults",
+          "schema": {
+            "title": "Parameters<typeof createCrudDispatcher>[1]"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** CRUD 事件默认处理器；直接沿用 createCrudDispatcher 的第二个参数契约。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/zero-code-shared.d.ts",
+            "line": 17,
+            "className": "CreateContainerCrudContextOptions",
+            "memberName": "eventDefaults",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.119Z"
+}

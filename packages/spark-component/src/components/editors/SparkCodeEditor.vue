@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/editors/SparkCodeEditor
+SparkCodeEditor 模块，属于 SPARK component infrastructure/editor。
+组件目录: editors。
+导出 ClassModel symbol: Props（共 1 个 symbol）。
+-->
 <template>
   <div class="spark-code-editor" :style="rootStyle">
     <div v-if="initError" class="spark-code-editor__notice">
@@ -23,6 +29,7 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vu
 import type { Extension } from '@codemirror/state'
 import type { EditorView } from '@codemirror/view'
 
+/** SparkCodeEditor 组件属性，描述代码内容、语言和编辑器外观。 */
 type Props = {
   /** 编辑器内容 */
   modelValue?: string

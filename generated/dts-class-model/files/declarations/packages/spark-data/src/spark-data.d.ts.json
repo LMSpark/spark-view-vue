@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/spark-data.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:spark-data",
+    "sourcePath": "declarations/packages/spark-data/src/spark-data.d.ts",
+    "sourceFile": "packages/spark-data/src/spark-data.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "spark-data",
+    "jsdoc": "SparkData facade API - recommended entry point for consumers.",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.775Z"
+}

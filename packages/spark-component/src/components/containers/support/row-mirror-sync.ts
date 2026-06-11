@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/support/row-mirror-sync
+ * @spark-appworks/spark-component 的 components/containers/support/row-mirror-sync 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import type { DataRow } from '@spark-appworks/spark-data'
 
 export function syncReactiveRow(

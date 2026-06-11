@@ -9,8 +9,10 @@ import { getProjectNavigationApi, getProjectPageApi } from '@/services/api-paths
 import { getUser } from '@/services/auth'
 import { createAuthHeaders, http } from '@/services/http'
 
+/** Page Design Editor Resolve Context 的运行上下文。 */
 export type PageDesignEditorResolveContext = {
-  moduleInstanceId: string
+    /** module Instance Id 标识。 */
+moduleInstanceId: string
 }
 
 export function createHeadlessPageDesignEditor(): ProjectWorkspace {

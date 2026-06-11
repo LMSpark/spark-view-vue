@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/json/helpers.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:json/helpers",
+    "sourcePath": "declarations/packages/spark-ai/src/json/helpers.d.ts",
+    "sourceFile": "packages/spark-ai/src/json/helpers.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "json/helpers",
+    "jsdoc": "json/helpers.ts — JSON Schema 便捷构造器（deprecated re-export 层）\n【迁移说明】所有构造器已统一到 @spark-appworks/spark-json-document。\n消费方应改为从 @spark-appworks/spark-json-document 直接导入。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.878Z"
+}

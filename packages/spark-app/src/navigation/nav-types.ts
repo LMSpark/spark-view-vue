@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-app:navigation/nav-types
+ * @spark-appworks/spark-app 的 navigation/nav-types 模块。
+ * 导出 ClassModel symbol: NavigationContext（共 1 个 symbol）。
+ */
 import type { ComputedRef, InjectionKey } from 'vue'
 import type { NavContextState, ProjectNodeData, RegionItems, RegionVisibility } from '@spark-appworks/spark-project-model'
 
@@ -8,6 +13,7 @@ import type { NavContextState, ProjectNodeData, RegionItems, RegionVisibility } 
  * 此文件仅保留 Vue 特有的类型。
  * ══════════════════════════════════════════════════════════ */
 
+/** Navigation Context 的运行上下文。 */
 export type NavigationContext = {
   /** 从根到当前叶子的节点路径 */
   activePath: ComputedRef<ProjectNodeData[]>

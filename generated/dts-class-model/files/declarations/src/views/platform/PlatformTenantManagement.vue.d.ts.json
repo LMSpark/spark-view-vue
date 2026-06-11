@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/views/platform/PlatformTenantManagement.vue.d.ts",
+  "module": {
+    "name": "app:views/platform/PlatformTenantManagement",
+    "sourcePath": "declarations/src/views/platform/PlatformTenantManagement.vue.d.ts",
+    "sourceFile": "src/views/platform/PlatformTenantManagement.vue",
+    "packageName": "app",
+    "modulePath": "views/platform/PlatformTenantManagement",
+    "jsdoc": "@module app:views/platform/PlatformTenantManagement\napp 的 views/platform/PlatformTenantManagement 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.154Z"
+}

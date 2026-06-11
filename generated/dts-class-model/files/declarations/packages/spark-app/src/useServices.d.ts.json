@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/useServices.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:useServices",
+    "sourcePath": "declarations/packages/spark-app/src/useServices.d.ts",
+    "sourceFile": "packages/spark-app/src/useServices.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "useServices",
+    "jsdoc": "服务访问 Composables\n📌 DI 架构统一说明：\nSPARK 项目采用单一 DI 管道（管道 B - SPARK 能力系统）：\n- ✅ 推荐：使用 PAGE_RUNTIME_SERVICES 能力获取页面运行时服务\n```ts\nconst { sparkConsume } = useSparkComponent({ type: 'my-comp' })\nconst services = sparkConsume(PAGE_RUNTIME_SERVICES)\nservices?.router?.push('/home')\nservices?.logger?.info('Action')\n```\n- ✅ Router：直接使用 vue-router\n```ts\nimport { useRouter } from 'vue-router'\nconst router = useRouter()\n```\n- ✅ Logger：使用工厂函数\n```ts\nimport { Logger } from '@spark-appworks/spark-utils'\nconst logger = Logger('MyModule')\n```",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.991Z"
+}

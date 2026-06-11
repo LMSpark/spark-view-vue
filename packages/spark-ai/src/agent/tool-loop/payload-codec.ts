@@ -34,10 +34,14 @@ import type { AiAgentTransportMessage } from '../transport/transport-types'
  *   · JSON 根节点非对象   → 抛 ToolArgsParseError，工具参数必须是 object
  * ----------------------------------------------------------------------------- */
 
+/** Tool Args Parse Error 的错误信息。 */
 export class ToolArgsParseError extends Error {
-  public constructor(
+    /** 创建 Tool Args Parse Error 实例。 */
+public constructor(
+    /** 参数解析失败的稳定错误码。 */
     public readonly code: 'TOOL_ARGS_INVALID_JSON' | 'TOOL_ARGS_NOT_OBJECT',
     message: string,
+    /** LLM 返回的原始 function.arguments 字符串。 */
     public readonly raw: string,
   ) {
     super(message)

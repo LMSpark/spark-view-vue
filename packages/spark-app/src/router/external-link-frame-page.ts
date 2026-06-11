@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-app:router/external-link-frame-page
+ * @spark-appworks/spark-app 的 router/external-link-frame-page 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import { computed, defineComponent, h } from 'vue'
 import { useRoute } from 'vue-router'
 

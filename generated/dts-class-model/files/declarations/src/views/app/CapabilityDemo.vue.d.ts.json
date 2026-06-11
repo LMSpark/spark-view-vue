@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/views/app/CapabilityDemo.vue.d.ts",
+  "module": {
+    "name": "app:views/app/CapabilityDemo",
+    "sourcePath": "declarations/src/views/app/CapabilityDemo.vue.d.ts",
+    "sourceFile": "src/views/app/CapabilityDemo.vue",
+    "packageName": "app",
+    "modulePath": "views/app/CapabilityDemo",
+    "jsdoc": "@module app:views/app/CapabilityDemo\napp 的 views/app/CapabilityDemo 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.112Z"
+}

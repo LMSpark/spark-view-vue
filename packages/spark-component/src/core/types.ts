@@ -75,7 +75,8 @@ export type FilterItemConfig = {
   options?: Array<{ label: string; value: unknown }>
   /** 选项字段映射（options 来自 DataView 成员时使用） */
   optionLabelField?: string
-  optionValueField?: string
+    /** option Value Field 字段。 */
+optionValueField?: string
   /** 与其他条件的逻辑关系（覆盖全局 filter.logic，默认继承） */
   logic?: 'and' | 'or'
   /** 跨列数（覆盖全局 filter.itemSpan） */
@@ -87,6 +88,7 @@ export type FilterItemConfig = {
 // 注册表接口
 // ============================================================================
 
+/** Component Registry 的语义模型。 */
 export type ComponentRegistry = {
   register(...args: ComponentRegistrationArgs): void
   get(type: string): ComponentDefinition | undefined
@@ -94,6 +96,7 @@ export type ComponentRegistry = {
   unregister(type: string): boolean
   getAll(): ReadonlyMap<string, ComponentDefinition>}
 
+/** Component Registration Input 的输入数据。 */
 export type ComponentRegistrationInput = Readonly<{
   type: string
   component: unknown
@@ -101,6 +104,7 @@ export type ComponentRegistrationInput = Readonly<{
   options?: { silent?: boolean } | undefined
 }>
 
+/** Component Registration Args 的语义模型。 */
 export type ComponentRegistrationArgs =
   | readonly [input: ComponentRegistrationInput]
   | readonly [

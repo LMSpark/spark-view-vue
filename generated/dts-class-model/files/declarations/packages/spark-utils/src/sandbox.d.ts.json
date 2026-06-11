@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/sandbox.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:sandbox",
+    "sourcePath": "declarations/packages/spark-utils/src/sandbox.d.ts",
+    "sourceFile": "packages/spark-utils/src/sandbox.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "sandbox",
+    "jsdoc": "共享沙箱工具\n供 `spark-data`（计算列表达式）和 `spark-component`（页面脚本）两个沙箱统一使用。\n纯 TypeScript，零框架依赖。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.026Z"
+}

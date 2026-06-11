@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/constants.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:constants",
+    "sourcePath": "declarations/packages/spark-app/src/constants.d.ts",
+    "sourceFile": "packages/spark-app/src/constants.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "constants",
+    "jsdoc": "应用层符号常量表\nL1 Application Layer Constants\n提供全局的 Symbol、枚举、错误码等常量定义\n\n============================================\n依赖注入 Symbol Keys（Injection Keys）\n============================================\n\nSparkRegistry 注入键\n从 spark-component 导入（架构允许 spark-app 依赖 spark-component）",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ErrorCode",
+      "Environment"
+    ]
+  },
+  "symbols": [
+    "ErrorCode",
+    "Environment"
+  ],
+  "models": {
+    "ErrorCode": {
+      "kind": "ErrorCode",
+      "className": "ErrorCode",
+      "jsdoc": "/** Error Code 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "typeof ErrorCodes[keyof typeof ErrorCodes]",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/constants.d.ts",
+        "line": 46,
+        "className": "ErrorCode",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "Environment": {
+      "kind": "Environment",
+      "className": "Environment",
+      "jsdoc": "/** Environment 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "typeof Environments[keyof typeof Environments]",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/constants.d.ts",
+        "line": 63,
+        "className": "Environment",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.917Z"
+}

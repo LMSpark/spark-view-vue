@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/layout/state
+ * @spark-appworks/spark-component:components/containers/layout/state 模块，属于 SPARK component container/layout-container。
+ * 组件目录: containers/layout。
+ * 导出 ClassModel symbol: UnifiedValueBridgeOptions, CommitValueOptions（共 2 个 symbol）。
+ */
 import { onBeforeUnmount, shallowRef, watch, type ShallowRef } from 'vue'
 import type { ValueRef } from '../../shared-types.js'
 
@@ -31,16 +37,25 @@ export function useDefaultedSelection<TItem, TValue>(options: {
   return state
 }
 
+/** Unified Value Bridge Options 的调用配置。 */
 export type UnifiedValueBridgeOptions<TValue> = {
-  value: ValueRef<TValue | undefined>
-  fallbackValue: TValue
-  debounceMs?: number
-  normalize?: (value: TValue | undefined) => TValue
-  equals?: (a: TValue, b: TValue) => boolean
-  emitValue?: (value: TValue) => void}
+    /** 当前值。 */
+value: ValueRef<TValue | undefined>
+    /** fallback Value 字段。 */
+fallbackValue: TValue
+    /** debounce Ms 字段。 */
+debounceMs?: number
+    /** normalize 回调。 */
+normalize?: (value: TValue | undefined) => TValue
+    /** equals 回调。 */
+equals?: (a: TValue, b: TValue) => boolean
+    /** emit Value 回调。 */
+emitValue?: (value: TValue) => void}
 
+/** Commit Value Options 的调用配置。 */
 type CommitValueOptions = {
-  emit?: boolean}
+    /** emit 字段。 */
+emit?: boolean}
 
 export function useUnifiedValueBridge<TValue>(options: UnifiedValueBridgeOptions<TValue>): {
   state: ShallowRef<TValue>

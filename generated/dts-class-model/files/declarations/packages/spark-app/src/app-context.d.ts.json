@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/app-context.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:app-context",
+    "sourcePath": "declarations/packages/spark-app/src/app-context.d.ts",
+    "sourceFile": "packages/spark-app/src/app-context.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "app-context",
+    "jsdoc": "Application Context\n应用级上下文管理",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.888Z"
+}

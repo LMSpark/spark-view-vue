@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/RendererTree/zero-code
+ * RendererTree 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: TreeNode, ElTreeNode, ElTreeComponent, NativeTreeLike, NativeTreeNodeLike, TreeEventControl, TreeEventHandler, RendererTreeBehaviorProps 等（共 9 个 symbol）。
+ */
 import { nextTick } from 'vue'
 import { isDataRow, type DataView, type DataRow } from '@spark-appworks/spark-data'
 import type { LoggerApi } from '@spark-appworks/spark-utils'
@@ -12,60 +18,115 @@ import {
 } from '../zero-code-shared.js'
 import type { RendererTreeApi } from './types'
 
+/** r-tree 对外暴露的树节点数据形态，兼容普通 DataRow 和嵌套 children。 */
 export type TreeNode = {
+  /** 树节点的业务主键；用于选中、拖拽移动和 Element Plus 节点定位。 */
   id?: string | number
+  /** 节点展示文本；优先用于树节点标题。 */
   label?: string
+  /** 兼容后端常见字段名的节点展示文本。 */
   name?: string
+  /** 子节点集合；存在时按嵌套树数据渲染。 */
   children?: TreeNode[]
+  /** 是否禁用该节点的选择、勾选或交互。 */
   disabled?: boolean
-  [key: string]: unknown}
+  /** 允许保留业务行上的额外字段，供脚本和动作读取。 */
+  [key: string]: unknown
+}
 
+/** Element Plus 树节点实例的最小结构，供事件回调和拖拽逻辑读取。 */
 export type ElTreeNode = {
+  /** Element Plus 树节点层级，从根层开始递增。 */
   level: number
+  /** Element Plus 树节点当前是否展开。 */
   expanded: boolean
+  /** 树节点绑定的原始 DataRow。 */
   data?: DataRow
+  /** 父级 Element Plus 树节点；根节点为空。 */
   parent?: ElTreeNode | null
-  [key: string]: unknown}
+  /** Element Plus 内部节点对象上的额外运行时字段。 */
+  [key: string]: unknown
+}
 
+/** Element Plus tree 组件实例的最小透传形态。 */
 export type ElTreeComponent = {
-  [key: string]: unknown}
+  /** Element Plus tree 组件实例上的额外运行时方法或状态。 */
+  [key: string]: unknown
+}
 
+/** r-tree 运行时需要调用的 Element Plus tree 原生能力集合。 */
 export type NativeTreeLike = {
+  /** 返回当前选中的原生树节点数据。 */
   getCurrentNode?: () => unknown
+  /** 按节点 key 设置当前选中节点；传 null 清空选中。 */
   setCurrentKey?: (key: string | number | null) => void
+  /** 按关键字触发 Element Plus 树过滤。 */
   filter?: (value: string) => void
+  /** 返回当前勾选的节点数据。 */
   getCheckedNodes?: (leafOnly?: boolean, includeHalfChecked?: boolean) => unknown[]
+  /** 返回当前勾选节点的 key 集合。 */
   getCheckedKeys?: (leafOnly?: boolean) => Array<string | number>
+  /** 设置当前勾选节点的 key 集合。 */
   setCheckedKeys?: (keys: Array<string | number>, leafOnly?: boolean) => void
+  /** 将节点数据追加到父节点下。 */
   append?: (data: unknown, parentNode: unknown) => void
+  /** 将节点数据插入到参考节点之前。 */
   insertBefore?: (data: unknown, refNode: unknown) => void
+  /** 将节点数据插入到参考节点之后。 */
   insertAfter?: (data: unknown, refNode: unknown) => void
+  /** 从树中移除节点实例或节点数据。 */
   remove?: (nodeOrData: unknown) => void
-  getNode?: (key: string | number) => NativeTreeNodeLike | undefined}
+  /** 按业务 key 获取原生树节点实例。 */
+  getNode?: (key: string | number) => NativeTreeNodeLike | undefined
+}
 
+/** Element Plus 原生树节点实例的最小能力集合。 */
 export type NativeTreeNodeLike = {
+  /** 展开当前原生树节点。 */
   expand?: () => void
-  data?: DataRow}
+  /** 原生树节点绑定的业务行数据。 */
+  data?: DataRow
+}
 
+/** 树事件回调的默认行为控制器。 */
 export type TreeEventControl = {
-  cancel: CancellableControl['cancel']}
+  /** 事件处理器调用后阻止组件默认行为。 */
+  cancel: CancellableControl['cancel']
+}
 
+/** r-tree 节点交互事件处理函数。 */
 export type TreeEventHandler = {
-  (data: TreeNode, node: ElTreeNode, component: ElTreeComponent, control: TreeEventControl): void | Promise<void>}
+  /** 树节点交互回调；可通过 control.cancel() 接管默认选中、展开等行为。 */
+  (data: TreeNode, node: ElTreeNode, component: ElTreeComponent, control: TreeEventControl): void | Promise<void>
+}
 
+/** r-tree 与节点交互相关的行为属性。 */
 type RendererTreeBehaviorProps = Readonly<Record<string, unknown>> & {
+  /** 节点点击时触发，可取消默认选中当前行行为。 */
   onNodeClick?: TreeEventHandler | undefined
-    onNodeExpand?: TreeEventHandler | undefined
-    onNodeCollapse?: TreeEventHandler | undefined}
+  /** 节点展开时触发，用于懒加载、埋点或自定义展开逻辑。 */
+  onNodeExpand?: TreeEventHandler | undefined
+  /** 节点收起时触发，用于同步外部状态或埋点。 */
+  onNodeCollapse?: TreeEventHandler | undefined
+}
 
+/** 创建 r-tree zero-code API 和事件桥接所需的运行时输入。 */
 type RendererTreeZeroCodeOptions = {
+  /** r-tree 的组件属性集合，包含事件回调和配置透传。 */
   props: RendererTreeBehaviorProps
+  /** 当前解析出的 DataView；为空时树 API 只处理原生实例能力。 */
   resolvedView: ValueRef<DataView | null>
+  /** 树渲染使用的行数据集合。 */
   treeData: ValueRef<DataRow[]>
+  /** Element Plus tree 原生组件 ref。 */
   nativeTreeRef: ValueRef<unknown>
+  /** 运行时诊断日志。 */
   logger: LoggerApi
+  /** 作为树节点 key 的字段名。 */
   nodeKeyField: ValueRef<string>
-  treeIdField: ValueRef<string>}
+  /** 作为树节点 id 的字段名，用于诊断缺主键场景。 */
+  treeIdField: ValueRef<string>
+}
 
 type TreeEventRunOptions = {
   handler: TreeEventHandler | undefined

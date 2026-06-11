@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/data-components/FieldSegmented.props
+ * FieldSegmented 模块，属于 SPARK component field-level/data-field。
+ * 组件目录: fields/data-components。
+ * 导出 ClassModel symbol: RSegmentedProps（共 1 个 symbol）。
+ */
 import type { SparkNodeProps, SparkOptionFieldProps } from '../../shared-types'
 
 /** 分段控件候选项直接使用原生联合类型，不再额外导出基础类型包装。 */

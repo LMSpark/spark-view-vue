@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/layout/RendererStepItem
+RendererStepItem 模块，属于 SPARK component container/layout-container。
+组件目录: containers/layout。
+导出 ClassModel symbol: Props（共 1 个 symbol）。
+-->
 <template>
   <el-step
     v-if="mode === 'header'"
@@ -32,6 +38,7 @@ import { nodeId } from '../../internal'
 import { useCompositeItemGrid } from '../runtime/container-layout'
 import type { SparkNodeProps } from '../../shared-types'
 
+/** r-steps 内部步骤项属性，兼容步骤头部和步骤内容区。 */
 type Props = SparkNodeProps & {
   /** 步骤标题 */
     title?: string

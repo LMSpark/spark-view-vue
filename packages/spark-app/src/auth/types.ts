@@ -9,18 +9,24 @@ import type { Component } from 'vue'
  * 登录凭证
  */
 export type LoginCredentials = {
-  username: string
-  password: string
+    /** username 字段。 */
+username: string
+    /** password 字段。 */
+password: string
   [key: string]: unknown}
 
 /**
  * 认证结果
  */
 export type AuthResult = {
-  user: UserInfo
-  tenant: TenantInfo
-  env: EnvironmentInfo
-  token?: string}
+    /** user 字段。 */
+user: UserInfo
+    /** tenant 字段。 */
+tenant: TenantInfo
+    /** env 字段。 */
+env: EnvironmentInfo
+    /** token 字段。 */
+token?: string}
 
 /**
  * Token 存储类型
@@ -99,7 +105,10 @@ export type AuthConfig = {
    * 钩子函数
    */
   onLoginSuccess: ((user: UserInfo) => void | Promise<void>) | undefined
-  onLogoutSuccess: (() => void | Promise<void>) | undefined
-  onAuthError: ((error: Error) => void) | undefined
-  onTokenRefresh: ((token: string) => void) | undefined}
+    /** on Logout Success 事件回调。 */
+onLogoutSuccess: (() => void | Promise<void>) | undefined
+    /** on Auth Error 事件回调。 */
+onAuthError: ((error: Error) => void) | undefined
+    /** on Token Refresh 事件回调。 */
+onTokenRefresh: ((token: string) => void) | undefined}
 

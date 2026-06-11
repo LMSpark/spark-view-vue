@@ -1,0 +1,414 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/data-views/RendererList/RendererList.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/data-views/RendererList/RendererList.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererList/RendererList.props\nRendererList 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: RListProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RListProps"
+    ],
+    "componentName": "RendererList",
+    "componentType": "r-list",
+    "componentLevel": "table-level",
+    "componentLayer": "data-view-container",
+    "componentDirectory": "containers/data-views"
+  },
+  "symbols": [
+    "RListProps"
+  ],
+  "models": {
+    "RListProps": {
+      "kind": "RListProps",
+      "className": "RListProps",
+      "jsdoc": "/**\n * r-list 组件公开属性接口。\n *\n * 命名规范：组件 type `r-list` → 接口名 `RListProps`。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & SparkCrudDataContainerProps & SparkGridLayoutProps & {\n    /** 显式收窄为列表容器使用的 DataView 数据线。 */\n    dataSource?: DataView;\n    /** 结构化工具栏 */\n    toolbar?: RToolbarProps;\n    /** 结构化列表项动作（toolbar 结构） */\n    actions?: RToolbarProps;\n    /** 列数 */\n    columns?: number;\n    /** 最小项宽度 */\n    minItemWidth?: string;\n    /** 行唯一键字段 */\n    rowKey?: string;\n    /** 空数据提示文案 */\n    emptyText?: string;\n    /** 列表项 CSS 类名 */\n    itemClass?: string;\n    /** 列表项行内样式 */\n    itemStyle?: CSSProperties;\n    /** 使用卡片包裹 */\n    useCard?: boolean;\n    /** 卡片阴影模式 */\n    cardShadow?: 'always' | 'hover' | 'never';\n    /** 项跨列数 */\n    itemColSpan?: number;\n    /** 项跨行数 */\n    itemRowSpan?: number;\n    /** 列表项点击回调 */\n    onItemClick?: RowClickHandler;\n    /** 透传给列表根节点的显式属性 */\n    listProps?: Record<string, unknown>;\n    /** 是否显示分页器。默认 true。 */\n    showPagination?: boolean;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkCrudDataContainerProps",
+          "targetName": "SparkCrudDataContainerProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkGridLayoutProps",
+          "targetName": "SparkGridLayoutProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 显式收窄为列表容器使用的 DataView 数据线。 */\n    dataSource?: DataView;\n    /** 结构化工具栏 */\n    toolbar?: RToolbarProps;\n    /** 结构化列表项动作（toolbar 结构） */\n    actions?: RToolbarProps;\n    /** 列数 */\n    columns?: number;\n    /** 最小项宽度 */\n    minItemWidth?: string;\n    /** 行唯一键字段 */\n    rowKey?: string;\n    /** 空数据提示文案 */\n    emptyText?: string;\n    /** 列表项 CSS 类名 */\n    itemClass?: string;\n    /** 列表项行内样式 */\n    itemStyle?: CSSProperties;\n    /** 使用卡片包裹 */\n    useCard?: boolean;\n    /** 卡片阴影模式 */\n    cardShadow?: 'always' | 'hover' | 'never';\n    /** 项跨列数 */\n    itemColSpan?: number;\n    /** 项跨行数 */\n    itemRowSpan?: number;\n    /** 列表项点击回调 */\n    onItemClick?: RowClickHandler;\n    /** 透传给列表根节点的显式属性 */\n    listProps?: Record<string, unknown>;\n    /** 是否显示分页器。默认 true。 */\n    showPagination?: boolean;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+        "line": 17,
+        "className": "RListProps",
+        "declarationKind": "type",
+        "componentName": "RendererList",
+        "componentType": "r-list",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "dataSource",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 显式收窄为列表容器使用的 DataView 数据线。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 19,
+            "className": "RListProps",
+            "memberName": "dataSource",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "toolbar",
+          "schema": {
+            "title": "RToolbarProps"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 结构化工具栏 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 21,
+            "className": "RListProps",
+            "memberName": "toolbar",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "actions",
+          "schema": {
+            "title": "RToolbarProps"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 结构化列表项动作（toolbar 结构） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 23,
+            "className": "RListProps",
+            "memberName": "actions",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "columns",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 列数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 25,
+            "className": "RListProps",
+            "memberName": "columns",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "minItemWidth",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 最小项宽度 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 27,
+            "className": "RListProps",
+            "memberName": "minItemWidth",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "rowKey",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 行唯一键字段 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 29,
+            "className": "RListProps",
+            "memberName": "rowKey",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "emptyText",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 空数据提示文案 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 31,
+            "className": "RListProps",
+            "memberName": "emptyText",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "itemClass",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 列表项 CSS 类名 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 33,
+            "className": "RListProps",
+            "memberName": "itemClass",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "itemStyle",
+          "schema": {
+            "title": "CSSProperties"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 列表项行内样式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 35,
+            "className": "RListProps",
+            "memberName": "itemStyle",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "useCard",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 使用卡片包裹 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 37,
+            "className": "RListProps",
+            "memberName": "useCard",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "cardShadow",
+          "schema": {
+            "title": "'always' | 'hover' | 'never'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 卡片阴影模式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 39,
+            "className": "RListProps",
+            "memberName": "cardShadow",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "itemColSpan",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 项跨列数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 41,
+            "className": "RListProps",
+            "memberName": "itemColSpan",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "itemRowSpan",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 项跨行数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 43,
+            "className": "RListProps",
+            "memberName": "itemRowSpan",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "onItemClick",
+          "schema": {
+            "title": "RowClickHandler"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 列表项点击回调 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 45,
+            "className": "RListProps",
+            "memberName": "onItemClick",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "listProps",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 透传给列表根节点的显式属性 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 47,
+            "className": "RListProps",
+            "memberName": "listProps",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "showPagination",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否显示分页器。默认 true。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+            "line": 49,
+            "className": "RListProps",
+            "memberName": "showPagination",
+            "declarationKind": "interface",
+            "componentName": "RendererList",
+            "componentType": "r-list",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.054Z"
+}

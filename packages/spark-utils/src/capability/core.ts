@@ -13,20 +13,25 @@ export type CapabilityReader<T> = {
 
 /** 带运行时校验的能力键。 */
 export class CapabilityKey<T> {
-  readonly token: symbol
+    /** token 字段。 */
+readonly token: symbol
 
-  constructor(
+    /** 创建 Capability Key 实例。 */
+constructor(
+    /** 能力键的全局唯一名称，会用于 Symbol.for(name)。 */
     readonly name: string,
     private readonly reader: CapabilityReader<T>,
   ) {
     this.token = Symbol.for(name)
   }
 
-  read(value: unknown): T | null {
+    /** 执行 read 操作。 */
+read(value: unknown): T | null {
     return this.reader(value) ? value : null
   }
 
-  toString(): string {
+    /** 执行 to String 操作。 */
+toString(): string {
     return this.name
   }
 }

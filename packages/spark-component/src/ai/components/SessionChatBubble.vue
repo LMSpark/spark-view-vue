@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-component:ai/components/SessionChatBubble
+@spark-appworks/spark-component 的 ai/components/SessionChatBubble 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div :class="[$style['chat-bubble'], $style[`chat-bubble--${role}`]]">
     <div :class="$style['chat-bubble__header']">

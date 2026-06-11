@@ -1,0 +1,239 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/data-views/RendererDetail/RendererDetail.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/data-views/RendererDetail/RendererDetail.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererDetail/RendererDetail.props\nRendererDetail 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: RDetailProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RDetailProps"
+    ],
+    "componentName": "RendererDetail",
+    "componentType": "r-detail",
+    "componentLevel": "table-level",
+    "componentLayer": "data-view-container",
+    "componentDirectory": "containers/data-views"
+  },
+  "symbols": [
+    "RDetailProps"
+  ],
+  "models": {
+    "RDetailProps": {
+      "kind": "RDetailProps",
+      "className": "RDetailProps",
+      "jsdoc": "/**\n * r-detail 组件公开属性接口。\n *\n * 命名规范：组件 type `r-detail` → 接口名 `RDetailProps`。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & SparkCrudDataContainerProps & SparkGridLayoutProps & {\n    /** 显式收窄为详情容器使用的 DataView 数据线。 */\n    dataSource?: DataView;\n    /** 结构化工具栏 */\n    toolbar?: RToolbarProps;\n    /** 上下文 DataView 成员，默认 currentRow。 */\n    contextDataMember?: DataMember | `${DataMember}`;\n    /** 上下文成员内部业务字段或点路径。 */\n    contextDataField?: string;\n    /** 没有显式 children 时，是否从 DataView.columns 自动生成字段。默认 true。 */\n    autoColumns?: boolean;\n    /** 标题对齐 */\n    titleAlign?: 'left' | 'center' | 'right';\n    /** 值对齐 */\n    valueAlign?: 'left' | 'center' | 'right';\n    /** 透传给详情根节点的显式属性 */\n    detailProps?: Record<string, unknown>;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkCrudDataContainerProps",
+          "targetName": "SparkCrudDataContainerProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkGridLayoutProps",
+          "targetName": "SparkGridLayoutProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 显式收窄为详情容器使用的 DataView 数据线。 */\n    dataSource?: DataView;\n    /** 结构化工具栏 */\n    toolbar?: RToolbarProps;\n    /** 上下文 DataView 成员，默认 currentRow。 */\n    contextDataMember?: DataMember | `${DataMember}`;\n    /** 上下文成员内部业务字段或点路径。 */\n    contextDataField?: string;\n    /** 没有显式 children 时，是否从 DataView.columns 自动生成字段。默认 true。 */\n    autoColumns?: boolean;\n    /** 标题对齐 */\n    titleAlign?: 'left' | 'center' | 'right';\n    /** 值对齐 */\n    valueAlign?: 'left' | 'center' | 'right';\n    /** 透传给详情根节点的显式属性 */\n    detailProps?: Record<string, unknown>;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.d.ts",
+        "line": 15,
+        "className": "RDetailProps",
+        "declarationKind": "type",
+        "componentName": "RendererDetail",
+        "componentType": "r-detail",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "dataSource",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 显式收窄为详情容器使用的 DataView 数据线。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.d.ts",
+            "line": 17,
+            "className": "RDetailProps",
+            "memberName": "dataSource",
+            "declarationKind": "interface",
+            "componentName": "RendererDetail",
+            "componentType": "r-detail",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "toolbar",
+          "schema": {
+            "title": "RToolbarProps"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 结构化工具栏 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.d.ts",
+            "line": 19,
+            "className": "RDetailProps",
+            "memberName": "toolbar",
+            "declarationKind": "interface",
+            "componentName": "RendererDetail",
+            "componentType": "r-detail",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "contextDataMember",
+          "schema": {
+            "title": "DataMember | `${DataMember}`"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 上下文 DataView 成员，默认 currentRow。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.d.ts",
+            "line": 21,
+            "className": "RDetailProps",
+            "memberName": "contextDataMember",
+            "declarationKind": "interface",
+            "componentName": "RendererDetail",
+            "componentType": "r-detail",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "contextDataField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 上下文成员内部业务字段或点路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.d.ts",
+            "line": 23,
+            "className": "RDetailProps",
+            "memberName": "contextDataField",
+            "declarationKind": "interface",
+            "componentName": "RendererDetail",
+            "componentType": "r-detail",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "autoColumns",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 没有显式 children 时，是否从 DataView.columns 自动生成字段。默认 true。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.d.ts",
+            "line": 25,
+            "className": "RDetailProps",
+            "memberName": "autoColumns",
+            "declarationKind": "interface",
+            "componentName": "RendererDetail",
+            "componentType": "r-detail",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "titleAlign",
+          "schema": {
+            "title": "'left' | 'center' | 'right'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 标题对齐 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.d.ts",
+            "line": 27,
+            "className": "RDetailProps",
+            "memberName": "titleAlign",
+            "declarationKind": "interface",
+            "componentName": "RendererDetail",
+            "componentType": "r-detail",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "valueAlign",
+          "schema": {
+            "title": "'left' | 'center' | 'right'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 值对齐 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.d.ts",
+            "line": 29,
+            "className": "RDetailProps",
+            "memberName": "valueAlign",
+            "declarationKind": "interface",
+            "componentName": "RendererDetail",
+            "componentType": "r-detail",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "detailProps",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 透传给详情根节点的显式属性 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.props.d.ts",
+            "line": 31,
+            "className": "RDetailProps",
+            "memberName": "detailProps",
+            "declarationKind": "interface",
+            "componentName": "RendererDetail",
+            "componentType": "r-detail",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.033Z"
+}

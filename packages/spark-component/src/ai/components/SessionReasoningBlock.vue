@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-component:ai/components/SessionReasoningBlock
+@spark-appworks/spark-component 的 ai/components/SessionReasoningBlock 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-collapse :model-value="isActive ? [0] : []">
     <el-collapse-item :title="collapsed ? '推理过程（已完成）' : '正在推理...'" :name="0">

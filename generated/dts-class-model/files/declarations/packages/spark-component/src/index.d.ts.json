@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:index",
+    "sourcePath": "declarations/packages/spark-component/src/index.d.ts",
+    "sourceFile": "packages/spark-component/src/index.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "index",
+    "jsdoc": "SPARK 组件系统 - 公共 API\n@packageDocumentation",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.614Z"
+}

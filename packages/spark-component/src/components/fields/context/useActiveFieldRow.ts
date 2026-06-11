@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/context/useActiveFieldRow
+ * @spark-appworks/spark-component 的 components/fields/context/useActiveFieldRow 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import { computed, onScopeDispose, shallowRef } from 'vue'
 import type { DataRow } from '@spark-appworks/spark-data'
 import { DATA_ROW, DATA_SOURCE, useSparkConsume } from '../../internal'

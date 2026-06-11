@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/class-model/signature-renderer
+ * @spark-appworks/spark-ai 的 class-model/class-model/signature-renderer 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import type { AiJsonSchemaObject } from '../../json'
 import { jsonSchemaToTypeText } from './json-schema-to-type'
 import {

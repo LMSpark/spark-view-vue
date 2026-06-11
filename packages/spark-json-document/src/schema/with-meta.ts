@@ -1,4 +1,9 @@
 /**
+ * @module @spark-appworks/spark-json-document:schema/with-meta
+ * @spark-appworks/spark-json-document 的 schema/with-meta 模块。
+ * 导出 ClassModel symbol: JsonSchemaNode（共 1 个 symbol）。
+ */
+/**
  * schema/with-meta.ts — JSON Schema 节点添加 title/description 元数据
  */
 

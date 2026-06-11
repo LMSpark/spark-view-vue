@@ -1,4 +1,9 @@
 /**
+ * @module @spark-appworks/spark-component:core/useSparkComponent
+ * @spark-appworks/spark-component 的 core/useSparkComponent 模块。
+ * 导出 ClassModel symbol: CapabilityKey, CapabilityContext, LoggerApi, SparkCapabilityConsumer, UseSparkComponentReturn, UseSparkPageComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions 等（共 11 个 symbol）。
+ */
+/**
  * 文件概述：
  * - 统一封装 Spark 组件的上下文创建、能力提供/消费、事件订阅与生命周期清理。
  * - 将 Vue 当前实例的运行时输入归一化为 SparkNode，并接入 Spark 自己的上下文树。
@@ -28,9 +33,13 @@ const {
   sparkRemove,
 } = SparkUtils
 
+/** Capability Key 的语义模型。 */
 type CapabilityKey<T> = SparkUtils.CapabilityKey<T>
+/** Capability Context 的运行上下文。 */
 type CapabilityContext = SparkUtils.CapabilityContext
+/** Logger Api 的语义模型。 */
 type LoggerApi = SparkUtils.LoggerApi
+/** Spark Capability Consumer 的语义模型。 */
 type SparkCapabilityConsumer = SparkUtils.SparkCapabilityConsumer
 
 function toSparkRuntimeOwner(instance: ReturnType<typeof getCurrentInstance>): SparkRuntimeOwner | null {
@@ -49,49 +58,73 @@ function toSparkRuntimeOwner(instance: ReturnType<typeof getCurrentInstance>): S
  * 子级独立自决：收到能力后，自己决定何时消费、如何使用，保持渲染自主权。
  */
 export type UseSparkComponentReturn = {
-  provider: {
+    /** provider 字段。 */
+provider: {
     nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null
     nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null
   }
-  isVisible: { readonly value: boolean }
-  isDisabled: { readonly value: boolean }
-  resolvedProps: { readonly value: Record<string, unknown> }
-  sparkProvide: {
+    /** 是否 is Visible。 */
+isVisible: { readonly value: boolean }
+    /** 是否 is Disabled。 */
+isDisabled: { readonly value: boolean }
+    /** resolved Props 字段。 */
+resolvedProps: { readonly value: Record<string, unknown> }
+    /** spark Provide 字段。 */
+sparkProvide: {
     <T>(name: CapabilityKey<T>, implementation: T): void
   }
-  sparkRemove: <T>(name: CapabilityKey<T>) => void
-  sparkConsume: SparkCapabilityConsumer
-  logger: LoggerApi}
+    /** spark Remove 回调。 */
+sparkRemove: <T>(name: CapabilityKey<T>) => void
+    /** spark Consume 字段。 */
+sparkConsume: SparkCapabilityConsumer
+    /** 诊断日志接口。 */
+logger: LoggerApi}
 
+/** Use Spark Page Component Return 的语义模型。 */
 export type UseSparkPageComponentReturn = UseSparkComponentReturn & {
-  registerApi: (api: unknown) => void}
+    /** register Api 回调。 */
+registerApi: (api: unknown) => void}
 
 /**
  * 轻量消费返回 — 仅消费能力、查询 provider，不创建自身上下文。
  * 由 `useSparkConsume()` 返回，供只需读取上下文的组件使用。
  */
 export type UseSparkCapabilityReaderReturn = {
-  provider: {
+    /** provider 字段。 */
+provider: {
     nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null
     nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null
   }
-  sparkConsume: SparkCapabilityConsumer}
+    /** spark Consume 字段。 */
+sparkConsume: SparkCapabilityConsumer}
 
+/** Use Spark Component Options 的调用配置。 */
 export type UseSparkComponentOptions = {
-  parentContext?: CapabilityContext}
+    /** parent Context 字段。 */
+parentContext?: CapabilityContext}
 
+/** Host Type Resolver Options 的调用配置。 */
 type HostTypeResolverOptions = {
-  hostTypes?: readonly string[]}
+    /** host Types 字段。 */
+hostTypes?: readonly string[]}
 
+/** Resolved Host Type 的语义模型。 */
 type ResolvedHostType = {
-  hostType: string | null
-  parentContext: CapabilityContext | null}
+    /** host Type 字段。 */
+hostType: string | null
+    /** parent Context 字段。 */
+parentContext: CapabilityContext | null}
 
+/** Spark Node Input 的输入数据。 */
 export type SparkNodeInput = {
-  type: string
-  props?: Record<string, unknown> | undefined
-  children?: SparkNode['children'] | undefined
-  id?: string | undefined}
+    /** 类型标识。 */
+type: string
+    /** 组件属性集合。 */
+props?: Record<string, unknown> | undefined
+    /** 子节点集合。 */
+children?: SparkNode['children'] | undefined
+    /** 唯一标识。 */
+id?: string | undefined}
 
 function normalizeHostType(
   type: string,

@@ -1,0 +1,782 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/data-views/view-runtime-state",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/data-views/view-runtime-state.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/data-views/view-runtime-state",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/view-runtime-state\n@spark-appworks/spark-component:components/containers/data-views/view-runtime-state 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: DataViewIdentityState, DataViewRowsState, DataViewDisplayState, DataViewPermissionState, DataViewRequestAndAggregateState, DataViewRuntimeState, ContainerDataViewContextState, DataViewState 等（共 10 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "DataViewIdentityState",
+      "DataViewRowsState",
+      "DataViewDisplayState",
+      "DataViewPermissionState",
+      "DataViewRequestAndAggregateState",
+      "DataViewRuntimeState",
+      "ContainerDataViewContextState",
+      "DataViewState",
+      "AggregateResultState",
+      "ResolvedViewRef"
+    ],
+    "componentLevel": "table-level",
+    "componentLayer": "data-view-container",
+    "componentDirectory": "containers/data-views"
+  },
+  "symbols": [
+    "DataViewIdentityState",
+    "DataViewRowsState",
+    "DataViewDisplayState",
+    "DataViewPermissionState",
+    "DataViewRequestAndAggregateState",
+    "DataViewRuntimeState",
+    "ContainerDataViewContextState",
+    "DataViewState",
+    "AggregateResultState",
+    "ResolvedViewRef"
+  ],
+  "models": {
+    "DataViewIdentityState": {
+      "kind": "DataViewIdentityState",
+      "className": "DataViewIdentityState",
+      "jsdoc": "/**\n * DataView 标识态：来自 DataView 快照的静态元信息。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** DataView 所属表名，用于诊断和表级能力定位。 */\n    tableName: ComputedRef<string>;\n    /** DataView 的视图 id；缺省时表示使用表默认视图。 */\n    viewId: ComputedRef<string | undefined>;\n    /** 当前 DataView 的主键字段名。 */\n    primaryKey: ComputedRef<string | undefined>;\n    /** 树形 DataView 的层级字段配置；非树形视图为空。 */\n    treeConfig: ComputedRef<TreeConfig | undefined>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+        "line": 6,
+        "className": "DataViewIdentityState",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "tableName",
+          "schema": {
+            "title": "ComputedRef<string>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** DataView 所属表名，用于诊断和表级能力定位。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 8,
+            "className": "DataViewIdentityState",
+            "memberName": "tableName",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "viewId",
+          "schema": {
+            "title": "ComputedRef<string | undefined>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** DataView 的视图 id；缺省时表示使用表默认视图。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 10,
+            "className": "DataViewIdentityState",
+            "memberName": "viewId",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "primaryKey",
+          "schema": {
+            "title": "ComputedRef<string | undefined>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前 DataView 的主键字段名。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 12,
+            "className": "DataViewIdentityState",
+            "memberName": "primaryKey",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "treeConfig",
+          "schema": {
+            "title": "ComputedRef<TreeConfig | undefined>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 树形 DataView 的层级字段配置；非树形视图为空。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 14,
+            "className": "DataViewIdentityState",
+            "memberName": "treeConfig",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataViewRowsState": {
+      "kind": "DataViewRowsState",
+      "className": "DataViewRowsState",
+      "jsdoc": "/** DataView 行数据态：当前视图下的行级数据与选择状态。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前页或当前视图范围内的行数据。 */\n    rows: ComputedRef<readonly DataRow[]>;\n    /** 当前视图可渲染的列定义。 */\n    columns: ComputedRef<readonly DataColumn[]>;\n    /** 当前行；表格高亮、详情容器和字段上下文共享该值。 */\n    currentRow: ComputedRef<DataRow | null>;\n    /** 当前已选择行集合。 */\n    selectedRows: ComputedRef<readonly DataRow[]>;\n    /** 当前处于编辑态的行集合。 */\n    editingRows: ComputedRef<readonly DataRow[]>;\n    /** 当前视图是否启用多选能力。 */\n    isMultiSelect: ComputedRef<boolean>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+        "line": 17,
+        "className": "DataViewRowsState",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "rows",
+          "schema": {
+            "title": "ComputedRef<readonly DataRow[]>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前页或当前视图范围内的行数据。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 19,
+            "className": "DataViewRowsState",
+            "memberName": "rows",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "columns",
+          "schema": {
+            "title": "ComputedRef<readonly DataColumn[]>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前视图可渲染的列定义。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 21,
+            "className": "DataViewRowsState",
+            "memberName": "columns",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "currentRow",
+          "schema": {
+            "title": "ComputedRef<DataRow | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前行；表格高亮、详情容器和字段上下文共享该值。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 23,
+            "className": "DataViewRowsState",
+            "memberName": "currentRow",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "selectedRows",
+          "schema": {
+            "title": "ComputedRef<readonly DataRow[]>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前已选择行集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 25,
+            "className": "DataViewRowsState",
+            "memberName": "selectedRows",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "editingRows",
+          "schema": {
+            "title": "ComputedRef<readonly DataRow[]>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前处于编辑态的行集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 27,
+            "className": "DataViewRowsState",
+            "memberName": "editingRows",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "isMultiSelect",
+          "schema": {
+            "title": "ComputedRef<boolean>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前视图是否启用多选能力。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 29,
+            "className": "DataViewRowsState",
+            "memberName": "isMultiSelect",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataViewDisplayState": {
+      "kind": "DataViewDisplayState",
+      "className": "DataViewDisplayState",
+      "jsdoc": "/** DataView 显示态：用于下拉/选择器等展示场景的 value/label 信息。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 原始模型权限数据，供权限投影和兼容字段读取。 */\n    _modelPerm: ComputedRef<ModelPermission | undefined>;\n    /** 当前值字段的字符串化结果。 */\n    value: ComputedRef<string>;\n    /** 当前显示标签；没有当前行或标签字段时为空。 */\n    label: ComputedRef<string | null>;\n    /** 多选场景下的显示标签集合。 */\n    labels: ComputedRef<readonly string[]>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+        "line": 32,
+        "className": "DataViewDisplayState",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "_modelPerm",
+          "schema": {
+            "title": "ComputedRef<ModelPermission | undefined>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 原始模型权限数据，供权限投影和兼容字段读取。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 34,
+            "className": "DataViewDisplayState",
+            "memberName": "_modelPerm",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "value",
+          "schema": {
+            "title": "ComputedRef<string>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前值字段的字符串化结果。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 36,
+            "className": "DataViewDisplayState",
+            "memberName": "value",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "label",
+          "schema": {
+            "title": "ComputedRef<string | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前显示标签；没有当前行或标签字段时为空。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 38,
+            "className": "DataViewDisplayState",
+            "memberName": "label",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "labels",
+          "schema": {
+            "title": "ComputedRef<readonly string[]>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 多选场景下的显示标签集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 40,
+            "className": "DataViewDisplayState",
+            "memberName": "labels",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataViewPermissionState": {
+      "kind": "DataViewPermissionState",
+      "className": "DataViewPermissionState",
+      "jsdoc": "/** DataView 权限投影：从 _modelPerm 解析后的统一模型权限结构。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前 DataView 对应模型的读写权限配置。 */\n    modelPermission: ComputedRef<ModelPermission | undefined>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+        "line": 43,
+        "className": "DataViewPermissionState",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "modelPermission",
+          "schema": {
+            "title": "ComputedRef<ModelPermission | undefined>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前 DataView 对应模型的读写权限配置。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 45,
+            "className": "DataViewPermissionState",
+            "memberName": "modelPermission",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataViewRequestAndAggregateState": {
+      "kind": "DataViewRequestAndAggregateState",
+      "className": "DataViewRequestAndAggregateState",
+      "jsdoc": "/** DataView 请求与聚合态：分页、加载状态、聚合结果等运行时动态信息。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前数据请求状态，用于 loading/empty/error 渲染。 */\n    requestState: ComputedRef<RequestState>;\n    /** 全量或当前查询条件下的聚合结果。 */\n    aggregateResult: ComputedRef<AggregateResultState>;\n    /** 已选择行集合的聚合结果。 */\n    selectionAggregateResult: ComputedRef<AggregateResultState>;\n    /** 当前查询结果总条数。 */\n    total: ComputedRef<number>;\n    /** 当前页码，从 1 开始。 */\n    page: ComputedRef<number>;\n    /** 当前分页大小。 */\n    pageSize: ComputedRef<number>;\n    /** 当前是否存在本地或远端变更中的写操作。 */\n    mutating: ComputedRef<boolean>;\n    /** 最近一次写操作错误。 */\n    mutatingError: ComputedRef<Error | null>;\n    /** 最近一次加载数据错误。 */\n    loadingError: ComputedRef<Error | null>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+        "line": 48,
+        "className": "DataViewRequestAndAggregateState",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "requestState",
+          "schema": {
+            "title": "ComputedRef<RequestState>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前数据请求状态，用于 loading/empty/error 渲染。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 50,
+            "className": "DataViewRequestAndAggregateState",
+            "memberName": "requestState",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "aggregateResult",
+          "schema": {
+            "title": "ComputedRef<AggregateResultState>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 全量或当前查询条件下的聚合结果。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 52,
+            "className": "DataViewRequestAndAggregateState",
+            "memberName": "aggregateResult",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "selectionAggregateResult",
+          "schema": {
+            "title": "ComputedRef<AggregateResultState>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 已选择行集合的聚合结果。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 54,
+            "className": "DataViewRequestAndAggregateState",
+            "memberName": "selectionAggregateResult",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "total",
+          "schema": {
+            "title": "ComputedRef<number>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前查询结果总条数。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 56,
+            "className": "DataViewRequestAndAggregateState",
+            "memberName": "total",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "page",
+          "schema": {
+            "title": "ComputedRef<number>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前页码，从 1 开始。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 58,
+            "className": "DataViewRequestAndAggregateState",
+            "memberName": "page",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "pageSize",
+          "schema": {
+            "title": "ComputedRef<number>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前分页大小。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 60,
+            "className": "DataViewRequestAndAggregateState",
+            "memberName": "pageSize",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "mutating",
+          "schema": {
+            "title": "ComputedRef<boolean>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前是否存在本地或远端变更中的写操作。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 62,
+            "className": "DataViewRequestAndAggregateState",
+            "memberName": "mutating",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "mutatingError",
+          "schema": {
+            "title": "ComputedRef<Error | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 最近一次写操作错误。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 64,
+            "className": "DataViewRequestAndAggregateState",
+            "memberName": "mutatingError",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "loadingError",
+          "schema": {
+            "title": "ComputedRef<Error | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 最近一次加载数据错误。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 66,
+            "className": "DataViewRequestAndAggregateState",
+            "memberName": "loadingError",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataViewRuntimeState": {
+      "kind": "DataViewRuntimeState",
+      "className": "DataViewRuntimeState",
+      "jsdoc": "/** DataView 完整运行时投影（不含容器级解析上下文）。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "DataViewIdentityState & DataViewRowsState & DataViewPermissionState & DataViewDisplayState & DataViewRequestAndAggregateState",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "DataViewIdentityState",
+          "targetName": "DataViewIdentityState"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "DataViewRowsState",
+          "targetName": "DataViewRowsState"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "DataViewPermissionState",
+          "targetName": "DataViewPermissionState"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "DataViewDisplayState",
+          "targetName": "DataViewDisplayState"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "DataViewRequestAndAggregateState",
+          "targetName": "DataViewRequestAndAggregateState"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+        "line": 69,
+        "className": "DataViewRuntimeState",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ContainerDataViewContextState": {
+      "kind": "ContainerDataViewContextState",
+      "className": "ContainerDataViewContextState",
+      "jsdoc": "/** 容器级数据解析上下文（不属于 DataView 原始字段）。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 容器最终解析到的数据视图实例。 */\n    resolvedView: ComputedRef<DataView | null>;\n    /** 容器最终解析到的行上下文，优先来自 dataMember/dataField。 */\n    resolvedDataRow: ComputedRef<DataRow | null>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+        "line": 71,
+        "className": "ContainerDataViewContextState",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "resolvedView",
+          "schema": {
+            "title": "ComputedRef<DataView | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 容器最终解析到的数据视图实例。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 73,
+            "className": "ContainerDataViewContextState",
+            "memberName": "resolvedView",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "resolvedDataRow",
+          "schema": {
+            "title": "ComputedRef<DataRow | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 容器最终解析到的行上下文，优先来自 dataMember/dataField。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 75,
+            "className": "ContainerDataViewContextState",
+            "memberName": "resolvedDataRow",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataViewState": {
+      "kind": "DataViewState",
+      "className": "DataViewState",
+      "jsdoc": "/** 五类容器共享顶层视图态。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "DataViewRuntimeState & ContainerDataViewContextState",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "DataViewRuntimeState",
+          "targetName": "DataViewRuntimeState"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "ContainerDataViewContextState",
+          "targetName": "ContainerDataViewContextState"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+        "line": 78,
+        "className": "DataViewState",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AggregateResultState": {
+      "kind": "AggregateResultState",
+      "className": "AggregateResultState",
+      "jsdoc": "/** 聚合结果运行时类型（key -> 聚合值）。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    readonly [key: string]: unknown;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+        "line": 80,
+        "className": "AggregateResultState",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ResolvedViewRef": {
+      "kind": "ResolvedViewRef",
+      "className": "ResolvedViewRef",
+      "jsdoc": "/** resolvedView 的标准只读 ref 形态。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前 DataView ref 值；为空表示容器还未解析到数据源。 */\n    readonly value: DataView | null;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+        "line": 84,
+        "className": "ResolvedViewRef",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "value",
+          "schema": {
+            "title": "DataView | null"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前 DataView ref 值；为空表示容器还未解析到数据源。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts",
+            "line": 86,
+            "className": "ResolvedViewRef",
+            "memberName": "value",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.107Z"
+}

@@ -78,18 +78,46 @@ export type ColumnType =
 /** ColumnType → TypeScript 类型映射表，用于泛型推断和类型匹配 */
 export type ColumnTypeMap = {
   // 数字类
-  number: number; int: number; integer: number
-  decimal: number; float: number; double: number
+  /** 通用数字列值。 */
+  number: number
+  /** 整数列值。 */
+  int: number
+  /** 整数列值的完整写法。 */
+  integer: number
+  /** 十进制数字列值。 */
+  decimal: number
+  /** 单精度浮点列值。 */
+  float: number
+  /** 双精度浮点列值。 */
+  double: number
   // 字符串类
-  string: string; varchar: string; text: string
+  /** 通用字符串列值。 */
+  string: string
+  /** 变长字符串列值。 */
+  varchar: string
+  /** 长文本列值。 */
+  text: string
   // 布尔
-  boolean: boolean; bool: boolean
+  /** 布尔列值。 */
+  boolean: boolean
+  /** 布尔列值的短写。 */
+  bool: boolean
   // 日期
-  date: Date | string; datetime: Date | string; time: string
+  /** 日期列值，允许 Date 或 ISO 日期字符串。 */
+  date: Date | string
+  /** 日期时间列值，允许 Date 或 ISO 日期时间字符串。 */
+  datetime: Date | string
+  /** 时间列值。 */
+  time: string
   // 复合
-  object: Record<string, unknown>; array: unknown[]
+  /** 对象列值。 */
+  object: Record<string, unknown>
+  /** 数组列值。 */
+  array: unknown[]
   // 枚举
-  enum: string | number}
+  /** 枚举列值。 */
+  enum: string | number
+}
 
 /**
  * 根据 ColumnType 字符串推断对应的 TypeScript 值类型。
@@ -315,16 +343,22 @@ export const MODEL_PERMISSION_FIELD = MODEL_PERMISSION_FIELD_VALUE
 
 /** 字段可见性枚举 */
 export enum FieldVisibility {
-  Visible = 'visible',
-  Masked = 'masked',
-  Hidden = 'hidden'
+    /** Visible 字段。 */
+Visible = 'visible',
+    /** Masked 字段。 */
+Masked = 'masked',
+    /** Hidden 字段。 */
+Hidden = 'hidden'
 }
 
 /** 组件级别枚举 */
 export enum ComponentLevel {
-  Model = 'model',
-  Instance = 'instance',
-  Field = 'field'
+    /** Model 字段。 */
+Model = 'model',
+    /** Instance 字段。 */
+Instance = 'instance',
+    /** Field 字段。 */
+Field = 'field'
 }
 
 // ═══════════════════════════════════════════════════════

@@ -1,0 +1,280 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:strategies/local-mutation-delegate",
+    "sourcePath": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+    "sourceFile": "packages/spark-data/src/strategies/local-mutation-delegate.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "strategies/local-mutation-delegate",
+    "jsdoc": "LocalMutationDelegate — 本地内存变更委托\n承载 DataView 的本地行数据同步逻辑：\n- updateFromServer : 将服务端响应同步到 rows / total / page / pageSize\n- appendRow        : 追加单行\n- updateRowById    : 按主键就地更新行，同步选中状态引用\n- deleteRowById    : 按主键删除行，清理选中状态\n- replaceRows      : 整批替换行，清理无效选中引用\n私有辅助：\n- buildRowIndexMap : O(n) 构建 row→index 映射（加速 updateRowById 行对象替换）",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "EmitRowsChangedFn",
+      "PostMutationFn",
+      "LocalMutationDelegate"
+    ]
+  },
+  "symbols": [
+    "EmitRowsChangedFn",
+    "PostMutationFn",
+    "LocalMutationDelegate"
+  ],
+  "models": {
+    "EmitRowsChangedFn": {
+      "kind": "EmitRowsChangedFn",
+      "className": "EmitRowsChangedFn",
+      "jsdoc": "/** Emit Rows Changed Fn 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    (options?: {\n        selectionChanged?: boolean;\n    }): void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+        "line": 17,
+        "className": "EmitRowsChangedFn",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "PostMutationFn": {
+      "kind": "PostMutationFn",
+      "className": "PostMutationFn",
+      "jsdoc": "/** Post Mutation Fn 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    (affectedRows: DataRow[] | 'all' | null): void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+        "line": 23,
+        "className": "PostMutationFn",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "LocalMutationDelegate": {
+      "kind": "LocalMutationDelegate",
+      "className": "LocalMutationDelegate",
+      "jsdoc": "/** Local Mutation Delegate 的语义模型。 */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+        "line": 27,
+        "className": "LocalMutationDelegate",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "title": "DataView"
+            },
+            "emitRowsChanged": {
+              "title": "EmitRowsChangedFn"
+            },
+            "postMutation": {
+              "title": "PostMutationFn | undefined"
+            }
+          },
+          "required": [
+            "host",
+            "emitRowsChanged"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Local Mutation Delegate 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+          "line": 32,
+          "className": "LocalMutationDelegate",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "buildRowIndexMap",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "title": "DataRow[]",
+                "items": true
+              }
+            },
+            "required": [
+              "rows"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Map<DataRow, number>"
+          },
+          "returnTypeText": "Map<DataRow, number>",
+          "jsdoc": "/** 构建 row → index 映射（O(n)），供 updateRowById 原地更新 rowIndexMap 复用 */",
+          "paramsTypeText": "rows: DataRow[]",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+            "line": 35,
+            "className": "LocalMutationDelegate",
+            "memberName": "buildRowIndexMap",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "updateFromServer",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "title": "{\n        rows?: DataRow[];\n        total?: number;\n        page?: number;\n        pageSize?: number;\n    } | DataRow[]",
+                "items": true
+              }
+            },
+            "required": [
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 将服务端响应同步到本地字段（rows / total / page / pageSize）\n     */",
+          "paramsTypeText": "data: DataRow[] | { rows?: DataRow[] | undefined; total?: number | undefined; page?: number | undefined; pageSize?: number | undefined; }",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+            "line": 39,
+            "className": "LocalMutationDelegate",
+            "memberName": "updateFromServer",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "appendRow",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "title": "DataRow"
+              }
+            },
+            "required": [
+              "row"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 本地追加一行，发射 rowsChanged */",
+          "paramsTypeText": "row: DataRow",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+            "line": 46,
+            "className": "LocalMutationDelegate",
+            "memberName": "appendRow",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "updateRowById",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              },
+              "data": {
+                "title": "Partial<DataRow>"
+              }
+            },
+            "required": [
+              "id",
+              "data"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/**\n     * 本地按主键部分更新一行，发射 rowsChanged\n     * 同步 currentRow / selectedRows 引用（引用已变，UI 需感知）\n     * @returns 是否成功（行不存在时 false）\n     */",
+          "paramsTypeText": "id: string | number, data: Partial<DataRow>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+            "line": 52,
+            "className": "LocalMutationDelegate",
+            "memberName": "updateRowById",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "deleteRowById",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/**\n     * 本地按主键删除一行，清理选中引用，发射 rowsChanged\n     * @returns 是否成功（行不存在时 false）\n     */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+            "line": 57,
+            "className": "LocalMutationDelegate",
+            "memberName": "deleteRowById",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "replaceRows",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "title": "DataRow[]",
+                "items": true
+              }
+            },
+            "required": [
+              "rows"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 本地整批替换所有行，清理无效选中引用，发射 rowsChanged */",
+          "paramsTypeText": "rows: DataRow[]",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+            "line": 59,
+            "className": "LocalMutationDelegate",
+            "memberName": "replaceRows",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.794Z"
+}

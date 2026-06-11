@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:index",
+    "sourcePath": "declarations/packages/spark-ai/src/index.d.ts",
+    "sourceFile": "packages/spark-ai/src/index.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "index",
+    "jsdoc": "@packageDocumentation\nSPARK AI root facade.\nUse the focused public entries for new code:\n- `@spark-appworks/spark-ai/json`\n- `@spark-appworks/spark-ai/class-model`\n- `@spark-appworks/spark-ai/agent`",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.874Z"
+}

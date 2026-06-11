@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/support/crud-defaults
+ * @spark-appworks/spark-component 的 components/containers/support/crud-defaults 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import { useEventDefaults, type EventDefaultDeclaration, type EventDispatcher } from './useEventDefaults.js'
 
 export function createCrudEventDefaults(

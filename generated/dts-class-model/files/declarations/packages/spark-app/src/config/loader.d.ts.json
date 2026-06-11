@@ -1,0 +1,306 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/config/loader.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:config/loader",
+    "sourcePath": "declarations/packages/spark-app/src/config/loader.d.ts",
+    "sourceFile": "packages/spark-app/src/config/loader.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "config/loader",
+    "jsdoc": "多租户配置加载器\n功能：\n1. 从 JSON 文件或 API 加载默认配置\n2. 根据租户 ID 加载租户特定配置\n3. 合并配置（深度合并）\n4. 支持环境变量覆盖\n5. 支持远程 API 或本地文件两种模式",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ConfigLoader",
+      "TenantResolver"
+    ]
+  },
+  "symbols": [
+    "ConfigLoader",
+    "TenantResolver"
+  ],
+  "models": {
+    "ConfigLoader": {
+      "kind": "ConfigLoader",
+      "className": "ConfigLoader",
+      "jsdoc": "/**\n * 配置加载器\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+        "line": 15,
+        "className": "ConfigLoader",
+        "declarationKind": "class"
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "getInstance",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ConfigLoader"
+          },
+          "returnTypeText": "ConfigLoader",
+          "jsdoc": "/**\n     * 获取单例实例\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+            "line": 23,
+            "className": "ConfigLoader",
+            "memberName": "getInstance",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "loadDefaultConfig",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<AppFullConfig>"
+          },
+          "returnTypeText": "Promise<AppFullConfig>",
+          "jsdoc": "/**\n     * 加载默认配置\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+            "line": 35,
+            "className": "ConfigLoader",
+            "memberName": "loadDefaultConfig",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "loadTenantConfig",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tenantId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "tenantId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<TenantConfig | null>"
+          },
+          "returnTypeText": "Promise<TenantConfig | null>",
+          "jsdoc": "/**\n     * 加载租户配置\n     */",
+          "paramsTypeText": "tenantId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+            "line": 39,
+            "className": "ConfigLoader",
+            "memberName": "loadTenantConfig",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "loadConfig",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tenantId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<AppFullConfig>"
+          },
+          "returnTypeText": "Promise<AppFullConfig>",
+          "jsdoc": "/**\n     * 加载完整配置（默认 + 租户）\n     */",
+          "paramsTypeText": "tenantId?: string | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+            "line": 43,
+            "className": "ConfigLoader",
+            "memberName": "loadConfig",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "clearCache",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 清除缓存\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+            "line": 60,
+            "className": "ConfigLoader",
+            "memberName": "clearCache",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    },
+    "TenantResolver": {
+      "kind": "TenantResolver",
+      "className": "TenantResolver",
+      "jsdoc": "/**\n * 租户识别器\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+        "line": 65,
+        "className": "TenantResolver",
+        "declarationKind": "class"
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "fromQuery",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "string | null"
+          },
+          "returnTypeText": "string | null",
+          "jsdoc": "/**\n     * 从 URL 参数获取租户 ID\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+            "line": 69,
+            "className": "TenantResolver",
+            "memberName": "fromQuery",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "fromSubdomain",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "string | null"
+          },
+          "returnTypeText": "string | null",
+          "jsdoc": "/**\n     * 从子域名获取租户 ID\n     * 例如：demo.example.com -> demo\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+            "line": 74,
+            "className": "TenantResolver",
+            "memberName": "fromSubdomain",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "fromLocalStorage",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "string | null"
+          },
+          "returnTypeText": "string | null",
+          "jsdoc": "/**\n     * 从 localStorage 获取租户 ID\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+            "line": 78,
+            "className": "TenantResolver",
+            "memberName": "fromLocalStorage",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "fromCookie",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "string | null"
+          },
+          "returnTypeText": "string | null",
+          "jsdoc": "/**\n     * 从 cookie 获取租户 ID\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+            "line": 82,
+            "className": "TenantResolver",
+            "memberName": "fromCookie",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "resolve",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "string | null"
+          },
+          "returnTypeText": "string | null",
+          "jsdoc": "/**\n     * 综合识别租户 ID（按优先级）\n     * 优先级：URL 参数 > 子域名 > localStorage > cookie\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+            "line": 87,
+            "className": "TenantResolver",
+            "memberName": "resolve",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "save",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tenantId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "tenantId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 保存租户 ID 到 localStorage\n     */",
+          "paramsTypeText": "tenantId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/config/loader.d.ts",
+            "line": 91,
+            "className": "TenantResolver",
+            "memberName": "save",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.913Z"
+}

@@ -7,25 +7,35 @@ import type { HttpClientBase } from './HttpClientBase'
 
 // ==================== 请求配置 ====================
 
+/** Method 的语义模型。 */
 export type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 /**
  * 请求配置
  */
 export type RequestConfig = {
-  url: string
-  method?: Method
-  headers?: Record<string, string>
-  params?: Record<string, unknown>
-  data?: unknown
-  timeout?: number
+    /** 资源地址。 */
+url: string
+    /** 请求方法或动作方法。 */
+method?: Method
+    /** 请求头集合。 */
+headers?: Record<string, string>
+    /** 参数集合。 */
+params?: Record<string, unknown>
+    /** 业务数据载荷。 */
+data?: unknown
+    /** 超时时间。 */
+timeout?: number
   /** 响应类型（默认 json） */
   responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'formdata'
-  baseURL?: string
+    /** base URL 地址。 */
+baseURL?: string
 
   // 缓存（仅 GET）
-  cache?: boolean
-  cacheKey?: string
+    /** cache 字段。 */
+cache?: boolean
+    /** cache Key 键。 */
+cacheKey?: string
   /** 缓存过期（ms，默认 300000） */
   cacheExpiry?: number
 
@@ -51,82 +61,126 @@ export type RequestConfig = {
 
 /** HTTP 响应（不泄露 axios 实现） */
 export type HttpResponse<T = unknown> = {
-  data: T
-  status: number
-  statusText: string
-  headers: Record<string, string>}
+    /** 业务数据载荷。 */
+data: T
+    /** 当前状态。 */
+status: number
+    /** status Text 文本。 */
+statusText: string
+    /** 请求头集合。 */
+headers: Record<string, string>}
 
 /** 旧版标准业务 API 响应（{ code, message, data } 格式） */
 export type ApiResponse<T = unknown> = {
-  code: number
-  message: string
-  data: T
-  timestamp?: string
-  traceId?: string}
+    /** 稳定错误码或诊断码。 */
+code: number
+    /** 用户可读消息。 */
+message: string
+    /** 业务数据载荷。 */
+data: T
+    /** 事件时间戳。 */
+timestamp?: string
+    /** trace Id 标识。 */
+traceId?: string}
 
 /** SPARK AI Server 统一 API envelope */
 export type ApiEnvelope<T = unknown> = {
-  protocolVersion?: number
-  ok: boolean
-  data?: T | null
-  error?: ApiEnvelopeError | null
+    /** protocol Version 字段。 */
+protocolVersion?: number
+    /** ok 字段。 */
+ok: boolean
+    /** 业务数据载荷。 */
+data?: T | null
+    /** 错误对象或错误信息。 */
+error?: ApiEnvelopeError | null
   /** v3 legacy field; v4 uses context.requestId. */
   requestId?: string
-  context?: ApiEnvelopeContext
-  event?: ApiEnvelopeEvent}
+    /** 运行上下文。 */
+context?: ApiEnvelopeContext
+    /** event 字段。 */
+event?: ApiEnvelopeEvent}
 
+/** Api Envelope Error 的错误信息。 */
 export type ApiEnvelopeError = {
-  code: string
-  message: string
-  category: string
-  severity?: string
-  retryPolicy?: string
-  details?: Record<string, unknown>}
+    /** 稳定错误码或诊断码。 */
+code: string
+    /** 用户可读消息。 */
+message: string
+    /** category 字段。 */
+category: string
+    /** severity 字段。 */
+severity?: string
+    /** retry Policy 字段。 */
+retryPolicy?: string
+    /** details 字段。 */
+details?: Record<string, unknown>}
 
+/** Api Envelope Context 的运行上下文。 */
 export type ApiEnvelopeContext = {
-  requestId?: string
-  tenantId?: string
-  projectId?: string
-  username?: string
-  scope?: {
+    /** request Id 标识。 */
+requestId?: string
+    /** tenant Id 标识。 */
+tenantId?: string
+    /** project Id 标识。 */
+projectId?: string
+    /** username 字段。 */
+username?: string
+    /** 业务作用域。 */
+scope?: {
     moduleId?: string
     moduleInstanceId?: string
     instanceId?: string
     runtimeInstanceId?: string
   }
-  session?: { sessionId?: string }
-  turn?: {
+    /** session 字段。 */
+session?: { sessionId?: string }
+    /** turn 字段。 */
+turn?: {
     turnId?: string
     turnKey?: string
     seq?: number
     baseRevision?: number
   }
-  stream?: {
+    /** stream 字段。 */
+stream?: {
     streamId?: string
     streamKey?: string
   }
 }
 
+/** Api Envelope Event 的事件载荷。 */
 export type ApiEnvelopeEvent = {
-  transport?: 'http' | 'sse'
-  name?: string
-  terminal?: boolean
-  sequence?: number
+    /** transport 字段。 */
+transport?: 'http' | 'sse'
+    /** 显示或业务名称。 */
+name?: string
+    /** terminal 字段。 */
+terminal?: boolean
+    /** sequence 字段。 */
+sequence?: number
 }
 
 // ==================== 错误 ====================
 
+/** Request Error 的错误信息。 */
 export type RequestError = Error & {
-  config: RequestConfig
-    code?: string
-    status?: number
-    response?: unknown}
+    /** 配置对象。 */
+config: RequestConfig
+        /** 稳定错误码或诊断码。 */
+code?: string
+        /** 当前状态。 */
+status?: number
+        /** 响应对象。 */
+response?: unknown}
 
 // ==================== 拦截器 ====================
 
+/** Request Interceptor 的语义模型。 */
 export type RequestInterceptor = {
-  name?: string
-  onRequest?: (config: RequestConfig) => RequestConfig | Promise<RequestConfig>
+    /** 显示或业务名称。 */
+name?: string
+    /** on Request 事件回调。 */
+onRequest?: (config: RequestConfig) => RequestConfig | Promise<RequestConfig>
   /**
    * 请求阶段错误回调。
    *
@@ -135,10 +189,14 @@ export type RequestInterceptor = {
    */
   onRequestError?: (error: RequestError) => void | Promise<void>}
 
+/** Response Interceptor 的语义模型。 */
 export type ResponseInterceptor = {
-  name?: string
-  onResponse?: <T>(response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>
-  onResponseError?: (error: RequestError) => RequestError | Promise<RequestError>}
+    /** 显示或业务名称。 */
+name?: string
+    /** on Response 事件回调。 */
+onResponse?: <T>(response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>
+    /** on Response Error 事件回调。 */
+onResponseError?: (error: RequestError) => RequestError | Promise<RequestError>}
 
 /** createHttpClient 工厂参数 */
 export type HttpClientFactoryOptions = Partial<RequestConfig>
@@ -154,6 +212,7 @@ export type CacheExpirationTier = {
   /** 级别说明 */
   description?: string}
 
+/** File Load Options 的调用配置。 */
 export type FileLoadOptions = {
   /** API 基础路径（文件 HTTP 加载使用） */
   baseUrl: string
@@ -207,14 +266,20 @@ export type CacheEntry<T = string> = {
   /** 过期级别（0=永不过期, 1=3天, 2=7天, 3=15天, 4=30天） */
   expirationLevel: number}
 
+/** File Load Result 的返回结果。 */
 export type FileLoadResult<T = unknown> = {
-  success: boolean
-  data?: T
+    /** success 字段。 */
+success: boolean
+    /** 业务数据载荷。 */
+data?: T
   /** 来源时间戳 */
   timestamp?: string
-  fromCache: boolean
-  error?: string
-  notModified?: boolean
+    /** from Cache 字段。 */
+fromCache: boolean
+    /** 错误对象或错误信息。 */
+error?: string
+    /** not Modified 字段。 */
+notModified?: boolean
   /** 失败状态码（如 404） */
   status?: number
   /** 失败原因（用于上游订阅消费，不再依赖字符串匹配） */
@@ -222,18 +287,21 @@ export type FileLoadResult<T = unknown> = {
 
 /** FileLoader 事件映射（用于全链路订阅消费） */
 export type FileLoaderEventMap = {
-  'file-loaded': {
+    /** file loaded 字段。 */
+'file-loaded': {
     fileName: string
     fromCache: boolean
     timestamp?: string
     notModified?: boolean
   }
-  'file-missing': {
+    /** file missing 字段。 */
+'file-missing': {
     fileName: string
     status?: number
     reason: 'not-found'
   }
-  'file-error': {
+    /** file error 字段。 */
+'file-error': {
     fileName: string
     status?: number
     error: string

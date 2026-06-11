@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/system/plugin.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:system/plugin",
+    "sourcePath": "declarations/packages/spark-component/src/system/plugin.d.ts",
+    "sourceFile": "packages/spark-component/src/system/plugin.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "system/plugin",
+    "jsdoc": "SPARK Vue 插件\n职责：\n- 创建并注入 Registry\n- 保持 spark-data 框架无关；Vue 响应式适配由组件级 DataView 状态/事件桥处理",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SparkPluginOptions"
+    ]
+  },
+  "symbols": [
+    "SparkPluginOptions"
+  ],
+  "models": {
+    "SparkPluginOptions": {
+      "kind": "SparkPluginOptions",
+      "className": "SparkPluginOptions",
+      "jsdoc": "/** Spark Plugin Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 自定义注册表（测试/隔离场景用） */\n    registry?: ComponentRegistry;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/system/plugin.d.ts",
+        "line": 11,
+        "className": "SparkPluginOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "registry",
+          "schema": {
+            "title": "ComponentRegistry"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 自定义注册表（测试/隔离场景用） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/system/plugin.d.ts",
+            "line": 13,
+            "className": "SparkPluginOptions",
+            "memberName": "registry",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.685Z"
+}

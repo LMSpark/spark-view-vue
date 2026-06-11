@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:ai/index
+ * @spark-appworks/spark-component 的 ai/index 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 // ── 组件 ──
 export { default as AiSessionTracePanel } from './components/AiSessionTracePanel.vue'
 export { default as AiToolApprovalCard } from './components/AiToolApprovalCard.vue'

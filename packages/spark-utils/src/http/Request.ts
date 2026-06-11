@@ -11,10 +11,12 @@ import { isRecord } from '../internal/guards.js'
 import { HttpClientBase, DEFAULT_TIMEOUT } from './HttpClientBase'
 import type { RequestConfig, Method, HttpResponse, RequestError } from './types'
 
+/** Request 的语义模型。 */
 export class Request extends HttpClientBase {
   private ax: AxiosInstance
 
-  constructor(defaults: Partial<RequestConfig> = {}) {
+    /** 创建 Request 实例。 */
+constructor(defaults: Partial<RequestConfig> = {}) {
     super(defaults, 'Http')
     // 所有实际请求配置均6 toAxios() 中完整提供，无需在实例层重复设置
     this.ax = axios.create()
@@ -22,12 +24,14 @@ export class Request extends HttpClientBase {
 
   // ==================== 模板方法实现 ====================
 
-  protected override async executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
+    /** 执行 execute Request 操作。 */
+protected override async executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
     const res: AxiosResponse<unknown> = await this.ax.request(this.toAxios(config))
     return this.toHttpResponse(res)
   }
 
-  protected override normalizeTransportError(err: unknown, config?: RequestConfig): RequestError {
+    /** normalize Transport Error 错误信息。 */
+protected override normalizeTransportError(err: unknown, config?: RequestConfig): RequestError {
     const base = err instanceof Error ? err : new Error(String(err))
 
     if (axios.isAxiosError(err)) {

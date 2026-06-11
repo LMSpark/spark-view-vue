@@ -9,10 +9,12 @@ import { getProjectNavigationApi, getProjectPageApi } from '@/services/api-paths
 import { getUser } from '@/services/auth'
 import { createAuthHeaders, http } from '@/services/http'
 
+/** Project Planning Editor Resolve Context 的运行上下文。 */
 export type ProjectPlanningEditorResolveContext = Readonly<{
   moduleInstanceId: string
 }>
 
+/** Headless Project Planning Editor Scope 的语义模型。 */
 export type HeadlessProjectPlanningEditorScope = Readonly<{
   tenantId?: string
   projectId?: string

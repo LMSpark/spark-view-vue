@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/dev-system/DevFileEditor
+app 的 views/app/dev-system/DevFileEditor 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="dev-file-editor">
     <template v-if="state.activePageId.value">

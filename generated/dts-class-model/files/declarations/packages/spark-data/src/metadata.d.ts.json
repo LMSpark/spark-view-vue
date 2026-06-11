@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/metadata.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:metadata",
+    "sourcePath": "declarations/packages/spark-data/src/metadata.d.ts",
+    "sourceFile": "packages/spark-data/src/metadata.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "metadata",
+    "jsdoc": "@module @spark-appworks/spark-data:metadata\n@spark-appworks/spark-data 的 metadata 模块。\n导出 ClassModel symbol: TableMetadataLike（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "TableMetadataLike"
+    ]
+  },
+  "symbols": [
+    "TableMetadataLike"
+  ],
+  "models": {
+    "TableMetadataLike": {
+      "kind": "TableMetadataLike",
+      "className": "TableMetadataLike",
+      "jsdoc": "/** Table Metadata Like 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Omit<TableMetadata, 'tableName'> & {\n    /** 数据表名。 */\n    tableName?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "Omit<TableMetadata, 'tableName'>",
+          "targetName": "Omit"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 数据表名。 */\n    tableName?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/metadata.d.ts",
+        "line": 3,
+        "className": "TableMetadataLike",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "tableName",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 数据表名。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/metadata.d.ts",
+            "line": 5,
+            "className": "TableMetadataLike",
+            "memberName": "tableName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.753Z"
+}

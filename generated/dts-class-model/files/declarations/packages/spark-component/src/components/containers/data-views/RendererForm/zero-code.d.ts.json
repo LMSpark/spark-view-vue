@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/data-views/RendererForm/zero-code",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/data-views/RendererForm/zero-code",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererForm/zero-code\nRendererForm 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: RendererFormZeroCodeOptions（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RendererFormZeroCodeOptions"
+    ],
+    "componentName": "RendererForm",
+    "componentType": "r-form",
+    "componentLevel": "table-level",
+    "componentLayer": "data-view-container",
+    "componentDirectory": "containers/data-views"
+  },
+  "symbols": [
+    "RendererFormZeroCodeOptions"
+  ],
+  "models": {
+    "RendererFormZeroCodeOptions": {
+      "kind": "RendererFormZeroCodeOptions",
+      "className": "RendererFormZeroCodeOptions",
+      "jsdoc": "/** Renderer Form Zero Code Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: Readonly<Record<string, unknown>>;\n    /** resolved View 字段。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** form Model 字段。 */\n    formModel: Record<string, unknown>;\n    /** native Form Ref 字段。 */\n    nativeFormRef: ValueRef<unknown>;\n    /** 诊断日志接口。 */\n    logger: LoggerApi;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.d.ts",
+        "line": 12,
+        "className": "RendererFormZeroCodeOptions",
+        "declarationKind": "type",
+        "componentName": "RendererForm",
+        "componentType": "r-form",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "props",
+          "schema": {
+            "title": "Readonly<Record<string, unknown>>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 组件属性集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.d.ts",
+            "line": 14,
+            "className": "RendererFormZeroCodeOptions",
+            "memberName": "props",
+            "declarationKind": "interface",
+            "componentName": "RendererForm",
+            "componentType": "r-form",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "resolvedView",
+          "schema": {
+            "title": "ValueRef<DataView | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** resolved View 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.d.ts",
+            "line": 16,
+            "className": "RendererFormZeroCodeOptions",
+            "memberName": "resolvedView",
+            "declarationKind": "interface",
+            "componentName": "RendererForm",
+            "componentType": "r-form",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "formModel",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** form Model 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.d.ts",
+            "line": 18,
+            "className": "RendererFormZeroCodeOptions",
+            "memberName": "formModel",
+            "declarationKind": "interface",
+            "componentName": "RendererForm",
+            "componentType": "r-form",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "nativeFormRef",
+          "schema": {
+            "title": "ValueRef<unknown>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** native Form Ref 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.d.ts",
+            "line": 20,
+            "className": "RendererFormZeroCodeOptions",
+            "memberName": "nativeFormRef",
+            "declarationKind": "interface",
+            "componentName": "RendererForm",
+            "componentType": "r-form",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "logger",
+          "schema": {
+            "title": "LoggerApi"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 诊断日志接口。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererForm/zero-code.d.ts",
+            "line": 22,
+            "className": "RendererFormZeroCodeOptions",
+            "memberName": "logger",
+            "declarationKind": "interface",
+            "componentName": "RendererForm",
+            "componentType": "r-form",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.050Z"
+}

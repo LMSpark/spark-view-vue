@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/editors/SparkJsonEditor
+SparkJsonEditor 模块，属于 SPARK component infrastructure/editor。
+组件目录: editors。
+导出 ClassModel symbol: SparkJsonEditorMode, Props（共 2 个 symbol）。
+-->
 <template>
   <div class="spark-json-editor" :style="rootStyle">
     <div v-if="initError" class="spark-json-editor__notice">
@@ -31,6 +37,7 @@ import type {
   JSONSchemaDefinitions,
 } from 'vanilla-jsoneditor'
 
+/** JSON 编辑器支持的展示模式。 */
 type SparkJsonEditorMode = 'text' | 'tree' | 'table'
 type SparkJsonEditorModeValue = NonNullable<JSONEditorPropsOptional['mode']>
 type SparkJsonEditorValidator = NonNullable<JSONEditorPropsOptional['validator']>
@@ -56,6 +63,7 @@ type SparkJsonEditorModule = {
   ) => SparkJsonEditorRenderValueResult | undefined
   renderValue?: SparkJsonEditorRenderValue}
 
+/** SparkJsonEditor 组件属性，描述 JSON 内容、Schema 校验和编辑模式。 */
 type Props = {
   /** JSON 字符串内容 */
   modelValue?: string

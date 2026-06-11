@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/runtime/class-model-runtime
+ * @spark-appworks/spark-ai 的 class-model/runtime/class-model-runtime 模块。
+ * 导出 ClassModel symbol: ClassModelScriptCommand, ClassModelRuntimeOptions, ClassModelToolArgs, ClassModelToolResult, ClassModelToolCheck, ClassModelScriptExecutorResult, ClassModelScriptExecutor, ClassModelRuntime（共 8 个 symbol）。
+ */
 import type { AiJsonValue } from '../../json'
 import type { ClassModelDocument } from '../class-model'
 import {
@@ -7,21 +12,25 @@ import {
 import { listClassModelToolSpecs, type ClassModelToolSpec } from '../tools/class-model-tool-specs'
 import { CLASS_MODEL_TOOL_NAMES, isClassModelToolName, type ClassModelToolName } from '../tools'
 
+/** Class Model Script Command 的命令参数。 */
 export type ClassModelScriptCommand = Readonly<{
   script: string
   host?: unknown
 }>
 
+/** Class Model Runtime Options 的调用配置。 */
 export type ClassModelRuntimeOptions = Readonly<{
   document?: ClassModelDocument
   knowledge?: ClassModelKnowledgeProvider
   scriptExecutor: ClassModelScriptExecutor
 }>
 
+/** Class Model Tool Args 的语义模型。 */
 export type ClassModelToolArgs = Readonly<Record<string, AiJsonValue>>
 
 export type { ClassModelToolSpec } from '../tools/class-model-tool-specs'
 
+/** Class Model Tool Result 的返回结果。 */
 export type ClassModelToolResult = Readonly<{
   ok: boolean
   data?: AiJsonValue
@@ -29,6 +38,7 @@ export type ClassModelToolResult = Readonly<{
   state?: Readonly<Record<string, unknown>>
 }>
 
+/** Class Model Tool Check 的语义模型。 */
 export type ClassModelToolCheck = Readonly<{
   level: 'error' | 'warn' | 'info'
   code: string
@@ -36,8 +46,10 @@ export type ClassModelToolCheck = Readonly<{
   hint?: string
 }>
 
+/** Class Model Script Executor Result 的返回结果。 */
 export type ClassModelScriptExecutorResult = AiJsonValue | ClassModelToolResult
 
+/** Class Model Script Executor 的语义模型。 */
 export type ClassModelScriptExecutor =
   (command: ClassModelScriptCommand) => ClassModelScriptExecutorResult | Promise<ClassModelScriptExecutorResult>
 
@@ -52,16 +64,19 @@ export class ClassModelRuntime {
   private readonly knowledge: ClassModelKnowledgeProvider
   private readonly scriptExecutor: ClassModelScriptExecutor
 
-  public constructor(options: ClassModelRuntimeOptions) {
+    /** 创建 Class Model Runtime 实例。 */
+public constructor(options: ClassModelRuntimeOptions) {
     this.knowledge = options.knowledge ?? createDefaultKnowledgeProvider(options)
     this.scriptExecutor = options.scriptExecutor
   }
 
-  public getTools(): readonly ClassModelToolSpec[] {
+    /** 读取 Tools。 */
+public getTools(): readonly ClassModelToolSpec[] {
     return listClassModelToolSpecs()
   }
 
-  public async executeTool(
+    /** 执行 execute Tool 操作。 */
+public async executeTool(
     toolName: string,
     rawArgs: ClassModelToolArgs,
     host?: unknown,

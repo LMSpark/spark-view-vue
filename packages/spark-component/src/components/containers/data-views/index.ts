@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/index
+ * @spark-appworks/spark-component:components/containers/data-views/index 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 export { default as RendererTable } from './RendererTable/index.js'
 export type { RendererTableApi, RendererTreePath, RTableProps } from './RendererTable/index.js'
 export { default as RendererForm } from './RendererForm/index.js'

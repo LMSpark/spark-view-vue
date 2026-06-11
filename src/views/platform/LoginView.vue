@@ -1,3 +1,8 @@
+<!--
+@module app:views/platform/LoginView
+app 的 views/platform/LoginView 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="login-page">
     <div class="login-card">

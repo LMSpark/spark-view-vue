@@ -16,6 +16,7 @@ import { withMeta } from '@spark-appworks/spark-json-document'
 
 // ── 页面数据 JSON Schema ──────────────────────────────────
 
+/** Page Data Editor Mode 的语义模型。 */
 export type PageDataEditorMode = 'tree' | 'text' | 'table'
 
 const knownColumnTypes = [
@@ -285,30 +286,46 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
 
 // ── DataSet 设计器投影 ────────────────────────────────────
 
+/** Designer Column Projection 的语义模型。 */
 export type DesignerColumnProjection = DataColumn & {
-  id: string
+    /** 唯一标识。 */
+id: string
 }
 
+/** Designer Table Projection 的语义模型。 */
 export type DesignerTableProjection = Omit<TableMetadata, 'columns'> & {
-  id: string
-  x: number
-  y: number
-  columns: DesignerColumnProjection[]
+    /** 唯一标识。 */
+id: string
+    /** x 字段。 */
+x: number
+    /** y 字段。 */
+y: number
+    /** 列定义集合。 */
+columns: DesignerColumnProjection[]
 }
 
+/** Designer Relation Projection 的语义模型。 */
 export type DesignerRelationProjection = TableRelation & {
-  relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many'
+    /** relation Type 字段。 */
+relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many'
 }
 
+/** Designer Table Ui State 的运行状态。 */
 export type DesignerTableUiState = {
-  id: string
-  x: number
-  y: number
-  columnIds: Record<string, string>
+    /** 唯一标识。 */
+id: string
+    /** x 字段。 */
+x: number
+    /** y 字段。 */
+y: number
+    /** column Ids 字段。 */
+columnIds: Record<string, string>
 }
 
+/** Layout For New Table 的语义模型。 */
 type LayoutForNewTable = (tableName: string, newIndex: number) => { x: number; y: number }
 
+/** Designer Table Ui State Reconcile Input 的输入数据。 */
 export type DesignerTableUiStateReconcileInput = Readonly<{
   metadata: DataSetMetadata
   currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>

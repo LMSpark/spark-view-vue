@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/display/non-data-components/index
+ * @spark-appworks/spark-component:components/display/non-data-components/index 模块，属于 SPARK component display/static-display。
+ * 组件目录: display/non-data-components。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 export { default as DisplayDescriptions } from './DisplayDescriptions.vue'
 export { default as DisplayDescriptionsItem } from './DisplayDescriptionsItem.vue'
 export { default as DisplayTimeline } from './DisplayTimeline.vue'

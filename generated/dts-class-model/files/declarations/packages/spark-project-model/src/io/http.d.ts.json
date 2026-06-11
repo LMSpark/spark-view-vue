@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/io/http.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:io/http",
+    "sourcePath": "declarations/packages/spark-project-model/src/io/http.d.ts",
+    "sourceFile": "packages/spark-project-model/src/io/http.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "io/http",
+    "jsdoc": "HTTP 客户端辅助：路径归一化、请求头拦截器。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.879Z"
+}

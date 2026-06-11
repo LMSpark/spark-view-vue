@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/result-mapper.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/tool-loop/result-mapper",
+    "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/result-mapper.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/tool-loop/result-mapper.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/tool-loop/result-mapper",
+    "jsdoc": "┌─────────────────────────────────────────────────────────────────────────────┐\n│  AI HOST · 操作结果映射器                                                     │\n│  Operation Result → Function Call Result Mapper                              │\n│                                                                              │\n│  本模块负责将工具 runtime 的 AiAgentToolResult 转换为 agent 层的               │\n│  AiAgentFunctionCallResult。两条链路的错误/成功结构不同，                      │\n│  需要做语义投影。                                                             │\n│                                                                              │\n│  转换规则：                                                                   │\n│    AiAgentToolResult.ok=true  → AiAgentFunctionCallResult.ok=true       │\n│      从 checks 中提取第一条 info/warn 作为 summary                             │\n│    AiAgentToolResult.ok=false → AiAgentFunctionCallResult.ok=false      │\n│      从 checks 中提取第一条 error 的 code/message/hint 作为 code/msg/fix      │\n│      若没有 error 级 check → 回退到 PROTOCOL_FAILURE                          │\n│                                                                              │\n│  调用方：tool-call-executor.ts                                                │\n└─────────────────────────────────────────────────────────────────────────────┘",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.782Z"
+}

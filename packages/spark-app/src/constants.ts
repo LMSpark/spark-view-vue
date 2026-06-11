@@ -63,6 +63,7 @@ export const ErrorCodes = {
   DATA_VALIDATION_FAILED: 6003,
 } as const
 
+/** Error Code 的语义模型。 */
 export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes]
 
 /**
@@ -82,6 +83,7 @@ export const Environments = {
   TEST: 'test'
 } as const
 
+/** Environment 的语义模型。 */
 export type Environment = typeof Environments[keyof typeof Environments]
 
 /**

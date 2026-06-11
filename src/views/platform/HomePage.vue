@@ -1,3 +1,8 @@
+<!--
+@module app:views/platform/HomePage
+app 的 views/platform/HomePage 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="home-page">
     <!-- ── Hero 区域 ── -->

@@ -1,17 +1,30 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/RendererTree/input
+ * RendererTree 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: RendererTreeInputProps, RendererTreeInputOptions（共 2 个 symbol）。
+ */
 import { computed } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../../internal'
 import type { REditorProps } from '../../zones/RendererEditor.types'
 import type { RToolbarProps } from '../../layout/RendererToolbar.types'
 import { useContainerToolbar } from '../../runtime/container-ui'
 
+/** Renderer Tree Input Props 的属性契约。 */
 type RendererTreeInputProps = {
-  children?: SparkNode['children'] | undefined
-  toolbar?: RToolbarProps | undefined
-  actions?: RToolbarProps | undefined
-  editor?: REditorProps | undefined}
+    /** 子节点集合。 */
+children?: SparkNode['children'] | undefined
+    /** toolbar 字段。 */
+toolbar?: RToolbarProps | undefined
+    /** actions 字段。 */
+actions?: RToolbarProps | undefined
+    /** editor 字段。 */
+editor?: REditorProps | undefined}
 
+/** Renderer Tree Input Options 的调用配置。 */
 type RendererTreeInputOptions = {
-  props: RendererTreeInputProps}
+    /** 组件属性集合。 */
+props: RendererTreeInputProps}
 
 export function useRendererTreeInput(options: RendererTreeInputOptions) {
   // 优先消费结构化 props.toolbar / props.actions / props.editor；children 不再做结构分流。

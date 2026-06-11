@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/layout/NavContextSelector.vue.d.ts",
+  "module": {
+    "name": "app:layout/NavContextSelector",
+    "sourcePath": "declarations/src/layout/NavContextSelector.vue.d.ts",
+    "sourceFile": "src/layout/NavContextSelector.vue",
+    "packageName": "app",
+    "modulePath": "layout/NavContextSelector",
+    "jsdoc": "@module app:layout/NavContextSelector\napp 的 layout/NavContextSelector 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.060Z"
+}

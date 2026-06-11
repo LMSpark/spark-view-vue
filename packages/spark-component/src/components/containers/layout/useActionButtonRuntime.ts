@@ -48,6 +48,7 @@ function resolveActionNode(
 
 // ── 公共接口 ──────────────────────────────────────────────────────────────
 
+/** Action Button Runtime Options 的调用配置。 */
 export type ActionButtonRuntimeOptions = {
   /** 当前节点（来自 resolvedProps） */
   currentNode: ComputedRef<SparkNode>
@@ -60,8 +61,10 @@ export type ActionButtonRuntimeOptions = {
   /** 日志警告 */
   warn: (msg: string) => void}
 
+/** Action Button Runtime 的语义模型。 */
 export type ActionButtonRuntime = {
-  hasBuiltinAction: ComputedRef<boolean>
+    /** 是否 has Builtin Action。 */
+hasBuiltinAction: ComputedRef<boolean>
   /** 当前解析后的 ActionDescriptor（null 表示非内置或未识别） */
   actionDescriptor: ComputedRef<ActionDescriptor | null>
   /** 内置动作禁用态（含 beforeRender + disabled prop + 结构状态） */

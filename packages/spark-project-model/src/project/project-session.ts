@@ -1,15 +1,26 @@
+/**
+ * @module @spark-appworks/spark-project-model:project/project-session
+ * @spark-appworks/spark-project-model 的 project/project-session 模块。
+ * 导出 ClassModel symbol: ProjectSessionState, ProjectSessionOwner, ProjectSession（共 3 个 symbol）。
+ */
 import type { NavigationNodeDraft } from '../navigation/navigation-edit'
 import type { ProjectNode } from '../navigation/project-node'
 import type { ConfigPageNode } from '../page/config-page'
 import type { ProjectNavigationDirtyScope } from './project-types'
 
+/** Project Session State 的运行状态。 */
 export type ProjectSessionState = {
-  selectedNodeId: string | null
-  activePageId: string | null
-  navigationDirty: boolean
-  navigationDirtyScope: ProjectNavigationDirtyScope | null
+    /** selected Node Id 标识。 */
+selectedNodeId: string | null
+    /** active Page Id 标识。 */
+activePageId: string | null
+    /** navigation Dirty 字段。 */
+navigationDirty: boolean
+    /** navigation Dirty Scope 字段。 */
+navigationDirtyScope: ProjectNavigationDirtyScope | null
 }
 
+/** Project Session Owner 的语义模型。 */
 type ProjectSessionOwner = {
   findNodeById(nodeId: string): ProjectNode | null
   findConfigPageByPageId(pageId: string): ConfigPageNode | null
@@ -28,7 +39,8 @@ export class ProjectSession {
 
   private navigationDraftValue: NavigationNodeDraft | null = null
 
-  constructor(private readonly owner: ProjectSessionOwner) {}
+    /** 创建 Project Session 实例。 */
+constructor(private readonly owner: ProjectSessionOwner) {}
 
   get session(): Readonly<ProjectSessionState> {
     return this.state
@@ -46,34 +58,40 @@ export class ProjectSession {
     return this.state.navigationDirty
   }
 
-  setNavigationDraft(draft: NavigationNodeDraft | null): void {
+    /** 设置 Navigation Draft。 */
+setNavigationDraft(draft: NavigationNodeDraft | null): void {
     this.navigationDraftValue = draft
   }
 
-  beginNavigationDraft(draft: NavigationNodeDraft): NavigationNodeDraft {
+    /** 执行 begin Navigation Draft 操作。 */
+beginNavigationDraft(draft: NavigationNodeDraft): NavigationNodeDraft {
     this.navigationDraftValue = draft
     return this.navigationDraftValue
   }
 
-  discardNavigationDraft(): void {
+    /** 执行 discard Navigation Draft 操作。 */
+discardNavigationDraft(): void {
     this.navigationDraftValue = null
     this.markNavigationClean()
   }
 
-  markNavigationDirty(scope: ProjectNavigationDirtyScope): void {
+    /** 执行 mark Navigation Dirty 操作。 */
+markNavigationDirty(scope: ProjectNavigationDirtyScope): void {
     this.state.navigationDirty = true
     this.state.navigationDirtyScope = scope === 'root'
       ? 'root'
       : (this.state.navigationDirtyScope ?? 'node')
   }
 
-  markNavigationClean(): void {
+    /** 执行 mark Navigation Clean 操作。 */
+markNavigationClean(): void {
     this.state.navigationDirty = false
     this.state.navigationDirtyScope = null
     this.navigationDraftValue = null
   }
 
-  setSelectedNodeId(
+    /** set Selected Node Id 标识。 */
+setSelectedNodeId(
     nodeId: string | null | undefined,
     options?: { silentIfMissing?: boolean },
   ): void {
@@ -93,7 +111,8 @@ export class ProjectSession {
     this.state.selectedNodeId = normalized
   }
 
-  setActivePageId(pageId: string | null | undefined): void {
+    /** set Active Page Id 标识。 */
+setActivePageId(pageId: string | null | undefined): void {
     const normalized = pageId?.trim() ?? ''
     if (!normalized) {
       this.state.activePageId = null
@@ -106,7 +125,8 @@ export class ProjectSession {
     this.state.activePageId = normalized
   }
 
-  syncWithModel(): void {
+    /** 执行 sync With Model 操作。 */
+syncWithModel(): void {
     const selectedNodeId = this.state.selectedNodeId
     if (selectedNodeId && !this.owner.findNodeById(selectedNodeId)) {
       this.state.selectedNodeId = null

@@ -1,4 +1,9 @@
 /**
+ * @module @spark-appworks/spark-utils:snapshot-history
+ * @spark-appworks/spark-utils 的 snapshot-history 模块。
+ * 导出 ClassModel symbol: SnapshotHistory（共 1 个 symbol）。
+ */
+/**
  * 通用快照历史管理器 — push / undo / redo / cursor。
  *
  * 设计目标：
@@ -10,7 +15,8 @@ export class SnapshotHistory<T> {
   private readonly _snapshots: T[] = []
   private _cursor = -1
 
-  constructor(private readonly _limit = 50) {
+    /** 创建 Snapshot History 实例。 */
+constructor(private readonly _limit = 50) {
     if (!Number.isInteger(_limit) || _limit < 0) {
       this._limit = 50
     }

@@ -1,4 +1,9 @@
 /**
+ * @module @spark-appworks/spark-component:components/register-renderers
+ * @spark-appworks/spark-component 的 components/register-renderers 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
+/**
  * 一键注册所有内置 Renderer 容器 + 字段组件到 SPARK 注册表。
  *
  * 【注册策略】

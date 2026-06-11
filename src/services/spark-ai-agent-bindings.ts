@@ -1,3 +1,8 @@
+/**
+ * @module app:services/spark-ai-agent-bindings
+ * app 的 services/spark-ai-agent-bindings 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 export {
   createSimpleInputContract,
   ClassModelAgentAdapter,

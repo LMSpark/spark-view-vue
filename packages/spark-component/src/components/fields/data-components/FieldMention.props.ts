@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/data-components/FieldMention.props
+ * FieldMention 模块，属于 SPARK component field-level/data-field。
+ * 组件目录: fields/data-components。
+ * 导出 ClassModel symbol: RMentionOption, RMentionProps（共 2 个 symbol）。
+ */
 import type { SparkMultilineFieldProps, SparkNodeProps } from '../../shared-types'
 
 /** Mention 候选项：提供展示值、标签、禁用状态和可选的持久化回写值。 */
@@ -11,6 +17,7 @@ export type RMentionOption = {
   /** @internal 供 trigger.writebackField 使用的持久化值，例如选项 ID。 */
   persistedValue?: string | number | boolean}
 
+/** RMention Props 的属性契约。 */
 export type RMentionProps = SparkNodeProps & SparkMultilineFieldProps & {
   /**
      * 完整的提及触发规则列表。

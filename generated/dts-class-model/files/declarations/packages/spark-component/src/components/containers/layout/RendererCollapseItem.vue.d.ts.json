@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererCollapseItem",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererCollapseItem",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererCollapseItem\nRendererCollapseItem 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: Props（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "Props"
+    ],
+    "componentName": "RendererCollapseItem",
+    "componentType": "r-collapse-item",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "Props"
+  ],
+  "models": {
+    "Props": {
+      "kind": "Props",
+      "className": "Props",
+      "jsdoc": "/** r-collapse-item 内部面板项属性，继承 SparkNode 通用节点属性。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 面板唯一标识 */\n    name?: string | number;\n    /** 面板标题 */\n    title?: string;\n    /** 是否禁用 */\n    disabled?: boolean;\n    /** 面板体自定义 class */\n    bodyClass?: string;\n    /** CSS Grid 列数 */\n    gridColumns?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 在父容器中的位置序号 */\n    index: number;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 面板唯一标识 */\n    name?: string | number;\n    /** 面板标题 */\n    title?: string;\n    /** 是否禁用 */\n    disabled?: boolean;\n    /** 面板体自定义 class */\n    bodyClass?: string;\n    /** CSS Grid 列数 */\n    gridColumns?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 在父容器中的位置序号 */\n    index: number;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+        "line": 3,
+        "className": "Props",
+        "declarationKind": "type",
+        "componentName": "RendererCollapseItem",
+        "componentType": "r-collapse-item",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "name",
+          "schema": {
+            "title": "string | number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 面板唯一标识 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+            "line": 5,
+            "className": "Props",
+            "memberName": "name",
+            "declarationKind": "interface",
+            "componentName": "RendererCollapseItem",
+            "componentType": "r-collapse-item",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 面板标题 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+            "line": 7,
+            "className": "Props",
+            "memberName": "title",
+            "declarationKind": "interface",
+            "componentName": "RendererCollapseItem",
+            "componentType": "r-collapse-item",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "disabled",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否禁用 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+            "line": 9,
+            "className": "Props",
+            "memberName": "disabled",
+            "declarationKind": "interface",
+            "componentName": "RendererCollapseItem",
+            "componentType": "r-collapse-item",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "bodyClass",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 面板体自定义 class */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+            "line": 11,
+            "className": "Props",
+            "memberName": "bodyClass",
+            "declarationKind": "interface",
+            "componentName": "RendererCollapseItem",
+            "componentType": "r-collapse-item",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "gridColumns",
+          "schema": {
+            "title": "number | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** CSS Grid 列数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+            "line": 13,
+            "className": "Props",
+            "memberName": "gridColumns",
+            "declarationKind": "interface",
+            "componentName": "RendererCollapseItem",
+            "componentType": "r-collapse-item",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 栅格行高 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+            "line": 15,
+            "className": "Props",
+            "memberName": "gridAutoRows",
+            "declarationKind": "interface",
+            "componentName": "RendererCollapseItem",
+            "componentType": "r-collapse-item",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "gridGap",
+          "schema": {
+            "title": "number | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 栅格间距 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+            "line": 17,
+            "className": "Props",
+            "memberName": "gridGap",
+            "declarationKind": "interface",
+            "componentName": "RendererCollapseItem",
+            "componentType": "r-collapse-item",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        },
+        {
+          "name": "index",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 在父容器中的位置序号 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+            "line": 19,
+            "className": "Props",
+            "memberName": "index",
+            "declarationKind": "interface",
+            "componentName": "RendererCollapseItem",
+            "componentType": "r-collapse-item",
+            "componentLevel": "container",
+            "componentLayer": "layout-container",
+            "componentDirectory": "containers/layout"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.150Z"
+}

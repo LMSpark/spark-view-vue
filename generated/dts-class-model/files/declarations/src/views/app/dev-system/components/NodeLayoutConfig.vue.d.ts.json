@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/views/app/dev-system/components/NodeLayoutConfig.vue.d.ts",
+  "module": {
+    "name": "app:views/app/dev-system/components/NodeLayoutConfig",
+    "sourcePath": "declarations/src/views/app/dev-system/components/NodeLayoutConfig.vue.d.ts",
+    "sourceFile": "src/views/app/dev-system/components/NodeLayoutConfig.vue",
+    "packageName": "app",
+    "modulePath": "views/app/dev-system/components/NodeLayoutConfig",
+    "jsdoc": "@module app:views/app/dev-system/components/NodeLayoutConfig\napp 的 views/app/dev-system/components/NodeLayoutConfig 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.121Z"
+}

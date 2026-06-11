@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/AiSessionTracePanel.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/AiSessionTracePanel",
+    "sourcePath": "declarations/packages/spark-component/src/ai/components/AiSessionTracePanel.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/AiSessionTracePanel.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/AiSessionTracePanel",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/AiSessionTracePanel\n@spark-appworks/spark-component 的 ai/components/AiSessionTracePanel 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.995Z"
+}

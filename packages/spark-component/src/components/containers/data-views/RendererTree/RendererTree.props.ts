@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/RendererTree/RendererTree.props
+ * RendererTree 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: RTreeProps（共 1 个 symbol）。
+ */
 import type { DataView } from '@spark-appworks/spark-data'
 import type {
   SparkCrudDataContainerProps,

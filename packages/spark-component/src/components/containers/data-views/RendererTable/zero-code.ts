@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/RendererTable/zero-code
+ * RendererTable 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: NativeTableLike, RendererTableZeroCodeOptions（共 2 个 symbol）。
+ */
 import { isDataRow, type DataView, type DataRow } from '@spark-appworks/spark-data'
 import type { LoggerApi } from '@spark-appworks/spark-utils'
 import { getSelectedRows } from '../../../../page/actions/index.js'
@@ -8,19 +14,33 @@ import type { ValueRef } from '../../../shared-types.js'
 
 /* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-condition */
 
+/** r-table 运行时需要调用的 Element Plus table 原生能力集合。 */
 export type NativeTableLike = {
+  /** 清空 UI 层多选状态。 */
   clearSelection?: () => void
+  /** 设置指定行在 UI 层的选中状态。 */
   toggleRowSelection?: (row: DataRow, selected?: boolean) => void
+  /** 设置 UI 层当前行；传 null 清空当前行。 */
   setCurrentRow?: (row: DataRow | null) => void
-  doLayout?: () => void}
+  /** 重新计算表格列宽和布局。 */
+  doLayout?: () => void
+}
 
+/** 创建 r-table zero-code API 和事件桥接所需的运行时输入。 */
 type RendererTableZeroCodeOptions = {
+  /** r-table 的组件属性集合，包含事件回调和配置透传。 */
   props: Readonly<Record<string, unknown>>
+  /** 当前解析出的 DataView。 */
   resolvedView: ValueRef<DataView | null>
+  /** Element Plus table 原生组件 ref。 */
   nativeTableRef: ValueRef<NativeTableLike | null>
+  /** 当前行变更的来源 id，用于避免 DataView selection 回环。 */
   currentRowOriginatorId?: string
+  /** 多选变更的来源 id，用于避免 DataView selection 回环。 */
   selectedRowsOriginatorId?: string
-  logger: LoggerApi}
+  /** 表格运行时诊断日志。 */
+  logger: LoggerApi
+}
 
 function toDataRows(value: unknown): DataRow[] {
   return Array.isArray(value) ? value.filter(isDataRow) : []

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/read-dts-class-model-bundle-json.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/class-model/read-dts-class-model-bundle-json",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/read-dts-class-model-bundle-json.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/class-model/read-dts-class-model-bundle-json.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/class-model/read-dts-class-model-bundle-json",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/read-dts-class-model-bundle-json\n@spark-appworks/spark-ai 的 class-model/class-model/read-dts-class-model-bundle-json 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.821Z"
+}

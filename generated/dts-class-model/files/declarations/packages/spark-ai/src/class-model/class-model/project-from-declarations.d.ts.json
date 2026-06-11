@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/project-from-declarations.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/class-model/project-from-declarations",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/project-from-declarations.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/class-model/project-from-declarations.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/class-model/project-from-declarations",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/project-from-declarations\n@spark-appworks/spark-ai 的 class-model/class-model/project-from-declarations 模块。\n导出 ClassModel symbol: ProjectDtsSourceFileProjectionOptions（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "ProjectDtsSourceFileProjectionOptions"
+    ]
+  },
+  "symbols": [
+    "ProjectDtsSourceFileProjectionOptions"
+  ],
+  "models": {
+    "ProjectDtsSourceFileProjectionOptions": {
+      "kind": "ProjectDtsSourceFileProjectionOptions",
+      "className": "ProjectDtsSourceFileProjectionOptions",
+      "jsdoc": "/** Project Dts Source File Projection Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    sourceFile: ts.SourceFile;\n    checker: ts.TypeChecker;\n    exportedOnly?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    sourceFile: ts.SourceFile;\n    checker: ts.TypeChecker;\n    exportedOnly?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/project-from-declarations.d.ts",
+        "line": 6,
+        "className": "ProjectDtsSourceFileProjectionOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.819Z"
+}

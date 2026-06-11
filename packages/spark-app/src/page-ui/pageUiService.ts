@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-app:page-ui/pageUiService
+ * @spark-appworks/spark-app 的 page-ui/pageUiService 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import { reactive } from 'vue'
 import { createRequest, isRecord } from '@spark-appworks/spark-utils'
 import type {

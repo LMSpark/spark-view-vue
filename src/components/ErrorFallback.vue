@@ -1,3 +1,8 @@
+<!--
+@module app:components/ErrorFallback
+app 的 components/ErrorFallback 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="error-fallback">
     <div class="error-content">

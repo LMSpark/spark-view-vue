@@ -110,3 +110,9 @@ export { SparkAIModel } from '@spark-appworks/spark-utils'
 export { PageConfigModel } from './domain-model/page/page-config-model'
 export { NavigationRowModel } from './domain-model/navigation/navigation-row-model'
 export { ProjectRootModel, ProjectRootModelEvent } from './domain-model/project/project-root-model'
+export {
+  applyProjectRootModelToProjectModel,
+  projectRootModelFromNavigationRoot,
+  projectRootModelFromProjectModel,
+} from './domain-model/project/project-root-bridge'
+export { replaceNavigationChildrenRemote } from './io/navigation-tree-sync'

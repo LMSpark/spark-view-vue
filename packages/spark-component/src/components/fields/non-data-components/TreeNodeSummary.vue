@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/fields/non-data-components/TreeNodeSummary
+TreeNodeSummary 模块，属于 SPARK component field-level/field-support。
+组件目录: fields/non-data-components。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div :class="['tree-node-summary', `tree-node-summary--${resolvedType}`]">
     <span class="tree-node-summary__rail" />

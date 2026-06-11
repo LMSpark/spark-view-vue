@@ -1,3 +1,8 @@
+/**
+ * @module app:layout/demo-nav
+ * app 的 layout/demo-nav 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import type { ProjectModelData } from '@spark-appworks/spark-project-model'
 
 /**

@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-app:navigation/useNavigation
+ * @spark-appworks/spark-app 的 navigation/useNavigation 模块。
+ * 导出 ClassModel symbol: UseNavigationOptions（共 1 个 symbol）。
+ */
 import { computed, inject, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createRequest } from '@spark-appworks/spark-utils'
@@ -83,6 +88,7 @@ function resolveRemoteSource(source: string): { url: string } {
   return { url: source }
 }
 
+/** Use Navigation Options 的调用配置。 */
 type UseNavigationOptions = {
   /** 跨应用导航回调：检测到 @app:projectId/path 格式时调用，由调用方实现项目切换逻辑 */
   onCrossAppNavigate?: (projectId: string, path: string) => Promise<void>

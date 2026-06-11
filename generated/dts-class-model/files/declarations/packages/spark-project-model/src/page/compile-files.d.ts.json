@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/page/compile-files.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:page/compile-files",
+    "sourcePath": "declarations/packages/spark-project-model/src/page/compile-files.d.ts",
+    "sourceFile": "packages/spark-project-model/src/page/compile-files.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "page/compile-files",
+    "jsdoc": "页面四文件编译 — 纯转换函数\n职责：将原始字符串（JSON / JS / CSS）转换为类型化数据结构。\n所有函数均为无副作用的纯函数，不涉及网络请求、缓存或文件系统。\n与 io/ 分离：\n- io 负责 **从哪里加载**（HTTP + 缓存）\n- 本模块负责 **如何解析**（字符串 → DataSet / SparkNode / 脚本 / CSS）",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.929Z"
+}

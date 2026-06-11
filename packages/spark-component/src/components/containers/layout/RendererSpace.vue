@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/layout/RendererSpace
+RendererSpace 模块，属于 SPARK component container/layout-container。
+组件目录: containers/layout。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div v-if="isVisible" :class="spaceClasses" :style="spaceStyle">
     <SparkComponentRenderer

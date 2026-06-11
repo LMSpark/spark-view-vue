@@ -32,13 +32,20 @@ const pageLogger = Logger('PageContentLoader')
 
 const REQUEST_TIMEOUT = 10_000
 
+/** Page Content Loader Options 的调用配置。 */
 export type PageContentLoaderOptions = {
-  apiBaseUrl?: string
-  httpClient?: HttpClientBase
-  pagesConfigBaseUrl?: string | (() => string)
-  fileStorage?: 'localStorage' | 'sessionStorage' | 'memory'
-  timeout?: number
-  getHeaders?: () => Record<string, string>
+    /** api Base Url 地址。 */
+apiBaseUrl?: string
+    /** http Client 字段。 */
+httpClient?: HttpClientBase
+    /** pages Config Base Url 地址。 */
+pagesConfigBaseUrl?: string | (() => string)
+    /** file Storage 字段。 */
+fileStorage?: 'localStorage' | 'sessionStorage' | 'memory'
+    /** 超时时间。 */
+timeout?: number
+    /** get Headers 回调。 */
+getHeaders?: () => Record<string, string>
 }
 
 // ═══ 选项解析：加载器构造参数的默认值与归一化 ═══
@@ -72,6 +79,7 @@ function resolvePagesConfigBaseUrl(options: ResolvedPageContentLoaderOptions): s
 
 // ═══ PageContentLoader 构造与配置 ═══════════════════════════
 
+/** Page Content Loader 的语义模型。 */
 export class PageContentLoader {
   private opts: ResolvedPageContentLoaderOptions
   private fileLoader!: FileLoader
@@ -79,7 +87,8 @@ export class PageContentLoader {
   private request: HttpClientBase
   private pagesConfigBase = ''
 
-  constructor(options: Partial<PageContentLoaderOptions> = {}) {
+    /** 创建 Page Content Loader 实例。 */
+constructor(options: Partial<PageContentLoaderOptions> = {}) {
     this.opts = { ...DEFAULT_OPTIONS, ...options }
     // 创建共享 Request 实例（远程 API 调用的统一 axios 通道）
     this.request = this.opts.httpClient ?? createRequest({
@@ -123,7 +132,8 @@ export class PageContentLoader {
 
   // ── 公开 API ──────────────────────────────────────────────────────
 
-  async loadPageFileContent(
+    /** 加载 Page File Content。 */
+async loadPageFileContent(
     pageId: string,
     filename: PageNodeFileName,
     options?: PageNodeLoadOptions,
@@ -139,26 +149,31 @@ export class PageContentLoader {
 
   // ═══ 缓存管理 ═══════════════════════════════════════════
 
-  clearCache(key?: string): void {
+    /** 清空 Cache。 */
+clearCache(key?: string): void {
     this.ensurePageFileContext()
     this.fileLoader.clearCache(key)
   }
 
-  clearAllCache(): { size: number; keys: string[] } {
+    /** 清空 All Cache。 */
+clearAllCache(): { size: number; keys: string[] } {
     this.clearCache()
     return this.getCacheStats()
   }
 
-  getCacheStats(): { size: number; keys: string[] } {
+    /** 读取 Cache Stats。 */
+getCacheStats(): { size: number; keys: string[] } {
     this.ensurePageFileContext()
     return this.fileLoader.getCacheStats()
   }
 
-  getHttpClient(): HttpClientBase {
+    /** 读取 Http Client。 */
+getHttpClient(): HttpClientBase {
     return this.request
   }
 
-  clearPageCache(pageId: string): void {
+    /** 清空 Page Cache。 */
+clearPageCache(pageId: string): void {
     const normalized = pageId.trim()
     if (!normalized) return
     for (const path of pageFilePaths(normalized)) this.clearCache(path)

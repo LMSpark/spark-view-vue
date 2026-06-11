@@ -79,9 +79,12 @@ function createScriptConsole(): Pick<Console, 'log' | 'info' | 'warn' | 'error' 
 type PageContextDeps = {
   /** DataSet getter（闭包引用，每次调用返回最新值） */
   getDataSet: () => DataSet | null
-  pageRoute: PageRoute
-  pageContainer: Ref<HTMLElement | null>
-  pageService: PageServiceCapability
+    /** page Route 字段。 */
+pageRoute: PageRoute
+    /** page Container 字段。 */
+pageContainer: Ref<HTMLElement | null>
+    /** page Service 字段。 */
+pageService: PageServiceCapability
   /** 页面级组件注册中心 getter（可选） */
   getComponentRegistry?: () => PageComponentRegistry | null
   /** 模块上下文 getter（可选，每次调用返回最新快照） */

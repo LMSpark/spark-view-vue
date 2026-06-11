@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/auto-register.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:auto-register",
+    "sourcePath": "declarations/packages/spark-app/src/auto-register.d.ts",
+    "sourceFile": "packages/spark-app/src/auto-register.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "auto-register",
+    "jsdoc": "通用的运行时组件自动注册工具\n此模块属于 spark-app 包，可在任意项目中直接安装使用，\n并支持通过参数配置 glob 模式与排除项。\n注意：spark-app 已明确依赖 spark-component，\n此处直接静态导入 Spark，避免无效动态导入告警。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AutoRegisterOptions"
+    ]
+  },
+  "symbols": [
+    "AutoRegisterOptions"
+  ],
+  "models": {
+    "AutoRegisterOptions": {
+      "kind": "AutoRegisterOptions",
+      "className": "AutoRegisterOptions",
+      "jsdoc": "/**\n * 通用的运行时组件自动注册工具\n *\n * 此模块属于 spark-app 包，可在任意项目中直接安装使用，\n * 并支持通过参数配置 glob 模式与排除项。\n *\n * 注意：spark-app 已明确依赖 spark-component，\n * 此处直接静态导入 Spark，避免无效动态导入告警。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 排除规则（glob 模式）\n     */\n    exclude?: string[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-app/src/auto-register.d.ts",
+        "line": 10,
+        "className": "AutoRegisterOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "exclude",
+          "schema": {
+            "type": "array",
+            "title": "string[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 排除规则（glob 模式）\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-app/src/auto-register.d.ts",
+            "line": 14,
+            "className": "AutoRegisterOptions",
+            "memberName": "exclude",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.909Z"
+}

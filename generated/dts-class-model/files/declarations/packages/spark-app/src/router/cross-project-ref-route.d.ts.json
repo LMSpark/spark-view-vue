@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/router/cross-project-ref-route.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:router/cross-project-ref-route",
+    "sourcePath": "declarations/packages/spark-app/src/router/cross-project-ref-route.d.ts",
+    "sourceFile": "packages/spark-app/src/router/cross-project-ref-route.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "router/cross-project-ref-route",
+    "jsdoc": "@module @spark-appworks/spark-app:router/cross-project-ref-route\n@spark-appworks/spark-app 的 router/cross-project-ref-route 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.965Z"
+}

@@ -45,10 +45,6 @@ temp-*.mts
 temp-catalog-per-comp/
 .eslintcache
 
-# 自动生成的 DTS ClassModel 产物
-declarations/
-generated/dts-class-model/
-
 # AI / e2e 本地运行产物（报告、联调日志等，不提交）
 artifacts/
 

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/layout/ThemeConfigurator.vue.d.ts",
+  "module": {
+    "name": "app:layout/ThemeConfigurator",
+    "sourcePath": "declarations/src/layout/ThemeConfigurator.vue.d.ts",
+    "sourceFile": "src/layout/ThemeConfigurator.vue",
+    "packageName": "app",
+    "modulePath": "layout/ThemeConfigurator",
+    "jsdoc": "@module app:layout/ThemeConfigurator\napp 的 layout/ThemeConfigurator 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.062Z"
+}

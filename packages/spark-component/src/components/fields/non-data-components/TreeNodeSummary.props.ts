@@ -1,5 +1,12 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/non-data-components/TreeNodeSummary.props
+ * TreeNodeSummary 模块，属于 SPARK component field-level/field-support。
+ * 组件目录: fields/non-data-components。
+ * 导出 ClassModel symbol: RTreeNodeSummaryProps（共 1 个 symbol）。
+ */
 import type { SparkNodeProps } from '../../shared-types'
 
+/** RTree Node Summary Props 的属性契约。 */
 export type RTreeNodeSummaryProps = SparkNodeProps & {
   /** 名称字段名 */
     nameField?: string

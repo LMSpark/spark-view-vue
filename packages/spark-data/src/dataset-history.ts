@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-data:dataset-history
+ * @spark-appworks/spark-data 的 dataset-history 模块。
+ * 导出 ClassModel symbol: DataSetHistoryStorageAdapter, DataSetHistoryScope, DataSetSnapshotSelector, DataSetHistorySnapshot, DataSetHistoryListOptions, DataSetSnapshotCommitOptions, DataSetCommitSnapshotOptions（共 7 个 symbol）。
+ */
 import { deepClone, isRecord } from '@spark-appworks/spark-utils'
 
 import type { DataSetContract, DataSetMetadata } from './types'
@@ -5,45 +10,75 @@ import type { DataSetContract, DataSetMetadata } from './types'
 const DEFAULT_HISTORY_NAMESPACE = 'spark:data-history'
 const DEFAULT_HISTORY_LIMIT = 20
 
+/** Data Set History Storage Adapter 的语义模型。 */
 export type DataSetHistoryStorageAdapter = {
   getItem(key: string): string | null
   setItem(key: string, value: string): void
   removeItem(key: string): void}
 
+/** Data Set History Scope 的语义模型。 */
 export type DataSetHistoryScope = {
-  dataSetName?: string
-  pageId?: string
-  scopeId?: string
-  namespace?: string}
+    /** data Set Name 名称。 */
+dataSetName?: string
+    /** page Id 标识。 */
+pageId?: string
+    /** scope Id 标识。 */
+scopeId?: string
+    /** namespace 字段。 */
+namespace?: string}
 
+/** Data Set Snapshot Selector 的语义模型。 */
 export type DataSetSnapshotSelector = {
-  entryId?: string
-  version?: number}
+    /** entry Id 标识。 */
+entryId?: string
+    /** version 字段。 */
+version?: number}
 
+/** Data Set History Snapshot 的语义模型。 */
 export type DataSetHistorySnapshot = {
-  id: string
-  version: number
-  timestamp: number
-  dataSetName: string
-  pageId?: string
-  label?: string
-  summary?: string
-  snapshot: DataSetMetadata
-  sourceData?: Record<string, unknown>}
+    /** 唯一标识。 */
+id: string
+    /** version 字段。 */
+version: number
+    /** 事件时间戳。 */
+timestamp: number
+    /** data Set Name 名称。 */
+dataSetName: string
+    /** page Id 标识。 */
+pageId?: string
+    /** 展示标签。 */
+label?: string
+    /** summary 字段。 */
+summary?: string
+    /** snapshot 字段。 */
+snapshot: DataSetMetadata
+    /** source Data 字段。 */
+sourceData?: Record<string, unknown>}
 
+/** Data Set History List Options 的调用配置。 */
 export type DataSetHistoryListOptions = DataSetHistoryScope & {
-  adapter?: DataSetHistoryStorageAdapter | null}
+    /** adapter 字段。 */
+adapter?: DataSetHistoryStorageAdapter | null}
 
+/** Data Set Snapshot Commit Options 的调用配置。 */
 export type DataSetSnapshotCommitOptions = DataSetHistoryListOptions & {
-  maxEntries?: number
-    label?: string
-    summary?: string
-    sourceData?: Record<string, unknown>
-    version?: number
-    timestamp?: number}
+    /** max Entries 字段。 */
+maxEntries?: number
+        /** 展示标签。 */
+label?: string
+        /** summary 字段。 */
+summary?: string
+        /** source Data 字段。 */
+sourceData?: Record<string, unknown>
+        /** version 字段。 */
+version?: number
+        /** 事件时间戳。 */
+timestamp?: number}
 
+/** Data Set Commit Snapshot Options 的调用配置。 */
 export type DataSetCommitSnapshotOptions = Omit<DataSetSnapshotCommitOptions, 'version'> & {
-  bumpVersion?: boolean}
+    /** bump Version 字段。 */
+bumpVersion?: boolean}
 
 type DataSetHistoryEnvelope = {
   entries: DataSetHistorySnapshot[]

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/tree/tree-flatten.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:tree/tree-flatten",
+    "sourcePath": "declarations/packages/spark-json-document/src/tree/tree-flatten.d.ts",
+    "sourceFile": "packages/spark-json-document/src/tree/tree-flatten.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "tree/tree-flatten",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\ntree/tree-flatten.ts — 平铺 ↔ 树往返管线\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.854Z"
+}

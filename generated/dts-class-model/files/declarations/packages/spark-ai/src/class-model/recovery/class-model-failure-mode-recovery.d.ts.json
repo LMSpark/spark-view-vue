@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/recovery/class-model-failure-mode-recovery.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/recovery/class-model-failure-mode-recovery",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/recovery/class-model-failure-mode-recovery.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/recovery/class-model-failure-mode-recovery.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/recovery/class-model-failure-mode-recovery",
+    "jsdoc": "ClassModel recovery：从构建期动作失败描述派生 RECOVERY_HINT。\nClassModel 是知识索引（model_*_guide）；连通性在构建期 fail-fast，无 diagnostics 旁路。\nrecovery 只读动作失败描述，不遍历 ClassModel 图，不在 app 层补链。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ClassModelFailureModeRecoveryCommand",
+      "ClassModelFailureModeRecoveryContext"
+    ]
+  },
+  "symbols": [
+    "ClassModelFailureModeRecoveryCommand",
+    "ClassModelFailureModeRecoveryContext"
+  ],
+  "models": {
+    "ClassModelFailureModeRecoveryCommand": {
+      "kind": "ClassModelFailureModeRecoveryCommand",
+      "className": "ClassModelFailureModeRecoveryCommand",
+      "jsdoc": "/** Class Model Failure Mode Recovery Command 的命令参数。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    callResult: Readonly<{\n        code: string;\n        msg: string;\n    }>;\n    moduleInstanceId?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    callResult: Readonly<{\n        code: string;\n        msg: string;\n    }>;\n    moduleInstanceId?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/recovery/class-model-failure-mode-recovery.d.ts",
+        "line": 9,
+        "className": "ClassModelFailureModeRecoveryCommand",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ClassModelFailureModeRecoveryContext": {
+      "kind": "ClassModelFailureModeRecoveryContext",
+      "className": "ClassModelFailureModeRecoveryContext",
+      "jsdoc": "/** Class Model Failure Mode Recovery Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    kind: string;\n    actionName: string;\n    mode: AiApiActionFailureMode;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    kind: string;\n    actionName: string;\n    mode: AiApiActionFailureMode;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/recovery/class-model-failure-mode-recovery.d.ts",
+        "line": 17,
+        "className": "ClassModelFailureModeRecoveryContext",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.860Z"
+}

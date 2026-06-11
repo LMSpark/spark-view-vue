@@ -21,22 +21,37 @@ import type {
   DataSource,
 } from '../types'
 
+/** Data Member 的语义模型。 */
 export enum DataMember {
-  Rows = 'rows',
-  Columns = 'columns',
-  CurrentRow = 'currentRow',
-  SelectedRows = 'selectedRows',
-  AggregateResult = 'aggregateResult',
-  SelectionAggregateResult = 'selectionAggregateResult',
-  Total = 'total',
-  Page = 'page',
-  PageSize = 'pageSize',
-  RequestState = 'requestState',
-  Mutating = 'mutating',
-  LoadingError = 'loadingError',
-  MutatingError = 'mutatingError',
+    /** Rows 字段。 */
+Rows = 'rows',
+    /** Columns 字段。 */
+Columns = 'columns',
+    /** Current Row 字段。 */
+CurrentRow = 'currentRow',
+    /** Selected Rows 字段。 */
+SelectedRows = 'selectedRows',
+    /** Aggregate Result 结果。 */
+AggregateResult = 'aggregateResult',
+    /** Selection Aggregate Result 结果。 */
+SelectionAggregateResult = 'selectionAggregateResult',
+    /** Total 字段。 */
+Total = 'total',
+    /** Page 字段。 */
+Page = 'page',
+    /** Page Size 大小。 */
+PageSize = 'pageSize',
+    /** Request State 状态。 */
+RequestState = 'requestState',
+    /** Mutating 字段。 */
+Mutating = 'mutating',
+    /** Loading Error 错误信息。 */
+LoadingError = 'loadingError',
+    /** Mutating Error 错误信息。 */
+MutatingError = 'mutatingError',
 }
 
+/** Data View Key Descriptor 的语义模型。 */
 export type DataViewKeyDescriptor = {
   /** DataSet scope, present only for cross-page `#scope` references. */
   scope?: string
@@ -49,21 +64,28 @@ export type DataViewKeyDescriptor = {
   /** Whether this key uses the cross-page `#scope` prefix. */
   crossPage?: boolean}
 
+/** Data View Member Descriptor 的语义模型。 */
 export type DataViewMemberDescriptor = DataViewKeyDescriptor & {
   /** DataView output member. */
     dataMember: DataMember
     /** Optional business field/path inside object-shaped members. */
     dataField?: string}
 
+/** Data View Member Input 的输入数据。 */
 export type DataViewMemberInput = {
-  dataViewKey: string | undefined
-  dataMember: DataMember | `${DataMember}` | undefined
-  dataField?: string | undefined}
+    /** DataView 定位键。 */
+dataViewKey: string | undefined
+    /** DataView 成员名。 */
+dataMember: DataMember | `${DataMember}` | undefined
+    /** DataView 成员字段路径。 */
+dataField?: string | undefined}
 
+/** Data View Member Object 的语义模型。 */
 export type DataViewMemberObject = {
   [key: string]: unknown}
 
 // 这里不再为 JS 基础类型保留导出别名，DataView 标量成员直接在联合类型中内联。
+/** Data View Member Value 的语义模型。 */
 export type DataViewMemberValue =
   | DataRow
   | AggregateResultRow
@@ -248,11 +270,16 @@ export function resolveDataViewMember(
   )
 }
 
+/** Data View Member Binding 的语义模型。 */
 export type DataViewMemberBinding = {
-  kind: 'value'
-  value: DataViewMemberValue
-  source: DataSource
-  descriptor: DataViewMemberDescriptor}
+    /** 类型判别字段。 */
+kind: 'value'
+    /** 当前值。 */
+value: DataViewMemberValue
+    /** 来源对象。 */
+source: DataSource
+    /** descriptor 字段。 */
+descriptor: DataViewMemberDescriptor}
 
 export function resolveDataViewMemberBinding(
   input: DataViewMemberInput,
@@ -276,6 +303,7 @@ export function resolveDataViewMemberBinding(
   }
 }
 
+/** Data View Key Diagnostic Status 的语义模型。 */
 export type DataViewKeyDiagnosticStatus =
   | 'ok'
   | 'invalid-key'
@@ -283,13 +311,20 @@ export type DataViewKeyDiagnosticStatus =
   | 'missing-table'
   | 'missing-view'
 
+/** Data View Key Diagnostic 的诊断信息。 */
 export type DataViewKeyDiagnostic = {
-  ok: boolean
-  status: DataViewKeyDiagnosticStatus
-  rawKey: string
-  descriptor: DataViewKeyDescriptor | null
-  message: string}
+    /** ok 字段。 */
+ok: boolean
+    /** 当前状态。 */
+status: DataViewKeyDiagnosticStatus
+    /** raw Key 键。 */
+rawKey: string
+    /** descriptor 字段。 */
+descriptor: DataViewKeyDescriptor | null
+    /** 用户可读消息。 */
+message: string}
 
+/** Data View Member Diagnostic Status 的语义模型。 */
 export type DataViewMemberDiagnosticStatus =
   | DataViewKeyDiagnosticStatus
   | 'invalid-member'
@@ -298,12 +333,18 @@ export type DataViewMemberDiagnosticStatus =
   | 'missing-field'
   | 'unsupported-data-field'
 
+/** Data View Member Diagnostic 的诊断信息。 */
 export type DataViewMemberDiagnostic = {
-  ok: boolean
-  status: DataViewMemberDiagnosticStatus
-  rawKey: string
-  descriptor: DataViewMemberDescriptor | null
-  message: string}
+    /** ok 字段。 */
+ok: boolean
+    /** 当前状态。 */
+status: DataViewMemberDiagnosticStatus
+    /** raw Key 键。 */
+rawKey: string
+    /** descriptor 字段。 */
+descriptor: DataViewMemberDescriptor | null
+    /** 用户可读消息。 */
+message: string}
 
 type DataViewKeyDiagnosticInput = Readonly<{
   status: DataViewKeyDiagnosticStatus
@@ -428,6 +469,7 @@ export function getDataViewIdentity(descriptor: DataViewKeyDescriptor): string {
   return `${descriptor.tableName}.${descriptor.viewId}`
 }
 
+/** Resolved Data View Capabilities 的语义模型。 */
 export type ResolvedDataViewCapabilities = {
   /** Resolved DataView, or null when unavailable. */
   dataSource: DataView | null

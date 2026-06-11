@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/layout/RendererTabPane
+RendererTabPane 模块，属于 SPARK component container/layout-container。
+组件目录: containers/layout。
+导出 ClassModel symbol: Props（共 1 个 symbol）。
+-->
 <template>
   <el-tab-pane
     :label="paneLabel"
@@ -31,6 +37,7 @@ import { nodeId } from '../../internal'
 import { useCompositeItemGrid } from '../runtime/container-layout'
 import type { SparkNodeProps } from '../../shared-types'
 
+/** r-tabs 内部标签页面板属性，描述标签头和内容区布局。 */
 type Props = SparkNodeProps & {
   /** 标签页唯一标识 */
     name?: string | number

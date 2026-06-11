@@ -1,4 +1,9 @@
 /**
+ * @module app:services/page-design-ai-runner
+ * app 的 services/page-design-ai-runner 模块。
+ * 导出 ClassModel symbol: PageDesignAiRunOptions, PageDesignAiRunEvents, PageDesignAiRunCommand, PageDesignAiRunResult（共 4 个 symbol）。
+ */
+/**
  * DevSystem 面板内 pageDesign AI — 使用 DevSystem 当前 ProjectWorkspace。
  *
  * `command.editor` 必须与手动编辑同一 `editor.project`，保存/撤销语义一致。
@@ -29,11 +34,16 @@ import {
   type PageDesignRunMode,
 } from '@/services/page-design-business'
 
+/** Page Design Ai Run Options 的调用配置。 */
 export type PageDesignAiRunOptions = {
-  description: string
-  mode?: PageDesignRunMode
-  allowedOperations?: PageDesignAllowedOperations
-  preserveExistingInteractions?: boolean
+    /** description 字段。 */
+description: string
+    /** mode 字段。 */
+mode?: PageDesignRunMode
+    /** allowed Operations 字段。 */
+allowedOperations?: PageDesignAllowedOperations
+    /** preserve Existing Interactions 字段。 */
+preserveExistingInteractions?: boolean
   /** 未声明 implGate 时 fail-fast；生产 runner 建议 true。 */
   strictImplGate?: boolean
 }
@@ -42,28 +52,44 @@ export type PageDesignAiRunOptions = {
  * DevSystem 侧 channel：仅转发 tool call 状态，不承载 stream/delta/reasoning（见 trace / spark-ai）。
  */
 export type PageDesignAiRunEvents = {
-  onToolCall?: (record: AiAgentToolCallRecord) => void
+    /** on Tool Call 事件回调。 */
+onToolCall?: (record: AiAgentToolCallRecord) => void
 }
 
+/** Page Design Ai Run Command 的命令参数。 */
 export type PageDesignAiRunCommand = PageDesignAiRunOptions & {
-  pageId: string
-  editor: ProjectWorkspace
-  consumeCapability: SparkCapabilityConsumer | null
-  events?: PageDesignAiRunEvents
-  trace?: AiRunTraceSink
-  adapter?: AiRunAdapterState
-  beforeFunctionCall?: AiRunBeforeFunctionCall
-  onAbort?: AiRunAbortHandler
-  userMessage?: string
+    /** page Id 标识。 */
+pageId: string
+    /** editor 字段。 */
+editor: ProjectWorkspace
+    /** consume Capability 字段。 */
+consumeCapability: SparkCapabilityConsumer | null
+    /** events 字段。 */
+events?: PageDesignAiRunEvents
+    /** trace 字段。 */
+trace?: AiRunTraceSink
+    /** adapter 字段。 */
+adapter?: AiRunAdapterState
+    /** before Function Call 字段。 */
+beforeFunctionCall?: AiRunBeforeFunctionCall
+    /** on Abort 事件回调。 */
+onAbort?: AiRunAbortHandler
+    /** user Message 字段。 */
+userMessage?: string
   /** 自动化/headless 调用可打开；DevSystem 默认保持手动保存语义。 */
   saveDirtyFilesAfterRun?: boolean
 }
 
+/** Page Design Ai Run Result 的返回结果。 */
 export type PageDesignAiRunResult = {
-  sawToolCall: boolean
-  files: ProjectActivePageProjection
-  dirtyFileNames: PageNodeFileName[]
-  savedDirtyFileNames: PageNodeFileName[]
+    /** saw Tool Call 字段。 */
+sawToolCall: boolean
+    /** files 字段。 */
+files: ProjectActivePageProjection
+    /** dirty File Names 字段。 */
+dirtyFileNames: PageNodeFileName[]
+    /** saved Dirty File Names 字段。 */
+savedDirtyFileNames: PageNodeFileName[]
 }
 
 export async function runPageDesignAiSession(command: PageDesignAiRunCommand): Promise<PageDesignAiRunResult> {

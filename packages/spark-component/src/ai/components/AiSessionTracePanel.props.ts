@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:ai/components/AiSessionTracePanel.props
+ * @spark-appworks/spark-component 的 ai/components/AiSessionTracePanel.props 模块。
+ * 导出 ClassModel symbol: AiSessionTracePanelProps（共 1 个 symbol）。
+ */
 import type { StreamDisplayEntry, SessionDiagnosticsData } from '../types'
 
 /**

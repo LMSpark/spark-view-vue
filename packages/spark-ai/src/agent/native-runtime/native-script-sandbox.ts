@@ -12,6 +12,7 @@ import { AiAgentToolCheck, AiAgentToolResult } from '../tool-runtime'
 
 const SCRIPT_RECOVERY_HINT = '按 tool result RECOVERY_HINT 修正；契约见 model_action_guide / model_class_guide（ClassModel 知识索引）。'
 
+/** Ai Native Script Sandbox Context 的运行上下文。 */
 export type AiNativeScriptSandboxContext = Readonly<Record<string, unknown>>
 
 const GENERATED_STACK_LINE_FOR_SCRIPT_LINE_1 = 6

@@ -21,11 +21,14 @@ import { pruneInvalidSelections } from '../core/utils'
 
 const logger = Logger('DataView:Selection')
 
+/** Emit Current Row Changed Fn 的语义模型。 */
 type EmitCurrentRowChangedFn = {
   (originatorId?: string): void}
+/** Emit Selected Rows Changed Fn 的语义模型。 */
 type EmitSelectedRowsChangedFn = {
   (originatorId?: string): void}
 
+/** Selection Delegate 的语义模型。 */
 export class SelectionDelegate {
 
   /** @internal 抑制单选同步（applyAutoFirst 内部用） */
@@ -35,7 +38,8 @@ export class SelectionDelegate {
   private _cachedRows: DataRow[] | undefined
   private _cachedIdToRowMap: Map<string | number, DataRow> | undefined
 
-  constructor(
+    /** 创建 Selection Delegate 实例。 */
+constructor(
     private host: DataView,
     private emitCurrentRowChanged: EmitCurrentRowChangedFn,
     private emitSelectedRowsChanged: EmitSelectedRowsChangedFn,

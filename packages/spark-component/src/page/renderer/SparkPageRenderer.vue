@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-component:page/renderer/SparkPageRenderer
+@spark-appworks/spark-component 的 page/renderer/SparkPageRenderer 模块。
+导出 ClassModel symbol: PageRuntimeErrorPhase, PageRuntimeErrorPayload, Props（共 3 个 symbol）。
+-->
 <template>
   <div v-if="loading" class="spark-page-loading">
     <slot name="loading">加载中...</slot>
@@ -107,13 +112,20 @@ import SparkComponentRenderer from '../../components/SparkComponentRenderer.vue'
 const logger = Logger('SparkPageRenderer')
 const currentInstance = getCurrentInstance()
 
+/** 页面运行时错误发生阶段。 */
 type PageRuntimeErrorPhase = 'load' | 'script-compile' | 'init' | 'script-function' | 'render'
 
+/** 页面运行时错误上报载荷。 */
 type PageRuntimeErrorPayload = {
+  /** 发生错误的页面运行阶段。 */
   phase: PageRuntimeErrorPhase
+  /** 面向用户和日志的错误消息。 */
   message: string
+  /** 出错页面 ID。 */
   pageId: string
-  at: string}
+  /** 错误发生时间。 */
+  at: string
+}
 
 type RenderFunction = {
   (props?: Record<string, unknown>): unknown}

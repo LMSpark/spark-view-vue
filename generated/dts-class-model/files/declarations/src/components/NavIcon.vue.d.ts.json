@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/components/NavIcon.vue.d.ts",
+  "module": {
+    "name": "app:components/NavIcon",
+    "sourcePath": "declarations/src/components/NavIcon.vue.d.ts",
+    "sourceFile": "src/components/NavIcon.vue",
+    "packageName": "app",
+    "modulePath": "components/NavIcon",
+    "jsdoc": "@module app:components/NavIcon\napp 的 components/NavIcon 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.040Z"
+}

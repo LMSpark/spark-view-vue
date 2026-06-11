@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/ai-host-run-bridge.d.ts",
+  "module": {
+    "name": "app:services/ai-host-run-bridge",
+    "sourcePath": "declarations/src/services/ai-host-run-bridge.d.ts",
+    "sourceFile": "src/services/ai-host-run-bridge.ts",
+    "packageName": "app",
+    "modulePath": "services/ai-host-run-bridge",
+    "jsdoc": "APP 层 Host Run 分布式桥接器。\n后端通过 APP 公共 SSE 定向下发 ai-host-run-request，本桥接器只负责\n校验平台载荷、调用本地 AiAgentHost.run(alias,args)、收集 trace 并提交回执。\n业务状态和业务流程编排仍由注册方与 LLM 协作完成，APP bridge 不理解具体能力。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiHostRunTarget",
+      "AiHostRunPrepare",
+      "AiHostRunBridgeOptions",
+      "AiHostRunBridge"
+    ]
+  },
+  "symbols": [
+    "AiHostRunTarget",
+    "AiHostRunPrepare",
+    "AiHostRunBridgeOptions",
+    "AiHostRunBridge"
+  ],
+  "models": {
+    "AiHostRunTarget": {
+      "kind": "AiHostRunTarget",
+      "className": "AiHostRunTarget",
+      "jsdoc": "/** Ai Host Run Target 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    has(alias: string): boolean;\n    dryRun(alias: string, args: unknown): AiAgentHostDryRunResult;\n    run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    has(alias: string): boolean;\n    dryRun(alias: string, args: unknown): AiAgentHostDryRunResult;\n    run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/ai-host-run-bridge.d.ts",
+        "line": 12,
+        "className": "AiHostRunTarget",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiHostRunPrepare": {
+      "kind": "AiHostRunPrepare",
+      "className": "AiHostRunPrepare",
+      "jsdoc": "/** Ai Host Run Prepare 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "(event: AiHostRunRequestEvent, host: THost) => AiHostRunTarget | Promise<AiHostRunTarget>",
+      "provenance": {
+        "file": "declarations/src/services/ai-host-run-bridge.d.ts",
+        "line": 18,
+        "className": "AiHostRunPrepare",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiHostRunBridgeOptions": {
+      "kind": "AiHostRunBridgeOptions",
+      "className": "AiHostRunBridgeOptions",
+      "jsdoc": "/** Ai Host Run Bridge Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    host: THost;\n    prepareRun?: AiHostRunPrepare<THost>;\n    defaultTimeoutMs?: number;\n    maxParallelRuns?: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    host: THost;\n    prepareRun?: AiHostRunPrepare<THost>;\n    defaultTimeoutMs?: number;\n    maxParallelRuns?: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/ai-host-run-bridge.d.ts",
+        "line": 20,
+        "className": "AiHostRunBridgeOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiHostRunBridge": {
+      "kind": "AiHostRunBridge",
+      "className": "AiHostRunBridge",
+      "jsdoc": "/** Ai Host Run Bridge 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    start(): () => void;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    start(): () => void;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/ai-host-run-bridge.d.ts",
+        "line": 27,
+        "className": "AiHostRunBridge",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.065Z"
+}

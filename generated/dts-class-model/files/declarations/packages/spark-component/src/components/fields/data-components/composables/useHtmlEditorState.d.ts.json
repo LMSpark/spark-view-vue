@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/fields/data-components/composables/useHtmlEditorState",
+    "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.d.ts",
+    "sourceFile": "packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/fields/data-components/composables/useHtmlEditorState",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useHtmlEditorState\n@spark-appworks/spark-component:components/fields/data-components/composables/useHtmlEditorState 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: UseHtmlEditorStateOptions（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "UseHtmlEditorStateOptions"
+    ],
+    "componentLevel": "field-level",
+    "componentLayer": "data-field",
+    "componentDirectory": "fields/data-components"
+  },
+  "symbols": [
+    "UseHtmlEditorStateOptions"
+  ],
+  "models": {
+    "UseHtmlEditorStateOptions": {
+      "kind": "UseHtmlEditorStateOptions",
+      "className": "UseHtmlEditorStateOptions",
+      "jsdoc": "/** Use Html Editor State Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** editor Ref 字段。 */\n    editorRef: Ref<HTMLElement | null>;\n    /** field Value 字段。 */\n    fieldValue: ValueRef<unknown>;\n    /** 是否 is Current Field Editable。 */\n    isCurrentFieldEditable: ValueRef<boolean>;\n    /** sync Value 回调。 */\n    syncValue: (value: string) => void;\n    /** emit Update 回调。 */\n    emitUpdate: (value: string) => void;\n    /** get Row Raw Value 回调。 */\n    getRowRawValue: (row: DataRow) => unknown;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.d.ts",
+        "line": 5,
+        "className": "UseHtmlEditorStateOptions",
+        "declarationKind": "type",
+        "componentLevel": "field-level",
+        "componentLayer": "data-field",
+        "componentDirectory": "fields/data-components"
+      },
+      "attributes": [
+        {
+          "name": "editorRef",
+          "schema": {
+            "title": "Ref<HTMLElement | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** editor Ref 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.d.ts",
+            "line": 7,
+            "className": "UseHtmlEditorStateOptions",
+            "memberName": "editorRef",
+            "declarationKind": "interface",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "fieldValue",
+          "schema": {
+            "title": "ValueRef<unknown>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** field Value 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.d.ts",
+            "line": 9,
+            "className": "UseHtmlEditorStateOptions",
+            "memberName": "fieldValue",
+            "declarationKind": "interface",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "isCurrentFieldEditable",
+          "schema": {
+            "title": "ValueRef<boolean>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 是否 is Current Field Editable。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.d.ts",
+            "line": 11,
+            "className": "UseHtmlEditorStateOptions",
+            "memberName": "isCurrentFieldEditable",
+            "declarationKind": "interface",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "syncValue",
+          "schema": {
+            "title": "(value: string) => void"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** sync Value 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.d.ts",
+            "line": 13,
+            "className": "UseHtmlEditorStateOptions",
+            "memberName": "syncValue",
+            "declarationKind": "interface",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "emitUpdate",
+          "schema": {
+            "title": "(value: string) => void"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** emit Update 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.d.ts",
+            "line": 15,
+            "className": "UseHtmlEditorStateOptions",
+            "memberName": "emitUpdate",
+            "declarationKind": "interface",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "getRowRawValue",
+          "schema": {
+            "title": "(row: DataRow) => unknown"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** get Row Raw Value 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useHtmlEditorState.d.ts",
+            "line": 17,
+            "className": "UseHtmlEditorStateOptions",
+            "memberName": "getRowRawValue",
+            "declarationKind": "interface",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.456Z"
+}

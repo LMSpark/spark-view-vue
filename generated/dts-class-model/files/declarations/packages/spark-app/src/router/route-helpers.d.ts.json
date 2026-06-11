@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/router/route-helpers.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:router/route-helpers",
+    "sourcePath": "declarations/packages/spark-app/src/router/route-helpers.d.ts",
+    "sourceFile": "packages/spark-app/src/router/route-helpers.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "router/route-helpers",
+    "jsdoc": "@module @spark-appworks/spark-app:router/route-helpers\n@spark-appworks/spark-app 的 router/route-helpers 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.976Z"
+}

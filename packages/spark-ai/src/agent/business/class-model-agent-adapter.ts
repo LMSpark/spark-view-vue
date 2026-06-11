@@ -53,8 +53,10 @@ import {
 import type { EnrichFunctionCallFailureCommand } from '../tool-loop/function-call-recovery-enricher'
 import { AiAgentRuntimeContext } from './scope-types'
 
+/** Class Model Agent Adapter Constructor 的语义模型。 */
 type ClassModelAgentAdapterConstructor<T> = new (...args: never[]) => T
 
+/** Class Model Agent Adapter Register Command 的命令参数。 */
 export type ClassModelAgentAdapterRegisterCommand<T> = Readonly<{
   host: AiAgentHost
   alias: string
@@ -63,12 +65,14 @@ export type ClassModelAgentAdapterRegisterCommand<T> = Readonly<{
   options: ClassModelAgentAdapterRegisterOptions<T>
 }>
 
+/** Class Model Agent Adapter Registration Command 的命令参数。 */
 export type ClassModelAgentAdapterRegistrationCommand<T> = Readonly<{
   moduleClass: ClassModelAgentAdapterConstructor<T>
   metadata?: AiModuleMetadataJson
   options: ClassModelAgentAdapterRegisterOptions<T>
 }>
 
+/** Class Model Agent Adapter Register Options 的调用配置。 */
 export type ClassModelAgentAdapterRegisterOptions<T> = Readonly<{
   moduleId?: string
   instance?: T
@@ -103,8 +107,10 @@ export type ClassModelAgentAdapterRegisterOptions<T> = Readonly<{
   enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
 }>
 
+/** Class Model Agent Adapter 的语义模型。 */
 export class ClassModelAgentAdapter {
-  public static register<T>(command: ClassModelAgentAdapterRegisterCommand<T>): AiAgentHost {
+    /** 执行 register 操作。 */
+public static register<T>(command: ClassModelAgentAdapterRegisterCommand<T>): AiAgentHost {
     const registration = ClassModelAgentAdapter.createRegistration({
       moduleClass: command.moduleClass,
       ...(command.metadata === undefined ? {} : { metadata: command.metadata }),
@@ -113,7 +119,8 @@ export class ClassModelAgentAdapter {
     return command.host.register(command.alias, registration)
   }
 
-  public static createRegistration<T>(
+    /** 创建 Registration。 */
+public static createRegistration<T>(
     command: ClassModelAgentAdapterRegistrationCommand<T>,
   ): AiAgentRegistration {
     const metadata = command.metadata === undefined

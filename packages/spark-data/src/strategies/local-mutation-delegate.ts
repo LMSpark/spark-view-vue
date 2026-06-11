@@ -16,13 +16,17 @@ import type { DataRow } from '../types'
 import type { DataView } from '../data-view'
 import { buildPkSet, pruneInvalidSelections } from '../core/utils'
 
+/** Emit Rows Changed Fn 的语义模型。 */
 type EmitRowsChangedFn = {
   (options?: { selectionChanged?: boolean }): void}
+/** Post Mutation Fn 的语义模型。 */
 type PostMutationFn = {
   (affectedRows: DataRow[] | 'all' | null): void}
 
+/** Local Mutation Delegate 的语义模型。 */
 export class LocalMutationDelegate {
-  constructor(
+    /** 创建 Local Mutation Delegate 实例。 */
+constructor(
     private readonly host: DataView,
     private readonly emitRowsChanged: EmitRowsChangedFn,
     private readonly postMutation?: PostMutationFn,

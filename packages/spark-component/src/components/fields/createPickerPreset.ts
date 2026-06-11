@@ -1,4 +1,9 @@
 /**
+ * @module @spark-appworks/spark-component:components/fields/createPickerPreset
+ * @spark-appworks/spark-component 的 components/fields/createPickerPreset 模块。
+ * 导出 ClassModel symbol: PickerPresetDefaults（共 1 个 symbol）。
+ */
+/**
  * Picker 变体工厂 —— 配置驱动生成 EntityPicker 的预设包装组件。
  *
  * FieldUserPicker.vue 等预设组件从 `../createPickerPreset` 引入该工厂，
@@ -12,11 +17,16 @@ import type { SparkOptionValueMode } from '../shared-types'
 import { emitFieldValueUpdate } from './data-components/composables/useControlledFieldChange'
 import FieldEntityPicker from './data-components/FieldEntityPicker.vue'
 
+/** Picker Preset Defaults 的语义模型。 */
 type PickerPresetDefaults = {
-  placeholder: string
-  buttonText: string
-  readonlyButtonText: string
-  entityName: string}
+    /** 占位提示文本。 */
+placeholder: string
+    /** button Text 文本。 */
+buttonText: string
+    /** readonly Button Text 文本。 */
+readonlyButtonText: string
+    /** entity Name 名称。 */
+entityName: string}
 
 function isSparkOptionValueMode(value: unknown): value is SparkOptionValueMode {
   return value === 'auto' || value === 'array' || value === 'separated-string'

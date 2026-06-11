@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/router/invalid-system-page.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:router/invalid-system-page",
+    "sourcePath": "declarations/packages/spark-app/src/router/invalid-system-page.d.ts",
+    "sourceFile": "packages/spark-app/src/router/invalid-system-page.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "router/invalid-system-page",
+    "jsdoc": "@module @spark-appworks/spark-app:router/invalid-system-page\n@spark-appworks/spark-app 的 router/invalid-system-page 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.975Z"
+}

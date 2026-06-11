@@ -1,7 +1,16 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/index
+ * @spark-appworks/spark-ai 的 class-model/index 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 export type {
   AttributeMeta,
   ClassModel,
+  ClassModelDeclarationRelation,
+  ClassModelDeclarationRelationKind,
   ClassModelDocument,
+  ComponentClassModelLayer,
+  ComponentClassModelLevel,
   ConstructorMeta,
   JsDocMeta,
   MethodMeta,

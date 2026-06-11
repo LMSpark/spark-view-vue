@@ -15,9 +15,12 @@
 
 import type { CapabilityContext } from '@spark-appworks/spark-utils'
 
+/** Spark Runtime Owner 的语义模型。 */
 export type SparkRuntimeOwner = {
-  parent?: SparkRuntimeOwner | null
-  pageRoot?: unknown}
+    /** parent 字段。 */
+parent?: SparkRuntimeOwner | null
+    /** page Root 字段。 */
+pageRoot?: unknown}
 
 const OWNER_CONTEXTS = new WeakMap<object, CapabilityContext>()
 /** key = 页面根 DOM 元素（HTMLElement），DOM 天然防泄漏 */

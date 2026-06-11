@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/strategies/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:strategies/index",
+    "sourcePath": "declarations/packages/spark-data/src/strategies/index.d.ts",
+    "sourceFile": "packages/spark-data/src/strategies/index.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "strategies/index",
+    "jsdoc": "strategies barrel export",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.792Z"
+}

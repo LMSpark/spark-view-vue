@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:agent/native-runtime/dts-native-script-runner
+ * @spark-appworks/spark-ai 的 agent/native-runtime/dts-native-script-runner 模块。
+ * 导出 ClassModel symbol: DtsNativeScriptRunCommand（共 1 个 symbol）。
+ */
 import type {
   AiJsonSchema,
   AiJsonValue,
@@ -18,6 +23,7 @@ import type {
 import { executeModuleScript } from './native-script-sandbox'
 import { createAiApiScriptContext } from './native-script-context'
 
+/** Dts Native Script Run Command 的命令参数。 */
 export type DtsNativeScriptRunCommand<TInstance = unknown> = Readonly<{
   instance: TInstance
   manifestUrl: string

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/error-utils.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:error-utils",
+    "sourcePath": "declarations/packages/spark-utils/src/error-utils.d.ts",
+    "sourceFile": "packages/spark-utils/src/error-utils.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "error-utils",
+    "jsdoc": "通用错误工具函数\n提供类型安全的错误处理辅助方法，消除全项目中的\n`error instanceof Error ? error.message : String(error)` 重复模式。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.998Z"
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/class-model-artifacts/artifact-urls.d.ts",
+  "module": {
+    "name": "app:class-model-artifacts/artifact-urls",
+    "sourcePath": "declarations/src/class-model-artifacts/artifact-urls.d.ts",
+    "sourceFile": "src/class-model-artifacts/artifact-urls.ts",
+    "packageName": "app",
+    "modulePath": "class-model-artifacts/artifact-urls",
+    "jsdoc": "@module app:class-model-artifacts/artifact-urls\napp 的 class-model-artifacts/artifact-urls 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.034Z"
+}

@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/class-model/index
+ * @spark-appworks/spark-ai 的 class-model/class-model/index 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 export {
   CLASS_MODEL_DOCUMENT_VERSION,
 } from './types'
@@ -5,7 +10,11 @@ export {
 export type {
   AttributeMeta,
   ClassModel,
+  ClassModelDeclarationRelation,
+  ClassModelDeclarationRelationKind,
   ClassModelDocument,
+  ComponentClassModelLayer,
+  ComponentClassModelLevel,
   ConstructorMeta,
   JsDocMeta,
   MethodMeta,
@@ -75,15 +84,20 @@ export {
 
 export type {
   BuildDtsClassModelBundleOptions,
+  BuildDtsClassModelBundleProgress,
+  BuildDtsClassModelBundleProgressPhase,
   BuildDtsClassModelBundleResult,
 } from './build-dts-class-model-bundle'
 
 export type {
-  DtsClassModelBundleClassEntry,
-  DtsClassModelBundleFileEntry,
   DtsClassModelBundleManifest,
+  DtsClassModelBundleFileEntry,
+  DtsClassModelSemanticGap,
+  DtsClassModelSemanticGapKind,
+  DtsClassModelSemanticGapReport,
+  DtsFileModuleJsDocSource,
+  DtsFileModuleSemanticMeta,
   DtsFileProjectionDocument,
-  ProjectDtsFileProjectionOptions,
 } from './dts-bundle-types'
 
 export type {

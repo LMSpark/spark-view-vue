@@ -7,9 +7,12 @@ import { getProjectApi, getProjectNavigationApi, getProjectPageApi, type Project
 import { getUser } from '@/services/auth'
 import { createAuthHeaders, http } from '@/services/http'
 
+/** Project Workspace Scope 的语义模型。 */
 export type ProjectWorkspaceScope = {
-  tenantId: string
-  projectId: string
+    /** tenant Id 标识。 */
+tenantId: string
+    /** project Id 标识。 */
+projectId: string
 }
 
 const projectWorkspaces = new Map<string, ProjectWorkspace>()

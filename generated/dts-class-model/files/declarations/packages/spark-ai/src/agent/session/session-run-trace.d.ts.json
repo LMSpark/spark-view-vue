@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/session/session-run-trace",
+    "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/session/session-run-trace.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/session/session-run-trace",
+    "jsdoc": "agent/session/session-run-trace.ts — headless AI run trace.\nThis is a compact, UI-independent projection of one active AI run. It is\nnot the durable conversation source; the backend DB owns persisted history.",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentRunTraceToolCall",
+      "AiAgentRunTraceReasoning",
+      "AiAgentRunTraceEntry",
+      "AiAgentRunTraceSnapshot",
+      "AiAgentRunTraceOptions",
+      "AiAgentRunTraceListener",
+      "AiAgentRunTrace"
+    ]
+  },
+  "symbols": [
+    "AiAgentRunTraceToolCall",
+    "AiAgentRunTraceReasoning",
+    "AiAgentRunTraceEntry",
+    "AiAgentRunTraceSnapshot",
+    "AiAgentRunTraceOptions",
+    "AiAgentRunTraceListener",
+    "AiAgentRunTrace"
+  ],
+  "models": {
+    "AiAgentRunTraceToolCall": {
+      "kind": "AiAgentRunTraceToolCall",
+      "className": "AiAgentRunTraceToolCall",
+      "jsdoc": "/** Ai Agent Run Trace Tool Call 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    toolName: string;\n    argsPreview: string;\n    turnId: string;\n    round: number;\n    callId: string | null;\n    status: 'success' | 'error';\n    resultSummary: string | null;\n    durationMs: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    toolName: string;\n    argsPreview: string;\n    turnId: string;\n    round: number;\n    callId: string | null;\n    status: 'success' | 'error';\n    resultSummary: string | null;\n    durationMs: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
+        "line": 9,
+        "className": "AiAgentRunTraceToolCall",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentRunTraceReasoning": {
+      "kind": "AiAgentRunTraceReasoning",
+      "className": "AiAgentRunTraceReasoning",
+      "jsdoc": "/** Ai Agent Run Trace Reasoning 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    text: string;\n    turnId: string;\n    collapsed: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    text: string;\n    turnId: string;\n    collapsed: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
+        "line": 20,
+        "className": "AiAgentRunTraceReasoning",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentRunTraceEntry": {
+      "kind": "AiAgentRunTraceEntry",
+      "className": "AiAgentRunTraceEntry",
+      "jsdoc": "/** Ai Agent Run Trace Entry 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    kind: 'user-message';\n    content: string;\n    timestamp: number;\n}> | Readonly<{\n    kind: 'assistant-delta';\n    content: string;\n    turnId: string;\n}> | Readonly<{\n    kind: 'assistant-complete';\n    content: string;\n    turnId: string;\n}> | Readonly<{\n    kind: 'reasoning';\n    item: AiAgentRunTraceReasoning;\n}> | Readonly<{\n    kind: 'tool-call';\n    item: AiAgentRunTraceToolCall;\n}> | Readonly<{\n    kind: 'error';\n    message: string;\n    timestamp: number;\n}> | Readonly<{\n    kind: 'system-message';\n    content: string;\n    timestamp: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    kind: 'user-message';\n    content: string;\n    timestamp: number;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    kind: 'assistant-delta';\n    content: string;\n    turnId: string;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    kind: 'assistant-complete';\n    content: string;\n    turnId: string;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    kind: 'reasoning';\n    item: AiAgentRunTraceReasoning;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    kind: 'tool-call';\n    item: AiAgentRunTraceToolCall;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    kind: 'error';\n    message: string;\n    timestamp: number;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    kind: 'system-message';\n    content: string;\n    timestamp: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
+        "line": 26,
+        "className": "AiAgentRunTraceEntry",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentRunTraceSnapshot": {
+      "kind": "AiAgentRunTraceSnapshot",
+      "className": "AiAgentRunTraceSnapshot",
+      "jsdoc": "/** Ai Agent Run Trace Snapshot 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    streamText: string;\n    reasoningText: string;\n    isStreaming: boolean;\n    isReasoning: boolean;\n    entries: readonly AiAgentRunTraceEntry[];\n    toolCalls: readonly AiAgentRunTraceToolCall[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    streamText: string;\n    reasoningText: string;\n    isStreaming: boolean;\n    isReasoning: boolean;\n    entries: readonly AiAgentRunTraceEntry[];\n    toolCalls: readonly AiAgentRunTraceToolCall[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
+        "line": 54,
+        "className": "AiAgentRunTraceSnapshot",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentRunTraceOptions": {
+      "kind": "AiAgentRunTraceOptions",
+      "className": "AiAgentRunTraceOptions",
+      "jsdoc": "/** Ai Agent Run Trace Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    now?: () => number;\n    argsPreviewLimit?: number;\n    resultPreviewLimit?: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    now?: () => number;\n    argsPreviewLimit?: number;\n    resultPreviewLimit?: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
+        "line": 63,
+        "className": "AiAgentRunTraceOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentRunTraceListener": {
+      "kind": "AiAgentRunTraceListener",
+      "className": "AiAgentRunTraceListener",
+      "jsdoc": "/** Ai Agent Run Trace Listener 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "(snapshot: AiAgentRunTraceSnapshot) => void",
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
+        "line": 69,
+        "className": "AiAgentRunTraceListener",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentRunTrace": {
+      "kind": "AiAgentRunTrace",
+      "className": "AiAgentRunTrace",
+      "jsdoc": "/** Ai Agent Run Trace 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    snapshot(): AiAgentRunTraceSnapshot;\n    subscribe(listener: AiAgentRunTraceListener): () => void;\n    appendUserMessage(content: string): void;\n    appendDelta(delta: string): void;\n    appendReasoning(text: string): void;\n    appendEvent(event: AiAgentStreamEvent): void;\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    appendError(message: string): void;\n    markAborted(message?: string): void;\n    finish(): void;\n    reset(): void;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    snapshot(): AiAgentRunTraceSnapshot;\n    subscribe(listener: AiAgentRunTraceListener): () => void;\n    appendUserMessage(content: string): void;\n    appendDelta(delta: string): void;\n    appendReasoning(text: string): void;\n    appendEvent(event: AiAgentStreamEvent): void;\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    appendError(message: string): void;\n    markAborted(message?: string): void;\n    finish(): void;\n    reset(): void;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
+        "line": 71,
+        "className": "AiAgentRunTrace",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.770Z"
+}

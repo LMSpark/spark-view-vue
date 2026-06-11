@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/http/beacon.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:http/beacon",
+    "sourcePath": "declarations/packages/spark-utils/src/http/beacon.d.ts",
+    "sourceFile": "packages/spark-utils/src/http/beacon.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "http/beacon",
+    "jsdoc": "@module @spark-appworks/spark-utils:http/beacon\n@spark-appworks/spark-utils 的 http/beacon 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.999Z"
+}

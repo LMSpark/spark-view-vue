@@ -1,5 +1,15 @@
+/**
+ * @module @spark-appworks/spark-project-model:domain-model/navigation/navigation-row-model
+ * @spark-appworks/spark-project-model 的 domain-model/navigation/navigation-row-model 模块。
+ * 导出 ClassModel symbol: NavigationRowModel（共 1 个 symbol）。
+ */
 import { SparkAIModel } from '@spark-appworks/spark-utils'
+import type { NavigationClient } from '../../io/navigation-client'
 import type { PageConfigModel } from '../page/page-config-model'
+import {
+  navigationRowPatch,
+  navigationRowsFromRoot,
+} from './navigation-row-bridge'
 
 /**
  * 导航节点 DB 扁平静态投影。
@@ -7,14 +17,28 @@ import type { PageConfigModel } from '../page/page-config-model'
  * 树结构由 parentId 表达，不含 children。
  */
 export class NavigationRowModel extends SparkAIModel {
-  id: string
-  parentId: string
-  projectId: string
-  tenantId: string
-  title: string
-  description: string
-  nodeKind: string
-  pageConfig: PageConfigModel | null
+    /** 唯一标识。 */
+id: string
+    /** parent Id 标识。 */
+parentId: string
+    /** project Id 标识。 */
+projectId: string
+    /** tenant Id 标识。 */
+tenantId: string
+    /** 显示标题。 */
+title: string
+    /** description 字段。 */
+description: string
+    /** node Kind 字段。 */
+nodeKind: string
+    /** planning Attachment Ref 字段。 */
+planningAttachmentRef?: string
+    /** 资源路径。 */
+path?: string
+    /** icon 字段。 */
+icon?: string
+    /** page Config 配置。 */
+pageConfig: PageConfigModel | null
 
   /**
    * @param options.id 节点 ID（NODE_ID）。
@@ -34,6 +58,9 @@ export class NavigationRowModel extends SparkAIModel {
     title: string
     description?: string
     nodeKind?: string
+    planningAttachmentRef?: string
+    path?: string
+    icon?: string
     pageConfig?: PageConfigModel | null
   }) {
     super(options)
@@ -44,10 +71,16 @@ export class NavigationRowModel extends SparkAIModel {
     this.title = options.title
     this.description = options.description ?? ''
     this.nodeKind = options.nodeKind ?? 'page'
+    if (options.planningAttachmentRef !== undefined) {
+      this.planningAttachmentRef = options.planningAttachmentRef
+    }
+    if (options.path !== undefined) this.path = options.path
+    if (options.icon !== undefined) this.icon = options.icon
     this.pageConfig = options.pageConfig ?? null
   }
 
-  toJson(): Record<string, unknown> {
+    /** 执行 to Json 操作。 */
+toJson(): Record<string, unknown> {
     return {
       id: this.id,
       parentId: this.parentId,
@@ -56,15 +89,42 @@ export class NavigationRowModel extends SparkAIModel {
       title: this.title,
       description: this.description,
       nodeKind: this.nodeKind,
+      ...(this.planningAttachmentRef === undefined ? {} : { planningAttachmentRef: this.planningAttachmentRef }),
+      ...(this.path === undefined ? {} : { path: this.path }),
+      ...(this.icon === undefined ? {} : { icon: this.icon }),
       pageConfig: this.pageConfig?.toJson() ?? null,
     }
   }
 
-  save(): void {
-    throw new Error('NavigationRowModel.save: not implemented')
+  /**
+   * 将当前行导航属性写入远端（不含 pageConfig 四文件）。
+   *
+   * @param options.client Workspace 提供的 NavigationClient。
+   */
+  async save(options: { client: NavigationClient }): Promise<void> {
+    await options.client.updateNode(this.id, navigationRowPatch(this))
   }
 
-  static load(id: string): NavigationRowModel {
-    throw new Error(`NavigationRowModel.load: not implemented (${id})`)
+  /**
+   * 从项目导航树中按 id 定位并恢复单行。
+   *
+   * @param options.id 导航节点 id。
+   * @param options.projectId 项目 id（用于扁平行字段）。
+   * @param options.tenantId 租户 id。
+   * @param options.client NavigationClient。
+   */
+  static async load(options: {
+    id: string
+    projectId: string
+    tenantId: string
+    client: NavigationClient
+  }): Promise<NavigationRowModel> {
+    const root = await options.client.loadRoot()
+    const rows = navigationRowsFromRoot(root, options.projectId, options.tenantId)
+    const found = rows.find((row) => row.id === options.id) ?? null
+    if (found === null) {
+      throw new Error(`NavigationRowModel.load: node not found: ${options.id}`)
+    }
+    return found
   }
 }

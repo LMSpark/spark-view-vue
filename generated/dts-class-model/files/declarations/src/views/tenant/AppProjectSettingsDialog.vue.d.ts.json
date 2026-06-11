@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/views/tenant/AppProjectSettingsDialog.vue.d.ts",
+  "module": {
+    "name": "app:views/tenant/AppProjectSettingsDialog",
+    "sourcePath": "declarations/src/views/tenant/AppProjectSettingsDialog.vue.d.ts",
+    "sourceFile": "src/views/tenant/AppProjectSettingsDialog.vue",
+    "packageName": "app",
+    "modulePath": "views/tenant/AppProjectSettingsDialog",
+    "jsdoc": "@module app:views/tenant/AppProjectSettingsDialog\napp 的 views/tenant/AppProjectSettingsDialog 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.159Z"
+}

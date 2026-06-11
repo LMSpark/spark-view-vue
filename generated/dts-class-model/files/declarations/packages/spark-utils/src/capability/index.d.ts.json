@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/capability/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:capability/index",
+    "sourcePath": "declarations/packages/spark-utils/src/capability/index.d.ts",
+    "sourceFile": "packages/spark-utils/src/capability/index.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "capability/index",
+    "jsdoc": "Spark 能力系统 —— 统一导出入口。\n包含两个层次：\n- core     框架无关的类型定义与原语函数（defineCapability / sparkProvide 等）\n- helpers  纯能力树遍历工具（sparkFindNearestProvider 等）\n注：运行时上下文锚点（WeakMap owner / pageRoot）已迁移至 spark-component。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.994Z"
+}

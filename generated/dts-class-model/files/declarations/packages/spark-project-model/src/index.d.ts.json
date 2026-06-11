@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:index",
+    "sourcePath": "declarations/packages/spark-project-model/src/index.d.ts",
+    "sourceFile": "packages/spark-project-model/src/index.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "index",
+    "jsdoc": "@spark-appworks/spark-project-model\n领域模型：class 层级为主语。\n运行态页面加载与 ProjectWorkspace 均从根入口导出。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.878Z"
+}

@@ -11,6 +11,7 @@ import type {
   ProjectNodeData,
 } from '../navigation/project-node'
 import { NavigationClient } from '../io/navigation-client'
+import { replaceNavigationChildrenRemote } from '../io/navigation-tree-sync'
 import type { PageFileCreateOptions, PageNodeFileVersionSummary } from '../page/page-file'
 import {
   assertNonEmptyPageId,
@@ -41,55 +42,90 @@ import {
   type NavigationNodePatch,
 } from '../navigation/navigation-edit'
 
+/** Project Page Load Options 的调用配置。 */
 export type ProjectPageLoadOptions = {
-  forceReload?: boolean
+    /** force Reload 字段。 */
+forceReload?: boolean
 }
 
+/** Create Page For Selected Node Params 的语义模型。 */
 export type CreatePageForSelectedNodeParams = {
-  pageId: string
-  title?: string
-  icon?: string
+    /** page Id 标识。 */
+pageId: string
+    /** 显示标题。 */
+title?: string
+    /** icon 字段。 */
+icon?: string
 }
 
+/** Create Mounted Page Params 的语义模型。 */
 type CreateMountedPageParams = {
-  pageId: string
-  title?: string
-  icon?: string
-  node?: ProjectNodeData
-  parentId?: string | null
-  index?: number
-  rollbackPageOnNavigationFailure?: boolean
+    /** page Id 标识。 */
+pageId: string
+    /** 显示标题。 */
+title?: string
+    /** icon 字段。 */
+icon?: string
+    /** node 字段。 */
+node?: ProjectNodeData
+    /** parent Id 标识。 */
+parentId?: string | null
+    /** index 字段。 */
+index?: number
+    /** rollback Page On Navigation Failure 字段。 */
+rollbackPageOnNavigationFailure?: boolean
 }
 
+/** Create Page Files Params 的语义模型。 */
 type CreatePageFilesParams = PageFileCreateOptions & {
-  pageId: string
+    /** page Id 标识。 */
+pageId: string
 }
 
+/** Page Node Create Mounted Result 的返回结果。 */
 export type PageNodeCreateMountedResult = {
-  page: Record<string, unknown>
-  node: ProjectNodeData
+    /** 当前页码。 */
+page: Record<string, unknown>
+    /** node 字段。 */
+node: ProjectNodeData
 }
 
+/** Page Node Remove Mounted Result 的返回结果。 */
 export type PageNodeRemoveMountedResult = {
-  deletedNode: ProjectNodeData | null
-  deletedFiles: boolean
+    /** deleted Node 字段。 */
+deletedNode: ProjectNodeData | null
+    /** deleted Files 字段。 */
+deletedFiles: boolean
 }
 
+/** Remove Mounted Page Params 的语义模型。 */
 type RemoveMountedPageParams = {
-  pageId: string
-  nodeId?: string
-  deleteFiles?: boolean
+    /** page Id 标识。 */
+pageId: string
+    /** node Id 标识。 */
+nodeId?: string
+    /** delete Files 字段。 */
+deleteFiles?: boolean
 }
 
+/** Project Workspace Options 的调用配置。 */
 export type ProjectWorkspaceOptions = {
-  projectId: string
-  http: HttpClientBase
-  getPageFilesApi: () => string
-  getNavigationApi: () => string
-  getProjectsApi?: () => string
-  getProjectNavigationApi?: (projectId: string) => string
-  getHeaders?: () => Record<string, string>
-  fileStorage?: NonNullable<PageContentLoaderOptions['fileStorage']>
+    /** project Id 标识。 */
+projectId: string
+    /** http 字段。 */
+http: HttpClientBase
+    /** get Page Files Api 回调。 */
+getPageFilesApi: () => string
+    /** get Navigation Api 回调。 */
+getNavigationApi: () => string
+    /** get Projects Api 回调。 */
+getProjectsApi?: () => string
+    /** get Project Navigation Api 回调。 */
+getProjectNavigationApi?: (projectId: string) => string
+    /** get Headers 回调。 */
+getHeaders?: () => Record<string, string>
+    /** file Storage 字段。 */
+fileStorage?: NonNullable<PageContentLoaderOptions['fileStorage']>
 }
 
 function isProjectPageLoadOptions(value: unknown): value is ProjectPageLoadOptions {
@@ -109,13 +145,15 @@ function toPageFilesApiBaseUrl(pageApi: string): string {
  * 项目 IO 编排层：将 ProjectModel 的操作委托到远端 API。
  */
 export class ProjectWorkspace {
-  readonly project: ProjectModel
+    /** project 字段。 */
+readonly project: ProjectModel
   private readonly projectReferenceClient: ProjectReferenceClient | null
   private readonly navigationClient: NavigationClient
   private readonly fileApi: PageFileApi
   private readonly getContentLoader: () => PageContentLoader
 
-  constructor(options: ProjectWorkspaceOptions) {
+    /** 创建 Project Workspace 实例。 */
+constructor(options: ProjectWorkspaceOptions) {
     const fileApi = new PageFileApi({
       getPageFilesApi: options.getPageFilesApi,
       http: options.http,
@@ -156,16 +194,19 @@ export class ProjectWorkspace {
     this.getContentLoader = getContentLoader
   }
 
-  getActivePageRenderNode(): PageNodeLike | null {
+    /** 读取 Active Page Render Node。 */
+getActivePageRenderNode(): PageNodeLike | null {
     const page = this.project.getActivePage()
     return page === null ? null : this.createRenderPageNode(page)
   }
 
-  async loadNavigation(): Promise<ProjectModelData> {
+    /** 加载 Navigation。 */
+async loadNavigation(): Promise<ProjectModelData> {
     return this.reloadNavigation()
   }
 
-  ingestNavigationRoot(
+    /** 执行 ingest Navigation Root 操作。 */
+ingestNavigationRoot(
     root: ProjectModelData,
     options?: { selectedNodeId?: string | null },
   ): ProjectModelData {
@@ -174,7 +215,9 @@ export class ProjectWorkspace {
     })
   }
 
+  /** 按指定 pageId 选择并加载页面文件。 */
   async selectPage(pageId: string, options?: ProjectPageLoadOptions): Promise<void>
+  /** 按当前导航选中节点选择并加载页面文件。 */
   async selectPage(options?: ProjectPageLoadOptions): Promise<void>
   async selectPage(
     pageIdOrOptions?: string | ProjectPageLoadOptions,
@@ -199,7 +242,8 @@ export class ProjectWorkspace {
     this.project.markPageLoadedChanged(page.pageId, true)
   }
 
-  async saveProjectLayout(options?: { skipReload?: boolean }): Promise<void> {
+    /** 保存 Project Layout。 */
+async saveProjectLayout(options?: { skipReload?: boolean }): Promise<void> {
     const root = this.project.rootNode
     if (!root) throw new Error('导航 root 未加载')
     const { patch } = createNavigationNodePatch(createNavigationNodeDraft(root.toNodeData()))
@@ -211,7 +255,8 @@ export class ProjectWorkspace {
     await this.reloadNavigation({ selectedNodeId: this.project.session.session.selectedNodeId })
   }
 
-  async saveSelectedNavigationNode(options?: { skipReload?: boolean }): Promise<void> {
+    /** 保存 Selected Navigation Node。 */
+async saveSelectedNavigationNode(options?: { skipReload?: boolean }): Promise<void> {
     let nodeId: string
     let patch: NavigationNodePatch & Pick<ProjectNodeData, 'title' | 'nodeKind'>
 
@@ -236,7 +281,8 @@ export class ProjectWorkspace {
     await this.reloadNavigation({ selectedNodeId: nodeId })
   }
 
-  async ensureActivePageFilesLoaded(options?: ProjectPageLoadOptions): Promise<void> {
+    /** 执行 ensure Active Page Files Loaded 操作。 */
+async ensureActivePageFilesLoaded(options?: ProjectPageLoadOptions): Promise<void> {
     const page = this.requireActivePage('无活动页面，无法加载页面文件')
     const loadOptions: { forceReload?: boolean } = {}
     if (options?.forceReload === true) loadOptions.forceReload = true
@@ -244,19 +290,22 @@ export class ProjectWorkspace {
     this.project.markPageLoadedChanged(page.pageId, true)
   }
 
-  async loadPageFile(name: PageNodeFileName, options?: ProjectPageLoadOptions): Promise<void> {
+    /** 加载 Page File。 */
+async loadPageFile(name: PageNodeFileName, options?: ProjectPageLoadOptions): Promise<void> {
     const page = this.requireActivePage('无活动页面，无法加载页面文件')
     await this.loadSinglePageFile(page, name, { forceReload: options?.forceReload === true })
     this.project.markPageFileChanged(page.pageId, name)
   }
 
-  async savePageFile(name: PageNodeFileName): Promise<void> {
+    /** 保存 Page File。 */
+async savePageFile(name: PageNodeFileName): Promise<void> {
     const page = this.requireActivePage('无活动页面，无法保存页面文件')
     await this.savePageFileFromModel(page, name)
     this.project.markPageFileChanged(page.pageId, name)
   }
 
-  async saveDirtyPageFiles(): Promise<void> {
+    /** 保存 Dirty Page Files。 */
+async saveDirtyPageFiles(): Promise<void> {
     const page = this.project.getActivePage()
     if (!page) return
     const dirtyNames = page.getDirtyFileNames()
@@ -264,18 +313,21 @@ export class ProjectWorkspace {
     for (const name of dirtyNames) this.project.markPageFileChanged(page.pageId, name)
   }
 
-  async saveAll(): Promise<void> {
+    /** 保存 All。 */
+async saveAll(): Promise<void> {
     await this.saveDirtyPageFiles()
     await this.saveNavigationFromSession()
   }
 
-  async addNavigationNode(params: { parentId?: string | null; node: ProjectNodeData; index?: number }): Promise<ProjectNodeData> {
+    /** 执行 add Navigation Node 操作。 */
+async addNavigationNode(params: { parentId?: string | null; node: ProjectNodeData; index?: number }): Promise<ProjectNodeData> {
     const node = await this.navigationClient.addNode(params)
     await this.reloadNavigation({ selectedNodeId: node.id })
     return node
   }
 
-  async deleteNode(nodeId: string): Promise<ProjectNodeData | null> {
+    /** 删除 Node。 */
+async deleteNode(nodeId: string): Promise<ProjectNodeData | null> {
     const normalized = nodeId.trim()
     if (!normalized) {
       throw new Error('nodeId 不能为空')
@@ -286,7 +338,8 @@ export class ProjectWorkspace {
     return result
   }
 
-  async createPageForSelectedNode(params: CreatePageForSelectedNodeParams): Promise<PageNodeCreateMountedResult> {
+    /** 创建 Page For Selected Node。 */
+async createPageForSelectedNode(params: CreatePageForSelectedNodeParams): Promise<PageNodeCreateMountedResult> {
     const pageId = params.pageId.trim()
     if (!pageId) {
       throw new Error('pageId 不能为空')
@@ -327,7 +380,8 @@ export class ProjectWorkspace {
     }
   }
 
-  async createMountedPage(params: CreateMountedPageParams): Promise<PageNodeCreateMountedResult> {
+    /** 创建 Mounted Page。 */
+async createMountedPage(params: CreateMountedPageParams): Promise<PageNodeCreateMountedResult> {
     const { pageId, ...modelParams } = params
     const pageNode = this.openPage(pageId)
     const page = await this.createPageFilesForModel(pageNode, {
@@ -346,7 +400,8 @@ export class ProjectWorkspace {
     }
   }
 
-  async createPageFiles(params: CreatePageFilesParams): Promise<Record<string, unknown>> {
+    /** 创建 Page Files。 */
+async createPageFiles(params: CreatePageFilesParams): Promise<Record<string, unknown>> {
     const { pageId, ...modelParams } = params
     const pageNode = this.openPage(pageId)
     const result = await this.createPageFilesForModel(pageNode, {
@@ -357,7 +412,8 @@ export class ProjectWorkspace {
     return result
   }
 
-  async deletePageFiles(pageId: string): Promise<void> {
+    /** 删除 Page Files。 */
+async deletePageFiles(pageId: string): Promise<void> {
     const normalized = pageId.trim()
     const pageNode = this.project.openPageDesign(normalized)
     await this.deletePageFilesForModel(pageNode)
@@ -368,7 +424,8 @@ export class ProjectWorkspace {
     this.project.markPageLoadedChanged(normalized, false)
   }
 
-  async removeMountedPage(params: RemoveMountedPageParams): Promise<PageNodeRemoveMountedResult> {
+    /** 删除 Mounted Page。 */
+async removeMountedPage(params: RemoveMountedPageParams): Promise<PageNodeRemoveMountedResult> {
     const deletedNode = await this.unmountPageNavigation(params.pageId, params.nodeId)
     const shouldDeleteFiles = params.deleteFiles !== false
     if (shouldDeleteFiles) {
@@ -382,7 +439,8 @@ export class ProjectWorkspace {
     return { deletedNode, deletedFiles: shouldDeleteFiles }
   }
 
-  async moveMountedPage(nodeId: string, newParentId: string | null, index: number): Promise<ProjectNodeData> {
+    /** 执行 move Mounted Page 操作。 */
+async moveMountedPage(nodeId: string, newParentId: string | null, index: number): Promise<ProjectNodeData> {
     if (nodeId.trim().length === 0) {
       throw new Error('nodeId must be a non-empty string')
     }
@@ -391,13 +449,15 @@ export class ProjectWorkspace {
     return result
   }
 
-  async listRemotePageVersions(filename: PageNodeFileName): Promise<PageNodeFileVersionSummary[]> {
+    /** 执行 list Remote Page Versions 操作。 */
+async listRemotePageVersions(filename: PageNodeFileName): Promise<PageNodeFileVersionSummary[]> {
     const page = this.project.getActivePage()
     if (!page) return []
     return this.fileApi.listVersions(page.pageId, filename)
   }
 
-  async restoreRemotePageVersion(version: number, filename: PageNodeFileName): Promise<void> {
+    /** 执行 restore Remote Page Version 操作。 */
+async restoreRemotePageVersion(version: number, filename: PageNodeFileName): Promise<void> {
     const page = this.requireActivePage('无活动页面，无法恢复版本')
     await this.fileApi.restoreVersion(page.pageId, filename, version)
     await this.loadSinglePageFile(page, filename, { forceReload: true })
@@ -406,19 +466,22 @@ export class ProjectWorkspace {
     this.notifyPageFileChanged(page.pageId, filename)
   }
 
-  async createRemotePageVersion(filename: PageNodeFileName): Promise<void> {
+    /** 创建 Remote Page Version。 */
+async createRemotePageVersion(filename: PageNodeFileName): Promise<void> {
     const page = this.project.getActivePage()
     if (!page) return
     await this.fileApi.createVersion(page.pageId, filename)
   }
 
-  async deleteRemotePageVersion(version: number, filename: PageNodeFileName): Promise<void> {
+    /** 删除 Remote Page Version。 */
+async deleteRemotePageVersion(version: number, filename: PageNodeFileName): Promise<void> {
     const page = this.project.getActivePage()
     if (!page) return
     await this.fileApi.deleteVersion(page.pageId, filename, version)
   }
 
-  notifyPageFileChanged(
+    /** 执行 notify Page File Changed 操作。 */
+notifyPageFileChanged(
     pageId: string,
     filename: PageNodeFileName | '__created' | '__deleted' | '__bulk',
   ): void {
@@ -429,17 +492,20 @@ export class ProjectWorkspace {
     this.project.markPageFileChanged(pageId, filename)
   }
 
-  async probeLink(url: string): Promise<{ embeddable: boolean; reason: string }> {
+    /** 执行 probe Link 操作。 */
+async probeLink(url: string): Promise<{ embeddable: boolean; reason: string }> {
     return this.navigationClient.probeLink(url)
   }
 
-  async listReferenceProjects(): Promise<ProjectSummary[]> {
+    /** 执行 list Reference Projects 操作。 */
+async listReferenceProjects(): Promise<ProjectSummary[]> {
     return this.requireProjectReferenceClient().listProjects({
       excludeProjectId: this.project.projectId,
     })
   }
 
-  async listReferenceProjectPages(projectId: string): Promise<ProjectPageReference[]> {
+    /** 执行 list Reference Project Pages 操作。 */
+async listReferenceProjectPages(projectId: string): Promise<ProjectPageReference[]> {
     return this.requireProjectReferenceClient().listProjectPages(projectId)
   }
 
@@ -502,7 +568,14 @@ export class ProjectWorkspace {
     if (!navDirty) return
 
     if (this.project.session.session.navigationDirtyScope === 'root') {
-      await this.saveProjectLayout()
+      const serverRoot = await this.navigationClient.loadRoot()
+      await replaceNavigationChildrenRemote(
+        this.navigationClient,
+        serverRoot,
+        this.project.toTree(),
+      )
+      await this.reloadNavigation({ selectedNodeId: this.project.session.session.selectedNodeId })
+      this.project.markNavigationClean('root')
       return
     }
     await this.saveSelectedNavigationNode()
@@ -615,4 +688,3 @@ export class ProjectWorkspace {
     throw new Error('ProjectReferenceClient 未配置，无法读取跨项目引用')
   }
 }
-

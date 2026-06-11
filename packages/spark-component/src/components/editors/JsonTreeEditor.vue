@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/editors/JsonTreeEditor
+JsonTreeEditor 模块，属于 SPARK component infrastructure/editor。
+组件目录: editors。
+导出 ClassModel symbol: JsonTreeEditorProps（共 1 个 symbol）。
+-->
 <template>
   <div class="vxe-json-tree-editor" :style="rootStyle">
     <div class="vxe-json-tree-editor__toolbar">
@@ -228,7 +234,9 @@ function isDisplayRow(value: unknown): value is DisplayRow {
 
 // ── Props ─────────────────────────────────────────────────────
 
+/** JSON 树编辑器属性，描述树数据、Schema 和过滤交互配置。 */
 type JsonTreeEditorProps = {
+  /** 固定编辑器类型，用于组件注册和配置识别。 */
   type?: 'json-tree-editor'
   /** 字段绑定名，映射到 DataView 行字段 */
   field?: string

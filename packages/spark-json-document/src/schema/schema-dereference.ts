@@ -7,6 +7,7 @@
 import { isRecord } from '@spark-appworks/spark-utils'
 import type { JsonSchema, JsonSchemaObject } from './schema-types'
 
+/** Json Schema Defs 的语义模型。 */
 export type JsonSchemaDefs = Readonly<Record<string, JsonSchemaObject>>
 
 export function dereferenceJsonSchema(

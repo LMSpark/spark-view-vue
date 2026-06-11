@@ -1,0 +1,387 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/editors/SparkJsonEditor",
+    "sourcePath": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/components/editors/SparkJsonEditor.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/editors/SparkJsonEditor",
+    "jsdoc": "@module @spark-appworks/spark-component:components/editors/SparkJsonEditor\nSparkJsonEditor 模块，属于 SPARK component infrastructure/editor。\n组件目录: editors。\n导出 ClassModel symbol: SparkJsonEditorMode, Props（共 2 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "SparkJsonEditorMode",
+      "Props"
+    ],
+    "componentName": "SparkJsonEditor",
+    "componentType": "json-editor",
+    "componentLevel": "infrastructure",
+    "componentLayer": "editor",
+    "componentDirectory": "editors"
+  },
+  "symbols": [
+    "SparkJsonEditorMode",
+    "Props"
+  ],
+  "models": {
+    "SparkJsonEditorMode": {
+      "kind": "SparkJsonEditorMode",
+      "className": "SparkJsonEditorMode",
+      "jsdoc": "/** JSON 编辑器支持的展示模式。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'text' | 'tree' | 'table'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'text'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'tree'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'table'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+        "line": 3,
+        "className": "SparkJsonEditorMode",
+        "declarationKind": "type",
+        "componentName": "SparkJsonEditor",
+        "componentType": "json-editor",
+        "componentLevel": "infrastructure",
+        "componentLayer": "editor",
+        "componentDirectory": "editors"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "Props": {
+      "kind": "Props",
+      "className": "Props",
+      "jsdoc": "/** SparkJsonEditor 组件属性，描述 JSON 内容、Schema 校验和编辑模式。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** JSON 字符串内容 */\n    modelValue?: string;\n    /** 是否只读 */\n    readOnly?: boolean;\n    /** 编辑器高度 */\n    height?: number | string;\n    /** 编辑模式 */\n    mode?: SparkJsonEditorMode;\n    /** 缩进空格数 */\n    indentation?: number | string;\n    /** Tab 缩进空格数 */\n    tabSize?: number;\n    /** 是否显示主菜单栏 */\n    mainMenuBar?: boolean;\n    /** 是否显示导航栏 */\n    navigationBar?: boolean;\n    /** 是否显示状态栏 */\n    statusBar?: boolean;\n    /** 是否提示格式化 */\n    askToFormat?: boolean;\n    /** JSON Schema 校验规则 */\n    schema?: JSONSchema | null;\n    /** JSON Schema 定义引用 */\n    schemaDefinitions?: JSONSchemaDefinitions | null;\n    /** 是否启用 Schema 校验 */\n    enableSchemaValidation?: boolean;\n    /** 是否启用 Schema 枚举渲染 */\n    enableSchemaEnumRenderer?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+        "line": 5,
+        "className": "Props",
+        "declarationKind": "type",
+        "componentName": "SparkJsonEditor",
+        "componentType": "json-editor",
+        "componentLevel": "infrastructure",
+        "componentLayer": "editor",
+        "componentDirectory": "editors"
+      },
+      "attributes": [
+        {
+          "name": "modelValue",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** JSON 字符串内容 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 7,
+            "className": "Props",
+            "memberName": "modelValue",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "readOnly",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否只读 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 9,
+            "className": "Props",
+            "memberName": "readOnly",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "height",
+          "schema": {
+            "title": "number | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 编辑器高度 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 11,
+            "className": "Props",
+            "memberName": "height",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "mode",
+          "schema": {
+            "title": "SparkJsonEditorMode"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 编辑模式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 13,
+            "className": "Props",
+            "memberName": "mode",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "indentation",
+          "schema": {
+            "title": "number | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 缩进空格数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 15,
+            "className": "Props",
+            "memberName": "indentation",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "tabSize",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** Tab 缩进空格数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 17,
+            "className": "Props",
+            "memberName": "tabSize",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "mainMenuBar",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否显示主菜单栏 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 19,
+            "className": "Props",
+            "memberName": "mainMenuBar",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "navigationBar",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否显示导航栏 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 21,
+            "className": "Props",
+            "memberName": "navigationBar",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "statusBar",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否显示状态栏 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 23,
+            "className": "Props",
+            "memberName": "statusBar",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "askToFormat",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否提示格式化 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 25,
+            "className": "Props",
+            "memberName": "askToFormat",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "schema",
+          "schema": {
+            "title": "JSONSchema | null"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** JSON Schema 校验规则 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 27,
+            "className": "Props",
+            "memberName": "schema",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "schemaDefinitions",
+          "schema": {
+            "title": "JSONSchemaDefinitions | null"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** JSON Schema 定义引用 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 29,
+            "className": "Props",
+            "memberName": "schemaDefinitions",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "enableSchemaValidation",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否启用 Schema 校验 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 31,
+            "className": "Props",
+            "memberName": "enableSchemaValidation",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        },
+        {
+          "name": "enableSchemaEnumRenderer",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否启用 Schema 枚举渲染 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/editors/SparkJsonEditor.vue.d.ts",
+            "line": 33,
+            "className": "Props",
+            "memberName": "enableSchemaEnumRenderer",
+            "declarationKind": "interface",
+            "componentName": "SparkJsonEditor",
+            "componentType": "json-editor",
+            "componentLevel": "infrastructure",
+            "componentLayer": "editor",
+            "componentDirectory": "editors"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.398Z"
+}

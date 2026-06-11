@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/display/non-data-components/DisplayResult
+DisplayResult 模块，属于 SPARK component display/static-display。
+组件目录: display/non-data-components。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-result
     v-if="isVisible"

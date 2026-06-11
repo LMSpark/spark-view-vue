@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldTransfer.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/fields/data-components/FieldTransfer.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldTransfer.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/fields/data-components/FieldTransfer.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/fields/data-components/FieldTransfer.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/FieldTransfer.props\nFieldTransfer 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: TransferValue, RTransferProps（共 2 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "TransferValue",
+      "RTransferProps"
+    ],
+    "componentName": "FieldTransfer",
+    "componentType": "r-transfer",
+    "componentLevel": "field-level",
+    "componentLayer": "data-field",
+    "componentDirectory": "fields/data-components"
+  },
+  "symbols": [
+    "TransferValue",
+    "RTransferProps"
+  ],
+  "models": {
+    "TransferValue": {
+      "kind": "TransferValue",
+      "className": "TransferValue",
+      "jsdoc": "/** Transfer 已选值数组；每一项对应穿梭框选项的 value。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Array<string | number>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Array<string | number>",
+          "targetName": "Array"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldTransfer.props.d.ts",
+        "line": 9,
+        "className": "TransferValue",
+        "declarationKind": "type",
+        "componentName": "FieldTransfer",
+        "componentType": "r-transfer",
+        "componentLevel": "field-level",
+        "componentLayer": "data-field",
+        "componentDirectory": "fields/data-components"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "RTransferProps": {
+      "kind": "RTransferProps",
+      "className": "RTransferProps",
+      "jsdoc": "/** RTransfer Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & SparkOptionFieldProps<TransferValue> & {\n    /** 左右面板标题。 */\n    titles?: [string, string];\n    /** 候选项过滤输入框占位文案。 */\n    filterPlaceholder?: string;\n    /** 目标面板排序策略。 */\n    targetOrder?: 'original' | 'push' | 'unshift';\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkOptionFieldProps<TransferValue>",
+          "targetName": "SparkOptionFieldProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 左右面板标题。 */\n    titles?: [string, string];\n    /** 候选项过滤输入框占位文案。 */\n    filterPlaceholder?: string;\n    /** 目标面板排序策略。 */\n    targetOrder?: 'original' | 'push' | 'unshift';\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldTransfer.props.d.ts",
+        "line": 11,
+        "className": "RTransferProps",
+        "declarationKind": "type",
+        "componentName": "FieldTransfer",
+        "componentType": "r-transfer",
+        "componentLevel": "field-level",
+        "componentLayer": "data-field",
+        "componentDirectory": "fields/data-components"
+      },
+      "attributes": [
+        {
+          "name": "titles",
+          "schema": {
+            "title": "[string, string]"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 左右面板标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldTransfer.props.d.ts",
+            "line": 13,
+            "className": "RTransferProps",
+            "memberName": "titles",
+            "declarationKind": "interface",
+            "componentName": "FieldTransfer",
+            "componentType": "r-transfer",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "filterPlaceholder",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 候选项过滤输入框占位文案。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldTransfer.props.d.ts",
+            "line": 15,
+            "className": "RTransferProps",
+            "memberName": "filterPlaceholder",
+            "declarationKind": "interface",
+            "componentName": "FieldTransfer",
+            "componentType": "r-transfer",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        },
+        {
+          "name": "targetOrder",
+          "schema": {
+            "title": "'original' | 'push' | 'unshift'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 目标面板排序策略。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldTransfer.props.d.ts",
+            "line": 17,
+            "className": "RTransferProps",
+            "memberName": "targetOrder",
+            "declarationKind": "interface",
+            "componentName": "FieldTransfer",
+            "componentType": "r-transfer",
+            "componentLevel": "field-level",
+            "componentLayer": "data-field",
+            "componentDirectory": "fields/data-components"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.558Z"
+}

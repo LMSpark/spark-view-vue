@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/projection/dts-renderer
+ * @spark-appworks/spark-ai 的 class-model/projection/dts-renderer 模块。
+ * 导出 ClassModel symbol: ModelGuideRenderInput, ModelGuide, AttributeGuideRenderInput, AttributeGuide, MethodGuideRenderInput, MethodGuide（共 6 个 symbol）。
+ */
 import type { AttributeMeta, ClassModel, ClassModelDocument, JsDocMeta, MethodMeta } from '../class-model'
 import { projectClassModelForGuide } from '../class-model/model-projection'
 import {
@@ -6,23 +11,27 @@ import {
   renderMethodDeclarationLine,
 } from '../class-model/signature-renderer'
 
+/** Model Guide Render Input 的输入数据。 */
 export type ModelGuideRenderInput = Readonly<{
   document: ClassModelDocument
   kind: string
 }>
 
+/** Model Guide 的语义模型。 */
 export type ModelGuide = Readonly<{
   kind: string
   declaration: string
   text: string
 }>
 
+/** Attribute Guide Render Input 的输入数据。 */
 export type AttributeGuideRenderInput = Readonly<{
   document: ClassModelDocument
   kind: string
   attributeName: string
 }>
 
+/** Attribute Guide 的语义模型。 */
 export type AttributeGuide = Readonly<{
   kind: string
   attributeName: string
@@ -30,12 +39,14 @@ export type AttributeGuide = Readonly<{
   text: string
 }>
 
+/** Method Guide Render Input 的输入数据。 */
 export type MethodGuideRenderInput = Readonly<{
   document: ClassModelDocument
   kind: string
   methodName: string
 }>
 
+/** Method Guide 的语义模型。 */
 export type MethodGuide = Readonly<{
   kind: string
   methodName: string

@@ -1,4 +1,9 @@
 /**
+ * @module app:views/app/dev-system/composables/useNodeKindFlags
+ * app 的 views/app/dev-system/composables/useNodeKindFlags 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
+/**
  * 节点类型（nodeKind）条件标志 — 跨属性编辑子组件共享
  */
 import { computed } from 'vue'

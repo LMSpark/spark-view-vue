@@ -290,8 +290,10 @@ export function useContainerGrid(options: UseContainerGridOptions): ContainerGri
 // § useCompositeItemGrid
 // ============================================================
 
+/** Use Composite Item Grid Options 的调用配置。 */
 type UseCompositeItemGridOptions = {
-  children?: () => SparkNode['children'] | undefined
+    /** 子节点集合。 */
+children?: () => SparkNode['children'] | undefined
   /** 复合容器内容区 class；空值会被标准化为空字符串。 */
   bodyClass?: () => string | null | undefined
   /** 复合容器内容区列数；字符串/数字都会被标准化为正整数。 */
@@ -303,10 +305,14 @@ type UseCompositeItemGridOptions = {
 
 /** `useCompositeItemGrid` 返回状态。 */
 export type CompositeItemGridState = {
-  contentChildren: ComputedRef<SparkNode[]>
-  contentBodyClass: ComputedRef<string>
-  contentGridStyle: ComputedRef<CSSProperties>
-  getContentChildGridStyle: (child: SparkNode, index?: number) => CSSProperties}
+    /** content Children 字段。 */
+contentChildren: ComputedRef<SparkNode[]>
+    /** content Body Class 字段。 */
+contentBodyClass: ComputedRef<string>
+    /** content Grid Style 字段。 */
+contentGridStyle: ComputedRef<CSSProperties>
+    /** get Content Child Grid Style 回调。 */
+getContentChildGridStyle: (child: SparkNode, index?: number) => CSSProperties}
 
 /**
  * 复合容器（Tabs / Collapse 等）内容区布局适配。

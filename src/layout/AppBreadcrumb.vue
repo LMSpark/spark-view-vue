@@ -1,3 +1,8 @@
+<!--
+@module app:layout/AppBreadcrumb
+app 的 layout/AppBreadcrumb 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <nav class="app-breadcrumb">
     <div class="app-breadcrumb__crumbs">

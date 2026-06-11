@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/page/actions/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:page/actions/index",
+    "sourcePath": "declarations/packages/spark-component/src/page/actions/index.d.ts",
+    "sourceFile": "packages/spark-component/src/page/actions/index.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/actions/index",
+    "jsdoc": "Action 模块入口\n单一动作真源：descriptor 类型 + executor + node 翻译器。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.630Z"
+}

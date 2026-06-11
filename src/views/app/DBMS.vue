@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/DBMS
+app 的 views/app/DBMS 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="dbms-page">
     <div class="dbms-header">

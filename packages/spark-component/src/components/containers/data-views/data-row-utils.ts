@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/data-row-utils
+ * @spark-appworks/spark-component:components/containers/data-views/data-row-utils 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import { isDataRow, type DataRow } from '@spark-appworks/spark-data'
 
 const TREE_LABEL_FALLBACK_FIELDS: readonly ['label', 'name', 'title'] = ['label', 'name', 'title']

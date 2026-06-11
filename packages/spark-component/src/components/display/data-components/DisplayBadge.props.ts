@@ -1,5 +1,12 @@
+/**
+ * @module @spark-appworks/spark-component:components/display/data-components/DisplayBadge.props
+ * DisplayBadge 模块，属于 SPARK component display/data-display。
+ * 组件目录: display/data-components。
+ * 导出 ClassModel symbol: RBadgeProps（共 1 个 symbol）。
+ */
 import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
+/** RBadge Props 的属性契约。 */
 export type RBadgeProps = SparkNodeProps & SparkDataDisplayProps<string | number> & {
   /** 徽标显示值（优先使用该字段渲染角标）。 */
     badgeValue?: string | number

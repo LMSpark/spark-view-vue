@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/support/RendererHostScope
+@spark-appworks/spark-component 的 components/containers/support/RendererHostScope 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <template v-for="(child, index) in props.children" :key="nodeId(child) ?? index">
     <SparkComponentRenderer :config="child" />

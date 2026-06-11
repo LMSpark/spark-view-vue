@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/CapabilityDemo
+app 的 views/app/CapabilityDemo 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="capability-demo">
     <h1>🎯 能力管理系统演示</h1>

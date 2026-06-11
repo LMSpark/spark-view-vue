@@ -74,7 +74,8 @@ export class PrimaryKeyGenerator {
   private config: PrimaryKeyGeneratorConfig
   private autoIncrementCounter: number
 
-  constructor(config: PrimaryKeyGeneratorConfig) {
+    /** 创建 Primary Key Generator 实例。 */
+constructor(config: PrimaryKeyGeneratorConfig) {
     this.config = config
     this.autoIncrementCounter = config.startValue ?? 1
   }

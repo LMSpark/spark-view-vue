@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/page-design/page-design-sop.d.ts",
+  "module": {
+    "name": "app:services/page-design/page-design-sop",
+    "sourcePath": "declarations/src/services/page-design/page-design-sop.d.ts",
+    "sourceFile": "src/services/page-design/page-design-sop.ts",
+    "packageName": "app",
+    "modulePath": "services/page-design/page-design-sop",
+    "jsdoc": "pageDesign SOP 编排：仅决定 toolLoopNudge 何时触发与 pageId 上下文。\n业务契约 SSOT：spark-project-model JSDoc → DTS ClassModel → model_*_guide / recovery hints。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.089Z"
+}

@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/fields/context/useFieldPermission",
+    "sourcePath": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+    "sourceFile": "packages/spark-component/src/components/fields/context/useFieldPermission.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/fields/context/useFieldPermission",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/context/useFieldPermission\n@spark-appworks/spark-component 的 components/fields/context/useFieldPermission 模块。\n导出 ClassModel symbol: OptionalWithUndefined, FieldPermissionProps, UseFieldPermissionOptions（共 3 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "OptionalWithUndefined",
+      "FieldPermissionProps",
+      "UseFieldPermissionOptions"
+    ]
+  },
+  "symbols": [
+    "OptionalWithUndefined",
+    "FieldPermissionProps",
+    "UseFieldPermissionOptions"
+  ],
+  "models": {
+    "OptionalWithUndefined": {
+      "kind": "OptionalWithUndefined",
+      "className": "OptionalWithUndefined",
+      "jsdoc": "/** Optional With Undefined 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    [K in keyof T]?: T[K] | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+        "line": 6,
+        "className": "OptionalWithUndefined",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "FieldPermissionProps": {
+      "kind": "FieldPermissionProps",
+      "className": "FieldPermissionProps",
+      "jsdoc": "/** Field Permission Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "OptionalWithUndefined<Omit<Pick<SparkFieldSemanticProps, 'field' | 'label' | 'modelValue' | 'value'>, 'modelValue' | 'value'>> & {\n    /** model Value 字段。 */\n    modelValue?: TValue | undefined;\n    /** 当前值。 */\n    value?: TValue | undefined;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "OptionalWithUndefined<Omit<Pick<SparkFieldSemanticProps, 'field' | 'label' | 'modelValue' | 'value'>, 'modelValue' | 'value'>>",
+          "targetName": "OptionalWithUndefined"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** model Value 字段。 */\n    modelValue?: TValue | undefined;\n    /** 当前值。 */\n    value?: TValue | undefined;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+        "line": 10,
+        "className": "FieldPermissionProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "modelValue",
+          "schema": {
+            "title": "TValue | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** model Value 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+            "line": 12,
+            "className": "FieldPermissionProps",
+            "memberName": "modelValue",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "value",
+          "schema": {
+            "title": "TValue | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前值。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+            "line": 14,
+            "className": "FieldPermissionProps",
+            "memberName": "value",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "UseFieldPermissionOptions": {
+      "kind": "UseFieldPermissionOptions",
+      "className": "UseFieldPermissionOptions",
+      "jsdoc": "/** Use Field Permission Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: FieldPermissionProps<TValue>;\n    /** 类型标识。 */\n    type: string;\n    /** fallback Value 字段。 */\n    fallbackValue: TValue;\n    /** format Display 回调。 */\n    formatDisplay?: (value: unknown) => string;\n    /**\n     * 运行时类型校正函数。\n     *\n     * `sourceFieldValue` 从行数据中读取的原始值类型不可控（DataSet 行数据是 `unknown`），\n     * 此函数在赋给 `fieldValue` 之前统一做类型校正，避免非预期类型（如 boolean false）\n     * 流入 el-input / el-input-number 等的 :model-value，从而消除 Vue runtime prop 警告。\n     *\n     * 注意：仅对来自行数据的值应用；`props.modelValue` 显式传入时直接使用（调用方负责类型正确性）。\n     */\n    coerce: (rawValue: unknown) => TValue;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+        "line": 17,
+        "className": "UseFieldPermissionOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "props",
+          "schema": {
+            "title": "FieldPermissionProps<TValue>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 组件属性集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+            "line": 19,
+            "className": "UseFieldPermissionOptions",
+            "memberName": "props",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "type",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 类型标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+            "line": 21,
+            "className": "UseFieldPermissionOptions",
+            "memberName": "type",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "fallbackValue",
+          "schema": {
+            "title": "TValue"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** fallback Value 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+            "line": 23,
+            "className": "UseFieldPermissionOptions",
+            "memberName": "fallbackValue",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "formatDisplay",
+          "schema": {
+            "title": "(value: unknown) => string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** format Display 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+            "line": 25,
+            "className": "UseFieldPermissionOptions",
+            "memberName": "formatDisplay",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "coerce",
+          "schema": {
+            "title": "(rawValue: unknown) => TValue"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * 运行时类型校正函数。\n     *\n     * `sourceFieldValue` 从行数据中读取的原始值类型不可控（DataSet 行数据是 `unknown`），\n     * 此函数在赋给 `fieldValue` 之前统一做类型校正，避免非预期类型（如 boolean false）\n     * 流入 el-input / el-input-number 等的 :model-value，从而消除 Vue runtime prop 警告。\n     *\n     * 注意：仅对来自行数据的值应用；`props.modelValue` 显式传入时直接使用（调用方负责类型正确性）。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+            "line": 35,
+            "className": "UseFieldPermissionOptions",
+            "memberName": "coerce",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.423Z"
+}

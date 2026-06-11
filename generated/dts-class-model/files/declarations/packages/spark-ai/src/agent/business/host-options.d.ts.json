@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/agent/business/host-options.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/business/host-options",
+    "sourcePath": "declarations/packages/spark-ai/src/agent/business/host-options.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/business/host-options.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/business/host-options",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/host-options\n@spark-appworks/spark-ai 的 agent/business/host-options 模块。\n导出 ClassModel symbol: AiAgentOptions（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentOptions"
+    ]
+  },
+  "symbols": [
+    "AiAgentOptions"
+  ],
+  "models": {
+    "AiAgentOptions": {
+      "kind": "AiAgentOptions",
+      "className": "AiAgentOptions",
+      "jsdoc": "/** Ai Agent Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/business/host-options.d.ts",
+        "line": 10,
+        "className": "AiAgentOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.737Z"
+}

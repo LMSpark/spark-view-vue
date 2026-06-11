@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/views/platform/HomePage.vue.d.ts",
+  "module": {
+    "name": "app:views/platform/HomePage",
+    "sourcePath": "declarations/src/views/platform/HomePage.vue.d.ts",
+    "sourceFile": "src/views/platform/HomePage.vue",
+    "packageName": "app",
+    "modulePath": "views/platform/HomePage",
+    "jsdoc": "@module app:views/platform/HomePage\napp 的 views/platform/HomePage 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.148Z"
+}

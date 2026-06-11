@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:navigation/navigation-kinds",
+    "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
+    "sourceFile": "packages/spark-project-model/src/navigation/navigation-kinds.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "navigation/navigation-kinds",
+    "jsdoc": "按 nodeKind 特化的导航节点 class（仅非配置页 kind；不含 page/sub-page）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ModuleNode",
+      "SystemDirectoryNode",
+      "LinkNode",
+      "RefNode",
+      "SystemPageNode",
+      "SystemActionNode",
+      "AnyProjectNode"
+    ]
+  },
+  "symbols": [
+    "ModuleNode",
+    "SystemDirectoryNode",
+    "LinkNode",
+    "RefNode",
+    "SystemPageNode",
+    "SystemActionNode",
+    "AnyProjectNode"
+  ],
+  "models": {
+    "ModuleNode": {
+      "kind": "ModuleNode",
+      "className": "ModuleNode",
+      "jsdoc": "/** Module Node 的语义模型。 */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "ProjectNode",
+          "targetName": "ProjectNode"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
+        "line": 4,
+        "className": "ModuleNode",
+        "declarationKind": "class"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SystemDirectoryNode": {
+      "kind": "SystemDirectoryNode",
+      "className": "SystemDirectoryNode",
+      "jsdoc": "/** System Directory Node 的语义模型。 */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "ProjectNode",
+          "targetName": "ProjectNode"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
+        "line": 8,
+        "className": "SystemDirectoryNode",
+        "declarationKind": "class"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "LinkNode": {
+      "kind": "LinkNode",
+      "className": "LinkNode",
+      "jsdoc": "/** Link Node 的语义模型。 */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "ProjectNode",
+          "targetName": "ProjectNode"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
+        "line": 12,
+        "className": "LinkNode",
+        "declarationKind": "class"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "RefNode": {
+      "kind": "RefNode",
+      "className": "RefNode",
+      "jsdoc": "/** Ref Node 的语义模型。 */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "ProjectNode",
+          "targetName": "ProjectNode"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
+        "line": 16,
+        "className": "RefNode",
+        "declarationKind": "class"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SystemPageNode": {
+      "kind": "SystemPageNode",
+      "className": "SystemPageNode",
+      "jsdoc": "/** System Page Node 的语义模型。 */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "ProjectNode",
+          "targetName": "ProjectNode"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
+        "line": 20,
+        "className": "SystemPageNode",
+        "declarationKind": "class"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SystemActionNode": {
+      "kind": "SystemActionNode",
+      "className": "SystemActionNode",
+      "jsdoc": "/** System Action Node 的语义模型。 */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "ProjectNode",
+          "targetName": "ProjectNode"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
+        "line": 24,
+        "className": "SystemActionNode",
+        "declarationKind": "class"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AnyProjectNode": {
+      "kind": "AnyProjectNode",
+      "className": "AnyProjectNode",
+      "jsdoc": "/** Any Project Node 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "ModuleNode | SystemDirectoryNode | LinkNode | RefNode | SystemPageNode | SystemActionNode",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "ModuleNode",
+          "targetName": "ModuleNode"
+        },
+        {
+          "kind": "union",
+          "typeText": "SystemDirectoryNode",
+          "targetName": "SystemDirectoryNode"
+        },
+        {
+          "kind": "union",
+          "typeText": "LinkNode",
+          "targetName": "LinkNode"
+        },
+        {
+          "kind": "union",
+          "typeText": "RefNode",
+          "targetName": "RefNode"
+        },
+        {
+          "kind": "union",
+          "typeText": "SystemPageNode",
+          "targetName": "SystemPageNode"
+        },
+        {
+          "kind": "union",
+          "typeText": "SystemActionNode",
+          "targetName": "SystemActionNode"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
+        "line": 28,
+        "className": "AnyProjectNode",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.909Z"
+}

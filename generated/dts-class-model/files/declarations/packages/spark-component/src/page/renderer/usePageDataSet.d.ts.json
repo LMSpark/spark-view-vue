@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:page/renderer/usePageDataSet",
+    "sourcePath": "declarations/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
+    "sourceFile": "packages/spark-component/src/page/renderer/usePageDataSet.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/renderer/usePageDataSet",
+    "jsdoc": "DataSet 管理 Composable\n位于 spark-component 渲染层，负责 DataSet 实例的引用管理。\nDataSet 自身通过事件总线驱动 UI 更新，不需要 Vue 响应式包装。\n职责单一：仅关注 DataSet 引用的持有/释放，不持有 UI/Rule 相关依赖。\nDataSet ↔ el-table 的同步由 SparkPageRenderer 渲染器内部负责。\n数据转换统一由上游 PageNode 完成，\n本 composable 只接受已编译好的 DataSet 实例，不做任何归一化。\n⚠️ 不调用 DataSet.destroy()——DataSet 实例由 PageNode 持有，\n同一页面的多次进入共享同一个 DataSet 对象。调用 destroy() 会导致\n第二次进入页面时拿到已销毁的 DataSet，表格无数据。\n清除实例引用即可，GC 由缓存策略负责。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "UsePageDataSetOptions",
+      "UsePageDataSetReturn"
+    ]
+  },
+  "symbols": [
+    "UsePageDataSetOptions",
+    "UsePageDataSetReturn"
+  ],
+  "models": {
+    "UsePageDataSetOptions": {
+      "kind": "UsePageDataSetOptions",
+      "className": "UsePageDataSetOptions",
+      "jsdoc": "/**\n * DataSet 管理选项接口\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 是否 enable Data Set。 */\n    enableDataSet?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
+        "line": 22,
+        "className": "UsePageDataSetOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "enableDataSet",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否 enable Data Set。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
+            "line": 24,
+            "className": "UsePageDataSetOptions",
+            "memberName": "enableDataSet",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "UsePageDataSetReturn": {
+      "kind": "UsePageDataSetReturn",
+      "className": "UsePageDataSetReturn",
+      "jsdoc": "/** DataSet 管理返回值接口 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前 DataSet 实例（getter，无响应式，每次访问返回最新值） */\n    readonly dataSet: DataSet | null;\n    /** 设置 DataSet 实例（必须是已编译好的 DataSet） */\n    initDataSet: (ds: DataSet) => void;\n    /** clear Data Set 回调。 */\n    clearDataSet: () => void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
+        "line": 27,
+        "className": "UsePageDataSetReturn",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "dataSet",
+          "schema": {
+            "title": "DataSet | null"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前 DataSet 实例（getter，无响应式，每次访问返回最新值） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
+            "line": 29,
+            "className": "UsePageDataSetReturn",
+            "memberName": "dataSet",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "initDataSet",
+          "schema": {
+            "title": "(ds: DataSet) => void"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 设置 DataSet 实例（必须是已编译好的 DataSet） */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
+            "line": 31,
+            "className": "UsePageDataSetReturn",
+            "memberName": "initDataSet",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "clearDataSet",
+          "schema": {
+            "title": "() => void"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** clear Data Set 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
+            "line": 33,
+            "className": "UsePageDataSetReturn",
+            "memberName": "clearDataSet",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.658Z"
+}

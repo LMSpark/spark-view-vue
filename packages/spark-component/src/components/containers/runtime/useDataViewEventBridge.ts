@@ -33,63 +33,106 @@ export type DataViewBridgeEventName =
 
 type NoArgBridgeEventName = Extract<DataViewBridgeEventName, 'rowsChanged' | 'cleared' | 'summaryChanged' | 'selectionSummaryChanged' | 'configChanged' | 'editingChanged'>
 type OriginatorBridgeEventName = Extract<DataViewBridgeEventName, 'currentRowChanged' | 'selectedRowsChanged'>
+/** Data View Request State 的运行状态。 */
 type DataViewRequestState = DataView['requestState']
 
 /** 桥接层基础上下文：用于统一错误处理、诊断与日志。 */
 export type DataViewBridgeBaseContext = {
-  view: DataView
-  eventName: DataViewBridgeEventName}
+    /** view 字段。 */
+view: DataView
+    /** event Name 名称。 */
+eventName: DataViewBridgeEventName}
 
+/** Current Row Changed Context 的运行上下文。 */
 export type CurrentRowChangedContext = {
-  row: DataRow | null
-  originatorId?: string
-  view: DataView
-  eventName: 'currentRowChanged'}
+    /** 当前行数据。 */
+row: DataRow | null
+    /** originator Id 标识。 */
+originatorId?: string
+    /** view 字段。 */
+view: DataView
+    /** event Name 名称。 */
+eventName: 'currentRowChanged'}
 
+/** Selected Rows Changed Context 的运行上下文。 */
 export type SelectedRowsChangedContext = {
-  rows: DataRow[]
-  originatorId?: string
-  view: DataView
-  eventName: 'selectedRowsChanged'}
+    /** 行数据集合。 */
+rows: DataRow[]
+    /** originator Id 标识。 */
+originatorId?: string
+    /** view 字段。 */
+view: DataView
+    /** event Name 名称。 */
+eventName: 'selectedRowsChanged'}
 
+/** Rows Changed Context 的运行上下文。 */
 export type RowsChangedContext = {
-  view: DataView
-  eventName: 'rowsChanged'}
+    /** view 字段。 */
+view: DataView
+    /** event Name 名称。 */
+eventName: 'rowsChanged'}
 
+/** Cleared Context 的运行上下文。 */
 export type ClearedContext = {
-  view: DataView
-  eventName: 'cleared'}
+    /** view 字段。 */
+view: DataView
+    /** event Name 名称。 */
+eventName: 'cleared'}
 
+/** Request State Changed Context 的运行上下文。 */
 export type RequestStateChangedContext = {
-  state: DataViewRequestState
-  view: DataView
-  eventName: 'requestStateChanged'}
+    /** 当前运行状态。 */
+state: DataViewRequestState
+    /** view 字段。 */
+view: DataView
+    /** event Name 名称。 */
+eventName: 'requestStateChanged'}
 
+/** Summary Changed Context 的运行上下文。 */
 export type SummaryChangedContext = {
-  view: DataView
-  eventName: 'summaryChanged'}
+    /** view 字段。 */
+view: DataView
+    /** event Name 名称。 */
+eventName: 'summaryChanged'}
 
+/** Selection Summary Changed Context 的运行上下文。 */
 export type SelectionSummaryChangedContext = {
-  view: DataView
-  eventName: 'selectionSummaryChanged'}
+    /** view 字段。 */
+view: DataView
+    /** event Name 名称。 */
+eventName: 'selectionSummaryChanged'}
 
+/** Mutating Changed Context 的运行上下文。 */
 export type MutatingChangedContext = {
-  mutating: boolean
-  view: DataView
-  eventName: 'mutatingChanged'}
+    /** mutating 字段。 */
+mutating: boolean
+    /** view 字段。 */
+view: DataView
+    /** event Name 名称。 */
+eventName: 'mutatingChanged'}
 
+/** Config Changed Context 的运行上下文。 */
 export type ConfigChangedContext = {
-  view: DataView
-  eventName: 'configChanged'}
+    /** view 字段。 */
+view: DataView
+    /** event Name 名称。 */
+eventName: 'configChanged'}
 
+/** Editing Changed Context 的运行上下文。 */
 export type EditingChangedContext = {
-  view: DataView
-  eventName: 'editingChanged'}
+    /** view 字段。 */
+view: DataView
+    /** event Name 名称。 */
+eventName: 'editingChanged'}
 
+/** Originator Filter Context 的运行上下文。 */
 export type OriginatorFilterContext = {
-  originatorId: string | undefined
-  view: DataView
-  eventName: 'currentRowChanged' | 'selectedRowsChanged'}
+    /** originator Id 标识。 */
+originatorId: string | undefined
+    /** view 字段。 */
+view: DataView
+    /** event Name 名称。 */
+eventName: 'currentRowChanged' | 'selectedRowsChanged'}
 
 /**
  * DataView 事件桥接的配置项。

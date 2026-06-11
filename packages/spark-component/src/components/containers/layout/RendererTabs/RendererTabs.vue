@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/layout/RendererTabs/RendererTabs
+RendererTabs 模块，属于 SPARK component container/layout-container。
+组件目录: containers/layout。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div :class="['renderer-tabs-layout', `renderer-tabs-layout--${toolbarPositionValue}`]">
     <div v-if="showToolbar" :class="['renderer-tabs-toolbar', toolbarClassValue]">

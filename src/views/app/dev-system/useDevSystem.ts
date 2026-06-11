@@ -1,4 +1,9 @@
 /**
+ * @module app:views/app/dev-system/useDevSystem
+ * app 的 views/app/dev-system/useDevSystem 模块。
+ * 导出 ClassModel symbol: DevSystemCtx（共 1 个 symbol）。
+ */
+/**
  * useDevSystem — 当前编辑 scope 导航设计器的单入口编排器。
  *
  * DevSystem 经当前 ProjectWorkspace 编辑对应 scope 的 ProjectModel（领域实例）；
@@ -120,4 +125,5 @@ export function useDevSystem() {
   }
 }
 
+/** Dev System Ctx 的语义模型。 */
 export type DevSystemCtx = ReturnType<typeof useDevSystem>

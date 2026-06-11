@@ -1,0 +1,750 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/tree-manager.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:tree-manager",
+    "sourcePath": "declarations/packages/spark-data/src/tree-manager.d.ts",
+    "sourceFile": "packages/spark-data/src/tree-manager.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "tree-manager",
+    "jsdoc": "树管理器\n统一入口：内存缓存 + HTTP 调用（含 flat/nested 双模式接口族）\n依赖方向：DataView → TreeManager（单向）",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "TreeManagerOptions",
+      "FetchNestedInput",
+      "TreeManager"
+    ]
+  },
+  "symbols": [
+    "TreeManagerOptions",
+    "FetchNestedInput",
+    "TreeManager"
+  ],
+  "models": {
+    "TreeManagerOptions": {
+      "kind": "TreeManagerOptions",
+      "className": "TreeManagerOptions",
+      "jsdoc": "/** Tree Manager Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 配置对象。 */\n    config: TreeConfig;\n    /** api 字段。 */\n    api?: TreeApi;\n    /** initial Nodes 字段。 */\n    initialNodes?: FlatTreeNode[];\n    /** http Client 字段。 */\n    httpClient?: HttpClientBase;\n    /** endpoint Context Provider 回调。 */\n    endpointContextProvider?: () => Record<string, unknown>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+        "line": 9,
+        "className": "TreeManagerOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "config",
+          "schema": {
+            "title": "TreeConfig"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 配置对象。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 11,
+            "className": "TreeManagerOptions",
+            "memberName": "config",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "api",
+          "schema": {
+            "title": "TreeApi"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** api 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 13,
+            "className": "TreeManagerOptions",
+            "memberName": "api",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "initialNodes",
+          "schema": {
+            "type": "array",
+            "title": "FlatTreeNode[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** initial Nodes 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 15,
+            "className": "TreeManagerOptions",
+            "memberName": "initialNodes",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "httpClient",
+          "schema": {
+            "title": "HttpClientBase"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** http Client 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 17,
+            "className": "TreeManagerOptions",
+            "memberName": "httpClient",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "endpointContextProvider",
+          "schema": {
+            "title": "() => Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** endpoint Context Provider 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 19,
+            "className": "TreeManagerOptions",
+            "memberName": "endpointContextProvider",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "FetchNestedInput": {
+      "kind": "FetchNestedInput",
+      "className": "FetchNestedInput",
+      "jsdoc": "/** Fetch Nested Input 的输入数据。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    rootId?: string | number | null | undefined;\n    limit?: number | undefined;\n    depthLimit?: number | undefined;\n    treeMode?: 'flat' | 'nested' | undefined;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    rootId?: string | number | null | undefined;\n    limit?: number | undefined;\n    depthLimit?: number | undefined;\n    treeMode?: 'flat' | 'nested' | undefined;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+        "line": 22,
+        "className": "FetchNestedInput",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "TreeManager": {
+      "kind": "TreeManager",
+      "className": "TreeManager",
+      "jsdoc": "/**\n * 树管理器类\n * 管理 DataView 中的树形数据视图\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+        "line": 32,
+        "className": "TreeManager",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "title": "TreeManagerOptions"
+            }
+          },
+          "required": [
+            "options"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/**\n     * 创建树管理器实例\n     * @param config 树配置\n     * @param initialNodes 初始节点\n     * @param dataView 关联的数据视图\n     */",
+        "provenance": {
+          "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+          "line": 53,
+          "className": "TreeManager",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "getConfig",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "TreeConfig"
+          },
+          "returnTypeText": "TreeConfig",
+          "jsdoc": "/**\n     * 获取树配置\n     * @returns 树配置副本\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 63,
+            "className": "TreeManager",
+            "memberName": "getConfig",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "addNodesToCache",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodes": {
+                "type": "array",
+                "title": "FlatTreeNode[]",
+                "items": true
+              }
+            },
+            "required": [
+              "nodes"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 添加节点到缓存\n     * @param nodes 要添加的节点数组\n     */",
+          "paramsTypeText": "nodes: FlatTreeNode[]",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 68,
+            "className": "TreeManager",
+            "memberName": "addNodesToCache",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "clear",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 清空缓存\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 72,
+            "className": "TreeManager",
+            "memberName": "clear",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getAllNodes",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "FlatTreeNode[]",
+            "items": true
+          },
+          "returnTypeText": "FlatTreeNode[]",
+          "jsdoc": "/**\n     * 返回缓存中所有扁平节点的数组\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 76,
+            "className": "TreeManager",
+            "memberName": "getAllNodes",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "fromJson",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "json": {
+                "title": "FlatTreeNode[] | Record<string, unknown> | string"
+              },
+              "options": {
+                "title": "TreeManagerOptions"
+              }
+            },
+            "required": [
+              "json",
+              "options"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "TreeManager"
+          },
+          "returnTypeText": "TreeManager",
+          "jsdoc": "/**\n     * 从 JSON 恢复树缓存（与 toJson 输出格式对应：FlatTreeNode[]）。\n     *\n     * @param json 节点数组、松散对象或 JSON 字符串\n     * @param options TreeManager 构造选项（config 必填）\n     */",
+          "paramsTypeText": "json: string | Record<string, unknown> | FlatTreeNode[], options: TreeManagerOptions",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 83,
+            "className": "TreeManager",
+            "memberName": "fromJson",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "toJson",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string",
+            "title": "string"
+          },
+          "returnTypeText": "string",
+          "jsdoc": "/**\n     * 将所有扁平节点序列化为 JSON 字符串（用于导出）\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 87,
+            "className": "TreeManager",
+            "memberName": "toJson",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "FlatTreeNode | undefined"
+          },
+          "returnTypeText": "FlatTreeNode | undefined",
+          "jsdoc": "/**\n     * 获取指定节点\n     * @param id 节点ID\n     * @returns 节点对象\n     */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 93,
+            "className": "TreeManager",
+            "memberName": "getNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getChildren",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentId": {
+                "title": "string | number | null"
+              }
+            },
+            "required": [
+              "parentId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "FlatTreeNode[]",
+            "items": true
+          },
+          "returnTypeText": "FlatTreeNode[]",
+          "jsdoc": "/**\n     * 获取子节点\n     * @param parentId 父节点ID\n     * @returns 子节点数组\n     */",
+          "paramsTypeText": "parentId: string | number | null",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 99,
+            "className": "TreeManager",
+            "memberName": "getChildren",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getRoots",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "FlatTreeNode[]",
+            "items": true
+          },
+          "returnTypeText": "FlatTreeNode[]",
+          "jsdoc": "/**\n     * 获取根节点\n     * @returns 根节点数组\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 104,
+            "className": "TreeManager",
+            "memberName": "getRoots",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "fetchChildren",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentId": {
+                "title": "string | number | null"
+              },
+              "limit": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "required": [
+              "parentId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<FlatTreeNode[]>"
+          },
+          "returnTypeText": "Promise<FlatTreeNode[]>",
+          "jsdoc": "/**\n     * 拉取直接子节点并写入缓存（对应 /tree/children）\n     */",
+          "paramsTypeText": "parentId: string | number | null, limit?: number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 108,
+            "className": "TreeManager",
+            "memberName": "fetchChildren",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "fetchPath",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<TreePath>"
+          },
+          "returnTypeText": "Promise<TreePath>",
+          "jsdoc": "/**\n     * 获取节点祖先链 ID（对应 /tree/path）\n     */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 112,
+            "className": "TreeManager",
+            "memberName": "fetchPath",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "expandToNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "targetId": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "targetId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/**\n     * 展开到目标节点（差量补齐缓存，对应 /tree/path + /tree/subtree）\n     */",
+          "paramsTypeText": "targetId: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 116,
+            "className": "TreeManager",
+            "memberName": "expandToNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "moveNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "title": "string | number"
+              },
+              "newParentId": {
+                "title": "string | number | null"
+              },
+              "index": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "required": [
+              "nodeId",
+              "newParentId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<FlatTreeNode>"
+          },
+          "returnTypeText": "Promise<FlatTreeNode>",
+          "jsdoc": "/** 执行 move Node 操作。 */",
+          "paramsTypeText": "nodeId: string | number, newParentId: string | number | null, index?: number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 118,
+            "className": "TreeManager",
+            "memberName": "moveNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "fetchNestedSearch",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "keyword": {
+                "type": "string",
+                "title": "string"
+              },
+              "limit": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "required": [
+              "keyword"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<NestedTreeSearchResult[]>"
+          },
+          "returnTypeText": "Promise<NestedTreeSearchResult[]>",
+          "jsdoc": "/**\n     * 嵌套模式远端搜索，返回匹配节点 + 祖先链（对应 /tree/nested/search）\n     */",
+          "paramsTypeText": "keyword: string, limit?: number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 122,
+            "className": "TreeManager",
+            "memberName": "fetchNestedSearch",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "fetchNested",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "title": "FetchNestedInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<NestedTreeNode[]>"
+          },
+          "returnTypeText": "Promise<NestedTreeNode[]>",
+          "jsdoc": "/**\n     * 拉取完整嵌套树（对应 /tree/nested）\n     */",
+          "paramsTypeText": "input?: Readonly<{ rootId?: string | number | null | undefined; limit?: number | undefined; depthLimit?: number | undefined; treeMode?: \"flat\" | \"nested\" | undefined; }> | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 126,
+            "className": "TreeManager",
+            "memberName": "fetchNested",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "searchNodes",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "keyword": {
+                "type": "string",
+                "title": "string"
+              },
+              "matchFn": {
+                "title": "(node: FlatTreeNode, keyword: string) => boolean"
+              }
+            },
+            "required": [
+              "keyword"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "FlatTreeNode[]",
+            "items": true
+          },
+          "returnTypeText": "FlatTreeNode[]",
+          "jsdoc": "/**\n     * 搜索节点\n     * @param keyword 搜索关键词\n     * @param matchFn 匹配函数\n     * @returns 匹配的节点数组\n     */",
+          "paramsTypeText": "keyword: string, matchFn?: ((node: FlatTreeNode, keyword: string) => boolean) | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 133,
+            "className": "TreeManager",
+            "memberName": "searchNodes",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "searchNested",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "keyword": {
+                "type": "string",
+                "title": "string"
+              },
+              "matchFn": {
+                "title": "(node: FlatTreeNode, keyword: string) => boolean"
+              },
+              "limit": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "required": [
+              "keyword"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "NestedTreeSearchResult[]",
+            "items": true
+          },
+          "returnTypeText": "NestedTreeSearchResult[]",
+          "jsdoc": "/**\n     * 嵌套树搜索（层次模式）\n     * 对应 /tree/nested/search 接口\n     * 返回匹配节点及其祖先链，前端可直接展开定位\n     * @param keyword 搜索关键词\n     * @param matchFn 自定义匹配函数（默认匹配 textField）\n     * @param limit 最大返回结果数（默认不限制）\n     * @returns 匹配节点 + 从根到该节点的祖先链数组\n     */",
+          "paramsTypeText": "keyword: string, matchFn?: ((node: FlatTreeNode, keyword: string) => boolean) | undefined, limit?: number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 143,
+            "className": "TreeManager",
+            "memberName": "searchNested",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getNodePath",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "nodeId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "TreePath"
+          },
+          "returnTypeText": "TreePath",
+          "jsdoc": "/**\n     * 获取节点路径\n     * @param nodeId 节点ID\n     * @returns 节点路径\n     */",
+          "paramsTypeText": "nodeId: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 149,
+            "className": "TreeManager",
+            "memberName": "getNodePath",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "buildNestedTree",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rootId": {
+                "title": "string | number | null"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "NestedTreeNode[]",
+            "items": true
+          },
+          "returnTypeText": "NestedTreeNode[]",
+          "jsdoc": "/**\n     * 全量构建嵌套树\n     * @param rootId 根节点ID\n     * @returns 嵌套树数组\n     */",
+          "paramsTypeText": "rootId?: string | number | null | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 155,
+            "className": "TreeManager",
+            "memberName": "buildNestedTree",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "buildSubTree",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rootId": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "rootId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "NestedTreeNode | null"
+          },
+          "returnTypeText": "NestedTreeNode | null",
+          "jsdoc": "/**\n     * 局部构建子树（递归）\n     * @param rootId 根节点ID\n     * @returns 嵌套子树\n     */",
+          "paramsTypeText": "rootId: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/tree-manager.d.ts",
+            "line": 163,
+            "className": "TreeManager",
+            "memberName": "buildSubTree",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.807Z"
+}

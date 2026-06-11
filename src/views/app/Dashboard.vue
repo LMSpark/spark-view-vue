@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/Dashboard
+app 的 views/app/Dashboard 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="dashboard-page">
     <el-page-header content="管理仪表板" @back="$router.go(-1)">

@@ -1,0 +1,874 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:page/config-page",
+    "sourcePath": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+    "sourceFile": "packages/spark-project-model/src/page/config-page.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "page/config-page",
+    "jsdoc": "ConfigPageNode——配置页节点，挂接 rule/dataset/script/style（纯内存领域模型）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageNodeRenderConfig",
+      "PageNodeLike",
+      "ProjectConfigPageNodeModelOptions",
+      "ConfigPageNode",
+      "ConfigSubPageNode"
+    ]
+  },
+  "symbols": [
+    "PageNodeRenderConfig",
+    "PageNodeLike",
+    "ProjectConfigPageNodeModelOptions",
+    "ConfigPageNode",
+    "ConfigSubPageNode"
+  ],
+  "models": {
+    "PageNodeRenderConfig": {
+      "kind": "PageNodeRenderConfig",
+      "className": "PageNodeRenderConfig",
+      "jsdoc": "/** Page Node Render Config 的配置结构。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** navigation 字段。 */\n    navigation: ProjectNodeData | null;\n    /** rule 字段。 */\n    rule: SparkNode[];\n    /** 业务数据载荷。 */\n    data: DataSet;\n    /** script 字段。 */\n    script: string | undefined;\n    /** css 字段。 */\n    css: string | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+        "line": 10,
+        "className": "PageNodeRenderConfig",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** page Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 12,
+            "className": "PageNodeRenderConfig",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "navigation",
+          "schema": {
+            "title": "ProjectNodeData | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** navigation 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 14,
+            "className": "PageNodeRenderConfig",
+            "memberName": "navigation",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "rule",
+          "schema": {
+            "type": "array",
+            "title": "SparkNode[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** rule 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 16,
+            "className": "PageNodeRenderConfig",
+            "memberName": "rule",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "data",
+          "schema": {
+            "title": "DataSet"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 业务数据载荷。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 18,
+            "className": "PageNodeRenderConfig",
+            "memberName": "data",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "script",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** script 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 20,
+            "className": "PageNodeRenderConfig",
+            "memberName": "script",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "css",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** css 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 22,
+            "className": "PageNodeRenderConfig",
+            "memberName": "css",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "PageNodeLike": {
+      "kind": "PageNodeLike",
+      "className": "PageNodeLike",
+      "jsdoc": "/** Page Node Like 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** page Id 标识。 */\n    readonly pageId: string;\n    /** 是否 is Loaded。 */\n    readonly isLoaded: boolean;\n    load(options?: PageNodeLoadOptions): Promise<void>;\n    toRenderConfig(): PageNodeRenderConfig;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+        "line": 25,
+        "className": "PageNodeLike",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** page Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 27,
+            "className": "PageNodeLike",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "isLoaded",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否 is Loaded。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 29,
+            "className": "PageNodeLike",
+            "memberName": "isLoaded",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectConfigPageNodeModelOptions": {
+      "kind": "ProjectConfigPageNodeModelOptions",
+      "className": "ProjectConfigPageNodeModelOptions",
+      "jsdoc": "/** Project Config Page Node Model Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "ProjectNodeModelOptions & {\n    /** 配置页唯一 pageId；省略时从导航节点解析。 */\n    pageId?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "ProjectNodeModelOptions",
+          "targetName": "ProjectNodeModelOptions"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 配置页唯一 pageId；省略时从导航节点解析。 */\n    pageId?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+        "line": 34,
+        "className": "ProjectConfigPageNodeModelOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 配置页唯一 pageId；省略时从导航节点解析。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 36,
+            "className": "ProjectConfigPageNodeModelOptions",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ConfigPageNode": {
+      "kind": "ConfigPageNode",
+      "className": "ConfigPageNode",
+      "jsdoc": "/**\n * 配置页面节点。\n *\n * 持有当前页面的 rule.json、pagedata.json、script.js、style.css 子模型。\n * 四文件持久化由 ProjectWorkspace 或 PageContentLoader 编排。\n *\n */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "ProjectNode",
+          "targetName": "ProjectNode"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+        "line": 45,
+        "className": "ConfigPageNode",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "title": "ProjectConfigPageNodeModelOptions"
+            }
+          },
+          "required": [
+            "options"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/**\n     * 创建配置页节点实例，并初始化 rule/pagedata/script/style 四文件内存模型。\n     *\n     * @param options 配置页导航节点、pageId 与基础 ProjectNode 初始化参数。\n     */",
+        "provenance": {
+          "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+          "line": 63,
+          "className": "ConfigPageNode",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [
+        {
+          "name": "rule",
+          "schema": {
+            "title": "PageRuleFile"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** rule 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 47,
+            "className": "ConfigPageNode",
+            "memberName": "rule",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "dataSet",
+          "schema": {
+            "title": "PageDataSetFile"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** data Set 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 49,
+            "className": "ConfigPageNode",
+            "memberName": "dataSet",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "style",
+          "schema": {
+            "title": "PageTextFile"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** style 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 51,
+            "className": "ConfigPageNode",
+            "memberName": "style",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "script",
+          "schema": {
+            "title": "PageTextFile"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** script 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 53,
+            "className": "ConfigPageNode",
+            "memberName": "script",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 配置页唯一 pageId，与四文件存储目录一致。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 55,
+            "className": "ConfigPageNode",
+            "memberName": "pageId",
+            "declarationKind": "class"
+          }
+        }
+      ],
+      "methods": [
+        {
+          "name": "isDirty",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/** 是否 is Dirty。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 69,
+            "className": "ConfigPageNode",
+            "memberName": "isDirty",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "hydrateFileText",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "title": "PageNodeFileName"
+              },
+              "text": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "name",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 由 ProjectWorkspace 或 PageContentLoader 在远端加载后灌入，不标 dirty。 */",
+          "paramsTypeText": "name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", text: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 71,
+            "className": "ConfigPageNode",
+            "memberName": "hydrateFileText",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "markLoaded",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 mark Loaded 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 73,
+            "className": "ConfigPageNode",
+            "memberName": "markLoaded",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "markUnloaded",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 mark Unloaded 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 75,
+            "className": "ConfigPageNode",
+            "memberName": "markUnloaded",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "markFileSaved",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 mark File Saved 操作。 */",
+          "paramsTypeText": "name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 77,
+            "className": "ConfigPageNode",
+            "memberName": "markFileSaved",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getFileText",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string",
+            "title": "string"
+          },
+          "returnTypeText": "string",
+          "jsdoc": "/**\n     * 读取四文件文本。\n     *\n     * @param name 要读取的页面文件名。\n     */",
+          "paramsTypeText": "name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 83,
+            "className": "ConfigPageNode",
+            "memberName": "getFileText",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setFileText",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "title": "PageNodeFileName"
+              },
+              "text": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "name",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 写入四文件文本到内存模型。\n     *\n     * @param name 要写入的页面文件名。\n     * @param text 新的文件文本内容。\n     */",
+          "paramsTypeText": "name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", text: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 90,
+            "className": "ConfigPageNode",
+            "memberName": "setFileText",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "canUndoFile",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/** 是否 can Undo File。 */",
+          "paramsTypeText": "name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 92,
+            "className": "ConfigPageNode",
+            "memberName": "canUndoFile",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "canRedoFile",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/** 是否 can Redo File。 */",
+          "paramsTypeText": "name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 94,
+            "className": "ConfigPageNode",
+            "memberName": "canRedoFile",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "undoFile",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/** 执行 undo File 操作。 */",
+          "paramsTypeText": "name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 96,
+            "className": "ConfigPageNode",
+            "memberName": "undoFile",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "redoFile",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/** 执行 redo File 操作。 */",
+          "paramsTypeText": "name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 98,
+            "className": "ConfigPageNode",
+            "memberName": "redoFile",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getDirtyFileNames",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "PageNodeFileName[]",
+            "items": true
+          },
+          "returnTypeText": "PageNodeFileName[]",
+          "jsdoc": "/** 读取 Dirty File Names。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 100,
+            "className": "ConfigPageNode",
+            "memberName": "getDirtyFileNames",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getNodeTree",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "SparkNodeTreeModel"
+          },
+          "returnTypeText": "SparkNodeTreeModel",
+          "jsdoc": "/**\n     * 读取 rule.json 节点树。\n     *\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 113,
+            "className": "ConfigPageNode",
+            "memberName": "getNodeTree",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "editNodeTree",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "run": {
+                "title": "(tree: SparkNodeTreeModel) => void | Promise<void>"
+              }
+            },
+            "required": [
+              "run"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/**\n     * 修改 rule.json 节点树。\n     *\n     * @param run 节点树编辑回调；回调参数是当前页面 SparkNodeTree。\n     */",
+          "paramsTypeText": "run: (tree: SparkNodeTree) => void | Promise<void>",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 119,
+            "className": "ConfigPageNode",
+            "memberName": "editNodeTree",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getDataSetTool",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataSetCrudTool"
+          },
+          "returnTypeText": "DataSetCrudTool",
+          "jsdoc": "/**\n     * 读取 pagedata 数据集工具入口。\n     *\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 124,
+            "className": "ConfigPageNode",
+            "memberName": "getDataSetTool",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "editDataSet",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "run": {
+                "title": "(tool: DataSetCrudTool) => void | Promise<void>"
+              }
+            },
+            "required": [
+              "run"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/**\n     * 修改 pagedata.json 数据集模型。\n     *\n     * @param run 数据集编辑回调；回调参数是当前页面 DataSetCrudTool。\n     */",
+          "paramsTypeText": "run: (tool: DataSetCrudTool) => void | Promise<void>",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 130,
+            "className": "ConfigPageNode",
+            "memberName": "editDataSet",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "toRenderConfig",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "PageNodeRenderConfig"
+          },
+          "returnTypeText": "PageNodeRenderConfig",
+          "jsdoc": "/** to Render Config 配置。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 132,
+            "className": "ConfigPageNode",
+            "memberName": "toRenderConfig",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "toSummary",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectPageNodeSummary"
+          },
+          "returnTypeText": "ProjectPageNodeSummary",
+          "jsdoc": "/** 执行 to Summary 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 134,
+            "className": "ConfigPageNode",
+            "memberName": "toSummary",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    },
+    "ConfigSubPageNode": {
+      "kind": "ConfigSubPageNode",
+      "className": "ConfigSubPageNode",
+      "jsdoc": "/** sub-page 配置页：四文件模型，nodeKind=sub-page，无独立 path。 */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "ConfigPageNode",
+          "targetName": "ConfigPageNode"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+        "line": 137,
+        "className": "ConfigSubPageNode",
+        "declarationKind": "class"
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "toSummary",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectPageNodeSummary"
+          },
+          "returnTypeText": "ProjectPageNodeSummary",
+          "jsdoc": "/** 执行 to Summary 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
+            "line": 141,
+            "className": "ConfigSubPageNode",
+            "memberName": "toSummary",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.934Z"
+}

@@ -1,0 +1,619 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/session/session-types",
+    "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/session/session-types.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/session/session-types",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\nagent/session/session-types.ts — 会话记录类型与存储契约\n═══════════════════════════════════════════════════════════════\n【架构定位】Host 层的会话持久化抽象。定义了会话记录的数据结构、\n历史条目类型、以及 AiAgentSessionStore 抽象类（存储契约）。\n【数据层次】\nAiAgentSessionStore (abstract class)     — 存储契约\n└─ AiAgentSessionRecord                — 会话记录（含历史列表）\n└─ AiAgentHistoryEntry            — 历史条目（message | functionCall）\n├─ AiAgentMessageHistoryEntry      — 消息条目\n└─ AiAgentFunctionCallHistoryEntry — 工具调用条目\n【关键设计】\n- AiAgentFunctionCallResult<T> 使用联合类型：ok:true 带 data/summary，ok:false 带 code/msg/fix/checks\n- AiAgentSessionStore 为抽象类（非 interface），允许子类继承默认行为\n- 历史条目按时间戳排序，id 由 store 实现分配\n- 历史会话是 Agent 能力诊断和再次接入同一会话的起点，业务 smoke 不另存完整历史副本\n【消费方】default-session-store、business-session、tool-loop-runner\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentFunctionCallCheck",
+      "AiAgentFunctionCallFailure",
+      "AiAgentFunctionCallResult",
+      "AiAgentSessionStatus",
+      "AiAgentMessageRole",
+      "AiAgentMessageSource",
+      "AiAgentFunctionCallHistoryStatus",
+      "AiAgentHistoryEntryBase",
+      "AiAgentMessageHistoryEntry",
+      "AiAgentFunctionCallHistoryEntry",
+      "AiAgentHistoryEntry",
+      "AiAgentSessionRecord",
+      "AiAgentStartSessionResult",
+      "AiAgentAppendFunctionCallOptions",
+      "AiAgentSessionStore"
+    ]
+  },
+  "symbols": [
+    "AiAgentFunctionCallCheck",
+    "AiAgentFunctionCallFailure",
+    "AiAgentFunctionCallResult",
+    "AiAgentSessionStatus",
+    "AiAgentMessageRole",
+    "AiAgentMessageSource",
+    "AiAgentFunctionCallHistoryStatus",
+    "AiAgentHistoryEntryBase",
+    "AiAgentMessageHistoryEntry",
+    "AiAgentFunctionCallHistoryEntry",
+    "AiAgentHistoryEntry",
+    "AiAgentSessionRecord",
+    "AiAgentStartSessionResult",
+    "AiAgentAppendFunctionCallOptions",
+    "AiAgentSessionStore"
+  ],
+  "models": {
+    "AiAgentFunctionCallCheck": {
+      "kind": "AiAgentFunctionCallCheck",
+      "className": "AiAgentFunctionCallCheck",
+      "jsdoc": "/** 工具调用失败结果 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 28,
+        "className": "AiAgentFunctionCallCheck",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentFunctionCallFailure": {
+      "kind": "AiAgentFunctionCallFailure",
+      "className": "AiAgentFunctionCallFailure",
+      "jsdoc": "/** Ai Agent Function Call Failure 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ok: false;\n    code: string;\n    msg: string;\n    fix: string;\n    checks?: readonly AiAgentFunctionCallCheck[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    ok: false;\n    code: string;\n    msg: string;\n    fix: string;\n    checks?: readonly AiAgentFunctionCallCheck[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 35,
+        "className": "AiAgentFunctionCallFailure",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentFunctionCallResult": {
+      "kind": "AiAgentFunctionCallResult",
+      "className": "AiAgentFunctionCallResult",
+      "jsdoc": "/**\n * 工具调用结果（联合类型）。\n * ok:true  → 成功，携带 data（可选）和 summary（可选）\n * ok:false → 失败，携带 code / msg / fix / checks（对齐工具结果的错误 check，完整回传给 LLM）\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ok: true;\n    data?: TData;\n    summary?: string;\n}> | AiAgentFunctionCallFailure",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    ok: true;\n    data?: TData;\n    summary?: string;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "AiAgentFunctionCallFailure",
+          "targetName": "AiAgentFunctionCallFailure"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 47,
+        "className": "AiAgentFunctionCallResult",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentSessionStatus": {
+      "kind": "AiAgentSessionStatus",
+      "className": "AiAgentSessionStatus",
+      "jsdoc": "/** Ai Agent Session Status 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'Started' | 'Stopped'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'Started'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'Stopped'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 53,
+        "className": "AiAgentSessionStatus",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentMessageRole": {
+      "kind": "AiAgentMessageRole",
+      "className": "AiAgentMessageRole",
+      "jsdoc": "/** Ai Agent Message Role 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'system' | 'user' | 'assistant'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'system'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'user'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'assistant'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 55,
+        "className": "AiAgentMessageRole",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentMessageSource": {
+      "kind": "AiAgentMessageSource",
+      "className": "AiAgentMessageSource",
+      "jsdoc": "/** Ai Agent Message Source 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'system' | 'ui' | 'llm'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'system'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'ui'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'llm'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 57,
+        "className": "AiAgentMessageSource",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentFunctionCallHistoryStatus": {
+      "kind": "AiAgentFunctionCallHistoryStatus",
+      "className": "AiAgentFunctionCallHistoryStatus",
+      "jsdoc": "/** Ai Agent Function Call History Status 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'requested' | 'completed' | 'failed'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'requested'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'completed'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'failed'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 59,
+        "className": "AiAgentFunctionCallHistoryStatus",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentHistoryEntryBase": {
+      "kind": "AiAgentHistoryEntryBase",
+      "className": "AiAgentHistoryEntryBase",
+      "jsdoc": "/** 历史条目公共字段 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n    runtimeInstanceId: string;\n    id: string;\n    seq: number;\n    timestamp: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n    runtimeInstanceId: string;\n    id: string;\n    seq: number;\n    timestamp: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 61,
+        "className": "AiAgentHistoryEntryBase",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentMessageHistoryEntry": {
+      "kind": "AiAgentMessageHistoryEntry",
+      "className": "AiAgentMessageHistoryEntry",
+      "jsdoc": "/** 消息历史条目（用户消息 / 助手回复 / 系统消息） */",
+      "shapeKind": "type",
+      "declarationTypeText": "AiAgentHistoryEntryBase & Readonly<{\n    kind: 'message';\n    role: AiAgentMessageRole;\n    source: AiAgentMessageSource;\n    content: string;\n    metadata?: Record<string, unknown>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "AiAgentHistoryEntryBase",
+          "targetName": "AiAgentHistoryEntryBase"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "Readonly<{\n    kind: 'message';\n    role: AiAgentMessageRole;\n    source: AiAgentMessageSource;\n    content: string;\n    metadata?: Record<string, unknown>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 71,
+        "className": "AiAgentMessageHistoryEntry",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentFunctionCallHistoryEntry": {
+      "kind": "AiAgentFunctionCallHistoryEntry",
+      "className": "AiAgentFunctionCallHistoryEntry",
+      "jsdoc": "/** 工具调用历史条目（OpenAI function call 记录） */",
+      "shapeKind": "type",
+      "declarationTypeText": "AiAgentHistoryEntryBase & Readonly<{\n    kind: 'functionCall';\n    toolName: string;\n    args: unknown;\n    status: AiAgentFunctionCallHistoryStatus;\n    completedAt?: number;\n    result?: unknown;\n    error?: AiAgentFunctionCallFailure;\n    metadata?: Record<string, unknown>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "AiAgentHistoryEntryBase",
+          "targetName": "AiAgentHistoryEntryBase"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "Readonly<{\n    kind: 'functionCall';\n    toolName: string;\n    args: unknown;\n    status: AiAgentFunctionCallHistoryStatus;\n    completedAt?: number;\n    result?: unknown;\n    error?: AiAgentFunctionCallFailure;\n    metadata?: Record<string, unknown>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 79,
+        "className": "AiAgentFunctionCallHistoryEntry",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentHistoryEntry": {
+      "kind": "AiAgentHistoryEntry",
+      "className": "AiAgentHistoryEntry",
+      "jsdoc": "/** 历史条目联合类型 */",
+      "shapeKind": "type",
+      "declarationTypeText": "AiAgentMessageHistoryEntry | AiAgentFunctionCallHistoryEntry",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "AiAgentMessageHistoryEntry",
+          "targetName": "AiAgentMessageHistoryEntry"
+        },
+        {
+          "kind": "union",
+          "typeText": "AiAgentFunctionCallHistoryEntry",
+          "targetName": "AiAgentFunctionCallHistoryEntry"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 90,
+        "className": "AiAgentHistoryEntry",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentSessionRecord": {
+      "kind": "AiAgentSessionRecord",
+      "className": "AiAgentSessionRecord",
+      "jsdoc": "/** 会话记录：包含生命周期状态和历史条目，是 Agent 诊断与再次接入会话的根数据 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n    runtimeInstanceId: string;\n    status: AiAgentSessionStatus;\n    startedAt: number;\n    updatedAt: number;\n    stoppedAt?: number;\n    reason?: string;\n    history: readonly AiAgentHistoryEntry[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n    runtimeInstanceId: string;\n    status: AiAgentSessionStatus;\n    startedAt: number;\n    updatedAt: number;\n    stoppedAt?: number;\n    reason?: string;\n    history: readonly AiAgentHistoryEntry[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 92,
+        "className": "AiAgentSessionRecord",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentStartSessionResult": {
+      "kind": "AiAgentStartSessionResult",
+      "className": "AiAgentStartSessionResult",
+      "jsdoc": "/** 会话启动结果：返回给业务方的初始状态 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    status: 'Started';\n    instanceId: string;\n    moduleId: string;\n    moduleInstanceId: string;\n    session: AiAgentSessionRecord;\n    tools: readonly AiAgentTransportToolSpec[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    status: 'Started';\n    instanceId: string;\n    moduleId: string;\n    moduleInstanceId: string;\n    session: AiAgentSessionRecord;\n    tools: readonly AiAgentTransportToolSpec[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 105,
+        "className": "AiAgentStartSessionResult",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentAppendFunctionCallOptions": {
+      "kind": "AiAgentAppendFunctionCallOptions",
+      "className": "AiAgentAppendFunctionCallOptions",
+      "jsdoc": "/** 向 sessionStore 追加工具调用记录的参数 */",
+      "shapeKind": "type",
+      "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    runtimeInstanceId: string;\n    toolName: string;\n    args: unknown;\n    status?: AiAgentFunctionCallHistoryStatus;\n    result?: unknown;\n    error?: AiAgentFunctionCallFailure;\n    metadata?: Record<string, unknown>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "AiAgentRuntimeContext",
+          "targetName": "AiAgentRuntimeContext"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "Readonly<{\n    runtimeInstanceId: string;\n    toolName: string;\n    args: unknown;\n    status?: AiAgentFunctionCallHistoryStatus;\n    result?: unknown;\n    error?: AiAgentFunctionCallFailure;\n    metadata?: Record<string, unknown>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 114,
+        "className": "AiAgentAppendFunctionCallOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentSessionStore": {
+      "kind": "AiAgentSessionStore",
+      "className": "AiAgentSessionStore",
+      "jsdoc": "/**\n * 会话存储抽象类。\n *\n * 定义了 Host 层所需的全部持久化操作。业务方可继承此类实现自定义存储\n * （如 localStorage、IndexedDB、服务端持久化），也可直接使用默认的\n * DefaultAiAgentSessionStore（纯内存实现）。\n *\n * 历史会话只属于 spark-ai：它支撑 Agent 能力诊断、失败回看和后续再次接入\n * 同一业务会话；业务包和 smoke 只能读取它，不应复制或维护第二份历史。\n *\n * 方法分类：\n *   生命周期 — startSession / stopSession / getSession / listSessions\n *   历史查询 — getSessionHistory\n *   追加记录 — appendMessage / appendFunctionCall\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+        "line": 138,
+        "className": "AiAgentSessionStore",
+        "declarationKind": "class"
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "startSession",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "required": [
+              "context"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "AiAgentSessionRecord"
+          },
+          "returnTypeText": "AiAgentSessionRecord",
+          "jsdoc": "/** 启动会话：创建新的会话记录 */",
+          "paramsTypeText": "context: AiAgentRuntimeContext",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+            "line": 140,
+            "className": "AiAgentSessionStore",
+            "memberName": "startSession",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "stopSession",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "title": "AiAgentRuntimeContext"
+              },
+              "reason": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "context"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "AiAgentSessionRecord | null"
+          },
+          "returnTypeText": "AiAgentSessionRecord | null",
+          "jsdoc": "/** 停止会话：标记为 Stopped，记录原因 */",
+          "paramsTypeText": "context: AiAgentRuntimeContext, reason?: string | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+            "line": 142,
+            "className": "AiAgentSessionStore",
+            "memberName": "stopSession",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getSession",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "required": [
+              "context"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "AiAgentSessionRecord | null"
+          },
+          "returnTypeText": "AiAgentSessionRecord | null",
+          "jsdoc": "/** 获取会话记录 */",
+          "paramsTypeText": "context: AiAgentRuntimeContext",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+            "line": 144,
+            "className": "AiAgentSessionStore",
+            "memberName": "getSession",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "listSessions",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "readonly AiAgentSessionRecord[]",
+            "items": true
+          },
+          "returnTypeText": "readonly AiAgentSessionRecord[]",
+          "jsdoc": "/** 列出所有会话 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+            "line": 146,
+            "className": "AiAgentSessionStore",
+            "memberName": "listSessions",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getSessionHistory",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "required": [
+              "context"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "readonly AiAgentHistoryEntry[]",
+            "items": true
+          },
+          "returnTypeText": "readonly AiAgentHistoryEntry[]",
+          "jsdoc": "/** 获取会话历史（所有条目） */",
+          "paramsTypeText": "context: AiAgentRuntimeContext",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+            "line": 148,
+            "className": "AiAgentSessionStore",
+            "memberName": "getSessionHistory",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "appendMessage",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "AiAgentAppendMessageOptions"
+              }
+            },
+            "required": [
+              "options"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "AiAgentMessageHistoryEntry"
+          },
+          "returnTypeText": "AiAgentMessageHistoryEntry",
+          "jsdoc": "/** 追加消息条目 */",
+          "paramsTypeText": "options: AiAgentAppendMessageOptions",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+            "line": 150,
+            "className": "AiAgentSessionStore",
+            "memberName": "appendMessage",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "appendFunctionCall",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "AiAgentAppendFunctionCallOptions"
+              }
+            },
+            "required": [
+              "options"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "AiAgentFunctionCallHistoryEntry"
+          },
+          "returnTypeText": "AiAgentFunctionCallHistoryEntry",
+          "jsdoc": "/** 追加工具调用条目 */",
+          "paramsTypeText": "options: AiAgentAppendFunctionCallOptions",
+          "provenance": {
+            "file": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+            "line": 152,
+            "className": "AiAgentSessionStore",
+            "memberName": "appendFunctionCall",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.773Z"
+}

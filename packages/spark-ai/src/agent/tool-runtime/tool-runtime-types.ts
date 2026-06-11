@@ -1,28 +1,44 @@
+/**
+ * @module @spark-appworks/spark-ai:agent/tool-runtime/tool-runtime-types
+ * @spark-appworks/spark-ai 的 agent/tool-runtime/tool-runtime-types 模块。
+ * 导出 ClassModel symbol: AiAgentToolCheckLevel, AiAgentToolCheck, AiAgentToolResultOptions, AiAgentToolResult, AiAgentToolSpec, AiAgentRuntimeHostContext, AiAgentToolRuntimeKnowledgeProjection, AiAgentToolRuntimeInspectFinding 等（共 10 个 symbol）。
+ */
 import type { AiJsonParams, AiJsonSchemaObject, AiJsonValue } from '../../json'
 
+/** Ai Agent Tool Check Level 的语义模型。 */
 export type AiAgentToolCheckLevel = 'error' | 'warn' | 'info'
 
+/** Ai Agent Tool Check 的语义模型。 */
 export class AiAgentToolCheck {
-  public constructor(
+    /** 创建 Ai Agent Tool Check 实例。 */
+public constructor(
+    /** 检查等级：error 会阻断，warn/info 用于提示。 */
     public readonly level: AiAgentToolCheckLevel,
+    /** 稳定检查码，供 UI 和恢复提示识别问题类型。 */
     public readonly code: string,
+    /** 面向用户或日志的检查说明。 */
     public readonly message: string,
+    /** 可选修复提示。 */
     public readonly hint?: string,
   ) {}
 
-  public static error(code: string, message: string, hint?: string): AiAgentToolCheck {
+    /** 错误对象或错误信息。 */
+public static error(code: string, message: string, hint?: string): AiAgentToolCheck {
     return new AiAgentToolCheck('error', code, message, hint)
   }
 
-  public static warn(code: string, message: string, hint?: string): AiAgentToolCheck {
+    /** 执行 warn 操作。 */
+public static warn(code: string, message: string, hint?: string): AiAgentToolCheck {
     return new AiAgentToolCheck('warn', code, message, hint)
   }
 
-  public static info(code: string, message: string, hint?: string): AiAgentToolCheck {
+    /** 执行 info 操作。 */
+public static info(code: string, message: string, hint?: string): AiAgentToolCheck {
     return new AiAgentToolCheck('info', code, message, hint)
   }
 }
 
+/** Ai Agent Tool Result Options 的调用配置。 */
 export type AiAgentToolResultOptions<TData> = Readonly<{
   ok: boolean
   data?: TData
@@ -30,13 +46,19 @@ export type AiAgentToolResultOptions<TData> = Readonly<{
   state?: Record<string, unknown>
 }>
 
+/** Ai Agent Tool Result 的返回结果。 */
 export class AiAgentToolResult<TData = unknown> {
-  public readonly ok: boolean
-  public readonly data?: TData
-  public readonly checks?: readonly AiAgentToolCheck[]
-  public readonly state?: Record<string, unknown>
+    /** ok 字段。 */
+public readonly ok: boolean
+    /** 业务数据载荷。 */
+public readonly data?: TData
+    /** checks 字段。 */
+public readonly checks?: readonly AiAgentToolCheck[]
+    /** 当前运行状态。 */
+public readonly state?: Record<string, unknown>
 
-  public constructor(options: AiAgentToolResultOptions<TData>) {
+    /** 创建 Ai Agent Tool Result 实例。 */
+public constructor(options: AiAgentToolResultOptions<TData>) {
     this.ok = options.ok
     if ('data' in options) this.data = options.data
     const checks = nonEmptyChecks(options.checks)
@@ -44,6 +66,7 @@ export class AiAgentToolResult<TData = unknown> {
     if (options.state !== undefined) this.state = options.state
   }
 
+  /** 构造成功的工具执行结果。 */
   public static ok<TData>(
     data?: TData,
     checks?: readonly AiAgentToolCheck[],
@@ -57,7 +80,8 @@ export class AiAgentToolResult<TData = unknown> {
     })
   }
 
-  public static fail(
+    /** 执行 fail 操作。 */
+public static fail(
     checks: readonly AiAgentToolCheck[],
     state?: Record<string, unknown>,
   ): AiAgentToolResult<never> {
@@ -71,11 +95,13 @@ export class AiAgentToolResult<TData = unknown> {
     })
   }
 
-  public static failCode(code: string, message: string, hint?: string): AiAgentToolResult<never> {
+    /** 执行 fail Code 操作。 */
+public static failCode(code: string, message: string, hint?: string): AiAgentToolResult<never> {
     return AiAgentToolResult.fail([AiAgentToolCheck.error(code, message, hint)])
   }
 
-  public static passthroughFailure(result: AiAgentToolResult<unknown>): AiAgentToolResult<never> {
+    /** 执行 passthrough Failure 操作。 */
+public static passthroughFailure(result: AiAgentToolResult<unknown>): AiAgentToolResult<never> {
     return new AiAgentToolResult({
       ok: false,
       ...(result.checks === undefined ? {} : { checks: result.checks }),
@@ -84,6 +110,7 @@ export class AiAgentToolResult<TData = unknown> {
   }
 }
 
+/** Ai Agent Tool Spec 的语义模型。 */
 export type AiAgentToolSpec = Readonly<{
   type: 'function'
   function: {
@@ -94,16 +121,19 @@ export type AiAgentToolSpec = Readonly<{
   }
 }>
 
+/** Ai Agent Runtime Host Context 的运行上下文。 */
 export type AiAgentRuntimeHostContext = Readonly<{
   moduleId: string
   moduleInstanceId: string
   instanceId: string
 }>
 
+/** Ai Agent Tool Runtime Knowledge Projection 的语义模型。 */
 export type AiAgentToolRuntimeKnowledgeProjection = Readonly<{
   promptSnapshot: string
 }>
 
+/** Ai Agent Tool Runtime Inspect Finding 的语义模型。 */
 export type AiAgentToolRuntimeInspectFinding = Readonly<{
   level: 'error' | 'warn' | 'info'
   code: string
@@ -111,6 +141,7 @@ export type AiAgentToolRuntimeInspectFinding = Readonly<{
   fix?: string
 }>
 
+/** Ai Agent Tool Runtime Inspect Report 的语义模型。 */
 export type AiAgentToolRuntimeInspectReport = Readonly<{
   status: 'ok' | 'warning' | 'error'
   rootKinds: readonly string[]
@@ -118,6 +149,7 @@ export type AiAgentToolRuntimeInspectReport = Readonly<{
   findings: readonly AiAgentToolRuntimeInspectFinding[]
 }>
 
+/** Ai Agent Tool Runtime 的语义模型。 */
 export type AiAgentToolRuntime = Readonly<{
   getTools(): readonly AiAgentToolSpec[]
   executeTool(

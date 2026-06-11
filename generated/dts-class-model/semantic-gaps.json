@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-06-11T12:20:27.162Z",
+  "gapCount": 0,
+  "notes": [
+    ".d.ts 是类型关系真源；declarationRelations 保留 extends / alias / intersection / union 等直接声明边。",
+    "module 是单个 DTS shard 的入口语义；必须来自源文件头 JSDoc，路径/组件目录/symbol 推导只作为定位日志，不算语义闭环。",
+    "attributes 和 methods 是 TypeScript TypeChecker 派生缓存；当 JSDoc 缺失时，语义链断在本报告列出的 declaration/source 位置。"
+  ],
+  "gaps": []
+}

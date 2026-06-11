@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/dev-system/components/NodeTargetConfig
+app 的 views/app/dev-system/components/NodeTargetConfig 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div>
     <el-divider content-position="left">{{ flags.routeSectionLabel.value }}</el-divider>

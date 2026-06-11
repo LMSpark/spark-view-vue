@@ -1,6 +1,13 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/layout/RendererButton.props
+ * RendererButton 模块，属于 SPARK component container/layout-container。
+ * 组件目录: containers/layout。
+ * 导出 ClassModel symbol: RButtonProps（共 1 个 symbol）。
+ */
 import type { SparkNodeProps } from '../../shared-types'
 import type { ActionDescriptor, BuiltinActionName } from '../../../page/actions'
 
+/** RButton Props 的属性契约。 */
 export type RButtonProps = SparkNodeProps & {
   /**
    * CRUD 或页面动作名，由宿主内置 action runner 接管执行。

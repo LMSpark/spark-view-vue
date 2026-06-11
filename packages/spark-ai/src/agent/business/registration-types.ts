@@ -28,11 +28,13 @@ import type {
 } from './lifecycle-types'
 import type { AiAgentRuntimeContext } from './scope-types'
 
+/** Ai Agent Tool Loop Nudge Reason 的语义模型。 */
 export type AiAgentToolLoopNudgeReason =
   | 'plan_without_tool'
   | 'execution_phase'
   | 'model_script_retry'
 
+/** Ai Agent Tool Loop Nudge Context 的运行上下文。 */
 export type AiAgentToolLoopNudgeContext = Readonly<{
   reason: AiAgentToolLoopNudgeReason
   moduleInstanceId: string
@@ -46,6 +48,7 @@ export type AiAgentToolLoopNudgeContext = Readonly<{
  * 所有回调函数均为可选——不传则跳过对应生命周期节点。
  * ----------------------------------------------------------------------------- */
 
+/** Ai Agent Registration Options 的调用配置。 */
 export type AiAgentRegistrationOptions<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
   /** 业务模块唯一标识，对应注册 runtime 的根业务 ID */
   moduleId: string
@@ -112,12 +115,16 @@ export type AiAgentRegistrationOptions<TInput extends AiJsonParams = AiJsonParam
  * 可选回调仅在传入时才挂载（避免 undefined 属性干扰运行时判断）。
  * ----------------------------------------------------------------------------- */
 
+/** Ai Agent Registration 的语义模型。 */
 export class AiAgentRegistration<TInput extends AiJsonParams = AiJsonParams> {
   /* ── 基础标识 ─────────────────────────────────────────── */
 
-  public readonly moduleId: string
-  public readonly name: string
-  public readonly description: string
+    /** module Id 标识。 */
+public readonly moduleId: string
+    /** 显示或业务名称。 */
+public readonly name: string
+    /** description 字段。 */
+public readonly description: string
 
   /* ── 能力运行时 ───────────────────────────────────────── */
 
@@ -154,13 +161,17 @@ export class AiAgentRegistration<TInput extends AiJsonParams = AiJsonParams> {
   public readonly releaseModuleInstance?: (moduleInstanceId: string) => void
   /** tool-loop 业务纠偏 */
   public readonly toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined
-  public readonly executionToolNames?: ReadonlySet<string>
-  public readonly planWithoutToolMarkers?: readonly string[]
-  public readonly enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
+    /** execution Tool Names 字段。 */
+public readonly executionToolNames?: ReadonlySet<string>
+    /** plan Without Tool Markers 字段。 */
+public readonly planWithoutToolMarkers?: readonly string[]
+    /** enrich Recovery Hints 回调。 */
+public readonly enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
 
   /* ── 构造函数 ─────────────────────────────────────────── */
 
-  public constructor(options: AiAgentRegistrationOptions<TInput>) {
+    /** 创建 Ai Agent Registration 实例。 */
+public constructor(options: AiAgentRegistrationOptions<TInput>) {
     this.moduleId = options.moduleId
     this.name = options.name
     this.description = options.description

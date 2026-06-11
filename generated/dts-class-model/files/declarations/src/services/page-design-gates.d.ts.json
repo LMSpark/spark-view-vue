@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/page-design-gates.d.ts",
+  "module": {
+    "name": "app:services/page-design-gates",
+    "sourcePath": "declarations/src/services/page-design-gates.d.ts",
+    "sourceFile": "src/services/page-design-gates.ts",
+    "packageName": "app",
+    "modulePath": "services/page-design-gates",
+    "jsdoc": "pageDesign 人工闸门：从 readPlanningProjection 读取 planningStatus / implGate，fail-fast 拒绝未放行页面。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageDesignRunMode",
+      "PageDesignPlanningStatus",
+      "PageDesignImplGate",
+      "PageDesignGateState",
+      "ReadPageDesignGateStateOptions",
+      "PageDesignGateValidationResult",
+      "EvaluatePageDesignMutationToolGateOptions"
+    ]
+  },
+  "symbols": [
+    "PageDesignRunMode",
+    "PageDesignPlanningStatus",
+    "PageDesignImplGate",
+    "PageDesignGateState",
+    "ReadPageDesignGateStateOptions",
+    "PageDesignGateValidationResult",
+    "EvaluatePageDesignMutationToolGateOptions"
+  ],
+  "models": {
+    "PageDesignRunMode": {
+      "kind": "PageDesignRunMode",
+      "className": "PageDesignRunMode",
+      "jsdoc": "/** Page Design Run Mode 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'create' | 'update' | 'fix'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'create'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'update'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'fix'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/page-design-gates.d.ts",
+        "line": 6,
+        "className": "PageDesignRunMode",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "PageDesignPlanningStatus": {
+      "kind": "PageDesignPlanningStatus",
+      "className": "PageDesignPlanningStatus",
+      "jsdoc": "/** Page Design Planning Status 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'planning_draft' | 'planning_confirmed'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'planning_draft'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'planning_confirmed'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/page-design-gates.d.ts",
+        "line": 8,
+        "className": "PageDesignPlanningStatus",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "PageDesignImplGate": {
+      "kind": "PageDesignImplGate",
+      "className": "PageDesignImplGate",
+      "jsdoc": "/** Page Design Impl Gate 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'closed' | 'open'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'closed'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'open'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/page-design-gates.d.ts",
+        "line": 10,
+        "className": "PageDesignImplGate",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "PageDesignGateState": {
+      "kind": "PageDesignGateState",
+      "className": "PageDesignGateState",
+      "jsdoc": "/** Page Design Gate State 的运行状态。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    pageId: string;\n    planningStatus: PageDesignPlanningStatus;\n    implGate: PageDesignImplGate;\n    upstreamContractsSatisfied: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    pageId: string;\n    planningStatus: PageDesignPlanningStatus;\n    implGate: PageDesignImplGate;\n    upstreamContractsSatisfied: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/page-design-gates.d.ts",
+        "line": 12,
+        "className": "PageDesignGateState",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ReadPageDesignGateStateOptions": {
+      "kind": "ReadPageDesignGateStateOptions",
+      "className": "ReadPageDesignGateStateOptions",
+      "jsdoc": "/** Read Page Design Gate State Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    /** 未声明 implGate 时是否视为 closed；默认 false（过渡兼容）。 */\n    strictImplGate?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    /** 未声明 implGate 时是否视为 closed；默认 false（过渡兼容）。 */\n    strictImplGate?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/page-design-gates.d.ts",
+        "line": 19,
+        "className": "ReadPageDesignGateStateOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "PageDesignGateValidationResult": {
+      "kind": "PageDesignGateValidationResult",
+      "className": "PageDesignGateValidationResult",
+      "jsdoc": "/** Page Design Gate Validation Result 的返回结果。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ok: boolean;\n    code?: string;\n    reason?: string;\n    fix?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    ok: boolean;\n    code?: string;\n    reason?: string;\n    fix?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/page-design-gates.d.ts",
+        "line": 24,
+        "className": "PageDesignGateValidationResult",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "EvaluatePageDesignMutationToolGateOptions": {
+      "kind": "EvaluatePageDesignMutationToolGateOptions",
+      "className": "EvaluatePageDesignMutationToolGateOptions",
+      "jsdoc": "/** Evaluate Page Design Mutation Tool Gate Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    toolName: string;\n    summary: ProjectPageNodeSummary;\n    mode?: PageDesignRunMode;\n    gateOptions?: ReadPageDesignGateStateOptions;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    toolName: string;\n    summary: ProjectPageNodeSummary;\n    mode?: PageDesignRunMode;\n    gateOptions?: ReadPageDesignGateStateOptions;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/page-design-gates.d.ts",
+        "line": 34,
+        "className": "EvaluatePageDesignMutationToolGateOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.085Z"
+}

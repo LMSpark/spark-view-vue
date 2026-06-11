@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/dev-system/components/NodeAgentGateConfig
+app 的 views/app/dev-system/components/NodeAgentGateConfig 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div v-if="showGateFields">
     <el-divider content-position="left">AI 闸门</el-divider>

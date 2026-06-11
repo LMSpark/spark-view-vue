@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/tree/tree-mutation.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:tree/tree-mutation",
+    "sourcePath": "declarations/packages/spark-json-document/src/tree/tree-mutation.d.ts",
+    "sourceFile": "packages/spark-json-document/src/tree/tree-mutation.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "tree/tree-mutation",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\ntree/tree-mutation.ts — 树节点变更操作（纯函数，不可变）\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.855Z"
+}

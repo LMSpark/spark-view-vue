@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/core/json-path.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:core/json-path",
+    "sourcePath": "declarations/packages/spark-json-document/src/core/json-path.d.ts",
+    "sourceFile": "packages/spark-json-document/src/core/json-path.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "core/json-path",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\ncore/json-path.ts — JSONPath 类型与路径操作\n═══════════════════════════════════════════════════════════════\n【架构定位】路径基础设施，被 tree/ 和 schema/ 两层依赖。\n不依赖包内其他模块（除 json-types 的 isJsonObject）。\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "JsonPath"
+    ]
+  },
+  "symbols": [
+    "JsonPath"
+  ],
+  "models": {
+    "JsonPath": {
+      "kind": "JsonPath",
+      "className": "JsonPath",
+      "jsdoc": "/** JSONPath：路径段数组（string = 对象键，number = 数组索引） */",
+      "shapeKind": "type",
+      "declarationTypeText": "Array<string | number>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Array<string | number>",
+          "targetName": "Array"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-json-document/src/core/json-path.d.ts",
+        "line": 12,
+        "className": "JsonPath",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.828Z"
+}

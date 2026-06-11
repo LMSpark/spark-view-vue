@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/view-tree-state
+ * @spark-appworks/spark-component:components/containers/data-views/view-tree-state 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: RendererTreeViewState, TreeTableRowsInput, RendererTreeViewStateOptions（共 3 个 symbol）。
+ */
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import {
@@ -16,8 +22,10 @@ import {
 
 /** 树形视图态（RendererTree 专用扩展）。 */
 export type RendererTreeViewState = DataViewState & {
-  treeData: ComputedRef<TreeNode[]>
-    treeIdField: ComputedRef<string>}
+    /** tree Data 字段。 */
+treeData: ComputedRef<TreeNode[]>
+        /** tree Id Field 字段。 */
+treeIdField: ComputedRef<string>}
 
 /** SparkData.createTreeManager 消费的种子节点形状。 */
 type TreeManagerSeedNode = Record<string, unknown> & {
@@ -129,6 +137,7 @@ function buildNestedTreeRows(fields: TreeFieldNames, seedNodes: TreeManagerSeedN
   return toDataRows(nestedRows)
 }
 
+/** Tree Table Rows Input 的输入数据。 */
 export type TreeTableRowsInput = Readonly<{
   view: DataView | null | undefined,
   rows: readonly DataRow[],
@@ -155,8 +164,10 @@ export function buildTreeTableRows(input: TreeTableRowsInput): DataRow[] {
   return buildNestedTreeRows(fields, seedNodes)
 }
 
+/** Renderer Tree View State Options 的调用配置。 */
 type RendererTreeViewStateOptions = {
-  dataState: DataViewState}
+    /** data State 状态。 */
+dataState: DataViewState}
 
 export function useRendererTreeViewState(options: RendererTreeViewStateOptions): RendererTreeViewState {
   const { rows, treeConfig } = options.dataState

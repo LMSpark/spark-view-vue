@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/project-planning-host-run-provider.d.ts",
+  "module": {
+    "name": "app:services/project-planning-host-run-provider",
+    "sourcePath": "declarations/src/services/project-planning-host-run-provider.d.ts",
+    "sourceFile": "src/services/project-planning-host-run-provider.ts",
+    "packageName": "app",
+    "modulePath": "services/project-planning-host-run-provider",
+    "jsdoc": "APP 壳层 projectPlanning Host Run provider（隔离式门面实例）。\n无 UI：SSE / 后端下发 ai-host-run-request 时，按 projectId 准备 headless\nProjectWorkspace，运行结束可选保存 navigation 后丢弃，不污染 DevSystem session。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.101Z"
+}

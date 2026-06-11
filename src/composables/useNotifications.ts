@@ -1,18 +1,34 @@
+/**
+ * @module app:composables/useNotifications
+ * app 的 composables/useNotifications 模块。
+ * 导出 ClassModel symbol: NotificationItem（共 1 个 symbol）。
+ */
 import { computed, onBeforeUnmount, reactive } from 'vue'
 import { onNotificationEvent, onPageConfigChange } from '@/services/sse-events'
 import type { FileChangeEvent, ServerNotificationEvent } from '@/services/sse-events'
 
+/** Notification Item 的语义模型。 */
 export type NotificationItem = {
-  id: number
-  title: string
-  message: string
-  time: number
-  read: boolean
-  remoteId?: string
-  level?: string
-  category?: string
-  source?: string
-  actionUrl?: string
+    /** 唯一标识。 */
+id: number
+    /** 显示标题。 */
+title: string
+    /** 用户可读消息。 */
+message: string
+    /** time 字段。 */
+time: number
+    /** read 字段。 */
+read: boolean
+    /** remote Id 标识。 */
+remoteId?: string
+    /** level 字段。 */
+level?: string
+    /** category 字段。 */
+category?: string
+    /** 来源对象。 */
+source?: string
+    /** action Url 地址。 */
+actionUrl?: string
 }
 
 const MAX_NOTIFICATIONS = 50

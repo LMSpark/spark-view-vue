@@ -72,9 +72,11 @@ export type SaveChangesData = {
 // DirtyTrackingDelegate
 // ─────────────────────────────────────────────
 
+/** Dirty Tracking Delegate 的语义模型。 */
 export class DirtyTrackingDelegate {
 
-  constructor(
+    /** 创建 Dirty Tracking Delegate 实例。 */
+constructor(
     private readonly getColumns: () => readonly DataColumn[] | undefined,
     private readonly getComputedColumnNames: () => ReadonlySet<string>,
     private readonly getPrimaryKeyFields: () => string[],

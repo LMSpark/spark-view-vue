@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-api",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/knowledge/worker-knowledge-api",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-api\n@spark-appworks/spark-ai 的 class-model/knowledge/worker-knowledge-api 模块。\n导出 ClassModel symbol: ClassModelKnowledgeWorkerInitInput, ClassModelKnowledgeWorkerApi（共 2 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ClassModelKnowledgeWorkerInitInput",
+      "ClassModelKnowledgeWorkerApi"
+    ]
+  },
+  "symbols": [
+    "ClassModelKnowledgeWorkerInitInput",
+    "ClassModelKnowledgeWorkerApi"
+  ],
+  "models": {
+    "ClassModelKnowledgeWorkerInitInput": {
+      "kind": "ClassModelKnowledgeWorkerInitInput",
+      "className": "ClassModelKnowledgeWorkerInitInput",
+      "jsdoc": "/** Class Model Knowledge Worker Init Input 的输入数据。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    /** declarations 分片 class-model manifest.json。 */\n    dtsClassModelManifestUrl: string;\n    /** 业务根 className；DTS 模型里 kind 与 className 同值。 */\n    rootClassName: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    /** declarations 分片 class-model manifest.json。 */\n    dtsClassModelManifestUrl: string;\n    /** 业务根 className；DTS 模型里 kind 与 className 同值。 */\n    rootClassName: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
+        "line": 9,
+        "className": "ClassModelKnowledgeWorkerInitInput",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ClassModelKnowledgeWorkerApi": {
+      "kind": "ClassModelKnowledgeWorkerApi",
+      "className": "ClassModelKnowledgeWorkerApi",
+      "jsdoc": "/** Class Model Knowledge Worker Api 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    init(input: ClassModelKnowledgeWorkerInitInput): Promise<{\n        initialized: true;\n    }>;\n    query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>;\n    modelGuide(input: ClassModelModelGuideInput): Promise<string>;\n    attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>;\n    methodGuide(input: ClassModelMethodGuideInput): Promise<string>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    init(input: ClassModelKnowledgeWorkerInitInput): Promise<{\n        initialized: true;\n    }>;\n    query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>;\n    modelGuide(input: ClassModelModelGuideInput): Promise<string>;\n    attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>;\n    methodGuide(input: ClassModelMethodGuideInput): Promise<string>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
+        "line": 16,
+        "className": "ClassModelKnowledgeWorkerApi",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.835Z"
+}

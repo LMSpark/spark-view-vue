@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/dev-system/DevPreviewTab
+app 的 views/app/dev-system/DevPreviewTab 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="dev-preview-tab">
     <!-- 工具栏 -->

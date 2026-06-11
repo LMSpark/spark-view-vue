@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/http/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:http/index",
+    "sourcePath": "declarations/packages/spark-utils/src/http/index.d.ts",
+    "sourceFile": "packages/spark-utils/src/http/index.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "http/index",
+    "jsdoc": "HTTP 模块 — 请求 + 文件加载\n@example\n```ts\nimport { createRequest, createFileLoader } from '@spark-appworks/spark-utils'\nconst http = createRequest({ baseURL: '/api', timeout: 5000 })\nconst data = await http.get<User[]>('/users')\n```",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.014Z"
+}

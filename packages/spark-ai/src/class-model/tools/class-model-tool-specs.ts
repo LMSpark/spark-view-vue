@@ -1,6 +1,12 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/tools/class-model-tool-specs
+ * @spark-appworks/spark-ai 的 class-model/tools/class-model-tool-specs 模块。
+ * 导出 ClassModel symbol: ClassModelToolSpec（共 1 个 symbol）。
+ */
 import type { AiJsonSchemaObject } from '../../json'
 import { CLASS_MODEL_TOOL_NAMES, type ClassModelToolName } from './tool-names'
 
+/** Class Model Tool Spec 的语义模型。 */
 export type ClassModelToolSpec = Readonly<{
   type: 'function'
   function: {

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/page-ui/pageUiService.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:page-ui/pageUiService",
+    "sourcePath": "declarations/packages/spark-app/src/page-ui/pageUiService.d.ts",
+    "sourceFile": "packages/spark-app/src/page-ui/pageUiService.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "page-ui/pageUiService",
+    "jsdoc": "@module @spark-appworks/spark-app:page-ui/pageUiService\n@spark-appworks/spark-app 的 page-ui/pageUiService 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.948Z"
+}

@@ -1,4 +1,9 @@
 /**
+ * @module @spark-appworks/spark-project-model:navigation/project-node
+ * @spark-appworks/spark-project-model 的 navigation/project-node 模块。
+ * 导出 ClassModel symbol: ChildPlacement, NavNodeKind, NavPermissionMode, ProjectNodeFamily, ProjectDescriptionContext, NavContextItem, NavContextConfig, ProjectNodeData 等（共 18 个 symbol）。
+ */
+/**
  * 项目导航节点基 class。
  *
  * 按 nodeKind 选择 ConfigPageNode 等子类；ProjectNodeData 仅为序列化形状。
@@ -32,8 +37,10 @@ export type NavNodeKind =
 /** 权限未匹配时的展示模式。 */
 export type NavPermissionMode = 'none' | 'masked' | 'invisible'
 
+/** Project Node Family 的语义模型。 */
 export type ProjectNodeFamily = 'module' | 'config-page' | 'system-page' | 'system-action' | 'link' | 'ref'
 
+/** Project Description Context 的运行上下文。 */
 export type ProjectDescriptionContext = {
   /** 上下文来源节点 ID。 */
   nodeId: string
@@ -119,6 +126,7 @@ export type ProjectNodeData = {
   upstreamContractsSatisfied?: boolean | undefined
 }
 
+/** Project Node Navigation Patch 的语义模型。 */
 export type ProjectNodeNavigationPatch = {
   /** 新标题。 */
   title: string
@@ -158,6 +166,7 @@ export type ProjectNodeNavigationPatch = {
   upstreamContractsSatisfied?: boolean | undefined
 }
 
+/** Project Node Location 的语义模型。 */
 export type ProjectNodeLocation = {
   /** 命中的节点数据。 */
   node: ProjectNodeData
@@ -241,6 +250,7 @@ export type ProjectPageSurface =
   | 'ref'
   | 'none'
 
+/** Project Page Node Summary 的语义模型。 */
 export type ProjectPageNodeSummary = Record<string, unknown> & {
   /** 配置页 pageId。 */
   pageId: string
@@ -272,6 +282,7 @@ export type ProjectPageNodeSummary = Record<string, unknown> & {
   icon?: string
 }
 
+/** Project Node Model Options 的调用配置。 */
 export type ProjectNodeModelOptions = {
   /** 当前导航节点数据快照。 */
   node: ProjectNodeData
@@ -295,7 +306,8 @@ export class ProjectNode {
   #pid: string
   #descriptionContext: ProjectDescriptionContext[]
 
-  constructor(options: ProjectNodeModelOptions) {
+    /** 创建 Project Node 实例。 */
+constructor(options: ProjectNodeModelOptions) {
     this.#node = cloneProjectNodeData(options.node)
     this.#pid = normalizePid(options.pid)
     this.#descriptionContext = [...(options.descriptionContext ?? [])]
@@ -309,7 +321,8 @@ export class ProjectNode {
     if (this.nodeKind === 'ref') return 'ref'
     return 'module'
   }
-  toNodeData(): ProjectNodeData { return cloneProjectNodeData(this.#node) }
+    /** 执行 to Node Data 操作。 */
+toNodeData(): ProjectNodeData { return cloneProjectNodeData(this.#node) }
 
   /** 导航编辑只能通过 class API 提交；DTO 快照不可作为包内可变真源。 */
   applyNavigationPatch(patch: ProjectNodeNavigationPatch): void {
@@ -415,7 +428,8 @@ export class ProjectNode {
 
   protected get effectiveDescription(): string { return formatProjectDescriptionContext(this.#descriptionContext) }
   protected get descriptionContext(): ProjectDescriptionContext[] { return [...this.#descriptionContext] }
-  rebindNavigationNode(node: ProjectNodeData, pid: string, descriptionContext: readonly ProjectDescriptionContext[]): void {
+    /** 执行 rebind Navigation Node 操作。 */
+rebindNavigationNode(node: ProjectNodeData, pid: string, descriptionContext: readonly ProjectDescriptionContext[]): void {
     this.#node = cloneProjectNodeData(node)
     this.#pid = normalizePid(pid)
     this.#descriptionContext = [...descriptionContext]

@@ -1,4 +1,9 @@
 /**
+ * @module @spark-appworks/spark-utils:clone
+ * @spark-appworks/spark-utils 的 clone 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
+/**
  * 深克隆工具
  *
  * 基于原生 `structuredClone`，保留 `undefined`、`Date`、`Map`、`Set`、`ArrayBuffer` 等

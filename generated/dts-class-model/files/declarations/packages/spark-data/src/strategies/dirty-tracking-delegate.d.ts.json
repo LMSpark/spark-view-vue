@@ -1,0 +1,704 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:strategies/dirty-tracking-delegate",
+    "sourcePath": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+    "sourceFile": "packages/spark-data/src/strategies/dirty-tracking-delegate.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "strategies/dirty-tracking-delegate",
+    "jsdoc": "DirtyTrackingDelegate — 本地变更追踪委托（三态：新增 / 编辑 / 待删除）\n## 背景\nDataView.rows 与 UI 双向绑定，增删改立即反映到界面，但不自动提交服务端。\n本 delegate 追踪三种\"本地-only\"操作，由 saveChanges() 统一提交。\n| DataView 方法      | 本地 rows | 服务端 | 追踪类型        |\n|--------------------|-----------|--------|-----------------|\n| addRow(data)       | 立即追加  | ❌     | pending create  |\n| editRowById(id, d) | 立即更新  | ❌     | dirty update    |\n| removeRow(id)      | 立即删除  | ❌     | pending delete  |\n## 行级状态机\n```\n[server-clean]\n├─ editRowById  → [dirty update]\n│     └─ removeRow → [pending delete]（清除 dirty）\n└─ removeRow    → [pending delete]\n[pending create]（本地新行，服务端不存在）\n├─ editRowById  → 无需额外标记（行本身就是最新状态）\n└─ removeRow    → 取消创建（不产生 server delete）\n```\n## 快照弱引用策略\n- **dirty update 快照** (`_dirtySnapshots`)：`WeakRef`——仅用于 diff/撤销，\n内存紧张时允许 GC 回收，saveChanges 降级为\"提交当前行数据\"。\n- **pending delete 快照** (`_deleteSnapshots`)：强引用——提交失败可将行还原回 UI。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "FieldChange",
+      "RowDiff",
+      "SaveChangesData",
+      "DirtyTrackingDelegate"
+    ]
+  },
+  "symbols": [
+    "FieldChange",
+    "RowDiff",
+    "SaveChangesData",
+    "DirtyTrackingDelegate"
+  ],
+  "models": {
+    "FieldChange": {
+      "kind": "FieldChange",
+      "className": "FieldChange",
+      "jsdoc": "/** 单字段变更记录（from → to） */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 修改前的原始值 */\n    from: unknown;\n    /** 修改后的当前值 */\n    to: unknown;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+        "line": 38,
+        "className": "FieldChange",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "from",
+          "schema": {
+            "title": "unknown"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 修改前的原始值 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 40,
+            "className": "FieldChange",
+            "memberName": "from",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "to",
+          "schema": {
+            "title": "unknown"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 修改后的当前值 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 42,
+            "className": "FieldChange",
+            "memberName": "to",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "RowDiff": {
+      "kind": "RowDiff",
+      "className": "RowDiff",
+      "jsdoc": "/** 行级字段变更映射（字段名 → 变更） */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    [field: string]: FieldChange;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+        "line": 45,
+        "className": "RowDiff",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SaveChangesData": {
+      "kind": "SaveChangesData",
+      "className": "SaveChangesData",
+      "jsdoc": "/**\n * saveChanges() 执行结果（三态统计）\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 新增行成功提交数 */\n    createdCount: number;\n    /** 编辑行成功保存数 */\n    savedCount: number;\n    /** 删除行成功提交数 */\n    deletedCount: number;\n    /** 总失败数（三态合计） */\n    failedCount: number;\n    /** 失败的行主键列表（可用于精准重试或 UI 高亮） */\n    failedIds: Array<string | number>;\n    /** 失败行的错误详情映射（主键 → 错误消息，用于诊断和 UI 提示） */\n    failedErrors: Record<string | number, string>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+        "line": 51,
+        "className": "SaveChangesData",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "createdCount",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 新增行成功提交数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 53,
+            "className": "SaveChangesData",
+            "memberName": "createdCount",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "savedCount",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 编辑行成功保存数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 55,
+            "className": "SaveChangesData",
+            "memberName": "savedCount",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "deletedCount",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 删除行成功提交数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 57,
+            "className": "SaveChangesData",
+            "memberName": "deletedCount",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "failedCount",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 总失败数（三态合计） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 59,
+            "className": "SaveChangesData",
+            "memberName": "failedCount",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "failedIds",
+          "schema": {
+            "title": "Array<string | number>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 失败的行主键列表（可用于精准重试或 UI 高亮） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 61,
+            "className": "SaveChangesData",
+            "memberName": "failedIds",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "failedErrors",
+          "schema": {
+            "title": "Record<string | number, string>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 失败行的错误详情映射（主键 → 错误消息，用于诊断和 UI 提示） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 63,
+            "className": "SaveChangesData",
+            "memberName": "failedErrors",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DirtyTrackingDelegate": {
+      "kind": "DirtyTrackingDelegate",
+      "className": "DirtyTrackingDelegate",
+      "jsdoc": "/** Dirty Tracking Delegate 的语义模型。 */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+        "line": 66,
+        "className": "DirtyTrackingDelegate",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "getColumns": {
+              "title": "() => readonly DataColumn[] | undefined"
+            },
+            "getComputedColumnNames": {
+              "title": "() => ReadonlySet<string>"
+            },
+            "getPrimaryKeyFields": {
+              "type": "array",
+              "title": "() => string[]",
+              "items": true
+            }
+          },
+          "required": [
+            "getColumns",
+            "getComputedColumnNames",
+            "getPrimaryKeyFields"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Dirty Tracking Delegate 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+          "line": 71,
+          "className": "DirtyTrackingDelegate",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "trackCreate",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              },
+              "row": {
+                "title": "DataRow"
+              }
+            },
+            "required": [
+              "id",
+              "row"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 将行登记为\"待新增\"。\n     *\n     * 特殊情况：若该 id 曾被登记为待删除（先删后撤销），则改为撤销删除，\n     * 新行直接进入 clean 状态（仅还原，不重复追踪新增）。\n     */",
+          "paramsTypeText": "id: string | number, row: DataRow",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 103,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "trackCreate",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "cancelCreate",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/**\n     * 取消指定行的\"待新增\"登记。\n     *\n     * 场景：pending create 行在未保存前被用户删除——无需 server delete，直接遗忘。\n     * @returns 该行是否确实是 pending create（false = 不是，无操作）\n     */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 110,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "cancelCreate",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "markDirty",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              },
+              "original": {
+                "title": "DataRow"
+              }
+            },
+            "required": [
+              "id",
+              "original"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 标注指定行为手工编辑（dirty update）。\n     *\n     * - pending create 行：**忽略**（新行本身就是最终数据，无需记录\"编辑前\"快照）\n     * - 连续编辑同一行：**不覆盖快照**（diff 始终相对于服务端原始值）\n     *\n     * @param id       行主键\n     * @param original 编辑**前**的行对象（浅拷贝后以 WeakRef 包装）\n     */",
+          "paramsTypeText": "id: string | number, original: DataRow",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 120,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "markDirty",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "clearDirty",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 清除指定行（或全部）的 dirty-update 状态。\n     * @param id 不传则清除全部\n     */",
+          "paramsTypeText": "id?: string | number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 125,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "clearDirty",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "trackDelete",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              },
+              "snapshot": {
+                "title": "DataRow"
+              }
+            },
+            "required": [
+              "id",
+              "snapshot"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 将行登记为\"待删除\"。\n     *\n     * 特殊情况：若该行是 pending create（从未在服务端存在），\n     * 直接取消新增，**不产生** server delete。\n     *\n     * @param id       行主键\n     * @param snapshot 被删除行的完整快照（强引用，提交失败时用于还原 UI）\n     */",
+          "paramsTypeText": "id: string | number, snapshot: DataRow",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 135,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "trackDelete",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "cancelDelete",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 撤销指定行（或全部）的 pending-delete 状态。\n     *\n     * 注意：撤销仅清除追踪记录，**不**自动将行还原回 rows——\n     * 由调用方（DataView）负责将快照 appendRow 回去。\n     */",
+          "paramsTypeText": "id?: string | number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 142,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "cancelDelete",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "clearAll",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 清除全部三态追踪状态（视图全量刷新 / 销毁时调用）。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 146,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "clearAll",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "hasPendingChanges",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/**\n     * 是否存在任意未提交的本地变更（新增 / 编辑 / 待删除）。\n     *\n     * @param id 不传 → 整个视图；传入 id → 指定行（任意态）\n     */",
+          "paramsTypeText": "id?: string | number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 152,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "hasPendingChanges",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "isDirty",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/**\n     * 是否有 dirty-update 未提交。\n     * @param id 不传 → 整体；传入 id → 指定行\n     */",
+          "paramsTypeText": "id?: string | number | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 157,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "isDirty",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "isPendingCreate",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/** 指定行是否是待新增状态 */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 159,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "isPendingCreate",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "isPendingDelete",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "returnTypeText": "boolean",
+          "jsdoc": "/** 指定行是否是待删除状态 */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 161,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "isPendingDelete",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getPendingDeleteSnapshot",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataRow | undefined"
+          },
+          "returnTypeText": "DataRow | undefined",
+          "jsdoc": "/**\n     * 获取 pending-delete 行的快照（提交失败时用于还原 UI）。\n     */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 173,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "getPendingDeleteSnapshot",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getOriginal",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataRow | undefined"
+          },
+          "returnTypeText": "DataRow | undefined",
+          "jsdoc": "/**\n     * 获取指定行在首次手工编辑**前**的快照（dirty update 专用）。\n     *\n     * @returns 快照；行不脏或弱引用已被 GC 回收时返回 undefined\n     */",
+          "paramsTypeText": "id: string | number",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 179,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "getOriginal",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getDiff",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "title": "string | number"
+              },
+              "current": {
+                "title": "DataRow"
+              }
+            },
+            "required": [
+              "id",
+              "current"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "RowDiff"
+          },
+          "returnTypeText": "RowDiff",
+          "jsdoc": "/**\n     * 计算指定行的字段级变更明细（dirty update 专用）。\n     *\n     * @param id      行主键\n     * @param current 当前行对象\n     * @returns 字段名 → `{ from, to }`；行不脏或快照已被 GC 回收时返回 `{}`\n     */",
+          "paramsTypeText": "id: string | number, current: DataRow",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 187,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "getDiff",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "executeChanges",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "host": {
+                "title": "DataView"
+              },
+              "crud": {
+                "title": "CrudDelegate"
+              },
+              "ids": {
+                "title": "Array<string | number>"
+              }
+            },
+            "required": [
+              "host",
+              "crud"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<SaveChangesData>>"
+          },
+          "returnTypeText": "Promise<CrudResult<SaveChangesData>>",
+          "jsdoc": "/**\n     * 将所有待提交变更（新增 / 手工编辑 / 删除）逐条保存到服务端。\n     *\n     * 提交顺序：**新增 → 更新 → 删除**（依赖关系最少）。\n     * 任意单行失败**不中断**后续行；失败行保留对应追踪状态。\n     *\n     * @param host 提供行数据读写的宿主（DataView 实现此接口）\n     * @param crud CRUD 网络操作接口（通常为 CrudDelegate）\n     * @param ids  指定要保存的行主键列表；不传则保存全部待提交变更\n     */",
+          "paramsTypeText": "host: DataView, crud: CrudDelegate, ids?: (string | number)[] | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 198,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "executeChanges",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "destroy",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 销毁——清理所有内存状态 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts",
+            "line": 200,
+            "className": "DirtyTrackingDelegate",
+            "memberName": "destroy",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.790Z"
+}

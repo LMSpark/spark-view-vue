@@ -1,10 +1,17 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/support/interactionControl
+ * @spark-appworks/spark-component 的 components/containers/support/interactionControl 模块。
+ * 导出 ClassModel symbol: CancellableControl, InteractionControl, CancelableHandler, RowClickHandler, RowSelectionHandler, CurrentRowChangeHandler, AddRowHandler, EditRowHandler 等（共 9 个 symbol）。
+ */
 import type { CrudResult, DataRow } from '@spark-appworks/spark-data'
 import { isRecord } from '@spark-appworks/spark-utils'
 
 // ── 可取消控制器（从 core/cancellable-control 内聚至此） ──────────────────
 
+/** Cancellable Control 的语义模型。 */
 export type CancellableControl = {
-  cancel: boolean}
+    /** cancel 字段。 */
+cancel: boolean}
 
 export function createCancellableControl(): CancellableControl {
   return { cancel: false }
@@ -16,10 +23,13 @@ export function isCancellableControl(value: unknown): value is CancellableContro
     && typeof value['cancel'] === 'boolean'
 }
 
+/** Interaction Control 的语义模型。 */
 export type InteractionControl = {
-  cancel: boolean
+    /** cancel 字段。 */
+cancel: boolean
 }
 
+/** Cancelable Handler 的回调函数契约。 */
 export type CancelableHandler<TArgs extends unknown[]> = {
   (...args: [...TArgs, InteractionControl]): void | Promise<void>}
 
@@ -45,9 +55,15 @@ export function createCancelledCrudResult<T>(message: string): CrudResult<T> {
   }
 }
 
+/** Row Click Handler 的回调函数契约。 */
 export type RowClickHandler = CancelableHandler<[DataRow, unknown, Event | undefined]>
+/** Row Selection Handler 的回调函数契约。 */
 export type RowSelectionHandler = CancelableHandler<[DataRow[]]>
+/** Current Row Change Handler 的回调函数契约。 */
 export type CurrentRowChangeHandler = CancelableHandler<[DataRow | null, DataRow | null | undefined]>
+/** Add Row Handler 的回调函数契约。 */
 export type AddRowHandler = CancelableHandler<[Partial<DataRow>]>
+/** Edit Row Handler 的回调函数契约。 */
 export type EditRowHandler = CancelableHandler<[string | number, Partial<DataRow>]>
+/** Remove Row Handler 的回调函数契约。 */
 export type RemoveRowHandler = CancelableHandler<[string | number]>

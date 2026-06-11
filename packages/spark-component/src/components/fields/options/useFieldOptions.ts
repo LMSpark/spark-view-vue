@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/options/useFieldOptions
+ * @spark-appworks/spark-component 的 components/fields/options/useFieldOptions 模块。
+ * 导出 ClassModel symbol: FieldTransferOption, OptionalWithUndefined, FieldOptionProps, UseFieldOptionsReturn, UseOptionFieldOptions（共 5 个 symbol）。
+ */
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import type { SparkOptionFieldProps } from '../../shared-types.js'
@@ -15,15 +20,21 @@ import {
 
 export type { FieldOption } from './option-normalization.js'
 
+/** Field Transfer Option 的语义模型。 */
 export type FieldTransferOption = {
-  key: string | number
-  label: string
-  disabled?: boolean}
+    /** 定位键。 */
+key: string | number
+    /** 展示标签。 */
+label: string
+    /** 是否禁用。 */
+disabled?: boolean}
 
+/** Optional With Undefined 的语义模型。 */
 type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
+/** Field Option Props 的属性契约。 */
 type FieldOptionProps = OptionalWithUndefined<Pick<
   SparkOptionFieldProps,
   'options'
@@ -37,22 +48,37 @@ type FieldOptionProps = OptionalWithUndefined<Pick<
   | 'valueSeparator'
 >>
 
+/** Use Field Options Return 的语义模型。 */
 type UseFieldOptionsReturn = {
-  options: ComputedRef<FieldOption[]>
-  flatOptions: ComputedRef<FieldOption[]>
-  normalizeOptionValues: (value: unknown) => Array<string | number | boolean>
-  findOptionLabel: (value: unknown) => string
-  findOptionLabels: (value: unknown) => string[]
-  formatOptionValue: (value: unknown) => string
-  formatCascaderValue: (value: unknown) => string
-  transferData: ComputedRef<FieldTransferOption[]>}
+    /** 调用配置项。 */
+options: ComputedRef<FieldOption[]>
+    /** flat Options 配置项。 */
+flatOptions: ComputedRef<FieldOption[]>
+    /** normalize Option Values 回调。 */
+normalizeOptionValues: (value: unknown) => Array<string | number | boolean>
+    /** find Option Label 回调。 */
+findOptionLabel: (value: unknown) => string
+    /** find Option Labels 回调。 */
+findOptionLabels: (value: unknown) => string[]
+    /** format Option Value 回调。 */
+formatOptionValue: (value: unknown) => string
+    /** format Cascader Value 回调。 */
+formatCascaderValue: (value: unknown) => string
+    /** transfer Data 字段。 */
+transferData: ComputedRef<FieldTransferOption[]>}
 
+/** Use Option Field Options 的调用配置。 */
 type UseOptionFieldOptions<TValue> = {
-  props: FieldOptionProps & FieldPermissionProps<TValue>
-  type: string
-  fallbackValue: TValue
-  coerce: (rawValue: unknown) => TValue
-  formatDisplay?: (value: unknown, helpers: UseFieldOptionsReturn) => string}
+    /** 组件属性集合。 */
+props: FieldOptionProps & FieldPermissionProps<TValue>
+    /** 类型标识。 */
+type: string
+    /** fallback Value 字段。 */
+fallbackValue: TValue
+    /** coerce 回调。 */
+coerce: (rawValue: unknown) => TValue
+    /** format Display 回调。 */
+formatDisplay?: (value: unknown, helpers: UseFieldOptionsReturn) => string}
 
 export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn {
   const resolvedOptionDataViewKey = computed(() => props.optionDataViewKey)

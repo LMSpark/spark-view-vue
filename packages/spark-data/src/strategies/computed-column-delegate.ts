@@ -223,7 +223,8 @@ export class ComputedColumnDelegate {
   private _compiledCtxRef: ComputedColumnContext | undefined
   private _ctx: ComputedColumnContext = {}
 
-  constructor(private readonly host: DataView) {}
+    /** 创建 Computed Column Delegate 实例。 */
+constructor(private readonly host: DataView) {}
 
   // ── 公共 API ─────────────────────────────────
 

@@ -35,6 +35,7 @@ import { createPageComponentRegistry } from '../context/page-component-registry'
 
 // ─── 公共接口 ────────────────────────────────────────────────────────────────
 
+/** Renderer Setup Return 的语义模型。 */
 type RendererSetupReturn = {
   /** 路由能力实例（消费方如 buildPageService / 页面动作可能需要） */
   router: Router

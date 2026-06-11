@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/core/utils.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:core/utils",
+    "sourcePath": "declarations/packages/spark-data/src/core/utils.d.ts",
+    "sourceFile": "packages/spark-data/src/core/utils.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "core/utils",
+    "jsdoc": "spark-data 内部工具函数",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.704Z"
+}

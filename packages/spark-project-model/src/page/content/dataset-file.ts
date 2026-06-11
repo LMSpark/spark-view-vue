@@ -4,15 +4,21 @@
 import { DataSet, DataSetCrudTool } from '@spark-appworks/spark-data'
 import { parsePageDataText, serializeDataSet } from '../page-file'
 
+/** Page Data Set File 的语义模型。 */
 export class PageDataSetFile {
-  value: DataSet
+    /** 当前值。 */
+value: DataSet
 
   private readonly undoStack: string[] = []
   private readonly redoStack: string[] = []
   private dirty = false
   private toolCache: DataSetCrudTool | null = null
 
-  constructor(readonly pageId: string) {
+    /** 创建 Page Data Set File 实例。 */
+constructor(
+    /** 页面 ID，用作 DataSet 名称和 pagedata.json 解析上下文。 */
+    readonly pageId: string,
+  ) {
     this.value = DataSet.fromJson({ dataSetName: pageId, tables: {} })
   }
 
@@ -20,9 +26,11 @@ export class PageDataSetFile {
   get canUndo(): boolean { return this.undoStack.length > 0 }
   get canRedo(): boolean { return this.redoStack.length > 0 }
 
-  getText(): string { return serializeDataSet(this.value) }
+    /** get Text 文本。 */
+getText(): string { return serializeDataSet(this.value) }
 
-  setText(text: string): void {
+    /** set Text 文本。 */
+setText(text: string): void {
     if (text === this.getText()) return
     this.pushUndo()
     this.value = parsePageDataText(text, this.pageId)
@@ -30,30 +38,35 @@ export class PageDataSetFile {
     this.dirty = true
   }
 
-  loadText(text: string): void {
+    /** load Text 文本。 */
+loadText(text: string): void {
     this.value = parsePageDataText(text, this.pageId)
     this.invalidateToolCache()
     this.clearHistory()
     this.dirty = false
   }
 
-  markSaved(): void {
+    /** 执行 mark Saved 操作。 */
+markSaved(): void {
     this.dirty = false
   }
 
-  getTool(): DataSetCrudTool {
+    /** 读取 Tool。 */
+getTool(): DataSetCrudTool {
     this.toolCache ??= DataSetCrudTool.fromJson(this.value.toJson())
     return this.toolCache
   }
 
-  replaceTool(tool: DataSetCrudTool): void {
+    /** 执行 replace Tool 操作。 */
+replaceTool(tool: DataSetCrudTool): void {
     this.pushUndo()
     this.value = DataSet.fromJson(tool.toJson())
     this.invalidateToolCache()
     this.dirty = true
   }
 
-  async editTool(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
+    /** 执行 edit Tool 操作。 */
+async editTool(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
     const beforeText = this.getText()
     const tool = this.getTool()
     await run(tool)
@@ -66,7 +79,8 @@ export class PageDataSetFile {
     this.dirty = true
   }
 
-  undo(): boolean {
+    /** 执行 undo 操作。 */
+undo(): boolean {
     const text = this.undoStack.pop()
     if (text === undefined) return false
     this.redoStack.push(this.getText())
@@ -76,7 +90,8 @@ export class PageDataSetFile {
     return true
   }
 
-  redo(): boolean {
+    /** 执行 redo 操作。 */
+redo(): boolean {
     const text = this.redoStack.pop()
     if (text === undefined) return false
     this.undoStack.push(this.getText())
@@ -100,4 +115,3 @@ export class PageDataSetFile {
     this.redoStack.length = 0
   }
 }
-

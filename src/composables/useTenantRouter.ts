@@ -1,3 +1,8 @@
+/**
+ * @module app:composables/useTenantRouter
+ * app 的 composables/useTenantRouter 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import { useRoute, useRouter } from 'vue-router'
 import { buildTenantPath, parseTenantScope } from '@/services/tenant-scope'
 

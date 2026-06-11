@@ -25,6 +25,7 @@ const AI_SESSION_API_BASE = '/api/ai/sessions'
 const AI_TURN_API = '/api/ai/turns'
 const MAX_AI_TURN_DIAGNOSTICS = 300
 
+/** Ai Turn Bridge Diagnostic 的诊断信息。 */
 type AiTurnBridgeDiagnostic = Readonly<{
   at: number
   type: string
@@ -36,6 +37,7 @@ type AiTurnBridgeDiagnostic = Readonly<{
 
 const aiTurnDiagnostics: AiTurnBridgeDiagnostic[] = []
 
+/** Ai Agent Turn Bridge Options 的调用配置。 */
 export type AiAgentTurnBridgeOptions = Readonly<{
   transport?: 'app-sse' | 'session-turn'
   timeoutMs?: number

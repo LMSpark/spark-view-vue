@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:node-tree/spark-node",
+    "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node.d.ts",
+    "sourceFile": "packages/spark-data/src/node-tree/spark-node.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "node-tree/spark-node",
+    "jsdoc": "SparkNode - 页面配置层的组件节点模型。\n这是 rule.json 的唯一结构契约，也对应运行时渲染树的最小输入结构。\n┌──────────────────────────────────────────────────────┐\n│  类型分组（按节点结构定义与操作）                      │\n│                                                      │\n│  1. 节点类型：  SparkNode / SparkNodeChildren         │\n│  2. 结构常量：  SPARK_NODE_STRUCT_KEYS                │\n│  3. 归一化：    normalizeSparkNode()                  │\n│                normalizeSparkNodeChildren()           │\n│                assertSparkNodeRootKeys()              │\n│  4. 类型守卫：  isSparkNode()                         │\n│  5. 节点访问：  nodeId() / nodeInputProp()            │\n│                nodeInputProps() / getSparkNodeChildren()│\n└──────────────────────────────────────────────────────┘",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SparkNodeChildren",
+      "SparkNode"
+    ]
+  },
+  "symbols": [
+    "SparkNodeChildren",
+    "SparkNode"
+  ],
+  "models": {
+    "SparkNodeChildren": {
+      "kind": "SparkNodeChildren",
+      "className": "SparkNodeChildren",
+      "jsdoc": "/**\n * SparkNode 子节点数组。\n *\n * 允许混合结构节点与纯文本子节点（string / number）；消费侧可用\n * `getSparkNodeChildren()` 过滤出结构节点。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "Array<SparkNode | string | number>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Array<SparkNode | string | number>",
+          "targetName": "Array"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node.d.ts",
+        "line": 25,
+        "className": "SparkNodeChildren",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkNode": {
+      "kind": "SparkNode",
+      "className": "SparkNode",
+      "jsdoc": "/**\n * 页面配置组件节点。\n *\n * rule.json 中每个条目的基本结构，渲染器根据 type 查找对应组件，\n * 将 props 注入为组件属性，递归渲染 children。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 组件类型（对应 ComponentDefinition.type） */\n    type: string;\n    /** 节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准） */\n    id?: string;\n    /** 组件属性（业务输入通过 props 传递，如 dataViewKey / class / 组件自有配置项） */\n    props?: Record<string, unknown>;\n    /** 子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点 */\n    children?: SparkNodeChildren;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/node-tree/spark-node.d.ts",
+        "line": 32,
+        "className": "SparkNode",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "type",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 组件类型（对应 ComponentDefinition.type） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node.d.ts",
+            "line": 34,
+            "className": "SparkNode",
+            "memberName": "type",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "id",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node.d.ts",
+            "line": 36,
+            "className": "SparkNode",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "props",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 组件属性（业务输入通过 props 传递，如 dataViewKey / class / 组件自有配置项） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node.d.ts",
+            "line": 38,
+            "className": "SparkNode",
+            "memberName": "props",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "children",
+          "schema": {
+            "title": "SparkNodeChildren"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/node-tree/spark-node.d.ts",
+            "line": 40,
+            "className": "SparkNode",
+            "memberName": "children",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.767Z"
+}

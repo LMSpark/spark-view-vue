@@ -57,8 +57,10 @@ export type {
  *
  */
 export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
-  readonly design: ProjectDesign<TNode>
-  readonly session: ProjectSession
+    /** design 字段。 */
+readonly design: ProjectDesign<TNode>
+    /** session 字段。 */
+readonly session: ProjectSession
 
   private revisionCounter = 0
   private readonly listeners = new Set<ProjectModelEventListener>()
@@ -103,14 +105,16 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   get isNavigationEditing(): boolean { return this.session.isNavigationEditing }
   get navigationDirty(): boolean { return this.session.navigationDirty }
 
-  subscribe(listener: ProjectModelEventListener): () => void {
+    /** 执行 subscribe 操作。 */
+subscribe(listener: ProjectModelEventListener): () => void {
     this.listeners.add(listener)
     return () => {
       this.listeners.delete(listener)
     }
   }
 
-  getChildNodes(nodeId?: string): TNode[] { return this.design.getChildNodes(nodeId) }
+    /** 读取 Child Nodes。 */
+getChildNodes(nodeId?: string): TNode[] { return this.design.getChildNodes(nodeId) }
   /** 导航树扁平节点列表，按遍历顺序排列。 */
   get flatRows(): TNode[] { return this.design.flatRows }
 
@@ -121,9 +125,11 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   get activePage(): ConfigPageNode | null {
     return this.getActivePage()
   }
-  forEachNode(callback: (node: TNode) => void): void { this.design.forEachNode(callback) }
+    /** 执行 for Each Node 操作。 */
+forEachNode(callback: (node: TNode) => void): void { this.design.forEachNode(callback) }
 
-  replaceProjectInfo(project: ProjectInfoInput): ProjectInfo { return this.design.replaceProjectInfo(project) }
+    /** 执行 replace Project Info 操作。 */
+replaceProjectInfo(project: ProjectInfoInput): ProjectInfo { return this.design.replaceProjectInfo(project) }
 
   /**
    * 替换导航根节点的 children，返回更新后的导航根数据。
@@ -137,9 +143,12 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     return root
   }
 
-  findNodeById(nodeId: string): TNode | null { return this.design.findNodeById(nodeId) }
-  findNodeLocation(nodeId: string): ProjectNodeLocation | null { return this.design.findNodeLocation(nodeId) }
-  findConfigPageByPageId(pageId: string): ConfigPageNode | null {
+    /** find Node By Id 标识。 */
+findNodeById(nodeId: string): TNode | null { return this.design.findNodeById(nodeId) }
+    /** 执行 find Node Location 操作。 */
+findNodeLocation(nodeId: string): ProjectNodeLocation | null { return this.design.findNodeLocation(nodeId) }
+    /** find Config Page By Page Id 标识。 */
+findConfigPageByPageId(pageId: string): ConfigPageNode | null {
     return this.design.findConfigPageByPageId(pageId)
   }
 
@@ -149,7 +158,8 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
    * @param pageId 目标配置页 pageId，必须来自输入。
    */
   openPageDesign(pageId: string): ConfigPageNode { return this.design.openPageDesign(pageId) }
-  closePageDesign(pageId: string): void { this.design.closePageDesign(pageId) }
+    /** 执行 close Page Design 操作。 */
+closePageDesign(pageId: string): void { this.design.closePageDesign(pageId) }
 
   /**
    * 读取策划轴投影：各 page/sub-page 的 description 与 descriptionContext。
@@ -218,29 +228,35 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     return result
   }
 
-  addRootModule(createId: () => string): ProjectNodeData {
+    /** 执行 add Root Module 操作。 */
+addRootModule(createId: () => string): ProjectNodeData {
     const node = this.design.addRootModule(createId)
     this.session.markNavigationDirty('root')
     this.emitNavigationChanged({ scope: 'root', nodeId: node.id })
     return node
   }
-  addChildPage(createId: () => string, parent?: ProjectNodeData | null): ProjectNodeData {
+    /** 执行 add Child Page 操作。 */
+addChildPage(createId: () => string, parent?: ProjectNodeData | null): ProjectNodeData {
     const node = this.design.addChildPage(createId, parent ?? null)
     this.session.markNavigationDirty('root')
     this.emitNavigationChanged({ scope: 'root', nodeId: node.id })
     return node
   }
-  removeNode(nodeId: string): ProjectNodeData | null {
+    /** 删除 Node。 */
+removeNode(nodeId: string): ProjectNodeData | null {
     const removed = this.design.removeNode(nodeId)
     this.session.syncWithModel()
     this.session.markNavigationDirty('root')
     this.emitNavigationChanged({ scope: 'root', nodeId })
     return removed
   }
-  refreshNavRefs(): void { this.design.refreshNavRefs() }
-  toTree(): ProjectNodeData[] { return this.design.toTree() }
+    /** 执行 refresh Nav Refs 操作。 */
+refreshNavRefs(): void { this.design.refreshNavRefs() }
+    /** 执行 to Tree 操作。 */
+toTree(): ProjectNodeData[] { return this.design.toTree() }
 
-  replaceNavigationRoot(
+    /** 执行 replace Navigation Root 操作。 */
+replaceNavigationRoot(
     root: ProjectModelData,
     options: { selectedNodeId?: string | null; dirty?: boolean } = {},
   ): ProjectModelData {
@@ -260,13 +276,15 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     return result
   }
 
-  selectNode(nodeId: string | null): void {
+    /** 执行 select Node 操作。 */
+selectNode(nodeId: string | null): void {
     this.session.setSelectedNodeId(nodeId)
     this.session.setNavigationDraft(null)
     this.emitSelectionChanged()
   }
 
-  setActivePage(pageId: string, options: { forceReset?: boolean } = {}): void {
+    /** 设置 Active Page。 */
+setActivePage(pageId: string, options: { forceReset?: boolean } = {}): void {
     const normalizedPageId = pageId.trim()
     if (!normalizedPageId) {
       this.clearActivePage()
@@ -284,35 +302,41 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     this.emitSelectionChanged()
   }
 
-  clearActivePage(): void {
+    /** 清空 Active Page。 */
+clearActivePage(): void {
     const activePageId = this.session.session.activePageId
     this.session.setActivePageId(null)
     if (activePageId) this.closePageDesign(activePageId)
     this.emitSelectionChanged()
   }
 
-  getActivePage(): ConfigPageNode | null {
+    /** 读取 Active Page。 */
+getActivePage(): ConfigPageNode | null {
     const activePageId = this.session.session.activePageId
     if (!activePageId) return null
     return this.design.findConfigPageByPageId(activePageId)
   }
 
-  beginNavigationDraft(): NavigationNodeDraft {
+    /** 执行 begin Navigation Draft 操作。 */
+beginNavigationDraft(): NavigationNodeDraft {
     const node = this.requireSelectedNode('未选中导航节点，无法开始导航编辑')
     return this.session.beginNavigationDraft(createNavigationNodeDraft(node))
   }
 
-  discardNavigationDraft(): void {
+    /** 执行 discard Navigation Draft 操作。 */
+discardNavigationDraft(): void {
     this.session.discardNavigationDraft()
     this.emitNavigationChanged({ scope: 'node' })
   }
 
-  markNavigationClean(scope: 'root' | 'node' = 'node'): void {
+    /** 执行 mark Navigation Clean 操作。 */
+markNavigationClean(scope: 'root' | 'node' = 'node'): void {
     this.session.markNavigationClean()
     this.emitNavigationChanged({ scope })
   }
 
-  applyNavigationNodeEdit(draft: NavigationNodeDraft): NavigationNodeDraftApplyResult {
+    /** 执行 apply Navigation Node Edit 操作。 */
+applyNavigationNodeEdit(draft: NavigationNodeDraft): NavigationNodeDraftApplyResult {
     const selected = this.requireSelectedNode('未选中导航节点，无法编辑导航属性')
     if (selected.id !== draft.node.id) {
       throw new Error(`导航编辑节点不匹配: ${draft.node.id} != ${selected.id}`)
@@ -329,7 +353,8 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     return result
   }
 
-  applyNodeKindPreset(kind: NavNodeKind): void {
+    /** 执行 apply Node Kind Preset 操作。 */
+applyNodeKindPreset(kind: NavNodeKind): void {
     const node = this.requireSelectedNode('未选中导航节点，无法修改节点类型')
     const draft = this.session.navigationDraft ?? createNavigationNodeDraft(node)
     const nextDraft: NavigationNodeDraft = {
@@ -360,19 +385,23 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     return this.findPageDesign(pageId)?.getFileText(fileName) ?? ''
   }
 
-  isActivePageLoaded(): boolean {
+    /** 是否 is Active Page Loaded。 */
+isActivePageLoaded(): boolean {
     return this.getActivePage()?.isLoaded === true
   }
 
-  canUndoPageFile(fileName: PageNodeFileName): boolean {
+    /** 是否 can Undo Page File。 */
+canUndoPageFile(fileName: PageNodeFileName): boolean {
     return this.getActivePage()?.canUndoFile(fileName) ?? false
   }
 
-  canRedoPageFile(fileName: PageNodeFileName): boolean {
+    /** 是否 can Redo Page File。 */
+canRedoPageFile(fileName: PageNodeFileName): boolean {
     return this.getActivePage()?.canRedoFile(fileName) ?? false
   }
 
-  undoPageFile(fileName: PageNodeFileName): boolean {
+    /** 执行 undo Page File 操作。 */
+undoPageFile(fileName: PageNodeFileName): boolean {
     const page = this.getActivePage()
     if (!page) return false
     const ok = page.undoFile(fileName)
@@ -380,7 +409,8 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     return ok
   }
 
-  redoPageFile(fileName: PageNodeFileName): boolean {
+    /** 执行 redo Page File 操作。 */
+redoPageFile(fileName: PageNodeFileName): boolean {
     const page = this.getActivePage()
     if (!page) return false
     const ok = page.redoFile(fileName)
@@ -388,7 +418,8 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     return ok
   }
 
-  getDataSetTool(): DataSetCrudTool | null {
+    /** 读取 Data Set Tool。 */
+getDataSetTool(): DataSetCrudTool | null {
     return this.getActivePage()?.getDataSetTool() ?? null
   }
 
@@ -402,7 +433,8 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     this.emitPageFileChanged(page.pageId, 'pagedata.json')
   }
 
-  getNodeTree(): SparkNodeTreeModel | null {
+    /** 读取 Node Tree。 */
+getNodeTree(): SparkNodeTreeModel | null {
     return this.getActivePage()?.getNodeTree() ?? null
   }
 
@@ -416,11 +448,13 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     this.emitPageFileChanged(page.pageId, 'rule.json')
   }
 
-  markPageFileChanged(pageId: string, fileName: PageNodeFileName): void {
+    /** 执行 mark Page File Changed 操作。 */
+markPageFileChanged(pageId: string, fileName: PageNodeFileName): void {
     this.emitPageFileChanged(pageId, fileName)
   }
 
-  markPageLoadedChanged(pageId: string, loaded: boolean): void {
+    /** 执行 mark Page Loaded Changed 操作。 */
+markPageLoadedChanged(pageId: string, loaded: boolean): void {
     const page = this.design.findConfigPageByPageId(pageId)
     if (page) {
       if (loaded) page.markLoaded()
@@ -459,7 +493,8 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     }
   }
 
-  readActivePageProjection(): ProjectActivePageProjection {
+    /** 执行 read Active Page Projection 操作。 */
+readActivePageProjection(): ProjectActivePageProjection {
     const activePage = this.getActivePage()
     const pageId = activePage?.pageId ?? ''
     const parseErrors: Record<PageNodeFileName, string | null> = {
@@ -488,7 +523,8 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     }
   }
 
-  readDirtyProjection(): ProjectDirtyProjection {
+    /** 执行 read Dirty Projection 操作。 */
+readDirtyProjection(): ProjectDirtyProjection {
     const activePage = this.getActivePage()
     const dirtyFiles = new Set<PageNodeFileName>()
     if (activePage) {

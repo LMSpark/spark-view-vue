@@ -69,15 +69,21 @@ const FILTER_OPERATORS: ReadonlySet<string> = new Set([
 type ErrorLoggerLike = {
   error(message: string, error?: unknown): void}
 
+/** Filter Panel Data View 的语义模型。 */
 type FilterPanelDataView = {
-  readonly rows: ReadonlyArray<Record<string, unknown>>
-  readonly columns?: readonly unknown[]
-  readonly filterExpression?: FilterExpression | undefined
-  readonly dataTable?: {
+    /** 行数据集合。 */
+readonly rows: ReadonlyArray<Record<string, unknown>>
+    /** 列定义集合。 */
+readonly columns?: readonly unknown[]
+    /** filter Expression 字段。 */
+readonly filterExpression?: FilterExpression | undefined
+    /** data Table 字段。 */
+readonly dataTable?: {
     readonly api?: { readonly list?: unknown } | undefined
     readonly resourceType?: string | undefined
   } | null | undefined
-  getColumn?: (field: string) => unknown
+    /** get Column 回调。 */
+getColumn?: (field: string) => unknown
   setFilter(expr: FilterExpression | undefined): Promise<void>
   executeFilter(expr: FilterExpression | undefined): Promise<void>
   refresh(): Promise<void>}
@@ -472,6 +478,7 @@ async function applyFilterSafely(params: ApplyFilterSafelyOptions): Promise<bool
 // § useFilterPanel
 // ============================================================
 
+/** Use Filter Panel Options 的调用配置。 */
 type UseFilterPanelOptions = {
   /** 过滤器子节点列表（响应式）。 */
   filterChildren: MaybeRefOrGetter<SparkNode[]>

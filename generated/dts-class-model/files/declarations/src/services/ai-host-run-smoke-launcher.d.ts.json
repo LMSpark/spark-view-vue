@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/ai-host-run-smoke-launcher.d.ts",
+  "module": {
+    "name": "app:services/ai-host-run-smoke-launcher",
+    "sourcePath": "declarations/src/services/ai-host-run-smoke-launcher.d.ts",
+    "sourceFile": "src/services/ai-host-run-smoke-launcher.ts",
+    "packageName": "app",
+    "modulePath": "services/ai-host-run-smoke-launcher",
+    "jsdoc": "@module app:services/ai-host-run-smoke-launcher\napp 的 services/ai-host-run-smoke-launcher 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.067Z"
+}

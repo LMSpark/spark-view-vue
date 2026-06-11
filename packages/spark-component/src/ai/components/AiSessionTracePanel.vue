@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-component:ai/components/AiSessionTracePanel
+@spark-appworks/spark-component 的 ai/components/AiSessionTracePanel 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-scrollbar :class="$style['trace-panel']" :style="{ height }">
     <div v-if="isEmpty" :class="$style['trace-panel__empty']">

@@ -29,8 +29,10 @@ import { createCrudLifecycleEvent } from './types'
 
 const logger = Logger('DataView:CRUD')
 
+/** Emit Crud Lifecycle Fn 的语义模型。 */
 type EmitCrudLifecycleFn = {
   (event: CrudLifecycleEvent): void}
+/** Mutating Fn 的语义模型。 */
 type MutatingFn = {
   (delta: 1 | -1, error?: Error | null): void}
 
@@ -47,7 +49,8 @@ function dataRowFromPartial(row: Partial<DataRow>): DataRow {
  */
 export class CrudDelegate {
 
-  constructor(
+    /** 创建 Crud Delegate 实例。 */
+constructor(
     private host: DataView,
     private emitCrudLifecycle: EmitCrudLifecycleFn,
     private emitMutating: MutatingFn,

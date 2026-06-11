@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/data-views/RendererTable/RendererTable.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/data-views/RendererTable/RendererTable.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererTable/RendererTable.props\nRendererTable 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: RTableProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RTableProps"
+    ],
+    "componentName": "RendererTable",
+    "componentType": "r-table",
+    "componentLevel": "table-level",
+    "componentLayer": "data-view-container",
+    "componentDirectory": "containers/data-views"
+  },
+  "symbols": [
+    "RTableProps"
+  ],
+  "models": {
+    "RTableProps": {
+      "kind": "RTableProps",
+      "className": "RTableProps",
+      "jsdoc": "/**\n * r-table 组件公开属性接口。\n *\n * 命名规范：组件 type `r-table` → 接口名 `RTableProps`。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & SparkInteractiveDataContainerProps & {\n    /** 显式收窄为表格容器使用的 DataView 数据线。 */\n    dataSource?: DataView;\n    /** 是否显示纵向边框。默认 true（resizable 启用时强制开启）。 */\n    border?: boolean;\n    /** 是否开启斑马纹。 */\n    stripe?: boolean;\n    /** 是否高亮当前行。 */\n    highlightCurrentRow?: boolean;\n    /** 行数据的 Key，用于树形表格。 */\n    rowKey?: string;\n    /** 是否允许拖动列宽，默认 true。 */\n    resizable?: boolean;\n    /** 没有显式 children 时，是否从 DataView.columns 自动生成列。默认 true。 */\n    autoColumns?: boolean;\n    /** 是否显示分页器。默认 true。 */\n    showPagination?: boolean;\n    /**\n     * 结构化工具栏\n     * 提示词模板：默认动作 append-row / refresh / delete-current；当表格开启多选（type=selection）时，使用 delete-selected 批量删除已选择行。\n     */\n    toolbar?: RToolbarProps;\n    /**\n     * 结构化筛选区\n     * 提示词模板：常用字段过滤 + range 过滤；优先复用列字段并保持字段名一致。\n     */\n    filter?: RFilterProps;\n    /**\n     * 结构化行动作\n     * 提示词模板：默认动作 message-row / delete-row。\n     */\n    actions?: RToolbarProps;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkInteractiveDataContainerProps",
+          "targetName": "SparkInteractiveDataContainerProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 显式收窄为表格容器使用的 DataView 数据线。 */\n    dataSource?: DataView;\n    /** 是否显示纵向边框。默认 true（resizable 启用时强制开启）。 */\n    border?: boolean;\n    /** 是否开启斑马纹。 */\n    stripe?: boolean;\n    /** 是否高亮当前行。 */\n    highlightCurrentRow?: boolean;\n    /** 行数据的 Key，用于树形表格。 */\n    rowKey?: string;\n    /** 是否允许拖动列宽，默认 true。 */\n    resizable?: boolean;\n    /** 没有显式 children 时，是否从 DataView.columns 自动生成列。默认 true。 */\n    autoColumns?: boolean;\n    /** 是否显示分页器。默认 true。 */\n    showPagination?: boolean;\n    /**\n     * 结构化工具栏\n     * 提示词模板：默认动作 append-row / refresh / delete-current；当表格开启多选（type=selection）时，使用 delete-selected 批量删除已选择行。\n     */\n    toolbar?: RToolbarProps;\n    /**\n     * 结构化筛选区\n     * 提示词模板：常用字段过滤 + range 过滤；优先复用列字段并保持字段名一致。\n     */\n    filter?: RFilterProps;\n    /**\n     * 结构化行动作\n     * 提示词模板：默认动作 message-row / delete-row。\n     */\n    actions?: RToolbarProps;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+        "line": 16,
+        "className": "RTableProps",
+        "declarationKind": "type",
+        "componentName": "RendererTable",
+        "componentType": "r-table",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "dataSource",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 显式收窄为表格容器使用的 DataView 数据线。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+            "line": 18,
+            "className": "RTableProps",
+            "memberName": "dataSource",
+            "declarationKind": "interface",
+            "componentName": "RendererTable",
+            "componentType": "r-table",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "border",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否显示纵向边框。默认 true（resizable 启用时强制开启）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+            "line": 20,
+            "className": "RTableProps",
+            "memberName": "border",
+            "declarationKind": "interface",
+            "componentName": "RendererTable",
+            "componentType": "r-table",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "stripe",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否开启斑马纹。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+            "line": 22,
+            "className": "RTableProps",
+            "memberName": "stripe",
+            "declarationKind": "interface",
+            "componentName": "RendererTable",
+            "componentType": "r-table",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "highlightCurrentRow",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否高亮当前行。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+            "line": 24,
+            "className": "RTableProps",
+            "memberName": "highlightCurrentRow",
+            "declarationKind": "interface",
+            "componentName": "RendererTable",
+            "componentType": "r-table",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "rowKey",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 行数据的 Key，用于树形表格。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+            "line": 26,
+            "className": "RTableProps",
+            "memberName": "rowKey",
+            "declarationKind": "interface",
+            "componentName": "RendererTable",
+            "componentType": "r-table",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "resizable",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否允许拖动列宽，默认 true。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+            "line": 28,
+            "className": "RTableProps",
+            "memberName": "resizable",
+            "declarationKind": "interface",
+            "componentName": "RendererTable",
+            "componentType": "r-table",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "autoColumns",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 没有显式 children 时，是否从 DataView.columns 自动生成列。默认 true。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+            "line": 30,
+            "className": "RTableProps",
+            "memberName": "autoColumns",
+            "declarationKind": "interface",
+            "componentName": "RendererTable",
+            "componentType": "r-table",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "showPagination",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否显示分页器。默认 true。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+            "line": 32,
+            "className": "RTableProps",
+            "memberName": "showPagination",
+            "declarationKind": "interface",
+            "componentName": "RendererTable",
+            "componentType": "r-table",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "toolbar",
+          "schema": {
+            "title": "RToolbarProps"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 结构化工具栏\n     * 提示词模板：默认动作 append-row / refresh / delete-current；当表格开启多选（type=selection）时，使用 delete-selected 批量删除已选择行。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+            "line": 37,
+            "className": "RTableProps",
+            "memberName": "toolbar",
+            "declarationKind": "interface",
+            "componentName": "RendererTable",
+            "componentType": "r-table",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "filter",
+          "schema": {
+            "title": "RFilterProps"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 结构化筛选区\n     * 提示词模板：常用字段过滤 + range 过滤；优先复用列字段并保持字段名一致。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+            "line": 42,
+            "className": "RTableProps",
+            "memberName": "filter",
+            "declarationKind": "interface",
+            "componentName": "RendererTable",
+            "componentType": "r-table",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "actions",
+          "schema": {
+            "title": "RToolbarProps"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/**\n     * 结构化行动作\n     * 提示词模板：默认动作 message-row / delete-row。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts",
+            "line": 47,
+            "className": "RTableProps",
+            "memberName": "actions",
+            "declarationKind": "interface",
+            "componentName": "RendererTable",
+            "componentType": "r-table",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.067Z"
+}

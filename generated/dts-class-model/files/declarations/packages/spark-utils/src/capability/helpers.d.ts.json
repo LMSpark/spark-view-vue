@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/capability/helpers.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:capability/helpers",
+    "sourcePath": "declarations/packages/spark-utils/src/capability/helpers.d.ts",
+    "sourceFile": "packages/spark-utils/src/capability/helpers.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "capability/helpers",
+    "jsdoc": "能力树遍历辅助工具 —— 纯基础设施，无业务语义。\n所有函数只操作 CapabilityContext / CapabilityKey 原语，\n不引用任何业务类型。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.993Z"
+}

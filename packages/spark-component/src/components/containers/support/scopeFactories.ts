@@ -1,12 +1,21 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/support/scopeFactories
+ * @spark-appworks/spark-component 的 components/containers/support/scopeFactories 模块。
+ * 导出 ClassModel symbol: BaseScopeContext（共 1 个 symbol）。
+ */
 import type { DataRow, ModelPermission } from '@spark-appworks/spark-data'
 import type { ModuleContext } from '../../internal'
 
 // ── 通用作用域结构 ───────────────────────────────────────────────────────────
 
+/** Base Scope Context 的运行上下文。 */
 export type BaseScopeContext<TSource> = {
-  dataSource: TSource | null | undefined
-  modelPermission: ModelPermission | undefined
-  moduleContext?: ModuleContext | null | undefined}
+    /** data Source 字段。 */
+dataSource: TSource | null | undefined
+    /** model Permission 字段。 */
+modelPermission: ModelPermission | undefined
+    /** module Context 字段。 */
+moduleContext?: ModuleContext | null | undefined}
 
 // ── 作用域构建辅助函数 ───────────────────────────────────────────────────────
 

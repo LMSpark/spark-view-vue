@@ -21,6 +21,7 @@ import type { ThemeCapability as ComponentThemeCapability, ThemeMode } from '@sp
 import { computed, getCurrentScope, inject, onScopeDispose, ref, watch, type ComputedRef, type InjectionKey, type Ref } from 'vue'
 export type { ThemeMode }
 
+/** Theme Capability 的语义模型。 */
 export type ThemeCapability = ComponentThemeCapability & {
   setStorageScope(scopeKey: string | null): void
 }

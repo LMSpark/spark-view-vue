@@ -1,3 +1,8 @@
+<!--
+@module app:views/platform/About
+app 的 views/platform/About 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="about-page">
     <el-page-header content="关于系统" @back="$router.go(-1)">

@@ -55,24 +55,32 @@ export type ThemeMode = 'light' | 'dark' | 'auto'
 
 /** 主题服务能力接口（最小契约，不含 Vue 响应式） */
 export type ThemeCapability = {
-  readonly current: 'light' | 'dark'
-  readonly mode: ThemeMode
+    /** current 字段。 */
+readonly current: 'light' | 'dark'
+    /** mode 字段。 */
+readonly mode: ThemeMode
   setMode(mode: ThemeMode): void
-  readonly isDark: boolean
+    /** 是否 is Dark。 */
+readonly isDark: boolean
   toggle(): void}
 
 // ── 模块上下文能力 ────────────────────────────────────────────────────────
 
 /** 模块列表项 */
 export type ModuleContextItem = {
-  id: string | number
-  title: string}
+    /** 唯一标识。 */
+id: string | number
+    /** 显示标题。 */
+title: string}
 
 /** 当前模块上下文快照 */
 export type ModuleContext = {
-  selected: string | number | null
-  items: readonly ModuleContextItem[]
-  nodeId: string}
+    /** selected 字段。 */
+selected: string | number | null
+    /** items 字段。 */
+items: readonly ModuleContextItem[]
+    /** node Id 标识。 */
+nodeId: string}
 
 /** MODULE_CONTEXT 能力接口 */
 export type ModuleContextCapability = {
@@ -81,15 +89,23 @@ export type ModuleContextCapability = {
 
 // ── 页面组件注册表能力 ─────────────────────────────────────────────────────
 
+/** Page Component Instance Entry 的语义模型。 */
 export type PageComponentInstanceEntry = {
-  id: string
-  type: string
-  props?: Record<string, unknown>}
+    /** 唯一标识。 */
+id: string
+    /** 类型标识。 */
+type: string
+    /** 组件属性集合。 */
+props?: Record<string, unknown>}
 
+/** Page Component Api Entry 的语义模型。 */
 export type PageComponentApiEntry = {
-  id: string
-  type: string
-  api: unknown}
+    /** 唯一标识。 */
+id: string
+    /** 类型标识。 */
+type: string
+    /** api 字段。 */
+api: unknown}
 
 /** 页面内组件实例/API 注册表能力接口 */
 export type PageComponentRegistry = {

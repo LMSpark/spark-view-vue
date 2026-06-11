@@ -58,6 +58,7 @@ type MutableSession = {
 // 第 2 节 · DefaultAiAgentSessionStore class
 // ═══════════════════════════════════════════════════════════════
 
+/** Default Ai Agent Session Store 的语义模型。 */
 export class DefaultAiAgentSessionStore extends AiAgentSessionStore {
   /** key → MutableSession */
   private readonly sessions = new Map<string, MutableSession>()
@@ -68,7 +69,8 @@ export class DefaultAiAgentSessionStore extends AiAgentSessionStore {
   /** 时间源（默认 Date.now，可注入用于测试） */
   private readonly now: () => number
 
-  public constructor(options: DefaultAiAgentSessionStoreOptions = {}) {
+    /** 创建 Default Ai Agent Session Store 实例。 */
+public constructor(options: DefaultAiAgentSessionStoreOptions = {}) {
     super()
     this.now = options.now ?? Date.now
   }

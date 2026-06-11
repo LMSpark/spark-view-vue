@@ -1,3 +1,8 @@
+<!--
+@module app:views/tenant/AppList
+app 的 views/tenant/AppList 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <div class="app-list-page">
     <el-page-header content="应用管理" @back="$router.go(-1)">

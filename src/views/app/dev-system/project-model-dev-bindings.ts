@@ -1,3 +1,8 @@
+/**
+ * @module app:views/app/dev-system/project-model-dev-bindings
+ * app 的 views/app/dev-system/project-model-dev-bindings 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 export {
   isConfigFilesPageSurface,
   isConfigNodeKind,

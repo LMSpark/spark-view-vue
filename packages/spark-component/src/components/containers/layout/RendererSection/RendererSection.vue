@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/layout/RendererSection/RendererSection
+RendererSection 模块，属于 SPARK component container/layout-container。
+组件目录: containers/layout。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-card v-if="useCard" :shadow="cardShadow" class="renderer-section renderer-section--card">
     <template v-if="hasHeader || collapsible" #header>

@@ -3,12 +3,16 @@
  */
 import type { ProjectPageNodeSummary } from '@spark-appworks/spark-project-model'
 
+/** Page Design Run Mode 的语义模型。 */
 export type PageDesignRunMode = 'create' | 'update' | 'fix'
 
+/** Page Design Planning Status 的语义模型。 */
 export type PageDesignPlanningStatus = 'planning_draft' | 'planning_confirmed'
 
+/** Page Design Impl Gate 的语义模型。 */
 export type PageDesignImplGate = 'closed' | 'open'
 
+/** Page Design Gate State 的运行状态。 */
 export type PageDesignGateState = Readonly<{
   pageId: string
   planningStatus: PageDesignPlanningStatus
@@ -16,11 +20,13 @@ export type PageDesignGateState = Readonly<{
   upstreamContractsSatisfied: boolean
 }>
 
+/** Read Page Design Gate State Options 的调用配置。 */
 export type ReadPageDesignGateStateOptions = Readonly<{
   /** 未声明 implGate 时是否视为 closed；默认 false（过渡兼容）。 */
   strictImplGate?: boolean
 }>
 
+/** Page Design Gate Validation Result 的返回结果。 */
 export type PageDesignGateValidationResult = Readonly<{
   ok: boolean
   code?: string
@@ -99,6 +105,7 @@ export function assertPageDesignRunGateAllowed(
   throw new Error(formatPageDesignGateFailure(result))
 }
 
+/** Evaluate Page Design Mutation Tool Gate Options 的调用配置。 */
 export type EvaluatePageDesignMutationToolGateOptions = Readonly<{
   toolName: string
   summary: ProjectPageNodeSummary

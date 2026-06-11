@@ -38,6 +38,7 @@ export type AiAgentFunctionCallCheck = Readonly<{
   hint?: string
 }>
 
+/** Ai Agent Function Call Failure 的语义模型。 */
 export type AiAgentFunctionCallFailure = Readonly<{
   ok: false
   code: string
@@ -61,9 +62,13 @@ export type AiAgentFunctionCallResult<TData> = Readonly<{
 // 第 2 节 · 会话状态与条目基础类型
 // ═══════════════════════════════════════════════════════════════
 
+/** Ai Agent Session Status 的语义模型。 */
 export type AiAgentSessionStatus = 'Started' | 'Stopped'
+/** Ai Agent Message Role 的语义模型。 */
 export type AiAgentMessageRole = 'system' | 'user' | 'assistant'
+/** Ai Agent Message Source 的语义模型。 */
 export type AiAgentMessageSource = 'system' | 'ui' | 'llm'
+/** Ai Agent Function Call History Status 的语义模型。 */
 export type AiAgentFunctionCallHistoryStatus = 'requested' | 'completed' | 'failed'
 
 /** 历史条目公共字段 */

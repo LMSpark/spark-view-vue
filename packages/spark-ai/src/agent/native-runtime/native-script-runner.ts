@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:agent/native-runtime/native-script-runner
+ * @spark-appworks/spark-ai 的 agent/native-runtime/native-script-runner 模块。
+ * 导出 ClassModel symbol: AiNativeRuntimeSchemaDefs, AiNativeScriptContextCommand, AiNativeScriptRunCommand（共 3 个 symbol）。
+ */
 import type {
   AiJsonSchema,
   AiJsonSchemaValidateOptions,
@@ -13,8 +18,10 @@ import {
 import { executeModuleScript } from './native-script-sandbox'
 import { createAiApiScriptContext } from './native-script-context'
 
+/** Ai Native Runtime Schema Defs 的语义模型。 */
 export type AiNativeRuntimeSchemaDefs = Readonly<Record<string, AiJsonSchema>>
 
+/** Ai Native Script Context Command 的命令参数。 */
 export type AiNativeScriptContextCommand<TInstance = unknown> = Readonly<{
   instance: TInstance
   metadata: AiModuleMetadataJson
@@ -22,6 +29,7 @@ export type AiNativeScriptContextCommand<TInstance = unknown> = Readonly<{
   schemaDefs?: AiNativeRuntimeSchemaDefs
 }>
 
+/** Ai Native Script Run Command 的命令参数。 */
 export type AiNativeScriptRunCommand<TInstance = unknown> =
   AiNativeScriptContextCommand<TInstance> & Readonly<{
     script: string

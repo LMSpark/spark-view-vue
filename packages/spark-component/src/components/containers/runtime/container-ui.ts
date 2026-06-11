@@ -71,10 +71,14 @@ export type ToolbarPosition = 'top' | 'bottom' | 'left' | 'right'
 
 /** 工具栏节点所需的最小属性形状（与 RToolbarProps 结构对齐）。 */
 type ToolbarLike = {
-  children?: SparkNodeChildren
-  position?: string
-  class?: string | string[]}
+    /** 子节点集合。 */
+children?: SparkNodeChildren
+    /** position 字段。 */
+position?: string
+    /** class 字段。 */
+class?: string | string[]}
 
+/** Use Container Toolbar Options 的调用配置。 */
 type UseContainerToolbarOptions = {
   /** toolbar SparkNode（响应式 getter 或 ref）。 */
   toolbarNode: MaybeRefOrGetter<ToolbarLike | null | undefined>

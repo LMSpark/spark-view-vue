@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/layout/RendererToolbar.types
+ * RendererToolbar 模块，属于 SPARK component container/layout-container。
+ * 组件目录: containers/layout。
+ * 导出 ClassModel symbol: InlineAlign, InlineJustify, RToolbarProps（共 3 个 symbol）。
+ */
 import type { SparkTableModelProps, SparkNodeProps } from '../../shared-types'
 import type { RTailProps } from '../zones/RendererTail.types'
 import type { ToolbarPosition } from '../runtime/container-ui'

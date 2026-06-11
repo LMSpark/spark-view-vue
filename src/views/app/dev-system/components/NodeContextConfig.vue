@@ -1,3 +1,8 @@
+<!--
+@module app:views/app/dev-system/components/NodeContextConfig
+app 的 views/app/dev-system/components/NodeContextConfig 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <template v-if="isDirectoryNode">
     <el-divider content-position="left">模块上下文（Context）</el-divider>

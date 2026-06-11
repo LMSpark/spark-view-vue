@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionChatBubble.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/SessionChatBubble.props",
+    "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionChatBubble.props.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/SessionChatBubble.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/SessionChatBubble.props",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/SessionChatBubble.props\n@spark-appworks/spark-component 的 ai/components/SessionChatBubble.props 模块。\n导出 ClassModel symbol: SessionChatBubbleProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SessionChatBubbleProps"
+    ]
+  },
+  "symbols": [
+    "SessionChatBubbleProps"
+  ],
+  "models": {
+    "SessionChatBubbleProps": {
+      "kind": "SessionChatBubbleProps",
+      "className": "SessionChatBubbleProps",
+      "jsdoc": "/** Session Chat Bubble Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    role: 'user' | 'assistant' | 'system' | 'error';\n    content: string;\n    timestamp?: number;\n    isTyping?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    role: 'user' | 'assistant' | 'system' | 'error';\n    content: string;\n    timestamp?: number;\n    isTyping?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/ai/components/SessionChatBubble.props.d.ts",
+        "line": 7,
+        "className": "SessionChatBubbleProps",
+        "declarationKind": "type",
+        "componentName": "SessionChatBubble"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.004Z"
+}

@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/actions/useSelectorFieldActions
+ * @spark-appworks/spark-component 的 components/fields/actions/useSelectorFieldActions 模块。
+ * 导出 ClassModel symbol: UseSelectorFieldActionsOptions（共 1 个 symbol）。
+ */
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import type {
@@ -7,9 +12,12 @@ import type {
 } from '../../internal'
 import { useFieldActionMode } from './useFieldActionMode'
 
+/** Use Selector Field Actions Options 的调用配置。 */
 type UseSelectorFieldActionsOptions = {
-  pageService: PageServiceCapability | null
-  isEditable: ComputedRef<boolean>}
+    /** page Service 字段。 */
+pageService: PageServiceCapability | null
+    /** 是否 is Editable。 */
+isEditable: ComputedRef<boolean>}
 
 export function useSelectorFieldActions(options: UseSelectorFieldActionsOptions) {
   const { pageService, isEditable } = options

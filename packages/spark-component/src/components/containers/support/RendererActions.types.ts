@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/support/RendererActions.types
+ * @spark-appworks/spark-component 的 components/containers/support/RendererActions.types 模块。
+ * 导出 ClassModel symbol: ActionsAlign, ActionsPosition, PermissionDeniedBehavior, RendererActionsProps（共 4 个 symbol）。
+ */
 /** 动作区内容对齐方式。 */
 export type ActionsAlign = 'left' | 'center' | 'right'
 

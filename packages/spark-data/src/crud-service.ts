@@ -313,7 +313,8 @@ export class CrudService {
     }
   }
 
-  async executeTransaction<T = DataSetTransactionResponse>(
+    /** 执行 execute Transaction 操作。 */
+async executeTransaction<T = DataSetTransactionResponse>(
     request: DataSetTransactionRequest,
     endpoint?: HttpEndpoint,
     config?: CrudOperationConfig,

@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-utils:logger
+ * @spark-appworks/spark-utils 的 logger 模块。
+ * 导出 ClassModel symbol: LogLevel, LoggerApi, LogTransport（共 3 个 symbol）。
+ */
 // Note: Logger 系统本身需要使用 console 输出日志，禁用 no-console 规则是合理的
 /* eslint-disable no-console */
 

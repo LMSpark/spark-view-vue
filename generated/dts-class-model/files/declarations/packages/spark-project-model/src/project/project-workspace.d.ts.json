@@ -1,0 +1,1454 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:project/project-workspace",
+    "sourcePath": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+    "sourceFile": "packages/spark-project-model/src/project/project-workspace.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "project/project-workspace",
+    "jsdoc": "ProjectWorkspace — 持有 ProjectModel 并提交 IO（设计即编辑）。\n领域状态、事件与投影属于 ProjectModel；谁 new 谁负责生命周期。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ProjectPageLoadOptions",
+      "CreatePageForSelectedNodeParams",
+      "CreateMountedPageParams",
+      "CreatePageFilesParams",
+      "PageNodeCreateMountedResult",
+      "PageNodeRemoveMountedResult",
+      "RemoveMountedPageParams",
+      "ProjectWorkspaceOptions",
+      "ProjectWorkspace"
+    ]
+  },
+  "symbols": [
+    "ProjectPageLoadOptions",
+    "CreatePageForSelectedNodeParams",
+    "CreateMountedPageParams",
+    "CreatePageFilesParams",
+    "PageNodeCreateMountedResult",
+    "PageNodeRemoveMountedResult",
+    "RemoveMountedPageParams",
+    "ProjectWorkspaceOptions",
+    "ProjectWorkspace"
+  ],
+  "models": {
+    "ProjectPageLoadOptions": {
+      "kind": "ProjectPageLoadOptions",
+      "className": "ProjectPageLoadOptions",
+      "jsdoc": "/** Project Page Load Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** force Reload 字段。 */\n    forceReload?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+        "line": 14,
+        "className": "ProjectPageLoadOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "forceReload",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** force Reload 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 16,
+            "className": "ProjectPageLoadOptions",
+            "memberName": "forceReload",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "CreatePageForSelectedNodeParams": {
+      "kind": "CreatePageForSelectedNodeParams",
+      "className": "CreatePageForSelectedNodeParams",
+      "jsdoc": "/** Create Page For Selected Node Params 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** 显示标题。 */\n    title?: string;\n    /** icon 字段。 */\n    icon?: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+        "line": 19,
+        "className": "CreatePageForSelectedNodeParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** page Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 21,
+            "className": "CreatePageForSelectedNodeParams",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 显示标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 23,
+            "className": "CreatePageForSelectedNodeParams",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "icon",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** icon 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 25,
+            "className": "CreatePageForSelectedNodeParams",
+            "memberName": "icon",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "CreateMountedPageParams": {
+      "kind": "CreateMountedPageParams",
+      "className": "CreateMountedPageParams",
+      "jsdoc": "/** Create Mounted Page Params 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** 显示标题。 */\n    title?: string;\n    /** icon 字段。 */\n    icon?: string;\n    /** node 字段。 */\n    node?: ProjectNodeData;\n    /** parent Id 标识。 */\n    parentId?: string | null;\n    /** index 字段。 */\n    index?: number;\n    /** rollback Page On Navigation Failure 字段。 */\n    rollbackPageOnNavigationFailure?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+        "line": 28,
+        "className": "CreateMountedPageParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** page Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 30,
+            "className": "CreateMountedPageParams",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "title",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 显示标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 32,
+            "className": "CreateMountedPageParams",
+            "memberName": "title",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "icon",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** icon 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 34,
+            "className": "CreateMountedPageParams",
+            "memberName": "icon",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "node",
+          "schema": {
+            "title": "ProjectNodeData"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** node 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 36,
+            "className": "CreateMountedPageParams",
+            "memberName": "node",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "parentId",
+          "schema": {
+            "title": "string | null"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** parent Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 38,
+            "className": "CreateMountedPageParams",
+            "memberName": "parentId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "index",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** index 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 40,
+            "className": "CreateMountedPageParams",
+            "memberName": "index",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "rollbackPageOnNavigationFailure",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** rollback Page On Navigation Failure 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 42,
+            "className": "CreateMountedPageParams",
+            "memberName": "rollbackPageOnNavigationFailure",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "CreatePageFilesParams": {
+      "kind": "CreatePageFilesParams",
+      "className": "CreatePageFilesParams",
+      "jsdoc": "/** Create Page Files Params 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "PageFileCreateOptions & {\n    /** page Id 标识。 */\n    pageId: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "PageFileCreateOptions",
+          "targetName": "PageFileCreateOptions"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+        "line": 45,
+        "className": "CreatePageFilesParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** page Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 47,
+            "className": "CreatePageFilesParams",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "PageNodeCreateMountedResult": {
+      "kind": "PageNodeCreateMountedResult",
+      "className": "PageNodeCreateMountedResult",
+      "jsdoc": "/** Page Node Create Mounted Result 的返回结果。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前页码。 */\n    page: Record<string, unknown>;\n    /** node 字段。 */\n    node: ProjectNodeData;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+        "line": 50,
+        "className": "PageNodeCreateMountedResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "page",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前页码。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 52,
+            "className": "PageNodeCreateMountedResult",
+            "memberName": "page",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "node",
+          "schema": {
+            "title": "ProjectNodeData"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** node 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 54,
+            "className": "PageNodeCreateMountedResult",
+            "memberName": "node",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "PageNodeRemoveMountedResult": {
+      "kind": "PageNodeRemoveMountedResult",
+      "className": "PageNodeRemoveMountedResult",
+      "jsdoc": "/** Page Node Remove Mounted Result 的返回结果。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** deleted Node 字段。 */\n    deletedNode: ProjectNodeData | null;\n    /** deleted Files 字段。 */\n    deletedFiles: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+        "line": 57,
+        "className": "PageNodeRemoveMountedResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "deletedNode",
+          "schema": {
+            "title": "ProjectNodeData | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** deleted Node 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 59,
+            "className": "PageNodeRemoveMountedResult",
+            "memberName": "deletedNode",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "deletedFiles",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** deleted Files 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 61,
+            "className": "PageNodeRemoveMountedResult",
+            "memberName": "deletedFiles",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "RemoveMountedPageParams": {
+      "kind": "RemoveMountedPageParams",
+      "className": "RemoveMountedPageParams",
+      "jsdoc": "/** Remove Mounted Page Params 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** node Id 标识。 */\n    nodeId?: string;\n    /** delete Files 字段。 */\n    deleteFiles?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+        "line": 64,
+        "className": "RemoveMountedPageParams",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "pageId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** page Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 66,
+            "className": "RemoveMountedPageParams",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "nodeId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** node Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 68,
+            "className": "RemoveMountedPageParams",
+            "memberName": "nodeId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "deleteFiles",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** delete Files 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 70,
+            "className": "RemoveMountedPageParams",
+            "memberName": "deleteFiles",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectWorkspaceOptions": {
+      "kind": "ProjectWorkspaceOptions",
+      "className": "ProjectWorkspaceOptions",
+      "jsdoc": "/** Project Workspace Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** project Id 标识。 */\n    projectId: string;\n    /** http 字段。 */\n    http: HttpClientBase;\n    /** get Page Files Api 回调。 */\n    getPageFilesApi: () => string;\n    /** get Navigation Api 回调。 */\n    getNavigationApi: () => string;\n    /** get Projects Api 回调。 */\n    getProjectsApi?: () => string;\n    /** get Project Navigation Api 回调。 */\n    getProjectNavigationApi?: (projectId: string) => string;\n    /** get Headers 回调。 */\n    getHeaders?: () => Record<string, string>;\n    /** file Storage 字段。 */\n    fileStorage?: NonNullable<PageContentLoaderOptions['fileStorage']>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+        "line": 73,
+        "className": "ProjectWorkspaceOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "projectId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** project Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 75,
+            "className": "ProjectWorkspaceOptions",
+            "memberName": "projectId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "http",
+          "schema": {
+            "title": "HttpClientBase"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** http 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 77,
+            "className": "ProjectWorkspaceOptions",
+            "memberName": "http",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "getPageFilesApi",
+          "schema": {
+            "title": "() => string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** get Page Files Api 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 79,
+            "className": "ProjectWorkspaceOptions",
+            "memberName": "getPageFilesApi",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "getNavigationApi",
+          "schema": {
+            "title": "() => string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** get Navigation Api 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 81,
+            "className": "ProjectWorkspaceOptions",
+            "memberName": "getNavigationApi",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "getProjectsApi",
+          "schema": {
+            "title": "() => string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** get Projects Api 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 83,
+            "className": "ProjectWorkspaceOptions",
+            "memberName": "getProjectsApi",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "getProjectNavigationApi",
+          "schema": {
+            "title": "(projectId: string) => string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** get Project Navigation Api 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 85,
+            "className": "ProjectWorkspaceOptions",
+            "memberName": "getProjectNavigationApi",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "getHeaders",
+          "schema": {
+            "title": "() => Record<string, string>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** get Headers 回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 87,
+            "className": "ProjectWorkspaceOptions",
+            "memberName": "getHeaders",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "fileStorage",
+          "schema": {
+            "title": "NonNullable<PageContentLoaderOptions['fileStorage']>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** file Storage 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 89,
+            "className": "ProjectWorkspaceOptions",
+            "memberName": "fileStorage",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ProjectWorkspace": {
+      "kind": "ProjectWorkspace",
+      "className": "ProjectWorkspace",
+      "jsdoc": "/**\n * 项目 IO 编排层：将 ProjectModel 的操作委托到远端 API。\n */",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+        "line": 94,
+        "className": "ProjectWorkspace",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "title": "ProjectWorkspaceOptions"
+            }
+          },
+          "required": [
+            "options"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/** 创建 Project Workspace 实例。 */",
+        "provenance": {
+          "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+          "line": 102,
+          "className": "ProjectWorkspace",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [
+        {
+          "name": "project",
+          "schema": {
+            "title": "ProjectModel"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** project 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 96,
+            "className": "ProjectWorkspace",
+            "memberName": "project",
+            "declarationKind": "class"
+          }
+        }
+      ],
+      "methods": [
+        {
+          "name": "getActivePageRenderNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "PageNodeLike | null"
+          },
+          "returnTypeText": "PageNodeLike | null",
+          "jsdoc": "/** 读取 Active Page Render Node。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 104,
+            "className": "ProjectWorkspace",
+            "memberName": "getActivePageRenderNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "loadNavigation",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<ProjectModelData>"
+          },
+          "returnTypeText": "Promise<ProjectModelData>",
+          "jsdoc": "/** 加载 Navigation。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 106,
+            "className": "ProjectWorkspace",
+            "memberName": "loadNavigation",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "ingestNavigationRoot",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "root": {
+                "title": "ProjectModelData"
+              },
+              "options": {
+                "title": "{\n        selectedNodeId?: string | null;\n    }"
+              }
+            },
+            "required": [
+              "root"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ProjectModelData"
+          },
+          "returnTypeText": "ProjectModelData",
+          "jsdoc": "/** 执行 ingest Navigation Root 操作。 */",
+          "paramsTypeText": "root: ProjectModelData, options?: { selectedNodeId?: string | null | undefined; } | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 108,
+            "className": "ProjectWorkspace",
+            "memberName": "ingestNavigationRoot",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "selectPage",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string",
+                "title": "string"
+              },
+              "options": {
+                "title": "ProjectPageLoadOptions"
+              }
+            },
+            "required": [
+              "pageId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 按指定 pageId 选择并加载页面文件。 */",
+          "paramsTypeText": "pageId: string, options?: ProjectPageLoadOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 112,
+            "className": "ProjectWorkspace",
+            "memberName": "selectPage",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "selectPage",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "ProjectPageLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 按当前导航选中节点选择并加载页面文件。 */",
+          "paramsTypeText": "options?: ProjectPageLoadOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 114,
+            "className": "ProjectWorkspace",
+            "memberName": "selectPage",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "saveProjectLayout",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "{\n        skipReload?: boolean;\n    }"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 保存 Project Layout。 */",
+          "paramsTypeText": "options?: { skipReload?: boolean | undefined; } | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 116,
+            "className": "ProjectWorkspace",
+            "memberName": "saveProjectLayout",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "saveSelectedNavigationNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "{\n        skipReload?: boolean;\n    }"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 保存 Selected Navigation Node。 */",
+          "paramsTypeText": "options?: { skipReload?: boolean | undefined; } | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 120,
+            "className": "ProjectWorkspace",
+            "memberName": "saveSelectedNavigationNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "ensureActivePageFilesLoaded",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "ProjectPageLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 执行 ensure Active Page Files Loaded 操作。 */",
+          "paramsTypeText": "options?: ProjectPageLoadOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 124,
+            "className": "ProjectWorkspace",
+            "memberName": "ensureActivePageFilesLoaded",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "loadPageFile",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "title": "PageNodeFileName"
+              },
+              "options": {
+                "title": "ProjectPageLoadOptions"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 加载 Page File。 */",
+          "paramsTypeText": "name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: ProjectPageLoadOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 126,
+            "className": "ProjectWorkspace",
+            "memberName": "loadPageFile",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "savePageFile",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 保存 Page File。 */",
+          "paramsTypeText": "name: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 128,
+            "className": "ProjectWorkspace",
+            "memberName": "savePageFile",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "saveDirtyPageFiles",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 保存 Dirty Page Files。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 130,
+            "className": "ProjectWorkspace",
+            "memberName": "saveDirtyPageFiles",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "saveAll",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 保存 All。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 132,
+            "className": "ProjectWorkspace",
+            "memberName": "saveAll",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "addNavigationNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "{\n        parentId?: string | null;\n        node: ProjectNodeData;\n        index?: number;\n    }"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<ProjectNodeData>"
+          },
+          "returnTypeText": "Promise<ProjectNodeData>",
+          "jsdoc": "/** 执行 add Navigation Node 操作。 */",
+          "paramsTypeText": "params: { parentId?: string | null | undefined; node: ProjectNodeData; index?: number | undefined; }",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 134,
+            "className": "ProjectWorkspace",
+            "memberName": "addNavigationNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "deleteNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "nodeId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<ProjectNodeData | null>"
+          },
+          "returnTypeText": "Promise<ProjectNodeData | null>",
+          "jsdoc": "/** 删除 Node。 */",
+          "paramsTypeText": "nodeId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 140,
+            "className": "ProjectWorkspace",
+            "memberName": "deleteNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "createPageForSelectedNode",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "CreatePageForSelectedNodeParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<PageNodeCreateMountedResult>"
+          },
+          "returnTypeText": "Promise<PageNodeCreateMountedResult>",
+          "jsdoc": "/** 创建 Page For Selected Node。 */",
+          "paramsTypeText": "params: CreatePageForSelectedNodeParams",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 142,
+            "className": "ProjectWorkspace",
+            "memberName": "createPageForSelectedNode",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "createMountedPage",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "CreateMountedPageParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<PageNodeCreateMountedResult>"
+          },
+          "returnTypeText": "Promise<PageNodeCreateMountedResult>",
+          "jsdoc": "/** 创建 Mounted Page。 */",
+          "paramsTypeText": "params: CreateMountedPageParams",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 144,
+            "className": "ProjectWorkspace",
+            "memberName": "createMountedPage",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "createPageFiles",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "CreatePageFilesParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<Record<string, unknown>>"
+          },
+          "returnTypeText": "Promise<Record<string, unknown>>",
+          "jsdoc": "/** 创建 Page Files。 */",
+          "paramsTypeText": "params: CreatePageFilesParams",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 146,
+            "className": "ProjectWorkspace",
+            "memberName": "createPageFiles",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "deletePageFiles",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "pageId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 删除 Page Files。 */",
+          "paramsTypeText": "pageId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 148,
+            "className": "ProjectWorkspace",
+            "memberName": "deletePageFiles",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "removeMountedPage",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "RemoveMountedPageParams"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<PageNodeRemoveMountedResult>"
+          },
+          "returnTypeText": "Promise<PageNodeRemoveMountedResult>",
+          "jsdoc": "/** 删除 Mounted Page。 */",
+          "paramsTypeText": "params: RemoveMountedPageParams",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 150,
+            "className": "ProjectWorkspace",
+            "memberName": "removeMountedPage",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "moveMountedPage",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string",
+                "title": "string"
+              },
+              "newParentId": {
+                "title": "string | null"
+              },
+              "index": {
+                "type": "number",
+                "title": "number"
+              }
+            },
+            "required": [
+              "nodeId",
+              "newParentId",
+              "index"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<ProjectNodeData>"
+          },
+          "returnTypeText": "Promise<ProjectNodeData>",
+          "jsdoc": "/** 执行 move Mounted Page 操作。 */",
+          "paramsTypeText": "nodeId: string, newParentId: string | null, index: number",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 152,
+            "className": "ProjectWorkspace",
+            "memberName": "moveMountedPage",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "listRemotePageVersions",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "filename": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "filename"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<PageNodeFileVersionSummary[]>"
+          },
+          "returnTypeText": "Promise<PageNodeFileVersionSummary[]>",
+          "jsdoc": "/** 执行 list Remote Page Versions 操作。 */",
+          "paramsTypeText": "filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 154,
+            "className": "ProjectWorkspace",
+            "memberName": "listRemotePageVersions",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "restoreRemotePageVersion",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "number",
+                "title": "number"
+              },
+              "filename": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "version",
+              "filename"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 执行 restore Remote Page Version 操作。 */",
+          "paramsTypeText": "version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 156,
+            "className": "ProjectWorkspace",
+            "memberName": "restoreRemotePageVersion",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "createRemotePageVersion",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "filename": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "filename"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 创建 Remote Page Version。 */",
+          "paramsTypeText": "filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 158,
+            "className": "ProjectWorkspace",
+            "memberName": "createRemotePageVersion",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "deleteRemotePageVersion",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "number",
+                "title": "number"
+              },
+              "filename": {
+                "title": "PageNodeFileName"
+              }
+            },
+            "required": [
+              "version",
+              "filename"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<void>"
+          },
+          "returnTypeText": "Promise<void>",
+          "jsdoc": "/** 删除 Remote Page Version。 */",
+          "paramsTypeText": "version: number, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 160,
+            "className": "ProjectWorkspace",
+            "memberName": "deleteRemotePageVersion",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "notifyPageFileChanged",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string",
+                "title": "string"
+              },
+              "filename": {
+                "title": "PageNodeFileName | '__created' | '__deleted' | '__bulk'"
+              }
+            },
+            "required": [
+              "pageId",
+              "filename"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 notify Page File Changed 操作。 */",
+          "paramsTypeText": "pageId: string, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\" | \"__created\" | \"__deleted\" | \"__bulk\"",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 162,
+            "className": "ProjectWorkspace",
+            "memberName": "notifyPageFileChanged",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "probeLink",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<{\n        embeddable: boolean;\n        reason: string;\n    }>"
+          },
+          "returnTypeText": "Promise<{\n        embeddable: boolean;\n        reason: string;\n    }>",
+          "jsdoc": "/** 执行 probe Link 操作。 */",
+          "paramsTypeText": "url: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 164,
+            "className": "ProjectWorkspace",
+            "memberName": "probeLink",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "listReferenceProjects",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<ProjectSummary[]>"
+          },
+          "returnTypeText": "Promise<ProjectSummary[]>",
+          "jsdoc": "/** 执行 list Reference Projects 操作。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 169,
+            "className": "ProjectWorkspace",
+            "memberName": "listReferenceProjects",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "listReferenceProjectPages",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "projectId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<ProjectPageReference[]>"
+          },
+          "returnTypeText": "Promise<ProjectPageReference[]>",
+          "jsdoc": "/** 执行 list Reference Project Pages 操作。 */",
+          "paramsTypeText": "projectId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts",
+            "line": 171,
+            "className": "ProjectWorkspace",
+            "memberName": "listReferenceProjectPages",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.983Z"
+}

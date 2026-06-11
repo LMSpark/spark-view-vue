@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/support/RendererFieldScope
+@spark-appworks/spark-component 的 components/containers/support/RendererFieldScope 模块。
+导出 ClassModel symbol: RendererFieldScopeProps（共 1 个 symbol）。
+-->
 <template>
   <el-form
     :model="formModel"
@@ -41,8 +46,11 @@ import { isDataRow, type DataRow } from '@spark-appworks/spark-data'
 import { useContainerGrid } from '../runtime/container-layout'
 import { syncReactiveRow } from './row-mirror-sync'
 
+/** r-field-scope 字段宿主容器属性，负责提供行上下文和表单布局。 */
 type RendererFieldScopeProps = {
+  /** 固定组件类型，用于注册表识别字段宿主容器。 */
   type?: 'r-field-scope'
+  /** 字段宿主容器节点 ID。 */
   id?: string
   /** 表单数据模型 */
   model?: DataRow

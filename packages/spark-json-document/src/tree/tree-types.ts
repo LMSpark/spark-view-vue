@@ -8,10 +8,12 @@ import type { JsonPath, JsonValue, JsonObject } from '../core'
 
 // ── 节点类型枚举 ───────────────────────────────────────────────
 
+/** Json Node Type 的语义模型。 */
 export type JsonNodeType = 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null'
 
 // ── 树节点（纯模型，6 字段）─────────────────────────────────
 
+/** Tree Node 的语义模型。 */
 export type TreeNode = {
   /** 节点 UUID */
   readonly id: string
@@ -29,6 +31,7 @@ export type TreeNode = {
 
 // ── 显示行（toDisplayRows 输出）──────────────────────────────
 
+/** Tree Display Node 的语义模型。 */
 export type TreeDisplayNode = TreeNode & {
   /** 嵌套深度（根 = 0） */
   readonly depth: number
@@ -46,10 +49,12 @@ export type TreeDisplayNode = TreeNode & {
 
 // ── 树模型 ────────────────────────────────────────────────────
 
+/** Tree Model 的语义模型。 */
 export type TreeModel = ReadonlyMap<string, TreeNode>
 
 // ── Mutation 结果 ─────────────────────────────────────────────
 
+/** Mutation Result 的返回结果。 */
 export type MutationResult = {
   /** 变更后的新树模型 */
   readonly model: TreeModel
@@ -61,6 +66,7 @@ export type MutationResult = {
 
 // ── 变更输入类型 ──────────────────────────────────────────────
 
+/** Rename Node Key Input 的输入数据。 */
 export type RenameNodeKeyInput = Readonly<{
   model: TreeModel
   uid: string
@@ -68,6 +74,7 @@ export type RenameNodeKeyInput = Readonly<{
   policy?: Partial<JsonTreePolicy>
 }>
 
+/** Update Node Type Input 的输入数据。 */
 export type UpdateNodeTypeInput = Readonly<{
   model: TreeModel
   uid: string
@@ -77,6 +84,7 @@ export type UpdateNodeTypeInput = Readonly<{
 
 // ── 策略接口 ─────────────────────────────────────────────────
 
+/** Json Tree Policy 的语义模型。 */
 export type JsonTreePolicy = {
   /** 根节点显示标签。默认 '$' */
   rootLabel?: string
@@ -107,13 +115,18 @@ export type JsonTreePolicy = {
  * - 若某 key 已存在且不都是 object，跳过（不覆盖）
  */
 export type AutoPopulateEntry = {
-  targetPath: JsonPath
-  entries: Record<string, JsonValue>
+    /** target Path 路径。 */
+targetPath: JsonPath
+    /** entries 字段。 */
+entries: Record<string, JsonValue>
 }
 
 // ── 平铺文档类型 ──────────────────────────────────────────────
 
+/** Flat Json Tree Document 的语义模型。 */
 export type FlatJsonTreeDocument = {
-  readonly rootType: 'object' | 'array'
-  readonly rows: TreeNode[]
+    /** root Type 字段。 */
+readonly rootType: 'object' | 'array'
+    /** 行数据集合。 */
+readonly rows: TreeNode[]
 }

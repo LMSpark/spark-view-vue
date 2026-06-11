@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/column-validation.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:column-validation",
+    "sourcePath": "declarations/packages/spark-data/src/column-validation.d.ts",
+    "sourceFile": "packages/spark-data/src/column-validation.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "column-validation",
+    "jsdoc": "列验证规则提取\n从 DataColumn 元数据提取框架无关的验证规则描述符。\nUI 框架层（如 Element Plus）负责将描述符转换为具体的表单验证规则。\n数据流：pagedata.json → DataColumn → extractColumnRules() → UI 层转换 → el-form-item :rules",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ValidationRuleType",
+      "ColumnValidationRule"
+    ]
+  },
+  "symbols": [
+    "ValidationRuleType",
+    "ColumnValidationRule"
+  ],
+  "models": {
+    "ValidationRuleType": {
+      "kind": "ValidationRuleType",
+      "className": "ValidationRuleType",
+      "jsdoc": "/** 验证规则类型 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'required' | 'type' | 'minLength' | 'maxLength' | 'min' | 'max' | 'pattern'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'required'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'type'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'minLength'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'maxLength'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'min'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'max'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'pattern'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/column-validation.d.ts",
+        "line": 11,
+        "className": "ValidationRuleType",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ColumnValidationRule": {
+      "kind": "ColumnValidationRule",
+      "className": "ColumnValidationRule",
+      "jsdoc": "/** 框架无关的验证规则描述符 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    type: 'required' | 'type';\n    message: string;\n} | {\n    type: 'minLength' | 'maxLength' | 'min' | 'max';\n    message: string;\n    value: number;\n} | {\n    type: 'pattern';\n    message: string;\n    value: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "{\n    type: 'required' | 'type';\n    message: string;\n}"
+        },
+        {
+          "kind": "union",
+          "typeText": "{\n    type: 'minLength' | 'maxLength' | 'min' | 'max';\n    message: string;\n    value: number;\n}"
+        },
+        {
+          "kind": "union",
+          "typeText": "{\n    type: 'pattern';\n    message: string;\n    value: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/column-validation.d.ts",
+        "line": 13,
+        "className": "ColumnValidationRule",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.691Z"
+}

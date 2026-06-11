@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/views/platform/LoginView.vue.d.ts",
+  "module": {
+    "name": "app:views/platform/LoginView",
+    "sourcePath": "declarations/src/views/platform/LoginView.vue.d.ts",
+    "sourceFile": "src/views/platform/LoginView.vue",
+    "packageName": "app",
+    "modulePath": "views/platform/LoginView",
+    "jsdoc": "@module app:views/platform/LoginView\napp 的 views/platform/LoginView 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.150Z"
+}

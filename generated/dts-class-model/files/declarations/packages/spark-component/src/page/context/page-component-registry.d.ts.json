@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/page/context/page-component-registry.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:page/context/page-component-registry",
+    "sourcePath": "declarations/packages/spark-component/src/page/context/page-component-registry.d.ts",
+    "sourceFile": "packages/spark-component/src/page/context/page-component-registry.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/context/page-component-registry",
+    "jsdoc": "@module @spark-appworks/spark-component:page/context/page-component-registry\n@spark-appworks/spark-component 的 page/context/page-component-registry 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.638Z"
+}

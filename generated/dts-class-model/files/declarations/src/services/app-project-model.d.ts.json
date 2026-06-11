@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/app-project-model.d.ts",
+  "module": {
+    "name": "app:services/app-project-model",
+    "sourcePath": "declarations/src/services/app-project-model.d.ts",
+    "sourceFile": "src/services/app-project-model.ts",
+    "packageName": "app",
+    "modulePath": "services/app-project-model",
+    "jsdoc": "@module app:services/app-project-model\napp 的 services/app-project-model 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.074Z"
+}

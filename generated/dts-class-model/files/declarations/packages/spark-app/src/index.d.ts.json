@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:index",
+    "sourcePath": "declarations/packages/spark-app/src/index.d.ts",
+    "sourceFile": "packages/spark-app/src/index.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "index",
+    "jsdoc": "@spark-appworks/spark-app\nSPARK Application Layer - 应用层基础设施",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.922Z"
+}

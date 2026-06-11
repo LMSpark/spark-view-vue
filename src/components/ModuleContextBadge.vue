@@ -1,3 +1,8 @@
+<!--
+@module app:components/ModuleContextBadge
+app 的 components/ModuleContextBadge 模块。
+导出 ClassModel symbol: Props（共 1 个 symbol）。
+-->
 <template>
   <div class="module-context-badge">
     <el-tag size="small" type="info">{{ displayText }}</el-tag>
@@ -14,9 +19,13 @@ import type {
   SparkNode,
 } from '@spark-appworks/spark-component'
 
+/** 模块上下文徽标属性，描述当前配置摘要和空态文本。 */
 type Props = {
+  /** 当前模块上下文配置对象。 */
   config?: SparkNode
+  /** 徽标前置标签文本。 */
   label?: string
+  /** 配置为空时展示的文本。 */
   emptyText?: string}
 
 const props = withDefaults(defineProps<Props>(), {

@@ -1,0 +1,336 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/support/beforeRender",
+    "sourcePath": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+    "sourceFile": "packages/spark-component/src/components/support/beforeRender.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/support/beforeRender",
+    "jsdoc": "@module @spark-appworks/spark-component:components/support/beforeRender\n@spark-appworks/spark-component:components/support/beforeRender 模块，属于 SPARK component infrastructure/support。\n组件目录: support。\n导出 ClassModel symbol: BeforeRenderContext, BeforeRenderState, MergeBeforeRenderOptions（共 3 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "BeforeRenderContext",
+      "BeforeRenderState",
+      "MergeBeforeRenderOptions"
+    ],
+    "componentLevel": "infrastructure",
+    "componentLayer": "support",
+    "componentDirectory": "support"
+  },
+  "symbols": [
+    "BeforeRenderContext",
+    "BeforeRenderState",
+    "MergeBeforeRenderOptions"
+  ],
+  "models": {
+    "BeforeRenderContext": {
+      "kind": "BeforeRenderContext",
+      "className": "BeforeRenderContext",
+      "jsdoc": "/** onBeforeRender 同步钩子接收到的节点渲染上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前节点 id。 */\n    id?: string | undefined;\n    /** 当前节点组件类型。 */\n    type: string;\n    /** 当前节点 props 的安全副本，不包含 onBeforeRender 和内部标记。 */\n    props: Record<string, unknown>;\n    /** 当前节点子节点配置。 */\n    children?: SparkNodeChildren | undefined;\n    /** 当前节点所在行上下文。 */\n    row?: DataRow | null | undefined;\n    /** 当前节点绑定的任意业务数据。 */\n    data?: unknown;\n    /** 当前节点在重复渲染集合中的索引。 */\n    index?: number | undefined;\n    /** 当前节点可访问的 DataView 数据源。 */\n    dataSource?: DataView | null | undefined;\n    /** 当前节点所在模型的权限配置。 */\n    modelPermission?: ModelPermission | undefined;\n    /** 当前渲染宿主信息。 */\n    host?: {\n        /** 宿主组件类型；缺失时为空。 */\n        type: string | null;\n    } | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+        "line": 11,
+        "className": "BeforeRenderContext",
+        "declarationKind": "type",
+        "componentLevel": "infrastructure",
+        "componentLayer": "support",
+        "componentDirectory": "support"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前节点 id。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 13,
+            "className": "BeforeRenderContext",
+            "memberName": "id",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        },
+        {
+          "name": "type",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前节点组件类型。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 15,
+            "className": "BeforeRenderContext",
+            "memberName": "type",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        },
+        {
+          "name": "props",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前节点 props 的安全副本，不包含 onBeforeRender 和内部标记。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 17,
+            "className": "BeforeRenderContext",
+            "memberName": "props",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        },
+        {
+          "name": "children",
+          "schema": {
+            "title": "SparkNodeChildren | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前节点子节点配置。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 19,
+            "className": "BeforeRenderContext",
+            "memberName": "children",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        },
+        {
+          "name": "row",
+          "schema": {
+            "title": "DataRow | null | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前节点所在行上下文。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 21,
+            "className": "BeforeRenderContext",
+            "memberName": "row",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        },
+        {
+          "name": "data",
+          "schema": {
+            "title": "unknown"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前节点绑定的任意业务数据。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 23,
+            "className": "BeforeRenderContext",
+            "memberName": "data",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        },
+        {
+          "name": "index",
+          "schema": {
+            "title": "number | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前节点在重复渲染集合中的索引。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 25,
+            "className": "BeforeRenderContext",
+            "memberName": "index",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        },
+        {
+          "name": "dataSource",
+          "schema": {
+            "title": "DataView | null | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前节点可访问的 DataView 数据源。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 27,
+            "className": "BeforeRenderContext",
+            "memberName": "dataSource",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        },
+        {
+          "name": "modelPermission",
+          "schema": {
+            "title": "ModelPermission | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前节点所在模型的权限配置。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 29,
+            "className": "BeforeRenderContext",
+            "memberName": "modelPermission",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        },
+        {
+          "name": "host",
+          "schema": {
+            "title": "{\n        /** 宿主组件类型；缺失时为空。 */\n        type: string | null;\n    } | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当前渲染宿主信息。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 31,
+            "className": "BeforeRenderContext",
+            "memberName": "host",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "BeforeRenderState": {
+      "kind": "BeforeRenderState",
+      "className": "BeforeRenderState",
+      "jsdoc": "/** onBeforeRender 解析后的渲染决策。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 节点最终是否可见。 */\n    visible: boolean;\n    /** 需要合并回节点 props 的补丁。 */\n    propsPatch: Record<string, unknown>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+        "line": 37,
+        "className": "BeforeRenderState",
+        "declarationKind": "type",
+        "componentLevel": "infrastructure",
+        "componentLayer": "support",
+        "componentDirectory": "support"
+      },
+      "attributes": [
+        {
+          "name": "visible",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 节点最终是否可见。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 39,
+            "className": "BeforeRenderState",
+            "memberName": "visible",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        },
+        {
+          "name": "propsPatch",
+          "schema": {
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 需要合并回节点 props 的补丁。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 41,
+            "className": "BeforeRenderState",
+            "memberName": "propsPatch",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "MergeBeforeRenderOptions": {
+      "kind": "MergeBeforeRenderOptions",
+      "className": "MergeBeforeRenderOptions",
+      "jsdoc": "/** 合并 beforeRender 补丁时的控制选项。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 是否写入内部已解析标记，避免同一节点重复执行 onBeforeRender。 */\n    markResolved?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+        "line": 44,
+        "className": "MergeBeforeRenderOptions",
+        "declarationKind": "type",
+        "componentLevel": "infrastructure",
+        "componentLayer": "support",
+        "componentDirectory": "support"
+      },
+      "attributes": [
+        {
+          "name": "markResolved",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否写入内部已解析标记，避免同一节点重复执行 onBeforeRender。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/support/beforeRender.d.ts",
+            "line": 46,
+            "className": "MergeBeforeRenderOptions",
+            "memberName": "markResolved",
+            "declarationKind": "interface",
+            "componentLevel": "infrastructure",
+            "componentLayer": "support",
+            "componentDirectory": "support"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.601Z"
+}

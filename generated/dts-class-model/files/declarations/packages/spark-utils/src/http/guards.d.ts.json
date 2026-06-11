@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/http/guards.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:http/guards",
+    "sourcePath": "declarations/packages/spark-utils/src/http/guards.d.ts",
+    "sourceFile": "packages/spark-utils/src/http/guards.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "http/guards",
+    "jsdoc": "@module @spark-appworks/spark-utils:http/guards\n@spark-appworks/spark-utils 的 http/guards 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.004Z"
+}

@@ -33,11 +33,16 @@ export type ConfigSourceOptions = {
  * 租户信息（完整版，含 logo/theme 等展示字段）
  */
 export type FullTenantInfo = {
-  tenantId: string
-  tenantName: string
-  tenantCode?: string
-  logo?: string
-  theme?: {
+    /** tenant Id 标识。 */
+tenantId: string
+    /** tenant Name 名称。 */
+tenantName: string
+    /** tenant Code 字段。 */
+tenantCode?: string
+    /** logo 字段。 */
+logo?: string
+    /** theme 字段。 */
+theme?: {
     primaryColor?: string
     [key: string]: unknown
   }}
@@ -93,4 +98,5 @@ export type AppFullConfig = {
  * 租户配置（可覆盖默认配置的部分）
  */
 export type TenantConfig = Partial<AppFullConfig> & {
-  tenant: FullTenantInfo}
+    /** tenant 字段。 */
+tenant: FullTenantInfo}

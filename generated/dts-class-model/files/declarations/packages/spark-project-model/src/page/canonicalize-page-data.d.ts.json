@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/page/canonicalize-page-data.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:page/canonicalize-page-data",
+    "sourcePath": "declarations/packages/spark-project-model/src/page/canonicalize-page-data.d.ts",
+    "sourceFile": "packages/spark-project-model/src/page/canonicalize-page-data.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "page/canonicalize-page-data",
+    "jsdoc": "pagedata.json 规范化：与 spark-data DataSet 序列化对齐，不含设计器 UI 语义。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.925Z"
+}

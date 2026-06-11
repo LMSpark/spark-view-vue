@@ -67,6 +67,7 @@ type AiAgentSendInput = Readonly<{
   scope: AiAgentScope
 }>
 
+/** Ai Agent Run Command 的命令参数。 */
 export type AiAgentRunCommand<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
   options: AiAgentOptions<TInput>
   kindID: string
@@ -74,6 +75,7 @@ export type AiAgentRunCommand<TInput extends AiJsonParams = AiJsonParams> = Read
   chat?: AiAgentTaskChatOptions
 }>
 
+/** Ai Agent Run Result 的返回结果。 */
 export type AiAgentRunResult<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
   task: AiAgentTask<TInput>
   session: AiAgentSession
@@ -224,14 +226,18 @@ class AiAgentMessageSender {
 // AI_AGENT_TRACE[host-session-entry]: 实时业务会话经 AiAgent.run 进入 AI Host。
 // AI_AGENT_REFACTOR_SOURCE[host-session-entry]: sessionId 来自业务 kind + 实例 id；turn 隔离继续在 send/transport 层传递。
 export class AiAgentSession {
-  public readonly target: AiAgentTarget
-  public readonly scope: AiAgentScope
-  public readonly sessionId: string
+    /** 目标对象。 */
+public readonly target: AiAgentTarget
+    /** 业务作用域。 */
+public readonly scope: AiAgentScope
+    /** session Id 标识。 */
+public readonly sessionId: string
 
   private readonly senderCore: AiAgentMessageSender
   private readonly state = new AiAgentMessageSendState()
 
-  public constructor(
+    /** 创建 Ai Agent Session 实例。 */
+public constructor(
     private readonly options: AiAgentOptions,
     targetInput: AiAgentTarget,
   ) {

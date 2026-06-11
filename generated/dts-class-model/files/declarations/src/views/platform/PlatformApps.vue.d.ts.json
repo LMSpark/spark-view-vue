@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/views/platform/PlatformApps.vue.d.ts",
+  "module": {
+    "name": "app:views/platform/PlatformApps",
+    "sourcePath": "declarations/src/views/platform/PlatformApps.vue.d.ts",
+    "sourceFile": "src/views/platform/PlatformApps.vue",
+    "packageName": "app",
+    "modulePath": "views/platform/PlatformApps",
+    "jsdoc": "@module app:views/platform/PlatformApps\napp 的 views/platform/PlatformApps 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.152Z"
+}

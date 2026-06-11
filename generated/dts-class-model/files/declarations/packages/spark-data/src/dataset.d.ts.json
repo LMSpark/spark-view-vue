@@ -1,0 +1,1425 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/dataset.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:dataset",
+    "sourcePath": "declarations/packages/spark-data/src/dataset.d.ts",
+    "sourceFile": "packages/spark-data/src/dataset.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "dataset",
+    "jsdoc": "DataSet — 数据空间协调器（容器 + 数据管理）\n职责：表注册管理查询、关系注册管理查询、数据加载协调\n不操作下层：不主动调用 DataView/DataTable 的方法来改变它们的状态\n不消费下层：不订阅 DataView 的事件（DataSet 是顶层）",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "DataSetConfig",
+      "DataSet"
+    ]
+  },
+  "symbols": [
+    "DataSetConfig",
+    "DataSet"
+  ],
+  "models": {
+    "DataSetConfig": {
+      "kind": "DataSetConfig",
+      "className": "DataSetConfig",
+      "jsdoc": "/** Data Set Config 的配置结构。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** data Set Name 名称。 */\n    dataSetName: string;\n    /** tables 字段。 */\n    tables: Record<string, TableMetadata>;\n    /** schema Version 字段。 */\n    schemaVersion?: number | undefined;\n    /** table Relations 字段。 */\n    tableRelations?: TableRelation[] | undefined;\n    /** view Dependencies 字段。 */\n    viewDependencies?: ViewDependency[] | undefined;\n    /** version 字段。 */\n    version?: number | undefined;\n    /** page Id 标识。 */\n    pageId?: string | undefined;\n    /** save Changes 字段。 */\n    saveChanges?: DataSetSaveChangesConfig | undefined;\n    /** layout 字段。 */\n    layout?: DataSetMetadata['layout'] | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/dataset.d.ts",
+        "line": 16,
+        "className": "DataSetConfig",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "dataSetName",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** data Set Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 18,
+            "className": "DataSetConfig",
+            "memberName": "dataSetName",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "tables",
+          "schema": {
+            "title": "Record<string, TableMetadata>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** tables 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 20,
+            "className": "DataSetConfig",
+            "memberName": "tables",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "schemaVersion",
+          "schema": {
+            "title": "number | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** schema Version 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 22,
+            "className": "DataSetConfig",
+            "memberName": "schemaVersion",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "tableRelations",
+          "schema": {
+            "title": "TableRelation[] | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** table Relations 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 24,
+            "className": "DataSetConfig",
+            "memberName": "tableRelations",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "viewDependencies",
+          "schema": {
+            "title": "ViewDependency[] | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** view Dependencies 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 26,
+            "className": "DataSetConfig",
+            "memberName": "viewDependencies",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "version",
+          "schema": {
+            "title": "number | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** version 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 28,
+            "className": "DataSetConfig",
+            "memberName": "version",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "pageId",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** page Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 30,
+            "className": "DataSetConfig",
+            "memberName": "pageId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "saveChanges",
+          "schema": {
+            "title": "DataSetSaveChangesConfig | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** save Changes 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 32,
+            "className": "DataSetConfig",
+            "memberName": "saveChanges",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "layout",
+          "schema": {
+            "title": "DataSetMetadata['layout'] | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** layout 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 34,
+            "className": "DataSetConfig",
+            "memberName": "layout",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataSet": {
+      "kind": "DataSet",
+      "className": "DataSet",
+      "jsdoc": "/** Data Set 的语义模型。 */",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "SparkAIModel",
+          "targetName": "SparkAIModel"
+        },
+        {
+          "kind": "implements",
+          "typeText": "DataSetContract",
+          "targetName": "DataSetContract"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-data/src/dataset.d.ts",
+        "line": 37,
+        "className": "DataSet",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "config": {
+              "title": "DataSetConfig"
+            }
+          },
+          "required": [
+            "config"
+          ],
+          "additionalProperties": false
+        },
+        "jsdoc": "/**\n     * 创建数据集实例\n     * @param config 数据集配置\n     */",
+        "provenance": {
+          "file": "declarations/packages/spark-data/src/dataset.d.ts",
+          "line": 106,
+          "className": "DataSet",
+          "memberName": "constructor",
+          "declarationKind": "class"
+        }
+      },
+      "attributes": [
+        {
+          "name": "dataSetName",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 数据集名称 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 39,
+            "className": "DataSet",
+            "memberName": "dataSetName",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "tables",
+          "schema": {
+            "title": "Record<string, DataTable>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 数据表集合 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 41,
+            "className": "DataSet",
+            "memberName": "tables",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "tableRelations",
+          "schema": {
+            "title": "TableRelation[] | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** L1: 表关系定义 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 43,
+            "className": "DataSet",
+            "memberName": "tableRelations",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "viewDependencies",
+          "schema": {
+            "title": "ViewDependency[] | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** L2: 视图联动定义 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 45,
+            "className": "DataSet",
+            "memberName": "viewDependencies",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "_resolvedRelations",
+          "schema": {
+            "title": "DataRelation[] | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * @internal 展开后的内部扁平关系（TableRelation + ViewDependency 合并）。\n     * CascadeDelegate / DataView / ComputedColumnDelegate 消费此结构。\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 50,
+            "className": "DataSet",
+            "memberName": "_resolvedRelations",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "schemaVersion",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** Schema 格式版本（默认 1） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 52,
+            "className": "DataSet",
+            "memberName": "schemaVersion",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "version",
+          "schema": {
+            "title": "number | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 业务数据版本号（乐观锁） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 54,
+            "className": "DataSet",
+            "memberName": "version",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "pageId",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 页面ID */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 56,
+            "className": "DataSet",
+            "memberName": "pageId",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "saveChangesConfig",
+          "schema": {
+            "title": "DataSetSaveChangesConfig | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** DataSet.saveChanges 的默认提交策略。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 58,
+            "className": "DataSet",
+            "memberName": "saveChangesConfig",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "layout",
+          "schema": {
+            "title": "DataSetMetadata['layout'] | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 设计器布局信息（不参与运行时数据逻辑）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 60,
+            "className": "DataSet",
+            "memberName": "layout",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "_sharedHttpClient",
+          "schema": {
+            "title": "HttpClientBase | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n      * M5: 共享 HTTP 客户端——所有 DataTable 的 CrudService 复用同一 HttpClientBase 实例。\n     * 由外部通过 `setSharedHttpClient(client)` 注入。未设置时各 CrudService 各自 createRequest()。\n     * @internal\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 66,
+            "className": "DataSet",
+            "memberName": "_sharedHttpClient",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "_appServices",
+          "schema": {
+            "title": "DataSetAppServices | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** @internal 页面运行时服务上下文（用于 URL 模板 tenant/project 占位参数解析） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 68,
+            "className": "DataSet",
+            "memberName": "_appServices",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "_pageRoute",
+          "schema": {
+            "title": "unknown"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** @internal 页面路由快照（页面运行时服务缺失时的作用域兜底） */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 70,
+            "className": "DataSet",
+            "memberName": "_pageRoute",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "_activeViewSubs",
+          "schema": {
+            "title": "Array<{\n        handlers: ViewChangeHandlers;\n        unsubs: Array<() => void>;\n    }>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * 活跃的 onAnyViewChange 订阅（handler + 每个视图的清理函数）。\n     * 当 DataTable.getOrCreateView() 创建新视图时，\n     * DataSet._subscribeNewView() 自动为所有活跃订阅追加监听。\n     * @internal\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 85,
+            "className": "DataSet",
+            "memberName": "_activeViewSubs",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "_activeOnSubs",
+          "schema": {
+            "title": "Array<{\n        event: 'loadSuccess' | 'loadError';\n        handler: (payload: {\n            tableName: string;\n            viewId: string;\n            error?: Error;\n        }) => void;\n        unsubs: Array<() => void>;\n    }>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/**\n     * 活跃的 on('loadSuccess'|'loadError') 订阅追踪。\n     * @internal\n     */",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 93,
+            "className": "DataSet",
+            "memberName": "_activeOnSubs",
+            "declarationKind": "class"
+          }
+        }
+      ],
+      "methods": [
+        {
+          "name": "initAutoSelection",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 对所有表的 default 视图触发 autoCurrentFirst / autoSelectFirst 初始选中逻辑。\n     *\n     * 必须在页面脚本（__init__）完成事件订阅**之后**调用，确保订阅者能收到\n     * `currentRowChanged` 事件。渲染层在组件 mounted 钩子中、\n     * `__init__` 执行完毕后调用此方法。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 114,
+            "className": "DataSet",
+            "memberName": "initAutoSelection",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setSharedHttpClient",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "client": {
+                "title": "HttpClientBase"
+              }
+            },
+            "required": [
+              "client"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 注入共享 HTTP 客户端（M5）——所有 DataTable 的 CrudService 将复用该实例。\n     *\n     * 调用时机：DataSet 构建完成后、首次数据请求之前。\n    * 已创建的 CrudService 实例不受影响（它们保留初始化时的 HttpClientBase）。\n     *\n     * @param client  HttpClientBase 实例（通常由应用层 auth 模块创建，带统一拦截器）\n     */",
+          "paramsTypeText": "client: HttpClientBase",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 123,
+            "className": "DataSet",
+            "memberName": "setSharedHttpClient",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setAppServices",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "appServices": {
+                "title": "DataSetAppServices"
+              }
+            },
+            "required": [
+              "appServices"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 设置 App Services。 */",
+          "paramsTypeText": "appServices: DataSetAppServices",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 125,
+            "className": "DataSet",
+            "memberName": "setAppServices",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "setPageRoute",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "route": {
+                "title": "unknown"
+              }
+            },
+            "required": [
+              "route"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 设置 Page Route。 */",
+          "paramsTypeText": "route: unknown",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 127,
+            "className": "DataSet",
+            "memberName": "setPageRoute",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getRequestTemplateParams",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Record<string, unknown>"
+          },
+          "returnTypeText": "Record<string, unknown>",
+          "jsdoc": "/** 读取 Request Template Params。 */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 129,
+            "className": "DataSet",
+            "memberName": "getRequestTemplateParams",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "on",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "event": {
+                "title": "'loadSuccess' | 'loadError'"
+              },
+              "handler": {
+                "title": "(payload: {\n        tableName: string;\n        viewId: string;\n        error?: Error;\n    }) => void"
+              }
+            },
+            "required": [
+              "event",
+              "handler"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "() => void"
+          },
+          "returnTypeText": "() => void",
+          "jsdoc": "/**\n     * 订阅数据集级别的加载事件（覆盖所有已注册表的所有视图）\n     *\n     * - `'loadSuccess'`：任一视图从服务器成功加载数据后触发\n     * - `'loadError'`：任一视图加载失败后触发（payload.error 含错误对象）\n     *\n     * @returns 取消订阅函数（页面卸载时调用以防内存泄漏）\n     *\n     * @example\n     * ```js\n     * const off = dataSet.on('loadSuccess', ({ tableName }) => {\n     *   ElMessage.success(`${tableName} 加载完成`)\n     * })\n     * // 资源释放时: off()\n     * ```\n     */",
+          "paramsTypeText": "event: \"loadSuccess\" | \"loadError\", handler: (payload: { tableName: string; viewId: string; error?: Error | undefined; }) => void",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 146,
+            "className": "DataSet",
+            "memberName": "on",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "onAnyViewChange",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "handlers": {
+                "title": "ViewChangeHandlers"
+              }
+            },
+            "required": [
+              "handlers"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "() => void"
+          },
+          "returnTypeText": "() => void",
+          "jsdoc": "/**\n     * 订阅此 DataSet 内任意视图的状态变化（替代全局 event-bus）。\n     *\n     * 接收 ViewChangeHandlers 映射，按需注册感兴趣的事件类型。\n     * 自动追踪：后续通过 getOrCreateView() 动态创建的视图也会被订阅。\n     * 作用域严格限定于本实例，不同页面的 DataSet 相互隔离。\n     *\n     * @example\n     * ```ts\n     * const off = dataSet.onAnyViewChange({\n     *   currentRowChanged(tableName, viewId, currentRow) { ... },\n     *   selectedRowsChanged(tableName, viewId, selectedRows) { ... },\n     *   cleared(tableName, viewId) { ... },\n     * })\n     * ```\n     */",
+          "paramsTypeText": "handlers: ViewChangeHandlers",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 167,
+            "className": "DataSet",
+            "memberName": "onAnyViewChange",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "_subscribeNewView",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "view": {
+                "title": "DataView"
+              }
+            },
+            "required": [
+              "view"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 将动态创建的视图注册到所有活跃订阅中。\n     * 由 DataTable.getOrCreateView() 在创建新视图时调用。\n     * @internal\n     */",
+          "paramsTypeText": "view: DataView",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 177,
+            "className": "DataSet",
+            "memberName": "_subscribeNewView",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "triggerAutoLoad",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 触发所有标记了 `autoLoad: true` 的 default 视图自动加载。\n     *\n     * 渲染层（如 usePageDataSet）在构建 DataSet 后调用此方法；\n     * 业务脚本不再需要在 `__init__` 中手动写 `view.loadFromServer()`。\n     *\n     * 仅处理 default 视图——命名视图和从表通常由级联机制驱动。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 188,
+            "className": "DataSet",
+            "memberName": "triggerAutoLoad",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getChildRelations",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentTable": {
+                "type": "string",
+                "title": "string"
+              },
+              "parentViewId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "parentTable",
+              "parentViewId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "DataRelation[]",
+            "items": true
+          },
+          "returnTypeText": "DataRelation[]",
+          "jsdoc": "/**\n     * 查询以指定视图为父的子关系（视图级索引）\n     * @param parentTable 父表名\n     * @param parentViewId 父视图ID\n     */",
+          "paramsTypeText": "parentTable: string, parentViewId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 194,
+            "className": "DataSet",
+            "memberName": "getChildRelations",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getParentRelations",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "childTable": {
+                "type": "string",
+                "title": "string"
+              },
+              "childViewId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "childTable",
+              "childViewId"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "DataRelation[]",
+            "items": true
+          },
+          "returnTypeText": "DataRelation[]",
+          "jsdoc": "/**\n     * 查询以指定视图为子的父关系（视图级索引）\n     * @param childTable 子表名\n     * @param childViewId 子视图ID\n     */",
+          "paramsTypeText": "childTable: string, childViewId: string",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 200,
+            "className": "DataSet",
+            "memberName": "getParentRelations",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "resolveDependencyFilter",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rel": {
+                "title": "DataRelation"
+              }
+            },
+            "required": [
+              "rel"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "FilterExpression | undefined | null"
+          },
+          "returnTypeText": "FilterExpression | undefined | null",
+          "jsdoc": "/** 解析 Dependency Filter。 */",
+          "paramsTypeText": "rel: DataRelation",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 202,
+            "className": "DataSet",
+            "memberName": "resolveDependencyFilter",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getTableChildRelations",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentTable": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "parentTable"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "TableRelation[]",
+            "items": true
+          },
+          "returnTypeText": "TableRelation[]",
+          "jsdoc": "/**\n     * 查询以指定表为父的所有表关系（表级索引，聚合函数消费）\n     */",
+          "paramsTypeText": "parentTable: string",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 206,
+            "className": "DataSet",
+            "memberName": "getTableChildRelations",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getTableParentRelations",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "childTable": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "childTable"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "TableRelation[]",
+            "items": true
+          },
+          "returnTypeText": "TableRelation[]",
+          "jsdoc": "/**\n     * 查询以指定表为子的所有表关系（表级索引）\n     */",
+          "paramsTypeText": "childTable: string",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 210,
+            "className": "DataSet",
+            "memberName": "getTableParentRelations",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "replaceFromJson",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "json": {
+                "title": "DataSetMetadata | Record<string, unknown> | string"
+              }
+            },
+            "required": [
+              "json"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/** 执行 replace From Json 操作。 */",
+          "paramsTypeText": "json: string | Record<string, unknown> | DataSetMetadata",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 220,
+            "className": "DataSet",
+            "memberName": "replaceFromJson",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "listSnapshots",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "DataSetHistoryListOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "title": "DataSetHistorySnapshot[]",
+            "items": true
+          },
+          "returnTypeText": "DataSetHistorySnapshot[]",
+          "jsdoc": "/** 执行 list Snapshots 操作。 */",
+          "paramsTypeText": "options?: DataSetHistoryListOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 222,
+            "className": "DataSet",
+            "memberName": "listSnapshots",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getSnapshot",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "title": "DataSetSnapshotSelector"
+              },
+              "options": {
+                "title": "DataSetHistoryListOptions"
+              }
+            },
+            "required": [
+              "selector"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataSetHistorySnapshot | null"
+          },
+          "returnTypeText": "DataSetHistorySnapshot | null",
+          "jsdoc": "/** 读取 Snapshot。 */",
+          "paramsTypeText": "selector: DataSetSnapshotSelector, options?: DataSetHistoryListOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 224,
+            "className": "DataSet",
+            "memberName": "getSnapshot",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "commitSnapshot",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "DataSetCommitSnapshotOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataSetHistorySnapshot"
+          },
+          "returnTypeText": "DataSetHistorySnapshot",
+          "jsdoc": "/** 执行 commit Snapshot 操作。 */",
+          "paramsTypeText": "options?: DataSetCommitSnapshotOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 226,
+            "className": "DataSet",
+            "memberName": "commitSnapshot",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "restoreSnapshot",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "title": "DataSetSnapshotSelector"
+              },
+              "options": {
+                "title": "DataSetHistoryListOptions"
+              }
+            },
+            "required": [
+              "selector"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataSetHistorySnapshot | null"
+          },
+          "returnTypeText": "DataSetHistorySnapshot | null",
+          "jsdoc": "/** 执行 restore Snapshot 操作。 */",
+          "paramsTypeText": "selector: DataSetSnapshotSelector, options?: DataSetHistoryListOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 228,
+            "className": "DataSet",
+            "memberName": "restoreSnapshot",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "addTable",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string",
+                "title": "string"
+              },
+              "columns": {
+                "type": "array",
+                "title": "DataColumn[]",
+                "items": true
+              }
+            },
+            "required": [
+              "tableName",
+              "columns"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataTable"
+          },
+          "returnTypeText": "DataTable",
+          "jsdoc": "/**\n     * 动态添加一张表（含 default 视图）。\n     * @returns 新建的 DataTable 实例\n     * @throws 表名已存在时抛 Error\n     */",
+          "paramsTypeText": "tableName: string, columns: DataColumn[]",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 234,
+            "className": "DataSet",
+            "memberName": "addTable",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "removeTable",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "tableName"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 删除未被关系或依赖引用的数据表。\n     * fail-fast：若仍被 tableRelation / viewDependency 引用，则拒绝删除。\n     */",
+          "paramsTypeText": "tableName: string",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 239,
+            "className": "DataSet",
+            "memberName": "removeTable",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "addRelation",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "title": "{\n        parentTable: string;\n        childTable: string;\n        parentField: string;\n        childField: string;\n        relationName?: string;\n    }"
+              }
+            },
+            "required": [
+              "params"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 添加 TableRelation（父子表关系）。\n     * @throws 引用的表/字段不存在或关系已重复时抛 Error\n     */",
+          "paramsTypeText": "params: { parentTable: string; childTable: string; parentField: string; childField: string; relationName?: string | undefined; }",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 247,
+            "className": "DataSet",
+            "memberName": "addRelation",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "updateRelation",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "title": "{\n        parentTable: string;\n        childTable: string;\n        parentField?: string;\n        childField?: string;\n    }"
+              },
+              "updates": {
+                "title": "Partial<TableRelation>"
+              }
+            },
+            "required": [
+              "selector",
+              "updates"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "TableRelation"
+          },
+          "returnTypeText": "TableRelation",
+          "jsdoc": "/**\n     * 更新 TableRelation。\n     * 若存在多个同 parentTable→childTable 的关系，必须显式指定 parentField/childField 消歧。\n     */",
+          "paramsTypeText": "selector: { parentTable: string; childTable: string; parentField?: string | undefined; childField?: string | undefined; }, updates: Partial<TableRelation>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 258,
+            "className": "DataSet",
+            "memberName": "updateRelation",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "removeRelation",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "title": "{\n        parentTable: string;\n        childTable: string;\n        parentField?: string;\n        childField?: string;\n    }"
+              }
+            },
+            "required": [
+              "selector"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 删除 TableRelation。\n     * @throws 关系不存在或被 viewDependency 引用时抛 Error\n     */",
+          "paramsTypeText": "selector: { parentTable: string; childTable: string; parentField?: string | undefined; childField?: string | undefined; }",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 268,
+            "className": "DataSet",
+            "memberName": "removeRelation",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "addDependency",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "dependency": {
+                "title": "ViewDependency"
+              }
+            },
+            "required": [
+              "dependency"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 添加 ViewDependency（视图联动依赖）。\n     * @throws 依赖引用非法或重复时抛 Error\n     */",
+          "paramsTypeText": "dependency: ViewDependency",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 279,
+            "className": "DataSet",
+            "memberName": "addDependency",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "updateDependency",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentTable": {
+                "type": "string",
+                "title": "string"
+              },
+              "childTable": {
+                "type": "string",
+                "title": "string"
+              },
+              "updates": {
+                "title": "Partial<ViewDependency>"
+              }
+            },
+            "required": [
+              "parentTable",
+              "childTable",
+              "updates"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "ViewDependency"
+          },
+          "returnTypeText": "ViewDependency",
+          "jsdoc": "/**\n     * 更新 ViewDependency。\n     * fail-fast：目标 parentTable→childTable 必须已有底层 tableRelation。\n     */",
+          "paramsTypeText": "parentTable: string, childTable: string, updates: Partial<ViewDependency>",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 284,
+            "className": "DataSet",
+            "memberName": "updateDependency",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "removeDependency",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentTable": {
+                "type": "string",
+                "title": "string"
+              },
+              "childTable": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "parentTable",
+              "childTable"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 删除 ViewDependency。\n     * @throws 依赖不存在时抛 Error\n     */",
+          "paramsTypeText": "parentTable: string, childTable: string",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 289,
+            "className": "DataSet",
+            "memberName": "removeDependency",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "destroy",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "void"
+          },
+          "returnTypeText": "void",
+          "jsdoc": "/**\n     * 销毁 DataSet 及其所有 DataTable/DataView 的资源。\n     *\n     * 调用后：\n     * - 所有 `onAnyViewChange` / `on('loadSuccess'|'loadError')` 订阅被清理\n     * - 所有 DataView 的 destroy() 被调用（清理级联、CRUD、计算列、脏追踪等委托）\n     * - 共享 HTTP 客户端引用被释放\n     * - 标记为已销毁，后续操作静默忽略\n     *\n     * 使用场景：页面卸载时由 `usePageDataSet.clearDataSet()` 调用。\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 301,
+            "className": "DataSet",
+            "memberName": "destroy",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getTable",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataTable | undefined"
+          },
+          "returnTypeText": "DataTable | undefined",
+          "jsdoc": "/**\n     * 获取数据表\n     * @param name 表名\n     * @returns 数据表实例\n     */",
+          "paramsTypeText": "name: string",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 311,
+            "className": "DataSet",
+            "memberName": "getTable",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "getView",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string",
+                "title": "string"
+              },
+              "viewId": {
+                "type": "string",
+                "title": "string"
+              }
+            },
+            "required": [
+              "tableName"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataView | undefined"
+          },
+          "returnTypeText": "DataView | undefined",
+          "jsdoc": "/**\n     * 获取已存在的数据视图（不会创建新视图）\n     */",
+          "paramsTypeText": "tableName: string, viewId?: string | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 315,
+            "className": "DataSet",
+            "memberName": "getView",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "saveChanges",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "title": "DataSetSaveChangesOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "Promise<CrudResult<DataSetSaveChangesResult>>"
+          },
+          "returnTypeText": "Promise<CrudResult<DataSetSaveChangesResult>>",
+          "jsdoc": "/**\n     * 保存 DataSet 范围内的编辑态和 staged 变更。\n     *\n     * 默认保存所有有变更视图；如果传入 views，则只保存指定视图/行。\n     * 提交顺序按 tableRelations 做父表 → 子表排序，保证主从页面一次提交时主表先落库。\n     */",
+          "paramsTypeText": "options?: DataSetSaveChangesOptions | undefined",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 322,
+            "className": "DataSet",
+            "memberName": "saveChanges",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "toJson",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataSetMetadata"
+          },
+          "returnTypeText": "DataSetMetadata",
+          "jsdoc": "/**\n     * 序列化为 JSON 友好的元数据对象\n     * @returns 数据集元数据\n     */",
+          "paramsTypeText": "",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 336,
+            "className": "DataSet",
+            "memberName": "toJson",
+            "declarationKind": "class"
+          }
+        },
+        {
+          "name": "fromJson",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "json": {
+                "title": "DataSetMetadata | Record<string, unknown> | string"
+              }
+            },
+            "required": [
+              "json"
+            ],
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "title": "DataSet"
+          },
+          "returnTypeText": "DataSet",
+          "jsdoc": "/**\n     * 从 JSON 对象或 JSON 字符串创建数据集实例。\n     *\n     * 支持：\n     * 1. canonical DataSet 元数据对象\n     * 2. pagedata.json 原始对象（任意 key-value）\n     * 3. 上述两种结构的 JSON 字符串\n     *\n     * 明确拒绝历史 `{ dataset: ... }` 包裹结构，避免模型层同时维护两套顶层事实源。\n     *\n     * @param json 数据集元数据对象、pagedata 原始对象或 JSON 字符串\n     * @returns 数据集实例\n     */",
+          "paramsTypeText": "json: string | Record<string, unknown> | DataSetMetadata",
+          "provenance": {
+            "file": "declarations/packages/spark-data/src/dataset.d.ts",
+            "line": 350,
+            "className": "DataSet",
+            "memberName": "fromJson",
+            "declarationKind": "class"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.746Z"
+}

@@ -1,0 +1,334 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/views/app/dev-system/useDevState.d.ts",
+  "module": {
+    "name": "app:views/app/dev-system/useDevState",
+    "sourcePath": "declarations/src/views/app/dev-system/useDevState.d.ts",
+    "sourceFile": "src/views/app/dev-system/useDevState.ts",
+    "packageName": "app",
+    "modulePath": "views/app/dev-system/useDevState",
+    "jsdoc": "@module app:views/app/dev-system/useDevState\napp 的 views/app/dev-system/useDevState 模块。\n导出 ClassModel symbol: DevPageFileName, PageConfigPageSummary, NavigationNodeDraftNode, RunPageDesignAiOptions, EditableProjectOption, StatusMessage, DevContextConfig, DevWorkspaceTab 等（共 9 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "DevPageFileName",
+      "PageConfigPageSummary",
+      "NavigationNodeDraftNode",
+      "RunPageDesignAiOptions",
+      "EditableProjectOption",
+      "StatusMessage",
+      "DevContextConfig",
+      "DevWorkspaceTab",
+      "DevState"
+    ]
+  },
+  "symbols": [
+    "DevPageFileName",
+    "PageConfigPageSummary",
+    "NavigationNodeDraftNode",
+    "RunPageDesignAiOptions",
+    "EditableProjectOption",
+    "StatusMessage",
+    "DevContextConfig",
+    "DevWorkspaceTab",
+    "DevState"
+  ],
+  "models": {
+    "DevPageFileName": {
+      "kind": "DevPageFileName",
+      "className": "DevPageFileName",
+      "jsdoc": "/** Dev Page File Name 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Extract<PageNodeFileName, string>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Extract<PageNodeFileName, string>",
+          "targetName": "Extract"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+        "line": 6,
+        "className": "DevPageFileName",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "PageConfigPageSummary": {
+      "kind": "PageConfigPageSummary",
+      "className": "PageConfigPageSummary",
+      "jsdoc": "/** Page Config Page Summary 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    [Key in keyof ProjectPageNodeSummary]: ProjectPageNodeSummary[Key];\n}",
+      "provenance": {
+        "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+        "line": 8,
+        "className": "PageConfigPageSummary",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "NavigationNodeDraftNode": {
+      "kind": "NavigationNodeDraftNode",
+      "className": "NavigationNodeDraftNode",
+      "jsdoc": "/** Navigation Node Draft Node 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    [Key in keyof ProjectNavigationNodeDraftNode]: ProjectNavigationNodeDraftNode[Key];\n}",
+      "provenance": {
+        "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+        "line": 12,
+        "className": "NavigationNodeDraftNode",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "RunPageDesignAiOptions": {
+      "kind": "RunPageDesignAiOptions",
+      "className": "RunPageDesignAiOptions",
+      "jsdoc": "/** Run Page Design Ai Options 的调用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    [Key in keyof PageDesignAiRunOptions]: PageDesignAiRunOptions[Key];\n}",
+      "provenance": {
+        "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+        "line": 16,
+        "className": "RunPageDesignAiOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "EditableProjectOption": {
+      "kind": "EditableProjectOption",
+      "className": "EditableProjectOption",
+      "jsdoc": "/** Editable Project Option 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "ProjectSummary & {\n    /** tenant Id 标识。 */\n    tenantId: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "ProjectSummary",
+          "targetName": "ProjectSummary"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+        "line": 20,
+        "className": "EditableProjectOption",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "tenantId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** tenant Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+            "line": 22,
+            "className": "EditableProjectOption",
+            "memberName": "tenantId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "StatusMessage": {
+      "kind": "StatusMessage",
+      "className": "StatusMessage",
+      "jsdoc": "/** Status Message 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 展示文本。 */\n    text: string;\n    /** 类型标识。 */\n    type: 'success' | 'warning' | 'error' | 'info';\n    /** time 字段。 */\n    time: string;\n}",
+      "provenance": {
+        "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+        "line": 25,
+        "className": "StatusMessage",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "text",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 展示文本。 */",
+          "provenance": {
+            "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+            "line": 27,
+            "className": "StatusMessage",
+            "memberName": "text",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "type",
+          "schema": {
+            "title": "'success' | 'warning' | 'error' | 'info'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 类型标识。 */",
+          "provenance": {
+            "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+            "line": 29,
+            "className": "StatusMessage",
+            "memberName": "type",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "time",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** time 字段。 */",
+          "provenance": {
+            "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+            "line": 31,
+            "className": "StatusMessage",
+            "memberName": "time",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DevContextConfig": {
+      "kind": "DevContextConfig",
+      "className": "DevContextConfig",
+      "jsdoc": "/** Dev Context Config 的配置结构。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 占位提示文本。 */\n    placeholder: string;\n    /** default Value 字段。 */\n    defaultValue: string;\n    /** param Name 名称。 */\n    paramName: string;\n}",
+      "provenance": {
+        "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+        "line": 34,
+        "className": "DevContextConfig",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "placeholder",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 占位提示文本。 */",
+          "provenance": {
+            "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+            "line": 36,
+            "className": "DevContextConfig",
+            "memberName": "placeholder",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "defaultValue",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** default Value 字段。 */",
+          "provenance": {
+            "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+            "line": 38,
+            "className": "DevContextConfig",
+            "memberName": "defaultValue",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "paramName",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** param Name 名称。 */",
+          "provenance": {
+            "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+            "line": 40,
+            "className": "DevContextConfig",
+            "memberName": "paramName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DevWorkspaceTab": {
+      "kind": "DevWorkspaceTab",
+      "className": "DevWorkspaceTab",
+      "jsdoc": "/** Dev Workspace Tab 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'props' | 'preview' | DevPageFileName",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'props'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'preview'"
+        },
+        {
+          "kind": "union",
+          "typeText": "DevPageFileName",
+          "targetName": "DevPageFileName"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+        "line": 43,
+        "className": "DevWorkspaceTab",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DevState": {
+      "kind": "DevState",
+      "className": "DevState",
+      "jsdoc": "/** Dev State 的运行状态。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "ReturnType<typeof useDevState>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "ReturnType<typeof useDevState>",
+          "targetName": "ReturnType"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
+        "line": 193,
+        "className": "DevState",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.139Z"
+}

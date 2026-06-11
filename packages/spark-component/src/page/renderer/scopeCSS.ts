@@ -6,8 +6,10 @@
  * CSS 作用域选项
  */
 export type CssScopeOptions = {
-  pageId: string
-  css: string}
+    /** page Id 标识。 */
+pageId: string
+    /** css 字段。 */
+css: string}
 
 /**
  * 为 CSS 添加作用域前缀

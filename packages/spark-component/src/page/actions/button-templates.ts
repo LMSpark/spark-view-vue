@@ -13,15 +13,24 @@ import type { BuiltinActionName } from './index.js'
 
 // ── 模板属性类型 ──────────────────────────────────────────────────────────
 
+/** Button Template Props 的属性契约。 */
 export type ButtonTemplateProps = {
-  buttonType?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
-  plain?: boolean
-  text?: boolean
-  link?: boolean
-  round?: boolean
-  circle?: boolean
-  buttonSize?: 'large' | 'default' | 'small'
-  icon?: string}
+    /** button Type 字段。 */
+buttonType?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
+    /** plain 字段。 */
+plain?: boolean
+    /** 展示文本。 */
+text?: boolean
+    /** link 字段。 */
+link?: boolean
+    /** round 字段。 */
+round?: boolean
+    /** circle 字段。 */
+circle?: boolean
+    /** button Size 大小。 */
+buttonSize?: 'large' | 'default' | 'small'
+    /** icon 字段。 */
+icon?: string}
 
 // ── 通用模板 ──────────────────────────────────────────────────────────────
 
@@ -98,16 +107,26 @@ const ACTION_TEMPLATE_MAP: Record<BuiltinActionName, ActionDefaults> = {
 
 // ── 解析入口 ──────────────────────────────────────────────────────────────
 
+/** Resolved Button Style 的语义模型。 */
 export type ResolvedButtonStyle = {
-  buttonType: string
-  buttonSize: string
-  plain: boolean
-  text: boolean
-  link: boolean
-  round: boolean
-  circle: boolean
-  icon: string | undefined
-  label: string | undefined}
+    /** button Type 字段。 */
+buttonType: string
+    /** button Size 大小。 */
+buttonSize: string
+    /** plain 字段。 */
+plain: boolean
+    /** 展示文本。 */
+text: boolean
+    /** link 字段。 */
+link: boolean
+    /** round 字段。 */
+round: boolean
+    /** circle 字段。 */
+circle: boolean
+    /** icon 字段。 */
+icon: string | undefined
+    /** 展示标签。 */
+label: string | undefined}
 
 /**
  * 解析 r-button 最终样式：action 推导 → template 覆盖 → 显式 props 覆盖。

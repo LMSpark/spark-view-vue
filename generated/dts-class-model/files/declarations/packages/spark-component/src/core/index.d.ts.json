@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/core/index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:core/index",
+    "sourcePath": "declarations/packages/spark-component/src/core/index.d.ts",
+    "sourceFile": "packages/spark-component/src/core/index.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "core/index",
+    "jsdoc": "core 层入口。\n聚合 spark-component 的基础内核：\n- useSparkComponent\n- 核心类型\n- capability keys",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.609Z"
+}

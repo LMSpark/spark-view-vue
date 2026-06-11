@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/class-model/dts-class-model-bundle-loader
+ * @spark-appworks/spark-ai 的 class-model/class-model/dts-class-model-bundle-loader 模块。
+ * 导出 ClassModel symbol: DtsClassModelBundleLoaderOptions, DtsClassModelBundleLoader（共 2 个 symbol）。
+ */
 import type { ClassModel } from './types'
 import type {
   DtsClassModelBundleManifest,
@@ -10,11 +15,13 @@ import {
   readDtsFileProjectionDocument,
 } from './read-dts-class-model-bundle-json'
 
+/** Dts Class Model Bundle Loader Options 的调用配置。 */
 export type DtsClassModelBundleLoaderOptions = Readonly<{
   manifestUrl: string
   fetchJson?: (url: string) => Promise<unknown>
 }>
 
+/** Dts Class Model Bundle Loader 的语义模型。 */
 export class DtsClassModelBundleLoader {
   private manifestPromise?: Promise<DtsClassModelBundleManifest>
   private readonly filePromises = new Map<string, Promise<DtsFileProjectionDocument>>()
@@ -22,15 +29,18 @@ export class DtsClassModelBundleLoader {
   private readonly loadedFilePaths = new Set<string>()
   private readonly fetchJson: (url: string) => Promise<unknown>
 
-  public constructor(private readonly options: DtsClassModelBundleLoaderOptions) {
+    /** 创建 Dts Class Model Bundle Loader 实例。 */
+public constructor(private readonly options: DtsClassModelBundleLoaderOptions) {
     this.fetchJson = options.fetchJson ?? defaultFetchJson
   }
 
-  public async init(): Promise<DtsClassModelBundleManifest> {
+    /** 执行 init 操作。 */
+public async init(): Promise<DtsClassModelBundleManifest> {
     return await this.loadManifest()
   }
 
-  public async ensureClassName(className: string): Promise<ClassModel> {
+    /** ensure Class Name 名称。 */
+public async ensureClassName(className: string): Promise<ClassModel> {
     const cached = this.loadedModels.get(className)
     if (cached !== undefined) return cached
 
@@ -45,7 +55,8 @@ export class DtsClassModelBundleLoader {
     return model
   }
 
-  public async ensureSourcePath(sourcePath: string): Promise<DtsFileProjectionDocument> {
+    /** ensure Source Path 路径。 */
+public async ensureSourcePath(sourcePath: string): Promise<DtsFileProjectionDocument> {
     const existing = this.filePromises.get(sourcePath)
     if (existing !== undefined) return await existing
 
@@ -64,7 +75,8 @@ export class DtsClassModelBundleLoader {
     return projection
   }
 
-  public async ensureReachableClosure(rootClassName: string): Promise<readonly string[]> {
+    /** 执行 ensure Reachable Closure 操作。 */
+public async ensureReachableClosure(rootClassName: string): Promise<readonly string[]> {
     await this.ensureClassName(rootClassName)
     const manifest = await this.loadManifest()
     const visited = new Set<string>()
@@ -83,7 +95,8 @@ export class DtsClassModelBundleLoader {
     return reachable
   }
 
-  public buildLoadedSurface(configPath = ''): DtsClassModelSurfaceDocument {
+    /** 执行 build Loaded Surface 操作。 */
+public buildLoadedSurface(configPath = ''): DtsClassModelSurfaceDocument {
     const models: Record<string, ClassModel> = {}
     for (const [className, model] of this.loadedModels.entries()) models[className] = model
     const fileIndex: Record<string, readonly string[]> = {}

@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/support/RendererFieldScope",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/support/RendererFieldScope.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/support/RendererFieldScope",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/support/RendererFieldScope\n@spark-appworks/spark-component 的 components/containers/support/RendererFieldScope 模块。\n导出 ClassModel symbol: RendererFieldScopeProps（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "RendererFieldScopeProps"
+    ]
+  },
+  "symbols": [
+    "RendererFieldScopeProps"
+  ],
+  "models": {
+    "RendererFieldScopeProps": {
+      "kind": "RendererFieldScopeProps",
+      "className": "RendererFieldScopeProps",
+      "jsdoc": "/** r-field-scope 字段宿主容器属性，负责提供行上下文和表单布局。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 固定组件类型，用于注册表识别字段宿主容器。 */\n    type?: 'r-field-scope';\n    /** 字段宿主容器节点 ID。 */\n    id?: string;\n    /** 表单数据模型 */\n    model?: DataRow;\n    /** 字段组件配置列表 */\n    children?: SparkNode[];\n    /** CSS Grid 列数 */\n    gridColumns?: number;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n    /** 自适应最小宽度 */\n    autoFitMinWidth?: string;\n    /** 默认跨列数 */\n    defaultColSpan?: number;\n    /** 最后一行不满时自动拉宽 */\n    autoFillLastRow?: boolean;\n    /** 标签位置 */\n    labelPosition?: 'top' | 'left' | 'right';\n    /** 标签宽度 */\n    labelWidth?: string;\n    /** 内联模式 */\n    inline?: boolean;\n    /** 紧凑模式 */\n    compact?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+        "line": 4,
+        "className": "RendererFieldScopeProps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "type",
+          "schema": {
+            "title": "'r-field-scope'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 固定组件类型，用于注册表识别字段宿主容器。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 6,
+            "className": "RendererFieldScopeProps",
+            "memberName": "type",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "id",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 字段宿主容器节点 ID。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 8,
+            "className": "RendererFieldScopeProps",
+            "memberName": "id",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "model",
+          "schema": {
+            "title": "DataRow"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 表单数据模型 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 10,
+            "className": "RendererFieldScopeProps",
+            "memberName": "model",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "children",
+          "schema": {
+            "type": "array",
+            "title": "SparkNode[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 字段组件配置列表 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 12,
+            "className": "RendererFieldScopeProps",
+            "memberName": "children",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "gridColumns",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** CSS Grid 列数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 14,
+            "className": "RendererFieldScopeProps",
+            "memberName": "gridColumns",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "gridGap",
+          "schema": {
+            "title": "number | string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 栅格间距 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 16,
+            "className": "RendererFieldScopeProps",
+            "memberName": "gridGap",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "gridAutoRows",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 栅格行高 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 18,
+            "className": "RendererFieldScopeProps",
+            "memberName": "gridAutoRows",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "autoFitMinWidth",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 自适应最小宽度 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 20,
+            "className": "RendererFieldScopeProps",
+            "memberName": "autoFitMinWidth",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "defaultColSpan",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 默认跨列数 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 22,
+            "className": "RendererFieldScopeProps",
+            "memberName": "defaultColSpan",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "autoFillLastRow",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 最后一行不满时自动拉宽 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 24,
+            "className": "RendererFieldScopeProps",
+            "memberName": "autoFillLastRow",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "labelPosition",
+          "schema": {
+            "title": "'top' | 'left' | 'right'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 标签位置 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 26,
+            "className": "RendererFieldScopeProps",
+            "memberName": "labelPosition",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "labelWidth",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 标签宽度 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 28,
+            "className": "RendererFieldScopeProps",
+            "memberName": "labelWidth",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "inline",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 内联模式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 30,
+            "className": "RendererFieldScopeProps",
+            "memberName": "inline",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "compact",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 紧凑模式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/support/RendererFieldScope.vue.d.ts",
+            "line": 32,
+            "className": "RendererFieldScopeProps",
+            "memberName": "compact",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.280Z"
+}

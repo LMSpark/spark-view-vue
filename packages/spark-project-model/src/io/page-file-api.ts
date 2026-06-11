@@ -10,13 +10,18 @@ import type { PageFileCreateOptions, PageNodeFileName, PageNodeFileVersionSummar
 import { assertNonEmptyPageId } from '../page/page-file'
 import { trimTrailingSlash } from './http'
 
+/** Page File Create Params 的语义模型。 */
 export type PageFileCreateParams = PageFileCreateOptions & {
-  pageId: string
+    /** page Id 标识。 */
+pageId: string
 }
 
+/** Page File Api Options 的调用配置。 */
 export type PageFileApiOptions = {
-  getPageFilesApi: () => string
-  http: HttpClientBase
+    /** get Page Files Api 回调。 */
+getPageFilesApi: () => string
+    /** http 字段。 */
+http: HttpClientBase
 }
 
 function parseOptionalNumber(value: unknown): number | null {
@@ -74,16 +79,19 @@ function assertPositiveVersion(version: number): void {
   }
 }
 
+/** Page File Api 的语义模型。 */
 export class PageFileApi {
   private readonly getPageFilesApi: () => string
   private readonly http: HttpClientBase
 
-  constructor(options: PageFileApiOptions) {
+    /** 创建 Page File Api 实例。 */
+constructor(options: PageFileApiOptions) {
     this.getPageFilesApi = options.getPageFilesApi
     this.http = options.http
   }
 
-  async saveFileContent(pageId: string, filename: PageNodeFileName, content: string): Promise<void> {
+    /** 保存 File Content。 */
+async saveFileContent(pageId: string, filename: PageNodeFileName, content: string): Promise<void> {
     const normalizedPageId = assertNonEmptyPageId(pageId)
     await this.http.put<Record<string, unknown>>(
       this.fileUrl(normalizedPageId, filename),
@@ -92,17 +100,20 @@ export class PageFileApi {
     )
   }
 
-  async createFiles(params: PageFileCreateParams): Promise<Record<string, unknown>> {
+    /** 创建 Files。 */
+async createFiles(params: PageFileCreateParams): Promise<Record<string, unknown>> {
     const pageId = assertNonEmptyPageId(params.pageId)
     return normalizeRecordResult(await this.http.post<unknown>(`${this.baseUrl()}/__create`, { ...params, pageId }))
   }
 
-  async deleteFiles(pageId: string): Promise<void> {
+    /** 删除 Files。 */
+async deleteFiles(pageId: string): Promise<void> {
     const normalizedPageId = assertNonEmptyPageId(pageId)
     await this.http.delete(`${this.baseUrl()}/${encodeURIComponent(normalizedPageId)}`)
   }
 
-  async listVersions(pageId: string, filename: PageNodeFileName): Promise<PageNodeFileVersionSummary[]> {
+    /** 执行 list Versions 操作。 */
+async listVersions(pageId: string, filename: PageNodeFileName): Promise<PageNodeFileVersionSummary[]> {
     const normalizedPageId = assertNonEmptyPageId(pageId)
     const result = normalizeRecordRows(await this.http.get<unknown>(
       `${this.fileUrl(normalizedPageId, filename)}/__versions`,
@@ -112,7 +123,8 @@ export class PageFileApi {
       .filter((item): item is PageNodeFileVersionSummary => item !== null)
   }
 
-  async restoreVersion(pageId: string, filename: PageNodeFileName, version: number): Promise<void> {
+    /** 执行 restore Version 操作。 */
+async restoreVersion(pageId: string, filename: PageNodeFileName, version: number): Promise<void> {
     const normalizedPageId = assertNonEmptyPageId(pageId)
     assertPositiveVersion(version)
     await this.http.post<Record<string, unknown>>(
@@ -121,7 +133,8 @@ export class PageFileApi {
     )
   }
 
-  async createVersion(pageId: string, filename: PageNodeFileName): Promise<void> {
+    /** 创建 Version。 */
+async createVersion(pageId: string, filename: PageNodeFileName): Promise<void> {
     const normalizedPageId = assertNonEmptyPageId(pageId)
     await this.http.post<Record<string, unknown>>(
       `${this.fileUrl(normalizedPageId, filename)}/__versions`,
@@ -129,7 +142,8 @@ export class PageFileApi {
     )
   }
 
-  async deleteVersion(pageId: string, filename: PageNodeFileName, version: number): Promise<void> {
+    /** 删除 Version。 */
+async deleteVersion(pageId: string, filename: PageNodeFileName, version: number): Promise<void> {
     const normalizedPageId = assertNonEmptyPageId(pageId)
     assertPositiveVersion(version)
     await this.http.delete(`${this.fileUrl(normalizedPageId, filename)}/__versions/${version}`)

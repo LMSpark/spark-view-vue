@@ -1,3 +1,8 @@
+/**
+ * @module app:services/project-settings
+ * app 的 services/project-settings 模块。
+ * 导出 ClassModel symbol: ProjectLayoutPlacement, ProjectDetail, ProjectHomeNodeOption, ProjectRuntimeSettings, ProjectRuntimeSettingsInput, SaveProjectRuntimeSettingsCommand（共 6 个 symbol）。
+ */
 import {
   normalizeNavRoot,
   type ProjectModelData,
@@ -6,36 +11,59 @@ import {
 import { http } from '@/services/http'
 import { getProjectDetailApi, getProjectNavigationApi } from '@/services/api-paths'
 
+/** Project Layout Placement 的语义模型。 */
 export type ProjectLayoutPlacement = 'header' | 'sidebar'
 
+/** Project Detail 的语义模型。 */
 export type ProjectDetail = {
-  tenantId: string
-  projectId: string
-  name: string
-  projectType: string
-  icon: string
-  description: string
-  homeNodeId: string | null
-  order: number
+    /** tenant Id 标识。 */
+tenantId: string
+    /** project Id 标识。 */
+projectId: string
+    /** 显示或业务名称。 */
+name: string
+    /** project Type 字段。 */
+projectType: string
+    /** icon 字段。 */
+icon: string
+    /** description 字段。 */
+description: string
+    /** home Node Id 标识。 */
+homeNodeId: string | null
+    /** order 字段。 */
+order: number
 }
 
+/** Project Home Node Option 的语义模型。 */
 export type ProjectHomeNodeOption = {
-  id: string
-  title: string
-  path: string
-  label: string
+    /** 唯一标识。 */
+id: string
+    /** 显示标题。 */
+title: string
+    /** 资源路径。 */
+path: string
+    /** 展示标签。 */
+label: string
 }
 
+/** Project Runtime Settings 的语义模型。 */
 export type ProjectRuntimeSettings = {
-  project: ProjectDetail
-  childPlacement: ProjectLayoutPlacement
-  rootModuleId: string | null
-  homeNodeOptions: ProjectHomeNodeOption[]
+    /** project 字段。 */
+project: ProjectDetail
+    /** child Placement 字段。 */
+childPlacement: ProjectLayoutPlacement
+    /** root Module Id 标识。 */
+rootModuleId: string | null
+    /** home Node Options 配置项。 */
+homeNodeOptions: ProjectHomeNodeOption[]
 }
 
+/** Project Runtime Settings Input 的输入数据。 */
 export type ProjectRuntimeSettingsInput = {
-  childPlacement: ProjectLayoutPlacement
-  homeNodeId: string | null
+    /** child Placement 字段。 */
+childPlacement: ProjectLayoutPlacement
+    /** home Node Id 标识。 */
+homeNodeId: string | null
 }
 
 const HOME_NODE_KINDS = new Set(['page', 'system-page', 'link'])
@@ -105,6 +133,7 @@ export async function loadProjectRuntimeSettings(
   }
 }
 
+/** Save Project Runtime Settings Command 的命令参数。 */
 export type SaveProjectRuntimeSettingsCommand = Readonly<{
   tenantId: string
   projectId: string

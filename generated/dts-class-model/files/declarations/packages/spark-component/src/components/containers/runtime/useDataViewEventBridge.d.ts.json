@@ -1,0 +1,1121 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/runtime/useDataViewEventBridge",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/runtime/useDataViewEventBridge",
+    "jsdoc": "useDataViewEventBridge.ts\nDataView → Vue 细粒度事件桥。\n基于 view.events.on/off 注册容器状态回调，带 originatorId 过滤，\n防止 UI 与 DataView 之间循环回写。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "DataViewBridgeEventName",
+      "DataViewRequestState",
+      "DataViewBridgeBaseContext",
+      "CurrentRowChangedContext",
+      "SelectedRowsChangedContext",
+      "RowsChangedContext",
+      "ClearedContext",
+      "RequestStateChangedContext",
+      "SummaryChangedContext",
+      "SelectionSummaryChangedContext",
+      "MutatingChangedContext",
+      "ConfigChangedContext",
+      "EditingChangedContext",
+      "OriginatorFilterContext",
+      "DataViewEventBridgeOptions"
+    ]
+  },
+  "symbols": [
+    "DataViewBridgeEventName",
+    "DataViewRequestState",
+    "DataViewBridgeBaseContext",
+    "CurrentRowChangedContext",
+    "SelectedRowsChangedContext",
+    "RowsChangedContext",
+    "ClearedContext",
+    "RequestStateChangedContext",
+    "SummaryChangedContext",
+    "SelectionSummaryChangedContext",
+    "MutatingChangedContext",
+    "ConfigChangedContext",
+    "EditingChangedContext",
+    "OriginatorFilterContext",
+    "DataViewEventBridgeOptions"
+  ],
+  "models": {
+    "DataViewBridgeEventName": {
+      "kind": "DataViewBridgeEventName",
+      "className": "DataViewBridgeEventName",
+      "jsdoc": "/** DataView 事件名（桥接层内部统一使用）。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'currentRowChanged' | 'selectedRowsChanged' | 'rowsChanged' | 'cleared' | 'requestStateChanged' | 'summaryChanged' | 'selectionSummaryChanged' | 'mutatingChanged' | 'configChanged' | 'editingChanged'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'currentRowChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'selectedRowsChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'rowsChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'cleared'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'requestStateChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'summaryChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'selectionSummaryChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'mutatingChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'configChanged'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'editingChanged'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 11,
+        "className": "DataViewBridgeEventName",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DataViewRequestState": {
+      "kind": "DataViewRequestState",
+      "className": "DataViewRequestState",
+      "jsdoc": "/** Data View Request State 的运行状态。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "DataView['requestState']",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 13,
+        "className": "DataViewRequestState",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DataViewBridgeBaseContext": {
+      "kind": "DataViewBridgeBaseContext",
+      "className": "DataViewBridgeBaseContext",
+      "jsdoc": "/** 桥接层基础上下文：用于统一错误处理、诊断与日志。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** view 字段。 */\n    view: DataView;\n    /** event Name 名称。 */\n    eventName: DataViewBridgeEventName;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 15,
+        "className": "DataViewBridgeBaseContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "view",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** view 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 17,
+            "className": "DataViewBridgeBaseContext",
+            "memberName": "view",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "eventName",
+          "schema": {
+            "title": "DataViewBridgeEventName"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** event Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 19,
+            "className": "DataViewBridgeBaseContext",
+            "memberName": "eventName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "CurrentRowChangedContext": {
+      "kind": "CurrentRowChangedContext",
+      "className": "CurrentRowChangedContext",
+      "jsdoc": "/** Current Row Changed Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前行数据。 */\n    row: DataRow | null;\n    /** originator Id 标识。 */\n    originatorId?: string;\n    /** view 字段。 */\n    view: DataView;\n    /** event Name 名称。 */\n    eventName: 'currentRowChanged';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 22,
+        "className": "CurrentRowChangedContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "row",
+          "schema": {
+            "title": "DataRow | null"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前行数据。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 24,
+            "className": "CurrentRowChangedContext",
+            "memberName": "row",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "originatorId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** originator Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 26,
+            "className": "CurrentRowChangedContext",
+            "memberName": "originatorId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "view",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** view 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 28,
+            "className": "CurrentRowChangedContext",
+            "memberName": "view",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "eventName",
+          "schema": {
+            "title": "'currentRowChanged'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** event Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 30,
+            "className": "CurrentRowChangedContext",
+            "memberName": "eventName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SelectedRowsChangedContext": {
+      "kind": "SelectedRowsChangedContext",
+      "className": "SelectedRowsChangedContext",
+      "jsdoc": "/** Selected Rows Changed Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 行数据集合。 */\n    rows: DataRow[];\n    /** originator Id 标识。 */\n    originatorId?: string;\n    /** view 字段。 */\n    view: DataView;\n    /** event Name 名称。 */\n    eventName: 'selectedRowsChanged';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 33,
+        "className": "SelectedRowsChangedContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "rows",
+          "schema": {
+            "type": "array",
+            "title": "DataRow[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 行数据集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 35,
+            "className": "SelectedRowsChangedContext",
+            "memberName": "rows",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "originatorId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** originator Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 37,
+            "className": "SelectedRowsChangedContext",
+            "memberName": "originatorId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "view",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** view 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 39,
+            "className": "SelectedRowsChangedContext",
+            "memberName": "view",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "eventName",
+          "schema": {
+            "title": "'selectedRowsChanged'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** event Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 41,
+            "className": "SelectedRowsChangedContext",
+            "memberName": "eventName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "RowsChangedContext": {
+      "kind": "RowsChangedContext",
+      "className": "RowsChangedContext",
+      "jsdoc": "/** Rows Changed Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** view 字段。 */\n    view: DataView;\n    /** event Name 名称。 */\n    eventName: 'rowsChanged';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 44,
+        "className": "RowsChangedContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "view",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** view 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 46,
+            "className": "RowsChangedContext",
+            "memberName": "view",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "eventName",
+          "schema": {
+            "title": "'rowsChanged'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** event Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 48,
+            "className": "RowsChangedContext",
+            "memberName": "eventName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ClearedContext": {
+      "kind": "ClearedContext",
+      "className": "ClearedContext",
+      "jsdoc": "/** Cleared Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** view 字段。 */\n    view: DataView;\n    /** event Name 名称。 */\n    eventName: 'cleared';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 51,
+        "className": "ClearedContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "view",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** view 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 53,
+            "className": "ClearedContext",
+            "memberName": "view",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "eventName",
+          "schema": {
+            "title": "'cleared'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** event Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 55,
+            "className": "ClearedContext",
+            "memberName": "eventName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "RequestStateChangedContext": {
+      "kind": "RequestStateChangedContext",
+      "className": "RequestStateChangedContext",
+      "jsdoc": "/** Request State Changed Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前运行状态。 */\n    state: DataViewRequestState;\n    /** view 字段。 */\n    view: DataView;\n    /** event Name 名称。 */\n    eventName: 'requestStateChanged';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 58,
+        "className": "RequestStateChangedContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "state",
+          "schema": {
+            "title": "DataViewRequestState"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前运行状态。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 60,
+            "className": "RequestStateChangedContext",
+            "memberName": "state",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "view",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** view 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 62,
+            "className": "RequestStateChangedContext",
+            "memberName": "view",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "eventName",
+          "schema": {
+            "title": "'requestStateChanged'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** event Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 64,
+            "className": "RequestStateChangedContext",
+            "memberName": "eventName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SummaryChangedContext": {
+      "kind": "SummaryChangedContext",
+      "className": "SummaryChangedContext",
+      "jsdoc": "/** Summary Changed Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** view 字段。 */\n    view: DataView;\n    /** event Name 名称。 */\n    eventName: 'summaryChanged';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 67,
+        "className": "SummaryChangedContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "view",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** view 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 69,
+            "className": "SummaryChangedContext",
+            "memberName": "view",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "eventName",
+          "schema": {
+            "title": "'summaryChanged'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** event Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 71,
+            "className": "SummaryChangedContext",
+            "memberName": "eventName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "SelectionSummaryChangedContext": {
+      "kind": "SelectionSummaryChangedContext",
+      "className": "SelectionSummaryChangedContext",
+      "jsdoc": "/** Selection Summary Changed Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** view 字段。 */\n    view: DataView;\n    /** event Name 名称。 */\n    eventName: 'selectionSummaryChanged';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 74,
+        "className": "SelectionSummaryChangedContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "view",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** view 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 76,
+            "className": "SelectionSummaryChangedContext",
+            "memberName": "view",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "eventName",
+          "schema": {
+            "title": "'selectionSummaryChanged'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** event Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 78,
+            "className": "SelectionSummaryChangedContext",
+            "memberName": "eventName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "MutatingChangedContext": {
+      "kind": "MutatingChangedContext",
+      "className": "MutatingChangedContext",
+      "jsdoc": "/** Mutating Changed Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** mutating 字段。 */\n    mutating: boolean;\n    /** view 字段。 */\n    view: DataView;\n    /** event Name 名称。 */\n    eventName: 'mutatingChanged';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 81,
+        "className": "MutatingChangedContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "mutating",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** mutating 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 83,
+            "className": "MutatingChangedContext",
+            "memberName": "mutating",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "view",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** view 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 85,
+            "className": "MutatingChangedContext",
+            "memberName": "view",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "eventName",
+          "schema": {
+            "title": "'mutatingChanged'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** event Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 87,
+            "className": "MutatingChangedContext",
+            "memberName": "eventName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ConfigChangedContext": {
+      "kind": "ConfigChangedContext",
+      "className": "ConfigChangedContext",
+      "jsdoc": "/** Config Changed Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** view 字段。 */\n    view: DataView;\n    /** event Name 名称。 */\n    eventName: 'configChanged';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 90,
+        "className": "ConfigChangedContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "view",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** view 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 92,
+            "className": "ConfigChangedContext",
+            "memberName": "view",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "eventName",
+          "schema": {
+            "title": "'configChanged'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** event Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 94,
+            "className": "ConfigChangedContext",
+            "memberName": "eventName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "EditingChangedContext": {
+      "kind": "EditingChangedContext",
+      "className": "EditingChangedContext",
+      "jsdoc": "/** Editing Changed Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** view 字段。 */\n    view: DataView;\n    /** event Name 名称。 */\n    eventName: 'editingChanged';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 97,
+        "className": "EditingChangedContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "view",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** view 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 99,
+            "className": "EditingChangedContext",
+            "memberName": "view",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "eventName",
+          "schema": {
+            "title": "'editingChanged'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** event Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 101,
+            "className": "EditingChangedContext",
+            "memberName": "eventName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "OriginatorFilterContext": {
+      "kind": "OriginatorFilterContext",
+      "className": "OriginatorFilterContext",
+      "jsdoc": "/** Originator Filter Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** originator Id 标识。 */\n    originatorId: string | undefined;\n    /** view 字段。 */\n    view: DataView;\n    /** event Name 名称。 */\n    eventName: 'currentRowChanged' | 'selectedRowsChanged';\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 104,
+        "className": "OriginatorFilterContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "originatorId",
+          "schema": {
+            "title": "string | undefined"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** originator Id 标识。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 106,
+            "className": "OriginatorFilterContext",
+            "memberName": "originatorId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "view",
+          "schema": {
+            "title": "DataView"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** view 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 108,
+            "className": "OriginatorFilterContext",
+            "memberName": "view",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "eventName",
+          "schema": {
+            "title": "'currentRowChanged' | 'selectedRowsChanged'"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** event Name 名称。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 110,
+            "className": "OriginatorFilterContext",
+            "memberName": "eventName",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "DataViewEventBridgeOptions": {
+      "kind": "DataViewEventBridgeOptions",
+      "className": "DataViewEventBridgeOptions",
+      "jsdoc": "/**\n * DataView 事件桥接的配置项。\n *\n * 设计目标：\n * - 让调用方只声明“需要哪些事件回调”，桥接层负责注册与清理。\n * - 对 originatorId 提供统一过滤点，避免由每个调用方重复实现。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 已解析 DataView（为空时桥接层处于 detached 状态）。 */\n    resolvedView: {\n        readonly value: DataView | null;\n    };\n    /** 命中该 originatorId 的事件会被过滤。 */\n    ignoreOriginatorId?: string;\n    /** 自定义 originatorId 过滤策略（返回 false 则不分发）。 */\n    shouldDispatchByOriginatorId?: (context: OriginatorFilterContext) => boolean;\n    /** 总开关：false 时不注册任何监听。 */\n    enabled?: boolean;\n    /** 当 view 为空或 enabled=false 时触发（可做 UI 复位）。 */\n    onDetached?: () => void;\n    /** 每次成功绑定到 view 时触发。 */\n    onAttached?: (view: DataView) => void;\n    /** currentRowChanged 事件回调。 */\n    onCurrentRowChanged?: (context: CurrentRowChangedContext) => void | Promise<void>;\n    /** selectedRowsChanged 事件回调。 */\n    onSelectedRowsChanged?: (context: SelectedRowsChangedContext) => void | Promise<void>;\n    /** rowsChanged 事件回调。 */\n    onRowsChanged?: (context: RowsChangedContext) => void | Promise<void>;\n    /** cleared 事件回调。 */\n    onCleared?: (context: ClearedContext) => void | Promise<void>;\n    /** requestStateChanged 事件回调。 */\n    onRequestStateChanged?: (context: RequestStateChangedContext) => void | Promise<void>;\n    /** summaryChanged 事件回调。 */\n    onSummaryChanged?: (context: SummaryChangedContext) => void | Promise<void>;\n    /** selectionSummaryChanged 事件回调。 */\n    onSelectionSummaryChanged?: (context: SelectionSummaryChangedContext) => void | Promise<void>;\n    /** mutatingChanged 事件回调。 */\n    onMutatingChanged?: (context: MutatingChangedContext) => void | Promise<void>;\n    /** configChanged 事件回调。 */\n    onConfigChanged?: (context: ConfigChangedContext) => void | Promise<void>;\n    /** editingChanged 事件回调。 */\n    onEditingChanged?: (context: EditingChangedContext) => void | Promise<void>;\n    /** 事件被 originatorId 过滤时触发。 */\n    onIgnoredByOriginatorId?: (context: OriginatorFilterContext) => void;\n    /** 统一错误处理；未提供时默认抛错。 */\n    onError?: (error: unknown, context: DataViewBridgeBaseContext) => void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+        "line": 119,
+        "className": "DataViewEventBridgeOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "resolvedView",
+          "schema": {
+            "title": "{\n        readonly value: DataView | null;\n    }"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 已解析 DataView（为空时桥接层处于 detached 状态）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 121,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "resolvedView",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "ignoreOriginatorId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 命中该 originatorId 的事件会被过滤。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 125,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "ignoreOriginatorId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "shouldDispatchByOriginatorId",
+          "schema": {
+            "title": "(context: OriginatorFilterContext) => boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 自定义 originatorId 过滤策略（返回 false 则不分发）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 127,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "shouldDispatchByOriginatorId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "enabled",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 总开关：false 时不注册任何监听。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 129,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "enabled",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onDetached",
+          "schema": {
+            "title": "() => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 当 view 为空或 enabled=false 时触发（可做 UI 复位）。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 131,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onDetached",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onAttached",
+          "schema": {
+            "title": "(view: DataView) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 每次成功绑定到 view 时触发。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 133,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onAttached",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onCurrentRowChanged",
+          "schema": {
+            "title": "(context: CurrentRowChangedContext) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** currentRowChanged 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 135,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onCurrentRowChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onSelectedRowsChanged",
+          "schema": {
+            "title": "(context: SelectedRowsChangedContext) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** selectedRowsChanged 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 137,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onSelectedRowsChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onRowsChanged",
+          "schema": {
+            "title": "(context: RowsChangedContext) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** rowsChanged 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 139,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onRowsChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onCleared",
+          "schema": {
+            "title": "(context: ClearedContext) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** cleared 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 141,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onCleared",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onRequestStateChanged",
+          "schema": {
+            "title": "(context: RequestStateChangedContext) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** requestStateChanged 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 143,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onRequestStateChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onSummaryChanged",
+          "schema": {
+            "title": "(context: SummaryChangedContext) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** summaryChanged 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 145,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onSummaryChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onSelectionSummaryChanged",
+          "schema": {
+            "title": "(context: SelectionSummaryChangedContext) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** selectionSummaryChanged 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 147,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onSelectionSummaryChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onMutatingChanged",
+          "schema": {
+            "title": "(context: MutatingChangedContext) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** mutatingChanged 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 149,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onMutatingChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onConfigChanged",
+          "schema": {
+            "title": "(context: ConfigChangedContext) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** configChanged 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 151,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onConfigChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onEditingChanged",
+          "schema": {
+            "title": "(context: EditingChangedContext) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** editingChanged 事件回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 153,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onEditingChanged",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onIgnoredByOriginatorId",
+          "schema": {
+            "title": "(context: OriginatorFilterContext) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 事件被 originatorId 过滤时触发。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 155,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onIgnoredByOriginatorId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "onError",
+          "schema": {
+            "title": "(error: unknown, context: DataViewBridgeBaseContext) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 统一错误处理；未提供时默认抛错。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/runtime/useDataViewEventBridge.d.ts",
+            "line": 157,
+            "className": "DataViewEventBridgeOptions",
+            "memberName": "onError",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.263Z"
+}

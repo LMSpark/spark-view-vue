@@ -402,7 +402,7 @@ export class SparkNodeTree {
    * - 默认会在反序列化过程中补齐缺失组件 id
    */
   static fromJson(
-    json: SparkNodeTreeJsonInput,
+    json: SparkNode | Record<string, unknown> | string,
     options: SparkNodeTreeFromJsonOptions = {},
   ): SparkNodeTree {
     const next = normalizeFromJsonOptions(options)

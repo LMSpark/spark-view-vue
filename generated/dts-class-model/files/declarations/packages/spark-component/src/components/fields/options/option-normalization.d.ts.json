@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/fields/options/option-normalization",
+    "sourcePath": "declarations/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+    "sourceFile": "packages/spark-component/src/components/fields/options/option-normalization.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/fields/options/option-normalization",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/options/option-normalization\n@spark-appworks/spark-component 的 components/fields/options/option-normalization 模块。\n导出 ClassModel symbol: FieldOption, NormalizeOptionFields（共 2 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "FieldOption",
+      "NormalizeOptionFields"
+    ]
+  },
+  "symbols": [
+    "FieldOption",
+    "NormalizeOptionFields"
+  ],
+  "models": {
+    "FieldOption": {
+      "kind": "FieldOption",
+      "className": "FieldOption",
+      "jsdoc": "/** Field Option 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 展示标签。 */\n    label: string;\n    /** 当前值。 */\n    value: string | number | boolean;\n    /** 是否禁用。 */\n    disabled?: boolean;\n    /** 子节点集合。 */\n    children?: FieldOption[];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+        "line": 7,
+        "className": "FieldOption",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "label",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 展示标签。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+            "line": 9,
+            "className": "FieldOption",
+            "memberName": "label",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "value",
+          "schema": {
+            "title": "string | number | boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前值。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+            "line": 11,
+            "className": "FieldOption",
+            "memberName": "value",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "disabled",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否禁用。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+            "line": 13,
+            "className": "FieldOption",
+            "memberName": "disabled",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "children",
+          "schema": {
+            "type": "array",
+            "title": "FieldOption[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 子节点集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+            "line": 15,
+            "className": "FieldOption",
+            "memberName": "children",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "NormalizeOptionFields": {
+      "kind": "NormalizeOptionFields",
+      "className": "NormalizeOptionFields",
+      "jsdoc": "/** Normalize Option Fields 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** label Field 字段。 */\n    labelField: string;\n    /** value Field 字段。 */\n    valueField: string;\n    /** children Field 字段。 */\n    childrenField: string;\n    /** disabled Field 字段。 */\n    disabledField: string;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+        "line": 18,
+        "className": "NormalizeOptionFields",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "labelField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** label Field 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+            "line": 20,
+            "className": "NormalizeOptionFields",
+            "memberName": "labelField",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "valueField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** value Field 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+            "line": 22,
+            "className": "NormalizeOptionFields",
+            "memberName": "valueField",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "childrenField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** children Field 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+            "line": 24,
+            "className": "NormalizeOptionFields",
+            "memberName": "childrenField",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "disabledField",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** disabled Field 字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/fields/options/option-normalization.d.ts",
+            "line": 26,
+            "className": "NormalizeOptionFields",
+            "memberName": "disabledField",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.584Z"
+}

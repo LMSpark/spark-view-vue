@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-data/src/core/data-row-guards.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:core/data-row-guards",
+    "sourcePath": "declarations/packages/spark-data/src/core/data-row-guards.d.ts",
+    "sourceFile": "packages/spark-data/src/core/data-row-guards.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "core/data-row-guards",
+    "jsdoc": "@module @spark-appworks/spark-data:core/data-row-guards\n@spark-appworks/spark-data 的 core/data-row-guards 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.692Z"
+}

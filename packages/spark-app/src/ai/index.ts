@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-app:ai/index
+ * @spark-appworks/spark-app 的 ai/index 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 export {
   createAiRunAdapter,
   formatAiRunError,

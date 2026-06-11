@@ -1,3 +1,9 @@
+<!--
+@module @spark-appworks/spark-component:components/containers/data-views/RendererTable/RendererTable
+RendererTable 模块，属于 SPARK component table-level/data-view-container。
+组件目录: containers/data-views。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <!-- 布局壳：工具栏 / 过滤区 / 表格主体，方向由 toolbarPositionValue 决定 -->
   <div :class="['renderer-table-layout', `renderer-table-layout--${toolbarPositionValue}`]">

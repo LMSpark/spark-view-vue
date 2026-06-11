@@ -24,6 +24,7 @@ const PROJECT_PARAM_TYPE_NAMES = [
   'ProjectNodeData',
 ] as const
 
+/** Project Planning Gate Validation Result 的返回结果。 */
 export type ProjectPlanningGateValidationResult = Readonly<{
   ok: boolean
   reason?: string
@@ -50,7 +51,7 @@ export function evaluateProjectPlanningToolGate(
   return {
     ok: false,
     reason: `projectPlanning: model_script 禁止调用 ${marker}；本阶段只处理 navigation 策划，不涉及四文件或 openPageDesign。`,
-    fix: '改用 readProjectPlanningInput / readNavigationPlanningInputs / replaceNavigationChildren 等通用 ProjectModel action；完成概要后 agent_complete。',
+    fix: '改用 readProjectPlanningInput / readNavigationPlanningInputs / replaceNavigationChildren 等通用 ProjectRootModel action；完成概要后 agent_complete。',
   }
 }
 
@@ -74,7 +75,7 @@ function evaluateProjectActionLookupGate(
   }
   return {
     ok: false,
-    reason: `projectPlanning: ${attributeName} 是 ProjectModel action，不是 attribute。`,
+    reason: `projectPlanning: ${attributeName} 是 ProjectRootModel action，不是 attribute。`,
     fix: `改用 model_action_guide({ kind: "project", actionName: "${attributeName}" })，然后在 model_script 中通过 this.${attributeName}(...) 调用。`,
   }
 }

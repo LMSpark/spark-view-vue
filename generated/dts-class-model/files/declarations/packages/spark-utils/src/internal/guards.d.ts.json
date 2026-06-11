@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-utils/src/internal/guards.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:internal/guards",
+    "sourcePath": "declarations/packages/spark-utils/src/internal/guards.d.ts",
+    "sourceFile": "packages/spark-utils/src/internal/guards.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "internal/guards",
+    "jsdoc": "SPARK 类型守卫（基础层）。\n所有包的类型守卫 SSoT，按使用频率分为两级：\n- 根出口（@spark-appworks/spark-utils）：isRecord、isObject、isCallable\n- /internal 出口：全部守卫，包括扩展的 read*Property 系列",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.022Z"
+}

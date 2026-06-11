@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/permission/FieldRenderHelper.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:permission/FieldRenderHelper",
+    "sourcePath": "declarations/packages/spark-component/src/permission/FieldRenderHelper.d.ts",
+    "sourceFile": "packages/spark-component/src/permission/FieldRenderHelper.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "permission/FieldRenderHelper",
+    "jsdoc": "字段渲染状态计算 — 纯函数\n结合字段配置和权限，计算字段的最终渲染状态。\n内部直接调用 checker 纯函数，调用方无需传入 checker 依赖。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.666Z"
+}

@@ -6,6 +6,7 @@
  * 委托分工：CrudDelegate / CascadeDelegate / SelectionDelegate / etc.
  */
 
+import { parseViewMetadataInput } from './metadata'
 import type {
   DataRow, ViewMetadata, FilterExpression, FilterOperator, FilterValueExpression, SortExpression,
   QueryParams, DataColumn, DataRelation,
@@ -225,10 +226,13 @@ export class DataView implements DataSource {
     }
   }
 
-  tableName: string
-  viewId: string
+    /** 数据表名。 */
+tableName: string
+    /** 视图标识。 */
+viewId: string
 
-  rows: DataRow[] = []
+    /** 行数据集合。 */
+rows: DataRow[] = []
 
   // ─────────────────────────────────────────────
   // 主键（全部委托给 _primaryKeyDelegate）
@@ -385,11 +389,15 @@ export class DataView implements DataSource {
   // 分页 & 加载状态
   // ─────────────────────────────────────────────
 
-  total = 0
-  page = 1
-  pageSize = 20
+    /** 总记录数。 */
+total = 0
+    /** 当前页码。 */
+page = 1
+    /** 分页大小。 */
+pageSize = 20
 
-  loadingError: Error | null = null
+    /** loading Error 错误信息。 */
+loadingError: Error | null = null
   /** 请求状态机，见 {@link RequestState}。唯一状态源，勿另设布尔标志。 */
   requestState: RequestState = RequestState.Idle
   /** 增删改批网络请求进行中（与 requestState 独立，可同时为 true） */
@@ -401,8 +409,10 @@ export class DataView implements DataSource {
   // 视图配置
   // ─────────────────────────────────────────────
 
-  filterExpression?: FilterExpression
-  sortExpression?: SortExpression
+    /** filter Expression 字段。 */
+filterExpression?: FilterExpression
+    /** sort Expression 字段。 */
+sortExpression?: SortExpression
   /** 请求成功后是否自动 currentRow = rows[0]（默认 true） */
   autoCurrentFirst = true
   /** 请求成功后是否自动 selectedRows = [rows[0]]（默认 true） */
@@ -819,7 +829,8 @@ export class DataView implements DataSource {
     return this._aggregateDelegate?.selectionAggregateResult ?? {}
   }
 
-  treeManager?: TreeManager | undefined
+    /** tree Manager 字段。 */
+treeManager?: TreeManager | undefined
 
   // ─────────────────────────────────────────────
   // 私有状态
@@ -1124,7 +1135,8 @@ export class DataView implements DataSource {
   /** 事件总线——独立事件模型（currentRowChanged / selectedRowsChanged / rowsChanged / cleared / configChanged / requestStateChanged / mutatingChanged） */
   readonly events: SparkEventEmitter<DataViewEventMap> = createEventEmitter()
 
-  protected logger = Logger('DataView')
+    /** 诊断日志接口。 */
+protected logger = Logger('DataView')
 
   /**
    * 创建数据视图实例。
@@ -1368,7 +1380,8 @@ export class DataView implements DataSource {
     }
   }
 
-  async loadTreeNested(rootId?: string | number | null, limit?: number, depthLimit?: number): Promise<CrudResult<NestedTreeNode[]>> {
+    /** 加载 Tree Nested。 */
+async loadTreeNested(rootId?: string | number | null, limit?: number, depthLimit?: number): Promise<CrudResult<NestedTreeNode[]>> {
     this.checkDestroyed()
     if (this.requestState === RequestState.Loading) return { success: false, message: 'Already loading' }
 
@@ -1877,7 +1890,8 @@ export class DataView implements DataSource {
   }
 
   // 内部树缓存写入入口；当前 ClassModel action 面不暴露该方法，避免和 SparkNodeTree.moveNode 混淆。
-  moveTreeNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<DataRow | null> {
+    /** 执行 move Tree Node 操作。 */
+moveTreeNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<DataRow | null> {
     return this._ensureTreeManager().moveNode(nodeId, newParentId, index).then(() => {
       this.syncRowsFromTreeManager()
       return this.getRowById(nodeId)
@@ -2187,11 +2201,13 @@ export class DataView implements DataSource {
     this.emitConfigChanged()
   }
 
-  configure(config: Partial<ViewMetadata>): void {
+    /** 执行 configure 操作。 */
+configure(config: Partial<ViewMetadata>): void {
     this.applyViewConfig(config)
   }
 
-  setAggregates(aggregates: Record<string, AggregateColumnConfig>): void {
+    /** 设置 Aggregates。 */
+setAggregates(aggregates: Record<string, AggregateColumnConfig>): void {
     const table = this.checkDataTableAttached()
     const columnNames = new Set(table.columns.map((column) => column.name))
     const missingFields = Object.entries(aggregates)
@@ -2205,7 +2221,8 @@ export class DataView implements DataSource {
     this.applyViewConfig({ aggregates })
   }
 
-  setTreeConfig(treeConfig: TreeConfig): void {
+    /** set Tree Config 配置。 */
+setTreeConfig(treeConfig: TreeConfig): void {
     const table = this.checkDataTableAttached()
     const columnNames = new Set(table.columns.map((column) => column.name))
     const { idField, parentIdField } = treeConfig
@@ -2226,7 +2243,8 @@ export class DataView implements DataSource {
     this.selectionDelegate.applyAutoFirst()
   }
 
-  toJson(): ViewMetadata {
+    /** 执行 to Json 操作。 */
+toJson(): ViewMetadata {
     const serializedRows = this.rows.map((row) => dataRowFromPartial(this.stripComputedColumns(row)))
 
     const result: ViewMetadata = {
@@ -2251,10 +2269,16 @@ export class DataView implements DataSource {
     return result
   }
 
-  static fromJson(data: ViewMetadata, tableName: string, viewId: string): DataView {
+    /** 执行 from Json 操作。 */
+static fromJson(
+    data: ViewMetadata | Record<string, unknown> | string,
+    tableName: string,
+    viewId: string,
+  ): DataView {
+    const metadata = parseViewMetadataInput(data, tableName, viewId)
     const v = new DataView(tableName, viewId)
-    if (data.rows !== undefined) v.rows = [...data.rows]
-    v.applyViewConfig(data)
+    if (metadata.rows !== undefined) v.rows = [...metadata.rows]
+    v.applyViewConfig(metadata)
     return v
   }
 }

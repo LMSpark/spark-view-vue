@@ -1,0 +1,338 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/class-model/types",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/class-model/types.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/class-model/types",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/types\n@spark-appworks/spark-ai 的 class-model/class-model/types 模块。\n导出 ClassModel symbol: ClassModelDocument, SourceProvenanceMeta, ComponentClassModelLevel, ComponentClassModelLayer, ClassModelDeclarationRelationKind, ClassModelDeclarationRelation, ClassModel, JsDocMeta 等（共 11 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ClassModelDocument",
+      "SourceProvenanceMeta",
+      "ComponentClassModelLevel",
+      "ComponentClassModelLayer",
+      "ClassModelDeclarationRelationKind",
+      "ClassModelDeclarationRelation",
+      "ClassModel",
+      "JsDocMeta",
+      "ConstructorMeta",
+      "AttributeMeta",
+      "MethodMeta"
+    ]
+  },
+  "symbols": [
+    "ClassModelDocument",
+    "SourceProvenanceMeta",
+    "ComponentClassModelLevel",
+    "ComponentClassModelLayer",
+    "ClassModelDeclarationRelationKind",
+    "ClassModelDeclarationRelation",
+    "ClassModel",
+    "JsDocMeta",
+    "ConstructorMeta",
+    "AttributeMeta",
+    "MethodMeta"
+  ],
+  "models": {
+    "ClassModelDocument": {
+      "kind": "ClassModelDocument",
+      "className": "ClassModelDocument",
+      "jsdoc": "/**\n * ClassModel 文档：只保留 module 真源，不预存 models 索引。\n *\n * LLM 可见的 ClassModel 在 guide 投影时按 attribute 链从 module 按需派生；\n * 连通性由 auditClassModelReflectionConnectivity 验证。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION;\n    rootKind: string;\n    module: AiModuleMetadataJson;\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION;\n    rootKind: string;\n    module: AiModuleMetadataJson;\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 16,
+        "className": "ClassModelDocument",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SourceProvenanceMeta": {
+      "kind": "SourceProvenanceMeta",
+      "className": "SourceProvenanceMeta",
+      "jsdoc": "/** Source Provenance Meta 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: 'class' | 'interface' | 'type' | 'enum' | 'function' | 'const' | 'component';\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: 'class' | 'interface' | 'type' | 'enum' | 'function' | 'const' | 'component';\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 23,
+        "className": "SourceProvenanceMeta",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ComponentClassModelLevel": {
+      "kind": "ComponentClassModelLevel",
+      "className": "ComponentClassModelLevel",
+      "jsdoc": "/** Component Class Model Level 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'table-level' | 'container' | 'field-level' | 'display' | 'infrastructure'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'table-level'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'container'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'field-level'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'display'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'infrastructure'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 37,
+        "className": "ComponentClassModelLevel",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ComponentClassModelLayer": {
+      "kind": "ComponentClassModelLayer",
+      "className": "ComponentClassModelLayer",
+      "jsdoc": "/** Component Class Model Layer 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'data-view-container' | 'layout-container' | 'zone-container' | 'data-field' | 'field-support' | 'data-display' | 'static-display' | 'editor' | 'support'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'data-view-container'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'layout-container'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'zone-container'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'data-field'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'field-support'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'data-display'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'static-display'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'editor'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'support'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 39,
+        "className": "ComponentClassModelLayer",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ClassModelDeclarationRelationKind": {
+      "kind": "ClassModelDeclarationRelationKind",
+      "className": "ClassModelDeclarationRelationKind",
+      "jsdoc": "/** Class Model Declaration Relation Kind 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "'alias' | 'intersection' | 'union' | 'extends' | 'implements'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'alias'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'intersection'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'union'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'extends'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'implements'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 41,
+        "className": "ClassModelDeclarationRelationKind",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ClassModelDeclarationRelation": {
+      "kind": "ClassModelDeclarationRelation",
+      "className": "ClassModelDeclarationRelation",
+      "jsdoc": "/** Class Model Declaration Relation 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    kind: ClassModelDeclarationRelationKind;\n    typeText: string;\n    targetName?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    kind: ClassModelDeclarationRelationKind;\n    typeText: string;\n    targetName?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 43,
+        "className": "ClassModelDeclarationRelation",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ClassModel": {
+      "kind": "ClassModel",
+      "className": "ClassModel",
+      "jsdoc": "/** guide 投影时的 class 视图；DTS 生成线会直接持久化这个结构。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    kind: string;\n    className: string;\n    jsdoc: JsDocMeta;\n    declarationTypeText?: string;\n    declarationRelations?: readonly ClassModelDeclarationRelation[];\n    shapeKind?: 'class' | 'interface' | 'type' | 'enum' | 'function' | 'const' | 'component';\n    provenance?: SourceProvenanceMeta;\n    constructorMeta?: ConstructorMeta;\n    attributes: readonly AttributeMeta[];\n    methods: readonly MethodMeta[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    kind: string;\n    className: string;\n    jsdoc: JsDocMeta;\n    declarationTypeText?: string;\n    declarationRelations?: readonly ClassModelDeclarationRelation[];\n    shapeKind?: 'class' | 'interface' | 'type' | 'enum' | 'function' | 'const' | 'component';\n    provenance?: SourceProvenanceMeta;\n    constructorMeta?: ConstructorMeta;\n    attributes: readonly AttributeMeta[];\n    methods: readonly MethodMeta[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 49,
+        "className": "ClassModel",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "JsDocMeta": {
+      "kind": "JsDocMeta",
+      "className": "JsDocMeta",
+      "jsdoc": "/** Js Doc Meta 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "string",
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 62,
+        "className": "JsDocMeta",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ConstructorMeta": {
+      "kind": "ConstructorMeta",
+      "className": "ConstructorMeta",
+      "jsdoc": "/** Constructor Meta 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    paramsSchema: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    paramsSchema: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 64,
+        "className": "ConstructorMeta",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AttributeMeta": {
+      "kind": "AttributeMeta",
+      "className": "AttributeMeta",
+      "jsdoc": "/** Attribute Meta 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    name: string;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    name: string;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 70,
+        "className": "AttributeMeta",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "MethodMeta": {
+      "kind": "MethodMeta",
+      "className": "MethodMeta",
+      "jsdoc": "/** Method Meta 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    name: string;\n    paramsSchema: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    returnTypeText?: string;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    paramsTypeText?: string;\n    provenance?: SourceProvenanceMeta;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    name: string;\n    paramsSchema: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    returnTypeText?: string;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    paramsTypeText?: string;\n    provenance?: SourceProvenanceMeta;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 79,
+        "className": "MethodMeta",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:25.827Z"
+}

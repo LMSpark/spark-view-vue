@@ -1,0 +1,531 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/data-views/view-data-source",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/data-views/view-data-source.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/data-views/view-data-source",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/view-data-source\n@spark-appworks/spark-component:components/containers/data-views/view-data-source 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: DataSourceLoggerLike, UseContainerDataSourceOptions, UseContainerDataSourceEffectsOptions, ContainerDataSourceState（共 4 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "DataSourceLoggerLike",
+      "UseContainerDataSourceOptions",
+      "UseContainerDataSourceEffectsOptions",
+      "ContainerDataSourceState"
+    ],
+    "componentLevel": "table-level",
+    "componentLayer": "data-view-container",
+    "componentDirectory": "containers/data-views"
+  },
+  "symbols": [
+    "DataSourceLoggerLike",
+    "UseContainerDataSourceOptions",
+    "UseContainerDataSourceEffectsOptions",
+    "ContainerDataSourceState"
+  ],
+  "models": {
+    "DataSourceLoggerLike": {
+      "kind": "DataSourceLoggerLike",
+      "className": "DataSourceLoggerLike",
+      "jsdoc": "/** 极简日志接口，仅供 useContainerDataSource 内部使用。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    warn(message: string): void;\n    error(message: string, error?: unknown): void;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+        "line": 6,
+        "className": "DataSourceLoggerLike",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "UseContainerDataSourceOptions": {
+      "kind": "UseContainerDataSourceOptions",
+      "className": "UseContainerDataSourceOptions",
+      "jsdoc": "/** 容器解析 DataView 或派生数据源时使用的统一输入。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 显式 DataView 定位键，格式为 table@viewId 或带作用域的 #scope@table@viewId。 */\n    dataViewKey: MaybeRefOrGetter<string | undefined>;\n    /** 从上级 DataView 上下文读取的成员名，例如 currentRow、rows 或 selectedRows。 */\n    contextDataMember?: MaybeRefOrGetter<DataMember | `${DataMember}` | undefined>;\n    /** 在 contextDataMember 解析结果上继续读取的字段路径。 */\n    contextDataField?: MaybeRefOrGetter<string | undefined>;\n    /** capability 消费入口，用于读取 PAGE_DATASET。 */\n    sparkConsume: SparkCapabilityConsumer;\n    /** 将解析到的 DataView 映射成容器实际消费的数据源形态。 */\n    mapView: (view: DataView) => TSource;\n    /** 外部显式传入的数据源；优先级高于 dataViewKey。 */\n    externalDataSource?: MaybeRefOrGetter<TSource | undefined>;\n    /** 父级容器传入的数据源；显式来源和上下文都缺失时使用。 */\n    inheritedDataSource?: MaybeRefOrGetter<TSource | null | undefined>;\n    /** 将解析出的数据源提供给子级容器或字段。 */\n    provideDataSource?: (source: TSource) => void;\n    /** 容器数据源解析诊断日志。 */\n    logger?: DataSourceLoggerLike;\n    /** 日志前缀，用于区分不同容器实例。 */\n    logPrefix?: string;\n    /** 跳过 provide、autoLoad 和诊断副作用，仅保留解析结果。 */\n    skipEffects?: boolean;\n    /** 跳过向下提供数据源的副作用。 */\n    skipProvideEffect?: boolean;\n    /** 跳过 DataView 自动加载副作用。 */\n    skipAutoLoadEffect?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+        "line": 11,
+        "className": "UseContainerDataSourceOptions",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "dataViewKey",
+          "schema": {
+            "title": "MaybeRefOrGetter<string | undefined>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 显式 DataView 定位键，格式为 table@viewId 或带作用域的 #scope@table@viewId。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 13,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "dataViewKey",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "contextDataMember",
+          "schema": {
+            "title": "MaybeRefOrGetter<DataMember | `${DataMember}` | undefined>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 从上级 DataView 上下文读取的成员名，例如 currentRow、rows 或 selectedRows。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 15,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "contextDataMember",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "contextDataField",
+          "schema": {
+            "title": "MaybeRefOrGetter<string | undefined>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 在 contextDataMember 解析结果上继续读取的字段路径。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 17,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "contextDataField",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "sparkConsume",
+          "schema": {
+            "title": "SparkCapabilityConsumer"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** capability 消费入口，用于读取 PAGE_DATASET。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 19,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "sparkConsume",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "mapView",
+          "schema": {
+            "title": "(view: DataView) => TSource"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 将解析到的 DataView 映射成容器实际消费的数据源形态。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 21,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "mapView",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "externalDataSource",
+          "schema": {
+            "title": "MaybeRefOrGetter<TSource | undefined>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 外部显式传入的数据源；优先级高于 dataViewKey。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 23,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "externalDataSource",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "inheritedDataSource",
+          "schema": {
+            "title": "MaybeRefOrGetter<TSource | null | undefined>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 父级容器传入的数据源；显式来源和上下文都缺失时使用。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 25,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "inheritedDataSource",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "provideDataSource",
+          "schema": {
+            "title": "(source: TSource) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 将解析出的数据源提供给子级容器或字段。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 27,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "provideDataSource",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "logger",
+          "schema": {
+            "title": "DataSourceLoggerLike"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 容器数据源解析诊断日志。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 29,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "logger",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "logPrefix",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 日志前缀，用于区分不同容器实例。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 31,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "logPrefix",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "skipEffects",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 跳过 provide、autoLoad 和诊断副作用，仅保留解析结果。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 33,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "skipEffects",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "skipProvideEffect",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 跳过向下提供数据源的副作用。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 35,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "skipProvideEffect",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "skipAutoLoadEffect",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 跳过 DataView 自动加载副作用。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 37,
+            "className": "UseContainerDataSourceOptions",
+            "memberName": "skipAutoLoadEffect",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "UseContainerDataSourceEffectsOptions": {
+      "kind": "UseContainerDataSourceEffectsOptions",
+      "className": "UseContainerDataSourceEffectsOptions",
+      "jsdoc": "/** 容器数据源解析后的副作用配置。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 已解析的数据源 ref。 */\n    resolvedView: ComputedRef<TSource | null>;\n    /** dataViewKey 或 dataMember 解析诊断。 */\n    diagnostic?: ComputedRef<DataViewKeyDiagnostic | DataViewMemberDiagnostic | null>;\n    /** 向下游提供数据源的回调。 */\n    provideDataSource?: (source: TSource) => void;\n    /** 副作用阶段使用的诊断日志。 */\n    logger: DataSourceLoggerLike;\n    /** 副作用日志前缀。 */\n    logPrefix: string;\n    /** 是否跳过 provideDataSource 副作用。 */\n    skipProvideEffect?: boolean;\n    /** 是否跳过 DataView requestData 自动加载。 */\n    skipAutoLoadEffect?: boolean;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+        "line": 40,
+        "className": "UseContainerDataSourceEffectsOptions",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "resolvedView",
+          "schema": {
+            "title": "ComputedRef<TSource | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 已解析的数据源 ref。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 42,
+            "className": "UseContainerDataSourceEffectsOptions",
+            "memberName": "resolvedView",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "diagnostic",
+          "schema": {
+            "title": "ComputedRef<DataViewKeyDiagnostic | DataViewMemberDiagnostic | null>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** dataViewKey 或 dataMember 解析诊断。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 44,
+            "className": "UseContainerDataSourceEffectsOptions",
+            "memberName": "diagnostic",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "provideDataSource",
+          "schema": {
+            "title": "(source: TSource) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 向下游提供数据源的回调。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 46,
+            "className": "UseContainerDataSourceEffectsOptions",
+            "memberName": "provideDataSource",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "logger",
+          "schema": {
+            "title": "DataSourceLoggerLike"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 副作用阶段使用的诊断日志。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 48,
+            "className": "UseContainerDataSourceEffectsOptions",
+            "memberName": "logger",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "logPrefix",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 副作用日志前缀。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 50,
+            "className": "UseContainerDataSourceEffectsOptions",
+            "memberName": "logPrefix",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "skipProvideEffect",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否跳过 provideDataSource 副作用。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 52,
+            "className": "UseContainerDataSourceEffectsOptions",
+            "memberName": "skipProvideEffect",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "skipAutoLoadEffect",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否跳过 DataView requestData 自动加载。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 54,
+            "className": "UseContainerDataSourceEffectsOptions",
+            "memberName": "skipAutoLoadEffect",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ContainerDataSourceState": {
+      "kind": "ContainerDataSourceState",
+      "className": "ContainerDataSourceState",
+      "jsdoc": "/** 容器解析后的数据源和行上下文结果。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 容器最终解析到的数据源；解析失败时为空。 */\n    resolvedView: ComputedRef<TSource | null>;\n    /** 容器最终解析到的行上下文。 */\n    resolvedDataRow: ComputedRef<DataRow | null>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+        "line": 57,
+        "className": "ContainerDataSourceState",
+        "declarationKind": "type",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "resolvedView",
+          "schema": {
+            "title": "ComputedRef<TSource | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 容器最终解析到的数据源；解析失败时为空。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 59,
+            "className": "ContainerDataSourceState",
+            "memberName": "resolvedView",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "resolvedDataRow",
+          "schema": {
+            "title": "ComputedRef<DataRow | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 容器最终解析到的行上下文。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+            "line": 61,
+            "className": "ContainerDataSourceState",
+            "memberName": "resolvedDataRow",
+            "declarationKind": "interface",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.103Z"
+}

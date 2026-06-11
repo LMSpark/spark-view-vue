@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-json-document:schema/schema-draft2020-audit
+ * @spark-appworks/spark-json-document 的 schema/schema-draft2020-audit 模块。
+ * 导出 ClassModel symbol: Draft2020AuditIssue（共 1 个 symbol）。
+ */
 import { isRecord } from '@spark-appworks/spark-utils'
 
 const VALID_SCHEMA_TYPES = new Set([
@@ -21,6 +26,7 @@ const REF_ANNOTATION_SIBLINGS = new Set([
   'writeOnly',
 ])
 
+/** Draft2020 Audit Issue 的语义模型。 */
 export type Draft2020AuditIssue = Readonly<{
   path: string
   rule: string

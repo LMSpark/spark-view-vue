@@ -1,15 +1,28 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/data-components/composables/useHtmlEditorState
+ * @spark-appworks/spark-component:components/fields/data-components/composables/useHtmlEditorState 模块，属于 SPARK component field-level/data-field。
+ * 组件目录: fields/data-components。
+ * 导出 ClassModel symbol: UseHtmlEditorStateOptions（共 1 个 symbol）。
+ */
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import type { DataRow } from '@spark-appworks/spark-data'
 import type { Ref } from 'vue'
 import type { ValueRef } from '../../../shared-types.js'
 
+/** Use Html Editor State Options 的调用配置。 */
 type UseHtmlEditorStateOptions = {
-  editorRef: Ref<HTMLElement | null>
-  fieldValue: ValueRef<unknown>
-  isCurrentFieldEditable: ValueRef<boolean>
-  syncValue: (value: string) => void
-  emitUpdate: (value: string) => void
-  getRowRawValue: (row: DataRow) => unknown}
+    /** editor Ref 字段。 */
+editorRef: Ref<HTMLElement | null>
+    /** field Value 字段。 */
+fieldValue: ValueRef<unknown>
+    /** 是否 is Current Field Editable。 */
+isCurrentFieldEditable: ValueRef<boolean>
+    /** sync Value 回调。 */
+syncValue: (value: string) => void
+    /** emit Update 回调。 */
+emitUpdate: (value: string) => void
+    /** get Row Raw Value 回调。 */
+getRowRawValue: (row: DataRow) => unknown}
 
 export function stripHtml(value: unknown): string {
   return String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()

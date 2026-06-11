@@ -1,21 +1,41 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/RendererVirtualCard/zero-code
+ * RendererVirtualCard 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: RendererVirtualCardZeroCodeOptions（共 1 个 symbol）。
+ */
 import { isDataRow, type DataRow, type DataView } from '@spark-appworks/spark-data'
 import { createContainerCrudContext } from '../zero-code-shared.js'
 import type { ValueRef } from '../../../shared-types.js'
 import type { RendererVirtualCardApi } from './types.js'
 
+/** 创建 r-virtual-card zero-code API 和事件派发桥接所需的运行时输入。 */
 type RendererVirtualCardZeroCodeOptions = {
+  /** r-virtual-card 的组件属性集合，包含事件回调和配置透传。 */
   props: Readonly<Record<string, unknown>>
+  /** 当前解析出的 DataView。 */
   resolvedView: ValueRef<DataView | null>
+  /** 当前可见或缓存中的卡片行数据。 */
   rows: ValueRef<readonly DataRow[]>
+  /** 已缓存的页码集合。 */
   cachedPages: ValueRef<readonly number[]>
+  /** 正在加载的页码集合。 */
   pendingPages: ValueRef<readonly number[]>
+  /** 当前视口附近需要渲染的页码集合。 */
   visiblePages: ValueRef<readonly number[]>
+  /** 当前滚动位置对应的页码。 */
   currentPage: ValueRef<number>
+  /** 当前数据集总页数。 */
   totalPages: ValueRef<number>
+  /** 滚动进度文本。 */
   progressText: ValueRef<string>
+  /** 当前虚拟分页加载策略说明。 */
   loadPolicyText: ValueRef<string>
+  /** 最近一次滚轮跳页状态说明。 */
   wheelStatusText: ValueRef<string>
+  /** 滚动到指定页并触发必要加载。 */
   scrollToPage: (page: number) => Promise<void>
+  /** 清空分页缓存并重新加载当前页。 */
   clearCache: () => void
 }
 

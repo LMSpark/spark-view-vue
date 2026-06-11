@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/api-paths.d.ts",
+  "module": {
+    "name": "app:services/api-paths",
+    "sourcePath": "declarations/src/services/api-paths.d.ts",
+    "sourceFile": "src/services/api-paths.ts",
+    "packageName": "app",
+    "modulePath": "services/api-paths",
+    "jsdoc": "集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。\n动态读取当前登录用户的 tenantId / defaultProjectId，\n生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ProjectApiScope"
+    ]
+  },
+  "symbols": [
+    "ProjectApiScope"
+  ],
+  "models": {
+    "ProjectApiScope": {
+      "kind": "ProjectApiScope",
+      "className": "ProjectApiScope",
+      "jsdoc": "/**\n * 集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。\n *\n * 动态读取当前登录用户的 tenantId / defaultProjectId，\n * 生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。\n */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId?: string;\n    /** project Id 标识。 */\n    projectId: string;\n}",
+      "provenance": {
+        "file": "declarations/src/services/api-paths.d.ts",
+        "line": 7,
+        "className": "ProjectApiScope",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "tenantId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** tenant Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/api-paths.d.ts",
+            "line": 9,
+            "className": "ProjectApiScope",
+            "memberName": "tenantId",
+            "declarationKind": "interface"
+          }
+        },
+        {
+          "name": "projectId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** project Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/api-paths.d.ts",
+            "line": 11,
+            "className": "ProjectApiScope",
+            "memberName": "projectId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.072Z"
+}

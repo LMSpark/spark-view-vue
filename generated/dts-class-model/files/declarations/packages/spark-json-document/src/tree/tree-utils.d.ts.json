@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/tree/tree-utils.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:tree/tree-utils",
+    "sourcePath": "declarations/packages/spark-json-document/src/tree/tree-utils.d.ts",
+    "sourceFile": "packages/spark-json-document/src/tree/tree-utils.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "tree/tree-utils",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\ntree/tree-utils.ts — 树模型内部工具函数\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.863Z"
+}

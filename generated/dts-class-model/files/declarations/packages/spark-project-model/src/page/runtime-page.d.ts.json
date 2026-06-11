@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-project-model/src/page/runtime-page.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:page/runtime-page",
+    "sourcePath": "declarations/packages/spark-project-model/src/page/runtime-page.d.ts",
+    "sourceFile": "packages/spark-project-model/src/page/runtime-page.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "page/runtime-page",
+    "jsdoc": "运行态配置页：ConfigPageNode + PageContentLoader 绑定。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.959Z"
+}

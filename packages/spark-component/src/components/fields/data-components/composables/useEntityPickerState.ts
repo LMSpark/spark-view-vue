@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/data-components/composables/useEntityPickerState
+ * @spark-appworks/spark-component:components/fields/data-components/composables/useEntityPickerState 模块，属于 SPARK component field-level/data-field。
+ * 组件目录: fields/data-components。
+ * 导出 ClassModel symbol: UseEntityPickerStateOptions（共 1 个 symbol）。
+ */
 import { computed } from 'vue'
 import type { PageSelectorOption } from '../../../internal'
 import type { FieldOption } from '../../options/index.js'
@@ -10,32 +16,58 @@ import type {
   ValueRef,
 } from '../../../shared-types.js'
 
+/** 实体选择字段的运行态输入，负责选择器弹出、值模式转换和清空行为。 */
 type UseEntityPickerStateOptions = {
+  /** 可编辑态选择按钮文本。 */
   buttonText: ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>
+  /** 只读态查看按钮文本。 */
   readonlyButtonText: ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>
+  /** 是否允许清空当前选择值。 */
   clearable: ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>
+  /** 是否允许多选实体。 */
   multiple: ValueRef<NonNullable<SparkOptionFieldProps['multiple']>>
+  /** 选择器是否开启搜索。 */
   searchable: ValueRef<boolean>
+  /** 多选字符串模式下的值分隔符。 */
   valueSeparator: ValueRef<NonNullable<SparkOptionFieldProps['valueSeparator']>>
+  /** 多选值写回模式：数组、字符串或按当前值自动判断。 */
   valueMode: ValueRef<SparkOptionValueMode>
+  /** 选择器中展示的实体名称。 */
   entityName: ValueRef<string>
+  /** 选择器搜索或空值提示。 */
   placeholder: ValueRef<NonNullable<SparkFieldSemanticProps['placeholder']>>
+  /** 已归一化的一维可选实体集合。 */
   flatOptions: ValueRef<FieldOption[]>
+  /** 当前字段原始值，保留数组或字符串等原始形态。 */
   currentRawValue: ValueRef<PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string>
+  /** 当前字段值的字符串形态，用于判断是否有值。 */
   currentRawStringValue: ValueRef<string>
+  /** 当前字段是否允许写入。 */
   isCurrentFieldEditable: ValueRef<boolean>
+  /** 当前页面运行时是否提供实体选择器能力。 */
   hasSelectorCapability: ValueRef<boolean>
+  /** 主按钮执行选择还是只读查看。 */
   primaryAction: ValueRef<'select' | 'view'>
+  /** 打开实体选择器并返回用户选择结果。 */
   selectEntities: (options: {
+    /** 选择器标题。 */
     title: string
+    /** 选择器展示的实体名称。 */
     entityName: string
+    /** 搜索框或空值占位文本。 */
     placeholder: string
+    /** 是否允许多选。 */
     multiple: boolean
+    /** 是否允许搜索。 */
     searchable: boolean
+    /** 打开选择器前的当前值。 */
     currentValue: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string
+    /** 当前可选实体集合。 */
     options: Array<{ label: string; value: PageSelectorOption['value']; disabled?: boolean }>
   }) => Promise<Array<{ label: string; value: PageSelectorOption['value'] }>>
-  updateValue: (value: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string) => void | Promise<void>}
+  /** 将选择结果写回字段值。 */
+  updateValue: (value: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string) => void | Promise<void>
+}
 
 export function useEntityPickerState(options: UseEntityPickerStateOptions) {
   const primaryActionText = computed(() => (options.primaryAction.value === 'select' ? options.buttonText.value : options.readonlyButtonText.value))

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/tree/tree-build.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:tree/tree-build",
+    "sourcePath": "declarations/packages/spark-json-document/src/tree/tree-build.d.ts",
+    "sourceFile": "packages/spark-json-document/src/tree/tree-build.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "tree/tree-build",
+    "jsdoc": "═══════════════════════════════════════════════════════════════\ntree/tree-build.ts — TreeModel 构建 / 导出 / 显示行\n═══════════════════════════════════════════════════════════════",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.853Z"
+}

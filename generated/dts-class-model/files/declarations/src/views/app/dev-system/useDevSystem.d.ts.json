@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/views/app/dev-system/useDevSystem.d.ts",
+  "module": {
+    "name": "app:views/app/dev-system/useDevSystem",
+    "sourcePath": "declarations/src/views/app/dev-system/useDevSystem.d.ts",
+    "sourceFile": "src/views/app/dev-system/useDevSystem.ts",
+    "packageName": "app",
+    "modulePath": "views/app/dev-system/useDevSystem",
+    "jsdoc": "@module app:views/app/dev-system/useDevSystem\napp 的 views/app/dev-system/useDevSystem 模块。\n导出 ClassModel symbol: DevSystemCtx（共 1 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "DevSystemCtx"
+    ]
+  },
+  "symbols": [
+    "DevSystemCtx"
+  ],
+  "models": {
+    "DevSystemCtx": {
+      "kind": "DevSystemCtx",
+      "className": "DevSystemCtx",
+      "jsdoc": "/** Dev System Ctx 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "ReturnType<typeof useDevSystem>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "ReturnType<typeof useDevSystem>",
+          "targetName": "ReturnType"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/views/app/dev-system/useDevSystem.d.ts",
+        "line": 167,
+        "className": "DevSystemCtx",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.142Z"
+}

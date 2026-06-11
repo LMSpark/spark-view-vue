@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-component:components/containers/data-views/view-runtime-state
+ * @spark-appworks/spark-component:components/containers/data-views/view-runtime-state 模块，属于 SPARK component table-level/data-view-container。
+ * 组件目录: containers/data-views。
+ * 导出 ClassModel symbol: DataViewIdentityState, DataViewRowsState, DataViewDisplayState, DataViewPermissionState, DataViewRequestAndAggregateState, DataViewRuntimeState, ContainerDataViewContextState, DataViewState 等（共 10 个 symbol）。
+ */
 import { computed, shallowRef } from 'vue'
 import type { ComputedRef } from 'vue'
 import {
@@ -17,50 +23,82 @@ import { useDataViewEventBridge } from '../runtime/useDataViewEventBridge.js'
  * DataView 标识态：来自 DataView 快照的静态元信息。
  */
 export type DataViewIdentityState = {
+  /** DataView 所属表名，用于诊断和表级能力定位。 */
   tableName: ComputedRef<string>
+  /** DataView 的视图 id；缺省时表示使用表默认视图。 */
   viewId: ComputedRef<string | undefined>
+  /** 当前 DataView 的主键字段名。 */
   primaryKey: ComputedRef<string | undefined>
-  treeConfig: ComputedRef<TreeConfig | undefined>}
+  /** 树形 DataView 的层级字段配置；非树形视图为空。 */
+  treeConfig: ComputedRef<TreeConfig | undefined>
+}
 
 /** DataView 行数据态：当前视图下的行级数据与选择状态。 */
 export type DataViewRowsState = {
+  /** 当前页或当前视图范围内的行数据。 */
   rows: ComputedRef<readonly DataRow[]>
+  /** 当前视图可渲染的列定义。 */
   columns: ComputedRef<readonly DataColumn[]>
+  /** 当前行；表格高亮、详情容器和字段上下文共享该值。 */
   currentRow: ComputedRef<DataRow | null>
+  /** 当前已选择行集合。 */
   selectedRows: ComputedRef<readonly DataRow[]>
+  /** 当前处于编辑态的行集合。 */
   editingRows: ComputedRef<readonly DataRow[]>
-  isMultiSelect: ComputedRef<boolean>}
+  /** 当前视图是否启用多选能力。 */
+  isMultiSelect: ComputedRef<boolean>
+}
 
 /** DataView 显示态：用于下拉/选择器等展示场景的 value/label 信息。 */
 export type DataViewDisplayState = {
+  /** 原始模型权限数据，供权限投影和兼容字段读取。 */
   _modelPerm: ComputedRef<ModelPermission | undefined>
+  /** 当前值字段的字符串化结果。 */
   value: ComputedRef<string>
+  /** 当前显示标签；没有当前行或标签字段时为空。 */
   label: ComputedRef<string | null>
-  labels: ComputedRef<readonly string[]>}
+  /** 多选场景下的显示标签集合。 */
+  labels: ComputedRef<readonly string[]>
+}
 
 /** DataView 权限投影：从 _modelPerm 解析后的统一模型权限结构。 */
 export type DataViewPermissionState = {
-  modelPermission: ComputedRef<ModelPermission | undefined>}
+  /** 当前 DataView 对应模型的读写权限配置。 */
+  modelPermission: ComputedRef<ModelPermission | undefined>
+}
 
 /** DataView 请求与聚合态：分页、加载状态、聚合结果等运行时动态信息。 */
 export type DataViewRequestAndAggregateState = {
+  /** 当前数据请求状态，用于 loading/empty/error 渲染。 */
   requestState: ComputedRef<RequestState>
+  /** 全量或当前查询条件下的聚合结果。 */
   aggregateResult: ComputedRef<AggregateResultState>
+  /** 已选择行集合的聚合结果。 */
   selectionAggregateResult: ComputedRef<AggregateResultState>
+  /** 当前查询结果总条数。 */
   total: ComputedRef<number>
+  /** 当前页码，从 1 开始。 */
   page: ComputedRef<number>
+  /** 当前分页大小。 */
   pageSize: ComputedRef<number>
+  /** 当前是否存在本地或远端变更中的写操作。 */
   mutating: ComputedRef<boolean>
+  /** 最近一次写操作错误。 */
   mutatingError: ComputedRef<Error | null>
-  loadingError: ComputedRef<Error | null>}
+  /** 最近一次加载数据错误。 */
+  loadingError: ComputedRef<Error | null>
+}
 
 /** DataView 完整运行时投影（不含容器级解析上下文）。 */
 export type DataViewRuntimeState = DataViewIdentityState & DataViewRowsState & DataViewPermissionState & DataViewDisplayState & DataViewRequestAndAggregateState
 
 /** 容器级数据解析上下文（不属于 DataView 原始字段）。 */
 export type ContainerDataViewContextState = {
+  /** 容器最终解析到的数据视图实例。 */
   resolvedView: ComputedRef<DataView | null>
-  resolvedDataRow: ComputedRef<DataRow | null>}
+  /** 容器最终解析到的行上下文，优先来自 dataMember/dataField。 */
+  resolvedDataRow: ComputedRef<DataRow | null>
+}
 
 /** 五类容器共享顶层视图态。 */
 export type DataViewState = DataViewRuntimeState & ContainerDataViewContextState
@@ -71,7 +109,9 @@ export type AggregateResultState = {
 
 /** resolvedView 的标准只读 ref 形态。 */
 export type ResolvedViewRef = {
-  readonly value: DataView | null}
+  /** 当前 DataView ref 值；为空表示容器还未解析到数据源。 */
+  readonly value: DataView | null
+}
 
 const EMPTY_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
 const EMPTY_SELECTION_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})

@@ -146,7 +146,8 @@ export class DynamicRouter {
   /** ProjectNodeData → 注册路由路径追踪（弱引用，导航树刷新后自动 GC） */
   private _navRouteMap = new WeakMap<ProjectNodeData, string>()
 
-  constructor(options: DynamicRouterOptions) {
+    /** 创建 Dynamic Router 实例。 */
+constructor(options: DynamicRouterOptions) {
     this.router = options.router
     this.pageContentLoader = options.pageContentLoader
 

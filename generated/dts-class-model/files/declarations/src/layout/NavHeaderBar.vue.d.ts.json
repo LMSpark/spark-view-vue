@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/layout/NavHeaderBar.vue.d.ts",
+  "module": {
+    "name": "app:layout/NavHeaderBar",
+    "sourcePath": "declarations/src/layout/NavHeaderBar.vue.d.ts",
+    "sourceFile": "src/layout/NavHeaderBar.vue",
+    "packageName": "app",
+    "modulePath": "layout/NavHeaderBar",
+    "jsdoc": "@module app:layout/NavHeaderBar\napp 的 layout/NavHeaderBar 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:27.061Z"
+}

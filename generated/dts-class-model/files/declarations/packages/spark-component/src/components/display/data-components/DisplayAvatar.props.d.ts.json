@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/display/data-components/DisplayAvatar.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/display/data-components/DisplayAvatar.props",
+    "sourcePath": "declarations/packages/spark-component/src/components/display/data-components/DisplayAvatar.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/display/data-components/DisplayAvatar.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/display/data-components/DisplayAvatar.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/display/data-components/DisplayAvatar.props\nDisplayAvatar 模块，属于 SPARK component display/data-display。\n组件目录: display/data-components。\n导出 ClassModel symbol: RAvatarProps（共 1 个 symbol）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RAvatarProps"
+    ],
+    "componentName": "DisplayAvatar",
+    "componentType": "r-avatar",
+    "componentLevel": "display",
+    "componentLayer": "data-display",
+    "componentDirectory": "display/data-components"
+  },
+  "symbols": [
+    "RAvatarProps"
+  ],
+  "models": {
+    "RAvatarProps": {
+      "kind": "RAvatarProps",
+      "className": "RAvatarProps",
+      "jsdoc": "/** RAvatar Props 的属性契约。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & SparkDataDisplayProps<string> & {\n    /** 头像尺寸 */\n    avatarSize?: number | 'large' | 'default' | 'small';\n    /** 头像形状 */\n    shape?: 'circle' | 'square';\n    /** 图片地址 */\n    src?: string;\n    /** 响应式图像集合 */\n    srcSet?: string;\n    /** 图片替代文本 */\n    alt?: string;\n    /** 图片填充方式 */\n    fit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';\n    /** 文本头像内容 */\n    text?: string;\n    /** 图标名称 */\n    icon?: string;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "SparkDataDisplayProps<string>",
+          "targetName": "SparkDataDisplayProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 头像尺寸 */\n    avatarSize?: number | 'large' | 'default' | 'small';\n    /** 头像形状 */\n    shape?: 'circle' | 'square';\n    /** 图片地址 */\n    src?: string;\n    /** 响应式图像集合 */\n    srcSet?: string;\n    /** 图片替代文本 */\n    alt?: string;\n    /** 图片填充方式 */\n    fit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';\n    /** 文本头像内容 */\n    text?: string;\n    /** 图标名称 */\n    icon?: string;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayAvatar.props.d.ts",
+        "line": 9,
+        "className": "RAvatarProps",
+        "declarationKind": "type",
+        "componentName": "DisplayAvatar",
+        "componentType": "r-avatar",
+        "componentLevel": "display",
+        "componentLayer": "data-display",
+        "componentDirectory": "display/data-components"
+      },
+      "attributes": [
+        {
+          "name": "avatarSize",
+          "schema": {
+            "title": "number | 'large' | 'default' | 'small'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 头像尺寸 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayAvatar.props.d.ts",
+            "line": 11,
+            "className": "RAvatarProps",
+            "memberName": "avatarSize",
+            "declarationKind": "interface",
+            "componentName": "DisplayAvatar",
+            "componentType": "r-avatar",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "shape",
+          "schema": {
+            "title": "'circle' | 'square'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 头像形状 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayAvatar.props.d.ts",
+            "line": 13,
+            "className": "RAvatarProps",
+            "memberName": "shape",
+            "declarationKind": "interface",
+            "componentName": "DisplayAvatar",
+            "componentType": "r-avatar",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "src",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 图片地址 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayAvatar.props.d.ts",
+            "line": 15,
+            "className": "RAvatarProps",
+            "memberName": "src",
+            "declarationKind": "interface",
+            "componentName": "DisplayAvatar",
+            "componentType": "r-avatar",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "srcSet",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 响应式图像集合 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayAvatar.props.d.ts",
+            "line": 17,
+            "className": "RAvatarProps",
+            "memberName": "srcSet",
+            "declarationKind": "interface",
+            "componentName": "DisplayAvatar",
+            "componentType": "r-avatar",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "alt",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 图片替代文本 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayAvatar.props.d.ts",
+            "line": 19,
+            "className": "RAvatarProps",
+            "memberName": "alt",
+            "declarationKind": "interface",
+            "componentName": "DisplayAvatar",
+            "componentType": "r-avatar",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "fit",
+          "schema": {
+            "title": "'fill' | 'contain' | 'cover' | 'none' | 'scale-down'"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 图片填充方式 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayAvatar.props.d.ts",
+            "line": 21,
+            "className": "RAvatarProps",
+            "memberName": "fit",
+            "declarationKind": "interface",
+            "componentName": "DisplayAvatar",
+            "componentType": "r-avatar",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "text",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 文本头像内容 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayAvatar.props.d.ts",
+            "line": 23,
+            "className": "RAvatarProps",
+            "memberName": "text",
+            "declarationKind": "interface",
+            "componentName": "DisplayAvatar",
+            "componentType": "r-avatar",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        },
+        {
+          "name": "icon",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 图标名称 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayAvatar.props.d.ts",
+            "line": 25,
+            "className": "RAvatarProps",
+            "memberName": "icon",
+            "declarationKind": "interface",
+            "componentName": "DisplayAvatar",
+            "componentType": "r-avatar",
+            "componentLevel": "display",
+            "componentLayer": "data-display",
+            "componentDirectory": "display/data-components"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.305Z"
+}

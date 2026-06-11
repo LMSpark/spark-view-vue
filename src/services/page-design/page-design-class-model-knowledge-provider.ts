@@ -1,3 +1,8 @@
+/**
+ * @module app:services/page-design/page-design-class-model-knowledge-provider
+ * app 的 services/page-design/page-design-class-model-knowledge-provider 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import {
   WorkerClassModelKnowledgeProvider,
   type ClassModelKnowledgeProvider,

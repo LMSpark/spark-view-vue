@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-component:ai/components/SessionToolCallCard
+@spark-appworks/spark-component 的 ai/components/SessionToolCallCard 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-card :class="$style['tool-card']" shadow="never">
     <div :class="$style['tool-card__header']">

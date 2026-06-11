@@ -26,32 +26,48 @@ export function isAppEnvironment(value: unknown): value is AppEnvironment {
  * 用户信息
  */
 export type UserInfo = {
-  userId: string
-  username: string
-  displayName?: string
-  email?: string
-  avatar?: string
-  readonly roles: string[]        // ['admin', 'sales', 'manager']
-  readonly permissions: string[]}
+    /** user Id 标识。 */
+userId: string
+    /** username 字段。 */
+username: string
+    /** display Name 名称。 */
+displayName?: string
+    /** email 字段。 */
+email?: string
+    /** avatar 字段。 */
+avatar?: string
+    /** roles 字段。 */
+readonly roles: string[]        // ['admin', 'sales', 'manager']
+    /** permissions 字段。 */
+readonly permissions: string[]}
 
 /**
  * 租户信息
  */
 export type TenantInfo = {
-  tenantId: string
-  tenantName: string
-  tenantCode?: string
-  config?: Record<string, unknown>
-  features?: string[]}
+    /** tenant Id 标识。 */
+tenantId: string
+    /** tenant Name 名称。 */
+tenantName: string
+    /** tenant Code 字段。 */
+tenantCode?: string
+    /** 配置对象。 */
+config?: Record<string, unknown>
+    /** features 字段。 */
+features?: string[]}
 
 /**
  * 环境信息
  */
 export type EnvironmentInfo = {
-  mode: AppEnvironment
-  apiBaseUrl: string
-  version: string
-  buildTime?: string}
+    /** mode 字段。 */
+mode: AppEnvironment
+    /** api Base Url 地址。 */
+apiBaseUrl: string
+    /** version 字段。 */
+version: string
+    /** build Time 字段。 */
+buildTime?: string}
 
 /**
  * 应用全局上下文接口
@@ -186,10 +202,15 @@ export type ErrorContext = {
  * 错误类型
  */
 export enum ErrorType {
-  Auth = 'AUTH',
-  Permission = 'PERMISSION',
-  Network = 'NETWORK',
-  Validation = 'VALIDATION',
-  Unknown = 'UNKNOWN'
+    /** Auth 字段。 */
+Auth = 'AUTH',
+    /** Permission 字段。 */
+Permission = 'PERMISSION',
+    /** Network 字段。 */
+Network = 'NETWORK',
+    /** Validation 字段。 */
+Validation = 'VALIDATION',
+    /** Unknown 字段。 */
+Unknown = 'UNKNOWN'
 }
 

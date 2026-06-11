@@ -1,7 +1,14 @@
+/**
+ * @module @spark-appworks/spark-component:components/display/data-components/DisplayProgress.props
+ * DisplayProgress 模块，属于 SPARK component display/data-display。
+ * 组件目录: display/data-components。
+ * 导出 ClassModel symbol: RProgressProps（共 1 个 symbol）。
+ */
 import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
 // 这里不再为 JS 基础类型保留导出别名，进度色直接内联到属性上。
 
+/** RProgress Props 的属性契约。 */
 export type RProgressProps = SparkNodeProps & SparkDataDisplayProps<number> & {
   /** 百分比值（优先级高于 value/field） */
     percentage?: number

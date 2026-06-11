@@ -1,3 +1,8 @@
+<!--
+@module app:components/IconPicker
+app 的 components/IconPicker 模块。
+导出 ClassModel symbol: Props（共 1 个 symbol）。
+-->
 <template>
   <el-popover trigger="click" :width="360" placement="bottom-start">
     <template #reference>
@@ -33,10 +38,15 @@ import { computed, ref } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import * as Icons from '@element-plus/icons-vue'
 
+/** 图标选择器属性，描述当前图标值和输入外观。 */
 type Props = {
+  /** 当前选中的图标名称。 */
   modelValue?: string
+  /** 未选择图标时的占位提示。 */
   placeholder?: string
-  width?: number | string}
+  /** 图标选择器输入框宽度。 */
+  width?: number | string
+}
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: '',

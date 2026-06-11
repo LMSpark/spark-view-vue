@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-app/src/router/external-link-frame-page.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:router/external-link-frame-page",
+    "sourcePath": "declarations/packages/spark-app/src/router/external-link-frame-page.d.ts",
+    "sourceFile": "packages/spark-app/src/router/external-link-frame-page.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "router/external-link-frame-page",
+    "jsdoc": "@module @spark-appworks/spark-app:router/external-link-frame-page\n@spark-appworks/spark-app 的 router/external-link-frame-page 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:25.973Z"
+}

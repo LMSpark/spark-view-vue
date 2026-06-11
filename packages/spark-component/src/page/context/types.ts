@@ -52,7 +52,11 @@ export type PageContext = ScriptContext & {
     h: typeof h
 
     // Timer API（沙箱白名单）
-    setTimeout: (handler: (...args: unknown[]) => void, timeout?: number) => number
-    clearTimeout: (id?: number) => void
-    setInterval: (handler: (...args: unknown[]) => void, timeout?: number) => number
-    clearInterval: (id?: number) => void}
+        /** set Timeout 回调。 */
+setTimeout: (handler: (...args: unknown[]) => void, timeout?: number) => number
+        /** clear Timeout 回调。 */
+clearTimeout: (id?: number) => void
+        /** set Interval 回调。 */
+setInterval: (handler: (...args: unknown[]) => void, timeout?: number) => number
+        /** clear Interval 回调。 */
+clearInterval: (id?: number) => void}

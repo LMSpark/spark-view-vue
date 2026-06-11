@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-component:components/fields/actions/useFileFieldActions
+ * @spark-appworks/spark-component 的 components/fields/actions/useFileFieldActions 模块。
+ * 导出 ClassModel symbol: UseFileFieldActionsOptions（共 1 个 symbol）。
+ */
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import type {
@@ -9,9 +14,12 @@ import type {
 } from '../../internal'
 import { useFieldActionMode } from './useFieldActionMode'
 
+/** Use File Field Actions Options 的调用配置。 */
 type UseFileFieldActionsOptions = {
-  pageService: PageServiceCapability | null
-  isEditable: ComputedRef<boolean>}
+    /** page Service 字段。 */
+pageService: PageServiceCapability | null
+    /** 是否 is Editable。 */
+isEditable: ComputedRef<boolean>}
 
 export function useFileFieldActions(options: UseFileFieldActionsOptions) {
   const { pageService, isEditable } = options

@@ -1,0 +1,943 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/data-views/RendererTree/zero-code",
+    "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/data-views/RendererTree/zero-code",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererTree/zero-code\nRendererTree 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: TreeNode, ElTreeNode, ElTreeComponent, NativeTreeLike, NativeTreeNodeLike, TreeEventControl, TreeEventHandler, RendererTreeBehaviorProps 等（共 9 个 symbol）。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "TreeNode",
+      "ElTreeNode",
+      "ElTreeComponent",
+      "NativeTreeLike",
+      "NativeTreeNodeLike",
+      "TreeEventControl",
+      "TreeEventHandler",
+      "RendererTreeBehaviorProps",
+      "RendererTreeZeroCodeOptions"
+    ],
+    "componentName": "RendererTree",
+    "componentType": "r-tree",
+    "componentLevel": "table-level",
+    "componentLayer": "data-view-container",
+    "componentDirectory": "containers/data-views"
+  },
+  "symbols": [
+    "TreeNode",
+    "ElTreeNode",
+    "ElTreeComponent",
+    "NativeTreeLike",
+    "NativeTreeNodeLike",
+    "TreeEventControl",
+    "TreeEventHandler",
+    "RendererTreeBehaviorProps",
+    "RendererTreeZeroCodeOptions"
+  ],
+  "models": {
+    "TreeNode": {
+      "kind": "TreeNode",
+      "className": "TreeNode",
+      "jsdoc": "/** r-tree 对外暴露的树节点数据形态，兼容普通 DataRow 和嵌套 children。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 树节点的业务主键；用于选中、拖拽移动和 Element Plus 节点定位。 */\n    id?: string | number;\n    /** 节点展示文本；优先用于树节点标题。 */\n    label?: string;\n    /** 兼容后端常见字段名的节点展示文本。 */\n    name?: string;\n    /** 子节点集合；存在时按嵌套树数据渲染。 */\n    children?: TreeNode[];\n    /** 是否禁用该节点的选择、勾选或交互。 */\n    disabled?: boolean;\n    /** 允许保留业务行上的额外字段，供脚本和动作读取。 */\n    [key: string]: unknown;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+        "line": 7,
+        "className": "TreeNode",
+        "declarationKind": "type",
+        "componentName": "RendererTree",
+        "componentType": "r-tree",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "schema": {
+            "title": "string | number"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 树节点的业务主键；用于选中、拖拽移动和 Element Plus 节点定位。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 9,
+            "className": "TreeNode",
+            "memberName": "id",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "label",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 节点展示文本；优先用于树节点标题。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 11,
+            "className": "TreeNode",
+            "memberName": "label",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "name",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 兼容后端常见字段名的节点展示文本。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 13,
+            "className": "TreeNode",
+            "memberName": "name",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "children",
+          "schema": {
+            "type": "array",
+            "title": "TreeNode[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 子节点集合；存在时按嵌套树数据渲染。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 15,
+            "className": "TreeNode",
+            "memberName": "children",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "disabled",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 是否禁用该节点的选择、勾选或交互。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 17,
+            "className": "TreeNode",
+            "memberName": "disabled",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ElTreeNode": {
+      "kind": "ElTreeNode",
+      "className": "ElTreeNode",
+      "jsdoc": "/** Element Plus 树节点实例的最小结构，供事件回调和拖拽逻辑读取。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** Element Plus 树节点层级，从根层开始递增。 */\n    level: number;\n    /** Element Plus 树节点当前是否展开。 */\n    expanded: boolean;\n    /** 树节点绑定的原始 DataRow。 */\n    data?: DataRow;\n    /** 父级 Element Plus 树节点；根节点为空。 */\n    parent?: ElTreeNode | null;\n    /** Element Plus 内部节点对象上的额外运行时字段。 */\n    [key: string]: unknown;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+        "line": 22,
+        "className": "ElTreeNode",
+        "declarationKind": "type",
+        "componentName": "RendererTree",
+        "componentType": "r-tree",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "level",
+          "schema": {
+            "type": "number",
+            "title": "number"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** Element Plus 树节点层级，从根层开始递增。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 24,
+            "className": "ElTreeNode",
+            "memberName": "level",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "expanded",
+          "schema": {
+            "type": "boolean",
+            "title": "boolean"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** Element Plus 树节点当前是否展开。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 26,
+            "className": "ElTreeNode",
+            "memberName": "expanded",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "data",
+          "schema": {
+            "title": "DataRow"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 树节点绑定的原始 DataRow。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 28,
+            "className": "ElTreeNode",
+            "memberName": "data",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "parent",
+          "schema": {
+            "title": "ElTreeNode | null"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 父级 Element Plus 树节点；根节点为空。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 30,
+            "className": "ElTreeNode",
+            "memberName": "parent",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "ElTreeComponent": {
+      "kind": "ElTreeComponent",
+      "className": "ElTreeComponent",
+      "jsdoc": "/** Element Plus tree 组件实例的最小透传形态。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** Element Plus tree 组件实例上的额外运行时方法或状态。 */\n    [key: string]: unknown;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+        "line": 35,
+        "className": "ElTreeComponent",
+        "declarationKind": "type",
+        "componentName": "RendererTree",
+        "componentType": "r-tree",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "NativeTreeLike": {
+      "kind": "NativeTreeLike",
+      "className": "NativeTreeLike",
+      "jsdoc": "/** r-tree 运行时需要调用的 Element Plus tree 原生能力集合。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 返回当前选中的原生树节点数据。 */\n    getCurrentNode?: () => unknown;\n    /** 按节点 key 设置当前选中节点；传 null 清空选中。 */\n    setCurrentKey?: (key: string | number | null) => void;\n    /** 按关键字触发 Element Plus 树过滤。 */\n    filter?: (value: string) => void;\n    /** 返回当前勾选的节点数据。 */\n    getCheckedNodes?: (leafOnly?: boolean, includeHalfChecked?: boolean) => unknown[];\n    /** 返回当前勾选节点的 key 集合。 */\n    getCheckedKeys?: (leafOnly?: boolean) => Array<string | number>;\n    /** 设置当前勾选节点的 key 集合。 */\n    setCheckedKeys?: (keys: Array<string | number>, leafOnly?: boolean) => void;\n    /** 将节点数据追加到父节点下。 */\n    append?: (data: unknown, parentNode: unknown) => void;\n    /** 将节点数据插入到参考节点之前。 */\n    insertBefore?: (data: unknown, refNode: unknown) => void;\n    /** 将节点数据插入到参考节点之后。 */\n    insertAfter?: (data: unknown, refNode: unknown) => void;\n    /** 从树中移除节点实例或节点数据。 */\n    remove?: (nodeOrData: unknown) => void;\n    /** 按业务 key 获取原生树节点实例。 */\n    getNode?: (key: string | number) => NativeTreeNodeLike | undefined;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+        "line": 40,
+        "className": "NativeTreeLike",
+        "declarationKind": "type",
+        "componentName": "RendererTree",
+        "componentType": "r-tree",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "getCurrentNode",
+          "schema": {
+            "title": "() => unknown"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 返回当前选中的原生树节点数据。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 42,
+            "className": "NativeTreeLike",
+            "memberName": "getCurrentNode",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "setCurrentKey",
+          "schema": {
+            "title": "(key: string | number | null) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 按节点 key 设置当前选中节点；传 null 清空选中。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 44,
+            "className": "NativeTreeLike",
+            "memberName": "setCurrentKey",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "filter",
+          "schema": {
+            "title": "(value: string) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 按关键字触发 Element Plus 树过滤。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 46,
+            "className": "NativeTreeLike",
+            "memberName": "filter",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "getCheckedNodes",
+          "schema": {
+            "type": "array",
+            "title": "(leafOnly?: boolean, includeHalfChecked?: boolean) => unknown[]",
+            "items": true
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 返回当前勾选的节点数据。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 48,
+            "className": "NativeTreeLike",
+            "memberName": "getCheckedNodes",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "getCheckedKeys",
+          "schema": {
+            "title": "(leafOnly?: boolean) => Array<string | number>"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 返回当前勾选节点的 key 集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 50,
+            "className": "NativeTreeLike",
+            "memberName": "getCheckedKeys",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "setCheckedKeys",
+          "schema": {
+            "title": "(keys: Array<string | number>, leafOnly?: boolean) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 设置当前勾选节点的 key 集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 52,
+            "className": "NativeTreeLike",
+            "memberName": "setCheckedKeys",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "append",
+          "schema": {
+            "title": "(data: unknown, parentNode: unknown) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 将节点数据追加到父节点下。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 54,
+            "className": "NativeTreeLike",
+            "memberName": "append",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "insertBefore",
+          "schema": {
+            "title": "(data: unknown, refNode: unknown) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 将节点数据插入到参考节点之前。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 56,
+            "className": "NativeTreeLike",
+            "memberName": "insertBefore",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "insertAfter",
+          "schema": {
+            "title": "(data: unknown, refNode: unknown) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 将节点数据插入到参考节点之后。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 58,
+            "className": "NativeTreeLike",
+            "memberName": "insertAfter",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "remove",
+          "schema": {
+            "title": "(nodeOrData: unknown) => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 从树中移除节点实例或节点数据。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 60,
+            "className": "NativeTreeLike",
+            "memberName": "remove",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "getNode",
+          "schema": {
+            "title": "(key: string | number) => NativeTreeNodeLike | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 按业务 key 获取原生树节点实例。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 62,
+            "className": "NativeTreeLike",
+            "memberName": "getNode",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "NativeTreeNodeLike": {
+      "kind": "NativeTreeNodeLike",
+      "className": "NativeTreeNodeLike",
+      "jsdoc": "/** Element Plus 原生树节点实例的最小能力集合。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 展开当前原生树节点。 */\n    expand?: () => void;\n    /** 原生树节点绑定的业务行数据。 */\n    data?: DataRow;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+        "line": 65,
+        "className": "NativeTreeNodeLike",
+        "declarationKind": "type",
+        "componentName": "RendererTree",
+        "componentType": "r-tree",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "expand",
+          "schema": {
+            "title": "() => void"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 展开当前原生树节点。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 67,
+            "className": "NativeTreeNodeLike",
+            "memberName": "expand",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "data",
+          "schema": {
+            "title": "DataRow"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 原生树节点绑定的业务行数据。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 69,
+            "className": "NativeTreeNodeLike",
+            "memberName": "data",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "TreeEventControl": {
+      "kind": "TreeEventControl",
+      "className": "TreeEventControl",
+      "jsdoc": "/** 树事件回调的默认行为控制器。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 事件处理器调用后阻止组件默认行为。 */\n    cancel: CancellableControl['cancel'];\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+        "line": 72,
+        "className": "TreeEventControl",
+        "declarationKind": "type",
+        "componentName": "RendererTree",
+        "componentType": "r-tree",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "cancel",
+          "schema": {
+            "title": "CancellableControl['cancel']"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 事件处理器调用后阻止组件默认行为。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 74,
+            "className": "TreeEventControl",
+            "memberName": "cancel",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "TreeEventHandler": {
+      "kind": "TreeEventHandler",
+      "className": "TreeEventHandler",
+      "jsdoc": "/** r-tree 节点交互事件处理函数。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 树节点交互回调；可通过 control.cancel() 接管默认选中、展开等行为。 */\n    (data: TreeNode, node: ElTreeNode, component: ElTreeComponent, control: TreeEventControl): void | Promise<void>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+        "line": 77,
+        "className": "TreeEventHandler",
+        "declarationKind": "type",
+        "componentName": "RendererTree",
+        "componentType": "r-tree",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "RendererTreeBehaviorProps": {
+      "kind": "RendererTreeBehaviorProps",
+      "className": "RendererTreeBehaviorProps",
+      "jsdoc": "/** r-tree 与节点交互相关的行为属性。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<Record<string, unknown>> & {\n    /** 节点点击时触发，可取消默认选中当前行行为。 */\n    onNodeClick?: TreeEventHandler | undefined;\n    /** 节点展开时触发，用于懒加载、埋点或自定义展开逻辑。 */\n    onNodeExpand?: TreeEventHandler | undefined;\n    /** 节点收起时触发，用于同步外部状态或埋点。 */\n    onNodeCollapse?: TreeEventHandler | undefined;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "Readonly<Record<string, unknown>>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 节点点击时触发，可取消默认选中当前行行为。 */\n    onNodeClick?: TreeEventHandler | undefined;\n    /** 节点展开时触发，用于懒加载、埋点或自定义展开逻辑。 */\n    onNodeExpand?: TreeEventHandler | undefined;\n    /** 节点收起时触发，用于同步外部状态或埋点。 */\n    onNodeCollapse?: TreeEventHandler | undefined;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+        "line": 82,
+        "className": "RendererTreeBehaviorProps",
+        "declarationKind": "type",
+        "componentName": "RendererTree",
+        "componentType": "r-enderer-tree-behavior",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "onNodeClick",
+          "schema": {
+            "title": "TreeEventHandler | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 节点点击时触发，可取消默认选中当前行行为。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 84,
+            "className": "RendererTreeBehaviorProps",
+            "memberName": "onNodeClick",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-enderer-tree-behavior",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "onNodeExpand",
+          "schema": {
+            "title": "TreeEventHandler | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 节点展开时触发，用于懒加载、埋点或自定义展开逻辑。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 86,
+            "className": "RendererTreeBehaviorProps",
+            "memberName": "onNodeExpand",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-enderer-tree-behavior",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "onNodeCollapse",
+          "schema": {
+            "title": "TreeEventHandler | undefined"
+          },
+          "readable": true,
+          "writable": false,
+          "jsdoc": "/** 节点收起时触发，用于同步外部状态或埋点。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 88,
+            "className": "RendererTreeBehaviorProps",
+            "memberName": "onNodeCollapse",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-enderer-tree-behavior",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    },
+    "RendererTreeZeroCodeOptions": {
+      "kind": "RendererTreeZeroCodeOptions",
+      "className": "RendererTreeZeroCodeOptions",
+      "jsdoc": "/** 创建 r-tree zero-code API 和事件桥接所需的运行时输入。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** r-tree 的组件属性集合，包含事件回调和配置透传。 */\n    props: RendererTreeBehaviorProps;\n    /** 当前解析出的 DataView；为空时树 API 只处理原生实例能力。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** 树渲染使用的行数据集合。 */\n    treeData: ValueRef<DataRow[]>;\n    /** Element Plus tree 原生组件 ref。 */\n    nativeTreeRef: ValueRef<unknown>;\n    /** 运行时诊断日志。 */\n    logger: LoggerApi;\n    /** 作为树节点 key 的字段名。 */\n    nodeKeyField: ValueRef<string>;\n    /** 作为树节点 id 的字段名，用于诊断缺主键场景。 */\n    treeIdField: ValueRef<string>;\n}",
+      "provenance": {
+        "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+        "line": 91,
+        "className": "RendererTreeZeroCodeOptions",
+        "declarationKind": "type",
+        "componentName": "RendererTree",
+        "componentType": "r-tree",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "props",
+          "schema": {
+            "title": "RendererTreeBehaviorProps"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** r-tree 的组件属性集合，包含事件回调和配置透传。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 93,
+            "className": "RendererTreeZeroCodeOptions",
+            "memberName": "props",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "resolvedView",
+          "schema": {
+            "title": "ValueRef<DataView | null>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 当前解析出的 DataView；为空时树 API 只处理原生实例能力。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 95,
+            "className": "RendererTreeZeroCodeOptions",
+            "memberName": "resolvedView",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "treeData",
+          "schema": {
+            "title": "ValueRef<DataRow[]>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 树渲染使用的行数据集合。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 97,
+            "className": "RendererTreeZeroCodeOptions",
+            "memberName": "treeData",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "nativeTreeRef",
+          "schema": {
+            "title": "ValueRef<unknown>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** Element Plus tree 原生组件 ref。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 99,
+            "className": "RendererTreeZeroCodeOptions",
+            "memberName": "nativeTreeRef",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "logger",
+          "schema": {
+            "title": "LoggerApi"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 运行时诊断日志。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 101,
+            "className": "RendererTreeZeroCodeOptions",
+            "memberName": "logger",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "nodeKeyField",
+          "schema": {
+            "title": "ValueRef<string>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 作为树节点 key 的字段名。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 103,
+            "className": "RendererTreeZeroCodeOptions",
+            "memberName": "nodeKeyField",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        },
+        {
+          "name": "treeIdField",
+          "schema": {
+            "title": "ValueRef<string>"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** 作为树节点 id 的字段名，用于诊断缺主键场景。 */",
+          "provenance": {
+            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts",
+            "line": 105,
+            "className": "RendererTreeZeroCodeOptions",
+            "memberName": "treeIdField",
+            "declarationKind": "interface",
+            "componentName": "RendererTree",
+            "componentType": "r-tree",
+            "componentLevel": "table-level",
+            "componentLayer": "data-view-container",
+            "componentDirectory": "containers/data-views"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:26.085Z"
+}

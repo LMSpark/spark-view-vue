@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-json-document/src/core/json-result-path.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:core/json-result-path",
+    "sourcePath": "declarations/packages/spark-json-document/src/core/json-result-path.d.ts",
+    "sourceFile": "packages/spark-json-document/src/core/json-result-path.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "core/json-result-path",
+    "jsdoc": "resultPath / JSON 取值 — 运行时委托 jmespath，不自研路径引擎。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-11T12:20:26.829Z"
+}

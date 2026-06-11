@@ -1,3 +1,8 @@
+/**
+ * @module @spark-appworks/spark-ai:class-model/tools/class-model-tool-schema-recovery
+ * @spark-appworks/spark-ai 的 class-model/tools/class-model-tool-schema-recovery 模块。
+ * 该 DTS shard 当前不导出 ClassModel symbol。
+ */
 import { findClassModelToolSpec } from './class-model-tool-specs'
 
 /** 从 ClassModel 工具闭集 schema 派生参数恢复提示，避免业务层硬编码协议字段名。 */

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/project-planning-editor-provider.d.ts",
+  "module": {
+    "name": "app:services/project-planning-editor-provider",
+    "sourcePath": "declarations/src/services/project-planning-editor-provider.d.ts",
+    "sourceFile": "src/services/project-planning-editor-provider.ts",
+    "packageName": "app",
+    "modulePath": "services/project-planning-editor-provider",
+    "jsdoc": "projectPlanning 门面实例选用策略（无 UI）。\n- headless run / Host Run：按 projectId 注册临时 ProjectWorkspace，运行后丢弃\n- 调用方也可直接注入已加载 navigation 的 editor（测试 / 编排层）",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ProjectPlanningEditorResolveContext",
+      "HeadlessProjectPlanningEditorScope"
+    ]
+  },
+  "symbols": [
+    "ProjectPlanningEditorResolveContext",
+    "HeadlessProjectPlanningEditorScope"
+  ],
+  "models": {
+    "ProjectPlanningEditorResolveContext": {
+      "kind": "ProjectPlanningEditorResolveContext",
+      "className": "ProjectPlanningEditorResolveContext",
+      "jsdoc": "/** Project Planning Editor Resolve Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    moduleInstanceId: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    moduleInstanceId: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/project-planning-editor-provider.d.ts",
+        "line": 9,
+        "className": "ProjectPlanningEditorResolveContext",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "HeadlessProjectPlanningEditorScope": {
+      "kind": "HeadlessProjectPlanningEditorScope",
+      "className": "HeadlessProjectPlanningEditorScope",
+      "jsdoc": "/** Headless Project Planning Editor Scope 的语义模型。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    tenantId?: string;\n    projectId?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    tenantId?: string;\n    projectId?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/project-planning-editor-provider.d.ts",
+        "line": 13,
+        "className": "HeadlessProjectPlanningEditorScope",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.100Z"
+}

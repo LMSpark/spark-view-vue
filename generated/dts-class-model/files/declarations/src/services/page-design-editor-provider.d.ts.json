@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/page-design-editor-provider.d.ts",
+  "module": {
+    "name": "app:services/page-design-editor-provider",
+    "sourcePath": "declarations/src/services/page-design-editor-provider.d.ts",
+    "sourceFile": "src/services/page-design-editor-provider.ts",
+    "packageName": "app",
+    "modulePath": "services/page-design-editor-provider",
+    "jsdoc": "pageDesign 门面实例选用策略。\n- DevSystem 面板内：与手动编辑同一 `editor.project`\n- 隔离运行：headless `ProjectWorkspace`，按 pageId 注册、运行后丢弃",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageDesignEditorResolveContext"
+    ]
+  },
+  "symbols": [
+    "PageDesignEditorResolveContext"
+  ],
+  "models": {
+    "PageDesignEditorResolveContext": {
+      "kind": "PageDesignEditorResolveContext",
+      "className": "PageDesignEditorResolveContext",
+      "jsdoc": "/** Page Design Editor Resolve Context 的运行上下文。 */",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** module Instance Id 标识。 */\n    moduleInstanceId: string;\n}",
+      "provenance": {
+        "file": "declarations/src/services/page-design-editor-provider.d.ts",
+        "line": 9,
+        "className": "PageDesignEditorResolveContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "moduleInstanceId",
+          "schema": {
+            "type": "string",
+            "title": "string"
+          },
+          "readable": true,
+          "writable": true,
+          "jsdoc": "/** module Instance Id 标识。 */",
+          "provenance": {
+            "file": "declarations/src/services/page-design-editor-provider.d.ts",
+            "line": 11,
+            "className": "PageDesignEditorResolveContext",
+            "memberName": "moduleInstanceId",
+            "declarationKind": "interface"
+          }
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-11T12:20:27.084Z"
+}

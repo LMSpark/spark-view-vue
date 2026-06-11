@@ -11,8 +11,10 @@ import vuePagesDocument from '../../config/navigation/vue-pages.json'
 const VUE_PAGES_PROTOCOL = 'spark-appworks.vue-pages'
 const VUE_PAGES_SCHEMA_VERSION = 1
 
+/** Page Scope 的语义模型。 */
 export type PageScope = 'public' | 'tenant' | 'app'
 
+/** Vue Page Config Entry 的语义模型。 */
 type VuePageConfigEntry = Readonly<{
   path: string
   title: string
@@ -30,6 +32,7 @@ type VuePagesConfig = Readonly<{
   pages: readonly VuePageConfigEntry[]
 }>
 
+/** Vue Page Entry 的语义模型。 */
 type VuePageEntry = Readonly<Omit<VuePageConfigEntry, 'path'> & {
   load: () => Promise<{ default: Component }>
 }>

@@ -1,3 +1,8 @@
+<!--
+@module @spark-appworks/spark-app:page-ui/AppPageUiHost
+@spark-appworks/spark-app 的 page-ui/AppPageUiHost 模块。
+该 DTS shard 当前不导出 ClassModel symbol。
+-->
 <template>
   <el-dialog
     :model-value="appPageUiState.dialog.visible"
