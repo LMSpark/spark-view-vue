@@ -1,8 +1,8 @@
 /**
- * agent/business · ClassModel 业务注册适配器。
- *
- * LLM 语义：把业务 class + DTS ClassModel/兼容 metadata 桥接为 Agent 可执行的
- * ClassModel 7-tool runtime。这里不再合成旧 AiModule、path router 或 direct function tool。
+ * @module @spark-appworks/spark-ai:agent/business/class-model-agent-adapter
+ * 职责：把业务 class、DTS ClassModel bundle 和知识服务适配为 Agent 可注册的 ClassModel 7-tool runtime。
+ * 边界：只做 ClassModel 业务注册适配，不恢复旧 AiModule/path router，也不绕过统一工具闭集直接调用函数。
+ * AI用途：新增或排查 ClassModel 驱动的业务 Agent 时，用本模块确认 metadata、runtime 和 registration 的接线方式。
  */
 
 import type { AiJsonSchemaObject, AiJsonValue } from '../../json'

@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-project-model:domain-model/navigation/navigation-row-model
- * @spark-appworks/spark-project-model 的 domain-model/navigation/navigation-row-model 模块。
- * 导出 ClassModel symbol: NavigationRowModel（共 1 个 symbol）。
+ * 职责：提供项目模型层 navigation-row-model 能力，围绕 NavigationRowModel 处理导航、页面文件、配置内容、工作区或远端 IO 契约。
+ * 边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。
+ * AI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 domain-model/navigation/navigation-row-model。
  */
 import { SparkAIModel } from '@spark-appworks/spark-utils'
 import type { NavigationClient } from '../../io/navigation-client'

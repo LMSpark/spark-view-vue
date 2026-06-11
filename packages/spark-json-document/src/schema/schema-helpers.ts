@@ -1,27 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * schema/schema-helpers.ts — JSON Schema 便捷构造器
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】schema 层中间件，依赖 schema-types.ts，被 validator.ts 和业务层消费。
- *   为函数注册的 paramsSchema 提供类型安全的快捷创建函数。
- *
- * 【设计决策】
- *   - 每个构造器返回标准 JsonSchemaObject，避免手写时遗漏 type/properties。
- *   - 所有函数都是纯工厂，无副作用、无状态。
- *   - `paramsSchema()` 专门用于函数参数根节点，强制 type=object。
- *
- * ═══════════════════════════════════════════════════════════════
- * 函数层级（自底向上）：
- *
- *   基础类型构造器          复合构造器            根节点构造器
- *   ┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
- *   │ stringSchema │     │ enumSchema   │     │ paramsSchema     │
- *   │ numberSchema │     │ arraySchema  │     │ noParamsSchema   │
- *   │ booleanSchema│     │ objectSchema │     └──────────────────┘
- *   │ anySchema    │     └──────────────┘
- *   └──────────────┘
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-json-document:schema/schema-helpers
+ * 职责：提供 JSON Document/schema 处理中的 schema helpers 能力，支撑 schema 标准化、审计和元数据保留。
+ * 边界：只处理 JSON schema/document 结构，不耦合应用页面、Vue 组件或 AI 会话状态。
+ * AI用途：校验或标准化配置 schema 时，用本模块确认 JSON 文档层的规则来源。
  */
 
 import type {

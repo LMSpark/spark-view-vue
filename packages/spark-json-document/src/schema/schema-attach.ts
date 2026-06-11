@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-json-document:schema/schema-attach
+ * 职责：提供 JSON Document/schema 处理中的 schema attach 能力，支撑 schema 标准化、审计和元数据保留。
+ * 边界：只处理 JSON schema/document 结构，不耦合应用页面、Vue 组件或 AI 会话状态。
+ * AI用途：校验或标准化配置 schema 时，用本模块确认 JSON 文档层的规则来源。
+ */
+/**
  * Attach document-level $defs to a schema root for AJV 2020 $ref resolution.
  */
 

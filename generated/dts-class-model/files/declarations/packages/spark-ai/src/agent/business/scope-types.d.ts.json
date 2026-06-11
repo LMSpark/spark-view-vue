@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/agent/business/scope-types.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "agent/business/scope-types",
-    "jsdoc": "┌─────────────────────────────────────────────────────────────────────────────┐\n│  AI HOST · 业务作用域类型                                                     │\n│  Business Scope & Context Types                                              │\n│                                                                              │\n│  本文件定义业务实例的定位、作用域和运行时上下文的类型层次。                       │\n│  从\"找到哪个业务\"到\"当前会话快照\"再到\"回调参数\"，逐步细化。                     │\n│                                                                              │\n│  类型层次：                                                                   │\n│    AiAgentTarget           — 业务定位（哪个注册的哪个实例）              │\n│      └─ AiAgentScope       — 业务作用域（定位 + 会话/运行时 ID）        │\n│    AiAgentRuntimeContext   — 运行时上下文（传递给生命周期回调）          │\n│    AiAgentAppendMessageOptions — 追加消息参数（上下文 + 消息字段）      │\n│                                                                              │\n│  使用场景：                                                                   │\n│    · Target   → registry.createBusiness() 时定位                              │\n│    · Scope    → tool-loop-runner 全程持有，turn stream 流键生成               │\n│    · Context  → systemPrompt / afterFunctionCall / onStartSession 回调入参    │\n│    · Options  → session.appendMessage() 入参                                  │\n└─────────────────────────────────────────────────────────────────────────────┘",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/scope-types\n职责：定义 AI 业务坐标、scope、runtime context、turn key 和 stream key 的类型模型。\n边界：只表达作用域数据结构，不生成 ID、不校验输入，也不依赖具体 Host 或 session 实现。\nAI用途：跨模块传递业务定位或诊断 turn/stream 归属时，用本模块确认字段边界。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "AiAgentTarget",
@@ -26,76 +26,53 @@
     "AiAgentTarget": {
       "kind": "AiAgentTarget",
       "className": "AiAgentTarget",
-      "jsdoc": "/**\n * 业务定位基类，用两个 ID 精确定位一个顶层业务实例：\n * businessRegistrationId — 顶层 kind（对应 BusinessRegistry 中的注册项）\n * businessInstanceId     — 顶层实例 ID（同一次会话内不变）\n */",
+      "jsdoc": "业务定位基类，用两个 ID 精确定位一个顶层业务实例：\nbusinessRegistrationId — 顶层 kind（对应 BusinessRegistry 中的注册项）\nbusinessInstanceId     — 顶层实例 ID（同一次会话内不变）",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-        "line": 28,
+        "line": 13,
         "className": "AiAgentTarget",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "businessRegistrationId": {
-              "type": "string",
-              "title": "string"
-            },
-            "businessInstanceId": {
-              "type": "string",
-              "title": "string"
+        "jsdoc": "创建 Ai Agent Target 实例。",
+        "signatureText": "constructor(\n    /** 业务注册 ID，对应 BusinessRegistry 中的顶层注册项。 */\n    businessRegistrationId: string, \n    /** 业务实例 ID，用于定位同一注册项下的具体实例。 */\n    businessInstanceId: string)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "businessRegistrationId",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
             }
           },
-          "required": [
-            "businessRegistrationId",
-            "businessInstanceId"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Ai Agent Target 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-          "line": 34,
-          "className": "AiAgentTarget",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          {
+            "name": "businessInstanceId",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          }
+        ]
       },
       "attributes": [
         {
           "name": "businessRegistrationId",
+          "jsdoc": "业务注册 ID，对应 BusinessRegistry 中的顶层注册项。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 业务注册 ID，对应 BusinessRegistry 中的顶层注册项。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-            "line": 30,
-            "className": "AiAgentTarget",
-            "memberName": "businessRegistrationId",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "businessInstanceId",
+          "jsdoc": "业务实例 ID，用于定位同一注册项下的具体实例。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 业务实例 ID，用于定位同一注册项下的具体实例。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-            "line": 32,
-            "className": "AiAgentTarget",
-            "memberName": "businessInstanceId",
-            "declarationKind": "class"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -103,7 +80,7 @@
     "AiAgentScope": {
       "kind": "AiAgentScope",
       "className": "AiAgentScope",
-      "jsdoc": "/**\n * 业务作用域（继承自定位基类），在业务定位基础上追加运行时标识。\n * instanceId        — 顶层实例 ID，参与 kind + instanceId 生成后端 sessionId\n * runtimeInstanceId — 工具 runtime 内部实例 ID（当前同顶层实例 ID）\n *\n * Scope 是 tool-loop-runner 的核心持有对象，贯穿整个会话生命周期，\n * 同时也是 turnKey / streamKey 的数据来源。\n */",
+      "jsdoc": "业务作用域（继承自定位基类），在业务定位基础上追加运行时标识。\ninstanceId        — 顶层实例 ID，参与 kind + instanceId 生成后端 sessionId\nruntimeInstanceId — 工具 runtime 内部实例 ID（当前同顶层实例 ID）\nScope 是 tool-loop-runner 的核心持有对象，贯穿整个会话生命周期，\n同时也是 turnKey / streamKey 的数据来源。",
       "shapeKind": "class",
       "declarationRelations": [
         {
@@ -114,82 +91,63 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-        "line": 48,
+        "line": 33,
         "className": "AiAgentScope",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "businessRegistrationId": {
-              "type": "string",
-              "title": "string"
-            },
-            "businessInstanceId": {
-              "type": "string",
-              "title": "string"
-            },
-            "instanceId": {
-              "type": "string",
-              "title": "string"
-            },
-            "runtimeInstanceId": {
-              "type": "string",
-              "title": "string"
+        "jsdoc": "创建 Ai Agent Scope 实例。",
+        "signatureText": "constructor(businessRegistrationId: string, businessInstanceId: string, \n    /** 顶层实例 ID，参与生成后端 sessionId。 */\n    instanceId: string, \n    /** 工具 runtime 内部实例 ID，当前通常与顶层实例 ID 一致。 */\n    runtimeInstanceId: string)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "businessRegistrationId",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
             }
           },
-          "required": [
-            "businessRegistrationId",
-            "businessInstanceId",
-            "instanceId",
-            "runtimeInstanceId"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Ai Agent Scope 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-          "line": 54,
-          "className": "AiAgentScope",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          {
+            "name": "businessInstanceId",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          {
+            "name": "instanceId",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          {
+            "name": "runtimeInstanceId",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          }
+        ]
       },
       "attributes": [
         {
           "name": "instanceId",
+          "jsdoc": "顶层实例 ID，参与生成后端 sessionId。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 顶层实例 ID，参与生成后端 sessionId。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-            "line": 50,
-            "className": "AiAgentScope",
-            "memberName": "instanceId",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "runtimeInstanceId",
+          "jsdoc": "工具 runtime 内部实例 ID，当前通常与顶层实例 ID 一致。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 工具 runtime 内部实例 ID，当前通常与顶层实例 ID 一致。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-            "line": 52,
-            "className": "AiAgentScope",
-            "memberName": "runtimeInstanceId",
-            "declarationKind": "class"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -197,98 +155,69 @@
     "AiAgentRuntimeContext": {
       "kind": "AiAgentRuntimeContext",
       "className": "AiAgentRuntimeContext",
-      "jsdoc": "/**\n * 传递给生命周期回调的精简上下文。\n * moduleId         — 业务模块 ID（对应 registration.moduleId）\n * moduleInstanceId — 顶层模块实例 ID（pageId、leaveDraftId 等）\n * instanceId       — 顶层实例 ID；后端 sessionId 由 moduleId + instanceId 生成\n *\n * 与 Scope 的区别：不含 businessRegistrationId / businessInstanceId，\n * 因为生命周期回调已在具体业务实例内部执行，无需重复定位。\n */",
+      "jsdoc": "传递给生命周期回调的精简上下文。\nmoduleId         — 业务模块 ID（对应 registration.moduleId）\nmoduleInstanceId — 顶层模块实例 ID（pageId、leaveDraftId 等）\ninstanceId       — 顶层实例 ID；后端 sessionId 由 moduleId + instanceId 生成\n与 Scope 的区别：不含 businessRegistrationId / businessInstanceId，\n因为生命周期回调已在具体业务实例内部执行，无需重复定位。",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-        "line": 69,
+        "line": 54,
         "className": "AiAgentRuntimeContext",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "moduleId": {
-              "type": "string",
-              "title": "string"
-            },
-            "moduleInstanceId": {
-              "type": "string",
-              "title": "string"
-            },
-            "instanceId": {
-              "type": "string",
-              "title": "string"
+        "jsdoc": "创建 Ai Agent Runtime Context 实例。",
+        "signatureText": "constructor(\n    /** 业务模块 ID，对应 registration.moduleId。 */\n    moduleId: string, \n    /** 顶层模块实例 ID，例如 pageId 或业务草稿 ID。 */\n    moduleInstanceId: string, \n    /** 顶层实例 ID，参与生成后端 sessionId。 */\n    instanceId: string)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "moduleId",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
             }
           },
-          "required": [
-            "moduleId",
-            "moduleInstanceId",
-            "instanceId"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Ai Agent Runtime Context 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-          "line": 77,
-          "className": "AiAgentRuntimeContext",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          {
+            "name": "moduleInstanceId",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          {
+            "name": "instanceId",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          }
+        ]
       },
       "attributes": [
         {
           "name": "moduleId",
+          "jsdoc": "业务模块 ID，对应 registration.moduleId。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 业务模块 ID，对应 registration.moduleId。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-            "line": 71,
-            "className": "AiAgentRuntimeContext",
-            "memberName": "moduleId",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "moduleInstanceId",
+          "jsdoc": "顶层模块实例 ID，例如 pageId 或业务草稿 ID。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 顶层模块实例 ID，例如 pageId 或业务草稿 ID。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-            "line": 73,
-            "className": "AiAgentRuntimeContext",
-            "memberName": "moduleInstanceId",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "instanceId",
+          "jsdoc": "顶层实例 ID，参与生成后端 sessionId。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 顶层实例 ID，参与生成后端 sessionId。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-            "line": 75,
-            "className": "AiAgentRuntimeContext",
-            "memberName": "instanceId",
-            "declarationKind": "class"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -296,7 +225,7 @@
     "AiAgentAppendMessageOptions": {
       "kind": "AiAgentAppendMessageOptions",
       "className": "AiAgentAppendMessageOptions",
-      "jsdoc": "/** Ai Agent Append Message Options 的调用配置。 */",
+      "jsdoc": "Ai Agent Append Message Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "AiAgentRuntimeContext & Readonly<{\n    /** 消息角色：user / assistant / system / tool */\n    role: AiAgentMessageRole;\n    /** 消息正文 */\n    content: string;\n    /** 消息来源标注（用于区分用户输入 / LLM 输出 / 工具返回值） */\n    source?: AiAgentMessageSource;\n    /** 附加元数据（如工具调用 ID、token 用量等） */\n    metadata?: Record<string, unknown>;\n}>",
       "declarationRelations": [
@@ -313,7 +242,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts",
-        "line": 86,
+        "line": 71,
         "className": "AiAgentAppendMessageOptions",
         "declarationKind": "type"
       },
@@ -321,5 +250,54 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.747Z"
+  "generatedAt": "2026-06-11T16:38:12.556Z",
+  "$defs": {
+    "AiAgentTarget": {
+      "type": "object",
+      "title": "AiAgentTarget",
+      "description": "业务定位基类，用两个 ID 精确定位一个顶层业务实例：\nbusinessRegistrationId — 顶层 kind（对应 BusinessRegistry 中的注册项）\nbusinessInstanceId     — 顶层实例 ID（同一次会话内不变）",
+      "properties": {
+        "businessRegistrationId": {
+          "type": "string"
+        },
+        "businessInstanceId": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentScope": {
+      "type": "object",
+      "title": "AiAgentScope",
+      "description": "业务作用域（继承自定位基类），在业务定位基础上追加运行时标识。\ninstanceId        — 顶层实例 ID，参与 kind + instanceId 生成后端 sessionId\nruntimeInstanceId — 工具 runtime 内部实例 ID（当前同顶层实例 ID）\nScope 是 tool-loop-runner 的核心持有对象，贯穿整个会话生命周期，\n同时也是 turnKey / streamKey 的数据来源。",
+      "properties": {
+        "instanceId": {
+          "type": "string"
+        },
+        "runtimeInstanceId": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentRuntimeContext": {
+      "type": "object",
+      "title": "AiAgentRuntimeContext",
+      "description": "传递给生命周期回调的精简上下文。\nmoduleId         — 业务模块 ID（对应 registration.moduleId）\nmoduleInstanceId — 顶层模块实例 ID（pageId、leaveDraftId 等）\ninstanceId       — 顶层实例 ID；后端 sessionId 由 moduleId + instanceId 生成\n与 Scope 的区别：不含 businessRegistrationId / businessInstanceId，\n因为生命周期回调已在具体业务实例内部执行，无需重复定位。",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentAppendMessageOptions": {
+      "type": "object",
+      "title": "AiAgentAppendMessageOptions",
+      "description": "Ai Agent Append Message Options 的调用配置。"
+    }
+  }
 }

@@ -1,7 +1,8 @@
 /**
  * @module app:composables/useNotifications
- * app 的 composables/useNotifications 模块。
- * 导出 ClassModel symbol: NotificationItem（共 1 个 symbol）。
+ * 职责：提供主应用 useNotifications 能力，围绕 NotificationItem 连接视图、服务、布局、路由或平台租户流程。
+ * 边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。
+ * AI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 composables/useNotifications。
  */
 import { computed, onBeforeUnmount, reactive } from 'vue'
 import { onNotificationEvent, onPageConfigChange } from '@/services/sse-events'

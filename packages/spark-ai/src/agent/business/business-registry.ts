@@ -1,32 +1,24 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/business/business-registry.ts — 业务注册表
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Host 层的业务注册中心。管理所有 AiAgentRegistration，
- *   提供按 moduleId 查询能力。sessionStore 必须由业务注册显式注入。
- *
- * 【注册流程】
- *   1. 业务方构造 AiAgentRegistration
- *   2. AiAgentHost.register/ensure 委托到内部 registry
- *   3. 内部检查 moduleId 不重复 → 存入 Map
- *
- * 【消费方】business-session（resolveRegistration）、Host 初始化代码
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/business/business-registry
+ * 职责：维护 AiAgentRegistration 的内存注册表，按 moduleId 注册、查询、列出和删除业务定义。
+ * 边界：只保证注册项唯一性和 sessionStore 显式注入，不创建业务 task、不启动 session，也不解析 alias。
+ * AI用途：排查业务是否已注册、moduleId 是否冲突或 registration 缺少 sessionStore 时，用本模块确认注册表规则。
  */
 
 import { isRecord } from '@spark-appworks/spark-utils'
 import type { AiJsonParams } from '../../json'
 import type { AiAgentRegistration } from './registration-types'
 
-/** Ai Agent Registry 的语义模型。 */
+/** Host 内部业务注册表，按 moduleId 保存 AI 业务定义并保护注册期不变量。 */
 export class AiAgentRegistry<TInput extends AiJsonParams = AiJsonParams> {
   /** moduleId → AiAgentRegistration */
   private readonly registrations = new Map<string, AiAgentRegistration<TInput>>()
 
   /**
-   * 注册一个业务。
-   * 若 moduleId 重复则抛出异常（注册期冲突，非运行时错误）。
+   * 注册一份业务定义到 moduleId 索引，供 Host.run 和 session 解析时使用。
+   *
+   * @param registration 包含输入契约、工具运行时、会话存储和生命周期钩子的业务注册项。
+   * @throws moduleId 已存在或 registration 未显式提供 sessionStore 时抛错，避免运行期出现半注册业务。
    */
   public register(registration: AiAgentRegistration<TInput>): void {
     if (this.registrations.has(registration.moduleId)) {
@@ -38,17 +30,17 @@ export class AiAgentRegistry<TInput extends AiJsonParams = AiJsonParams> {
     this.registrations.set(registration.moduleId, registration)
   }
 
-  /** 按 moduleId 查询注册项 */
+  /** 按 moduleId 查询已注册业务；未命中时返回 undefined，由调用方决定是否 fail-fast。 */
   public get(moduleId: string): AiAgentRegistration<TInput> | undefined {
     return this.registrations.get(moduleId)
   }
 
-  /** 列出当前所有业务注册项。 */
+  /** 列出当前所有业务注册项，供 Host 诊断、dry-run 和对外摘要使用。 */
   public list(): ReadonlyArray<AiAgentRegistration<TInput>> {
     return [...this.registrations.values()]
   }
 
-  /** 删除一个业务注册项，供 Host.unregister 维护别名映射时使用。 */
+  /** 删除一个业务注册项，供 Host.unregister 同步维护 alias 映射和注册表状态。 */
   public delete(moduleId: string): boolean {
     return this.registrations.delete(moduleId)
   }

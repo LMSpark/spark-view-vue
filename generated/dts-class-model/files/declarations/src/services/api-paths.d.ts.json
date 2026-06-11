@@ -7,7 +7,7 @@
     "sourceFile": "src/services/api-paths.ts",
     "packageName": "app",
     "modulePath": "services/api-paths",
-    "jsdoc": "集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。\n动态读取当前登录用户的 tenantId / defaultProjectId，\n生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。",
+    "jsdoc": "@module app:services/api-paths\n职责：提供应用运行时 service 层的 api paths 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ProjectApiScope"
@@ -20,53 +20,52 @@
     "ProjectApiScope": {
       "kind": "ProjectApiScope",
       "className": "ProjectApiScope",
-      "jsdoc": "/**\n * 集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。\n *\n * 动态读取当前登录用户的 tenantId / defaultProjectId，\n * 生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。\n */",
+      "jsdoc": "集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。\n动态读取当前登录用户的 tenantId / defaultProjectId，\n生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId?: string;\n    /** project Id 标识。 */\n    projectId: string;\n}",
       "provenance": {
         "file": "declarations/src/services/api-paths.d.ts",
-        "line": 7,
+        "line": 13,
         "className": "ProjectApiScope",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "tenantId",
+          "jsdoc": "tenant Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** tenant Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/api-paths.d.ts",
-            "line": 9,
-            "className": "ProjectApiScope",
-            "memberName": "tenantId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "projectId",
+          "jsdoc": "project Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** project Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/api-paths.d.ts",
-            "line": 11,
-            "className": "ProjectApiScope",
-            "memberName": "projectId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.072Z"
+  "generatedAt": "2026-06-11T16:38:13.102Z",
+  "$defs": {
+    "ProjectApiScope": {
+      "type": "object",
+      "title": "ProjectApiScope",
+      "description": "集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。\n动态读取当前登录用户的 tenantId / defaultProjectId，\n生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

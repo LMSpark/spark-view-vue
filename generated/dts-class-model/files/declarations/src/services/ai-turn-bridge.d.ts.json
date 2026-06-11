@@ -7,7 +7,7 @@
     "sourceFile": "src/services/ai-turn-bridge.ts",
     "packageName": "app",
     "modulePath": "services/ai-turn-bridge",
-    "jsdoc": "APP-owned AI turn bridge.\nHTTP commands and APP SSE subscription stay in src/services; spark-ai only\nreceives callbacks and aggregates events.",
+    "jsdoc": "@module app:services/ai-turn-bridge\n职责：提供应用运行时 service 层的 ai turn bridge 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nAPP-owned AI turn bridge.\nHTTP commands and APP SSE subscription stay in src/services; spark-ai only\nreceives callbacks and aggregates events.",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "AiTurnBridgeDiagnostic",
@@ -22,7 +22,7 @@
     "AiTurnBridgeDiagnostic": {
       "kind": "AiTurnBridgeDiagnostic",
       "className": "AiTurnBridgeDiagnostic",
-      "jsdoc": "/** Ai Turn Bridge Diagnostic 的诊断信息。 */",
+      "jsdoc": "Ai Turn Bridge Diagnostic 的诊断信息。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    at: number;\n    type: string;\n    sessionId?: string;\n    turnId?: string;\n    message?: string;\n    details?: Record<string, unknown>;\n}>",
       "declarationRelations": [
@@ -34,7 +34,7 @@
       ],
       "provenance": {
         "file": "declarations/src/services/ai-turn-bridge.d.ts",
-        "line": 9,
+        "line": 15,
         "className": "AiTurnBridgeDiagnostic",
         "declarationKind": "type"
       },
@@ -44,7 +44,7 @@
     "AiAgentTurnBridgeOptions": {
       "kind": "AiAgentTurnBridgeOptions",
       "className": "AiAgentTurnBridgeOptions",
-      "jsdoc": "/** Ai Agent Turn Bridge Options 的调用配置。 */",
+      "jsdoc": "Ai Agent Turn Bridge Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    transport?: 'app-sse' | 'session-turn';\n    timeoutMs?: number;\n    idleTimeoutMs?: number;\n    windowSize?: number;\n}>",
       "declarationRelations": [
@@ -56,7 +56,7 @@
       ],
       "provenance": {
         "file": "declarations/src/services/ai-turn-bridge.d.ts",
-        "line": 18,
+        "line": 24,
         "className": "AiAgentTurnBridgeOptions",
         "declarationKind": "type"
       },
@@ -64,5 +64,17 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.071Z"
+  "generatedAt": "2026-06-11T16:38:13.102Z",
+  "$defs": {
+    "AiTurnBridgeDiagnostic": {
+      "type": "object",
+      "title": "AiTurnBridgeDiagnostic",
+      "description": "Ai Turn Bridge Diagnostic 的诊断信息。"
+    },
+    "AiAgentTurnBridgeOptions": {
+      "type": "object",
+      "title": "AiAgentTurnBridgeOptions",
+      "description": "Ai Agent Turn Bridge Options 的调用配置。"
+    }
+  }
 }

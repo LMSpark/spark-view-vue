@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-component:components/containers/data-views/RendererTable/types
- * RendererTable 模块，属于 SPARK component table-level/data-view-container。
- * 组件目录: containers/data-views。
- * 导出 ClassModel symbol: RendererTreePath, RendererTableApi（共 2 个 symbol）。
+ * 职责：集中定义 RendererTable（r-table）内部共享的类型契约，描述渲染器状态、事件载荷和运行时数据形态。
+ * 边界：只提供 table-level/data-view-container 的类型层语义，不创建组件实例、不执行 IO，也不承载具体 UI 渲染。
+ * AI用途：需要判断 renderer table 的状态结构、事件参数或 zero-code API 形状时，用本模块作为类型入口。
  */
 import type { CrudResult, DataRow, NestedTreeNode, NestedTreeSearchResult } from '@spark-appworks/spark-data'
 import type { BaseContainerApi } from '../../support/base-container-api.js'

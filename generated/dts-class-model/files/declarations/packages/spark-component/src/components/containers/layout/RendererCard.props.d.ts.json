@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/layout/RendererCard.props.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/layout/RendererCard.props",
-    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererCard.props\nRendererCard 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: RCardProps（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererCard.props\n职责：定义 RendererCard（r-card）的配置属性契约，把页面 JSON 中的字段、数据绑定、显示选项和交互开关约束成可生成的类型。\n边界：只描述 container/layout-container 组件的声明式配置，不读取 DataSet、不触发运行时事件，也不直接渲染 DOM。\nAI用途：生成或修订页面配置时，用本模块判断 renderer card 允许哪些 props、哪些字段属于数据绑定，避免把运行时 API 写进配置。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "RCardProps"
@@ -25,7 +25,7 @@
     "RCardProps": {
       "kind": "RCardProps",
       "className": "RCardProps",
-      "jsdoc": "/** RCard Props 的属性契约。 */",
+      "jsdoc": "RCard Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "SparkNodeProps & {\n    /** 卡片头部文本 */\n    header?: string;\n    /** 阴影显示策略 */\n    shadow?: 'always' | 'hover' | 'never';\n    /** 卡片主体样式 */\n    bodyStyle?: Record<string, unknown> | string;\n    /** 卡片主体 class */\n    bodyClass?: string;\n}",
       "declarationRelations": [
@@ -53,93 +53,118 @@
       "attributes": [
         {
           "name": "header",
+          "jsdoc": "卡片头部文本",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 卡片头部文本 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCard.props.d.ts",
-            "line": 11,
-            "className": "RCardProps",
-            "memberName": "header",
-            "declarationKind": "interface",
-            "componentName": "RendererCard",
-            "componentType": "r-card",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         },
         {
           "name": "shadow",
+          "jsdoc": "阴影显示策略",
           "schema": {
-            "title": "'always' | 'hover' | 'never'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "always"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "hover"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "never"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 阴影显示策略 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCard.props.d.ts",
-            "line": 13,
-            "className": "RCardProps",
-            "memberName": "shadow",
-            "declarationKind": "interface",
-            "componentName": "RendererCard",
-            "componentType": "r-card",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         },
         {
           "name": "bodyStyle",
+          "jsdoc": "卡片主体样式",
           "schema": {
-            "title": "Record<string, unknown> | string"
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              },
+              {
+                "type": "string"
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 卡片主体样式 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCard.props.d.ts",
-            "line": 15,
-            "className": "RCardProps",
-            "memberName": "bodyStyle",
-            "declarationKind": "interface",
-            "componentName": "RendererCard",
-            "componentType": "r-card",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         },
         {
           "name": "bodyClass",
+          "jsdoc": "卡片主体 class",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 卡片主体 class */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCard.props.d.ts",
-            "line": 17,
-            "className": "RCardProps",
-            "memberName": "bodyClass",
-            "declarationKind": "interface",
-            "componentName": "RendererCard",
-            "componentType": "r-card",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.139Z"
+  "generatedAt": "2026-06-11T16:38:12.720Z",
+  "$defs": {
+    "RCardProps": {
+      "type": "object",
+      "title": "RCardProps",
+      "description": "RCard Props 的属性契约。",
+      "properties": {
+        "header": {
+          "type": "string"
+        },
+        "shadow": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "always"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "hover"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "never"
+              ]
+            }
+          ]
+        },
+        "bodyStyle": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "Record<string, unknown>"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "bodyClass": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

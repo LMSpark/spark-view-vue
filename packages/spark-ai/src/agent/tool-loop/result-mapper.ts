@@ -1,21 +1,8 @@
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │  AI HOST · 操作结果映射器                                                     │
- * │  Operation Result → Function Call Result Mapper                              │
- * │                                                                              │
- * │  本模块负责将工具 runtime 的 AiAgentToolResult 转换为 agent 层的               │
- * │  AiAgentFunctionCallResult。两条链路的错误/成功结构不同，                      │
- * │  需要做语义投影。                                                             │
- * │                                                                              │
- * │  转换规则：                                                                   │
- * │    AiAgentToolResult.ok=true  → AiAgentFunctionCallResult.ok=true       │
- * │      从 checks 中提取第一条 info/warn 作为 summary                             │
- * │    AiAgentToolResult.ok=false → AiAgentFunctionCallResult.ok=false      │
- * │      从 checks 中提取第一条 error 的 code/message/hint 作为 code/msg/fix      │
- * │      若没有 error 级 check → 回退到 PROTOCOL_FAILURE                          │
- * │                                                                              │
- * │  调用方：tool-call-executor.ts                                                │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * @module @spark-appworks/spark-ai:agent/tool-loop/result-mapper
+ * 职责：支撑 Agent tool loop 的 result mapper 能力，处理工具调用、结果映射、诊断事件或 payload 编解码。
+ * 边界：只服务单次 turn 内的工具循环，不定义业务注册协议，也不直接管理 UI 或持久化页面状态。
+ * AI用途：排查工具调用为什么继续、完成、失败或被映射成回调事件时，用本模块定位 loop 内部语义。
  */
 
 import type { AiJsonValue } from '../../json'

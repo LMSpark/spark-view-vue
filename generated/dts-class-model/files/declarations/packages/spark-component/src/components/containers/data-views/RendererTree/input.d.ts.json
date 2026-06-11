@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/data-views/RendererTree/input.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/data-views/RendererTree/input",
-    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererTree/input\nRendererTree 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: RendererTreeInputProps, RendererTreeInputOptions（共 2 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererTree/input\n职责：支撑 RendererTree（r-enderer-tree-input）在 table-level/data-view-container 中的运行时协作，补齐配置、状态或渲染器之间的连接逻辑。\n边界：只覆盖当前组件目录 containers/data-views 的局部能力，不定义全局页面模型，也不越级操作业务数据源。\nAI用途：需要判断 renderer tree 的组件分层、辅助类型或内部接线时，用本模块作为局部语义入口。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "RendererTreeInputProps",
@@ -27,7 +27,7 @@
     "RendererTreeInputProps": {
       "kind": "RendererTreeInputProps",
       "className": "RendererTreeInputProps",
-      "jsdoc": "/** Renderer Tree Input Props 的属性契约。 */",
+      "jsdoc": "Renderer Tree Input Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 子节点集合。 */\n    children?: SparkNode['children'] | undefined;\n    /** toolbar 字段。 */\n    toolbar?: RToolbarProps | undefined;\n    /** actions 字段。 */\n    actions?: RToolbarProps | undefined;\n    /** editor 字段。 */\n    editor?: REditorProps | undefined;\n}",
       "provenance": {
@@ -44,87 +44,39 @@
       "attributes": [
         {
           "name": "children",
+          "jsdoc": "子节点集合。",
           "schema": {
-            "title": "SparkNode['children'] | undefined"
+            "type": "array"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 子节点集合。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/input.d.ts",
-            "line": 7,
-            "className": "RendererTreeInputProps",
-            "memberName": "children",
-            "declarationKind": "interface",
-            "componentName": "RendererTree",
-            "componentType": "r-enderer-tree-input",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": false
         },
         {
           "name": "toolbar",
+          "jsdoc": "toolbar 字段。",
           "schema": {
-            "title": "RToolbarProps | undefined"
+            "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** toolbar 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/input.d.ts",
-            "line": 9,
-            "className": "RendererTreeInputProps",
-            "memberName": "toolbar",
-            "declarationKind": "interface",
-            "componentName": "RendererTree",
-            "componentType": "r-enderer-tree-input",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": false
         },
         {
           "name": "actions",
+          "jsdoc": "actions 字段。",
           "schema": {
-            "title": "RToolbarProps | undefined"
+            "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** actions 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/input.d.ts",
-            "line": 11,
-            "className": "RendererTreeInputProps",
-            "memberName": "actions",
-            "declarationKind": "interface",
-            "componentName": "RendererTree",
-            "componentType": "r-enderer-tree-input",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": false
         },
         {
           "name": "editor",
+          "jsdoc": "editor 字段。",
           "schema": {
-            "title": "REditorProps | undefined"
+            "$ref": "../../zones/RendererEditor.types.d.ts.json#/$defs/REditorProps"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** editor 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/input.d.ts",
-            "line": 13,
-            "className": "RendererTreeInputProps",
-            "memberName": "editor",
-            "declarationKind": "interface",
-            "componentName": "RendererTree",
-            "componentType": "r-enderer-tree-input",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -132,7 +84,7 @@
     "RendererTreeInputOptions": {
       "kind": "RendererTreeInputOptions",
       "className": "RendererTreeInputOptions",
-      "jsdoc": "/** Renderer Tree Input Options 的调用配置。 */",
+      "jsdoc": "Renderer Tree Input Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: RendererTreeInputProps;\n}",
       "provenance": {
@@ -149,28 +101,47 @@
       "attributes": [
         {
           "name": "props",
+          "jsdoc": "组件属性集合。",
           "schema": {
-            "title": "RendererTreeInputProps"
+            "$ref": "#/$defs/RendererTreeInputProps"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 组件属性集合。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererTree/input.d.ts",
-            "line": 18,
-            "className": "RendererTreeInputOptions",
-            "memberName": "props",
-            "declarationKind": "interface",
-            "componentName": "RendererTree",
-            "componentType": "r-tree",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.076Z"
+  "generatedAt": "2026-06-11T16:38:12.694Z",
+  "$defs": {
+    "RendererTreeInputProps": {
+      "type": "object",
+      "title": "RendererTreeInputProps",
+      "description": "Renderer Tree Input Props 的属性契约。",
+      "properties": {
+        "children": {
+          "type": "array"
+        },
+        "toolbar": {
+          "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+        },
+        "actions": {
+          "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+        },
+        "editor": {
+          "$ref": "../../zones/RendererEditor.types.d.ts.json#/$defs/REditorProps"
+        }
+      }
+    },
+    "RendererTreeInputOptions": {
+      "type": "object",
+      "title": "RendererTreeInputOptions",
+      "description": "Renderer Tree Input Options 的调用配置。",
+      "properties": {
+        "props": {
+          "$ref": "#/$defs/RendererTreeInputProps"
+        }
+      }
+    }
+  }
 }

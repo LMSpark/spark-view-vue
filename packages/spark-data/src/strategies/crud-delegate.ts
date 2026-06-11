@@ -1,18 +1,8 @@
 /**
- * CrudDelegate — CRUD 操作委托
- *
- * 从 DataView 提取的 CRUD 职责：
- * - 单条读取（retrieve）
- * - 单条 CRUD（create/update/delete）
- * - 批量 CRUD（batchCreate/batchUpdate/batchDelete）
- * - 导入/导出（importData/exportData）
- * - 数据校验代理
- * - CRUD 生命周期事件（before/after hooks）
- *
- * 通过 DataView 宿主交互。delegate 是 DataView 的内部职责切分，
- * 不再维护单实现宿主接口。
- *
- * CrudService 实例由 DataTable 持有并缓存（模型级共享）。
+ * @module @spark-appworks/spark-data:strategies/crud-delegate
+ * 职责：提供 spark-data 数据管线中的 crud delegate 能力，支撑 DataSet、DataTable、DataView、树或 CRUD 状态协作。
+ * 边界：保持框架无关，只维护数据模型和操作协议，不导入 Vue、Element Plus 或应用路由。
+ * AI用途：处理页面数据绑定、DataViewKey、行状态、树结构或 CRUD 行为时，用本模块确认数据层语义。
  */
 
 import { Logger } from '@spark-appworks/spark-utils'

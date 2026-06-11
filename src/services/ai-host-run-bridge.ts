@@ -1,4 +1,10 @@
 /**
+ * @module app:services/ai-host-run-bridge
+ * 职责：提供应用运行时 service 层的 ai host run bridge 能力，连接项目模型、AI Host、租户上下文或页面设计流程。
+ * 边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。
+ * AI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。
+ */
+/**
  * APP 层 Host Run 分布式桥接器。
  *
  * 后端通过 APP 公共 SSE 定向下发 ai-host-run-request，本桥接器只负责

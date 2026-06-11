@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-project-model/src/io/page-content-loader.ts",
     "packageName": "@spark-appworks/spark-project-model",
     "modulePath": "io/page-content-loader",
-    "jsdoc": "页面内容加载器 - 统一读取四文件原文\n职责：通过后端页面配置文件 API 加载四文件原文，并管理客户端缓存策略。\n## 数据流\n```\nloadPageFileContent(pageId, filename)\n└── fileLoader.load(path, { parseJSON: false }) → PageContentLoadResult<string>\n```\n## 缓存策略\n- FileLoader 时间戳协议（localStorage / sessionStorage / memory）\n- 后端 API 走 timestamp/notModified + 客户端缓存",
+    "jsdoc": "@module @spark-appworks/spark-project-model:io/page-content-loader\n职责：提供项目模型和页面配置域中的 page content loader 能力，支撑 navigation、page content、project session 或远程 IO。\n边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。\nAI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "PageContentLoaderOptions",
@@ -22,113 +22,98 @@
     "PageContentLoaderOptions": {
       "kind": "PageContentLoaderOptions",
       "className": "PageContentLoaderOptions",
-      "jsdoc": "/** Page Content Loader Options 的调用配置。 */",
+      "jsdoc": "Page Content Loader Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** api Base Url 地址。 */\n    apiBaseUrl?: string;\n    /** http Client 字段。 */\n    httpClient?: HttpClientBase;\n    /** pages Config Base Url 地址。 */\n    pagesConfigBaseUrl?: string | (() => string);\n    /** file Storage 字段。 */\n    fileStorage?: 'localStorage' | 'sessionStorage' | 'memory';\n    /** 超时时间。 */\n    timeout?: number;\n    /** get Headers 回调。 */\n    getHeaders?: () => Record<string, string>;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-        "line": 20,
+        "line": 11,
         "className": "PageContentLoaderOptions",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "apiBaseUrl",
+          "jsdoc": "api Base Url 地址。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** api Base Url 地址。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-            "line": 22,
-            "className": "PageContentLoaderOptions",
-            "memberName": "apiBaseUrl",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "httpClient",
+          "jsdoc": "http Client 字段。",
           "schema": {
+            "type": "object",
             "title": "HttpClientBase"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** http Client 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-            "line": 24,
-            "className": "PageContentLoaderOptions",
-            "memberName": "httpClient",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "pagesConfigBaseUrl",
+          "jsdoc": "pages Config Base Url 地址。",
           "schema": {
-            "title": "string | (() => string)"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "title": "() => string"
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** pages Config Base Url 地址。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-            "line": 26,
-            "className": "PageContentLoaderOptions",
-            "memberName": "pagesConfigBaseUrl",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "fileStorage",
+          "jsdoc": "file Storage 字段。",
           "schema": {
-            "title": "'localStorage' | 'sessionStorage' | 'memory'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "localStorage"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "sessionStorage"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "memory"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** file Storage 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-            "line": 28,
-            "className": "PageContentLoaderOptions",
-            "memberName": "fileStorage",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "timeout",
+          "jsdoc": "超时时间。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 超时时间。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-            "line": 30,
-            "className": "PageContentLoaderOptions",
-            "memberName": "timeout",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "getHeaders",
+          "jsdoc": "get Headers 回调。",
           "schema": {
+            "type": "object",
             "title": "() => Record<string, string>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** get Headers 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-            "line": 32,
-            "className": "PageContentLoaderOptions",
-            "memberName": "getHeaders",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -136,191 +121,219 @@
     "PageContentLoader": {
       "kind": "PageContentLoader",
       "className": "PageContentLoader",
-      "jsdoc": "/** Page Content Loader 的语义模型。 */",
+      "jsdoc": "Page Content Loader 的语义模型。",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-        "line": 35,
+        "line": 26,
         "className": "PageContentLoader",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "options": {
-              "title": "Partial<PageContentLoaderOptions>"
+        "jsdoc": "创建 Page Content Loader 实例。",
+        "signatureText": "constructor(options?: Partial<PageContentLoaderOptions>)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "options",
+            "type": {
+              "type": "reference",
+              "name": "Partial",
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "name": "PageContentLoaderOptions",
+                  "sourcePath": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts"
+                }
+              ]
             }
-          },
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Page Content Loader 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-          "line": 42,
-          "className": "PageContentLoader",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          }
+        ]
       },
       "attributes": [],
       "methods": [
         {
           "name": "loadPageFileContent",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "pageId": {
-                "type": "string",
-                "title": "string"
-              },
-              "filename": {
-                "title": "PageNodeFileName"
-              },
-              "options": {
-                "title": "PageNodeLoadOptions"
+          "jsdoc": "加载 Page File Content。",
+          "signatureText": "loadPageFileContent(pageId: string, filename: PageNodeFileName, options?: PageNodeLoadOptions): Promise<PageContentLoadResult<string>>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "pageId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
             },
-            "required": [
-              "pageId",
-              "filename"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<PageContentLoadResult<string>>"
-          },
-          "returnTypeText": "Promise<PageContentLoadResult<string>>",
-          "jsdoc": "/** 加载 Page File Content。 */",
-          "paramsTypeText": "pageId: string, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", options?: PageNodeLoadOptions | undefined",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-            "line": 46,
-            "className": "PageContentLoader",
-            "memberName": "loadPageFileContent",
-            "declarationKind": "class"
+            {
+              "name": "filename",
+              "type": {
+                "type": "reference",
+                "name": "PageNodeFileName",
+                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+              }
+            },
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "PageNodeLoadOptions",
+                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "PageContentLoadResult",
+                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
+              }
+            ]
           }
         },
         {
           "name": "clearCache",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "key": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "清空 Cache。",
+          "signatureText": "clearCache(key?: string): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "key",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 清空 Cache。 */",
-          "paramsTypeText": "key?: string | undefined",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-            "line": 48,
-            "className": "PageContentLoader",
-            "memberName": "clearCache",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "clearAllCache",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "{\n        size: number;\n        keys: string[];\n    }"
-          },
-          "returnTypeText": "{\n        size: number;\n        keys: string[];\n    }",
-          "jsdoc": "/** 清空 All Cache。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-            "line": 50,
-            "className": "PageContentLoader",
-            "memberName": "clearAllCache",
-            "declarationKind": "class"
+          "jsdoc": "清空 All Cache。",
+          "signatureText": "clearAllCache(): {\n        size: number;\n        keys: string[];\n    }",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "unknown",
+            "name": "{\n        size: number;\n        keys: string[];\n    }"
           }
         },
         {
           "name": "getCacheStats",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "{\n        size: number;\n        keys: string[];\n    }"
-          },
-          "returnTypeText": "{\n        size: number;\n        keys: string[];\n    }",
-          "jsdoc": "/** 读取 Cache Stats。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-            "line": 55,
-            "className": "PageContentLoader",
-            "memberName": "getCacheStats",
-            "declarationKind": "class"
+          "jsdoc": "读取 Cache Stats。",
+          "signatureText": "getCacheStats(): {\n        size: number;\n        keys: string[];\n    }",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "unknown",
+            "name": "{\n        size: number;\n        keys: string[];\n    }"
           }
         },
         {
           "name": "getHttpClient",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "HttpClientBase"
-          },
-          "returnTypeText": "HttpClientBase",
-          "jsdoc": "/** 读取 Http Client。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-            "line": 60,
-            "className": "PageContentLoader",
-            "memberName": "getHttpClient",
-            "declarationKind": "class"
+          "jsdoc": "读取 Http Client。",
+          "signatureText": "getHttpClient(): HttpClientBase",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "reference",
+            "name": "unknown"
           }
         },
         {
           "name": "clearPageCache",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "pageId": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "清空 Page Cache。",
+          "signatureText": "clearPageCache(pageId: string): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "pageId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
-            },
-            "required": [
-              "pageId"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 清空 Page Cache。 */",
-          "paramsTypeText": "pageId: string",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts",
-            "line": 62,
-            "className": "PageContentLoader",
-            "memberName": "clearPageCache",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.889Z"
+  "generatedAt": "2026-06-11T16:38:13.037Z",
+  "$defs": {
+    "PageContentLoaderOptions": {
+      "type": "object",
+      "title": "PageContentLoaderOptions",
+      "description": "Page Content Loader Options 的调用配置。",
+      "properties": {
+        "apiBaseUrl": {
+          "type": "string"
+        },
+        "httpClient": {
+          "type": "object",
+          "title": "HttpClientBase"
+        },
+        "pagesConfigBaseUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "title": "() => string"
+            }
+          ]
+        },
+        "fileStorage": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "localStorage"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "sessionStorage"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "memory"
+              ]
+            }
+          ]
+        },
+        "timeout": {
+          "type": "number"
+        },
+        "getHeaders": {
+          "type": "object",
+          "title": "() => Record<string, string>"
+        }
+      }
+    },
+    "PageContentLoader": {
+      "type": "object",
+      "title": "PageContentLoader",
+      "description": "Page Content Loader 的语义模型。"
+    }
+  }
 }

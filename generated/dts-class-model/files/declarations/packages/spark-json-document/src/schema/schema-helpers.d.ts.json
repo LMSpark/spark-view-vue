@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-json-document/src/schema/schema-helpers.ts",
     "packageName": "@spark-appworks/spark-json-document",
     "modulePath": "schema/schema-helpers",
-    "jsdoc": "═══════════════════════════════════════════════════════════════\nschema/schema-helpers.ts — JSON Schema 便捷构造器\n═══════════════════════════════════════════════════════════════\n【架构定位】schema 层中间件，依赖 schema-types.ts，被 validator.ts 和业务层消费。\n为函数注册的 paramsSchema 提供类型安全的快捷创建函数。\n【设计决策】\n- 每个构造器返回标准 JsonSchemaObject，避免手写时遗漏 type/properties。\n- 所有函数都是纯工厂，无副作用、无状态。\n- `paramsSchema()` 专门用于函数参数根节点，强制 type=object。\n═══════════════════════════════════════════════════════════════\n函数层级（自底向上）：\n基础类型构造器          复合构造器            根节点构造器\n┌──────────────┐     ┌──────────────┐     ┌──────────────────┐\n│ stringSchema │     │ enumSchema   │     │ paramsSchema     │\n│ numberSchema │     │ arraySchema  │     │ noParamsSchema   │\n│ booleanSchema│     │ objectSchema │     └──────────────────┘\n│ anySchema    │     └──────────────┘\n└──────────────┘\n═══════════════════════════════════════════════════════════════",
+    "jsdoc": "@module @spark-appworks/spark-json-document:schema/schema-helpers\n职责：提供 JSON Document/schema 处理中的 schema helpers 能力，支撑 schema 标准化、审计和元数据保留。\n边界：只处理 JSON schema/document 结构，不耦合应用页面、Vue 组件或 AI 会话状态。\nAI用途：校验或标准化配置 schema 时，用本模块确认 JSON 文档层的规则来源。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "StringSchemaOptions",
@@ -28,7 +28,7 @@
     "StringSchemaOptions": {
       "kind": "StringSchemaOptions",
       "className": "StringSchemaOptions",
-      "jsdoc": "/** String Schema Options 的调用配置。 */",
+      "jsdoc": "String Schema Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    nullable?: boolean;\n    minLength?: number;\n}>",
       "declarationRelations": [
@@ -40,7 +40,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/schema/schema-helpers.d.ts",
-        "line": 28,
+        "line": 9,
         "className": "StringSchemaOptions",
         "declarationKind": "type"
       },
@@ -50,7 +50,7 @@
     "NumberSchemaOptions": {
       "kind": "NumberSchemaOptions",
       "className": "NumberSchemaOptions",
-      "jsdoc": "/** Number Schema Options 的调用配置。 */",
+      "jsdoc": "Number Schema Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    nullable?: boolean;\n}>",
       "declarationRelations": [
@@ -62,7 +62,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/schema/schema-helpers.d.ts",
-        "line": 33,
+        "line": 14,
         "className": "NumberSchemaOptions",
         "declarationKind": "type"
       },
@@ -72,7 +72,7 @@
     "BooleanSchemaOptions": {
       "kind": "BooleanSchemaOptions",
       "className": "BooleanSchemaOptions",
-      "jsdoc": "/** Boolean Schema Options 的调用配置。 */",
+      "jsdoc": "Boolean Schema Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    nullable?: boolean;\n}>",
       "declarationRelations": [
@@ -84,7 +84,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/schema/schema-helpers.d.ts",
-        "line": 37,
+        "line": 18,
         "className": "BooleanSchemaOptions",
         "declarationKind": "type"
       },
@@ -94,7 +94,7 @@
     "EnumSchemaOptions": {
       "kind": "EnumSchemaOptions",
       "className": "EnumSchemaOptions",
-      "jsdoc": "/** Enum Schema Options 的调用配置。 */",
+      "jsdoc": "Enum Schema Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    type?: 'string' | 'number';\n    nullable?: boolean;\n}>",
       "declarationRelations": [
@@ -106,7 +106,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/schema/schema-helpers.d.ts",
-        "line": 49,
+        "line": 30,
         "className": "EnumSchemaOptions",
         "declarationKind": "type"
       },
@@ -116,7 +116,7 @@
     "ObjectSchemaOptions": {
       "kind": "ObjectSchemaOptions",
       "className": "ObjectSchemaOptions",
-      "jsdoc": "/** Object Schema Options 的调用配置。 */",
+      "jsdoc": "Object Schema Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    required?: readonly string[];\n    description?: string;\n    additionalProperties?: JsonSchema;\n}>",
       "declarationRelations": [
@@ -128,7 +128,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/schema/schema-helpers.d.ts",
-        "line": 58,
+        "line": 39,
         "className": "ObjectSchemaOptions",
         "declarationKind": "type"
       },
@@ -136,5 +136,32 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.844Z"
+  "generatedAt": "2026-06-11T16:38:13.019Z",
+  "$defs": {
+    "StringSchemaOptions": {
+      "type": "object",
+      "title": "StringSchemaOptions",
+      "description": "String Schema Options 的调用配置。"
+    },
+    "NumberSchemaOptions": {
+      "type": "object",
+      "title": "NumberSchemaOptions",
+      "description": "Number Schema Options 的调用配置。"
+    },
+    "BooleanSchemaOptions": {
+      "type": "object",
+      "title": "BooleanSchemaOptions",
+      "description": "Boolean Schema Options 的调用配置。"
+    },
+    "EnumSchemaOptions": {
+      "type": "object",
+      "title": "EnumSchemaOptions",
+      "description": "Enum Schema Options 的调用配置。"
+    },
+    "ObjectSchemaOptions": {
+      "type": "object",
+      "title": "ObjectSchemaOptions",
+      "description": "Object Schema Options 的调用配置。"
+    }
+  }
 }

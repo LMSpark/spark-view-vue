@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-project-model:project/project-design
+ * 职责：提供项目模型和页面配置域中的 project design 能力，支撑 navigation、page content、project session 或远程 IO。
+ * 边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。
+ * AI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。
+ */
+/**
  * ProjectDesign — 项目设计内容：元数据 + 节点树 + 配置页 Map。
  */
 import type {

@@ -7,7 +7,7 @@
     "sourceFile": "src/components/ModuleContextBadge.vue",
     "packageName": "app",
     "modulePath": "components/ModuleContextBadge",
-    "jsdoc": "@module app:components/ModuleContextBadge\napp 的 components/ModuleContextBadge 模块。\n导出 ClassModel symbol: Props（共 1 个 symbol）。",
+    "jsdoc": "@module app:components/ModuleContextBadge\n职责：提供主应用 ModuleContextBadge 能力，围绕 Props 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 components/ModuleContextBadge。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "Props"
@@ -20,7 +20,7 @@
     "Props": {
       "kind": "Props",
       "className": "Props",
-      "jsdoc": "/** 模块上下文徽标属性，描述当前配置摘要和空态文本。 */",
+      "jsdoc": "模块上下文徽标属性，描述当前配置摘要和空态文本。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 当前模块上下文配置对象。 */\n    config?: SparkNode;\n    /** 徽标前置标签文本。 */\n    label?: string;\n    /** 配置为空时展示的文本。 */\n    emptyText?: string;\n}",
       "provenance": {
@@ -32,57 +32,54 @@
       "attributes": [
         {
           "name": "config",
+          "jsdoc": "当前模块上下文配置对象。",
           "schema": {
+            "type": "object",
             "title": "SparkNode"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 当前模块上下文配置对象。 */",
-          "provenance": {
-            "file": "declarations/src/components/ModuleContextBadge.vue.d.ts",
-            "line": 5,
-            "className": "Props",
-            "memberName": "config",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "label",
+          "jsdoc": "徽标前置标签文本。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 徽标前置标签文本。 */",
-          "provenance": {
-            "file": "declarations/src/components/ModuleContextBadge.vue.d.ts",
-            "line": 7,
-            "className": "Props",
-            "memberName": "label",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "emptyText",
+          "jsdoc": "配置为空时展示的文本。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 配置为空时展示的文本。 */",
-          "provenance": {
-            "file": "declarations/src/components/ModuleContextBadge.vue.d.ts",
-            "line": 9,
-            "className": "Props",
-            "memberName": "emptyText",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.038Z"
+  "generatedAt": "2026-06-11T16:38:13.095Z",
+  "$defs": {
+    "Props": {
+      "type": "object",
+      "title": "Props",
+      "description": "模块上下文徽标属性，描述当前配置摘要和空态文本。",
+      "properties": {
+        "config": {
+          "type": "object",
+          "title": "SparkNode"
+        },
+        "label": {
+          "type": "string"
+        },
+        "emptyText": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

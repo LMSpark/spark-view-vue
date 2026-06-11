@@ -1,26 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/session/session-types.ts — 会话记录类型与存储契约
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Host 层的会话持久化抽象。定义了会话记录的数据结构、
- *   历史条目类型、以及 AiAgentSessionStore 抽象类（存储契约）。
- *
- * 【数据层次】
- *   AiAgentSessionStore (abstract class)     — 存储契约
- *     └─ AiAgentSessionRecord                — 会话记录（含历史列表）
- *          └─ AiAgentHistoryEntry            — 历史条目（message | functionCall）
- *               ├─ AiAgentMessageHistoryEntry      — 消息条目
- *               └─ AiAgentFunctionCallHistoryEntry — 工具调用条目
- *
- * 【关键设计】
- *   - AiAgentFunctionCallResult<T> 使用联合类型：ok:true 带 data/summary，ok:false 带 code/msg/fix/checks
- *   - AiAgentSessionStore 为抽象类（非 interface），允许子类继承默认行为
- *   - 历史条目按时间戳排序，id 由 store 实现分配
- *   - 历史会话是 Agent 能力诊断和再次接入同一会话的起点，业务 smoke 不另存完整历史副本
- *
- * 【消费方】default-session-store、business-session、tool-loop-runner
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/session/session-types
+ * 职责：定义或实现 Agent 会话存储、诊断和运行轨迹中的 session types 能力。
+ * 边界：只维护 session 层状态和观测数据，不生成业务输入契约，也不直接执行工具 runtime。
+ * AI用途：追踪会话记录、诊断事件或 run trace 时，用本模块确认 session 数据如何保存和读取。
  */
 
 import type { AiAgentAppendMessageOptions, AiAgentRuntimeContext } from '../business/scope-types'

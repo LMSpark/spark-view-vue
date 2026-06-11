@@ -1,20 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/chat/chat-types.ts — 聊天请求/响应 DTO
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Host 层的聊天消息类型定义。这些 DTO 在 UI 层、transport 层、
- *   和工具循环之间传递，不依赖任何框架（React/Vue 无关）。
- *
- * 【核心类型】
- *   AiAgentChatMessage  — 单条聊天消息（role + content）
- *   AiAgentChatRequest  — 聊天请求（历史消息 + 回调）
- *   AiAgentStreamEvent  — AI turn 事件（来自 APP 公共 SSE 的事件单元）
- *   AiAgentToolCallRecord — 工具调用记录（用于前端展示/调试）
- *   AiAgentTurnMeta     — 轮次元数据（turnId、时间戳等）
- *
- * 【消费方】business-session、tool-loop-runner、turn-event-collector、UI 层
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/chat/chat-types
+ * 职责：定义 Agent 聊天请求、消息、响应和流式事件之间共享的 DTO。
+ * 边界：只维护跨 UI、transport、session 的消息协议，不发送网络请求，也不解释工具调用结果。
+ * AI用途：对齐聊天消息结构、历史记录和响应 payload 时，用本模块确认字段含义。
  */
 
 import type {

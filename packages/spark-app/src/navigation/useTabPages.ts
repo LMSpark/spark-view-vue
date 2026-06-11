@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-app:navigation/useTabPages
- * @spark-appworks/spark-app 的 navigation/useTabPages 模块。
- * 导出 ClassModel symbol: TabPage, PageMode, UseTabPagesOptions（共 3 个 symbol）。
+ * 职责：提供应用壳层 useTabPages 能力，围绕 TabPage、PageMode、UseTabPagesOptions 连接导航、认证、插件、主题或 AI 宿主接线。
+ * 边界：只负责 spark-app 基础设施和运行时接线，不定义底层 DataSet，也不实现组件渲染细节。
+ * AI用途：需要理解应用层如何把路由、服务和组件系统组装起来时，用本模块定位 navigation/useTabPages。
  */
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'

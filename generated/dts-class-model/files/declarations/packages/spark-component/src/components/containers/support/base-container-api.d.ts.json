@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/support/base-container-api.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/support/base-container-api",
-    "jsdoc": "容器组件公共 API 基类\nTable / Form / Detail / List 四大容器共享的 CRUD + 当前行方法签名。\nTree 的 CRUD 表面差异较大（appendNode / removeNode 等），不参与该基类。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/support/base-container-api\n职责：提供 base container api 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\n\n容器组件公共 API 基类\nTable / Form / Detail / List 四大容器共享的 CRUD + 当前行方法签名。\nTree 的 CRUD 表面差异较大（appendNode / removeNode 等），不参与该基类。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "BaseCrudContainerApi",
@@ -24,12 +24,12 @@
     "BaseCrudContainerApi": {
       "kind": "BaseCrudContainerApi",
       "className": "BaseCrudContainerApi",
-      "jsdoc": "/**\n * 数据容器 CRUD API（统一最小公约数）。\n *\n * 该接口用于抽取 Table/Form/Detail/List/Tree 的共有 CRUD 能力。\n */",
+      "jsdoc": "数据容器 CRUD API（统一最小公约数）。\n该接口用于抽取 Table/Form/Detail/List/Tree 的共有 CRUD 能力。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    getDataSource(): DataView | null;\n    addRow(row: Partial<DataRow>): Promise<DataRow | CrudResult<DataRow> | null>;\n    editRowById(id: string | number, patch: Partial<DataRow>): Promise<boolean | CrudResult<DataRow>>;\n    removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>;\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/components/containers/support/base-container-api.d.ts",
-        "line": 13,
+        "line": 19,
         "className": "BaseCrudContainerApi",
         "declarationKind": "type"
       },
@@ -39,7 +39,7 @@
     "BaseContainerApi": {
       "kind": "BaseContainerApi",
       "className": "BaseContainerApi",
-      "jsdoc": "/**\n * 表单/表格类容器 API（CRUD + 当前行 + 本地行操作）。\n */",
+      "jsdoc": "表单/表格类容器 API（CRUD + 当前行 + 本地行操作）。",
       "shapeKind": "type",
       "declarationTypeText": "BaseCrudContainerApi & {\n    getCurrentRow(): DataRow | null;\n    refresh(): Promise<void>;\n    appendRow(row: DataRow): void;\n    updateRowById(id: string | number, patch: Partial<DataRow>): boolean;\n    deleteRowById(id: string | number): boolean;\n    setCurrentRow(row: DataRow | null): void;\n    setCurrentRowById(id: string | number | null): boolean;\n}",
       "declarationRelations": [
@@ -55,7 +55,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-component/src/components/containers/support/base-container-api.d.ts",
-        "line": 22,
+        "line": 28,
         "className": "BaseContainerApi",
         "declarationKind": "type"
       },
@@ -65,12 +65,12 @@
     "VisibilityContainerApi": {
       "kind": "VisibilityContainerApi",
       "className": "VisibilityContainerApi",
-      "jsdoc": "/**\n * 可见性容器 API（Dialog/Drawer 等）。\n */",
+      "jsdoc": "可见性容器 API（Dialog/Drawer 等）。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    open(): void;\n    close(): void;\n    isVisible(): boolean;\n    toggle(): void;\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/components/containers/support/base-container-api.d.ts",
-        "line": 34,
+        "line": 40,
         "className": "VisibilityContainerApi",
         "declarationKind": "type"
       },
@@ -78,5 +78,22 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.265Z"
+  "generatedAt": "2026-06-11T16:38:12.763Z",
+  "$defs": {
+    "BaseCrudContainerApi": {
+      "type": "object",
+      "title": "BaseCrudContainerApi",
+      "description": "数据容器 CRUD API（统一最小公约数）。\n该接口用于抽取 Table/Form/Detail/List/Tree 的共有 CRUD 能力。"
+    },
+    "BaseContainerApi": {
+      "type": "object",
+      "title": "BaseContainerApi",
+      "description": "表单/表格类容器 API（CRUD + 当前行 + 本地行操作）。"
+    },
+    "VisibilityContainerApi": {
+      "type": "object",
+      "title": "VisibilityContainerApi",
+      "description": "可见性容器 API（Dialog/Drawer 等）。"
+    }
+  }
 }

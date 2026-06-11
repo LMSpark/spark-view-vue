@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/page/binding/build-page-children.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "page/binding/build-page-children",
-    "jsdoc": "SparkNode → page children 绑定器\n边界约束：\n- spark-project-model 负责提供声明式 SparkNode 树\n- spark-component 负责将其物化为运行时 children（SparkNode[]）\n绑定内容：\n- on / ActionDescriptor 绑定为可执行闭包\n- children 递归转换\n- props 内嵌 SparkNode 递归归并\n- 顶层 id 去重",
+    "jsdoc": "@module @spark-appworks/spark-component:page/binding/build-page-children\n职责：提供 build page children 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\n\nSparkNode → page children 绑定器\n边界约束：\n- spark-project-model 负责提供声明式 SparkNode 树\n- spark-component 负责将其物化为运行时 children（SparkNode[]）\n绑定内容：\n- on / ActionDescriptor 绑定为可执行闭包\n- children 递归转换\n- props 内嵌 SparkNode 递归归并\n- 顶层 id 去重",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "PageScriptCaller",
@@ -22,12 +22,12 @@
     "PageScriptCaller": {
       "kind": "PageScriptCaller",
       "className": "PageScriptCaller",
-      "jsdoc": "/** 页面脚本函数调用签名。 */",
+      "jsdoc": "页面脚本函数调用签名。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    (functionName: string, ...args: unknown[]): unknown;\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/page/binding/build-page-children.d.ts",
-        "line": 17,
+        "line": 23,
         "className": "PageScriptCaller",
         "declarationKind": "type"
       },
@@ -37,51 +37,57 @@
     "BuildPageChildrenOptions": {
       "kind": "BuildPageChildrenOptions",
       "className": "BuildPageChildrenOptions",
-      "jsdoc": "/** buildPageChildren 运行时依赖。 */",
+      "jsdoc": "buildPageChildren 运行时依赖。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 脚本函数调用器，用于把字符串事件名绑定到真实脚本函数。 */\n    callFunc: PageScriptCaller;\n    /** 动作执行上下文，用于把声明式 action descriptor 绑定成可执行闭包。 */\n    actionCtx: ActionExecutionContext;\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/page/binding/build-page-children.d.ts",
-        "line": 21,
+        "line": 27,
         "className": "BuildPageChildrenOptions",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "callFunc",
+          "jsdoc": "脚本函数调用器，用于把字符串事件名绑定到真实脚本函数。",
           "schema": {
-            "title": "PageScriptCaller"
+            "$ref": "#/$defs/PageScriptCaller"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 脚本函数调用器，用于把字符串事件名绑定到真实脚本函数。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/page/binding/build-page-children.d.ts",
-            "line": 23,
-            "className": "BuildPageChildrenOptions",
-            "memberName": "callFunc",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "actionCtx",
+          "jsdoc": "动作执行上下文，用于把声明式 action descriptor 绑定成可执行闭包。",
           "schema": {
-            "title": "ActionExecutionContext"
+            "$ref": "../actions/action-types.d.ts.json#/$defs/ActionExecutionContext"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 动作执行上下文，用于把声明式 action descriptor 绑定成可执行闭包。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/page/binding/build-page-children.d.ts",
-            "line": 25,
-            "className": "BuildPageChildrenOptions",
-            "memberName": "actionCtx",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.634Z"
+  "generatedAt": "2026-06-11T16:38:12.903Z",
+  "$defs": {
+    "PageScriptCaller": {
+      "type": "object",
+      "title": "PageScriptCaller",
+      "description": "页面脚本函数调用签名。"
+    },
+    "BuildPageChildrenOptions": {
+      "type": "object",
+      "title": "BuildPageChildrenOptions",
+      "description": "buildPageChildren 运行时依赖。",
+      "properties": {
+        "callFunc": {
+          "$ref": "#/$defs/PageScriptCaller"
+        },
+        "actionCtx": {
+          "$ref": "../actions/action-types.d.ts.json#/$defs/ActionExecutionContext"
+        }
+      }
+    }
+  }
 }

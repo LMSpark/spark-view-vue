@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/fields/data-components/composables/useBasicFieldState",
-    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useBasicFieldState\n@spark-appworks/spark-component:components/fields/data-components/composables/useBasicFieldState 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: OptionalWithUndefined, BasicFieldProps, UseBasicFieldStateOptions（共 3 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useBasicFieldState\n职责：提供 useBasicFieldState（未注册组件类型）相关的组合式状态或行为封装，复用字段值、选项、权限、动作和交互控制逻辑。\n边界：只服务 field-level/data-field 的 setup/runtime 组合，不直接声明页面配置，也不替代组件 props。\nAI用途：需要理解 use basic field state 的响应式状态来源、值转换或事件副作用时，使用本模块定位实际运行规则。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "OptionalWithUndefined",
@@ -27,7 +27,7 @@
     "OptionalWithUndefined": {
       "kind": "OptionalWithUndefined",
       "className": "OptionalWithUndefined",
-      "jsdoc": "/** Optional With Undefined 的语义模型。 */",
+      "jsdoc": "Optional With Undefined 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    [K in keyof T]?: T[K] | undefined;\n}",
       "provenance": {
@@ -45,7 +45,7 @@
     "BasicFieldProps": {
       "kind": "BasicFieldProps",
       "className": "BasicFieldProps",
-      "jsdoc": "/** Basic Field Props 的属性契约。 */",
+      "jsdoc": "Basic Field Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "FieldPermissionProps<TValue> & OptionalWithUndefined<Pick<SparkNodeProps, 'type' | 'children'>> & OptionalWithUndefined<Pick<SparkFieldSemanticProps, 'width' | 'resizable' | 'titleAlign' | 'valueAlign' | 'headerCellClassName' | 'cellClassName' | 'titleClassName' | 'valueClassName' | 'sortable'>>",
       "declarationRelations": [
@@ -80,7 +80,7 @@
     "UseBasicFieldStateOptions": {
       "kind": "UseBasicFieldStateOptions",
       "className": "UseBasicFieldStateOptions",
-      "jsdoc": "/** Use Basic Field State Options 的调用配置。 */",
+      "jsdoc": "Use Basic Field State Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: BasicFieldProps<TValue>;\n    /** field Type 字段。 */\n    fieldType: string;\n    /** fallback Value 字段。 */\n    fallbackValue: TValue;\n    /** emit Update 回调。 */\n    emitUpdate: (value: TValue) => void;\n    /** format Display 回调。 */\n    formatDisplay?: (value: unknown) => string;\n    /** coerce 回调。 */\n    coerce: (rawValue: unknown) => TValue;\n}",
       "provenance": {
@@ -95,122 +95,102 @@
       "attributes": [
         {
           "name": "props",
+          "jsdoc": "组件属性集合。",
           "schema": {
+            "$ref": "#/$defs/BasicFieldProps",
             "title": "BasicFieldProps<TValue>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 组件属性集合。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.d.ts",
-            "line": 18,
-            "className": "UseBasicFieldStateOptions",
-            "memberName": "props",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "fieldType",
+          "jsdoc": "field Type 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** field Type 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.d.ts",
-            "line": 20,
-            "className": "UseBasicFieldStateOptions",
-            "memberName": "fieldType",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "fallbackValue",
-          "schema": {
-            "title": "TValue"
-          },
+          "jsdoc": "fallback Value 字段。",
+          "schema": true,
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** fallback Value 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.d.ts",
-            "line": 22,
-            "className": "UseBasicFieldStateOptions",
-            "memberName": "fallbackValue",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "emitUpdate",
+          "jsdoc": "emit Update 回调。",
           "schema": {
+            "type": "object",
             "title": "(value: TValue) => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** emit Update 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.d.ts",
-            "line": 24,
-            "className": "UseBasicFieldStateOptions",
-            "memberName": "emitUpdate",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "formatDisplay",
+          "jsdoc": "format Display 回调。",
           "schema": {
+            "type": "object",
             "title": "(value: unknown) => string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** format Display 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.d.ts",
-            "line": 26,
-            "className": "UseBasicFieldStateOptions",
-            "memberName": "formatDisplay",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "coerce",
+          "jsdoc": "coerce 回调。",
           "schema": {
+            "type": "object",
             "title": "(rawValue: unknown) => TValue"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** coerce 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useBasicFieldState.d.ts",
-            "line": 28,
-            "className": "UseBasicFieldStateOptions",
-            "memberName": "coerce",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.433Z"
+  "generatedAt": "2026-06-11T16:38:12.820Z",
+  "$defs": {
+    "OptionalWithUndefined": {
+      "type": "object",
+      "title": "OptionalWithUndefined",
+      "description": "Optional With Undefined 的语义模型。"
+    },
+    "BasicFieldProps": {
+      "type": "object",
+      "title": "BasicFieldProps",
+      "description": "Basic Field Props 的属性契约。"
+    },
+    "UseBasicFieldStateOptions": {
+      "type": "object",
+      "title": "UseBasicFieldStateOptions",
+      "description": "Use Basic Field State Options 的调用配置。",
+      "properties": {
+        "props": {
+          "$ref": "#/$defs/BasicFieldProps",
+          "title": "BasicFieldProps<TValue>"
+        },
+        "fieldType": {
+          "type": "string"
+        },
+        "fallbackValue": true,
+        "emitUpdate": {
+          "type": "object",
+          "title": "(value: TValue) => void"
+        },
+        "formatDisplay": {
+          "type": "object",
+          "title": "(value: unknown) => string"
+        },
+        "coerce": {
+          "type": "object",
+          "title": "(rawValue: unknown) => TValue"
+        }
+      }
+    }
+  }
 }

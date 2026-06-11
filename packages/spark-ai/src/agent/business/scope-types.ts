@@ -1,23 +1,8 @@
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │  AI HOST · 业务作用域类型                                                     │
- * │  Business Scope & Context Types                                              │
- * │                                                                              │
- * │  本文件定义业务实例的定位、作用域和运行时上下文的类型层次。                       │
- * │  从"找到哪个业务"到"当前会话快照"再到"回调参数"，逐步细化。                     │
- * │                                                                              │
- * │  类型层次：                                                                   │
- * │    AiAgentTarget           — 业务定位（哪个注册的哪个实例）              │
- * │      └─ AiAgentScope       — 业务作用域（定位 + 会话/运行时 ID）        │
- * │    AiAgentRuntimeContext   — 运行时上下文（传递给生命周期回调）          │
- * │    AiAgentAppendMessageOptions — 追加消息参数（上下文 + 消息字段）      │
- * │                                                                              │
- * │  使用场景：                                                                   │
- * │    · Target   → registry.createBusiness() 时定位                              │
- * │    · Scope    → tool-loop-runner 全程持有，turn stream 流键生成               │
- * │    · Context  → systemPrompt / afterFunctionCall / onStartSession 回调入参    │
- * │    · Options  → session.appendMessage() 入参                                  │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * @module @spark-appworks/spark-ai:agent/business/scope-types
+ * 职责：定义 AI 业务坐标、scope、runtime context、turn key 和 stream key 的类型模型。
+ * 边界：只表达作用域数据结构，不生成 ID、不校验输入，也不依赖具体 Host 或 session 实现。
+ * AI用途：跨模块传递业务定位或诊断 turn/stream 归属时，用本模块确认字段边界。
  */
 
 import type {

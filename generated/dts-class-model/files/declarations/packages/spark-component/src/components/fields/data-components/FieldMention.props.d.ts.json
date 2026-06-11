@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/fields/data-components/FieldMention.props.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/fields/data-components/FieldMention.props",
-    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/FieldMention.props\nFieldMention 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: RMentionOption, RMentionProps（共 2 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/FieldMention.props\n职责：定义 FieldMention（r-mention）的配置属性契约，把页面 JSON 中的字段、数据绑定、显示选项和交互开关约束成可生成的类型。\n边界：只描述 field-level/data-field 组件的声明式配置，不读取 DataSet、不触发运行时事件，也不直接渲染 DOM。\nAI用途：生成或修订页面配置时，用本模块判断 field mention 允许哪些 props、哪些字段属于数据绑定，避免把运行时 API 写进配置。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "RMentionOption",
@@ -27,7 +27,7 @@
     "RMentionOption": {
       "kind": "RMentionOption",
       "className": "RMentionOption",
-      "jsdoc": "/** Mention 候选项：提供展示值、标签、禁用状态和可选的持久化回写值。 */",
+      "jsdoc": "Mention 候选项：提供展示值、标签、禁用状态和可选的持久化回写值。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 展示值（必填）。 */\n    value: string;\n    /** 展示标签。 */\n    label?: string;\n    /** 当前候选项是否禁用。 */\n    disabled?: boolean;\n    /** @internal 供 trigger.writebackField 使用的持久化值，例如选项 ID。 */\n    persistedValue?: string | number | boolean;\n}",
       "provenance": {
@@ -44,90 +44,49 @@
       "attributes": [
         {
           "name": "value",
+          "jsdoc": "展示值（必填）。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 展示值（必填）。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 11,
-            "className": "RMentionOption",
-            "memberName": "value",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "label",
+          "jsdoc": "展示标签。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 展示标签。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 13,
-            "className": "RMentionOption",
-            "memberName": "label",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "disabled",
+          "jsdoc": "当前候选项是否禁用。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 当前候选项是否禁用。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 15,
-            "className": "RMentionOption",
-            "memberName": "disabled",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "persistedValue",
+          "jsdoc": "@internal 供 trigger.writebackField 使用的持久化值，例如选项 ID。",
           "schema": {
-            "title": "string | number | boolean"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** @internal 供 trigger.writebackField 使用的持久化值，例如选项 ID。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 17,
-            "className": "RMentionOption",
-            "memberName": "persistedValue",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -135,7 +94,7 @@
     "RMentionProps": {
       "kind": "RMentionProps",
       "className": "RMentionProps",
-      "jsdoc": "/** RMention Props 的属性契约。 */",
+      "jsdoc": "RMention Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "SparkNodeProps & SparkMultilineFieldProps & {\n    /**\n       * 完整的提及触发规则列表。\n       *\n       * 每一项描述一个前缀触发器的完整结构：\n       * - `prefix`：触发字符\n       * - `split`：选中后写回文本的分隔符\n       * - `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段\n       * - `options.dataViewKey`：候选项数据源\n        * - `options.valueField / labelField / disabledField`：候选项字段映射\n       * - `searchable`：是否启用本地候选项过滤\n       *\n      * 主输入文本本身走继承自 `SparkFieldSemanticProps` 的 `modelValue/field` 语义：\n       * - `modelValue` 表示当前 Mention 输入框中的文本值\n       * - `field` 表示这份文本最终持久化到宿主数据行的哪个字段\n       *\n       * 注意：底层 el-mention 只支持一个全局 `split`；\n       * 若这里配置了多项且 `split` 不一致，组件会直接 fail-fast。\n       */\n    mentionTriggers?: Array<{\n        /** 触发字符，必须是单个字符。 */\n        prefix: string;\n        /** 选中后写回文本的分隔符。 */\n        split?: string;\n        /**\n         * 额外回写宿主字段。\n         *\n         * 选中候选项后，会把 `options.valueField` 对应的候选项值写入当前宿主数据行的这个字段。\n         * 这用于“输入框里保留可读文本，但额外持久化选项 ID”这一类场景。\n         */\n        writebackField?: string;\n        /** 是否启用本地候选项过滤。 */\n        searchable?: boolean;\n        /** 候选项来源与字段映射。 */\n        options?: {\n            /** 候选项 DataView，例如 `Users@default`。 */\n            dataViewKey?: string;\n            /**\n             * 候选项值字段。\n             *\n             * 用于指定从候选项数据源的哪个字段读取值，并映射为 el-mention 的 `option.value`。\n             * 用户选中候选项后，这个值会进入宿主输入框文本；\n             * 但这不是对候选项数据源的“回写”，候选项表本身不会因此被修改。\n             */\n            valueField?: string;\n            /** 候选项显示字段。 */\n            labelField?: string;\n            /** 候选项禁用字段。 */\n            disabledField?: string;\n        };\n    }>;\n    /**\n     * @internal Mention 候选项结果集。\n     *\n     * 页面配置层应通过 `mentionTriggers[].options` 提供候选项来源；\n     * 组件运行时会先把这些配置解析为真正传给 el-mention 的候选项。\n     * 这里保留该字段，只用于组件内部或受控场景直接覆盖那份“已计算好的结果集”。\n     *\n     * `persistedValue` 只服务于内部回写宿主字段，不会直接显示在输入框里。\n     */\n    options?: RMentionOption[];\n    /** 候选浮层位置 */\n    placement?: 'top' | 'bottom';\n    /** 是否显示箭头 */\n    showArrow?: boolean;\n    /** 浮层偏移 */\n    offset?: number;\n    /** 是否整词匹配 */\n    whole?: boolean;\n    /** 自定义整词判断 */\n    checkIsWhole?: (pattern: string, prefix: string) => boolean;\n    /** 是否加载态 */\n    loading?: boolean;\n    /** 输入框类型 */\n    inputType?: 'text' | 'textarea';\n}",
       "declarationRelations": [
@@ -168,202 +127,219 @@
       "attributes": [
         {
           "name": "mentionTriggers",
+          "jsdoc": "完整的提及触发规则列表。\n每一项描述一个前缀触发器的完整结构：\n- `prefix`：触发字符\n- `split`：选中后写回文本的分隔符\n- `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段\n- `options.dataViewKey`：候选项数据源\n- `options.valueField / labelField / disabledField`：候选项字段映射\n- `searchable`：是否启用本地候选项过滤\n主输入文本本身走继承自 `SparkFieldSemanticProps` 的 `modelValue/field` 语义：\n- `modelValue` 表示当前 Mention 输入框中的文本值\n- `field` 表示这份文本最终持久化到宿主数据行的哪个字段\n注意：底层 el-mention 只支持一个全局 `split`；\n若这里配置了多项且 `split` 不一致，组件会直接 fail-fast。",
           "schema": {
-            "title": "Array<{\n        /** 触发字符，必须是单个字符。 */\n        prefix: string;\n        /** 选中后写回文本的分隔符。 */\n        split?: string;\n        /**\n         * 额外回写宿主字段。\n         *\n         * 选中候选项后，会把 `options.valueField` 对应的候选项值写入当前宿主数据行的这个字段。\n         * 这用于“输入框里保留可读文本，但额外持久化选项 ID”这一类场景。\n         */\n        writebackField?: string;\n        /** 是否启用本地候选项过滤。 */\n        searchable?: boolean;\n        /** 候选项来源与字段映射。 */\n        options?: {\n            /** 候选项 DataView，例如 `Users@default`。 */\n            dataViewKey?: string;\n            /**\n             * 候选项值字段。\n             *\n             * 用于指定从候选项数据源的哪个字段读取值，并映射为 el-mention 的 `option.value`。\n             * 用户选中候选项后，这个值会进入宿主输入框文本；\n             * 但这不是对候选项数据源的“回写”，候选项表本身不会因此被修改。\n             */\n            valueField?: string;\n            /** 候选项显示字段。 */\n            labelField?: string;\n            /** 候选项禁用字段。 */\n            disabledField?: string;\n        };\n    }>"
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/**\n       * 完整的提及触发规则列表。\n       *\n       * 每一项描述一个前缀触发器的完整结构：\n       * - `prefix`：触发字符\n       * - `split`：选中后写回文本的分隔符\n       * - `writebackField`：选中候选项后，把候选项值额外回写到宿主哪一个字段\n       * - `options.dataViewKey`：候选项数据源\n        * - `options.valueField / labelField / disabledField`：候选项字段映射\n       * - `searchable`：是否启用本地候选项过滤\n       *\n      * 主输入文本本身走继承自 `SparkFieldSemanticProps` 的 `modelValue/field` 语义：\n       * - `modelValue` 表示当前 Mention 输入框中的文本值\n       * - `field` 表示这份文本最终持久化到宿主数据行的哪个字段\n       *\n       * 注意：底层 el-mention 只支持一个全局 `split`；\n       * 若这里配置了多项且 `split` 不一致，组件会直接 fail-fast。\n       */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 39,
-            "className": "RMentionProps",
-            "memberName": "mentionTriggers",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "options",
+          "jsdoc": "@internal Mention 候选项结果集。\n\n页面配置层应通过 `mentionTriggers[].options` 提供候选项来源；\n组件运行时会先把这些配置解析为真正传给 el-mention 的候选项。\n这里保留该字段，只用于组件内部或受控场景直接覆盖那份“已计算好的结果集”。\n\n`persistedValue` 只服务于内部回写宿主字段，不会直接显示在输入框里。",
           "schema": {
             "type": "array",
-            "title": "RMentionOption[]",
-            "items": true
+            "items": {
+              "$ref": "#/$defs/RMentionOption"
+            }
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/**\n     * @internal Mention 候选项结果集。\n     *\n     * 页面配置层应通过 `mentionTriggers[].options` 提供候选项来源；\n     * 组件运行时会先把这些配置解析为真正传给 el-mention 的候选项。\n     * 这里保留该字段，只用于组件内部或受控场景直接覆盖那份“已计算好的结果集”。\n     *\n     * `persistedValue` 只服务于内部回写宿主字段，不会直接显示在输入框里。\n     */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 80,
-            "className": "RMentionProps",
-            "memberName": "options",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "placement",
+          "jsdoc": "候选浮层位置",
           "schema": {
-            "title": "'top' | 'bottom'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "top"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "bottom"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 候选浮层位置 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 82,
-            "className": "RMentionProps",
-            "memberName": "placement",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "showArrow",
+          "jsdoc": "是否显示箭头",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否显示箭头 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 84,
-            "className": "RMentionProps",
-            "memberName": "showArrow",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "offset",
+          "jsdoc": "浮层偏移",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 浮层偏移 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 86,
-            "className": "RMentionProps",
-            "memberName": "offset",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "whole",
+          "jsdoc": "是否整词匹配",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否整词匹配 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 88,
-            "className": "RMentionProps",
-            "memberName": "whole",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "checkIsWhole",
+          "jsdoc": "自定义整词判断",
           "schema": {
+            "type": "object",
             "title": "(pattern: string, prefix: string) => boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 自定义整词判断 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 90,
-            "className": "RMentionProps",
-            "memberName": "checkIsWhole",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "loading",
+          "jsdoc": "是否加载态",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否加载态 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 92,
-            "className": "RMentionProps",
-            "memberName": "loading",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "inputType",
+          "jsdoc": "输入框类型",
           "schema": {
-            "title": "'text' | 'textarea'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "text"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "textarea"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 输入框类型 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldMention.props.d.ts",
-            "line": 94,
-            "className": "RMentionProps",
-            "memberName": "inputType",
-            "declarationKind": "interface",
-            "componentName": "FieldMention",
-            "componentType": "r-mention",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.517Z"
+  "generatedAt": "2026-06-11T16:38:12.861Z",
+  "$defs": {
+    "RMentionOption": {
+      "type": "object",
+      "title": "RMentionOption",
+      "description": "Mention 候选项：提供展示值、标签、禁用状态和可选的持久化回写值。",
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "persistedValue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    "RMentionProps": {
+      "type": "object",
+      "title": "RMentionProps",
+      "description": "RMention Props 的属性契约。",
+      "properties": {
+        "mentionTriggers": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RMentionOption"
+          }
+        },
+        "placement": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "top"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "bottom"
+              ]
+            }
+          ]
+        },
+        "showArrow": {
+          "type": "boolean"
+        },
+        "offset": {
+          "type": "number"
+        },
+        "whole": {
+          "type": "boolean"
+        },
+        "checkIsWhole": {
+          "type": "object",
+          "title": "(pattern: string, prefix: string) => boolean"
+        },
+        "loading": {
+          "type": "boolean"
+        },
+        "inputType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "text"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "textarea"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
 }

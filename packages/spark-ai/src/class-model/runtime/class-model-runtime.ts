@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/runtime/class-model-runtime
- * @spark-appworks/spark-ai 的 class-model/runtime/class-model-runtime 模块。
- * 导出 ClassModel symbol: ClassModelScriptCommand, ClassModelRuntimeOptions, ClassModelToolArgs, ClassModelToolResult, ClassModelToolCheck, ClassModelScriptExecutorResult, ClassModelScriptExecutor, ClassModelRuntime（共 8 个 symbol）。
+ * 职责：维护 DTS ClassModel 知识链路中的 class-model-runtime 能力，围绕 ClassModelScriptCommand、ClassModelRuntimeOptions、ClassModelToolArgs 等 8 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。
+ * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。
+ * AI用途：当需要判断 ClassModel 在 class-model/runtime/class-model-runtime 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiJsonValue } from '../../json'
 import type { ClassModelDocument } from '../class-model'

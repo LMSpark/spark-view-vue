@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-project-model/src/page/content/rule-file.ts",
     "packageName": "@spark-appworks/spark-project-model",
     "modulePath": "page/content/rule-file",
-    "jsdoc": "@module @spark-appworks/spark-project-model:page/content/rule-file\n@spark-appworks/spark-project-model 的 page/content/rule-file 模块。\n导出 ClassModel symbol: PageRuleFile（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-project-model:page/content/rule-file\n职责：提供项目模型层 rule-file 能力，围绕 PageRuleFile 处理导航、页面文件、配置内容、工作区或远端 IO 契约。\n边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。\nAI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 page/content/rule-file。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "PageRuleFile"
@@ -20,7 +20,7 @@
     "PageRuleFile": {
       "kind": "PageRuleFile",
       "className": "PageRuleFile",
-      "jsdoc": "/** Page Rule File 的语义模型。 */",
+      "jsdoc": "Page Rule File 的语义模型。",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
@@ -29,288 +29,196 @@
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "pageId": {
-              "type": "string",
-              "title": "string"
+        "jsdoc": "创建 Page Rule File 实例。",
+        "signatureText": "constructor(\n    /** 页面 ID，用于标识当前 rule.json 所属页面。 */\n    pageId: string)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "pageId",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
             }
-          },
-          "required": [
-            "pageId"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Page Rule File 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
-          "line": 10,
-          "className": "PageRuleFile",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          }
+        ]
       },
       "attributes": [
         {
           "name": "pageId",
+          "jsdoc": "页面 ID，用于标识当前 rule.json 所属页面。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 页面 ID，用于标识当前 rule.json 所属页面。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
-            "line": 5,
-            "className": "PageRuleFile",
-            "memberName": "pageId",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "tree",
+          "jsdoc": "tree 字段。",
           "schema": {
+            "type": "object",
             "title": "SparkNodeTreeModel"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tree 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
-            "line": 7,
-            "className": "PageRuleFile",
-            "memberName": "tree",
-            "declarationKind": "class"
-          }
+          "writable": true
         }
       ],
       "methods": [
         {
           "name": "getText",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "string",
-            "title": "string"
-          },
-          "returnTypeText": "string",
-          "jsdoc": "/** get Text 文本。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
-            "line": 19,
-            "className": "PageRuleFile",
-            "memberName": "getText",
-            "declarationKind": "class"
+          "jsdoc": "get Text 文本。",
+          "signatureText": "getText(): string",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "string"
           }
         },
         {
           "name": "setText",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "text": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "set Text 文本。",
+          "signatureText": "setText(text: string): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "text",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
-            },
-            "required": [
-              "text"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** set Text 文本。 */",
-          "paramsTypeText": "text: string",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
-            "line": 21,
-            "className": "PageRuleFile",
-            "memberName": "setText",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "loadText",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "text": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "load Text 文本。",
+          "signatureText": "loadText(text: string): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "text",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
-            },
-            "required": [
-              "text"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** load Text 文本。 */",
-          "paramsTypeText": "text: string",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
-            "line": 23,
-            "className": "PageRuleFile",
-            "memberName": "loadText",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "markSaved",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 执行 mark Saved 操作。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
-            "line": 25,
-            "className": "PageRuleFile",
-            "memberName": "markSaved",
-            "declarationKind": "class"
+          "jsdoc": "执行 mark Saved 操作。",
+          "signatureText": "markSaved(): void",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "getTree",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "SparkNodeTreeModel"
-          },
-          "returnTypeText": "SparkNodeTreeModel",
-          "jsdoc": "/** 读取 Tree。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
-            "line": 27,
-            "className": "PageRuleFile",
-            "memberName": "getTree",
-            "declarationKind": "class"
+          "jsdoc": "读取 Tree。",
+          "signatureText": "getTree(): SparkNodeTreeModel",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "reference",
+            "name": "SparkNodeTree"
           }
         },
         {
           "name": "replaceTree",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "tree": {
-                "title": "SparkNodeTreeModel"
+          "jsdoc": "执行 replace Tree 操作。",
+          "signatureText": "replaceTree(tree: SparkNodeTreeModel): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tree",
+              "type": {
+                "type": "reference",
+                "name": "SparkNodeTree"
               }
-            },
-            "required": [
-              "tree"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 执行 replace Tree 操作。 */",
-          "paramsTypeText": "tree: SparkNodeTree",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
-            "line": 29,
-            "className": "PageRuleFile",
-            "memberName": "replaceTree",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "editTree",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "run": {
-                "title": "(tree: SparkNodeTreeModel) => void | Promise<void>"
+          "jsdoc": "执行 edit Tree 操作。",
+          "signatureText": "editTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "run",
+              "type": {
+                "type": "unknown",
+                "name": "(tree: SparkNodeTreeModel) => void | Promise<void>"
               }
-            },
-            "required": [
-              "run"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<void>"
-          },
-          "returnTypeText": "Promise<void>",
-          "jsdoc": "/** 执行 edit Tree 操作。 */",
-          "paramsTypeText": "run: (tree: SparkNodeTree) => void | Promise<void>",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
-            "line": 31,
-            "className": "PageRuleFile",
-            "memberName": "editTree",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
           }
         },
         {
           "name": "undo",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean",
-            "title": "boolean"
-          },
-          "returnTypeText": "boolean",
-          "jsdoc": "/** 执行 undo 操作。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
-            "line": 33,
-            "className": "PageRuleFile",
-            "memberName": "undo",
-            "declarationKind": "class"
+          "jsdoc": "执行 undo 操作。",
+          "signatureText": "undo(): boolean",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "boolean"
           }
         },
         {
           "name": "redo",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean",
-            "title": "boolean"
-          },
-          "returnTypeText": "boolean",
-          "jsdoc": "/** 执行 redo 操作。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/page/content/rule-file.d.ts",
-            "line": 35,
-            "className": "PageRuleFile",
-            "memberName": "redo",
-            "declarationKind": "class"
+          "jsdoc": "执行 redo 操作。",
+          "signatureText": "redo(): boolean",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "boolean"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.945Z"
+  "generatedAt": "2026-06-11T16:38:13.057Z",
+  "$defs": {
+    "PageRuleFile": {
+      "type": "object",
+      "title": "PageRuleFile",
+      "description": "Page Rule File 的语义模型。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "tree": {
+          "type": "object",
+          "title": "SparkNodeTreeModel"
+        }
+      }
+    }
+  }
 }

@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/types
- * @spark-appworks/spark-ai 的 class-model/class-model/types 模块。
- * 导出 ClassModel symbol: ClassModelDocument, SourceProvenanceMeta, ComponentClassModelLevel, ComponentClassModelLayer, ClassModelDeclarationRelationKind, ClassModelDeclarationRelation, ClassModel, JsDocMeta 等（共 11 个 symbol）。
+ * 职责：维护 DTS ClassModel 知识链路中的 types 能力，围绕 ClassModelDocument、SourceProvenanceMeta、ComponentClassModelLevel 等 11 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。
+ * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。
+ * AI用途：当需要判断 ClassModel 在 class-model/class-model/types 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
 import type { AiModuleMetadataJson } from '../metadata'
@@ -91,7 +92,10 @@ export type JsDocMeta = string
 
 /** Constructor Meta 的语义模型。 */
 export type ConstructorMeta = Readonly<{
-  paramsSchema: AiJsonSchemaObject
+  signatureText?: string
+  parameterStyle?: MethodParameterStyle
+  parameters?: readonly MethodParameterMeta[]
+  paramsSchema?: AiJsonSchemaObject
   jsdoc: JsDocMeta
   provenance?: SourceProvenanceMeta
 }>
@@ -106,10 +110,40 @@ export type AttributeMeta = Readonly<{
   provenance?: SourceProvenanceMeta
 }>
 
+/**
+ * Method Parameter Style 表达 .d.ts 签名的调用形态。
+ * positional 表示调用方按参数位置传入实参；named 表示签名使用对象解构，调用方传入一个承载命名字段的对象。
+ */
+export type MethodParameterStyle = 'positional' | 'named'
+
+/**
+ * DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。
+ * intrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；
+ * array/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。
+ */
+export type DtsTypeMeta =
+  | Readonly<{ type: 'intrinsic'; name: string }>
+  | Readonly<{ type: 'reference'; name: string; sourcePath?: string; refersToTypeParameter?: boolean; typeArguments?: readonly DtsTypeMeta[] }>
+  | Readonly<{ type: 'array'; elementType: DtsTypeMeta }>
+  | Readonly<{ type: 'union'; types: readonly DtsTypeMeta[] }>
+  | Readonly<{ type: 'intersection'; types: readonly DtsTypeMeta[] }>
+  | Readonly<{ type: 'literal'; value: string | number | boolean | null }>
+  | Readonly<{ type: 'unknown'; name: string }>
+
+/** Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 的 name + type 形态记录 DTS 参数。 */
+export type MethodParameterMeta = Readonly<{
+  name: string
+  type: DtsTypeMeta
+}>
+
 /** Method Meta 的语义模型。 */
 export type MethodMeta = Readonly<{
   name: string
-  paramsSchema: AiJsonSchemaObject
+  signatureText?: string
+  parameterStyle?: MethodParameterStyle
+  parameters?: readonly MethodParameterMeta[]
+  returnType?: DtsTypeMeta
+  paramsSchema?: AiJsonSchemaObject
   returnSchema?: AiJsonSchema
   returnTypeText?: string
   takesContext?: boolean

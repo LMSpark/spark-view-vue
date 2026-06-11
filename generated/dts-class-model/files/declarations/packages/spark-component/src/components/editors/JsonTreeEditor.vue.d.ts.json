@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/editors/JsonTreeEditor.vue",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/editors/JsonTreeEditor",
-    "jsdoc": "@module @spark-appworks/spark-component:components/editors/JsonTreeEditor\nJsonTreeEditor 模块，属于 SPARK component infrastructure/editor。\n组件目录: editors。\n导出 ClassModel symbol: JsonTreeEditorProps（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/editors/JsonTreeEditor\n职责：实现 JsonTreeEditor（未注册组件类型）的 Vue 渲染入口，把配置 props、数据上下文和事件桥接成用户可见的组件界面。\n边界：负责 infrastructure/editor 的视图组合与事件转发，不定义跨组件数据模型，也不替代 zero-code 行为 API。\nAI用途：需要理解 json tree editor 的实际渲染结构、slot/toolbar/状态呈现或事件触发点时，优先查看本模块。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "JsonTreeEditorProps"
@@ -24,7 +24,7 @@
     "JsonTreeEditorProps": {
       "kind": "JsonTreeEditorProps",
       "className": "JsonTreeEditorProps",
-      "jsdoc": "/** JSON 树编辑器属性，描述树数据、Schema 和过滤交互配置。 */",
+      "jsdoc": "JSON 树编辑器属性，描述树数据、Schema 和过滤交互配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 固定编辑器类型，用于组件注册和配置识别。 */\n    type?: 'json-tree-editor';\n    /** 字段绑定名，映射到 DataView 行字段 */\n    field?: string;\n    /** 显示标签 */\n    label?: string;\n    /** r-table 内列宽 */\n    width?: number;\n    /** JSON 字符串内容 */\n    modelValue?: string;\n    /** 已解析的 JSON 文档对象 */\n    documentValue?: Sjd.JsonDocument | null;\n    /** 编辑器高度 */\n    height?: number | string;\n    /** 是否只读 */\n    readOnly?: boolean;\n    /** JSON Schema 校验规则 */\n    schema?: {\n        [key: string]: unknown;\n    } | null;\n    /** 筛选框占位文本 */\n    filterPlaceholder?: string;\n    /** 策略聚合对象（复杂场景一次传入） */\n    policy?: Sjd.JsonTreePolicy;\n    /** 根节点标签 */\n    rootLabel?: string;\n    /** 判断路径是否受保护 */\n    isProtected?: (path: Sjd.JsonPath) => boolean;\n    /** 判断路径是否可编辑键名 */\n    canEditKey?: (path: Sjd.JsonPath) => boolean;\n    /** 判断路径是否可编辑类型 */\n    canEditType?: (path: Sjd.JsonPath) => boolean;\n    /** 推荐子节点键名 */\n    suggestChildKey?: (target: Sjd.JsonObject, parentPath: Sjd.JsonPath) => string;\n    /** 创建数组默认子项 */\n    createDefaultArrayItem?: (parentPath: Sjd.JsonPath) => Sjd.JsonValue;\n    /** 创建对象默认子值 */\n    createDefaultObjectValue?: (parentPath: Sjd.JsonPath, key: string) => Sjd.JsonValue;\n}",
       "provenance": {
@@ -40,374 +40,296 @@
       "attributes": [
         {
           "name": "type",
+          "jsdoc": "固定编辑器类型，用于组件注册和配置识别。",
           "schema": {
-            "title": "'json-tree-editor'"
+            "type": "string",
+            "enum": [
+              "json-tree-editor"
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 固定编辑器类型，用于组件注册和配置识别。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 5,
-            "className": "JsonTreeEditorProps",
-            "memberName": "type",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "field",
+          "jsdoc": "字段绑定名，映射到 DataView 行字段",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 字段绑定名，映射到 DataView 行字段 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 7,
-            "className": "JsonTreeEditorProps",
-            "memberName": "field",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "label",
+          "jsdoc": "显示标签",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 显示标签 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 9,
-            "className": "JsonTreeEditorProps",
-            "memberName": "label",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "width",
+          "jsdoc": "r-table 内列宽",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** r-table 内列宽 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 11,
-            "className": "JsonTreeEditorProps",
-            "memberName": "width",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "modelValue",
+          "jsdoc": "JSON 字符串内容",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** JSON 字符串内容 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 13,
-            "className": "JsonTreeEditorProps",
-            "memberName": "modelValue",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "documentValue",
+          "jsdoc": "已解析的 JSON 文档对象",
           "schema": {
-            "title": "Sjd.JsonDocument | null"
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "Sjd.JsonDocument"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 已解析的 JSON 文档对象 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 15,
-            "className": "JsonTreeEditorProps",
-            "memberName": "documentValue",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "height",
+          "jsdoc": "编辑器高度",
           "schema": {
-            "title": "number | string"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 编辑器高度 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 17,
-            "className": "JsonTreeEditorProps",
-            "memberName": "height",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "readOnly",
+          "jsdoc": "是否只读",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否只读 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 19,
-            "className": "JsonTreeEditorProps",
-            "memberName": "readOnly",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "schema",
+          "jsdoc": "JSON Schema 校验规则",
           "schema": {
-            "title": "{\n        [key: string]: unknown;\n    } | null"
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** JSON Schema 校验规则 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 21,
-            "className": "JsonTreeEditorProps",
-            "memberName": "schema",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "filterPlaceholder",
+          "jsdoc": "筛选框占位文本",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 筛选框占位文本 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 25,
-            "className": "JsonTreeEditorProps",
-            "memberName": "filterPlaceholder",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "policy",
+          "jsdoc": "策略聚合对象（复杂场景一次传入）",
           "schema": {
+            "type": "object",
             "title": "Sjd.JsonTreePolicy"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 策略聚合对象（复杂场景一次传入） */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 27,
-            "className": "JsonTreeEditorProps",
-            "memberName": "policy",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "rootLabel",
+          "jsdoc": "根节点标签",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 根节点标签 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 29,
-            "className": "JsonTreeEditorProps",
-            "memberName": "rootLabel",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "isProtected",
+          "jsdoc": "判断路径是否受保护",
           "schema": {
+            "type": "object",
             "title": "(path: Sjd.JsonPath) => boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 判断路径是否受保护 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 31,
-            "className": "JsonTreeEditorProps",
-            "memberName": "isProtected",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "canEditKey",
+          "jsdoc": "判断路径是否可编辑键名",
           "schema": {
+            "type": "object",
             "title": "(path: Sjd.JsonPath) => boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 判断路径是否可编辑键名 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 33,
-            "className": "JsonTreeEditorProps",
-            "memberName": "canEditKey",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "canEditType",
+          "jsdoc": "判断路径是否可编辑类型",
           "schema": {
+            "type": "object",
             "title": "(path: Sjd.JsonPath) => boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 判断路径是否可编辑类型 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 35,
-            "className": "JsonTreeEditorProps",
-            "memberName": "canEditType",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "suggestChildKey",
+          "jsdoc": "推荐子节点键名",
           "schema": {
+            "type": "object",
             "title": "(target: Sjd.JsonObject, parentPath: Sjd.JsonPath) => string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 推荐子节点键名 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 37,
-            "className": "JsonTreeEditorProps",
-            "memberName": "suggestChildKey",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "createDefaultArrayItem",
+          "jsdoc": "创建数组默认子项",
           "schema": {
+            "type": "object",
             "title": "(parentPath: Sjd.JsonPath) => Sjd.JsonValue"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 创建数组默认子项 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 39,
-            "className": "JsonTreeEditorProps",
-            "memberName": "createDefaultArrayItem",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         },
         {
           "name": "createDefaultObjectValue",
+          "jsdoc": "创建对象默认子值",
           "schema": {
+            "type": "object",
             "title": "(parentPath: Sjd.JsonPath, key: string) => Sjd.JsonValue"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 创建对象默认子值 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
-            "line": 41,
-            "className": "JsonTreeEditorProps",
-            "memberName": "createDefaultObjectValue",
-            "declarationKind": "interface",
-            "componentName": "JsonTreeEditor",
-            "componentLevel": "infrastructure",
-            "componentLayer": "editor",
-            "componentDirectory": "editors"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.391Z"
+  "generatedAt": "2026-06-11T16:38:12.809Z",
+  "$defs": {
+    "JsonTreeEditorProps": {
+      "type": "object",
+      "title": "JsonTreeEditorProps",
+      "description": "JSON 树编辑器属性，描述树数据、Schema 和过滤交互配置。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "json-tree-editor"
+          ]
+        },
+        "field": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "modelValue": {
+          "type": "string"
+        },
+        "documentValue": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "Sjd.JsonDocument"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "readOnly": {
+          "type": "boolean"
+        },
+        "schema": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "filterPlaceholder": {
+          "type": "string"
+        },
+        "policy": {
+          "type": "object",
+          "title": "Sjd.JsonTreePolicy"
+        },
+        "rootLabel": {
+          "type": "string"
+        },
+        "isProtected": {
+          "type": "object",
+          "title": "(path: Sjd.JsonPath) => boolean"
+        },
+        "canEditKey": {
+          "type": "object",
+          "title": "(path: Sjd.JsonPath) => boolean"
+        },
+        "canEditType": {
+          "type": "object",
+          "title": "(path: Sjd.JsonPath) => boolean"
+        },
+        "suggestChildKey": {
+          "type": "object",
+          "title": "(target: Sjd.JsonObject, parentPath: Sjd.JsonPath) => string"
+        },
+        "createDefaultArrayItem": {
+          "type": "object",
+          "title": "(parentPath: Sjd.JsonPath) => Sjd.JsonValue"
+        },
+        "createDefaultObjectValue": {
+          "type": "object",
+          "title": "(parentPath: Sjd.JsonPath, key: string) => Sjd.JsonValue"
+        }
+      }
+    }
+  }
 }

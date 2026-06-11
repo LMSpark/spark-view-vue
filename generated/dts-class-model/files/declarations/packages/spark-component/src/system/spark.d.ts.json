@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/system/spark.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "system/spark",
-    "jsdoc": "SPARK 命名空间 — 统一 API 入口\n- `Spark.register(type, component)` — 注册单个已解析组件\n- `Spark.registerAll(components)` — 批量注册已解析组件\n- `Spark.createPlugin()` — 创建 Vue 插件\n- `Spark.createRegistry()` — 创建隔离注册表\n- `Spark.createSystem()` — 创建测试用隔离系统",
+    "jsdoc": "@module @spark-appworks/spark-component:system/spark\n职责：提供 spark 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\n\nSPARK 命名空间 — 统一 API 入口\n- `Spark.register(type, component)` — 注册单个已解析组件\n- `Spark.registerAll(components)` — 批量注册已解析组件\n- `Spark.createPlugin()` — 创建 Vue 插件\n- `Spark.createRegistry()` — 创建隔离注册表\n- `Spark.createSystem()` — 创建测试用隔离系统",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "SparkSystem"
@@ -20,51 +20,54 @@
     "SparkSystem": {
       "kind": "SparkSystem",
       "className": "SparkSystem",
-      "jsdoc": "/** Spark.createSystem() 返回的隔离测试系统 */",
+      "jsdoc": "Spark.createSystem() 返回的隔离测试系统",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** registry 字段。 */\n    registry: ComponentRegistry;\n    /** root Context 字段。 */\n    rootContext: CapabilityContext;\n    createContext(config: Partial<CapabilityContext> & {\n        type: string;\n    }, parent?: CapabilityContext): CapabilityContext;\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/system/spark.d.ts",
-        "line": 13,
+        "line": 19,
         "className": "SparkSystem",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "registry",
+          "jsdoc": "registry 字段。",
           "schema": {
-            "title": "ComponentRegistry"
+            "$ref": "../core/types.d.ts.json#/$defs/ComponentRegistry"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** registry 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/system/spark.d.ts",
-            "line": 15,
-            "className": "SparkSystem",
-            "memberName": "registry",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "rootContext",
+          "jsdoc": "root Context 字段。",
           "schema": {
+            "type": "object",
             "title": "CapabilityContext"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** root Context 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/system/spark.d.ts",
-            "line": 17,
-            "className": "SparkSystem",
-            "memberName": "rootContext",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.689Z"
+  "generatedAt": "2026-06-11T16:38:12.920Z",
+  "$defs": {
+    "SparkSystem": {
+      "type": "object",
+      "title": "SparkSystem",
+      "description": "Spark.createSystem() 返回的隔离测试系统",
+      "properties": {
+        "registry": {
+          "$ref": "../core/types.d.ts.json#/$defs/ComponentRegistry"
+        },
+        "rootContext": {
+          "type": "object",
+          "title": "CapabilityContext"
+        }
+      }
+    }
+  }
 }

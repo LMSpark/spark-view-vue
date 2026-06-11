@@ -15,6 +15,7 @@ export default [
       'scripts/**',            // 独立脚本，不纳入 tsconfig project
       '**/*.example.ts',
       'dist/**',
+      'generated/dts-class-model-review/**',
       'node_modules/**',
       'vue-virtual-card-scroll-demo/**',
       'vite.config.ts',

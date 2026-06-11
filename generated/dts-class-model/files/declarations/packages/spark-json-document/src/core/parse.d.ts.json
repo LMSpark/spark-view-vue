@@ -7,11 +7,11 @@
     "sourceFile": "packages/spark-json-document/src/core/parse.ts",
     "packageName": "@spark-appworks/spark-json-document",
     "modulePath": "core/parse",
-    "jsdoc": "═══════════════════════════════════════════════════════════════\ncore/parse.ts — JSON 文档解析与序列化\n═══════════════════════════════════════════════════════════════",
+    "jsdoc": "@module @spark-appworks/spark-json-document:core/parse\n职责：提供 JSON Document/schema 处理中的 parse 能力，支撑 schema 标准化、审计和元数据保留。\n边界：只处理 JSON schema/document 结构，不耦合应用页面、Vue 组件或 AI 会话状态。\nAI用途：校验或标准化配置 schema 时，用本模块确认 JSON 文档层的规则来源。\n\n═══════════════════════════════════════════════════════════════\ncore/parse.ts — JSON 文档解析与序列化\n═══════════════════════════════════════════════════════════════",
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
   "symbols": [],
   "models": {},
-  "generatedAt": "2026-06-11T12:20:26.832Z"
+  "generatedAt": "2026-06-11T16:38:13.017Z"
 }

@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/fields/data-components/composables/useControlledFieldChange",
-    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useControlledFieldChange\n@spark-appworks/spark-component:components/fields/data-components/composables/useControlledFieldChange 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: FieldValueUpdateEmitter, FieldValueUpdateEmits, UseControlledFieldChangeOptions（共 3 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useControlledFieldChange\n职责：提供 useControlledFieldChange（未注册组件类型）相关的组合式状态或行为封装，复用字段值、选项、权限、动作和交互控制逻辑。\n边界：只服务 field-level/data-field 的 setup/runtime 组合，不直接声明页面配置，也不替代组件 props。\nAI用途：需要理解 use controlled field change 的响应式状态来源、值转换或事件副作用时，使用本模块定位实际运行规则。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "FieldValueUpdateEmitter",
@@ -27,7 +27,7 @@
     "FieldValueUpdateEmitter": {
       "kind": "FieldValueUpdateEmitter",
       "className": "FieldValueUpdateEmitter",
-      "jsdoc": "/** Field Value Update Emitter 的语义模型。 */",
+      "jsdoc": "Field Value Update Emitter 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    (event: 'update:modelValue', value: TValue): void;\n}",
       "provenance": {
@@ -45,7 +45,7 @@
     "FieldValueUpdateEmits": {
       "kind": "FieldValueUpdateEmits",
       "className": "FieldValueUpdateEmits",
-      "jsdoc": "/** Field Value Update Emits 的语义模型。 */",
+      "jsdoc": "Field Value Update Emits 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** update:model Value 字段。 */\n    'update:modelValue': [value: TValue];\n}",
       "provenance": {
@@ -60,22 +60,12 @@
       "attributes": [
         {
           "name": "update:modelValue",
+          "jsdoc": "update:model Value 字段。",
           "schema": {
-            "title": "[value: TValue]"
+            "type": "array"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** update:model Value 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.d.ts",
-            "line": 9,
-            "className": "FieldValueUpdateEmits",
-            "memberName": "update:modelValue",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -83,7 +73,7 @@
     "UseControlledFieldChangeOptions": {
       "kind": "UseControlledFieldChangeOptions",
       "className": "UseControlledFieldChangeOptions",
-      "jsdoc": "/** Use Controlled Field Change Options 的调用配置。 */",
+      "jsdoc": "Use Controlled Field Change Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** get Value 回调。 */\n    getValue: () => TValue;\n    /** emit Update 回调。 */\n    emitUpdate: (value: TValue) => void;\n    /** sync Value 回调。 */\n    syncValue: (value: TValue) => void;\n    /** after Default 回调。 */\n    afterDefault?: (nextValue: TValue, previousValue: TValue) => void | Promise<void>;\n    /** handler Source 字段。 */\n    handlerSource?: Readonly<Record<string, unknown>>;\n}",
       "provenance": {
@@ -98,102 +88,101 @@
       "attributes": [
         {
           "name": "getValue",
+          "jsdoc": "get Value 回调。",
           "schema": {
+            "type": "object",
             "title": "() => TValue"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** get Value 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.d.ts",
-            "line": 15,
-            "className": "UseControlledFieldChangeOptions",
-            "memberName": "getValue",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "emitUpdate",
+          "jsdoc": "emit Update 回调。",
           "schema": {
+            "type": "object",
             "title": "(value: TValue) => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** emit Update 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.d.ts",
-            "line": 17,
-            "className": "UseControlledFieldChangeOptions",
-            "memberName": "emitUpdate",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "syncValue",
+          "jsdoc": "sync Value 回调。",
           "schema": {
+            "type": "object",
             "title": "(value: TValue) => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** sync Value 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.d.ts",
-            "line": 19,
-            "className": "UseControlledFieldChangeOptions",
-            "memberName": "syncValue",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "afterDefault",
+          "jsdoc": "after Default 回调。",
           "schema": {
+            "type": "object",
             "title": "(nextValue: TValue, previousValue: TValue) => void | Promise<void>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** after Default 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.d.ts",
-            "line": 21,
-            "className": "UseControlledFieldChangeOptions",
-            "memberName": "afterDefault",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "handlerSource",
+          "jsdoc": "handler Source 字段。",
           "schema": {
+            "type": "object",
             "title": "Readonly<Record<string, unknown>>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** handler Source 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useControlledFieldChange.d.ts",
-            "line": 23,
-            "className": "UseControlledFieldChangeOptions",
-            "memberName": "handlerSource",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.438Z"
+  "generatedAt": "2026-06-11T16:38:12.823Z",
+  "$defs": {
+    "FieldValueUpdateEmitter": {
+      "type": "object",
+      "title": "FieldValueUpdateEmitter",
+      "description": "Field Value Update Emitter 的语义模型。"
+    },
+    "FieldValueUpdateEmits": {
+      "type": "object",
+      "title": "FieldValueUpdateEmits",
+      "description": "Field Value Update Emits 的语义模型。",
+      "properties": {
+        "update:modelValue": {
+          "type": "array"
+        }
+      }
+    },
+    "UseControlledFieldChangeOptions": {
+      "type": "object",
+      "title": "UseControlledFieldChangeOptions",
+      "description": "Use Controlled Field Change Options 的调用配置。",
+      "properties": {
+        "getValue": {
+          "type": "object",
+          "title": "() => TValue"
+        },
+        "emitUpdate": {
+          "type": "object",
+          "title": "(value: TValue) => void"
+        },
+        "syncValue": {
+          "type": "object",
+          "title": "(value: TValue) => void"
+        },
+        "afterDefault": {
+          "type": "object",
+          "title": "(nextValue: TValue, previousValue: TValue) => void | Promise<void>"
+        },
+        "handlerSource": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        }
+      }
+    }
+  }
 }

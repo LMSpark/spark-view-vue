@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/page/renderer/scopeCSS.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "page/renderer/scopeCSS",
-    "jsdoc": "CSS 作用域隔离工具",
+    "jsdoc": "@module @spark-appworks/spark-component:page/renderer/scopeCSS\n职责：提供 scope CSS 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "CssScopeOptions"
@@ -20,53 +20,52 @@
     "CssScopeOptions": {
       "kind": "CssScopeOptions",
       "className": "CssScopeOptions",
-      "jsdoc": "/**\n * CSS 作用域选项\n */",
+      "jsdoc": "CSS 作用域选项",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** css 字段。 */\n    css: string;\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/page/renderer/scopeCSS.d.ts",
-        "line": 7,
+        "line": 13,
         "className": "CssScopeOptions",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "pageId",
+          "jsdoc": "page Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** page Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/page/renderer/scopeCSS.d.ts",
-            "line": 9,
-            "className": "CssScopeOptions",
-            "memberName": "pageId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "css",
+          "jsdoc": "css 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** css 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/page/renderer/scopeCSS.d.ts",
-            "line": 11,
-            "className": "CssScopeOptions",
-            "memberName": "css",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.650Z"
+  "generatedAt": "2026-06-11T16:38:12.906Z",
+  "$defs": {
+    "CssScopeOptions": {
+      "type": "object",
+      "title": "CssScopeOptions",
+      "description": "CSS 作用域选项",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "css": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-app/src/navigation/useColorScheme.ts",
     "packageName": "@spark-appworks/spark-app",
     "modulePath": "navigation/useColorScheme",
-    "jsdoc": "@module @spark-appworks/spark-app:navigation/useColorScheme\n@spark-appworks/spark-app 的 navigation/useColorScheme 模块。\n导出 ClassModel symbol: PrimaryPreset, NavColorSet, NavPreset, StyleColorSet, StylePreset（共 5 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-app:navigation/useColorScheme\n职责：提供应用壳层 useColorScheme 能力，围绕 PrimaryPreset、NavColorSet、NavPreset 等 5 个公开契约 连接导航、认证、插件、主题或 AI 宿主接线。\n边界：只负责 spark-app 基础设施和运行时接线，不定义底层 DataSet，也不实现组件渲染细节。\nAI用途：需要理解应用层如何把路由、服务和组件系统组装起来时，用本模块定位 navigation/useColorScheme。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "PrimaryPreset",
@@ -28,7 +28,7 @@
     "PrimaryPreset": {
       "kind": "PrimaryPreset",
       "className": "PrimaryPreset",
-      "jsdoc": "/** Primary Preset 的语义模型。 */",
+      "jsdoc": "Primary Preset 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 显示或业务名称。 */\n    name: string;\n    /** color 字段。 */\n    color: string;\n}",
       "provenance": {
@@ -40,37 +40,21 @@
       "attributes": [
         {
           "name": "name",
+          "jsdoc": "显示或业务名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 显示或业务名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 4,
-            "className": "PrimaryPreset",
-            "memberName": "name",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "color",
+          "jsdoc": "color 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** color 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 6,
-            "className": "PrimaryPreset",
-            "memberName": "color",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -78,7 +62,7 @@
     "NavColorSet": {
       "kind": "NavColorSet",
       "className": "NavColorSet",
-      "jsdoc": "/** Nav Color Set 的语义模型。 */",
+      "jsdoc": "Nav Color Set 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** header Bg 字段。 */\n    headerBg: string;\n    /** sidebar Bg 字段。 */\n    sidebarBg: string;\n    /** text Color 字段。 */\n    textColor: string;\n}",
       "provenance": {
@@ -90,54 +74,30 @@
       "attributes": [
         {
           "name": "headerBg",
+          "jsdoc": "header Bg 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** header Bg 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 11,
-            "className": "NavColorSet",
-            "memberName": "headerBg",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "sidebarBg",
+          "jsdoc": "sidebar Bg 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** sidebar Bg 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 13,
-            "className": "NavColorSet",
-            "memberName": "sidebarBg",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "textColor",
+          "jsdoc": "text Color 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** text Color 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 15,
-            "className": "NavColorSet",
-            "memberName": "textColor",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -145,7 +105,7 @@
     "NavPreset": {
       "kind": "NavPreset",
       "className": "NavPreset",
-      "jsdoc": "/** Nav Preset 的语义模型。 */",
+      "jsdoc": "Nav Preset 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 显示或业务名称。 */\n    name: string;\n    /** color 字段。 */\n    color: string;\n    /** light 字段。 */\n    light: NavColorSet;\n    /** dark 字段。 */\n    dark: NavColorSet;\n}",
       "provenance": {
@@ -157,69 +117,39 @@
       "attributes": [
         {
           "name": "name",
+          "jsdoc": "显示或业务名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 显示或业务名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 20,
-            "className": "NavPreset",
-            "memberName": "name",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "color",
+          "jsdoc": "color 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** color 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 22,
-            "className": "NavPreset",
-            "memberName": "color",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "light",
+          "jsdoc": "light 字段。",
           "schema": {
-            "title": "NavColorSet"
+            "$ref": "#/$defs/NavColorSet"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** light 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 24,
-            "className": "NavPreset",
-            "memberName": "light",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "dark",
+          "jsdoc": "dark 字段。",
           "schema": {
-            "title": "NavColorSet"
+            "$ref": "#/$defs/NavColorSet"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** dark 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 26,
-            "className": "NavPreset",
-            "memberName": "dark",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -227,7 +157,7 @@
     "StyleColorSet": {
       "kind": "StyleColorSet",
       "className": "StyleColorSet",
-      "jsdoc": "/** Style Color Set 的语义模型。 */",
+      "jsdoc": "Style Color Set 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** bg 字段。 */\n    bg: string;\n    /** 当前页码。 */\n    page: string;\n    /** overlay 字段。 */\n    overlay: string;\n    /** soft 字段。 */\n    soft: string;\n    /** sunken 字段。 */\n    sunken: string;\n    /** hover 字段。 */\n    hover: string;\n    /** selected 字段。 */\n    selected: string;\n    /** text Primary 字段。 */\n    textPrimary: string;\n    /** text Regular 字段。 */\n    textRegular: string;\n    /** text Secondary 字段。 */\n    textSecondary: string;\n    /** text Placeholder 字段。 */\n    textPlaceholder: string;\n    /** border 字段。 */\n    border: string;\n    /** border Light 字段。 */\n    borderLight: string;\n    /** divider 字段。 */\n    divider: string;\n    /** chrome Border 字段。 */\n    chromeBorder: string;\n    /** control Bg 字段。 */\n    controlBg: string;\n    /** control Border 字段。 */\n    controlBorder: string;\n    /** control Border Hover 字段。 */\n    controlBorderHover: string;\n    /** shadow 字段。 */\n    shadow: string;\n    /** shadow Light 字段。 */\n    shadowLight: string;\n    /** shadow Panel 字段。 */\n    shadowPanel: string;\n    /** scrollbar Thumb 字段。 */\n    scrollbarThumb: string;\n    /** scrollbar Thumb Hover 字段。 */\n    scrollbarThumbHover: string;\n}",
       "provenance": {
@@ -239,394 +169,210 @@
       "attributes": [
         {
           "name": "bg",
+          "jsdoc": "bg 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** bg 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 31,
-            "className": "StyleColorSet",
-            "memberName": "bg",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "page",
+          "jsdoc": "当前页码。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前页码。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 33,
-            "className": "StyleColorSet",
-            "memberName": "page",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "overlay",
+          "jsdoc": "overlay 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** overlay 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 35,
-            "className": "StyleColorSet",
-            "memberName": "overlay",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "soft",
+          "jsdoc": "soft 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** soft 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 37,
-            "className": "StyleColorSet",
-            "memberName": "soft",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "sunken",
+          "jsdoc": "sunken 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** sunken 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 39,
-            "className": "StyleColorSet",
-            "memberName": "sunken",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "hover",
+          "jsdoc": "hover 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** hover 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 41,
-            "className": "StyleColorSet",
-            "memberName": "hover",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "selected",
+          "jsdoc": "selected 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** selected 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 43,
-            "className": "StyleColorSet",
-            "memberName": "selected",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "textPrimary",
+          "jsdoc": "text Primary 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** text Primary 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 45,
-            "className": "StyleColorSet",
-            "memberName": "textPrimary",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "textRegular",
+          "jsdoc": "text Regular 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** text Regular 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 47,
-            "className": "StyleColorSet",
-            "memberName": "textRegular",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "textSecondary",
+          "jsdoc": "text Secondary 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** text Secondary 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 49,
-            "className": "StyleColorSet",
-            "memberName": "textSecondary",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "textPlaceholder",
+          "jsdoc": "text Placeholder 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** text Placeholder 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 51,
-            "className": "StyleColorSet",
-            "memberName": "textPlaceholder",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "border",
+          "jsdoc": "border 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** border 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 53,
-            "className": "StyleColorSet",
-            "memberName": "border",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "borderLight",
+          "jsdoc": "border Light 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** border Light 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 55,
-            "className": "StyleColorSet",
-            "memberName": "borderLight",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "divider",
+          "jsdoc": "divider 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** divider 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 57,
-            "className": "StyleColorSet",
-            "memberName": "divider",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "chromeBorder",
+          "jsdoc": "chrome Border 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** chrome Border 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 59,
-            "className": "StyleColorSet",
-            "memberName": "chromeBorder",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "controlBg",
+          "jsdoc": "control Bg 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** control Bg 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 61,
-            "className": "StyleColorSet",
-            "memberName": "controlBg",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "controlBorder",
+          "jsdoc": "control Border 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** control Border 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 63,
-            "className": "StyleColorSet",
-            "memberName": "controlBorder",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "controlBorderHover",
+          "jsdoc": "control Border Hover 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** control Border Hover 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 65,
-            "className": "StyleColorSet",
-            "memberName": "controlBorderHover",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "shadow",
+          "jsdoc": "shadow 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** shadow 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 67,
-            "className": "StyleColorSet",
-            "memberName": "shadow",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "shadowLight",
+          "jsdoc": "shadow Light 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** shadow Light 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 69,
-            "className": "StyleColorSet",
-            "memberName": "shadowLight",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "shadowPanel",
+          "jsdoc": "shadow Panel 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** shadow Panel 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 71,
-            "className": "StyleColorSet",
-            "memberName": "shadowPanel",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "scrollbarThumb",
+          "jsdoc": "scrollbar Thumb 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** scrollbar Thumb 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 73,
-            "className": "StyleColorSet",
-            "memberName": "scrollbarThumb",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "scrollbarThumbHover",
+          "jsdoc": "scrollbar Thumb Hover 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** scrollbar Thumb Hover 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 75,
-            "className": "StyleColorSet",
-            "memberName": "scrollbarThumbHover",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -634,7 +380,7 @@
     "StylePreset": {
       "kind": "StylePreset",
       "className": "StylePreset",
-      "jsdoc": "/** Style Preset 的语义模型。 */",
+      "jsdoc": "Style Preset 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 显示或业务名称。 */\n    name: string;\n    /** description 字段。 */\n    description: string;\n    /** icon 字段。 */\n    icon: string;\n    /** primary Color 字段。 */\n    primaryColor: string;\n    /** nav Index 字段。 */\n    navIndex: number;\n    /** light 字段。 */\n    light: StyleColorSet;\n    /** dark 字段。 */\n    dark: StyleColorSet;\n}",
       "provenance": {
@@ -646,124 +392,224 @@
       "attributes": [
         {
           "name": "name",
+          "jsdoc": "显示或业务名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 显示或业务名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 80,
-            "className": "StylePreset",
-            "memberName": "name",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "description",
+          "jsdoc": "description 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** description 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 82,
-            "className": "StylePreset",
-            "memberName": "description",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "icon",
+          "jsdoc": "icon 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** icon 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 84,
-            "className": "StylePreset",
-            "memberName": "icon",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "primaryColor",
+          "jsdoc": "primary Color 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** primary Color 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 86,
-            "className": "StylePreset",
-            "memberName": "primaryColor",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "navIndex",
+          "jsdoc": "nav Index 字段。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** nav Index 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 88,
-            "className": "StylePreset",
-            "memberName": "navIndex",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "light",
+          "jsdoc": "light 字段。",
           "schema": {
-            "title": "StyleColorSet"
+            "$ref": "#/$defs/StyleColorSet"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** light 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 90,
-            "className": "StylePreset",
-            "memberName": "light",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "dark",
+          "jsdoc": "dark 字段。",
           "schema": {
-            "title": "StyleColorSet"
+            "$ref": "#/$defs/StyleColorSet"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** dark 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/useColorScheme.d.ts",
-            "line": 92,
-            "className": "StylePreset",
-            "memberName": "dark",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.941Z"
+  "generatedAt": "2026-06-11T16:38:12.635Z",
+  "$defs": {
+    "PrimaryPreset": {
+      "type": "object",
+      "title": "PrimaryPreset",
+      "description": "Primary Preset 的语义模型。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        }
+      }
+    },
+    "NavColorSet": {
+      "type": "object",
+      "title": "NavColorSet",
+      "description": "Nav Color Set 的语义模型。",
+      "properties": {
+        "headerBg": {
+          "type": "string"
+        },
+        "sidebarBg": {
+          "type": "string"
+        },
+        "textColor": {
+          "type": "string"
+        }
+      }
+    },
+    "NavPreset": {
+      "type": "object",
+      "title": "NavPreset",
+      "description": "Nav Preset 的语义模型。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "light": {
+          "$ref": "#/$defs/NavColorSet"
+        },
+        "dark": {
+          "$ref": "#/$defs/NavColorSet"
+        }
+      }
+    },
+    "StyleColorSet": {
+      "type": "object",
+      "title": "StyleColorSet",
+      "description": "Style Color Set 的语义模型。",
+      "properties": {
+        "bg": {
+          "type": "string"
+        },
+        "page": {
+          "type": "string"
+        },
+        "overlay": {
+          "type": "string"
+        },
+        "soft": {
+          "type": "string"
+        },
+        "sunken": {
+          "type": "string"
+        },
+        "hover": {
+          "type": "string"
+        },
+        "selected": {
+          "type": "string"
+        },
+        "textPrimary": {
+          "type": "string"
+        },
+        "textRegular": {
+          "type": "string"
+        },
+        "textSecondary": {
+          "type": "string"
+        },
+        "textPlaceholder": {
+          "type": "string"
+        },
+        "border": {
+          "type": "string"
+        },
+        "borderLight": {
+          "type": "string"
+        },
+        "divider": {
+          "type": "string"
+        },
+        "chromeBorder": {
+          "type": "string"
+        },
+        "controlBg": {
+          "type": "string"
+        },
+        "controlBorder": {
+          "type": "string"
+        },
+        "controlBorderHover": {
+          "type": "string"
+        },
+        "shadow": {
+          "type": "string"
+        },
+        "shadowLight": {
+          "type": "string"
+        },
+        "shadowPanel": {
+          "type": "string"
+        },
+        "scrollbarThumb": {
+          "type": "string"
+        },
+        "scrollbarThumbHover": {
+          "type": "string"
+        }
+      }
+    },
+    "StylePreset": {
+      "type": "object",
+      "title": "StylePreset",
+      "description": "Style Preset 的语义模型。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "primaryColor": {
+          "type": "string"
+        },
+        "navIndex": {
+          "type": "number"
+        },
+        "light": {
+          "$ref": "#/$defs/StyleColorSet"
+        },
+        "dark": {
+          "$ref": "#/$defs/StyleColorSet"
+        }
+      }
+    }
+  }
 }

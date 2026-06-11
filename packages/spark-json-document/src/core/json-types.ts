@@ -1,15 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * core/json-types.ts — JSON 基础值类型（单一事实源 SSOT）
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】最底层基础类型，被 schema/ 和 tree/ 两层共同依赖。
- *   本文件不依赖包内任何其他模块。
- *
- * 【设计决策】
- *   - 统一 JSON 值类型定义，消除 spark-ai 的 AiJsonValue/AiJsonObject 重复定义。
- *   - 旧 AiJsonValue/AiJsonObject/AiJsonParams 名称在 spark-ai/json 中保留为 deprecated alias。
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-json-document:core/json-types
+ * 职责：提供 JSON Document/schema 处理中的 json types 能力，支撑 schema 标准化、审计和元数据保留。
+ * 边界：只处理 JSON schema/document 结构，不耦合应用页面、Vue 组件或 AI 会话状态。
+ * AI用途：校验或标准化配置 schema 时，用本模块确认 JSON 文档层的规则来源。
  */
 
 import { isRecord } from '@spark-appworks/spark-utils'

@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/data-views/RendererVirtualCard/zero-code",
-    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererVirtualCard/zero-code\nRendererVirtualCard 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: RendererVirtualCardZeroCodeOptions（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererVirtualCard/zero-code\n职责：封装 RendererVirtualCard（r-virtual-card）的 zero-code 行为层，向配置动作和脚本暴露稳定的组件操作 API。\n边界：只编排 table-level/data-view-container 的运行时能力、原生组件引用和事件控制，不声明视觉 props，也不持久化业务数据。\nAI用途：当动作、脚本或 ClassModel 需要调用 renderer virtual card 的选择、刷新、编辑、分页或树/表操作时，使用本模块确认 API 语义。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "RendererVirtualCardZeroCodeOptions"
@@ -25,7 +25,7 @@
     "RendererVirtualCardZeroCodeOptions": {
       "kind": "RendererVirtualCardZeroCodeOptions",
       "className": "RendererVirtualCardZeroCodeOptions",
-      "jsdoc": "/** 创建 r-virtual-card zero-code API 和事件派发桥接所需的运行时输入。 */",
+      "jsdoc": "创建 r-virtual-card zero-code API 和事件派发桥接所需的运行时输入。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** r-virtual-card 的组件属性集合，包含事件回调和配置透传。 */\n    props: Readonly<Record<string, unknown>>;\n    /** 当前解析出的 DataView。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** 当前可见或缓存中的卡片行数据。 */\n    rows: ValueRef<readonly DataRow[]>;\n    /** 已缓存的页码集合。 */\n    cachedPages: ValueRef<readonly number[]>;\n    /** 正在加载的页码集合。 */\n    pendingPages: ValueRef<readonly number[]>;\n    /** 当前视口附近需要渲染的页码集合。 */\n    visiblePages: ValueRef<readonly number[]>;\n    /** 当前滚动位置对应的页码。 */\n    currentPage: ValueRef<number>;\n    /** 当前数据集总页数。 */\n    totalPages: ValueRef<number>;\n    /** 滚动进度文本。 */\n    progressText: ValueRef<string>;\n    /** 当前虚拟分页加载策略说明。 */\n    loadPolicyText: ValueRef<string>;\n    /** 最近一次滚轮跳页状态说明。 */\n    wheelStatusText: ValueRef<string>;\n    /** 滚动到指定页并触发必要加载。 */\n    scrollToPage: (page: number) => Promise<void>;\n    /** 清空分页缓存并重新加载当前页。 */\n    clearCache: () => void;\n}",
       "provenance": {
@@ -42,280 +42,198 @@
       "attributes": [
         {
           "name": "props",
+          "jsdoc": "r-virtual-card 的组件属性集合，包含事件回调和配置透传。",
           "schema": {
+            "type": "object",
             "title": "Readonly<Record<string, unknown>>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** r-virtual-card 的组件属性集合，包含事件回调和配置透传。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 13,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "props",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "resolvedView",
+          "jsdoc": "当前解析出的 DataView。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<DataView | null>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前解析出的 DataView。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 15,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "resolvedView",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "rows",
+          "jsdoc": "当前可见或缓存中的卡片行数据。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<readonly DataRow[]>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前可见或缓存中的卡片行数据。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 17,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "rows",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "cachedPages",
+          "jsdoc": "已缓存的页码集合。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<readonly number[]>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 已缓存的页码集合。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 19,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "cachedPages",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "pendingPages",
+          "jsdoc": "正在加载的页码集合。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<readonly number[]>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 正在加载的页码集合。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 21,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "pendingPages",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "visiblePages",
+          "jsdoc": "当前视口附近需要渲染的页码集合。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<readonly number[]>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前视口附近需要渲染的页码集合。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 23,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "visiblePages",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "currentPage",
+          "jsdoc": "当前滚动位置对应的页码。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<number>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前滚动位置对应的页码。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 25,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "currentPage",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "totalPages",
+          "jsdoc": "当前数据集总页数。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<number>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前数据集总页数。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 27,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "totalPages",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "progressText",
+          "jsdoc": "滚动进度文本。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<string>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 滚动进度文本。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 29,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "progressText",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "loadPolicyText",
+          "jsdoc": "当前虚拟分页加载策略说明。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<string>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前虚拟分页加载策略说明。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 31,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "loadPolicyText",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "wheelStatusText",
+          "jsdoc": "最近一次滚轮跳页状态说明。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<string>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 最近一次滚轮跳页状态说明。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 33,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "wheelStatusText",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "scrollToPage",
+          "jsdoc": "滚动到指定页并触发必要加载。",
           "schema": {
+            "type": "object",
             "title": "(page: number) => Promise<void>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 滚动到指定页并触发必要加载。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 35,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "scrollToPage",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "clearCache",
+          "jsdoc": "清空分页缓存并重新加载当前页。",
           "schema": {
+            "type": "object",
             "title": "() => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 清空分页缓存并重新加载当前页。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
-            "line": 37,
-            "className": "RendererVirtualCardZeroCodeOptions",
-            "memberName": "clearCache",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.100Z"
+  "generatedAt": "2026-06-11T16:38:12.703Z",
+  "$defs": {
+    "RendererVirtualCardZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererVirtualCardZeroCodeOptions",
+      "description": "创建 r-virtual-card zero-code API 和事件派发桥接所需的运行时输入。",
+      "properties": {
+        "props": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        },
+        "resolvedView": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<DataView | null>"
+        },
+        "rows": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<readonly DataRow[]>"
+        },
+        "cachedPages": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<readonly number[]>"
+        },
+        "pendingPages": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<readonly number[]>"
+        },
+        "visiblePages": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<readonly number[]>"
+        },
+        "currentPage": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<number>"
+        },
+        "totalPages": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<number>"
+        },
+        "progressText": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<string>"
+        },
+        "loadPolicyText": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<string>"
+        },
+        "wheelStatusText": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<string>"
+        },
+        "scrollToPage": {
+          "type": "object",
+          "title": "(page: number) => Promise<void>"
+        },
+        "clearCache": {
+          "type": "object",
+          "title": "() => void"
+        }
+      }
+    }
+  }
 }

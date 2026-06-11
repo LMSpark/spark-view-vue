@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-utils/src/http/Request.ts",
     "packageName": "@spark-appworks/spark-utils",
     "modulePath": "http/Request",
-    "jsdoc": "Request — 基于 axios 的 HTTP 客户端\n继承 HttpClientBase（重试/缓存/拦截器/快捷方法），\n仅实现 axios 特有的：配置转换 + 请求执行 + 错误归一化。",
+    "jsdoc": "@module @spark-appworks/spark-utils:http/Request\n职责：提供框架无关的 Request 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。\n边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。\nAI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。\n\nRequest — 基于 axios 的 HTTP 客户端\n继承 HttpClientBase（重试/缓存/拦截器/快捷方法），\n仅实现 axios 特有的：配置转换 + 请求执行 + 错误归一化。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "Request"
@@ -20,7 +20,7 @@
     "Request": {
       "kind": "Request",
       "className": "Request",
-      "jsdoc": "/** Request 的语义模型。 */",
+      "jsdoc": "Request 的语义模型。",
       "shapeKind": "class",
       "declarationRelations": [
         {
@@ -31,92 +31,103 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/Request.d.ts",
-        "line": 10,
+        "line": 16,
         "className": "Request",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "defaults": {
-              "title": "Partial<RequestConfig>"
+        "jsdoc": "创建 Request 实例。",
+        "signatureText": "constructor(defaults?: Partial<RequestConfig>)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "defaults",
+            "type": {
+              "type": "reference",
+              "name": "Partial",
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "name": "RequestConfig",
+                  "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+                }
+              ]
             }
-          },
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Request 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-utils/src/http/Request.d.ts",
-          "line": 13,
-          "className": "Request",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          }
+        ]
       },
       "attributes": [],
       "methods": [
         {
           "name": "executeRequest",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "config": {
-                "title": "RequestConfig"
+          "jsdoc": "执行 execute Request 操作。",
+          "signatureText": "protected executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "config",
+              "type": {
+                "type": "reference",
+                "name": "RequestConfig",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
               }
-            },
-            "required": [
-              "config"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<HttpResponse<unknown>>"
-          },
-          "returnTypeText": "Promise<HttpResponse<unknown>>",
-          "jsdoc": "/** 执行 execute Request 操作。 */",
-          "paramsTypeText": "config: RequestConfig",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/Request.d.ts",
-            "line": 15,
-            "className": "Request",
-            "memberName": "executeRequest",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "HttpResponse",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            ]
           }
         },
         {
           "name": "normalizeTransportError",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "err": {
-                "title": "unknown"
-              },
-              "config": {
-                "title": "RequestConfig"
+          "jsdoc": "normalize Transport Error 错误信息。",
+          "signatureText": "protected normalizeTransportError(err: unknown, config?: RequestConfig): RequestError",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "err",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
               }
             },
-            "required": [
-              "err"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "RequestError"
-          },
-          "returnTypeText": "RequestError",
-          "jsdoc": "/** normalize Transport Error 错误信息。 */",
-          "paramsTypeText": "err: unknown, config?: RequestConfig | undefined",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/Request.d.ts",
-            "line": 17,
-            "className": "Request",
-            "memberName": "normalizeTransportError",
-            "declarationKind": "class"
+            {
+              "name": "config",
+              "type": {
+                "type": "reference",
+                "name": "RequestConfig",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "RequestError",
+            "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.017Z"
+  "generatedAt": "2026-06-11T16:38:13.087Z",
+  "$defs": {
+    "Request": {
+      "type": "object",
+      "title": "Request",
+      "description": "Request 的语义模型。"
+    }
+  }
 }

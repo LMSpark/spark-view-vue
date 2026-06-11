@@ -1,7 +1,8 @@
 /**
  * @module app:views/app/dev-system/useDevState
- * app 的 views/app/dev-system/useDevState 模块。
- * 导出 ClassModel symbol: DevPageFileName, PageConfigPageSummary, NavigationNodeDraftNode, RunPageDesignAiOptions, EditableProjectOption, StatusMessage, DevContextConfig, DevWorkspaceTab 等（共 9 个 symbol）。
+ * 职责：提供 DevSystem 的 useDevState 能力，围绕 DevPageFileName、PageConfigPageSummary、NavigationNodeDraftNode 等 9 个公开契约 支撑配置调试、节点编辑、预览或开发态状态管理。
+ * 边界：只服务开发系统 UI 和调试流程，不作为运行中页面配置真源，也不绕过 ProjectWorkspace 保存链路。
+ * AI用途：需要理解开发系统如何编辑节点和文件时，用本模块定位 views/app/dev-system/useDevState。
  */
 /**
  * DevSystem — 当前编辑 scope 的导航设计器状态。

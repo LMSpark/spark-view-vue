@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-component:ai/components/SessionDiagnosticsPanel.props
- * @spark-appworks/spark-component 的 ai/components/SessionDiagnosticsPanel.props 模块。
- * 导出 ClassModel symbol: SessionDiagnosticsPanelProps（共 1 个 symbol）。
+ * 职责：维护 @spark-appworks/spark-component 中 ai/components/SessionDiagnosticsPanel.props 的模块能力，围绕 SessionDiagnosticsPanelProps 提供稳定的公开契约。
+ * 边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。
+ * AI用途：需要定位 ai/components/SessionDiagnosticsPanel.props 的声明、导出和使用边界时，从本模块开始。
  */
 import type { SessionDiagnosticsData } from '../types'
 

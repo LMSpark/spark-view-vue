@@ -7,7 +7,7 @@
     "sourceFile": "src/services/project-workspace.ts",
     "packageName": "app",
     "modulePath": "services/project-workspace",
-    "jsdoc": "APP 层 ProjectWorkspace 缓存。",
+    "jsdoc": "@module app:services/project-workspace\n职责：提供应用运行时 service 层的 project workspace 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nAPP 层 ProjectWorkspace 缓存。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ProjectWorkspaceScope"
@@ -20,53 +20,52 @@
     "ProjectWorkspaceScope": {
       "kind": "ProjectWorkspaceScope",
       "className": "ProjectWorkspaceScope",
-      "jsdoc": "/** Project Workspace Scope 的语义模型。 */",
+      "jsdoc": "Project Workspace Scope 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** project Id 标识。 */\n    projectId: string;\n}",
       "provenance": {
         "file": "declarations/src/services/project-workspace.d.ts",
-        "line": 8,
+        "line": 14,
         "className": "ProjectWorkspaceScope",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "tenantId",
+          "jsdoc": "tenant Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tenant Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/project-workspace.d.ts",
-            "line": 10,
-            "className": "ProjectWorkspaceScope",
-            "memberName": "tenantId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "projectId",
+          "jsdoc": "project Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** project Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/project-workspace.d.ts",
-            "line": 12,
-            "className": "ProjectWorkspaceScope",
-            "memberName": "projectId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.105Z"
+  "generatedAt": "2026-06-11T16:38:13.119Z",
+  "$defs": {
+    "ProjectWorkspaceScope": {
+      "type": "object",
+      "title": "ProjectWorkspaceScope",
+      "description": "Project Workspace Scope 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

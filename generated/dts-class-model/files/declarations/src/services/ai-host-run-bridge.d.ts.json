@@ -7,7 +7,7 @@
     "sourceFile": "src/services/ai-host-run-bridge.ts",
     "packageName": "app",
     "modulePath": "services/ai-host-run-bridge",
-    "jsdoc": "APP 层 Host Run 分布式桥接器。\n后端通过 APP 公共 SSE 定向下发 ai-host-run-request，本桥接器只负责\n校验平台载荷、调用本地 AiAgentHost.run(alias,args)、收集 trace 并提交回执。\n业务状态和业务流程编排仍由注册方与 LLM 协作完成，APP bridge 不理解具体能力。",
+    "jsdoc": "@module app:services/ai-host-run-bridge\n职责：提供应用运行时 service 层的 ai host run bridge 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nAPP 层 Host Run 分布式桥接器。\n后端通过 APP 公共 SSE 定向下发 ai-host-run-request，本桥接器只负责\n校验平台载荷、调用本地 AiAgentHost.run(alias,args)、收集 trace 并提交回执。\n业务状态和业务流程编排仍由注册方与 LLM 协作完成，APP bridge 不理解具体能力。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "AiHostRunTarget",
@@ -26,7 +26,7 @@
     "AiHostRunTarget": {
       "kind": "AiHostRunTarget",
       "className": "AiHostRunTarget",
-      "jsdoc": "/** Ai Host Run Target 的语义模型。 */",
+      "jsdoc": "Ai Host Run Target 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    has(alias: string): boolean;\n    dryRun(alias: string, args: unknown): AiAgentHostDryRunResult;\n    run(alias: string, args: AiJsonParams, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
       "declarationRelations": [
@@ -38,7 +38,7 @@
       ],
       "provenance": {
         "file": "declarations/src/services/ai-host-run-bridge.d.ts",
-        "line": 12,
+        "line": 18,
         "className": "AiHostRunTarget",
         "declarationKind": "type"
       },
@@ -48,12 +48,12 @@
     "AiHostRunPrepare": {
       "kind": "AiHostRunPrepare",
       "className": "AiHostRunPrepare",
-      "jsdoc": "/** Ai Host Run Prepare 的语义模型。 */",
+      "jsdoc": "Ai Host Run Prepare 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "(event: AiHostRunRequestEvent, host: THost) => AiHostRunTarget | Promise<AiHostRunTarget>",
       "provenance": {
         "file": "declarations/src/services/ai-host-run-bridge.d.ts",
-        "line": 18,
+        "line": 24,
         "className": "AiHostRunPrepare",
         "declarationKind": "type"
       },
@@ -63,7 +63,7 @@
     "AiHostRunBridgeOptions": {
       "kind": "AiHostRunBridgeOptions",
       "className": "AiHostRunBridgeOptions",
-      "jsdoc": "/** Ai Host Run Bridge Options 的调用配置。 */",
+      "jsdoc": "Ai Host Run Bridge Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    host: THost;\n    prepareRun?: AiHostRunPrepare<THost>;\n    defaultTimeoutMs?: number;\n    maxParallelRuns?: number;\n}>",
       "declarationRelations": [
@@ -75,7 +75,7 @@
       ],
       "provenance": {
         "file": "declarations/src/services/ai-host-run-bridge.d.ts",
-        "line": 20,
+        "line": 26,
         "className": "AiHostRunBridgeOptions",
         "declarationKind": "type"
       },
@@ -85,7 +85,7 @@
     "AiHostRunBridge": {
       "kind": "AiHostRunBridge",
       "className": "AiHostRunBridge",
-      "jsdoc": "/** Ai Host Run Bridge 的语义模型。 */",
+      "jsdoc": "Ai Host Run Bridge 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    start(): () => void;\n}>",
       "declarationRelations": [
@@ -97,7 +97,7 @@
       ],
       "provenance": {
         "file": "declarations/src/services/ai-host-run-bridge.d.ts",
-        "line": 27,
+        "line": 33,
         "className": "AiHostRunBridge",
         "declarationKind": "type"
       },
@@ -105,5 +105,27 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.065Z"
+  "generatedAt": "2026-06-11T16:38:13.101Z",
+  "$defs": {
+    "AiHostRunTarget": {
+      "type": "object",
+      "title": "AiHostRunTarget",
+      "description": "Ai Host Run Target 的语义模型。"
+    },
+    "AiHostRunPrepare": {
+      "type": "object",
+      "title": "AiHostRunPrepare",
+      "description": "Ai Host Run Prepare 的语义模型。"
+    },
+    "AiHostRunBridgeOptions": {
+      "type": "object",
+      "title": "AiHostRunBridgeOptions",
+      "description": "Ai Host Run Bridge Options 的调用配置。"
+    },
+    "AiHostRunBridge": {
+      "type": "object",
+      "title": "AiHostRunBridge",
+      "description": "Ai Host Run Bridge 的语义模型。"
+    }
+  }
 }

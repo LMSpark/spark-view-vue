@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/layout/RendererCollapse/RendererCollapse.props.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/layout/RendererCollapse/RendererCollapse.props",
-    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererCollapse/RendererCollapse.props\nRendererCollapse 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: RCollapseProps（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererCollapse/RendererCollapse.props\n职责：定义 RendererCollapse（r-collapse）的配置属性契约，把页面 JSON 中的字段、数据绑定、显示选项和交互开关约束成可生成的类型。\n边界：只描述 container/layout-container 组件的声明式配置，不读取 DataSet、不触发运行时事件，也不直接渲染 DOM。\nAI用途：生成或修订页面配置时，用本模块判断 renderer collapse 允许哪些 props、哪些字段属于数据绑定，避免把运行时 API 写进配置。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "RCollapseProps"
@@ -25,7 +25,7 @@
     "RCollapseProps": {
       "kind": "RCollapseProps",
       "className": "RCollapseProps",
-      "jsdoc": "/** RCollapse Props 的属性契约。 */",
+      "jsdoc": "RCollapse Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "SparkNodeProps & {\n    /** 结构化工具栏 */\n    toolbar?: RToolbarProps;\n    /** 当前展开的面板 */\n    modelValue?: string | number | Array<string | number>;\n    /** 展开/折叠切换回调 */\n    onChange?: (value: string | number | Array<string | number>) => void;\n}",
       "declarationRelations": [
@@ -53,70 +53,94 @@
       "attributes": [
         {
           "name": "toolbar",
+          "jsdoc": "结构化工具栏",
           "schema": {
-            "title": "RToolbarProps"
+            "$ref": "../RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 结构化工具栏 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapse/RendererCollapse.props.d.ts",
-            "line": 12,
-            "className": "RCollapseProps",
-            "memberName": "toolbar",
-            "declarationKind": "interface",
-            "componentName": "RendererCollapse",
-            "componentType": "r-collapse",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         },
         {
           "name": "modelValue",
+          "jsdoc": "当前展开的面板",
           "schema": {
-            "title": "string | number | Array<string | number>"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 当前展开的面板 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapse/RendererCollapse.props.d.ts",
-            "line": 14,
-            "className": "RCollapseProps",
-            "memberName": "modelValue",
-            "declarationKind": "interface",
-            "componentName": "RendererCollapse",
-            "componentType": "r-collapse",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         },
         {
           "name": "onChange",
+          "jsdoc": "展开/折叠切换回调",
           "schema": {
+            "type": "object",
             "title": "(value: string | number | Array<string | number>) => void"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 展开/折叠切换回调 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapse/RendererCollapse.props.d.ts",
-            "line": 16,
-            "className": "RCollapseProps",
-            "memberName": "onChange",
-            "declarationKind": "interface",
-            "componentName": "RendererCollapse",
-            "componentType": "r-collapse",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.143Z"
+  "generatedAt": "2026-06-11T16:38:12.721Z",
+  "$defs": {
+    "RCollapseProps": {
+      "type": "object",
+      "title": "RCollapseProps",
+      "description": "RCollapse Props 的属性契约。",
+      "properties": {
+        "toolbar": {
+          "$ref": "../RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+        },
+        "modelValue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "onChange": {
+          "type": "object",
+          "title": "(value: string | number | Array<string | number>) => void"
+        }
+      }
+    }
+  }
 }

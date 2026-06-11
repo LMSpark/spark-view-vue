@@ -1,21 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/transport/app-sse-events.ts — APP 层 SSE 事件类型定义
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Agent 传输层的 SSE 事件契约。定义 APP 层推送事件的基础类型
- *   和事件名枚举。本文件不依赖任何框架，是 spark-ai 与 APP 层的双向契约。
- *
- * 【核心类型】
- *   AiAgentAppSseEventName  — SSE 事件名联合类型（业务事件 + llm-frame + 通配后缀）
- *   AiAgentAppSseEvent<T>   — SSE 事件结构（name / ok / data / raw 字段）
- *
- * 【事件分类】
- *   业务事件：page-config / data-batch-job / data-change / notification
- *   AI 事件：ai-host-run-* / llm-frame（承载 APP 侧执行请求与模型 turn 帧）
- *
- * 【消费方】turn-event-collector（监听 llm-frame）、APP 层 SSE 实现
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/transport/app-sse-events
+ * 职责：定义 Agent transport 层的 app sse events 协议，把 session/tool-loop 事件投影为应用可消费事件。
+ * 边界：只描述传输事件和回调契约，不实现业务注册、不保存会话，也不渲染 UI。
+ * AI用途：对齐 SSE、turn callback 或前端事件消费字段时，用本模块确认传输边界。
  */
 
 import type { ApiEnvelopeContext, ApiEnvelopeEvent } from '@spark-appworks/spark-utils'

@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-utils/src/snapshot-history.ts",
     "packageName": "@spark-appworks/spark-utils",
     "modulePath": "snapshot-history",
-    "jsdoc": "@module @spark-appworks/spark-utils:snapshot-history\n@spark-appworks/spark-utils 的 snapshot-history 模块。\n导出 ClassModel symbol: SnapshotHistory（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-utils:snapshot-history\n职责：提供框架无关基础设施 snapshot-history 能力，围绕 SnapshotHistory 支撑 capability、HTTP、日志、脚本类型或历史快照。\n边界：保持底层工具包纯净，不依赖 Vue、spark-data 或应用壳层，也不承载业务配置。\nAI用途：需要跨包复用基础能力或确认底层协议时，用本模块理解 snapshot-history。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "SnapshotHistory"
@@ -20,129 +20,112 @@
     "SnapshotHistory": {
       "kind": "SnapshotHistory",
       "className": "SnapshotHistory",
-      "jsdoc": "/**\n * 通用快照历史管理器 — push / undo / redo / cursor。\n *\n * 设计目标：\n * 1. 纯 TypeScript，零框架依赖。\n * 2. 供 SparkNodeTree 和 DataSetCrudTool 共用，消除重复的 _history[] + _cursor 模式。\n * 3. 内存级轻量快照，非持久化（StorageAdapter 面向 localStorage，不同场景）。\n */",
+      "jsdoc": "通用快照历史管理器 — push / undo / redo / cursor。\n设计目标：\n1. 纯 TypeScript，零框架依赖。\n2. 供 SparkNodeTree 和 DataSetCrudTool 共用，消除重复的 _history[] + _cursor 模式。\n3. 内存级轻量快照，非持久化（StorageAdapter 面向 localStorage，不同场景）。",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
-        "line": 14,
+        "line": 15,
         "className": "SnapshotHistory",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "_limit": {
-              "type": "number",
-              "title": "number"
+        "jsdoc": "创建 Snapshot History 实例。",
+        "signatureText": "constructor(_limit?: number)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "_limit",
+            "type": {
+              "type": "intrinsic",
+              "name": "number"
             }
-          },
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Snapshot History 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
-          "line": 19,
-          "className": "SnapshotHistory",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          }
+        ]
       },
       "attributes": [],
       "methods": [
         {
           "name": "push",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "snapshot": {
-                "title": "T"
+          "jsdoc": "追加快照。截断 cursor 之后的前进条目（标准分支语义），超出限额时移除最旧条目。",
+          "signatureText": "push(snapshot: T): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "snapshot",
+              "type": {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
               }
-            },
-            "required": [
-              "snapshot"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/**\n     * 追加快照。截断 cursor 之后的前进条目（标准分支语义），超出限额时移除最旧条目。\n     */",
-          "paramsTypeText": "snapshot: T",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
-            "line": 23,
-            "className": "SnapshotHistory",
-            "memberName": "push",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "undo",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "T | null"
-          },
-          "returnTypeText": "T | null",
-          "jsdoc": "/**\n     * 撤销：cursor 后退一步，返回前一个快照；不可撤销时返回 null。\n     */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
-            "line": 27,
-            "className": "SnapshotHistory",
-            "memberName": "undo",
-            "declarationKind": "class"
+          "jsdoc": "撤销：cursor 后退一步，返回前一个快照；不可撤销时返回 null。",
+          "signatureText": "undo(): T | null",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
           }
         },
         {
           "name": "redo",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "T | null"
-          },
-          "returnTypeText": "T | null",
-          "jsdoc": "/**\n     * 重做：cursor 前进一步，返回下一个快照；不可重做时返回 null。\n     */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
-            "line": 31,
-            "className": "SnapshotHistory",
-            "memberName": "redo",
-            "declarationKind": "class"
+          "jsdoc": "重做：cursor 前进一步，返回下一个快照；不可重做时返回 null。",
+          "signatureText": "redo(): T | null",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
           }
         },
         {
           "name": "clear",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/**\n     * 清空全部历史。\n     */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/snapshot-history.d.ts",
-            "line": 49,
-            "className": "SnapshotHistory",
-            "memberName": "clear",
-            "declarationKind": "class"
+          "jsdoc": "清空全部历史。",
+          "signatureText": "clear(): void",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.030Z"
+  "generatedAt": "2026-06-11T16:38:13.092Z",
+  "$defs": {
+    "SnapshotHistory": {
+      "type": "object",
+      "title": "SnapshotHistory",
+      "description": "通用快照历史管理器 — push / undo / redo / cursor。\n设计目标：\n1. 纯 TypeScript，零框架依赖。\n2. 供 SparkNodeTree 和 DataSetCrudTool 共用，消除重复的 _history[] + _cursor 模式。\n3. 内存级轻量快照，非持久化（StorageAdapter 面向 localStorage，不同场景）。"
+    }
+  }
 }

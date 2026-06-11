@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/class-model/class-model/types.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/class-model/types",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/types\n@spark-appworks/spark-ai 的 class-model/class-model/types 模块。\n导出 ClassModel symbol: ClassModelDocument, SourceProvenanceMeta, ComponentClassModelLevel, ComponentClassModelLayer, ClassModelDeclarationRelationKind, ClassModelDeclarationRelation, ClassModel, JsDocMeta 等（共 11 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/types\n职责：维护 DTS ClassModel 知识链路中的 types 能力，围绕 ClassModelDocument、SourceProvenanceMeta、ComponentClassModelLevel 等 11 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/types 这一段如何生成、加载或投影时，用本模块定位职责。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ClassModelDocument",
@@ -20,6 +20,9 @@
       "JsDocMeta",
       "ConstructorMeta",
       "AttributeMeta",
+      "MethodParameterStyle",
+      "DtsTypeMeta",
+      "MethodParameterMeta",
       "MethodMeta"
     ]
   },
@@ -34,13 +37,16 @@
     "JsDocMeta",
     "ConstructorMeta",
     "AttributeMeta",
+    "MethodParameterStyle",
+    "DtsTypeMeta",
+    "MethodParameterMeta",
     "MethodMeta"
   ],
   "models": {
     "ClassModelDocument": {
       "kind": "ClassModelDocument",
       "className": "ClassModelDocument",
-      "jsdoc": "/**\n * ClassModel 文档：只保留 module 真源，不预存 models 索引。\n *\n * LLM 可见的 ClassModel 在 guide 投影时按 attribute 链从 module 按需派生；\n * 连通性由 auditClassModelReflectionConnectivity 验证。\n */",
+      "jsdoc": "ClassModel 文档：只保留 module 真源，不预存 models 索引。\nLLM 可见的 ClassModel 在 guide 投影时按 attribute 链从 module 按需派生；\n连通性由 auditClassModelReflectionConnectivity 验证。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION;\n    rootKind: string;\n    module: AiModuleMetadataJson;\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n}>",
       "declarationRelations": [
@@ -52,7 +58,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 16,
+        "line": 17,
         "className": "ClassModelDocument",
         "declarationKind": "type"
       },
@@ -62,7 +68,7 @@
     "SourceProvenanceMeta": {
       "kind": "SourceProvenanceMeta",
       "className": "SourceProvenanceMeta",
-      "jsdoc": "/** Source Provenance Meta 的语义模型。 */",
+      "jsdoc": "Source Provenance Meta 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: 'class' | 'interface' | 'type' | 'enum' | 'function' | 'const' | 'component';\n}>",
       "declarationRelations": [
@@ -74,7 +80,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 23,
+        "line": 24,
         "className": "SourceProvenanceMeta",
         "declarationKind": "type"
       },
@@ -84,7 +90,7 @@
     "ComponentClassModelLevel": {
       "kind": "ComponentClassModelLevel",
       "className": "ComponentClassModelLevel",
-      "jsdoc": "/** Component Class Model Level 的语义模型。 */",
+      "jsdoc": "Component Class Model Level 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "'table-level' | 'container' | 'field-level' | 'display' | 'infrastructure'",
       "declarationRelations": [
@@ -111,7 +117,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 37,
+        "line": 38,
         "className": "ComponentClassModelLevel",
         "declarationKind": "type"
       },
@@ -121,7 +127,7 @@
     "ComponentClassModelLayer": {
       "kind": "ComponentClassModelLayer",
       "className": "ComponentClassModelLayer",
-      "jsdoc": "/** Component Class Model Layer 的语义模型。 */",
+      "jsdoc": "Component Class Model Layer 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "'data-view-container' | 'layout-container' | 'zone-container' | 'data-field' | 'field-support' | 'data-display' | 'static-display' | 'editor' | 'support'",
       "declarationRelations": [
@@ -164,7 +170,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 39,
+        "line": 40,
         "className": "ComponentClassModelLayer",
         "declarationKind": "type"
       },
@@ -174,7 +180,7 @@
     "ClassModelDeclarationRelationKind": {
       "kind": "ClassModelDeclarationRelationKind",
       "className": "ClassModelDeclarationRelationKind",
-      "jsdoc": "/** Class Model Declaration Relation Kind 的语义模型。 */",
+      "jsdoc": "Class Model Declaration Relation Kind 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "'alias' | 'intersection' | 'union' | 'extends' | 'implements'",
       "declarationRelations": [
@@ -201,7 +207,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 41,
+        "line": 42,
         "className": "ClassModelDeclarationRelationKind",
         "declarationKind": "type"
       },
@@ -211,7 +217,7 @@
     "ClassModelDeclarationRelation": {
       "kind": "ClassModelDeclarationRelation",
       "className": "ClassModelDeclarationRelation",
-      "jsdoc": "/** Class Model Declaration Relation 的语义模型。 */",
+      "jsdoc": "Class Model Declaration Relation 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    kind: ClassModelDeclarationRelationKind;\n    typeText: string;\n    targetName?: string;\n}>",
       "declarationRelations": [
@@ -223,7 +229,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 43,
+        "line": 44,
         "className": "ClassModelDeclarationRelation",
         "declarationKind": "type"
       },
@@ -233,7 +239,7 @@
     "ClassModel": {
       "kind": "ClassModel",
       "className": "ClassModel",
-      "jsdoc": "/** guide 投影时的 class 视图；DTS 生成线会直接持久化这个结构。 */",
+      "jsdoc": "guide 投影时的 class 视图；DTS 生成线会直接持久化这个结构。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    kind: string;\n    className: string;\n    jsdoc: JsDocMeta;\n    declarationTypeText?: string;\n    declarationRelations?: readonly ClassModelDeclarationRelation[];\n    shapeKind?: 'class' | 'interface' | 'type' | 'enum' | 'function' | 'const' | 'component';\n    provenance?: SourceProvenanceMeta;\n    constructorMeta?: ConstructorMeta;\n    attributes: readonly AttributeMeta[];\n    methods: readonly MethodMeta[];\n}>",
       "declarationRelations": [
@@ -245,7 +251,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 49,
+        "line": 50,
         "className": "ClassModel",
         "declarationKind": "type"
       },
@@ -255,12 +261,12 @@
     "JsDocMeta": {
       "kind": "JsDocMeta",
       "className": "JsDocMeta",
-      "jsdoc": "/** Js Doc Meta 的语义模型。 */",
+      "jsdoc": "Js Doc Meta 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "string",
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 62,
+        "line": 63,
         "className": "JsDocMeta",
         "declarationKind": "type"
       },
@@ -270,19 +276,19 @@
     "ConstructorMeta": {
       "kind": "ConstructorMeta",
       "className": "ConstructorMeta",
-      "jsdoc": "/** Constructor Meta 的语义模型。 */",
+      "jsdoc": "Constructor Meta 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    paramsSchema: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+      "declarationTypeText": "Readonly<{\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    paramsSchema?: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    paramsSchema: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
+          "typeText": "Readonly<{\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    paramsSchema?: AiJsonSchemaObject;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
           "targetName": "Readonly"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 64,
+        "line": 65,
         "className": "ConstructorMeta",
         "declarationKind": "type"
       },
@@ -292,7 +298,7 @@
     "AttributeMeta": {
       "kind": "AttributeMeta",
       "className": "AttributeMeta",
-      "jsdoc": "/** Attribute Meta 的语义模型。 */",
+      "jsdoc": "Attribute Meta 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    name: string;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    jsdoc: JsDocMeta;\n    provenance?: SourceProvenanceMeta;\n}>",
       "declarationRelations": [
@@ -304,8 +310,107 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 70,
+        "line": 74,
         "className": "AttributeMeta",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "MethodParameterStyle": {
+      "kind": "MethodParameterStyle",
+      "className": "MethodParameterStyle",
+      "jsdoc": "Method Parameter Style 表达 .d.ts 签名的调用形态。\npositional 表示调用方按参数位置传入实参；named 表示签名使用对象解构，调用方传入一个承载命名字段的对象。",
+      "shapeKind": "type",
+      "declarationTypeText": "'positional' | 'named'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'positional'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'named'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 86,
+        "className": "MethodParameterStyle",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsTypeMeta": {
+      "kind": "DtsTypeMeta",
+      "className": "DtsTypeMeta",
+      "jsdoc": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    type: 'intrinsic';\n    name: string;\n}> | Readonly<{\n    type: 'reference';\n    name: string;\n    sourcePath?: string;\n    refersToTypeParameter?: boolean;\n    typeArguments?: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'array';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'union';\n    types: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'intersection';\n    types: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'literal';\n    value: string | number | boolean | null;\n}> | Readonly<{\n    type: 'unknown';\n    name: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    type: 'intrinsic';\n    name: string;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    type: 'reference';\n    name: string;\n    sourcePath?: string;\n    refersToTypeParameter?: boolean;\n    typeArguments?: readonly DtsTypeMeta[];\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    type: 'array';\n    elementType: DtsTypeMeta;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    type: 'union';\n    types: readonly DtsTypeMeta[];\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    type: 'intersection';\n    types: readonly DtsTypeMeta[];\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    type: 'literal';\n    value: string | number | boolean | null;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    type: 'unknown';\n    name: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 92,
+        "className": "DtsTypeMeta",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "MethodParameterMeta": {
+      "kind": "MethodParameterMeta",
+      "className": "MethodParameterMeta",
+      "jsdoc": "Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 的 name + type 形态记录 DTS 参数。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    name: string;\n    type: DtsTypeMeta;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    name: string;\n    type: DtsTypeMeta;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 118,
+        "className": "MethodParameterMeta",
         "declarationKind": "type"
       },
       "attributes": [],
@@ -314,19 +419,19 @@
     "MethodMeta": {
       "kind": "MethodMeta",
       "className": "MethodMeta",
-      "jsdoc": "/** Method Meta 的语义模型。 */",
+      "jsdoc": "Method Meta 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    name: string;\n    paramsSchema: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    returnTypeText?: string;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    paramsTypeText?: string;\n    provenance?: SourceProvenanceMeta;\n}>",
+      "declarationTypeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    returnType?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    returnTypeText?: string;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    paramsTypeText?: string;\n    provenance?: SourceProvenanceMeta;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    name: string;\n    paramsSchema: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    returnTypeText?: string;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    paramsTypeText?: string;\n    provenance?: SourceProvenanceMeta;\n}>",
+          "typeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    returnType?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    returnTypeText?: string;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    paramsTypeText?: string;\n    provenance?: SourceProvenanceMeta;\n}>",
           "targetName": "Readonly"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 79,
+        "line": 123,
         "className": "MethodMeta",
         "declarationKind": "type"
       },
@@ -334,5 +439,77 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.827Z"
+  "generatedAt": "2026-06-11T16:38:12.598Z",
+  "$defs": {
+    "ClassModelDocument": {
+      "type": "object",
+      "title": "ClassModelDocument",
+      "description": "ClassModel 文档：只保留 module 真源，不预存 models 索引。\nLLM 可见的 ClassModel 在 guide 投影时按 attribute 链从 module 按需派生；\n连通性由 auditClassModelReflectionConnectivity 验证。"
+    },
+    "SourceProvenanceMeta": {
+      "type": "object",
+      "title": "SourceProvenanceMeta",
+      "description": "Source Provenance Meta 的语义模型。"
+    },
+    "ComponentClassModelLevel": {
+      "type": "object",
+      "title": "ComponentClassModelLevel",
+      "description": "Component Class Model Level 的语义模型。"
+    },
+    "ComponentClassModelLayer": {
+      "type": "object",
+      "title": "ComponentClassModelLayer",
+      "description": "Component Class Model Layer 的语义模型。"
+    },
+    "ClassModelDeclarationRelationKind": {
+      "type": "object",
+      "title": "ClassModelDeclarationRelationKind",
+      "description": "Class Model Declaration Relation Kind 的语义模型。"
+    },
+    "ClassModelDeclarationRelation": {
+      "type": "object",
+      "title": "ClassModelDeclarationRelation",
+      "description": "Class Model Declaration Relation 的语义模型。"
+    },
+    "ClassModel": {
+      "type": "object",
+      "title": "ClassModel",
+      "description": "guide 投影时的 class 视图；DTS 生成线会直接持久化这个结构。"
+    },
+    "JsDocMeta": {
+      "type": "object",
+      "title": "JsDocMeta",
+      "description": "Js Doc Meta 的语义模型。"
+    },
+    "ConstructorMeta": {
+      "type": "object",
+      "title": "ConstructorMeta",
+      "description": "Constructor Meta 的语义模型。"
+    },
+    "AttributeMeta": {
+      "type": "object",
+      "title": "AttributeMeta",
+      "description": "Attribute Meta 的语义模型。"
+    },
+    "MethodParameterStyle": {
+      "type": "object",
+      "title": "MethodParameterStyle",
+      "description": "Method Parameter Style 表达 .d.ts 签名的调用形态。\npositional 表示调用方按参数位置传入实参；named 表示签名使用对象解构，调用方传入一个承载命名字段的对象。"
+    },
+    "DtsTypeMeta": {
+      "type": "object",
+      "title": "DtsTypeMeta",
+      "description": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。"
+    },
+    "MethodParameterMeta": {
+      "type": "object",
+      "title": "MethodParameterMeta",
+      "description": "Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 的 name + type 形态记录 DTS 参数。"
+    },
+    "MethodMeta": {
+      "type": "object",
+      "title": "MethodMeta",
+      "description": "Method Meta 的语义模型。"
+    }
+  }
 }

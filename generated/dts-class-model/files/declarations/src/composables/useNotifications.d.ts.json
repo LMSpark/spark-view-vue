@@ -7,7 +7,7 @@
     "sourceFile": "src/composables/useNotifications.ts",
     "packageName": "app",
     "modulePath": "composables/useNotifications",
-    "jsdoc": "@module app:composables/useNotifications\napp 的 composables/useNotifications 模块。\n导出 ClassModel symbol: NotificationItem（共 1 个 symbol）。",
+    "jsdoc": "@module app:composables/useNotifications\n职责：提供主应用 useNotifications 能力，围绕 NotificationItem 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 composables/useNotifications。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "NotificationItem"
@@ -20,7 +20,7 @@
     "NotificationItem": {
       "kind": "NotificationItem",
       "className": "NotificationItem",
-      "jsdoc": "/** Notification Item 的语义模型。 */",
+      "jsdoc": "Notification Item 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: number;\n    /** 显示标题。 */\n    title: string;\n    /** 用户可读消息。 */\n    message: string;\n    /** time 字段。 */\n    time: number;\n    /** read 字段。 */\n    read: boolean;\n    /** remote Id 标识。 */\n    remoteId?: string;\n    /** level 字段。 */\n    level?: string;\n    /** category 字段。 */\n    category?: string;\n    /** 来源对象。 */\n    source?: string;\n    /** action Url 地址。 */\n    actionUrl?: string;\n}",
       "provenance": {
@@ -32,177 +32,136 @@
       "attributes": [
         {
           "name": "id",
+          "jsdoc": "唯一标识。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 唯一标识。 */",
-          "provenance": {
-            "file": "declarations/src/composables/useNotifications.d.ts",
-            "line": 4,
-            "className": "NotificationItem",
-            "memberName": "id",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "title",
+          "jsdoc": "显示标题。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 显示标题。 */",
-          "provenance": {
-            "file": "declarations/src/composables/useNotifications.d.ts",
-            "line": 6,
-            "className": "NotificationItem",
-            "memberName": "title",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "message",
+          "jsdoc": "用户可读消息。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 用户可读消息。 */",
-          "provenance": {
-            "file": "declarations/src/composables/useNotifications.d.ts",
-            "line": 8,
-            "className": "NotificationItem",
-            "memberName": "message",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "time",
+          "jsdoc": "time 字段。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** time 字段。 */",
-          "provenance": {
-            "file": "declarations/src/composables/useNotifications.d.ts",
-            "line": 10,
-            "className": "NotificationItem",
-            "memberName": "time",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "read",
+          "jsdoc": "read 字段。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** read 字段。 */",
-          "provenance": {
-            "file": "declarations/src/composables/useNotifications.d.ts",
-            "line": 12,
-            "className": "NotificationItem",
-            "memberName": "read",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "remoteId",
+          "jsdoc": "remote Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** remote Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/composables/useNotifications.d.ts",
-            "line": 14,
-            "className": "NotificationItem",
-            "memberName": "remoteId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "level",
+          "jsdoc": "level 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** level 字段。 */",
-          "provenance": {
-            "file": "declarations/src/composables/useNotifications.d.ts",
-            "line": 16,
-            "className": "NotificationItem",
-            "memberName": "level",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "category",
+          "jsdoc": "category 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** category 字段。 */",
-          "provenance": {
-            "file": "declarations/src/composables/useNotifications.d.ts",
-            "line": 18,
-            "className": "NotificationItem",
-            "memberName": "category",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "source",
+          "jsdoc": "来源对象。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 来源对象。 */",
-          "provenance": {
-            "file": "declarations/src/composables/useNotifications.d.ts",
-            "line": 20,
-            "className": "NotificationItem",
-            "memberName": "source",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "actionUrl",
+          "jsdoc": "action Url 地址。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** action Url 地址。 */",
-          "provenance": {
-            "file": "declarations/src/composables/useNotifications.d.ts",
-            "line": 22,
-            "className": "NotificationItem",
-            "memberName": "actionUrl",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.042Z"
+  "generatedAt": "2026-06-11T16:38:13.096Z",
+  "$defs": {
+    "NotificationItem": {
+      "type": "object",
+      "title": "NotificationItem",
+      "description": "Notification Item 的语义模型。",
+      "properties": {
+        "id": {
+          "type": "number"
+        },
+        "title": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "time": {
+          "type": "number"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "remoteId": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "actionUrl": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

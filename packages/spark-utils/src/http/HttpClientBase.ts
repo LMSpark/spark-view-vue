@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-utils:http/HttpClientBase
+ * 职责：提供框架无关的 Http Client Base 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。
+ * 边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。
+ * AI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。
+ */
+/**
  * HttpClientBase — HTTP 客户端抽象基类
  *
  * 所有公共逻辑的**唯一来源**：

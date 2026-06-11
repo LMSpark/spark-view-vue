@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-component:components/create-passthrough
+ * 职责：提供 create passthrough 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。
+ * 边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。
+ * AI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。
+ */
+/**
  * 透传组件工厂 — 用 1 个函数替代 14+ 个零逻辑 .vue 包装文件。
  *
  * 每个 passthrough 组件的行为完全相同：

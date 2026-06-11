@@ -1,4 +1,10 @@
 /**
+ * @module app:services/api-paths
+ * 职责：提供应用运行时 service 层的 api paths 能力，连接项目模型、AI Host、租户上下文或页面设计流程。
+ * 边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。
+ * AI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。
+ */
+/**
  * 集中管理多租户 API 路径 — 所有前端 API 调用统一从此模块获取基础路径。
  *
  * 动态读取当前登录用户的 tenantId / defaultProjectId，

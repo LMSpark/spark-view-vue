@@ -7,7 +7,7 @@
     "sourceFile": "src/services/auth.ts",
     "packageName": "app",
     "modulePath": "services/auth",
-    "jsdoc": "@module app:services/auth\napp 的 services/auth 模块。\n导出 ClassModel symbol: AuthUser, PlatformAdminUserLike, LoginParams, RegisterParams, RegisterTenantParams（共 5 个 symbol）。",
+    "jsdoc": "@module app:services/auth\n职责：提供主应用 auth 能力，围绕 AuthUser、PlatformAdminUserLike、LoginParams 等 5 个公开契约 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/auth。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "AuthUser",
@@ -28,152 +28,90 @@
     "AuthUser": {
       "kind": "AuthUser",
       "className": "AuthUser",
-      "jsdoc": "/**\n * 认证服务 — 前端 Token 管理 + API 调用封装。\n *\n * 存储布局：\n *   localStorage: spark_token (JWT), spark_user (JSON)\n *\n * 所有 API 调用自动附带 X-Tenant-Id 头。\n */",
+      "jsdoc": "认证服务 — 前端 Token 管理 + API 调用封装。\n存储布局：\nlocalStorage: spark_token (JWT), spark_user (JSON)\n所有 API 调用自动附带 X-Tenant-Id 头。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** user Id 标识。 */\n    userId: string;\n    /** username 字段。 */\n    username: string;\n    /** display Name 名称。 */\n    displayName: string;\n    /** email 字段。 */\n    email: string;\n    /** avatar 字段。 */\n    avatar: string;\n    /** roles 字段。 */\n    roles: string[];\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** default Project Id 标识。 */\n    defaultProjectId: string;\n}",
       "provenance": {
         "file": "declarations/src/services/auth.d.ts",
-        "line": 14,
+        "line": 15,
         "className": "AuthUser",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "userId",
+          "jsdoc": "user Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** user Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 16,
-            "className": "AuthUser",
-            "memberName": "userId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "username",
+          "jsdoc": "username 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** username 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 18,
-            "className": "AuthUser",
-            "memberName": "username",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "displayName",
+          "jsdoc": "display Name 名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** display Name 名称。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 20,
-            "className": "AuthUser",
-            "memberName": "displayName",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "email",
+          "jsdoc": "email 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** email 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 22,
-            "className": "AuthUser",
-            "memberName": "email",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "avatar",
+          "jsdoc": "avatar 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** avatar 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 24,
-            "className": "AuthUser",
-            "memberName": "avatar",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "roles",
+          "jsdoc": "roles 字段。",
           "schema": {
             "type": "array",
-            "title": "string[]",
-            "items": true
+            "items": {
+              "type": "string"
+            }
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** roles 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 26,
-            "className": "AuthUser",
-            "memberName": "roles",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "tenantId",
+          "jsdoc": "tenant Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tenant Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 28,
-            "className": "AuthUser",
-            "memberName": "tenantId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "defaultProjectId",
+          "jsdoc": "default Project Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** default Project Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 30,
-            "className": "AuthUser",
-            "memberName": "defaultProjectId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -181,50 +119,33 @@
     "PlatformAdminUserLike": {
       "kind": "PlatformAdminUserLike",
       "className": "PlatformAdminUserLike",
-      "jsdoc": "/** Platform Admin User Like 的语义模型。 */",
+      "jsdoc": "Platform Admin User Like 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId?: string;\n    /** roles 字段。 */\n    roles?: readonly string[];\n}",
       "provenance": {
         "file": "declarations/src/services/auth.d.ts",
-        "line": 33,
+        "line": 34,
         "className": "PlatformAdminUserLike",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "tenantId",
+          "jsdoc": "tenant Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** tenant Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 35,
-            "className": "PlatformAdminUserLike",
-            "memberName": "tenantId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "roles",
+          "jsdoc": "roles 字段。",
           "schema": {
-            "type": "array",
-            "title": "readonly string[]",
-            "items": true
+            "type": "array"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** roles 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 37,
-            "className": "PlatformAdminUserLike",
-            "memberName": "roles",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -232,66 +153,42 @@
     "LoginParams": {
       "kind": "LoginParams",
       "className": "LoginParams",
-      "jsdoc": "/** Login Params 的语义模型。 */",
+      "jsdoc": "Login Params 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n}",
       "provenance": {
         "file": "declarations/src/services/auth.d.ts",
-        "line": 52,
+        "line": 53,
         "className": "LoginParams",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "tenantId",
+          "jsdoc": "tenant Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tenant Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 54,
-            "className": "LoginParams",
-            "memberName": "tenantId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "username",
+          "jsdoc": "username 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** username 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 56,
-            "className": "LoginParams",
-            "memberName": "username",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "password",
+          "jsdoc": "password 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** password 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 58,
-            "className": "LoginParams",
-            "memberName": "password",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -299,100 +196,60 @@
     "RegisterParams": {
       "kind": "RegisterParams",
       "className": "RegisterParams",
-      "jsdoc": "/** Register Params 的语义模型。 */",
+      "jsdoc": "Register Params 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n    /** display Name 名称。 */\n    displayName?: string;\n    /** email 字段。 */\n    email?: string;\n}",
       "provenance": {
         "file": "declarations/src/services/auth.d.ts",
-        "line": 62,
+        "line": 63,
         "className": "RegisterParams",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "tenantId",
+          "jsdoc": "tenant Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tenant Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 64,
-            "className": "RegisterParams",
-            "memberName": "tenantId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "username",
+          "jsdoc": "username 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** username 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 66,
-            "className": "RegisterParams",
-            "memberName": "username",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "password",
+          "jsdoc": "password 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** password 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 68,
-            "className": "RegisterParams",
-            "memberName": "password",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "displayName",
+          "jsdoc": "display Name 名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** display Name 名称。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 70,
-            "className": "RegisterParams",
-            "memberName": "displayName",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "email",
+          "jsdoc": "email 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** email 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 72,
-            "className": "RegisterParams",
-            "memberName": "email",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -400,87 +257,161 @@
     "RegisterTenantParams": {
       "kind": "RegisterTenantParams",
       "className": "RegisterTenantParams",
-      "jsdoc": "/** Register Tenant Params 的语义模型。 */",
+      "jsdoc": "Register Tenant Params 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** tenant Name 名称。 */\n    tenantName: string;\n    /** username 字段。 */\n    username: string;\n    /** password 字段。 */\n    password: string;\n}",
       "provenance": {
         "file": "declarations/src/services/auth.d.ts",
-        "line": 76,
+        "line": 77,
         "className": "RegisterTenantParams",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "tenantId",
+          "jsdoc": "tenant Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tenant Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 78,
-            "className": "RegisterTenantParams",
-            "memberName": "tenantId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "tenantName",
+          "jsdoc": "tenant Name 名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tenant Name 名称。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 80,
-            "className": "RegisterTenantParams",
-            "memberName": "tenantName",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "username",
+          "jsdoc": "username 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** username 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 82,
-            "className": "RegisterTenantParams",
-            "memberName": "username",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "password",
+          "jsdoc": "password 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** password 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/auth.d.ts",
-            "line": 84,
-            "className": "RegisterTenantParams",
-            "memberName": "password",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.076Z"
+  "generatedAt": "2026-06-11T16:38:13.103Z",
+  "$defs": {
+    "AuthUser": {
+      "type": "object",
+      "title": "AuthUser",
+      "description": "认证服务 — 前端 Token 管理 + API 调用封装。\n存储布局：\nlocalStorage: spark_token (JWT), spark_user (JSON)\n所有 API 调用自动附带 X-Tenant-Id 头。",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "defaultProjectId": {
+          "type": "string"
+        }
+      }
+    },
+    "PlatformAdminUserLike": {
+      "type": "object",
+      "title": "PlatformAdminUserLike",
+      "description": "Platform Admin User Like 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array"
+        }
+      }
+    },
+    "LoginParams": {
+      "type": "object",
+      "title": "LoginParams",
+      "description": "Login Params 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "RegisterParams": {
+      "type": "object",
+      "title": "RegisterParams",
+      "description": "Register Params 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "RegisterTenantParams": {
+      "type": "object",
+      "title": "RegisterTenantParams",
+      "description": "Register Tenant Params 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "tenantName": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

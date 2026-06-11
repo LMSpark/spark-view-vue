@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/knowledge/worker-knowledge-handler",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-handler\n@spark-appworks/spark-ai 的 class-model/knowledge/worker-knowledge-handler 模块。\n导出 ClassModel symbol: CreateClassModelKnowledgeWorkerApiOptions（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-handler\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-handler 能力，围绕 CreateClassModelKnowledgeWorkerApiOptions 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-handler 这一段如何生成、加载或投影时，用本模块定位职责。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "CreateClassModelKnowledgeWorkerApiOptions"
@@ -20,7 +20,7 @@
     "CreateClassModelKnowledgeWorkerApiOptions": {
       "kind": "CreateClassModelKnowledgeWorkerApiOptions",
       "className": "CreateClassModelKnowledgeWorkerApiOptions",
-      "jsdoc": "/** Create Class Model Knowledge Worker Api Options 的调用配置。 */",
+      "jsdoc": "Create Class Model Knowledge Worker Api Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
       "declarationRelations": [
@@ -32,7 +32,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.d.ts",
-        "line": 9,
+        "line": 10,
         "className": "CreateClassModelKnowledgeWorkerApiOptions",
         "declarationKind": "type"
       },
@@ -40,5 +40,12 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.839Z"
+  "generatedAt": "2026-06-11T16:38:12.603Z",
+  "$defs": {
+    "CreateClassModelKnowledgeWorkerApiOptions": {
+      "type": "object",
+      "title": "CreateClassModelKnowledgeWorkerApiOptions",
+      "description": "Create Class Model Knowledge Worker Api Options 的调用配置。"
+    }
+  }
 }

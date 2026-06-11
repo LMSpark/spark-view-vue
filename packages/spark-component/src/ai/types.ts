@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-component:ai/types
+ * 职责：定义 types 相关的内部类型契约，支撑渲染器、props、zero-code 和运行时状态协作。
+ * 边界：只描述 component-runtime 的类型结构，不直接渲染界面，也不发起数据请求。
+ * AI用途：跨文件修改 types 行为或补齐配置类型时，用本模块确认共享类型边界。
+ */
+/**
  * AI 会话监视组件 — 共享领域类型（SSOT）。
  *
  * StreamDisplayEntry、ToolCallDisplayItem、ReasoningDisplayItem

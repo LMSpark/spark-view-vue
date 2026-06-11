@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-utils/src/http/types.ts",
     "packageName": "@spark-appworks/spark-utils",
     "modulePath": "http/types",
-    "jsdoc": "HTTP 模块类型定义\n@packageDocumentation",
+    "jsdoc": "@module @spark-appworks/spark-utils:http/types\n职责：提供框架无关的 types 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。\n边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。\nAI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。\n\nHTTP 模块类型定义\n@packageDocumentation",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "Method",
@@ -52,7 +52,7 @@
     "Method": {
       "kind": "Method",
       "className": "Method",
-      "jsdoc": "/** Method 的语义模型。 */",
+      "jsdoc": "Method 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'",
       "declarationRelations": [
@@ -79,7 +79,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 7,
+        "line": 13,
         "className": "Method",
         "declarationKind": "type"
       },
@@ -89,297 +89,207 @@
     "RequestConfig": {
       "kind": "RequestConfig",
       "className": "RequestConfig",
-      "jsdoc": "/**\n * 请求配置\n */",
+      "jsdoc": "请求配置",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 资源地址。 */\n    url: string;\n    /** 请求方法或动作方法。 */\n    method?: Method;\n    /** 请求头集合。 */\n    headers?: Record<string, string>;\n    /** 参数集合。 */\n    params?: Record<string, unknown>;\n    /** 业务数据载荷。 */\n    data?: unknown;\n    /** 超时时间。 */\n    timeout?: number;\n    /** 响应类型（默认 json） */\n    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'formdata';\n    /** base URL 地址。 */\n    baseURL?: string;\n    /** cache 字段。 */\n    cache?: boolean;\n    /** cache Key 键。 */\n    cacheKey?: string;\n    /** 缓存过期（ms，默认 300000） */\n    cacheExpiry?: number;\n    /** 重试次数（默认 0） */\n    retry?: number;\n    /** 重试延迟（ms，默认 1000） */\n    retryDelay?: number;\n    /** AbortSignal —— 用于取消请求（组件卸载时中止在途请求） */\n    signal?: AbortSignal;\n    /** 跨域请求携带 cookie（对应 axios withCredentials / fetch credentials:'include'） */\n    withCredentials?: boolean;\n    /** 自定义元数据（透传给拦截器） */\n    meta?: Record<string, unknown>;\n    /** fetch-only: 页面卸载时保持连接（日志传输场景） */\n    keepalive?: boolean;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 11,
+        "line": 17,
         "className": "RequestConfig",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "url",
+          "jsdoc": "资源地址。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 资源地址。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 13,
-            "className": "RequestConfig",
-            "memberName": "url",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "method",
+          "jsdoc": "请求方法或动作方法。",
           "schema": {
-            "title": "Method"
+            "$ref": "#/$defs/Method"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 请求方法或动作方法。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 15,
-            "className": "RequestConfig",
-            "memberName": "method",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "headers",
+          "jsdoc": "请求头集合。",
           "schema": {
+            "type": "object",
             "title": "Record<string, string>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 请求头集合。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 17,
-            "className": "RequestConfig",
-            "memberName": "headers",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "params",
+          "jsdoc": "参数集合。",
           "schema": {
+            "type": "object",
             "title": "Record<string, unknown>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 参数集合。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 19,
-            "className": "RequestConfig",
-            "memberName": "params",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "data",
-          "schema": {
-            "title": "unknown"
-          },
+          "jsdoc": "业务数据载荷。",
+          "schema": true,
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 业务数据载荷。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 21,
-            "className": "RequestConfig",
-            "memberName": "data",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "timeout",
+          "jsdoc": "超时时间。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 超时时间。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 23,
-            "className": "RequestConfig",
-            "memberName": "timeout",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "responseType",
+          "jsdoc": "响应类型（默认 json）",
           "schema": {
-            "title": "'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'formdata'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "arraybuffer"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "blob"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "document"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "json"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "text"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "formdata"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 响应类型（默认 json） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 25,
-            "className": "RequestConfig",
-            "memberName": "responseType",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "baseURL",
+          "jsdoc": "base URL 地址。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** base URL 地址。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 27,
-            "className": "RequestConfig",
-            "memberName": "baseURL",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "cache",
+          "jsdoc": "cache 字段。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** cache 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 29,
-            "className": "RequestConfig",
-            "memberName": "cache",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "cacheKey",
+          "jsdoc": "cache Key 键。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** cache Key 键。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 31,
-            "className": "RequestConfig",
-            "memberName": "cacheKey",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "cacheExpiry",
+          "jsdoc": "缓存过期（ms，默认 300000）",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 缓存过期（ms，默认 300000） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 33,
-            "className": "RequestConfig",
-            "memberName": "cacheExpiry",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "retry",
+          "jsdoc": "重试次数（默认 0）",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 重试次数（默认 0） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 35,
-            "className": "RequestConfig",
-            "memberName": "retry",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "retryDelay",
+          "jsdoc": "重试延迟（ms，默认 1000）",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 重试延迟（ms，默认 1000） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 37,
-            "className": "RequestConfig",
-            "memberName": "retryDelay",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "signal",
+          "jsdoc": "AbortSignal —— 用于取消请求（组件卸载时中止在途请求）",
           "schema": {
+            "type": "object",
             "title": "AbortSignal"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** AbortSignal —— 用于取消请求（组件卸载时中止在途请求） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 39,
-            "className": "RequestConfig",
-            "memberName": "signal",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "withCredentials",
+          "jsdoc": "跨域请求携带 cookie（对应 axios withCredentials / fetch credentials:'include'）",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 跨域请求携带 cookie（对应 axios withCredentials / fetch credentials:'include'） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 41,
-            "className": "RequestConfig",
-            "memberName": "withCredentials",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "meta",
+          "jsdoc": "自定义元数据（透传给拦截器）",
           "schema": {
+            "type": "object",
             "title": "Record<string, unknown>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 自定义元数据（透传给拦截器） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 43,
-            "className": "RequestConfig",
-            "memberName": "meta",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "keepalive",
+          "jsdoc": "fetch-only: 页面卸载时保持连接（日志传输场景）",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** fetch-only: 页面卸载时保持连接（日志传输场景） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 45,
-            "className": "RequestConfig",
-            "memberName": "keepalive",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -387,81 +297,50 @@
     "HttpResponse": {
       "kind": "HttpResponse",
       "className": "HttpResponse",
-      "jsdoc": "/** HTTP 响应（不泄露 axios 实现） */",
+      "jsdoc": "HTTP 响应（不泄露 axios 实现）",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 业务数据载荷。 */\n    data: T;\n    /** 当前状态。 */\n    status: number;\n    /** status Text 文本。 */\n    statusText: string;\n    /** 请求头集合。 */\n    headers: Record<string, string>;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 48,
+        "line": 54,
         "className": "HttpResponse",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "data",
-          "schema": {
-            "title": "T"
-          },
+          "jsdoc": "业务数据载荷。",
+          "schema": true,
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 业务数据载荷。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 50,
-            "className": "HttpResponse",
-            "memberName": "data",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "status",
+          "jsdoc": "当前状态。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前状态。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 52,
-            "className": "HttpResponse",
-            "memberName": "status",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "statusText",
+          "jsdoc": "status Text 文本。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** status Text 文本。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 54,
-            "className": "HttpResponse",
-            "memberName": "statusText",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "headers",
+          "jsdoc": "请求头集合。",
           "schema": {
+            "type": "object",
             "title": "Record<string, string>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 请求头集合。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 56,
-            "className": "HttpResponse",
-            "memberName": "headers",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -469,99 +348,58 @@
     "ApiResponse": {
       "kind": "ApiResponse",
       "className": "ApiResponse",
-      "jsdoc": "/** 旧版标准业务 API 响应（{ code, message, data } 格式） */",
+      "jsdoc": "旧版标准业务 API 响应（{ code, message, data } 格式）",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 稳定错误码或诊断码。 */\n    code: number;\n    /** 用户可读消息。 */\n    message: string;\n    /** 业务数据载荷。 */\n    data: T;\n    /** 事件时间戳。 */\n    timestamp?: string;\n    /** trace Id 标识。 */\n    traceId?: string;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 59,
+        "line": 65,
         "className": "ApiResponse",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "code",
+          "jsdoc": "稳定错误码或诊断码。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 稳定错误码或诊断码。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 61,
-            "className": "ApiResponse",
-            "memberName": "code",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "message",
+          "jsdoc": "用户可读消息。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 用户可读消息。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 63,
-            "className": "ApiResponse",
-            "memberName": "message",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "data",
-          "schema": {
-            "title": "T"
-          },
+          "jsdoc": "业务数据载荷。",
+          "schema": true,
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 业务数据载荷。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 65,
-            "className": "ApiResponse",
-            "memberName": "data",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "timestamp",
+          "jsdoc": "事件时间戳。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 事件时间戳。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 67,
-            "className": "ApiResponse",
-            "memberName": "timestamp",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "traceId",
+          "jsdoc": "trace Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** trace Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 69,
-            "className": "ApiResponse",
-            "memberName": "traceId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -569,130 +407,83 @@
     "ApiEnvelope": {
       "kind": "ApiEnvelope",
       "className": "ApiEnvelope",
-      "jsdoc": "/** SPARK AI Server 统一 API envelope */",
+      "jsdoc": "SPARK AI Server 统一 API envelope",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** protocol Version 字段。 */\n    protocolVersion?: number;\n    /** ok 字段。 */\n    ok: boolean;\n    /** 业务数据载荷。 */\n    data?: T | null;\n    /** 错误对象或错误信息。 */\n    error?: ApiEnvelopeError | null;\n    /** v3 legacy field; v4 uses context.requestId. */\n    requestId?: string;\n    /** 运行上下文。 */\n    context?: ApiEnvelopeContext;\n    /** event 字段。 */\n    event?: ApiEnvelopeEvent;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 72,
+        "line": 78,
         "className": "ApiEnvelope",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "protocolVersion",
+          "jsdoc": "protocol Version 字段。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** protocol Version 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 74,
-            "className": "ApiEnvelope",
-            "memberName": "protocolVersion",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "ok",
+          "jsdoc": "ok 字段。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** ok 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 76,
-            "className": "ApiEnvelope",
-            "memberName": "ok",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "data",
-          "schema": {
-            "title": "T | null"
-          },
+          "jsdoc": "业务数据载荷。",
+          "schema": true,
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 业务数据载荷。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 78,
-            "className": "ApiEnvelope",
-            "memberName": "data",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "error",
+          "jsdoc": "错误对象或错误信息。",
           "schema": {
-            "title": "ApiEnvelopeError | null"
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ApiEnvelopeError"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 错误对象或错误信息。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 80,
-            "className": "ApiEnvelope",
-            "memberName": "error",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "requestId",
+          "jsdoc": "v3 legacy field; v4 uses context.requestId.",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** v3 legacy field; v4 uses context.requestId. */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 82,
-            "className": "ApiEnvelope",
-            "memberName": "requestId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "context",
+          "jsdoc": "运行上下文。",
           "schema": {
-            "title": "ApiEnvelopeContext"
+            "$ref": "#/$defs/ApiEnvelopeContext"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 运行上下文。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 84,
-            "className": "ApiEnvelope",
-            "memberName": "context",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "event",
+          "jsdoc": "event 字段。",
           "schema": {
-            "title": "ApiEnvelopeEvent"
+            "$ref": "#/$defs/ApiEnvelopeEvent"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** event 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 86,
-            "className": "ApiEnvelope",
-            "memberName": "event",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -700,116 +491,70 @@
     "ApiEnvelopeError": {
       "kind": "ApiEnvelopeError",
       "className": "ApiEnvelopeError",
-      "jsdoc": "/** Api Envelope Error 的错误信息。 */",
+      "jsdoc": "Api Envelope Error 的错误信息。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 稳定错误码或诊断码。 */\n    code: string;\n    /** 用户可读消息。 */\n    message: string;\n    /** category 字段。 */\n    category: string;\n    /** severity 字段。 */\n    severity?: string;\n    /** retry Policy 字段。 */\n    retryPolicy?: string;\n    /** details 字段。 */\n    details?: Record<string, unknown>;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 89,
+        "line": 95,
         "className": "ApiEnvelopeError",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "code",
+          "jsdoc": "稳定错误码或诊断码。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 稳定错误码或诊断码。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 91,
-            "className": "ApiEnvelopeError",
-            "memberName": "code",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "message",
+          "jsdoc": "用户可读消息。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 用户可读消息。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 93,
-            "className": "ApiEnvelopeError",
-            "memberName": "message",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "category",
+          "jsdoc": "category 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** category 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 95,
-            "className": "ApiEnvelopeError",
-            "memberName": "category",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "severity",
+          "jsdoc": "severity 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** severity 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 97,
-            "className": "ApiEnvelopeError",
-            "memberName": "severity",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "retryPolicy",
+          "jsdoc": "retry Policy 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** retry Policy 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 99,
-            "className": "ApiEnvelopeError",
-            "memberName": "retryPolicy",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "details",
+          "jsdoc": "details 字段。",
           "schema": {
+            "type": "object",
             "title": "Record<string, unknown>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** details 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 101,
-            "className": "ApiEnvelopeError",
-            "memberName": "details",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -817,147 +562,87 @@
     "ApiEnvelopeContext": {
       "kind": "ApiEnvelopeContext",
       "className": "ApiEnvelopeContext",
-      "jsdoc": "/** Api Envelope Context 的运行上下文。 */",
+      "jsdoc": "Api Envelope Context 的运行上下文。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** request Id 标识。 */\n    requestId?: string;\n    /** tenant Id 标识。 */\n    tenantId?: string;\n    /** project Id 标识。 */\n    projectId?: string;\n    /** username 字段。 */\n    username?: string;\n    /** 业务作用域。 */\n    scope?: {\n        moduleId?: string;\n        moduleInstanceId?: string;\n        instanceId?: string;\n        runtimeInstanceId?: string;\n    };\n    /** session 字段。 */\n    session?: {\n        sessionId?: string;\n    };\n    /** turn 字段。 */\n    turn?: {\n        turnId?: string;\n        turnKey?: string;\n        seq?: number;\n        baseRevision?: number;\n    };\n    /** stream 字段。 */\n    stream?: {\n        streamId?: string;\n        streamKey?: string;\n    };\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 104,
+        "line": 110,
         "className": "ApiEnvelopeContext",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "requestId",
+          "jsdoc": "request Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** request Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 106,
-            "className": "ApiEnvelopeContext",
-            "memberName": "requestId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "tenantId",
+          "jsdoc": "tenant Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** tenant Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 108,
-            "className": "ApiEnvelopeContext",
-            "memberName": "tenantId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "projectId",
+          "jsdoc": "project Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** project Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 110,
-            "className": "ApiEnvelopeContext",
-            "memberName": "projectId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "username",
+          "jsdoc": "username 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** username 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 112,
-            "className": "ApiEnvelopeContext",
-            "memberName": "username",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "scope",
+          "jsdoc": "业务作用域。",
           "schema": {
-            "title": "{\n        moduleId?: string;\n        moduleInstanceId?: string;\n        instanceId?: string;\n        runtimeInstanceId?: string;\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 业务作用域。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 114,
-            "className": "ApiEnvelopeContext",
-            "memberName": "scope",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "session",
+          "jsdoc": "session 字段。",
           "schema": {
-            "title": "{\n        sessionId?: string;\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** session 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 121,
-            "className": "ApiEnvelopeContext",
-            "memberName": "session",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "turn",
+          "jsdoc": "turn 字段。",
           "schema": {
-            "title": "{\n        turnId?: string;\n        turnKey?: string;\n        seq?: number;\n        baseRevision?: number;\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** turn 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 125,
-            "className": "ApiEnvelopeContext",
-            "memberName": "turn",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "stream",
+          "jsdoc": "stream 字段。",
           "schema": {
-            "title": "{\n        streamId?: string;\n        streamKey?: string;\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** stream 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 132,
-            "className": "ApiEnvelopeContext",
-            "memberName": "stream",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -965,82 +650,64 @@
     "ApiEnvelopeEvent": {
       "kind": "ApiEnvelopeEvent",
       "className": "ApiEnvelopeEvent",
-      "jsdoc": "/** Api Envelope Event 的事件载荷。 */",
+      "jsdoc": "Api Envelope Event 的事件载荷。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** transport 字段。 */\n    transport?: 'http' | 'sse';\n    /** 显示或业务名称。 */\n    name?: string;\n    /** terminal 字段。 */\n    terminal?: boolean;\n    /** sequence 字段。 */\n    sequence?: number;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 138,
+        "line": 144,
         "className": "ApiEnvelopeEvent",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "transport",
+          "jsdoc": "transport 字段。",
           "schema": {
-            "title": "'http' | 'sse'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "http"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "sse"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** transport 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 140,
-            "className": "ApiEnvelopeEvent",
-            "memberName": "transport",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "name",
+          "jsdoc": "显示或业务名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 显示或业务名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 142,
-            "className": "ApiEnvelopeEvent",
-            "memberName": "name",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "terminal",
+          "jsdoc": "terminal 字段。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** terminal 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 144,
-            "className": "ApiEnvelopeEvent",
-            "memberName": "terminal",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "sequence",
+          "jsdoc": "sequence 字段。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** sequence 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 146,
-            "className": "ApiEnvelopeEvent",
-            "memberName": "sequence",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -1048,7 +715,7 @@
     "RequestError": {
       "kind": "RequestError",
       "className": "RequestError",
-      "jsdoc": "/** Request Error 的错误信息。 */",
+      "jsdoc": "Request Error 的错误信息。",
       "shapeKind": "type",
       "declarationTypeText": "Error & {\n    /** 配置对象。 */\n    config: RequestConfig;\n    /** 稳定错误码或诊断码。 */\n    code?: string;\n    /** 当前状态。 */\n    status?: number;\n    /** 响应对象。 */\n    response?: unknown;\n}",
       "declarationRelations": [
@@ -1064,76 +731,44 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 149,
+        "line": 155,
         "className": "RequestError",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "config",
+          "jsdoc": "配置对象。",
           "schema": {
-            "title": "RequestConfig"
+            "$ref": "#/$defs/RequestConfig"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 配置对象。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 151,
-            "className": "RequestError",
-            "memberName": "config",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "code",
+          "jsdoc": "稳定错误码或诊断码。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 稳定错误码或诊断码。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 153,
-            "className": "RequestError",
-            "memberName": "code",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "status",
+          "jsdoc": "当前状态。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 当前状态。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 155,
-            "className": "RequestError",
-            "memberName": "status",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "response",
-          "schema": {
-            "title": "unknown"
-          },
+          "jsdoc": "响应对象。",
+          "schema": true,
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 响应对象。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 157,
-            "className": "RequestError",
-            "memberName": "response",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -1141,64 +776,44 @@
     "RequestInterceptor": {
       "kind": "RequestInterceptor",
       "className": "RequestInterceptor",
-      "jsdoc": "/** Request Interceptor 的语义模型。 */",
+      "jsdoc": "Request Interceptor 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 显示或业务名称。 */\n    name?: string;\n    /** on Request 事件回调。 */\n    onRequest?: (config: RequestConfig) => RequestConfig | Promise<RequestConfig>;\n    /**\n     * 请求阶段错误回调。\n     *\n     * 当前版本中，此回调在**同一拦截器**的 `onRequest` 抛出异常时被调用，\n     * 允许拦截器自行记录或处理自身引发的错误。异常仍会向上传播。\n     */\n    onRequestError?: (error: RequestError) => void | Promise<void>;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 160,
+        "line": 166,
         "className": "RequestInterceptor",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "name",
+          "jsdoc": "显示或业务名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 显示或业务名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 162,
-            "className": "RequestInterceptor",
-            "memberName": "name",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "onRequest",
+          "jsdoc": "on Request 事件回调。",
           "schema": {
+            "type": "object",
             "title": "(config: RequestConfig) => RequestConfig | Promise<RequestConfig>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** on Request 事件回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 164,
-            "className": "RequestInterceptor",
-            "memberName": "onRequest",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "onRequestError",
+          "jsdoc": "请求阶段错误回调。\n当前版本中，此回调在**同一拦截器**的 `onRequest` 抛出异常时被调用，\n允许拦截器自行记录或处理自身引发的错误。异常仍会向上传播。",
           "schema": {
+            "type": "object",
             "title": "(error: RequestError) => void | Promise<void>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/**\n     * 请求阶段错误回调。\n     *\n     * 当前版本中，此回调在**同一拦截器**的 `onRequest` 抛出异常时被调用，\n     * 允许拦截器自行记录或处理自身引发的错误。异常仍会向上传播。\n     */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 171,
-            "className": "RequestInterceptor",
-            "memberName": "onRequestError",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -1206,64 +821,44 @@
     "ResponseInterceptor": {
       "kind": "ResponseInterceptor",
       "className": "ResponseInterceptor",
-      "jsdoc": "/** Response Interceptor 的语义模型。 */",
+      "jsdoc": "Response Interceptor 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 显示或业务名称。 */\n    name?: string;\n    /** on Response 事件回调。 */\n    onResponse?: <T>(response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>;\n    /** on Response Error 事件回调。 */\n    onResponseError?: (error: RequestError) => RequestError | Promise<RequestError>;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 174,
+        "line": 180,
         "className": "ResponseInterceptor",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "name",
+          "jsdoc": "显示或业务名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 显示或业务名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 176,
-            "className": "ResponseInterceptor",
-            "memberName": "name",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "onResponse",
+          "jsdoc": "on Response 事件回调。",
           "schema": {
+            "type": "object",
             "title": "<T>(response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** on Response 事件回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 178,
-            "className": "ResponseInterceptor",
-            "memberName": "onResponse",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "onResponseError",
+          "jsdoc": "on Response Error 事件回调。",
           "schema": {
+            "type": "object",
             "title": "(error: RequestError) => RequestError | Promise<RequestError>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** on Response Error 事件回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 180,
-            "className": "ResponseInterceptor",
-            "memberName": "onResponseError",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -1271,7 +866,7 @@
     "HttpClientFactoryOptions": {
       "kind": "HttpClientFactoryOptions",
       "className": "HttpClientFactoryOptions",
-      "jsdoc": "/** createHttpClient 工厂参数 */",
+      "jsdoc": "createHttpClient 工厂参数",
       "shapeKind": "type",
       "declarationTypeText": "Partial<RequestConfig>",
       "declarationRelations": [
@@ -1283,7 +878,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 183,
+        "line": 189,
         "className": "HttpClientFactoryOptions",
         "declarationKind": "type"
       },
@@ -1293,66 +888,42 @@
     "CacheExpirationTier": {
       "kind": "CacheExpirationTier",
       "className": "CacheExpirationTier",
-      "jsdoc": "/** 缓存过期策略级别定义 */",
+      "jsdoc": "缓存过期策略级别定义",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 级别编号 */\n    level: number;\n    /** 最大闲置时间（毫秒），Infinity 表示永不过期 */\n    maxAge: number;\n    /** 级别说明 */\n    description?: string;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 185,
+        "line": 191,
         "className": "CacheExpirationTier",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "level",
+          "jsdoc": "级别编号",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 级别编号 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 187,
-            "className": "CacheExpirationTier",
-            "memberName": "level",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "maxAge",
+          "jsdoc": "最大闲置时间（毫秒），Infinity 表示永不过期",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 最大闲置时间（毫秒），Infinity 表示永不过期 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 189,
-            "className": "CacheExpirationTier",
-            "memberName": "maxAge",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "description",
+          "jsdoc": "级别说明",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 级别说明 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 191,
-            "className": "CacheExpirationTier",
-            "memberName": "description",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -1360,250 +931,165 @@
     "FileLoadOptions": {
       "kind": "FileLoadOptions",
       "className": "FileLoadOptions",
-      "jsdoc": "/** File Load Options 的调用配置。 */",
+      "jsdoc": "File Load Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** API 基础路径（文件 HTTP 加载使用） */\n    baseUrl: string;\n    /** 缓存存储方式 */\n    storage?: 'localStorage' | 'sessionStorage' | 'memory';\n    /** 缓存键前缀 */\n    cachePrefix?: string;\n    /** 自定义 HTTP client；用于复用上层认证、租户作用域或 URL 重写能力 */\n    request?: HttpClientBase;\n    /** 超时（ms） */\n    timeout?: number;\n    /** 自定义请求头（静态） */\n    headers?: Record<string, string>;\n    /** 动态请求头回调（每次请求时调用，优先级高于 headers） */\n    getHeaders?: () => Record<string, string>;\n    /** 网络失败时降级到缓存 */\n    fallbackToCache?: boolean;\n    /**\n     * 过期策略级别定义（默认：0=永不过期, 1=3天, 2=7天, 3=15天, 4=30天）\n     * 可自定义级别定义\n     */\n    expirationTiers?: CacheExpirationTier[];\n    /** 默认过期级别（默认 3 = 15天），对应 expirationTiers 中的 level */\n    defaultExpirationLevel?: number;\n    /** 最大缓存条目数（默认 100），超过按 LRU 清理 */\n    maxCacheSize?: number;\n    /** 当前 cachePrefix 在 Web Storage 中最多占用的估算字节数，超过按 LRU 清理 */\n    maxStorageBytes?: number;\n    /** Web Storage 总占用的估算字节上限；只驱逐当前缓存前缀下的条目 */\n    maxStorageTotalBytes?: number;\n    /** 单个 Web Storage 缓存项最大估算字节数，超过则跳过持久化 */\n    maxEntryStorageBytes?: number;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 194,
+        "line": 200,
         "className": "FileLoadOptions",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "baseUrl",
+          "jsdoc": "API 基础路径（文件 HTTP 加载使用）",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** API 基础路径（文件 HTTP 加载使用） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 196,
-            "className": "FileLoadOptions",
-            "memberName": "baseUrl",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "storage",
+          "jsdoc": "缓存存储方式",
           "schema": {
-            "title": "'localStorage' | 'sessionStorage' | 'memory'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "localStorage"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "sessionStorage"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "memory"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 缓存存储方式 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 198,
-            "className": "FileLoadOptions",
-            "memberName": "storage",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "cachePrefix",
+          "jsdoc": "缓存键前缀",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 缓存键前缀 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 200,
-            "className": "FileLoadOptions",
-            "memberName": "cachePrefix",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "request",
+          "jsdoc": "自定义 HTTP client；用于复用上层认证、租户作用域或 URL 重写能力",
           "schema": {
-            "title": "HttpClientBase"
+            "$ref": "HttpClientBase.d.ts.json#/$defs/HttpClientBase"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 自定义 HTTP client；用于复用上层认证、租户作用域或 URL 重写能力 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 202,
-            "className": "FileLoadOptions",
-            "memberName": "request",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "timeout",
+          "jsdoc": "超时（ms）",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 超时（ms） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 204,
-            "className": "FileLoadOptions",
-            "memberName": "timeout",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "headers",
+          "jsdoc": "自定义请求头（静态）",
           "schema": {
+            "type": "object",
             "title": "Record<string, string>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 自定义请求头（静态） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 206,
-            "className": "FileLoadOptions",
-            "memberName": "headers",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "getHeaders",
+          "jsdoc": "动态请求头回调（每次请求时调用，优先级高于 headers）",
           "schema": {
+            "type": "object",
             "title": "() => Record<string, string>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 动态请求头回调（每次请求时调用，优先级高于 headers） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 208,
-            "className": "FileLoadOptions",
-            "memberName": "getHeaders",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "fallbackToCache",
+          "jsdoc": "网络失败时降级到缓存",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 网络失败时降级到缓存 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 210,
-            "className": "FileLoadOptions",
-            "memberName": "fallbackToCache",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "expirationTiers",
+          "jsdoc": "过期策略级别定义（默认：0=永不过期, 1=3天, 2=7天, 3=15天, 4=30天）\n可自定义级别定义",
           "schema": {
             "type": "array",
-            "title": "CacheExpirationTier[]",
-            "items": true
+            "items": {
+              "$ref": "#/$defs/CacheExpirationTier"
+            }
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/**\n     * 过期策略级别定义（默认：0=永不过期, 1=3天, 2=7天, 3=15天, 4=30天）\n     * 可自定义级别定义\n     */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 215,
-            "className": "FileLoadOptions",
-            "memberName": "expirationTiers",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "defaultExpirationLevel",
+          "jsdoc": "默认过期级别（默认 3 = 15天），对应 expirationTiers 中的 level",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 默认过期级别（默认 3 = 15天），对应 expirationTiers 中的 level */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 217,
-            "className": "FileLoadOptions",
-            "memberName": "defaultExpirationLevel",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "maxCacheSize",
+          "jsdoc": "最大缓存条目数（默认 100），超过按 LRU 清理",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 最大缓存条目数（默认 100），超过按 LRU 清理 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 219,
-            "className": "FileLoadOptions",
-            "memberName": "maxCacheSize",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "maxStorageBytes",
+          "jsdoc": "当前 cachePrefix 在 Web Storage 中最多占用的估算字节数，超过按 LRU 清理",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 当前 cachePrefix 在 Web Storage 中最多占用的估算字节数，超过按 LRU 清理 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 221,
-            "className": "FileLoadOptions",
-            "memberName": "maxStorageBytes",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "maxStorageTotalBytes",
+          "jsdoc": "Web Storage 总占用的估算字节上限；只驱逐当前缓存前缀下的条目",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** Web Storage 总占用的估算字节上限；只驱逐当前缓存前缀下的条目 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 223,
-            "className": "FileLoadOptions",
-            "memberName": "maxStorageTotalBytes",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "maxEntryStorageBytes",
+          "jsdoc": "单个 Web Storage 缓存项最大估算字节数，超过则跳过持久化",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 单个 Web Storage 缓存项最大估算字节数，超过则跳过持久化 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 225,
-            "className": "FileLoadOptions",
-            "memberName": "maxEntryStorageBytes",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -1611,99 +1097,58 @@
     "CacheEntry": {
       "kind": "CacheEntry",
       "className": "CacheEntry",
-      "jsdoc": "/**\n * 通用缓存条目（泛型）\n * - 文件内容：T = string\n * - DataSet、编译后脚本、编译后规则等计算结果：T = 具体类型\n */",
+      "jsdoc": "通用缓存条目（泛型）\n- 文件内容：T = string\n- DataSet、编译后脚本、编译后规则等计算结果：T = 具体类型",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 缓存的数据（文件原始内容或任意计算结果） */\n    data: T;\n    /**\n     * 来源时间戳（来自文件服务器的 mtime、版本号或任意标识）\n     * 对比此字段判断缓存是否仍有效。\n     */\n    sourceTimestamp: string;\n    /** 缓存创建时间（毫秒时间戳，用于兜底） */\n    cachedAt: number;\n    /** 最后访问时间（毫秒时间戳，用于滑动过期 + LRU 清理） */\n    lastAccess: number;\n    /** 过期级别（0=永不过期, 1=3天, 2=7天, 3=15天, 4=30天） */\n    expirationLevel: number;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 232,
+        "line": 238,
         "className": "CacheEntry",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "data",
-          "schema": {
-            "title": "T"
-          },
+          "jsdoc": "缓存的数据（文件原始内容或任意计算结果）",
+          "schema": true,
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 缓存的数据（文件原始内容或任意计算结果） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 234,
-            "className": "CacheEntry",
-            "memberName": "data",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "sourceTimestamp",
+          "jsdoc": "来源时间戳（来自文件服务器的 mtime、版本号或任意标识）\n对比此字段判断缓存是否仍有效。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/**\n     * 来源时间戳（来自文件服务器的 mtime、版本号或任意标识）\n     * 对比此字段判断缓存是否仍有效。\n     */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 239,
-            "className": "CacheEntry",
-            "memberName": "sourceTimestamp",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "cachedAt",
+          "jsdoc": "缓存创建时间（毫秒时间戳，用于兜底）",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 缓存创建时间（毫秒时间戳，用于兜底） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 241,
-            "className": "CacheEntry",
-            "memberName": "cachedAt",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "lastAccess",
+          "jsdoc": "最后访问时间（毫秒时间戳，用于滑动过期 + LRU 清理）",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 最后访问时间（毫秒时间戳，用于滑动过期 + LRU 清理） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 243,
-            "className": "CacheEntry",
-            "memberName": "lastAccess",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "expirationLevel",
+          "jsdoc": "过期级别（0=永不过期, 1=3天, 2=7天, 3=15天, 4=30天）",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 过期级别（0=永不过期, 1=3天, 2=7天, 3=15天, 4=30天） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 245,
-            "className": "CacheEntry",
-            "memberName": "expirationLevel",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -1711,149 +1156,116 @@
     "FileLoadResult": {
       "kind": "FileLoadResult",
       "className": "FileLoadResult",
-      "jsdoc": "/** File Load Result 的返回结果。 */",
+      "jsdoc": "File Load Result 的返回结果。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** success 字段。 */\n    success: boolean;\n    /** 业务数据载荷。 */\n    data?: T;\n    /** 来源时间戳 */\n    timestamp?: string;\n    /** from Cache 字段。 */\n    fromCache: boolean;\n    /** 错误对象或错误信息。 */\n    error?: string;\n    /** not Modified 字段。 */\n    notModified?: boolean;\n    /** 失败状态码（如 404） */\n    status?: number;\n    /** 失败原因（用于上游订阅消费，不再依赖字符串匹配） */\n    reason?: 'not-found' | 'network' | 'invalid-response' | 'parse' | 'unknown';\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 248,
+        "line": 254,
         "className": "FileLoadResult",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "success",
+          "jsdoc": "success 字段。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** success 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 250,
-            "className": "FileLoadResult",
-            "memberName": "success",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "data",
-          "schema": {
-            "title": "T"
-          },
+          "jsdoc": "业务数据载荷。",
+          "schema": true,
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 业务数据载荷。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 252,
-            "className": "FileLoadResult",
-            "memberName": "data",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "timestamp",
+          "jsdoc": "来源时间戳",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 来源时间戳 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 254,
-            "className": "FileLoadResult",
-            "memberName": "timestamp",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "fromCache",
+          "jsdoc": "from Cache 字段。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** from Cache 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 256,
-            "className": "FileLoadResult",
-            "memberName": "fromCache",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "error",
+          "jsdoc": "错误对象或错误信息。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 错误对象或错误信息。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 258,
-            "className": "FileLoadResult",
-            "memberName": "error",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "notModified",
+          "jsdoc": "not Modified 字段。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** not Modified 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 260,
-            "className": "FileLoadResult",
-            "memberName": "notModified",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "status",
+          "jsdoc": "失败状态码（如 404）",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 失败状态码（如 404） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 262,
-            "className": "FileLoadResult",
-            "memberName": "status",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "reason",
+          "jsdoc": "失败原因（用于上游订阅消费，不再依赖字符串匹配）",
           "schema": {
-            "title": "'not-found' | 'network' | 'invalid-response' | 'parse' | 'unknown'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "not-found"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "network"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "invalid-response"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "parse"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "unknown"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 失败原因（用于上游订阅消费，不再依赖字符串匹配） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 264,
-            "className": "FileLoadResult",
-            "memberName": "reason",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -1861,67 +1273,553 @@
     "FileLoaderEventMap": {
       "kind": "FileLoaderEventMap",
       "className": "FileLoaderEventMap",
-      "jsdoc": "/** FileLoader 事件映射（用于全链路订阅消费） */",
+      "jsdoc": "FileLoader 事件映射（用于全链路订阅消费）",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** file loaded 字段。 */\n    'file-loaded': {\n        fileName: string;\n        fromCache: boolean;\n        timestamp?: string;\n        notModified?: boolean;\n    };\n    /** file missing 字段。 */\n    'file-missing': {\n        fileName: string;\n        status?: number;\n        reason: 'not-found';\n    };\n    /** file error 字段。 */\n    'file-error': {\n        fileName: string;\n        status?: number;\n        error: string;\n        reason: 'network' | 'invalid-response' | 'parse' | 'unknown';\n    };\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-        "line": 267,
+        "line": 273,
         "className": "FileLoaderEventMap",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "file-loaded",
+          "jsdoc": "file loaded 字段。",
           "schema": {
-            "title": "{\n        fileName: string;\n        fromCache: boolean;\n        timestamp?: string;\n        notModified?: boolean;\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** file loaded 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 269,
-            "className": "FileLoaderEventMap",
-            "memberName": "file-loaded",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "file-missing",
+          "jsdoc": "file missing 字段。",
           "schema": {
-            "title": "{\n        fileName: string;\n        status?: number;\n        reason: 'not-found';\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** file missing 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 276,
-            "className": "FileLoaderEventMap",
-            "memberName": "file-missing",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "file-error",
+          "jsdoc": "file error 字段。",
           "schema": {
-            "title": "{\n        fileName: string;\n        status?: number;\n        error: string;\n        reason: 'network' | 'invalid-response' | 'parse' | 'unknown';\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** file error 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/types.d.ts",
-            "line": 282,
-            "className": "FileLoaderEventMap",
-            "memberName": "file-error",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.019Z"
+  "generatedAt": "2026-06-11T16:38:13.090Z",
+  "$defs": {
+    "Method": {
+      "type": "object",
+      "title": "Method",
+      "description": "Method 的语义模型。"
+    },
+    "RequestConfig": {
+      "type": "object",
+      "title": "RequestConfig",
+      "description": "请求配置",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "method": {
+          "$ref": "#/$defs/Method"
+        },
+        "headers": {
+          "type": "object",
+          "title": "Record<string, string>"
+        },
+        "params": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "data": true,
+        "timeout": {
+          "type": "number"
+        },
+        "responseType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "arraybuffer"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "blob"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "document"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "json"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "text"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "formdata"
+              ]
+            }
+          ]
+        },
+        "baseURL": {
+          "type": "string"
+        },
+        "cache": {
+          "type": "boolean"
+        },
+        "cacheKey": {
+          "type": "string"
+        },
+        "cacheExpiry": {
+          "type": "number"
+        },
+        "retry": {
+          "type": "number"
+        },
+        "retryDelay": {
+          "type": "number"
+        },
+        "signal": {
+          "type": "object",
+          "title": "AbortSignal"
+        },
+        "withCredentials": {
+          "type": "boolean"
+        },
+        "meta": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "keepalive": {
+          "type": "boolean"
+        }
+      }
+    },
+    "HttpResponse": {
+      "type": "object",
+      "title": "HttpResponse",
+      "description": "HTTP 响应（不泄露 axios 实现）",
+      "properties": {
+        "data": true,
+        "status": {
+          "type": "number"
+        },
+        "statusText": {
+          "type": "string"
+        },
+        "headers": {
+          "type": "object",
+          "title": "Record<string, string>"
+        }
+      }
+    },
+    "ApiResponse": {
+      "type": "object",
+      "title": "ApiResponse",
+      "description": "旧版标准业务 API 响应（{ code, message, data } 格式）",
+      "properties": {
+        "code": {
+          "type": "number"
+        },
+        "message": {
+          "type": "string"
+        },
+        "data": true,
+        "timestamp": {
+          "type": "string"
+        },
+        "traceId": {
+          "type": "string"
+        }
+      }
+    },
+    "ApiEnvelope": {
+      "type": "object",
+      "title": "ApiEnvelope",
+      "description": "SPARK AI Server 统一 API envelope",
+      "properties": {
+        "protocolVersion": {
+          "type": "number"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "data": true,
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApiEnvelopeError"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "context": {
+          "$ref": "#/$defs/ApiEnvelopeContext"
+        },
+        "event": {
+          "$ref": "#/$defs/ApiEnvelopeEvent"
+        }
+      }
+    },
+    "ApiEnvelopeError": {
+      "type": "object",
+      "title": "ApiEnvelopeError",
+      "description": "Api Envelope Error 的错误信息。",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "retryPolicy": {
+          "type": "string"
+        },
+        "details": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    },
+    "ApiEnvelopeContext": {
+      "type": "object",
+      "title": "ApiEnvelopeContext",
+      "description": "Api Envelope Context 的运行上下文。",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "object"
+        },
+        "session": {
+          "type": "object"
+        },
+        "turn": {
+          "type": "object"
+        },
+        "stream": {
+          "type": "object"
+        }
+      }
+    },
+    "ApiEnvelopeEvent": {
+      "type": "object",
+      "title": "ApiEnvelopeEvent",
+      "description": "Api Envelope Event 的事件载荷。",
+      "properties": {
+        "transport": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "http"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "sse"
+              ]
+            }
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "terminal": {
+          "type": "boolean"
+        },
+        "sequence": {
+          "type": "number"
+        }
+      }
+    },
+    "RequestError": {
+      "type": "object",
+      "title": "RequestError",
+      "description": "Request Error 的错误信息。",
+      "properties": {
+        "config": {
+          "$ref": "#/$defs/RequestConfig"
+        },
+        "code": {
+          "type": "string"
+        },
+        "status": {
+          "type": "number"
+        },
+        "response": true
+      }
+    },
+    "RequestInterceptor": {
+      "type": "object",
+      "title": "RequestInterceptor",
+      "description": "Request Interceptor 的语义模型。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "onRequest": {
+          "type": "object",
+          "title": "(config: RequestConfig) => RequestConfig | Promise<RequestConfig>"
+        },
+        "onRequestError": {
+          "type": "object",
+          "title": "(error: RequestError) => void | Promise<void>"
+        }
+      }
+    },
+    "ResponseInterceptor": {
+      "type": "object",
+      "title": "ResponseInterceptor",
+      "description": "Response Interceptor 的语义模型。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "onResponse": {
+          "type": "object",
+          "title": "<T>(response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>"
+        },
+        "onResponseError": {
+          "type": "object",
+          "title": "(error: RequestError) => RequestError | Promise<RequestError>"
+        }
+      }
+    },
+    "HttpClientFactoryOptions": {
+      "type": "object",
+      "title": "HttpClientFactoryOptions",
+      "description": "createHttpClient 工厂参数"
+    },
+    "CacheExpirationTier": {
+      "type": "object",
+      "title": "CacheExpirationTier",
+      "description": "缓存过期策略级别定义",
+      "properties": {
+        "level": {
+          "type": "number"
+        },
+        "maxAge": {
+          "type": "number"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "FileLoadOptions": {
+      "type": "object",
+      "title": "FileLoadOptions",
+      "description": "File Load Options 的调用配置。",
+      "properties": {
+        "baseUrl": {
+          "type": "string"
+        },
+        "storage": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "localStorage"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "sessionStorage"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "memory"
+              ]
+            }
+          ]
+        },
+        "cachePrefix": {
+          "type": "string"
+        },
+        "request": {
+          "$ref": "HttpClientBase.d.ts.json#/$defs/HttpClientBase"
+        },
+        "timeout": {
+          "type": "number"
+        },
+        "headers": {
+          "type": "object",
+          "title": "Record<string, string>"
+        },
+        "getHeaders": {
+          "type": "object",
+          "title": "() => Record<string, string>"
+        },
+        "fallbackToCache": {
+          "type": "boolean"
+        },
+        "expirationTiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CacheExpirationTier"
+          }
+        },
+        "defaultExpirationLevel": {
+          "type": "number"
+        },
+        "maxCacheSize": {
+          "type": "number"
+        },
+        "maxStorageBytes": {
+          "type": "number"
+        },
+        "maxStorageTotalBytes": {
+          "type": "number"
+        },
+        "maxEntryStorageBytes": {
+          "type": "number"
+        }
+      }
+    },
+    "CacheEntry": {
+      "type": "object",
+      "title": "CacheEntry",
+      "description": "通用缓存条目（泛型）\n- 文件内容：T = string\n- DataSet、编译后脚本、编译后规则等计算结果：T = 具体类型",
+      "properties": {
+        "data": true,
+        "sourceTimestamp": {
+          "type": "string"
+        },
+        "cachedAt": {
+          "type": "number"
+        },
+        "lastAccess": {
+          "type": "number"
+        },
+        "expirationLevel": {
+          "type": "number"
+        }
+      }
+    },
+    "FileLoadResult": {
+      "type": "object",
+      "title": "FileLoadResult",
+      "description": "File Load Result 的返回结果。",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "data": true,
+        "timestamp": {
+          "type": "string"
+        },
+        "fromCache": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string"
+        },
+        "notModified": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "number"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "not-found"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "network"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "invalid-response"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "parse"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "unknown"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "FileLoaderEventMap": {
+      "type": "object",
+      "title": "FileLoaderEventMap",
+      "description": "FileLoader 事件映射（用于全链路订阅消费）",
+      "properties": {
+        "file-loaded": {
+          "type": "object"
+        },
+        "file-missing": {
+          "type": "object"
+        },
+        "file-error": {
+          "type": "object"
+        }
+      }
+    }
+  }
 }

@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/class-model/projection/dts-renderer.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/projection/dts-renderer",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/projection/dts-renderer\n@spark-appworks/spark-ai 的 class-model/projection/dts-renderer 模块。\n导出 ClassModel symbol: ModelGuideRenderInput, ModelGuide, AttributeGuideRenderInput, AttributeGuide, MethodGuideRenderInput, MethodGuide（共 6 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/projection/dts-renderer\n职责：维护 DTS ClassModel 知识链路中的 dts-renderer 能力，围绕 ModelGuideRenderInput、ModelGuide、AttributeGuideRenderInput 等 6 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/projection/dts-renderer 这一段如何生成、加载或投影时，用本模块定位职责。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ModelGuideRenderInput",
@@ -30,7 +30,7 @@
     "ModelGuideRenderInput": {
       "kind": "ModelGuideRenderInput",
       "className": "ModelGuideRenderInput",
-      "jsdoc": "/** Model Guide Render Input 的输入数据。 */",
+      "jsdoc": "Model Guide Render Input 的输入数据。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n}>",
       "declarationRelations": [
@@ -42,7 +42,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
-        "line": 8,
+        "line": 9,
         "className": "ModelGuideRenderInput",
         "declarationKind": "type"
       },
@@ -52,7 +52,7 @@
     "ModelGuide": {
       "kind": "ModelGuide",
       "className": "ModelGuide",
-      "jsdoc": "/** Model Guide 的语义模型。 */",
+      "jsdoc": "Model Guide 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    kind: string;\n    declaration: string;\n    text: string;\n}>",
       "declarationRelations": [
@@ -64,7 +64,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
-        "line": 13,
+        "line": 14,
         "className": "ModelGuide",
         "declarationKind": "type"
       },
@@ -74,7 +74,7 @@
     "AttributeGuideRenderInput": {
       "kind": "AttributeGuideRenderInput",
       "className": "AttributeGuideRenderInput",
-      "jsdoc": "/** Attribute Guide Render Input 的输入数据。 */",
+      "jsdoc": "Attribute Guide Render Input 的输入数据。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n    attributeName: string;\n}>",
       "declarationRelations": [
@@ -86,7 +86,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
-        "line": 19,
+        "line": 20,
         "className": "AttributeGuideRenderInput",
         "declarationKind": "type"
       },
@@ -96,7 +96,7 @@
     "AttributeGuide": {
       "kind": "AttributeGuide",
       "className": "AttributeGuide",
-      "jsdoc": "/** Attribute Guide 的语义模型。 */",
+      "jsdoc": "Attribute Guide 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    kind: string;\n    attributeName: string;\n    declaration: string;\n    text: string;\n}>",
       "declarationRelations": [
@@ -108,7 +108,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
-        "line": 25,
+        "line": 26,
         "className": "AttributeGuide",
         "declarationKind": "type"
       },
@@ -118,7 +118,7 @@
     "MethodGuideRenderInput": {
       "kind": "MethodGuideRenderInput",
       "className": "MethodGuideRenderInput",
-      "jsdoc": "/** Method Guide Render Input 的输入数据。 */",
+      "jsdoc": "Method Guide Render Input 的输入数据。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    document: ClassModelDocument;\n    kind: string;\n    methodName: string;\n}>",
       "declarationRelations": [
@@ -130,7 +130,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
-        "line": 32,
+        "line": 33,
         "className": "MethodGuideRenderInput",
         "declarationKind": "type"
       },
@@ -140,7 +140,7 @@
     "MethodGuide": {
       "kind": "MethodGuide",
       "className": "MethodGuide",
-      "jsdoc": "/** Method Guide 的语义模型。 */",
+      "jsdoc": "Method Guide 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    kind: string;\n    methodName: string;\n    declaration: string;\n    text: string;\n}>",
       "declarationRelations": [
@@ -152,7 +152,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
-        "line": 38,
+        "line": 39,
         "className": "MethodGuide",
         "declarationKind": "type"
       },
@@ -160,5 +160,37 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.856Z"
+  "generatedAt": "2026-06-11T16:38:12.607Z",
+  "$defs": {
+    "ModelGuideRenderInput": {
+      "type": "object",
+      "title": "ModelGuideRenderInput",
+      "description": "Model Guide Render Input 的输入数据。"
+    },
+    "ModelGuide": {
+      "type": "object",
+      "title": "ModelGuide",
+      "description": "Model Guide 的语义模型。"
+    },
+    "AttributeGuideRenderInput": {
+      "type": "object",
+      "title": "AttributeGuideRenderInput",
+      "description": "Attribute Guide Render Input 的输入数据。"
+    },
+    "AttributeGuide": {
+      "type": "object",
+      "title": "AttributeGuide",
+      "description": "Attribute Guide 的语义模型。"
+    },
+    "MethodGuideRenderInput": {
+      "type": "object",
+      "title": "MethodGuideRenderInput",
+      "description": "Method Guide Render Input 的输入数据。"
+    },
+    "MethodGuide": {
+      "type": "object",
+      "title": "MethodGuide",
+      "description": "Method Guide 的语义模型。"
+    }
+  }
 }

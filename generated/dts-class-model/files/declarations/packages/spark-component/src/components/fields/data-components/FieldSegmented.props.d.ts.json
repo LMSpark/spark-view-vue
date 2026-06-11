@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/fields/data-components/FieldSegmented.props.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/fields/data-components/FieldSegmented.props",
-    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/FieldSegmented.props\nFieldSegmented 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: RSegmentedProps（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/FieldSegmented.props\n职责：定义 FieldSegmented（r-segmented）的配置属性契约，把页面 JSON 中的字段、数据绑定、显示选项和交互开关约束成可生成的类型。\n边界：只描述 field-level/data-field 组件的声明式配置，不读取 DataSet、不触发运行时事件，也不直接渲染 DOM。\nAI用途：生成或修订页面配置时，用本模块判断 field segmented 允许哪些 props、哪些字段属于数据绑定，避免把运行时 API 写进配置。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "RSegmentedProps"
@@ -25,7 +25,7 @@
     "RSegmentedProps": {
       "kind": "RSegmentedProps",
       "className": "RSegmentedProps",
-      "jsdoc": "/** 分段控件候选项直接使用原生联合类型，不再额外导出基础类型包装。 */",
+      "jsdoc": "分段控件候选项直接使用原生联合类型，不再额外导出基础类型包装。",
       "shapeKind": "type",
       "declarationTypeText": "SparkNodeProps & SparkOptionFieldProps<string | number, string | number | {\n    label: string;\n    value: string | number;\n    disabled?: boolean;\n}> & {\n    /** 尺寸 */\n    size?: 'large' | 'default' | 'small';\n    /** 是否占满容器宽度 */\n    block?: boolean;\n}",
       "declarationRelations": [
@@ -58,50 +58,78 @@
       "attributes": [
         {
           "name": "size",
+          "jsdoc": "尺寸",
           "schema": {
-            "title": "'large' | 'default' | 'small'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "large"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "default"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "small"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 尺寸 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldSegmented.props.d.ts",
-            "line": 15,
-            "className": "RSegmentedProps",
-            "memberName": "size",
-            "declarationKind": "interface",
-            "componentName": "FieldSegmented",
-            "componentType": "r-segmented",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "block",
+          "jsdoc": "是否占满容器宽度",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否占满容器宽度 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldSegmented.props.d.ts",
-            "line": 17,
-            "className": "RSegmentedProps",
-            "memberName": "block",
-            "declarationKind": "interface",
-            "componentName": "FieldSegmented",
-            "componentType": "r-segmented",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.536Z"
+  "generatedAt": "2026-06-11T16:38:12.867Z",
+  "$defs": {
+    "RSegmentedProps": {
+      "type": "object",
+      "title": "RSegmentedProps",
+      "description": "分段控件候选项直接使用原生联合类型，不再额外导出基础类型包装。",
+      "properties": {
+        "size": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "large"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "default"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "small"
+              ]
+            }
+          ]
+        },
+        "block": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
 }

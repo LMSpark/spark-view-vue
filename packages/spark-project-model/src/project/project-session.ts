@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-project-model:project/project-session
- * @spark-appworks/spark-project-model 的 project/project-session 模块。
- * 导出 ClassModel symbol: ProjectSessionState, ProjectSessionOwner, ProjectSession（共 3 个 symbol）。
+ * 职责：提供项目模型层 project-session 能力，围绕 ProjectSessionState、ProjectSessionOwner、ProjectSession 处理导航、页面文件、配置内容、工作区或远端 IO 契约。
+ * 边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。
+ * AI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 project/project-session。
  */
 import type { NavigationNodeDraft } from '../navigation/navigation-edit'
 import type { ProjectNode } from '../navigation/project-node'

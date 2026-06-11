@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/runtime/container-form-detail.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/runtime/container-form-detail",
-    "jsdoc": "container-form-detail.ts\n表单/详情容器编排层：r-form 与 r-detail 的完整运行时编排。\n职责：\n- useFormDetailContainer    : 6 个分区的完整容器编排（布局/能力/镜像/工具栏/作用域/输出）\n- buildFormDetailContainerProps : 规范化构建入参（避免消费端重复展开可选字段）\n- FormDetailContainerConsumerProps : 两侧容器组件的最小输入形状\n工作流程（6 分区）：\n1. 布局层     : children → CSS Grid 投影（useContainerGrid）\n2. 能力接入层  : dataViewKey → DataView 解析 + 能力注入（useContainerDataSource）\n3. 上下文镜像层 : DataView.currentRow / aggregateResult → contextData（shallowReactive）\n4. 工具栏投影层 : toolbar SparkNode → 可见性/位置（useContainerToolbar）\n5. 作用域构建层 : contextData → 字段渲染默认作用域（createCurrentRowScope）\n6. 对外输出层  : 汇总所有状态并返回\n消费方：RendererForm.vue、RendererDetail.vue",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/runtime/container-form-detail\n职责：提供 container form detail 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "FormDetailContainerProps",
@@ -22,7 +22,7 @@
     "FormDetailContainerProps": {
       "kind": "FormDetailContainerProps",
       "className": "FormDetailContainerProps",
-      "jsdoc": "/** 容器内部完整属性形状（包括私有布局字段）。 */",
+      "jsdoc": "容器内部完整属性形状（包括私有布局字段）。",
       "shapeKind": "type",
       "declarationTypeText": "SparkNode & {\n    /** DataView 定位键。 */\n    dataViewKey: string | undefined;\n    /** context Data Member 字段。 */\n    contextDataMember: DataMember | `${DataMember}` | undefined;\n    /** context Data Field 字段。 */\n    contextDataField: string | undefined;\n    /** data Source 字段。 */\n    dataSource?: DataView;\n    /** toolbar 字段。 */\n    toolbar?: RToolbarProps;\n    /** auto Columns 字段。 */\n    autoColumns: boolean | undefined;\n    /** grid Columns 字段。 */\n    gridColumns: number | undefined;\n    /** grid Gap 字段。 */\n    gridGap: number | string | undefined;\n    /** grid Auto Rows 字段。 */\n    gridAutoRows: string | undefined;\n}",
       "declarationRelations": [
@@ -38,154 +38,147 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-        "line": 25,
+        "line": 11,
         "className": "FormDetailContainerProps",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "dataViewKey",
+          "jsdoc": "DataView 定位键。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** DataView 定位键。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 27,
-            "className": "FormDetailContainerProps",
-            "memberName": "dataViewKey",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "contextDataMember",
+          "jsdoc": "context Data Member 字段。",
           "schema": {
-            "title": "DataMember | `${DataMember}` | undefined"
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataMember"
+              },
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** context Data Member 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 29,
-            "className": "FormDetailContainerProps",
-            "memberName": "contextDataMember",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "contextDataField",
+          "jsdoc": "context Data Field 字段。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** context Data Field 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 31,
-            "className": "FormDetailContainerProps",
-            "memberName": "contextDataField",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "dataSource",
+          "jsdoc": "data Source 字段。",
           "schema": {
+            "type": "object",
             "title": "DataView"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** data Source 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 33,
-            "className": "FormDetailContainerProps",
-            "memberName": "dataSource",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "toolbar",
+          "jsdoc": "toolbar 字段。",
           "schema": {
-            "title": "RToolbarProps"
+            "$ref": "../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** toolbar 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 35,
-            "className": "FormDetailContainerProps",
-            "memberName": "toolbar",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "autoColumns",
+          "jsdoc": "auto Columns 字段。",
           "schema": {
-            "title": "boolean | undefined"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** auto Columns 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 37,
-            "className": "FormDetailContainerProps",
-            "memberName": "autoColumns",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "gridColumns",
+          "jsdoc": "grid Columns 字段。",
           "schema": {
-            "title": "number | undefined"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** grid Columns 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 39,
-            "className": "FormDetailContainerProps",
-            "memberName": "gridColumns",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "gridGap",
+          "jsdoc": "grid Gap 字段。",
           "schema": {
-            "title": "number | string | undefined"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** grid Gap 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 41,
-            "className": "FormDetailContainerProps",
-            "memberName": "gridGap",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "gridAutoRows",
+          "jsdoc": "grid Auto Rows 字段。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** grid Auto Rows 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 43,
-            "className": "FormDetailContainerProps",
-            "memberName": "gridAutoRows",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -193,211 +186,374 @@
     "FormDetailContainerConsumerProps": {
       "kind": "FormDetailContainerConsumerProps",
       "className": "FormDetailContainerConsumerProps",
-      "jsdoc": "/**\n * r-form / r-detail 消费 `useFormDetailContainer` 时的最小输入形状。\n *\n * 目的：统一两侧组件的入参组装，避免在消费端重复展开同一批可选字段。\n */",
+      "jsdoc": "r-form / r-detail 消费 `useFormDetailContainer` 时的最小输入形状。\n目的：统一两侧组件的入参组装，避免在消费端重复展开同一批可选字段。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 类型标识。 */\n    type: SparkNode['type'];\n    /** 唯一标识。 */\n    id?: SparkNode['id'];\n    /** toolbar 字段。 */\n    toolbar?: RToolbarProps;\n    /** 子节点集合。 */\n    children?: SparkNode['children'];\n    /** data Source 字段。 */\n    dataSource?: DataView;\n    /** DataView 定位键。 */\n    dataViewKey: string | undefined;\n    /** context Data Member 字段。 */\n    contextDataMember: DataMember | `${DataMember}` | undefined;\n    /** context Data Field 字段。 */\n    contextDataField: string | undefined;\n    /** auto Columns 字段。 */\n    autoColumns: boolean | undefined;\n    /** grid Columns 字段。 */\n    gridColumns: number | undefined;\n    /** grid Gap 字段。 */\n    gridGap: number | string | undefined;\n    /** grid Auto Rows 字段。 */\n    gridAutoRows: string | undefined;\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-        "line": 50,
+        "line": 36,
         "className": "FormDetailContainerConsumerProps",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "type",
+          "jsdoc": "类型标识。",
           "schema": {
-            "title": "SparkNode['type']"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 类型标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 52,
-            "className": "FormDetailContainerConsumerProps",
-            "memberName": "type",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "id",
+          "jsdoc": "唯一标识。",
           "schema": {
-            "title": "SparkNode['id']"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 唯一标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 54,
-            "className": "FormDetailContainerConsumerProps",
-            "memberName": "id",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "toolbar",
+          "jsdoc": "toolbar 字段。",
           "schema": {
-            "title": "RToolbarProps"
+            "$ref": "../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** toolbar 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 56,
-            "className": "FormDetailContainerConsumerProps",
-            "memberName": "toolbar",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "children",
+          "jsdoc": "子节点集合。",
           "schema": {
-            "title": "SparkNode['children']"
+            "type": "array"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 子节点集合。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 58,
-            "className": "FormDetailContainerConsumerProps",
-            "memberName": "children",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "dataSource",
+          "jsdoc": "data Source 字段。",
           "schema": {
+            "type": "object",
             "title": "DataView"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** data Source 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 60,
-            "className": "FormDetailContainerConsumerProps",
-            "memberName": "dataSource",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "dataViewKey",
+          "jsdoc": "DataView 定位键。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** DataView 定位键。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 62,
-            "className": "FormDetailContainerConsumerProps",
-            "memberName": "dataViewKey",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "contextDataMember",
+          "jsdoc": "context Data Member 字段。",
           "schema": {
-            "title": "DataMember | `${DataMember}` | undefined"
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataMember"
+              },
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** context Data Member 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 64,
-            "className": "FormDetailContainerConsumerProps",
-            "memberName": "contextDataMember",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "contextDataField",
+          "jsdoc": "context Data Field 字段。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** context Data Field 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 66,
-            "className": "FormDetailContainerConsumerProps",
-            "memberName": "contextDataField",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "autoColumns",
+          "jsdoc": "auto Columns 字段。",
           "schema": {
-            "title": "boolean | undefined"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** auto Columns 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 68,
-            "className": "FormDetailContainerConsumerProps",
-            "memberName": "autoColumns",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "gridColumns",
+          "jsdoc": "grid Columns 字段。",
           "schema": {
-            "title": "number | undefined"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** grid Columns 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 70,
-            "className": "FormDetailContainerConsumerProps",
-            "memberName": "gridColumns",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "gridGap",
+          "jsdoc": "grid Gap 字段。",
           "schema": {
-            "title": "number | string | undefined"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** grid Gap 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 72,
-            "className": "FormDetailContainerConsumerProps",
-            "memberName": "gridGap",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "gridAutoRows",
+          "jsdoc": "grid Auto Rows 字段。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** grid Auto Rows 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/runtime/container-form-detail.d.ts",
-            "line": 74,
-            "className": "FormDetailContainerConsumerProps",
-            "memberName": "gridAutoRows",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.244Z"
+  "generatedAt": "2026-06-11T16:38:12.755Z",
+  "$defs": {
+    "FormDetailContainerProps": {
+      "type": "object",
+      "title": "FormDetailContainerProps",
+      "description": "容器内部完整属性形状（包括私有布局字段）。",
+      "properties": {
+        "dataViewKey": {
+          "type": "string"
+        },
+        "contextDataMember": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataMember"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          ]
+        },
+        "contextDataField": {
+          "type": "string"
+        },
+        "dataSource": {
+          "type": "object",
+          "title": "DataView"
+        },
+        "toolbar": {
+          "$ref": "../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+        },
+        "autoColumns": {
+          "type": "boolean"
+        },
+        "gridColumns": {
+          "type": "number"
+        },
+        "gridGap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "gridAutoRows": {
+          "type": "string"
+        }
+      }
+    },
+    "FormDetailContainerConsumerProps": {
+      "type": "object",
+      "title": "FormDetailContainerConsumerProps",
+      "description": "r-form / r-detail 消费 `useFormDetailContainer` 时的最小输入形状。\n目的：统一两侧组件的入参组装，避免在消费端重复展开同一批可选字段。",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "toolbar": {
+          "$ref": "../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+        },
+        "children": {
+          "type": "array"
+        },
+        "dataSource": {
+          "type": "object",
+          "title": "DataView"
+        },
+        "dataViewKey": {
+          "type": "string"
+        },
+        "contextDataMember": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataMember"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          ]
+        },
+        "contextDataField": {
+          "type": "string"
+        },
+        "autoColumns": {
+          "type": "boolean"
+        },
+        "gridColumns": {
+          "type": "number"
+        },
+        "gridGap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "gridAutoRows": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

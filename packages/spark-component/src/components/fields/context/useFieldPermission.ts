@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-component:components/fields/context/useFieldPermission
- * @spark-appworks/spark-component 的 components/fields/context/useFieldPermission 模块。
- * 导出 ClassModel symbol: OptionalWithUndefined, FieldPermissionProps, UseFieldPermissionOptions（共 3 个 symbol）。
+ * 职责：维护 @spark-appworks/spark-component 中 components/fields/context/useFieldPermission 的模块能力，围绕 OptionalWithUndefined、FieldPermissionProps、UseFieldPermissionOptions 提供稳定的公开契约。
+ * 边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。
+ * AI用途：需要定位 components/fields/context/useFieldPermission 的声明、导出和使用边界时，从本模块开始。
  */
 import { computed, getCurrentInstance } from 'vue'
 import { FieldVisibility } from '@spark-appworks/spark-data'

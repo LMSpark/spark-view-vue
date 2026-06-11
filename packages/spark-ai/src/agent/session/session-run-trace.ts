@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-ai:agent/session/session-run-trace
+ * 职责：定义或实现 Agent 会话存储、诊断和运行轨迹中的 session run trace 能力。
+ * 边界：只维护 session 层状态和观测数据，不生成业务输入契约，也不直接执行工具 runtime。
+ * AI用途：追踪会话记录、诊断事件或 run trace 时，用本模块确认 session 数据如何保存和读取。
+ */
+/**
  * agent/session/session-run-trace.ts — headless AI run trace.
  *
  * This is a compact, UI-independent projection of one active AI run. It is

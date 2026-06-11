@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-json-document/src/core/json-types.ts",
     "packageName": "@spark-appworks/spark-json-document",
     "modulePath": "core/json-types",
-    "jsdoc": "═══════════════════════════════════════════════════════════════\ncore/json-types.ts — JSON 基础值类型（单一事实源 SSOT）\n═══════════════════════════════════════════════════════════════\n【架构定位】最底层基础类型，被 schema/ 和 tree/ 两层共同依赖。\n本文件不依赖包内任何其他模块。\n【设计决策】\n- 统一 JSON 值类型定义，消除 spark-ai 的 AiJsonValue/AiJsonObject 重复定义。\n- 旧 AiJsonValue/AiJsonObject/AiJsonParams 名称在 spark-ai/json 中保留为 deprecated alias。\n═══════════════════════════════════════════════════════════════",
+    "jsdoc": "@module @spark-appworks/spark-json-document:core/json-types\n职责：提供 JSON Document/schema 处理中的 json types 能力，支撑 schema 标准化、审计和元数据保留。\n边界：只处理 JSON schema/document 结构，不耦合应用页面、Vue 组件或 AI 会话状态。\nAI用途：校验或标准化配置 schema 时，用本模块确认 JSON 文档层的规则来源。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "JsonPrimitive",
@@ -30,7 +30,7 @@
     "JsonPrimitive": {
       "kind": "JsonPrimitive",
       "className": "JsonPrimitive",
-      "jsdoc": "/** JSON 原始值 */",
+      "jsdoc": "JSON 原始值",
       "shapeKind": "type",
       "declarationTypeText": "string | number | boolean | null",
       "declarationRelations": [
@@ -53,7 +53,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/core/json-types.d.ts",
-        "line": 16,
+        "line": 9,
         "className": "JsonPrimitive",
         "declarationKind": "type"
       },
@@ -63,7 +63,7 @@
     "JsonValue": {
       "kind": "JsonValue",
       "className": "JsonValue",
-      "jsdoc": "/** 递归 JSON 值：原始值 | 对象 | 数组 */",
+      "jsdoc": "递归 JSON 值：原始值 | 对象 | 数组",
       "shapeKind": "type",
       "declarationTypeText": "JsonPrimitive | JsonObject | JsonValue[]",
       "declarationRelations": [
@@ -84,7 +84,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/core/json-types.d.ts",
-        "line": 18,
+        "line": 11,
         "className": "JsonValue",
         "declarationKind": "type"
       },
@@ -94,12 +94,12 @@
     "JsonObject": {
       "kind": "JsonObject",
       "className": "JsonObject",
-      "jsdoc": "/** JSON 对象：key → JsonValue 映射 */",
+      "jsdoc": "JSON 对象：key → JsonValue 映射",
       "shapeKind": "type",
       "declarationTypeText": "{\n    [key: string]: JsonValue;\n}",
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/core/json-types.d.ts",
-        "line": 20,
+        "line": 13,
         "className": "JsonObject",
         "declarationKind": "type"
       },
@@ -109,7 +109,7 @@
     "JsonDocument": {
       "kind": "JsonDocument",
       "className": "JsonDocument",
-      "jsdoc": "/** 文档顶层：对象或数组 */",
+      "jsdoc": "文档顶层：对象或数组",
       "shapeKind": "type",
       "declarationTypeText": "JsonObject | JsonValue[]",
       "declarationRelations": [
@@ -125,7 +125,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/core/json-types.d.ts",
-        "line": 24,
+        "line": 17,
         "className": "JsonDocument",
         "declarationKind": "type"
       },
@@ -135,7 +135,7 @@
     "JsonParams": {
       "kind": "JsonParams",
       "className": "JsonParams",
-      "jsdoc": "/** 函数/业务参数对象：运行时宽形态，key → JsonValue */",
+      "jsdoc": "函数/业务参数对象：运行时宽形态，key → JsonValue",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<Record<string, JsonValue>>",
       "declarationRelations": [
@@ -147,7 +147,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/core/json-types.d.ts",
-        "line": 26,
+        "line": 19,
         "className": "JsonParams",
         "declarationKind": "type"
       },
@@ -157,7 +157,7 @@
     "JsonParamShape": {
       "kind": "JsonParamShape",
       "className": "JsonParamShape",
-      "jsdoc": "/**\n * 参数对象的具名字段形态。\n *\n * 与 JsonParams 不同，本类型不引入 string 索引签名，避免 keyof 退化为 string。\n * 具体业务输入应使用它，以保留字段级约束。\n */",
+      "jsdoc": "参数对象的具名字段形态。\n与 JsonParams 不同，本类型不引入 string 索引签名，避免 keyof 退化为 string。\n具体业务输入应使用它，以保留字段级约束。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<TShape>",
       "declarationRelations": [
@@ -169,7 +169,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/core/json-types.d.ts",
-        "line": 33,
+        "line": 26,
         "className": "JsonParamShape",
         "declarationKind": "type"
       },
@@ -177,5 +177,37 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.831Z"
+  "generatedAt": "2026-06-11T16:38:13.017Z",
+  "$defs": {
+    "JsonPrimitive": {
+      "type": "object",
+      "title": "JsonPrimitive",
+      "description": "JSON 原始值"
+    },
+    "JsonValue": {
+      "type": "object",
+      "title": "JsonValue",
+      "description": "递归 JSON 值：原始值 | 对象 | 数组"
+    },
+    "JsonObject": {
+      "type": "object",
+      "title": "JsonObject",
+      "description": "JSON 对象：key → JsonValue 映射"
+    },
+    "JsonDocument": {
+      "type": "object",
+      "title": "JsonDocument",
+      "description": "文档顶层：对象或数组"
+    },
+    "JsonParams": {
+      "type": "object",
+      "title": "JsonParams",
+      "description": "函数/业务参数对象：运行时宽形态，key → JsonValue"
+    },
+    "JsonParamShape": {
+      "type": "object",
+      "title": "JsonParamShape",
+      "description": "参数对象的具名字段形态。\n与 JsonParams 不同，本类型不引入 string 索引签名，避免 keyof 退化为 string。\n具体业务输入应使用它，以保留字段级约束。"
+    }
+  }
 }

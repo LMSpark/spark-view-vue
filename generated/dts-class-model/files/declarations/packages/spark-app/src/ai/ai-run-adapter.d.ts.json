@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-app/src/ai/ai-run-adapter.ts",
     "packageName": "@spark-appworks/spark-app",
     "modulePath": "ai/ai-run-adapter",
-    "jsdoc": "Headless AI run adapter.\nThis file is intentionally UI-free: no Vue imports, no component references,\nand no browser transport ownership. UI can observe a run by passing an\noptional trace sink.",
+    "jsdoc": "@module @spark-appworks/spark-app:ai/ai-run-adapter\n职责：提供 spark-app 应用壳中的 ai run adapter 能力，连接路由、导航、认证、插件、页面 UI 或 AI 桥接。\n边界：负责应用层编排，不下沉实现底层数据模型，也不直接改写组件包的渲染协议。\nAI用途：排查页面打开、导航状态、权限上下文或应用侧 AI 接线时，用本模块确认 app 层入口。\n\nHeadless AI run adapter.\nThis file is intentionally UI-free: no Vue imports, no component references,\nand no browser transport ownership. UI can observe a run by passing an\noptional trace sink.",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "AiRunTraceSink",
@@ -36,7 +36,7 @@
     "AiRunTraceSink": {
       "kind": "AiRunTraceSink",
       "className": "AiRunTraceSink",
-      "jsdoc": "/** Ai Run Trace Sink 的语义模型。 */",
+      "jsdoc": "Ai Run Trace Sink 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    appendUserMessage(content: string): void;\n    appendEvent(event: AiAgentStreamEvent): void;\n    appendDelta(delta: string): void;\n    appendReasoning(text: string): void;\n    appendToolCall(record: AiAgentToolCallRecord): void;\n    appendError(message: string): void;\n    markAborted(message?: string): void;\n    finish(): void;\n    reset(): void;\n}>",
       "declarationRelations": [
@@ -48,7 +48,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 11,
+        "line": 17,
         "className": "AiRunTraceSink",
         "declarationKind": "type"
       },
@@ -58,12 +58,12 @@
     "AiRunErrorFormatter": {
       "kind": "AiRunErrorFormatter",
       "className": "AiRunErrorFormatter",
-      "jsdoc": "/** Ai Run Error Formatter 的语义模型。 */",
+      "jsdoc": "Ai Run Error Formatter 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "(error: unknown) => string",
       "provenance": {
         "file": "declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 24,
+        "line": 30,
         "className": "AiRunErrorFormatter",
         "declarationKind": "type"
       },
@@ -73,12 +73,12 @@
     "AiRunBeforeFunctionCall": {
       "kind": "AiRunBeforeFunctionCall",
       "className": "AiRunBeforeFunctionCall",
-      "jsdoc": "/** Ai Run Before Function Call 的语义模型。 */",
+      "jsdoc": "Ai Run Before Function Call 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "(options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>",
       "provenance": {
         "file": "declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 26,
+        "line": 32,
         "className": "AiRunBeforeFunctionCall",
         "declarationKind": "type"
       },
@@ -88,12 +88,12 @@
     "AiRunAbortHandler": {
       "kind": "AiRunAbortHandler",
       "className": "AiRunAbortHandler",
-      "jsdoc": "/** Ai Run Abort Handler 的回调函数契约。 */",
+      "jsdoc": "Ai Run Abort Handler 的回调函数契约。",
       "shapeKind": "type",
       "declarationTypeText": "(reason: string) => void",
       "provenance": {
         "file": "declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 28,
+        "line": 34,
         "className": "AiRunAbortHandler",
         "declarationKind": "type"
       },
@@ -103,7 +103,7 @@
     "AiRunAdapterRunStatus": {
       "kind": "AiRunAdapterRunStatus",
       "className": "AiRunAdapterRunStatus",
-      "jsdoc": "/** Ai Run Adapter Run Status 的语义模型。 */",
+      "jsdoc": "Ai Run Adapter Run Status 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "'completed' | 'aborted'",
       "declarationRelations": [
@@ -118,7 +118,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 30,
+        "line": 36,
         "className": "AiRunAdapterRunStatus",
         "declarationKind": "type"
       },
@@ -128,7 +128,7 @@
     "AiRunHost": {
       "kind": "AiRunHost",
       "className": "AiRunHost",
-      "jsdoc": "/** Ai Run Host 的语义模型。 */",
+      "jsdoc": "Ai Run Host 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    run<TInput extends AiJsonParams>(alias: string, input: TInput, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>;\n}>",
       "declarationRelations": [
@@ -140,7 +140,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 32,
+        "line": 38,
         "className": "AiRunHost",
         "declarationKind": "type"
       },
@@ -150,7 +150,7 @@
     "AiRunAdapterOptions": {
       "kind": "AiRunAdapterOptions",
       "className": "AiRunAdapterOptions",
-      "jsdoc": "/** Ai Run Adapter Options 的调用配置。 */",
+      "jsdoc": "Ai Run Adapter Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    formatError?: AiRunErrorFormatter;\n}>",
       "declarationRelations": [
@@ -162,7 +162,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 36,
+        "line": 42,
         "className": "AiRunAdapterOptions",
         "declarationKind": "type"
       },
@@ -172,7 +172,7 @@
     "AiRunAdapterCommand": {
       "kind": "AiRunAdapterCommand",
       "className": "AiRunAdapterCommand",
-      "jsdoc": "/** Ai Run Adapter Command 的命令参数。 */",
+      "jsdoc": "Ai Run Adapter Command 的命令参数。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    host: AiRunHost;\n    alias: string;\n    input: TInput;\n    trace?: AiRunTraceSink;\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    onAbort?: AiRunAbortHandler;\n    userMessage?: string;\n}>",
       "declarationRelations": [
@@ -184,7 +184,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 40,
+        "line": 46,
         "className": "AiRunAdapterCommand",
         "declarationKind": "type"
       },
@@ -194,7 +194,7 @@
     "AiRunAdapterState": {
       "kind": "AiRunAdapterState",
       "className": "AiRunAdapterState",
-      "jsdoc": "/** Ai Run Adapter State 的运行状态。 */",
+      "jsdoc": "Ai Run Adapter State 的运行状态。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    isRunning(): boolean;\n    abort(reason?: string): void;\n    run<TInput extends AiJsonParams>(command: AiRunAdapterCommand<TInput>): Promise<AiRunAdapterRunStatus>;\n}>",
       "declarationRelations": [
@@ -206,7 +206,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts",
-        "line": 50,
+        "line": 56,
         "className": "AiRunAdapterState",
         "declarationKind": "type"
       },
@@ -214,5 +214,52 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.882Z"
+  "generatedAt": "2026-06-11T16:38:12.615Z",
+  "$defs": {
+    "AiRunTraceSink": {
+      "type": "object",
+      "title": "AiRunTraceSink",
+      "description": "Ai Run Trace Sink 的语义模型。"
+    },
+    "AiRunErrorFormatter": {
+      "type": "object",
+      "title": "AiRunErrorFormatter",
+      "description": "Ai Run Error Formatter 的语义模型。"
+    },
+    "AiRunBeforeFunctionCall": {
+      "type": "object",
+      "title": "AiRunBeforeFunctionCall",
+      "description": "Ai Run Before Function Call 的语义模型。"
+    },
+    "AiRunAbortHandler": {
+      "type": "object",
+      "title": "AiRunAbortHandler",
+      "description": "Ai Run Abort Handler 的回调函数契约。"
+    },
+    "AiRunAdapterRunStatus": {
+      "type": "object",
+      "title": "AiRunAdapterRunStatus",
+      "description": "Ai Run Adapter Run Status 的语义模型。"
+    },
+    "AiRunHost": {
+      "type": "object",
+      "title": "AiRunHost",
+      "description": "Ai Run Host 的语义模型。"
+    },
+    "AiRunAdapterOptions": {
+      "type": "object",
+      "title": "AiRunAdapterOptions",
+      "description": "Ai Run Adapter Options 的调用配置。"
+    },
+    "AiRunAdapterCommand": {
+      "type": "object",
+      "title": "AiRunAdapterCommand",
+      "description": "Ai Run Adapter Command 的命令参数。"
+    },
+    "AiRunAdapterState": {
+      "type": "object",
+      "title": "AiRunAdapterState",
+      "description": "Ai Run Adapter State 的运行状态。"
+    }
+  }
 }

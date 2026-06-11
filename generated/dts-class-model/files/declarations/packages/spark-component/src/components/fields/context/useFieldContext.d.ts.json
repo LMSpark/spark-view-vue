@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/fields/context/useFieldContext.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/fields/context/useFieldContext",
-    "jsdoc": "@module @spark-appworks/spark-component:components/fields/context/useFieldContext\n@spark-appworks/spark-component 的 components/fields/context/useFieldContext 模块。\n导出 ClassModel symbol: FieldContextProps, FieldPermissionForContext, OptionalWithUndefined, FieldContextInputProps（共 4 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/context/useFieldContext\n职责：维护 @spark-appworks/spark-component 中 components/fields/context/useFieldContext 的模块能力，围绕 FieldContextProps、FieldPermissionForContext、OptionalWithUndefined 等 4 个公开契约 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 components/fields/context/useFieldContext 的声明、导出和使用边界时，从本模块开始。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "FieldContextProps",
@@ -26,7 +26,7 @@
     "FieldContextProps": {
       "kind": "FieldContextProps",
       "className": "FieldContextProps",
-      "jsdoc": "/** Field Context Props 的属性契约。 */",
+      "jsdoc": "Field Context Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 类型标识。 */\n    type: string;\n    /** display Label 字段。 */\n    displayLabel: string;\n    /** 绑定字段名。 */\n    fieldName: string;\n    /** width 字段。 */\n    width: number | undefined;\n    /** resizable 字段。 */\n    resizable?: boolean;\n    /** title Align 字段。 */\n    titleAlign?: 'left' | 'center' | 'right';\n    /** value Align 字段。 */\n    valueAlign?: 'left' | 'center' | 'right';\n    /** header Cell Class Name 名称。 */\n    headerCellClassName?: string;\n    /** cell Class Name 名称。 */\n    cellClassName?: string;\n    /** title Class Name 名称。 */\n    titleClassName?: string;\n    /** value Class Name 名称。 */\n    valueClassName?: string;\n    /** sortable 字段。 */\n    sortable: boolean | 'custom';\n    /** merged Children 字段。 */\n    mergedChildren: SparkNode[];\n    /** 是否 is Current Field Hidden。 */\n    isCurrentFieldHidden: boolean;\n    /** 是否 should Render Current Field。 */\n    shouldRenderCurrentField: boolean;\n    /** current Display Value 字段。 */\n    currentDisplayValue: string;\n    /** 是否 is Table Cell Hidden。 */\n    isTableCellHidden: (row: DataRow) => boolean;\n    /** get Table Cell Display Value 回调。 */\n    getTableCellDisplayValue: (row: DataRow) => string;\n    /** validation Rules 字段。 */\n    validationRules: FormItemRule[];\n}",
       "provenance": {
@@ -38,322 +38,231 @@
       "attributes": [
         {
           "name": "type",
+          "jsdoc": "类型标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 类型标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 9,
-            "className": "FieldContextProps",
-            "memberName": "type",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "displayLabel",
+          "jsdoc": "display Label 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** display Label 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 11,
-            "className": "FieldContextProps",
-            "memberName": "displayLabel",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "fieldName",
+          "jsdoc": "绑定字段名。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 绑定字段名。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 13,
-            "className": "FieldContextProps",
-            "memberName": "fieldName",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "width",
+          "jsdoc": "width 字段。",
           "schema": {
-            "title": "number | undefined"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** width 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 15,
-            "className": "FieldContextProps",
-            "memberName": "width",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "resizable",
+          "jsdoc": "resizable 字段。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** resizable 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 17,
-            "className": "FieldContextProps",
-            "memberName": "resizable",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "titleAlign",
+          "jsdoc": "title Align 字段。",
           "schema": {
-            "title": "'left' | 'center' | 'right'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "left"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "center"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "right"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** title Align 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 19,
-            "className": "FieldContextProps",
-            "memberName": "titleAlign",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "valueAlign",
+          "jsdoc": "value Align 字段。",
           "schema": {
-            "title": "'left' | 'center' | 'right'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "left"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "center"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "right"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** value Align 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 21,
-            "className": "FieldContextProps",
-            "memberName": "valueAlign",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "headerCellClassName",
+          "jsdoc": "header Cell Class Name 名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** header Cell Class Name 名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 23,
-            "className": "FieldContextProps",
-            "memberName": "headerCellClassName",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "cellClassName",
+          "jsdoc": "cell Class Name 名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** cell Class Name 名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 25,
-            "className": "FieldContextProps",
-            "memberName": "cellClassName",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "titleClassName",
+          "jsdoc": "title Class Name 名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** title Class Name 名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 27,
-            "className": "FieldContextProps",
-            "memberName": "titleClassName",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "valueClassName",
+          "jsdoc": "value Class Name 名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** value Class Name 名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 29,
-            "className": "FieldContextProps",
-            "memberName": "valueClassName",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "sortable",
+          "jsdoc": "sortable 字段。",
           "schema": {
-            "title": "boolean | 'custom'"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "custom"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** sortable 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 31,
-            "className": "FieldContextProps",
-            "memberName": "sortable",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "mergedChildren",
+          "jsdoc": "merged Children 字段。",
           "schema": {
             "type": "array",
-            "title": "SparkNode[]",
-            "items": true
+            "items": {
+              "type": "object",
+              "title": "SparkNode"
+            }
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** merged Children 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 33,
-            "className": "FieldContextProps",
-            "memberName": "mergedChildren",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "isCurrentFieldHidden",
+          "jsdoc": "是否 is Current Field Hidden。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 是否 is Current Field Hidden。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 35,
-            "className": "FieldContextProps",
-            "memberName": "isCurrentFieldHidden",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "shouldRenderCurrentField",
+          "jsdoc": "是否 should Render Current Field。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 是否 should Render Current Field。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 37,
-            "className": "FieldContextProps",
-            "memberName": "shouldRenderCurrentField",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "currentDisplayValue",
+          "jsdoc": "current Display Value 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** current Display Value 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 39,
-            "className": "FieldContextProps",
-            "memberName": "currentDisplayValue",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "isTableCellHidden",
+          "jsdoc": "是否 is Table Cell Hidden。",
           "schema": {
+            "type": "object",
             "title": "(row: DataRow) => boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 是否 is Table Cell Hidden。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 41,
-            "className": "FieldContextProps",
-            "memberName": "isTableCellHidden",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "getTableCellDisplayValue",
+          "jsdoc": "get Table Cell Display Value 回调。",
           "schema": {
+            "type": "object",
             "title": "(row: DataRow) => string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** get Table Cell Display Value 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 43,
-            "className": "FieldContextProps",
-            "memberName": "getTableCellDisplayValue",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "validationRules",
+          "jsdoc": "validation Rules 字段。",
           "schema": {
             "type": "array",
-            "title": "FormItemRule[]",
-            "items": true
+            "items": {
+              "$ref": "../columnFormRules.d.ts.json#/$defs/FormItemRule"
+            }
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** validation Rules 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 45,
-            "className": "FieldContextProps",
-            "memberName": "validationRules",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -361,7 +270,7 @@
     "FieldPermissionForContext": {
       "kind": "FieldPermissionForContext",
       "className": "FieldPermissionForContext",
-      "jsdoc": "/** Field Permission For Context 的运行上下文。 */",
+      "jsdoc": "Field Permission For Context 的运行上下文。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 绑定字段名。 */\n    fieldName: ComputedRef<string>;\n    /** display Label 字段。 */\n    displayLabel: ComputedRef<string>;\n    /** 是否 is Current Field Hidden。 */\n    isCurrentFieldHidden: ComputedRef<boolean>;\n    /** 是否 should Render Current Field。 */\n    shouldRenderCurrentField: ComputedRef<boolean>;\n    /** current Display Value 字段。 */\n    currentDisplayValue: ComputedRef<string>;\n    /** 是否 is Table Cell Hidden。 */\n    isTableCellHidden: (row: DataRow) => boolean;\n    /** get Table Cell Display Value 回调。 */\n    getTableCellDisplayValue: (row: DataRow) => string;\n    /** validation Rules 字段。 */\n    validationRules: ComputedRef<FormItemRule[]>;\n}",
       "provenance": {
@@ -373,131 +282,83 @@
       "attributes": [
         {
           "name": "fieldName",
+          "jsdoc": "绑定字段名。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<string>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 绑定字段名。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 50,
-            "className": "FieldPermissionForContext",
-            "memberName": "fieldName",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "displayLabel",
+          "jsdoc": "display Label 字段。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<string>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** display Label 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 52,
-            "className": "FieldPermissionForContext",
-            "memberName": "displayLabel",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "isCurrentFieldHidden",
+          "jsdoc": "是否 is Current Field Hidden。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<boolean>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 是否 is Current Field Hidden。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 54,
-            "className": "FieldPermissionForContext",
-            "memberName": "isCurrentFieldHidden",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "shouldRenderCurrentField",
+          "jsdoc": "是否 should Render Current Field。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<boolean>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 是否 should Render Current Field。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 56,
-            "className": "FieldPermissionForContext",
-            "memberName": "shouldRenderCurrentField",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "currentDisplayValue",
+          "jsdoc": "current Display Value 字段。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<string>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** current Display Value 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 58,
-            "className": "FieldPermissionForContext",
-            "memberName": "currentDisplayValue",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "isTableCellHidden",
+          "jsdoc": "是否 is Table Cell Hidden。",
           "schema": {
+            "type": "object",
             "title": "(row: DataRow) => boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 是否 is Table Cell Hidden。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 60,
-            "className": "FieldPermissionForContext",
-            "memberName": "isTableCellHidden",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "getTableCellDisplayValue",
+          "jsdoc": "get Table Cell Display Value 回调。",
           "schema": {
+            "type": "object",
             "title": "(row: DataRow) => string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** get Table Cell Display Value 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 62,
-            "className": "FieldPermissionForContext",
-            "memberName": "getTableCellDisplayValue",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "validationRules",
+          "jsdoc": "validation Rules 字段。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<FormItemRule[]>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** validation Rules 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 64,
-            "className": "FieldPermissionForContext",
-            "memberName": "validationRules",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -505,7 +366,7 @@
     "OptionalWithUndefined": {
       "kind": "OptionalWithUndefined",
       "className": "OptionalWithUndefined",
-      "jsdoc": "/** Optional With Undefined 的语义模型。 */",
+      "jsdoc": "Optional With Undefined 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    [K in keyof T]?: T[K] | undefined;\n}",
       "provenance": {
@@ -520,7 +381,7 @@
     "FieldContextInputProps": {
       "kind": "FieldContextInputProps",
       "className": "FieldContextInputProps",
-      "jsdoc": "/** Field Context Input Props 的属性契约。 */",
+      "jsdoc": "Field Context Input Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "OptionalWithUndefined<Pick<SparkNodeProps, 'type' | 'children'>> & OptionalWithUndefined<Pick<SparkFieldSemanticProps, 'width' | 'resizable' | 'titleAlign' | 'valueAlign' | 'headerCellClassName' | 'cellClassName' | 'titleClassName' | 'valueClassName' | 'sortable'>> & {\n    /** 类型标识。 */\n    type: string;\n}",
       "declarationRelations": [
@@ -548,24 +409,193 @@
       "attributes": [
         {
           "name": "type",
+          "jsdoc": "类型标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 类型标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/context/useFieldContext.d.ts",
-            "line": 73,
-            "className": "FieldContextInputProps",
-            "memberName": "type",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.417Z"
+  "generatedAt": "2026-06-11T16:38:12.817Z",
+  "$defs": {
+    "FieldContextProps": {
+      "type": "object",
+      "title": "FieldContextProps",
+      "description": "Field Context Props 的属性契约。",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "displayLabel": {
+          "type": "string"
+        },
+        "fieldName": {
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "resizable": {
+          "type": "boolean"
+        },
+        "titleAlign": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "valueAlign": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "left"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "right"
+              ]
+            }
+          ]
+        },
+        "headerCellClassName": {
+          "type": "string"
+        },
+        "cellClassName": {
+          "type": "string"
+        },
+        "titleClassName": {
+          "type": "string"
+        },
+        "valueClassName": {
+          "type": "string"
+        },
+        "sortable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "custom"
+              ]
+            }
+          ]
+        },
+        "mergedChildren": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "SparkNode"
+          }
+        },
+        "isCurrentFieldHidden": {
+          "type": "boolean"
+        },
+        "shouldRenderCurrentField": {
+          "type": "boolean"
+        },
+        "currentDisplayValue": {
+          "type": "string"
+        },
+        "isTableCellHidden": {
+          "type": "object",
+          "title": "(row: DataRow) => boolean"
+        },
+        "getTableCellDisplayValue": {
+          "type": "object",
+          "title": "(row: DataRow) => string"
+        },
+        "validationRules": {
+          "type": "array",
+          "items": {
+            "$ref": "../columnFormRules.d.ts.json#/$defs/FormItemRule"
+          }
+        }
+      }
+    },
+    "FieldPermissionForContext": {
+      "type": "object",
+      "title": "FieldPermissionForContext",
+      "description": "Field Permission For Context 的运行上下文。",
+      "properties": {
+        "fieldName": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "displayLabel": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "isCurrentFieldHidden": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "shouldRenderCurrentField": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "currentDisplayValue": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "isTableCellHidden": {
+          "type": "object",
+          "title": "(row: DataRow) => boolean"
+        },
+        "getTableCellDisplayValue": {
+          "type": "object",
+          "title": "(row: DataRow) => string"
+        },
+        "validationRules": {
+          "type": "object",
+          "title": "ComputedRef<FormItemRule[]>"
+        }
+      }
+    },
+    "OptionalWithUndefined": {
+      "type": "object",
+      "title": "OptionalWithUndefined",
+      "description": "Optional With Undefined 的语义模型。"
+    },
+    "FieldContextInputProps": {
+      "type": "object",
+      "title": "FieldContextInputProps",
+      "description": "Field Context Input Props 的属性契约。",
+      "properties": {
+        "type": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

@@ -1,31 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/business/lifecycle-types.ts — 业务生命周期类型
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Agent 层的生命周期指令契约。定义工具调用前的策略裁决、
- *   工具调用后的三态流转（continue/complete/abort）以及生命周期回调入参类型。
- *   位于 business/ 层，被 registration-types、business-task、tool-loop-runner
- *   和 tool-call-executor 共同消费。
- *
- * 【核心类型】
- *   AiAgentBeforeFunctionCallStatus    — 工具调用前置裁决三态
- *   AiAgentBeforeFunctionCallDirective — 工具调用前置裁决指令
- *   AiAgentLifecycleStatus             — 生命周期三态枚举
- *   AiAgentLifecycleDirective          — 生命周期指令（状态 + 可选信息）
- *   AiAgentBeforeFunctionCallOptions   — 工具调用前回调的入参
- *   AiAgentAfterFunctionCallOptions    — 工具调用后回调的入参
- *
- * 【数据流】
- *   1. tool-call-executor 执行 runtime 前，调用 registration.beforeFunctionCall()
- *   2. allow → 继续执行工具；reject → 回灌失败 tool result；abort → 进入终止流程
- *   3. tool-call-executor 执行完一次工具调用后，调用 registration.afterFunctionCall()
- *   4. 业务方返回 AiAgentLifecycleDirective（continue / complete / abort）
- *   5. continue → 进入下一轮工具循环
- *   6. complete / abort → tool-loop-runner 进入生命周期终止流程
- *
- * 【消费方】registration-types、business-task、tool-loop-runner、tool-call-executor
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/business/lifecycle-types
+ * 职责：定义工具调用前后生命周期回调的输入、输出和 continue/complete/abort 流转契约。
+ * 边界：只描述 lifecycle 协议，不执行策略、不调用工具，也不保存 session 状态。
+ * AI用途：实现或审查业务级工具调用拦截、完成判定和中止逻辑时，用本模块确认回调语义。
  */
 
 import type { AiJsonParams } from '../../json'

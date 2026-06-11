@@ -7,11 +7,11 @@
     "sourceFile": "packages/spark-data/src/node-tree/index.ts",
     "packageName": "@spark-appworks/spark-data",
     "modulePath": "node-tree/index",
-    "jsdoc": "@module @spark-appworks/spark-data:node-tree/index\n@spark-appworks/spark-data 的 node-tree/index 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdoc": "@module @spark-appworks/spark-data:node-tree/index\n职责：提供数据层 node-tree 能力，围绕 模块入口、副作用注册或内部组合逻辑 描述 DataSet、DataTable、DataView、策略委托或数据绑定键。\n边界：保持框架无关，只处理数据模型、校验和本地策略，不依赖 Vue、路由或 Element Plus。\nAI用途：生成页面数据绑定、DataViewKey 或数据策略调用时，用本模块确认 node-tree/index 的数据语义。",
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
   "symbols": [],
   "models": {},
-  "generatedAt": "2026-06-11T12:20:26.755Z"
+  "generatedAt": "2026-06-11T16:38:12.972Z"
 }

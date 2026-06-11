@@ -7,7 +7,7 @@
     "sourceFile": "src/services/project-planning-gates.ts",
     "packageName": "app",
     "modulePath": "services/project-planning-gates",
-    "jsdoc": "projectPlanning 工具闸门：策划阶段禁止进入 pageDesign 四文件链。",
+    "jsdoc": "@module app:services/project-planning-gates\n职责：提供应用运行时 service 层的 project planning gates 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nprojectPlanning 工具闸门：策划阶段禁止进入 pageDesign 四文件链。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ProjectPlanningGateValidationResult"
@@ -20,7 +20,7 @@
     "ProjectPlanningGateValidationResult": {
       "kind": "ProjectPlanningGateValidationResult",
       "className": "ProjectPlanningGateValidationResult",
-      "jsdoc": "/** Project Planning Gate Validation Result 的返回结果。 */",
+      "jsdoc": "Project Planning Gate Validation Result 的返回结果。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    ok: boolean;\n    reason?: string;\n    fix?: string;\n}>",
       "declarationRelations": [
@@ -32,7 +32,7 @@
       ],
       "provenance": {
         "file": "declarations/src/services/project-planning-gates.d.ts",
-        "line": 6,
+        "line": 12,
         "className": "ProjectPlanningGateValidationResult",
         "declarationKind": "type"
       },
@@ -40,5 +40,12 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.100Z"
+  "generatedAt": "2026-06-11T16:38:13.116Z",
+  "$defs": {
+    "ProjectPlanningGateValidationResult": {
+      "type": "object",
+      "title": "ProjectPlanningGateValidationResult",
+      "description": "Project Planning Gate Validation Result 的返回结果。"
+    }
+  }
 }

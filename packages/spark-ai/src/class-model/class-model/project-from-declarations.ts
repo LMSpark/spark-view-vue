@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/project-from-declarations
- * @spark-appworks/spark-ai 的 class-model/class-model/project-from-declarations 模块。
- * 导出 ClassModel symbol: ProjectDtsSourceFileProjectionOptions（共 1 个 symbol）。
+ * 职责：从 TypeScript DTS AST 和 TypeChecker 投影 ClassModel，抽取类、接口、类型别名、枚举、成员、声明关系和模块语义。
+ * 边界：只读取声明结构和 JSDoc，不生成业务代码、不执行脚本，也不把 VCM 旧链路重新引入。
+ * AI用途：排查 .d.ts 到 JSON 的字段丢失、关系断链或组件分层识别时，用本模块定位投影逻辑。
  */
 import { relative, resolve } from 'node:path'
 
@@ -31,7 +32,10 @@ import type {
   ComponentClassModelLayer,
   ComponentClassModelLevel,
   ConstructorMeta,
+  DtsTypeMeta,
   MethodMeta,
+  MethodParameterMeta,
+  MethodParameterStyle,
   SourceProvenanceMeta,
 } from './types'
 
@@ -701,13 +705,16 @@ function projectMethodMember(command: MethodMemberCommand): MethodMeta {
     throw new Error(`Missing method signature for ${className}.${memberName}`)
   }
   const returnType = context.checker.getReturnTypeOfSignature(signature)
+  const returnTypeText = methodReturnTypeTextFromDeclaration(context.checker, signature, member, sourceFile)
   return {
     name: memberName,
+    signatureText: methodSignatureTextFromDeclaration(member, sourceFile),
+    parameterStyle: parameterStyleFromDeclaration(member),
+    parameters: methodParametersFromDeclaration(context.checker, context.repoRoot, member, sourceFile),
+    returnType: dtsTypeMetaFromTypeNode(context.checker, context.repoRoot, member.type, sourceFile),
     paramsSchema: paramsSchemaFromSignature(context.checker, signature),
     returnSchema: typeToAiJsonSchema(context.checker, returnType, member.type),
-    returnTypeText: member.type === undefined
-      ? context.checker.typeToString(returnType, undefined, ts.TypeFormatFlags.NoTruncation)
-      : member.type.getText(sourceFile),
+    returnTypeText,
     jsdoc: readJsDoc(context.checker, member),
     paramsTypeText: signatureParamsTypeText(context.checker, signature),
     provenance: createProvenance({
@@ -729,13 +736,16 @@ function projectMethodSignature(command: MethodSignatureCommand): MethodMeta {
     throw new Error(`Missing method signature for ${className}.${memberName}`)
   }
   const returnType = context.checker.getReturnTypeOfSignature(signature)
+  const returnTypeText = methodReturnTypeTextFromDeclaration(context.checker, signature, member, sourceFile)
   return {
     name: memberName,
+    signatureText: methodSignatureTextFromDeclaration(member, sourceFile),
+    parameterStyle: parameterStyleFromDeclaration(member),
+    parameters: methodParametersFromDeclaration(context.checker, context.repoRoot, member, sourceFile),
+    returnType: dtsTypeMetaFromTypeNode(context.checker, context.repoRoot, member.type, sourceFile),
     paramsSchema: paramsSchemaFromSignature(context.checker, signature),
     returnSchema: typeToAiJsonSchema(context.checker, returnType, member.type),
-    returnTypeText: member.type === undefined
-      ? context.checker.typeToString(returnType, undefined, ts.TypeFormatFlags.NoTruncation)
-      : member.type.getText(sourceFile),
+    returnTypeText,
     jsdoc: readJsDoc(context.checker, member),
     paramsTypeText: signatureParamsTypeText(context.checker, signature),
     provenance: createProvenance({
@@ -748,6 +758,179 @@ function projectMethodSignature(command: MethodSignatureCommand): MethodMeta {
   }
 }
 
+function methodSignatureTextFromDeclaration(
+  member: ts.MethodDeclaration | ts.MethodSignature,
+  sourceFile: ts.SourceFile,
+): string {
+  return member.getText(sourceFile).replace(/;$/u, '').trim()
+}
+
+function methodParametersFromDeclaration(
+  checker: ts.TypeChecker,
+  repoRoot: string,
+  member: ts.MethodDeclaration | ts.MethodSignature | ts.ConstructorDeclaration,
+  sourceFile: ts.SourceFile,
+): readonly MethodParameterMeta[] {
+  return member.parameters.map((parameter) => {
+    return {
+      name: parameter.name.getText(sourceFile),
+      type: dtsTypeMetaFromParameter(checker, repoRoot, parameter, sourceFile),
+    }
+  })
+}
+
+function parameterStyleFromDeclaration(
+  member: ts.MethodDeclaration | ts.MethodSignature | ts.ConstructorDeclaration,
+): MethodParameterStyle {
+  const firstParameter = member.parameters[0]
+  return firstParameter !== undefined && member.parameters.length === 1 && ts.isObjectBindingPattern(firstParameter.name)
+    ? 'named'
+    : 'positional'
+}
+
+function dtsTypeMetaFromParameter(
+  checker: ts.TypeChecker,
+  repoRoot: string,
+  parameter: ts.ParameterDeclaration,
+  sourceFile: ts.SourceFile,
+): DtsTypeMeta {
+  if (parameter.type !== undefined) {
+    return dtsTypeMetaFromTypeNode(checker, repoRoot, parameter.type, sourceFile)
+  }
+  return {
+    type: 'unknown',
+    name: checker.typeToString(checker.getTypeAtLocation(parameter.name), undefined, ts.TypeFormatFlags.NoTruncation),
+  }
+}
+
+function dtsTypeMetaFromTypeNode(
+  checker: ts.TypeChecker,
+  repoRoot: string,
+  typeNode: ts.TypeNode | undefined,
+  sourceFile: ts.SourceFile,
+): DtsTypeMeta {
+  if (typeNode === undefined) return { type: 'unknown', name: 'unknown' }
+  if (ts.isParenthesizedTypeNode(typeNode)) return dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.type, sourceFile)
+  if (ts.isArrayTypeNode(typeNode)) {
+    return {
+      type: 'array',
+      elementType: dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.elementType, sourceFile),
+    }
+  }
+  if (ts.isTupleTypeNode(typeNode)) return { type: 'unknown', name: typeNode.getText(sourceFile) }
+  if (ts.isTypeLiteralNode(typeNode)) return { type: 'unknown', name: typeNode.getText(sourceFile) }
+  if (ts.isFunctionTypeNode(typeNode) || ts.isConstructorTypeNode(typeNode)) {
+    return { type: 'unknown', name: typeNode.getText(sourceFile) }
+  }
+  if (ts.isLiteralTypeNode(typeNode)) return literalDtsTypeMeta(typeNode, sourceFile)
+  if (ts.isUnionTypeNode(typeNode)) {
+    return {
+      type: 'union',
+      types: typeNode.types
+        .filter(item => !isUndefinedLikeTypeNode(item))
+        .map(item => dtsTypeMetaFromTypeNode(checker, repoRoot, item, sourceFile)),
+    }
+  }
+  if (ts.isIntersectionTypeNode(typeNode)) {
+    return {
+      type: 'intersection',
+      types: typeNode.types.map(item => dtsTypeMetaFromTypeNode(checker, repoRoot, item, sourceFile)),
+    }
+  }
+  if (ts.isTypeReferenceNode(typeNode)) {
+    const typeName = typeNode.typeName.getText()
+    if ((typeName === 'Array' || typeName === 'ReadonlyArray') && typeNode.typeArguments?.[0] !== undefined) {
+      return {
+        type: 'array',
+        elementType: dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.typeArguments[0], sourceFile),
+      }
+    }
+    return dtsReferenceTypeMetaFromTypeReferenceNode(checker, repoRoot, typeNode, sourceFile)
+  }
+  const intrinsicName = intrinsicNameFromKeywordTypeNode(typeNode)
+  if (intrinsicName !== undefined) return { type: 'intrinsic', name: intrinsicName }
+  return { type: 'unknown', name: typeNode.getText(sourceFile) }
+}
+
+function dtsReferenceTypeMetaFromTypeReferenceNode(
+  checker: ts.TypeChecker,
+  repoRoot: string,
+  node: ts.TypeReferenceNode,
+  sourceFile: ts.SourceFile,
+): DtsTypeMeta {
+  const symbol = resolveAliasedSymbol(checker, checker.getSymbolAtLocation(node.typeName))
+  const declaration = symbol?.valueDeclaration ?? symbol?.declarations?.[0]
+  const typeArguments = node.typeArguments?.map(item => dtsTypeMetaFromTypeNode(checker, repoRoot, item, sourceFile))
+  if (declaration !== undefined && ts.isTypeParameterDeclaration(declaration)) {
+    return {
+      type: 'reference',
+      name: node.typeName.getText(sourceFile),
+      refersToTypeParameter: true,
+      ...(typeArguments === undefined || typeArguments.length === 0 ? {} : { typeArguments }),
+    }
+  }
+  const sourcePath = declaration === undefined
+    ? undefined
+    : normalizeRepoPath(declaration.getSourceFile().fileName, repoRoot)
+  const declarationName = declaration === undefined ? undefined : declarationNameText(declaration)
+  return {
+    type: 'reference',
+    name: declarationName ?? symbol?.name ?? node.typeName.getText(sourceFile),
+    ...(sourcePath?.startsWith('declarations/') === true ? { sourcePath } : {}),
+    ...(typeArguments === undefined || typeArguments.length === 0 ? {} : { typeArguments }),
+  }
+}
+
+function isUndefinedLikeTypeNode(typeNode: ts.TypeNode): boolean {
+  return typeNode.kind === ts.SyntaxKind.UndefinedKeyword || typeNode.kind === ts.SyntaxKind.VoidKeyword
+}
+
+function intrinsicNameFromKeywordTypeNode(typeNode: ts.TypeNode): string | undefined {
+  if (typeNode.kind === ts.SyntaxKind.StringKeyword) return 'string'
+  if (typeNode.kind === ts.SyntaxKind.NumberKeyword) return 'number'
+  if (typeNode.kind === ts.SyntaxKind.BooleanKeyword) return 'boolean'
+  if (typeNode.kind === ts.SyntaxKind.NullKeyword) return 'null'
+  if (typeNode.kind === ts.SyntaxKind.BigIntKeyword) return 'bigint'
+  if (typeNode.kind === ts.SyntaxKind.SymbolKeyword) return 'symbol'
+  if (typeNode.kind === ts.SyntaxKind.AnyKeyword) return 'any'
+  if (typeNode.kind === ts.SyntaxKind.UnknownKeyword) return 'unknown'
+  if (typeNode.kind === ts.SyntaxKind.VoidKeyword) return 'void'
+  if (typeNode.kind === ts.SyntaxKind.UndefinedKeyword) return 'undefined'
+  if (typeNode.kind === ts.SyntaxKind.NeverKeyword) return 'never'
+  if (typeNode.kind === ts.SyntaxKind.ObjectKeyword) return 'object'
+  return undefined
+}
+
+function literalDtsTypeMeta(typeNode: ts.LiteralTypeNode, sourceFile: ts.SourceFile): DtsTypeMeta {
+  const literal = typeNode.literal
+  if (ts.isStringLiteral(literal)) return { type: 'literal', value: literal.text }
+  if (ts.isNumericLiteral(literal)) return { type: 'literal', value: Number(literal.text) }
+  if (literal.kind === ts.SyntaxKind.TrueKeyword) return { type: 'literal', value: true }
+  if (literal.kind === ts.SyntaxKind.FalseKeyword) return { type: 'literal', value: false }
+  if (literal.kind === ts.SyntaxKind.NullKeyword) return { type: 'literal', value: null }
+  return { type: 'unknown', name: typeNode.getText(sourceFile) }
+}
+
+function methodReturnTypeTextFromDeclaration(
+  checker: ts.TypeChecker,
+  signature: ts.Signature,
+  member: ts.MethodDeclaration | ts.MethodSignature,
+  sourceFile: ts.SourceFile,
+): string {
+  if (member.type !== undefined) return member.type.getText(sourceFile)
+  return checker.typeToString(checker.getReturnTypeOfSignature(signature), undefined, ts.TypeFormatFlags.NoTruncation)
+}
+
+function resolveAliasedSymbol(checker: ts.TypeChecker, symbol: ts.Symbol | undefined): ts.Symbol | undefined {
+  if (symbol === undefined) return undefined
+  return (symbol.flags & ts.SymbolFlags.Alias) === 0 ? symbol : checker.getAliasedSymbol(symbol)
+}
+
+function declarationNameText(declaration: ts.Declaration): string | undefined {
+  const name = (declaration as ts.Declaration & { name?: ts.Node }).name
+  return name !== undefined && ts.isIdentifier(name) ? name.text : undefined
+}
+
 function projectConstructor(command: ConstructorProjectionCommand): ConstructorMeta {
   const { site, member } = command
   const { context, sourceFile, className } = site
@@ -757,6 +940,9 @@ function projectConstructor(command: ConstructorProjectionCommand): ConstructorM
     throw new Error(`Missing constructor signature for ${className}`)
   }
   return {
+    signatureText: constructorSignatureTextFromDeclaration(member, sourceFile),
+    parameterStyle: parameterStyleFromDeclaration(member),
+    parameters: methodParametersFromDeclaration(context.checker, context.repoRoot, member, sourceFile),
     paramsSchema: paramsSchemaFromSignature(context.checker, signature),
     jsdoc: readJsDoc(context.checker, member),
     provenance: createProvenance({
@@ -767,6 +953,13 @@ function projectConstructor(command: ConstructorProjectionCommand): ConstructorM
       declarationKind: 'class',
     }),
   }
+}
+
+function constructorSignatureTextFromDeclaration(
+  member: ts.ConstructorDeclaration,
+  sourceFile: ts.SourceFile,
+): string {
+  return member.getText(sourceFile).replace(/;$/u, '').trim()
 }
 
 function registerModel(context: ProjectionContext, className: string, model: ClassModel): void {
@@ -1151,14 +1344,65 @@ function readComponentNameFromPropsFile(file: string): string | undefined {
 }
 
 function readJsDoc(checker: ts.TypeChecker, node: ts.Node): string {
-  const symbol = checker.getSymbolAtLocation(node)
+  const symbol = readJsDocSymbol(checker, node)
   if (symbol !== undefined) {
-    return ts.displayPartsToString(symbol.getDocumentationComment(checker)).trim()
+    const lines = [
+      normalizeJsDocText(ts.displayPartsToString(symbol.getDocumentationComment(checker))),
+      ...symbol.getJsDocTags(checker).map(renderJsDocTag),
+    ].filter(line => line.length > 0)
+    if (lines.length > 0) return lines.join('\n')
   }
   const tags = ts.getJSDocCommentsAndTags(node)
   if (tags.length === 0) return ''
   return tags
-    .map(tag => tag.getText().trim())
+    .map(tag => normalizeJsDocText(tag.getText()))
+    .filter(text => text.length > 0)
+    .join('\n')
+    .trim()
+}
+
+function readJsDocSymbol(checker: ts.TypeChecker, node: ts.Node): ts.Symbol | undefined {
+  const name = readDeclarationNameNode(node)
+  if (name !== undefined) {
+    const symbol = checker.getSymbolAtLocation(name)
+    if (symbol !== undefined) return symbol
+  }
+  return checker.getSymbolAtLocation(node)
+}
+
+function readDeclarationNameNode(node: ts.Node): ts.Node | undefined {
+  if (
+    ts.isClassDeclaration(node)
+    || ts.isInterfaceDeclaration(node)
+    || ts.isTypeAliasDeclaration(node)
+    || ts.isEnumDeclaration(node)
+    || ts.isFunctionDeclaration(node)
+    || ts.isPropertyDeclaration(node)
+    || ts.isPropertySignature(node)
+    || ts.isMethodDeclaration(node)
+    || ts.isMethodSignature(node)
+    || ts.isEnumMember(node)
+  ) {
+    return node.name
+  }
+  return undefined
+}
+
+function renderJsDocTag(tag: ts.JSDocTagInfo): string {
+  const text = tag.text === undefined ? '' : ts.displayPartsToString(tag.text).trim()
+  return text.length === 0 ? `@${tag.name}` : `@${tag.name} ${text}`
+}
+
+function normalizeJsDocText(text: string): string {
+  const normalized = text.trim()
+  if (normalized.length === 0) return ''
+  if (normalized.startsWith('/**') || normalized.startsWith('/*')) {
+    return cleanJsDocBlock(normalized)
+  }
+  return normalized
+    .split(/\r?\n/u)
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
     .join('\n')
     .trim()
 }

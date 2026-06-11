@@ -1,30 +1,8 @@
 /**
- * ComputedColumnDelegate — 计算列管理器
- *
- * 职责：
- * - 表达式编译（`new Function` + `with` 沙箱）、子表聚合函数注入
- * - 已编译函数注册表（`ComputedColumnDelegate`）
- * - 编译缓存管理（列指纹 + ctx 变更检测）
- * - 聚合解析器构建（通过 DataView 访问 DataSet/DataRelation）
- *
- * DataView 仅保留薄代理（setComputedContext / recomputeColumns / aggregateResult getter），
- * 所有编排逻辑委托到本文件。
- *
- * ## 表达式格式
- * ```
- * "price * qty"
- * "firstName + ' ' + lastName"
- * "ctx.taxRate ? amount * ctx.taxRate : amount"
- *
- * // 子表聚合（需配置 DataRelation；第一个参数按 childTable 匹配，当前读取 default 视图）
- * "$sum('OrderItems', 'amount')"
- * "$count('OrderItems')"
- * "$avg('Scores', 'score')"
- * "$min('Bids', 'price')"
- * "$max('Bids', 'price')"
- * "$list('Tags', 'name').join(', ')"
- * "$join('Tags', 'name', ' | ')"    // 字符串连接，第三参数为分隔符（默认 ', '）
- * ```
+ * @module @spark-appworks/spark-data:strategies/computed-column-delegate
+ * 职责：提供 spark-data 数据管线中的 computed column delegate 能力，支撑 DataSet、DataTable、DataView、树或 CRUD 状态协作。
+ * 边界：保持框架无关，只维护数据模型和操作协议，不导入 Vue、Element Plus 或应用路由。
+ * AI用途：处理页面数据绑定、DataViewKey、行状态、树结构或 CRUD 行为时，用本模块确认数据层语义。
  */
 
 import { Logger, toErrorMessage, createSafeProxy } from '@spark-appworks/spark-utils'

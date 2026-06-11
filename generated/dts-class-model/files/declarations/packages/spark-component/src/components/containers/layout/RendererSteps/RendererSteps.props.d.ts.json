@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/layout/RendererSteps/RendererSteps.props.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/layout/RendererSteps/RendererSteps.props",
-    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererSteps/RendererSteps.props\nRendererSteps 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: RStepsProps（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererSteps/RendererSteps.props\n职责：定义 RendererSteps（r-steps）的配置属性契约，把页面 JSON 中的字段、数据绑定、显示选项和交互开关约束成可生成的类型。\n边界：只描述 container/layout-container 组件的声明式配置，不读取 DataSet、不触发运行时事件，也不直接渲染 DOM。\nAI用途：生成或修订页面配置时，用本模块判断 renderer steps 允许哪些 props、哪些字段属于数据绑定，避免把运行时 API 写进配置。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "RStepsProps"
@@ -25,7 +25,7 @@
     "RStepsProps": {
       "kind": "RStepsProps",
       "className": "RStepsProps",
-      "jsdoc": "/** RSteps Props 的属性契约。 */",
+      "jsdoc": "RSteps Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "SparkNodeProps & {\n    /** 结构化工具栏 */\n    toolbar?: RToolbarProps;\n    /** 当前步骤 */\n    modelValue?: string | number;\n    /** 步骤切换回调（value 为当前 step 的 value） */\n    onStepChange?: (value: string | number, step: SparkNode, index: number) => void;\n}",
       "declarationRelations": [
@@ -53,70 +53,68 @@
       "attributes": [
         {
           "name": "toolbar",
+          "jsdoc": "结构化工具栏",
           "schema": {
-            "title": "RToolbarProps"
+            "$ref": "../RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 结构化工具栏 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSteps/RendererSteps.props.d.ts",
-            "line": 13,
-            "className": "RStepsProps",
-            "memberName": "toolbar",
-            "declarationKind": "interface",
-            "componentName": "RendererSteps",
-            "componentType": "r-steps",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         },
         {
           "name": "modelValue",
+          "jsdoc": "当前步骤",
           "schema": {
-            "title": "string | number"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 当前步骤 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSteps/RendererSteps.props.d.ts",
-            "line": 15,
-            "className": "RStepsProps",
-            "memberName": "modelValue",
-            "declarationKind": "interface",
-            "componentName": "RendererSteps",
-            "componentType": "r-steps",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         },
         {
           "name": "onStepChange",
+          "jsdoc": "步骤切换回调（value 为当前 step 的 value）",
           "schema": {
+            "type": "object",
             "title": "(value: string | number, step: SparkNode, index: number) => void"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 步骤切换回调（value 为当前 step 的 value） */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSteps/RendererSteps.props.d.ts",
-            "line": 17,
-            "className": "RStepsProps",
-            "memberName": "onStepChange",
-            "declarationKind": "interface",
-            "componentName": "RendererSteps",
-            "componentType": "r-steps",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.202Z"
+  "generatedAt": "2026-06-11T16:38:12.735Z",
+  "$defs": {
+    "RStepsProps": {
+      "type": "object",
+      "title": "RStepsProps",
+      "description": "RSteps Props 的属性契约。",
+      "properties": {
+        "toolbar": {
+          "$ref": "../RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+        },
+        "modelValue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "onStepChange": {
+          "type": "object",
+          "title": "(value: string | number, step: SparkNode, index: number) => void"
+        }
+      }
+    }
+  }
 }

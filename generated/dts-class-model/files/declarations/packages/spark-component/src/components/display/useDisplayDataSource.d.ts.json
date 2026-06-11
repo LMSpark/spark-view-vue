@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/display/useDisplayDataSource.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/display/useDisplayDataSource",
-    "jsdoc": "useDisplayDataSource — 轻量级数据读取 composable，供 display 组件使用\n优先级：\n1. props.value（显式值）\n2. props.dataViewKey + props.dataMember + props.dataField（DataView 输出读取，依赖 PAGE_DATASET）\n3. props.field（从 DATA_ROW / DATA_SOURCE.currentRow 读取字段）",
+    "jsdoc": "@module @spark-appworks/spark-component:components/display/useDisplayDataSource\n职责：提供 use Display Data Source 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 display-level/view-only，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\n\nuseDisplayDataSource — 轻量级数据读取 composable，供 display 组件使用\n优先级：\n1. props.value（显式值）\n2. props.dataViewKey + props.dataMember + props.dataField（DataView 输出读取，依赖 PAGE_DATASET）\n3. props.field（从 DATA_ROW / DATA_SOURCE.currentRow 读取字段）",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "DisplayDataProps",
@@ -22,95 +22,106 @@
     "DisplayDataProps": {
       "kind": "DisplayDataProps",
       "className": "DisplayDataProps",
-      "jsdoc": "/** Display Data Props 的属性契约。 */",
+      "jsdoc": "Display Data Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** DataView 定位键。 */\n    dataViewKey?: string | undefined;\n    /** DataView 成员名。 */\n    dataMember?: DataMember | `${DataMember}` | undefined;\n    /** DataView 成员字段路径。 */\n    dataField?: string | undefined;\n    /** field 字段。 */\n    field?: string | undefined;\n    /** 当前值。 */\n    value?: unknown;\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/components/display/useDisplayDataSource.d.ts",
-        "line": 12,
+        "line": 18,
         "className": "DisplayDataProps",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "dataViewKey",
+          "jsdoc": "DataView 定位键。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** DataView 定位键。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/useDisplayDataSource.d.ts",
-            "line": 14,
-            "className": "DisplayDataProps",
-            "memberName": "dataViewKey",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "dataMember",
+          "jsdoc": "DataView 成员名。",
           "schema": {
-            "title": "DataMember | `${DataMember}` | undefined"
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataMember"
+              },
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** DataView 成员名。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/useDisplayDataSource.d.ts",
-            "line": 16,
-            "className": "DisplayDataProps",
-            "memberName": "dataMember",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "dataField",
+          "jsdoc": "DataView 成员字段路径。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** DataView 成员字段路径。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/useDisplayDataSource.d.ts",
-            "line": 18,
-            "className": "DisplayDataProps",
-            "memberName": "dataField",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "field",
+          "jsdoc": "field 字段。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** field 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/useDisplayDataSource.d.ts",
-            "line": 20,
-            "className": "DisplayDataProps",
-            "memberName": "field",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "value",
-          "schema": {
-            "title": "unknown"
-          },
+          "jsdoc": "当前值。",
+          "schema": true,
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 当前值。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/useDisplayDataSource.d.ts",
-            "line": 22,
-            "className": "DisplayDataProps",
-            "memberName": "value",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -118,35 +129,110 @@
     "UseDisplayDataSourceReturn": {
       "kind": "UseDisplayDataSourceReturn",
       "className": "UseDisplayDataSourceReturn",
-      "jsdoc": "/** Use Display Data Source Return 的语义模型。 */",
+      "jsdoc": "Use Display Data Source Return 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** resolved Value 字段。 */\n    resolvedValue: ComputedRef<unknown>;\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/components/display/useDisplayDataSource.d.ts",
-        "line": 25,
+        "line": 31,
         "className": "UseDisplayDataSourceReturn",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "resolvedValue",
+          "jsdoc": "resolved Value 字段。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<unknown>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** resolved Value 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/useDisplayDataSource.d.ts",
-            "line": 27,
-            "className": "UseDisplayDataSourceReturn",
-            "memberName": "resolvedValue",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.386Z"
+  "generatedAt": "2026-06-11T16:38:12.805Z",
+  "$defs": {
+    "DisplayDataProps": {
+      "type": "object",
+      "title": "DisplayDataProps",
+      "description": "Display Data Props 的属性契约。",
+      "properties": {
+        "dataViewKey": {
+          "type": "string"
+        },
+        "dataMember": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataMember"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          ]
+        },
+        "dataField": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "value": true
+      }
+    },
+    "UseDisplayDataSourceReturn": {
+      "type": "object",
+      "title": "UseDisplayDataSourceReturn",
+      "description": "Use Display Data Source Return 的语义模型。",
+      "properties": {
+        "resolvedValue": {
+          "type": "object",
+          "title": "ComputedRef<unknown>"
+        }
+      }
+    }
+  }
 }

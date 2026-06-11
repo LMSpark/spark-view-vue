@@ -7,7 +7,7 @@
     "sourceFile": "src/services/project-switch.ts",
     "packageName": "app",
     "modulePath": "services/project-switch",
-    "jsdoc": "项目切换服务 — provide/inject 键 + 类型定义。\nApp.vue provide → 子组件 inject，用于切换当前项目后联动刷新导航 + 路由。",
+    "jsdoc": "@module app:services/project-switch\n职责：提供应用运行时 service 层的 project switch 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\n项目切换服务 — provide/inject 键 + 类型定义。\nApp.vue provide → 子组件 inject，用于切换当前项目后联动刷新导航 + 路由。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ProjectSwitchService"
@@ -20,12 +20,12 @@
     "ProjectSwitchService": {
       "kind": "ProjectSwitchService",
       "className": "ProjectSwitchService",
-      "jsdoc": "/** Project Switch Service 的语义模型。 */",
+      "jsdoc": "Project Switch Service 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 切换到指定项目并刷新导航 + 路由 */\n    switchAndReload(projectId: string): Promise<void>;\n}",
       "provenance": {
         "file": "declarations/src/services/project-switch.d.ts",
-        "line": 8,
+        "line": 14,
         "className": "ProjectSwitchService",
         "declarationKind": "type"
       },
@@ -33,5 +33,12 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.103Z"
+  "generatedAt": "2026-06-11T16:38:13.118Z",
+  "$defs": {
+    "ProjectSwitchService": {
+      "type": "object",
+      "title": "ProjectSwitchService",
+      "description": "Project Switch Service 的语义模型。"
+    }
+  }
 }

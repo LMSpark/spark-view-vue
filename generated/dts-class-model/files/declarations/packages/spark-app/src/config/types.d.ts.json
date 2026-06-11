@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-app/src/config/types.ts",
     "packageName": "@spark-appworks/spark-app",
     "modulePath": "config/types",
-    "jsdoc": "应用配置类型定义\n支持多租户配置\nPluginConfigItem 复用本包的定义，不重复声明。",
+    "jsdoc": "@module @spark-appworks/spark-app:config/types\n职责：提供 spark-app 应用壳中的 types 能力，连接路由、导航、认证、插件、页面 UI 或 AI 桥接。\n边界：负责应用层编排，不下沉实现底层数据模型，也不直接改写组件包的渲染协议。\nAI用途：排查页面打开、导航状态、权限上下文或应用侧 AI 接线时，用本模块确认 app 层入口。\n\n应用配置类型定义\n支持多租户配置\nPluginConfigItem 复用本包的定义，不重复声明。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ConfigSourceOptions",
@@ -26,63 +26,55 @@
     "ConfigSourceOptions": {
       "kind": "ConfigSourceOptions",
       "className": "ConfigSourceOptions",
-      "jsdoc": "/**\n * 配置源类型\n */",
+      "jsdoc": "配置源类型",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 配置源类型 */\n    type: 'local' | 'remote';\n    /** API 端点配置（远程加载） */\n    api?: {\n        defaultConfigEndpoint: string;\n        tenantConfigEndpoint: string;\n        timeout?: number;\n        headers?: Record<string, string>;\n    };\n    /** 本地文件路径配置 */\n    local?: {\n        defaultConfigPath: string;\n        tenantConfigTemplate: string;\n    };\n}",
       "provenance": {
         "file": "declarations/packages/spark-app/src/config/types.d.ts",
-        "line": 12,
+        "line": 18,
         "className": "ConfigSourceOptions",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "type",
+          "jsdoc": "配置源类型",
           "schema": {
-            "title": "'local' | 'remote'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "local"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "remote"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 配置源类型 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 14,
-            "className": "ConfigSourceOptions",
-            "memberName": "type",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "api",
+          "jsdoc": "API 端点配置（远程加载）",
           "schema": {
-            "title": "{\n        defaultConfigEndpoint: string;\n        tenantConfigEndpoint: string;\n        timeout?: number;\n        headers?: Record<string, string>;\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** API 端点配置（远程加载） */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 16,
-            "className": "ConfigSourceOptions",
-            "memberName": "api",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "local",
+          "jsdoc": "本地文件路径配置",
           "schema": {
-            "title": "{\n        defaultConfigPath: string;\n        tenantConfigTemplate: string;\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 本地文件路径配置 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 23,
-            "className": "ConfigSourceOptions",
-            "memberName": "local",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -90,99 +82,60 @@
     "FullTenantInfo": {
       "kind": "FullTenantInfo",
       "className": "FullTenantInfo",
-      "jsdoc": "/**\n * 租户信息（完整版，含 logo/theme 等展示字段）\n */",
+      "jsdoc": "租户信息（完整版，含 logo/theme 等展示字段）",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** tenant Name 名称。 */\n    tenantName: string;\n    /** tenant Code 字段。 */\n    tenantCode?: string;\n    /** logo 字段。 */\n    logo?: string;\n    /** theme 字段。 */\n    theme?: {\n        primaryColor?: string;\n        [key: string]: unknown;\n    };\n}",
       "provenance": {
         "file": "declarations/packages/spark-app/src/config/types.d.ts",
-        "line": 31,
+        "line": 37,
         "className": "FullTenantInfo",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "tenantId",
+          "jsdoc": "tenant Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tenant Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 33,
-            "className": "FullTenantInfo",
-            "memberName": "tenantId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "tenantName",
+          "jsdoc": "tenant Name 名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tenant Name 名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 35,
-            "className": "FullTenantInfo",
-            "memberName": "tenantName",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "tenantCode",
+          "jsdoc": "tenant Code 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** tenant Code 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 37,
-            "className": "FullTenantInfo",
-            "memberName": "tenantCode",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "logo",
+          "jsdoc": "logo 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** logo 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 39,
-            "className": "FullTenantInfo",
-            "memberName": "logo",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "theme",
+          "jsdoc": "theme 字段。",
           "schema": {
-            "title": "{\n        primaryColor?: string;\n        [key: string]: unknown;\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** theme 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 41,
-            "className": "FullTenantInfo",
-            "memberName": "theme",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -190,160 +143,97 @@
     "AppFullConfig": {
       "kind": "AppFullConfig",
       "className": "AppFullConfig",
-      "jsdoc": "/**\n * 完整的应用配置\n */",
+      "jsdoc": "完整的应用配置",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 配置源设置 */\n    configSource?: ConfigSourceOptions;\n    /** 租户信息 */\n    tenant?: FullTenantInfo;\n    /** 路由配置 */\n    router: {\n        mode: 'history' | 'hash';\n        base?: string;\n    };\n    /** 挂载点 */\n    mountTarget: string;\n    /** UI 插件配置（简单: true / 详细: PluginConfigItem） */\n    plugins: Record<string, boolean | PluginConfigItem>;\n    /** SPARK 组件系统 */\n    spark: {\n        enabled: boolean;\n    };\n    /** PageNode 运行配置 */\n    pageNode: {\n        apiBaseUrl: string;\n        timeout?: number;\n        homePath: string;\n    };\n    /** 应用基础配置 */\n    config: {\n        apiBaseUrl: string;\n        logLevel: 'debug' | 'info' | 'warn' | 'error';\n        enableMock?: boolean;\n        version: string;\n        features: {\n            enableExport?: boolean;\n            enableOffline?: boolean;\n        };\n    };\n    /** Logger 配置 */\n    logger: AppLoggerConfig;\n}",
       "provenance": {
         "file": "declarations/packages/spark-app/src/config/types.d.ts",
-        "line": 49,
+        "line": 55,
         "className": "AppFullConfig",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "configSource",
+          "jsdoc": "配置源设置",
           "schema": {
-            "title": "ConfigSourceOptions"
+            "$ref": "#/$defs/ConfigSourceOptions"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 配置源设置 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 51,
-            "className": "AppFullConfig",
-            "memberName": "configSource",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "tenant",
+          "jsdoc": "租户信息",
           "schema": {
-            "title": "FullTenantInfo"
+            "$ref": "#/$defs/FullTenantInfo"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 租户信息 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 53,
-            "className": "AppFullConfig",
-            "memberName": "tenant",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "router",
+          "jsdoc": "路由配置",
           "schema": {
-            "title": "{\n        mode: 'history' | 'hash';\n        base?: string;\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 路由配置 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 55,
-            "className": "AppFullConfig",
-            "memberName": "router",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "mountTarget",
+          "jsdoc": "挂载点",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 挂载点 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 60,
-            "className": "AppFullConfig",
-            "memberName": "mountTarget",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "plugins",
+          "jsdoc": "UI 插件配置（简单: true / 详细: PluginConfigItem）",
           "schema": {
+            "type": "object",
             "title": "Record<string, boolean | PluginConfigItem>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** UI 插件配置（简单: true / 详细: PluginConfigItem） */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 62,
-            "className": "AppFullConfig",
-            "memberName": "plugins",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "spark",
+          "jsdoc": "SPARK 组件系统",
           "schema": {
-            "title": "{\n        enabled: boolean;\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** SPARK 组件系统 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 64,
-            "className": "AppFullConfig",
-            "memberName": "spark",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "pageNode",
+          "jsdoc": "PageNode 运行配置",
           "schema": {
-            "title": "{\n        apiBaseUrl: string;\n        timeout?: number;\n        homePath: string;\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** PageNode 运行配置 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 68,
-            "className": "AppFullConfig",
-            "memberName": "pageNode",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "config",
+          "jsdoc": "应用基础配置",
           "schema": {
-            "title": "{\n        apiBaseUrl: string;\n        logLevel: 'debug' | 'info' | 'warn' | 'error';\n        enableMock?: boolean;\n        version: string;\n        features: {\n            enableExport?: boolean;\n            enableOffline?: boolean;\n        };\n    }"
+            "type": "object"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 应用基础配置 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 74,
-            "className": "AppFullConfig",
-            "memberName": "config",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "logger",
+          "jsdoc": "Logger 配置",
           "schema": {
-            "title": "AppLoggerConfig"
+            "$ref": "../logger/index.d.ts.json#/$defs/AppLoggerConfig"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** Logger 配置 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 85,
-            "className": "AppFullConfig",
-            "memberName": "logger",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -351,7 +241,7 @@
     "TenantConfig": {
       "kind": "TenantConfig",
       "className": "TenantConfig",
-      "jsdoc": "/**\n * 租户配置（可覆盖默认配置的部分）\n */",
+      "jsdoc": "租户配置（可覆盖默认配置的部分）",
       "shapeKind": "type",
       "declarationTypeText": "Partial<AppFullConfig> & {\n    /** tenant 字段。 */\n    tenant: FullTenantInfo;\n}",
       "declarationRelations": [
@@ -367,30 +257,121 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-app/src/config/types.d.ts",
-        "line": 90,
+        "line": 96,
         "className": "TenantConfig",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "tenant",
+          "jsdoc": "tenant 字段。",
           "schema": {
-            "title": "FullTenantInfo"
+            "$ref": "#/$defs/FullTenantInfo"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tenant 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/config/types.d.ts",
-            "line": 92,
-            "className": "TenantConfig",
-            "memberName": "tenant",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.914Z"
+  "generatedAt": "2026-06-11T16:38:12.626Z",
+  "$defs": {
+    "ConfigSourceOptions": {
+      "type": "object",
+      "title": "ConfigSourceOptions",
+      "description": "配置源类型",
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "local"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "remote"
+              ]
+            }
+          ]
+        },
+        "api": {
+          "type": "object"
+        },
+        "local": {
+          "type": "object"
+        }
+      }
+    },
+    "FullTenantInfo": {
+      "type": "object",
+      "title": "FullTenantInfo",
+      "description": "租户信息（完整版，含 logo/theme 等展示字段）",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "tenantName": {
+          "type": "string"
+        },
+        "tenantCode": {
+          "type": "string"
+        },
+        "logo": {
+          "type": "string"
+        },
+        "theme": {
+          "type": "object"
+        }
+      }
+    },
+    "AppFullConfig": {
+      "type": "object",
+      "title": "AppFullConfig",
+      "description": "完整的应用配置",
+      "properties": {
+        "configSource": {
+          "$ref": "#/$defs/ConfigSourceOptions"
+        },
+        "tenant": {
+          "$ref": "#/$defs/FullTenantInfo"
+        },
+        "router": {
+          "type": "object"
+        },
+        "mountTarget": {
+          "type": "string"
+        },
+        "plugins": {
+          "type": "object",
+          "title": "Record<string, boolean | PluginConfigItem>"
+        },
+        "spark": {
+          "type": "object"
+        },
+        "pageNode": {
+          "type": "object"
+        },
+        "config": {
+          "type": "object"
+        },
+        "logger": {
+          "$ref": "../logger/index.d.ts.json#/$defs/AppLoggerConfig"
+        }
+      }
+    },
+    "TenantConfig": {
+      "type": "object",
+      "title": "TenantConfig",
+      "description": "租户配置（可覆盖默认配置的部分）",
+      "properties": {
+        "tenant": {
+          "$ref": "#/$defs/FullTenantInfo"
+        }
+      }
+    }
+  }
 }

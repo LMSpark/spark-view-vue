@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-app/src/navigation/page-cache.ts",
     "packageName": "@spark-appworks/spark-app",
     "modulePath": "navigation/page-cache",
-    "jsdoc": "@module @spark-appworks/spark-app:navigation/page-cache\n@spark-appworks/spark-app 的 navigation/page-cache 模块。\n导出 ClassModel symbol: PageCacheSource, PageCacheHandle（共 2 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-app:navigation/page-cache\n职责：提供应用壳层 page-cache 能力，围绕 PageCacheSource、PageCacheHandle 连接导航、认证、插件、主题或 AI 宿主接线。\n边界：只负责 spark-app 基础设施和运行时接线，不定义底层 DataSet，也不实现组件渲染细节。\nAI用途：需要理解应用层如何把路由、服务和组件系统组装起来时，用本模块定位 navigation/page-cache。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "PageCacheSource",
@@ -22,12 +22,12 @@
     "PageCacheSource": {
       "kind": "PageCacheSource",
       "className": "PageCacheSource",
-      "jsdoc": "/**\n * 页面配置缓存管理（spark-app 内聚）\n */",
+      "jsdoc": "页面配置缓存管理（spark-app 内聚）",
       "shapeKind": "type",
       "declarationTypeText": "{\n    clearPageCache(pageId: string): void;\n    clearAllCache(): {\n        size: number;\n        keys: string[];\n    };\n    getCacheStats(): {\n        size: number;\n        keys: string[];\n    };\n}",
       "provenance": {
         "file": "declarations/packages/spark-app/src/navigation/page-cache.d.ts",
-        "line": 9,
+        "line": 10,
         "className": "PageCacheSource",
         "declarationKind": "type"
       },
@@ -37,12 +37,12 @@
     "PageCacheHandle": {
       "kind": "PageCacheHandle",
       "className": "PageCacheHandle",
-      "jsdoc": "/** Page Cache Handle 的语义模型。 */",
+      "jsdoc": "Page Cache Handle 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    clearPageCache(pageId: string): void;\n    clearAllCache(): {\n        size: number;\n        keys: string[];\n    };\n    getCacheStats(): {\n        size: number;\n        keys: string[];\n    };\n}",
       "provenance": {
         "file": "declarations/packages/spark-app/src/navigation/page-cache.d.ts",
-        "line": 21,
+        "line": 22,
         "className": "PageCacheHandle",
         "declarationKind": "type"
       },
@@ -50,5 +50,17 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.936Z"
+  "generatedAt": "2026-06-11T16:38:12.633Z",
+  "$defs": {
+    "PageCacheSource": {
+      "type": "object",
+      "title": "PageCacheSource",
+      "description": "页面配置缓存管理（spark-app 内聚）"
+    },
+    "PageCacheHandle": {
+      "type": "object",
+      "title": "PageCacheHandle",
+      "description": "Page Cache Handle 的语义模型。"
+    }
+  }
 }

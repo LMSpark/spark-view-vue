@@ -1,11 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * core/json-path.ts — JSONPath 类型与路径操作
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】路径基础设施，被 tree/ 和 schema/ 两层依赖。
- *   不依赖包内其他模块（除 json-types 的 isJsonObject）。
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-json-document:core/json-path
+ * 职责：提供 JSON Document/schema 处理中的 json path 能力，支撑 schema 标准化、审计和元数据保留。
+ * 边界：只处理 JSON schema/document 结构，不耦合应用页面、Vue 组件或 AI 会话状态。
+ * AI用途：校验或标准化配置 schema 时，用本模块确认 JSON 文档层的规则来源。
  */
 
 import type { JsonDocument, JsonValue } from './json-types'

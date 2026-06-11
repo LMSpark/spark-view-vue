@@ -1,19 +1,8 @@
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │  AI HOST · 载荷编解码器                                                       │
- * │  Payload Codec — 序列化 / 反序列化 / 参数规整                                 │
- * │                                                                              │
- * │  本模块是 Tool Loop 的数据转换层，负责：                                        │
- * │    1. 将 LLM 返回的原始 JSON 字符串解析为类型安全的参数记录                      │
- * │    2. 将用户最新输入提取为传输层消息格式                                        │
- * │    3. 将任意 JS 值安全序列化为 JSON（处理 BigInt、循环引用等边界情况）           │
- * │                                                                              │
- * │  调用关系：                                                                   │
- * │    parseToolArgs        → tool-call-executor.ts  —— 解析 LLM 工具调用参数     │
- * │    toCurrentTurnMessages → tool-loop-runner.ts   —— 获取当前轮次用户消息       │
- * │    stringifyAiAgentPayload → tool-call-executor.ts —— 序列化工具调用结果        │
- * │                           → diagnostic-events.ts —— 序列化诊断事件数据         │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * @module @spark-appworks/spark-ai:agent/tool-loop/payload-codec
+ * 职责：支撑 Agent tool loop 的 payload codec 能力，处理工具调用、结果映射、诊断事件或 payload 编解码。
+ * 边界：只服务单次 turn 内的工具循环，不定义业务注册协议，也不直接管理 UI 或持久化页面状态。
+ * AI用途：排查工具调用为什么继续、完成、失败或被映射成回调事件时，用本模块定位 loop 内部语义。
  */
 
 import type { AiJsonObject, AiJsonParams, AiJsonValue } from '../../json'

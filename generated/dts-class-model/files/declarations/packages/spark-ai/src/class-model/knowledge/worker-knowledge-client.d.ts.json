@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/knowledge/worker-knowledge-client",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-client\n@spark-appworks/spark-ai 的 class-model/knowledge/worker-knowledge-client 模块。\n导出 ClassModel symbol: WorkerClassModelKnowledgeProvider（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-client\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-client 能力，围绕 WorkerClassModelKnowledgeProvider 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-client 这一段如何生成、加载或投影时，用本模块定位职责。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "WorkerClassModelKnowledgeProvider"
@@ -20,7 +20,7 @@
     "WorkerClassModelKnowledgeProvider": {
       "kind": "WorkerClassModelKnowledgeProvider",
       "className": "WorkerClassModelKnowledgeProvider",
-      "jsdoc": "/**\n * 主线程 knowledge provider。\n *\n * 成熟 Worker 通信由 Comlink 负责；主线程只传 metadata/catalog URL 和小查询参数。\n * 注意：本文件不得 import spark-json-document，也不得 import generated metadata JSON。\n */",
+      "jsdoc": "主线程 knowledge provider。\n成熟 Worker 通信由 Comlink 负责；主线程只传 metadata/catalog URL 和小查询参数。\n注意：本文件不得 import spark-json-document，也不得 import generated metadata JSON。",
       "shapeKind": "class",
       "declarationRelations": [
         {
@@ -36,147 +36,142 @@
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "worker": {
-              "title": "Worker"
-            },
-            "init": {
-              "title": "ClassModelKnowledgeWorkerInitInput"
+        "jsdoc": "创建 Worker Class Model Knowledge Provider 实例。",
+        "signatureText": "constructor(worker: Worker, init: ClassModelKnowledgeWorkerInitInput)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "worker",
+            "type": {
+              "type": "reference",
+              "name": "Worker"
             }
           },
-          "required": [
-            "worker",
-            "init"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Worker Class Model Knowledge Provider 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.d.ts",
-          "line": 14,
-          "className": "WorkerClassModelKnowledgeProvider",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          {
+            "name": "init",
+            "type": {
+              "type": "reference",
+              "name": "ClassModelKnowledgeWorkerInitInput",
+              "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts"
+            }
+          }
+        ]
       },
       "attributes": [],
       "methods": [
         {
           "name": "query",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "title": "ClassModelKnowledgeQueryInput"
+          "jsdoc": "查询参数。",
+          "signatureText": "query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "ClassModelKnowledgeQueryInput",
+                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
               }
-            },
-            "required": [
-              "input"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<AiJsonValue>"
-          },
-          "returnTypeText": "Promise<AiJsonValue>",
-          "jsdoc": "/** 查询参数。 */",
-          "paramsTypeText": "input: Readonly<{ kind?: string | undefined; keyword?: string | undefined; includeMembers: boolean; }>",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.d.ts",
-            "line": 16,
-            "className": "WorkerClassModelKnowledgeProvider",
-            "memberName": "query",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
           }
         },
         {
           "name": "modelGuide",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "title": "ClassModelModelGuideInput"
+          "jsdoc": "执行 model Guide 操作。",
+          "signatureText": "modelGuide(input: ClassModelModelGuideInput): Promise<string>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "ClassModelModelGuideInput",
+                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
               }
-            },
-            "required": [
-              "input"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<string>"
-          },
-          "returnTypeText": "Promise<string>",
-          "jsdoc": "/** 执行 model Guide 操作。 */",
-          "paramsTypeText": "input: Readonly<{ kind: string; }>",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.d.ts",
-            "line": 18,
-            "className": "WorkerClassModelKnowledgeProvider",
-            "memberName": "modelGuide",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ]
           }
         },
         {
           "name": "attributeGuide",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "title": "ClassModelAttributeGuideInput"
+          "jsdoc": "执行 attribute Guide 操作。",
+          "signatureText": "attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "ClassModelAttributeGuideInput",
+                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
               }
-            },
-            "required": [
-              "input"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<string>"
-          },
-          "returnTypeText": "Promise<string>",
-          "jsdoc": "/** 执行 attribute Guide 操作。 */",
-          "paramsTypeText": "input: Readonly<{ kind: string; attributeName: string; }>",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.d.ts",
-            "line": 20,
-            "className": "WorkerClassModelKnowledgeProvider",
-            "memberName": "attributeGuide",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ]
           }
         },
         {
           "name": "methodGuide",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "title": "ClassModelMethodGuideInput"
+          "jsdoc": "执行 method Guide 操作。",
+          "signatureText": "methodGuide(input: ClassModelMethodGuideInput): Promise<string>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "ClassModelMethodGuideInput",
+                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
               }
-            },
-            "required": [
-              "input"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<string>"
-          },
-          "returnTypeText": "Promise<string>",
-          "jsdoc": "/** 执行 method Guide 操作。 */",
-          "paramsTypeText": "input: Readonly<{ kind: string; methodName: string; }>",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.d.ts",
-            "line": 22,
-            "className": "WorkerClassModelKnowledgeProvider",
-            "memberName": "methodGuide",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ]
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.837Z"
+  "generatedAt": "2026-06-11T16:38:12.603Z",
+  "$defs": {
+    "WorkerClassModelKnowledgeProvider": {
+      "type": "object",
+      "title": "WorkerClassModelKnowledgeProvider",
+      "description": "主线程 knowledge provider。\n成熟 Worker 通信由 Comlink 负责；主线程只传 metadata/catalog URL 和小查询参数。\n注意：本文件不得 import spark-json-document，也不得 import generated metadata JSON。"
+    }
+  }
 }

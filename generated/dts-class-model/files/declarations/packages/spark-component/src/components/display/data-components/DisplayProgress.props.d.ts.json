@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/display/data-components/DisplayProgress.props.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/display/data-components/DisplayProgress.props",
-    "jsdoc": "@module @spark-appworks/spark-component:components/display/data-components/DisplayProgress.props\nDisplayProgress 模块，属于 SPARK component display/data-display。\n组件目录: display/data-components。\n导出 ClassModel symbol: RProgressProps（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/display/data-components/DisplayProgress.props\n职责：定义 DisplayProgress（r-progress）的配置属性契约，把页面 JSON 中的字段、数据绑定、显示选项和交互开关约束成可生成的类型。\n边界：只描述 display/data-display 组件的声明式配置，不读取 DataSet、不触发运行时事件，也不直接渲染 DOM。\nAI用途：生成或修订页面配置时，用本模块判断 display progress 允许哪些 props、哪些字段属于数据绑定，避免把运行时 API 写进配置。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "RProgressProps"
@@ -25,7 +25,7 @@
     "RProgressProps": {
       "kind": "RProgressProps",
       "className": "RProgressProps",
-      "jsdoc": "/** RProgress Props 的属性契约。 */",
+      "jsdoc": "RProgress Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "SparkNodeProps & SparkDataDisplayProps<number> & {\n    /** 百分比值（优先级高于 value/field） */\n    percentage?: number;\n    /** 进度条类型 */\n    progressType?: 'line' | 'circle' | 'dashboard';\n    /** 线宽 */\n    strokeWidth?: number;\n    /** 线形时文本是否内嵌 */\n    textInside?: boolean;\n    /** 状态 */\n    status?: 'success' | 'exception' | 'warning';\n    /** 是否不确定进度 */\n    indeterminate?: boolean;\n    /** 动画时长（毫秒） */\n    duration?: number;\n    /** 进度色 */\n    color?: string | Array<{\n        color: string;\n        percentage: number;\n    }>;\n    /** 圆形进度宽度 */\n    circleWidth?: number;\n    /** 是否显示文本 */\n    showText?: boolean;\n    /** 线帽样式 */\n    strokeLinecap?: 'butt' | 'round' | 'square';\n    /** 文本模板 */\n    formatText?: string;\n}",
       "declarationRelations": [
@@ -58,267 +58,294 @@
       "attributes": [
         {
           "name": "percentage",
+          "jsdoc": "百分比值（优先级高于 value/field）",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 百分比值（优先级高于 value/field） */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayProgress.props.d.ts",
-            "line": 11,
-            "className": "RProgressProps",
-            "memberName": "percentage",
-            "declarationKind": "interface",
-            "componentName": "DisplayProgress",
-            "componentType": "r-progress",
-            "componentLevel": "display",
-            "componentLayer": "data-display",
-            "componentDirectory": "display/data-components"
-          }
+          "writable": false
         },
         {
           "name": "progressType",
+          "jsdoc": "进度条类型",
           "schema": {
-            "title": "'line' | 'circle' | 'dashboard'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "line"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "circle"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "dashboard"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 进度条类型 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayProgress.props.d.ts",
-            "line": 13,
-            "className": "RProgressProps",
-            "memberName": "progressType",
-            "declarationKind": "interface",
-            "componentName": "DisplayProgress",
-            "componentType": "r-progress",
-            "componentLevel": "display",
-            "componentLayer": "data-display",
-            "componentDirectory": "display/data-components"
-          }
+          "writable": false
         },
         {
           "name": "strokeWidth",
+          "jsdoc": "线宽",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 线宽 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayProgress.props.d.ts",
-            "line": 15,
-            "className": "RProgressProps",
-            "memberName": "strokeWidth",
-            "declarationKind": "interface",
-            "componentName": "DisplayProgress",
-            "componentType": "r-progress",
-            "componentLevel": "display",
-            "componentLayer": "data-display",
-            "componentDirectory": "display/data-components"
-          }
+          "writable": false
         },
         {
           "name": "textInside",
+          "jsdoc": "线形时文本是否内嵌",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 线形时文本是否内嵌 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayProgress.props.d.ts",
-            "line": 17,
-            "className": "RProgressProps",
-            "memberName": "textInside",
-            "declarationKind": "interface",
-            "componentName": "DisplayProgress",
-            "componentType": "r-progress",
-            "componentLevel": "display",
-            "componentLayer": "data-display",
-            "componentDirectory": "display/data-components"
-          }
+          "writable": false
         },
         {
           "name": "status",
+          "jsdoc": "状态",
           "schema": {
-            "title": "'success' | 'exception' | 'warning'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "success"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "exception"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warning"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 状态 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayProgress.props.d.ts",
-            "line": 19,
-            "className": "RProgressProps",
-            "memberName": "status",
-            "declarationKind": "interface",
-            "componentName": "DisplayProgress",
-            "componentType": "r-progress",
-            "componentLevel": "display",
-            "componentLayer": "data-display",
-            "componentDirectory": "display/data-components"
-          }
+          "writable": false
         },
         {
           "name": "indeterminate",
+          "jsdoc": "是否不确定进度",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否不确定进度 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayProgress.props.d.ts",
-            "line": 21,
-            "className": "RProgressProps",
-            "memberName": "indeterminate",
-            "declarationKind": "interface",
-            "componentName": "DisplayProgress",
-            "componentType": "r-progress",
-            "componentLevel": "display",
-            "componentLayer": "data-display",
-            "componentDirectory": "display/data-components"
-          }
+          "writable": false
         },
         {
           "name": "duration",
+          "jsdoc": "动画时长（毫秒）",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 动画时长（毫秒） */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayProgress.props.d.ts",
-            "line": 23,
-            "className": "RProgressProps",
-            "memberName": "duration",
-            "declarationKind": "interface",
-            "componentName": "DisplayProgress",
-            "componentType": "r-progress",
-            "componentLevel": "display",
-            "componentLayer": "data-display",
-            "componentDirectory": "display/data-components"
-          }
+          "writable": false
         },
         {
           "name": "color",
+          "jsdoc": "进度色",
           "schema": {
-            "title": "string | Array<{\n        color: string;\n        percentage: number;\n    }>"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 进度色 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayProgress.props.d.ts",
-            "line": 25,
-            "className": "RProgressProps",
-            "memberName": "color",
-            "declarationKind": "interface",
-            "componentName": "DisplayProgress",
-            "componentType": "r-progress",
-            "componentLevel": "display",
-            "componentLayer": "data-display",
-            "componentDirectory": "display/data-components"
-          }
+          "writable": false
         },
         {
           "name": "circleWidth",
+          "jsdoc": "圆形进度宽度",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 圆形进度宽度 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayProgress.props.d.ts",
-            "line": 30,
-            "className": "RProgressProps",
-            "memberName": "circleWidth",
-            "declarationKind": "interface",
-            "componentName": "DisplayProgress",
-            "componentType": "r-progress",
-            "componentLevel": "display",
-            "componentLayer": "data-display",
-            "componentDirectory": "display/data-components"
-          }
+          "writable": false
         },
         {
           "name": "showText",
+          "jsdoc": "是否显示文本",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否显示文本 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayProgress.props.d.ts",
-            "line": 32,
-            "className": "RProgressProps",
-            "memberName": "showText",
-            "declarationKind": "interface",
-            "componentName": "DisplayProgress",
-            "componentType": "r-progress",
-            "componentLevel": "display",
-            "componentLayer": "data-display",
-            "componentDirectory": "display/data-components"
-          }
+          "writable": false
         },
         {
           "name": "strokeLinecap",
+          "jsdoc": "线帽样式",
           "schema": {
-            "title": "'butt' | 'round' | 'square'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "butt"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "round"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "square"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 线帽样式 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayProgress.props.d.ts",
-            "line": 34,
-            "className": "RProgressProps",
-            "memberName": "strokeLinecap",
-            "declarationKind": "interface",
-            "componentName": "DisplayProgress",
-            "componentType": "r-progress",
-            "componentLevel": "display",
-            "componentLayer": "data-display",
-            "componentDirectory": "display/data-components"
-          }
+          "writable": false
         },
         {
           "name": "formatText",
+          "jsdoc": "文本模板",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 文本模板 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/data-components/DisplayProgress.props.d.ts",
-            "line": 36,
-            "className": "RProgressProps",
-            "memberName": "formatText",
-            "declarationKind": "interface",
-            "componentName": "DisplayProgress",
-            "componentType": "r-progress",
-            "componentLevel": "display",
-            "componentLayer": "data-display",
-            "componentDirectory": "display/data-components"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.323Z"
+  "generatedAt": "2026-06-11T16:38:12.786Z",
+  "$defs": {
+    "RProgressProps": {
+      "type": "object",
+      "title": "RProgressProps",
+      "description": "RProgress Props 的属性契约。",
+      "properties": {
+        "percentage": {
+          "type": "number"
+        },
+        "progressType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "line"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "circle"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "dashboard"
+              ]
+            }
+          ]
+        },
+        "strokeWidth": {
+          "type": "number"
+        },
+        "textInside": {
+          "type": "boolean"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "exception"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            }
+          ]
+        },
+        "indeterminate": {
+          "type": "boolean"
+        },
+        "duration": {
+          "type": "number"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          ]
+        },
+        "circleWidth": {
+          "type": "number"
+        },
+        "showText": {
+          "type": "boolean"
+        },
+        "strokeLinecap": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "butt"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "round"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "square"
+              ]
+            }
+          ]
+        },
+        "formatText": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

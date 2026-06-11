@@ -7,11 +7,11 @@
     "sourceFile": "packages/spark-component/src/components/fields/context/tableColumnContext.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/fields/context/tableColumnContext",
-    "jsdoc": "@module @spark-appworks/spark-component:components/fields/context/tableColumnContext\n@spark-appworks/spark-component 的 components/fields/context/tableColumnContext 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/context/tableColumnContext\n职责：维护 @spark-appworks/spark-component 中 components/fields/context/tableColumnContext 的模块能力，围绕 模块入口、副作用注册或内部组合逻辑 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 components/fields/context/tableColumnContext 的声明、导出和使用边界时，从本模块开始。",
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
   "symbols": [],
   "models": {},
-  "generatedAt": "2026-06-11T12:20:26.411Z"
+  "generatedAt": "2026-06-11T16:38:12.815Z"
 }

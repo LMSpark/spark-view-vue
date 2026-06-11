@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/class-model/metadata/metadata-graph.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/metadata/metadata-graph",
-    "jsdoc": "metadata 对象图遍历。\n协议真源线：模型（AiApiObjectMetadata）→ 属性 || 方法（action）→ 子模块（嵌套 api）。\n实例由会话 scope 钉死；LLM 发现走 metadata 图，执行走 model_script 对象链，不用 /kind[id] path。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/metadata/metadata-graph\n职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/metadata-graph 的 AiApiMetadataGraphEdge、AiApiMetadataGraphNode、AiApiNestedApiRecord语义。\n边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。\nAI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。\n\nmetadata 对象图遍历。\n协议真源线：模型（AiApiObjectMetadata）→ 属性 || 方法（action）→ 子模块（嵌套 api）。\n实例由会话 scope 钉死；LLM 发现走 metadata 图，执行走 model_script 对象链，不用 /kind[id] path。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "AiApiMetadataGraphEdge",
@@ -24,7 +24,7 @@
     "AiApiMetadataGraphEdge": {
       "kind": "AiApiMetadataGraphEdge",
       "className": "AiApiMetadataGraphEdge",
-      "jsdoc": "/** 从父模型到子模型的边：经可读/可写属性，或经 action 的 resultApis。 */",
+      "jsdoc": "从父模型到子模型的边：经可读/可写属性，或经 action 的 resultApis。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    parentKind: string;\n    via: 'attribute' | 'action';\n    viaName: string;\n    child: AiApiObjectMetadata;\n}>",
       "declarationRelations": [
@@ -36,7 +36,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/metadata/metadata-graph.d.ts",
-        "line": 9,
+        "line": 15,
         "className": "AiApiMetadataGraphEdge",
         "declarationKind": "type"
       },
@@ -46,7 +46,7 @@
     "AiApiMetadataGraphNode": {
       "kind": "AiApiMetadataGraphNode",
       "className": "AiApiMetadataGraphNode",
-      "jsdoc": "/** metadata 图中的一个节点（含出边）。 */",
+      "jsdoc": "metadata 图中的一个节点（含出边）。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    api: AiApiObjectMetadata;\n    parentKind?: string;\n    edges: readonly AiApiMetadataGraphEdge[];\n}>",
       "declarationRelations": [
@@ -58,7 +58,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/metadata/metadata-graph.d.ts",
-        "line": 16,
+        "line": 22,
         "className": "AiApiMetadataGraphNode",
         "declarationKind": "type"
       },
@@ -68,7 +68,7 @@
     "AiApiNestedApiRecord": {
       "kind": "AiApiNestedApiRecord",
       "className": "AiApiNestedApiRecord",
-      "jsdoc": "/** 扁平嵌套 API 记录，供 guide 投影或注册 companion（迁移期）。 */",
+      "jsdoc": "扁平嵌套 API 记录，供 guide 投影或注册 companion（迁移期）。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    api: AiApiObjectMetadata;\n    parentKind: string;\n    via: AiApiMetadataGraphEdge['via'];\n    viaName: string;\n}>",
       "declarationRelations": [
@@ -80,7 +80,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/metadata/metadata-graph.d.ts",
-        "line": 22,
+        "line": 28,
         "className": "AiApiNestedApiRecord",
         "declarationKind": "type"
       },
@@ -88,5 +88,22 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.850Z"
+  "generatedAt": "2026-06-11T16:38:12.605Z",
+  "$defs": {
+    "AiApiMetadataGraphEdge": {
+      "type": "object",
+      "title": "AiApiMetadataGraphEdge",
+      "description": "从父模型到子模型的边：经可读/可写属性，或经 action 的 resultApis。"
+    },
+    "AiApiMetadataGraphNode": {
+      "type": "object",
+      "title": "AiApiMetadataGraphNode",
+      "description": "metadata 图中的一个节点（含出边）。"
+    },
+    "AiApiNestedApiRecord": {
+      "type": "object",
+      "title": "AiApiNestedApiRecord",
+      "description": "扁平嵌套 API 记录，供 guide 投影或注册 companion（迁移期）。"
+    }
+  }
 }

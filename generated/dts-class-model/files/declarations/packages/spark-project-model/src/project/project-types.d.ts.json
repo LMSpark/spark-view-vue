@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-project-model/src/project/project-types.ts",
     "packageName": "@spark-appworks/spark-project-model",
     "modulePath": "project/project-types",
-    "jsdoc": "@module @spark-appworks/spark-project-model:project/project-types\n@spark-appworks/spark-project-model 的 project/project-types 模块。\n导出 ClassModel symbol: ProjectNavigationDirtyScope, ProjectModelEvent, ProjectModelEventListener, ProjectPageFileWriteCommand, ProjectNavigationProjection, ProjectActivePageProjection, ProjectDirtyProjection, ProjectPlanningInput 等（共 12 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-project-model:project/project-types\n职责：提供项目模型层 project-types 能力，围绕 ProjectNavigationDirtyScope、ProjectModelEvent、ProjectModelEventListener 等 12 个公开契约 处理导航、页面文件、配置内容、工作区或远端 IO 契约。\n边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。\nAI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 project/project-types。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ProjectNavigationDirtyScope",
@@ -42,7 +42,7 @@
     "ProjectNavigationDirtyScope": {
       "kind": "ProjectNavigationDirtyScope",
       "className": "ProjectNavigationDirtyScope",
-      "jsdoc": "/** Project Navigation Dirty Scope 的语义模型。 */",
+      "jsdoc": "Project Navigation Dirty Scope 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "'node' | 'root'",
       "declarationRelations": [
@@ -57,7 +57,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 10,
+        "line": 11,
         "className": "ProjectNavigationDirtyScope",
         "declarationKind": "type"
       },
@@ -67,7 +67,7 @@
     "ProjectModelEvent": {
       "kind": "ProjectModelEvent",
       "className": "ProjectModelEvent",
-      "jsdoc": "/** Project Model Event 的事件载荷。 */",
+      "jsdoc": "Project Model Event 的事件载荷。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    type: 'navigation.changed';\n    projectId: string;\n    revision: number;\n    scope: ProjectNavigationDirtyScope;\n    nodeId?: string;\n} | {\n    type: 'selection.changed';\n    projectId: string;\n    revision: number;\n    nodeId: string | null;\n    pageId: string | null;\n} | {\n    type: 'page.file.changed';\n    projectId: string;\n    revision: number;\n    pageId: string;\n    fileName: PageNodeFileName;\n} | {\n    type: 'runtime.changed';\n    projectId: string;\n    revision: number;\n    pageId?: string;\n}",
       "declarationRelations": [
@@ -90,7 +90,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 12,
+        "line": 13,
         "className": "ProjectModelEvent",
         "declarationKind": "type"
       },
@@ -100,12 +100,12 @@
     "ProjectModelEventListener": {
       "kind": "ProjectModelEventListener",
       "className": "ProjectModelEventListener",
-      "jsdoc": "/** Project Model Event Listener 的语义模型。 */",
+      "jsdoc": "Project Model Event Listener 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "(event: ProjectModelEvent) => void",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 37,
+        "line": 38,
         "className": "ProjectModelEventListener",
         "declarationKind": "type"
       },
@@ -115,64 +115,42 @@
     "ProjectPageFileWriteCommand": {
       "kind": "ProjectPageFileWriteCommand",
       "className": "ProjectPageFileWriteCommand",
-      "jsdoc": "/** Project Page File Write Command 的命令参数。 */",
+      "jsdoc": "Project Page File Write Command 的命令参数。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 目标配置页 pageId；省略时使用当前 activePage。 */\n    pageId?: string | undefined;\n    /** 要写入的页面四文件名。 */\n    fileName: PageNodeFileName;\n    /** 新的文件文本内容，只写入内存模型，落盘由工作区编排。 */\n    text: string;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 39,
+        "line": 40,
         "className": "ProjectPageFileWriteCommand",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "pageId",
+          "jsdoc": "目标配置页 pageId；省略时使用当前 activePage。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 目标配置页 pageId；省略时使用当前 activePage。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 41,
-            "className": "ProjectPageFileWriteCommand",
-            "memberName": "pageId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "fileName",
+          "jsdoc": "要写入的页面四文件名。",
           "schema": {
-            "title": "PageNodeFileName"
+            "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 要写入的页面四文件名。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 43,
-            "className": "ProjectPageFileWriteCommand",
-            "memberName": "fileName",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "text",
+          "jsdoc": "新的文件文本内容，只写入内存模型，落盘由工作区编排。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 新的文件文本内容，只写入内存模型，落盘由工作区编排。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 45,
-            "className": "ProjectPageFileWriteCommand",
-            "memberName": "text",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -180,131 +158,112 @@
     "ProjectNavigationProjection": {
       "kind": "ProjectNavigationProjection",
       "className": "ProjectNavigationProjection",
-      "jsdoc": "/** Project Navigation Projection 的语义模型。 */",
+      "jsdoc": "Project Navigation Projection 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** navigation Root 字段。 */\n    navigationRoot: ProjectModelData;\n    /** tree Data 字段。 */\n    treeData: ProjectNodeData[];\n    /** selected Node 字段。 */\n    selectedNode: ProjectNodeData | null;\n    /** selected Node Id 标识。 */\n    selectedNodeId: string | null;\n    /** navigation Location 字段。 */\n    navigationLocation: ProjectNodeLocation | null;\n    /** navigation Draft 字段。 */\n    navigationDraft: NavigationNodeDraft | null;\n    /** page Features 字段。 */\n    pageFeatures: ProjectPageNodeSummary[];\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 48,
+        "line": 49,
         "className": "ProjectNavigationProjection",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "navigationRoot",
+          "jsdoc": "navigation Root 字段。",
           "schema": {
-            "title": "ProjectModelData"
+            "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectModelData"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** navigation Root 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 50,
-            "className": "ProjectNavigationProjection",
-            "memberName": "navigationRoot",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "treeData",
+          "jsdoc": "tree Data 字段。",
           "schema": {
             "type": "array",
-            "title": "ProjectNodeData[]",
-            "items": true
+            "items": {
+              "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+            }
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tree Data 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 52,
-            "className": "ProjectNavigationProjection",
-            "memberName": "treeData",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "selectedNode",
+          "jsdoc": "selected Node 字段。",
           "schema": {
-            "title": "ProjectNodeData | null"
+            "anyOf": [
+              {
+                "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** selected Node 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 54,
-            "className": "ProjectNavigationProjection",
-            "memberName": "selectedNode",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "selectedNodeId",
+          "jsdoc": "selected Node Id 标识。",
           "schema": {
-            "title": "string | null"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** selected Node Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 56,
-            "className": "ProjectNavigationProjection",
-            "memberName": "selectedNodeId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "navigationLocation",
+          "jsdoc": "navigation Location 字段。",
           "schema": {
-            "title": "ProjectNodeLocation | null"
+            "anyOf": [
+              {
+                "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeLocation"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** navigation Location 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 58,
-            "className": "ProjectNavigationProjection",
-            "memberName": "navigationLocation",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "navigationDraft",
+          "jsdoc": "navigation Draft 字段。",
           "schema": {
-            "title": "NavigationNodeDraft | null"
+            "anyOf": [
+              {
+                "$ref": "../navigation/navigation-edit.d.ts.json#/$defs/NavigationNodeDraft"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** navigation Draft 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 60,
-            "className": "ProjectNavigationProjection",
-            "memberName": "navigationDraft",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "pageFeatures",
+          "jsdoc": "page Features 字段。",
           "schema": {
             "type": "array",
-            "title": "ProjectPageNodeSummary[]",
-            "items": true
+            "items": {
+              "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectPageNodeSummary"
+            }
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** page Features 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 62,
-            "className": "ProjectNavigationProjection",
-            "memberName": "pageFeatures",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -312,133 +271,79 @@
     "ProjectActivePageProjection": {
       "kind": "ProjectActivePageProjection",
       "className": "ProjectActivePageProjection",
-      "jsdoc": "/** Project Active Page Projection 的语义模型。 */",
+      "jsdoc": "Project Active Page Projection 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** rule Json 字段。 */\n    ruleJson: string;\n    /** page Data Json 字段。 */\n    pageDataJson: string;\n    /** script 字段。 */\n    script: string;\n    /** style 字段。 */\n    style: string;\n    /** parse Errors 字段。 */\n    parseErrors: Record<PageNodeFileName, string | null>;\n    /** 是否 is Loaded。 */\n    isLoaded: boolean;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 65,
+        "line": 66,
         "className": "ProjectActivePageProjection",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "pageId",
+          "jsdoc": "page Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** page Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 67,
-            "className": "ProjectActivePageProjection",
-            "memberName": "pageId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "ruleJson",
+          "jsdoc": "rule Json 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** rule Json 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 69,
-            "className": "ProjectActivePageProjection",
-            "memberName": "ruleJson",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "pageDataJson",
+          "jsdoc": "page Data Json 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** page Data Json 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 71,
-            "className": "ProjectActivePageProjection",
-            "memberName": "pageDataJson",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "script",
+          "jsdoc": "script 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** script 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 73,
-            "className": "ProjectActivePageProjection",
-            "memberName": "script",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "style",
+          "jsdoc": "style 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** style 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 75,
-            "className": "ProjectActivePageProjection",
-            "memberName": "style",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "parseErrors",
+          "jsdoc": "parse Errors 字段。",
           "schema": {
+            "type": "object",
             "title": "Record<PageNodeFileName, string | null>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** parse Errors 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 77,
-            "className": "ProjectActivePageProjection",
-            "memberName": "parseErrors",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "isLoaded",
+          "jsdoc": "是否 is Loaded。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 是否 is Loaded。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 79,
-            "className": "ProjectActivePageProjection",
-            "memberName": "isLoaded",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -446,82 +351,52 @@
     "ProjectDirtyProjection": {
       "kind": "ProjectDirtyProjection",
       "className": "ProjectDirtyProjection",
-      "jsdoc": "/** Project Dirty Projection 的语义模型。 */",
+      "jsdoc": "Project Dirty Projection 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** dirty Files 字段。 */\n    dirtyFiles: Set<PageNodeFileName>;\n    /** 是否 has Any File Dirty。 */\n    hasAnyFileDirty: boolean;\n    /** navigation Dirty 字段。 */\n    navigationDirty: boolean;\n    /** 是否 has Any Dirty。 */\n    hasAnyDirty: boolean;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 82,
+        "line": 83,
         "className": "ProjectDirtyProjection",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "dirtyFiles",
+          "jsdoc": "dirty Files 字段。",
           "schema": {
+            "type": "object",
             "title": "Set<PageNodeFileName>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** dirty Files 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 84,
-            "className": "ProjectDirtyProjection",
-            "memberName": "dirtyFiles",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "hasAnyFileDirty",
+          "jsdoc": "是否 has Any File Dirty。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 是否 has Any File Dirty。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 86,
-            "className": "ProjectDirtyProjection",
-            "memberName": "hasAnyFileDirty",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "navigationDirty",
+          "jsdoc": "navigation Dirty 字段。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** navigation Dirty 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 88,
-            "className": "ProjectDirtyProjection",
-            "memberName": "navigationDirty",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "hasAnyDirty",
+          "jsdoc": "是否 has Any Dirty。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 是否 has Any Dirty。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 90,
-            "className": "ProjectDirtyProjection",
-            "memberName": "hasAnyDirty",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -529,7 +404,7 @@
     "ProjectPlanningInput": {
       "kind": "ProjectPlanningInput",
       "className": "ProjectPlanningInput",
-      "jsdoc": "/** 项目级策划输入：短需求 + 可选详细说明附件引用。 */",
+      "jsdoc": "项目级策划输入：短需求 + 可选详细说明附件引用。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    /** 项目级短需求；优先 navigation 根节点 description，否则 project.description。 */\n    requirement: string;\n    /** 策划详细说明附件引用；正文由工作区解析后传给 LLM。 */\n    planningAttachmentRef?: string;\n}>",
       "declarationRelations": [
@@ -541,7 +416,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 93,
+        "line": 94,
         "className": "ProjectPlanningInput",
         "declarationKind": "type"
       },
@@ -551,7 +426,7 @@
     "NavigationPlanningInput": {
       "kind": "NavigationPlanningInput",
       "className": "NavigationPlanningInput",
-      "jsdoc": "/** 单个导航节点策划输入：节点 description + 可选附件引用。 */",
+      "jsdoc": "单个导航节点策划输入：节点 description + 可选附件引用。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    nodeId: string;\n    title: string;\n    nodeKind: string;\n    /** 节点短需求，即 navigation description。 */\n    requirement: string;\n    planningAttachmentRef?: string;\n}>",
       "declarationRelations": [
@@ -563,7 +438,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 100,
+        "line": 101,
         "className": "NavigationPlanningInput",
         "declarationKind": "type"
       },
@@ -573,196 +448,114 @@
     "ProjectInfo": {
       "kind": "ProjectInfo",
       "className": "ProjectInfo",
-      "jsdoc": "/** Project Info 的语义模型。 */",
+      "jsdoc": "Project Info 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 租户 ID；多租户环境下用于隔离项目。 */\n    tenantId?: string | undefined;\n    /** 项目唯一 ID。 */\n    projectId: string;\n    /** 项目名称。 */\n    name: string;\n    /** 项目类型标识。 */\n    projectType: string;\n    /** 项目图标名。 */\n    icon?: string | undefined;\n    /** 项目描述，供导航、规划和 AI 设计理解项目目标。 */\n    description: string;\n    /** 策划详细说明附件引用（文件 ID / 工作区路径等，由 IO 层约定）。 */\n    planningAttachmentRef?: string | undefined;\n    /** 项目首页导航节点 ID。 */\n    homeNodeId?: string | undefined;\n    /** 项目排序值。 */\n    order: number;\n    /** 项目创建时间。 */\n    createdAt?: string | undefined;\n    /** 项目更新时间。 */\n    updatedAt?: string | undefined;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 109,
+        "line": 110,
         "className": "ProjectInfo",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "tenantId",
+          "jsdoc": "租户 ID；多租户环境下用于隔离项目。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 租户 ID；多租户环境下用于隔离项目。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 111,
-            "className": "ProjectInfo",
-            "memberName": "tenantId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "projectId",
+          "jsdoc": "项目唯一 ID。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 项目唯一 ID。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 113,
-            "className": "ProjectInfo",
-            "memberName": "projectId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "name",
+          "jsdoc": "项目名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 项目名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 115,
-            "className": "ProjectInfo",
-            "memberName": "name",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "projectType",
+          "jsdoc": "项目类型标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 项目类型标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 117,
-            "className": "ProjectInfo",
-            "memberName": "projectType",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "icon",
+          "jsdoc": "项目图标名。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 项目图标名。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 119,
-            "className": "ProjectInfo",
-            "memberName": "icon",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "description",
+          "jsdoc": "项目描述，供导航、规划和 AI 设计理解项目目标。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 项目描述，供导航、规划和 AI 设计理解项目目标。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 121,
-            "className": "ProjectInfo",
-            "memberName": "description",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "planningAttachmentRef",
+          "jsdoc": "策划详细说明附件引用（文件 ID / 工作区路径等，由 IO 层约定）。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 策划详细说明附件引用（文件 ID / 工作区路径等，由 IO 层约定）。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 123,
-            "className": "ProjectInfo",
-            "memberName": "planningAttachmentRef",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "homeNodeId",
+          "jsdoc": "项目首页导航节点 ID。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 项目首页导航节点 ID。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 125,
-            "className": "ProjectInfo",
-            "memberName": "homeNodeId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "order",
+          "jsdoc": "项目排序值。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 项目排序值。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 127,
-            "className": "ProjectInfo",
-            "memberName": "order",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "createdAt",
+          "jsdoc": "项目创建时间。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 项目创建时间。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 129,
-            "className": "ProjectInfo",
-            "memberName": "createdAt",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "updatedAt",
+          "jsdoc": "项目更新时间。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 项目更新时间。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 131,
-            "className": "ProjectInfo",
-            "memberName": "updatedAt",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -770,7 +563,7 @@
     "ProjectInfoInput": {
       "kind": "ProjectInfoInput",
       "className": "ProjectInfoInput",
-      "jsdoc": "/** Project Info Input 的输入数据。 */",
+      "jsdoc": "Project Info Input 的输入数据。",
       "shapeKind": "type",
       "declarationTypeText": "Partial<Omit<ProjectInfo, 'projectId'>> & {\n    /** 可选项目 ID；未提供时由 ProjectModel 构造参数补齐。 */\n    projectId?: string | undefined;\n}",
       "declarationRelations": [
@@ -786,26 +579,19 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 134,
+        "line": 135,
         "className": "ProjectInfoInput",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "projectId",
+          "jsdoc": "可选项目 ID；未提供时由 ProjectModel 构造参数补齐。",
           "schema": {
-            "title": "string | undefined"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 可选项目 ID；未提供时由 ProjectModel 构造参数补齐。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 136,
-            "className": "ProjectInfoInput",
-            "memberName": "projectId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -813,52 +599,254 @@
     "ProjectModelInitOptions": {
       "kind": "ProjectModelInitOptions",
       "className": "ProjectModelInitOptions",
-      "jsdoc": "/** 纯领域构造参数（无 IO）。 */",
+      "jsdoc": "纯领域构造参数（无 IO）。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 当前 ProjectModel 绑定的项目 ID。 */\n    projectId: string;\n    /** 可选项目基础信息；缺省字段由 ProjectModel 使用默认值补齐。 */\n    project?: ProjectInfoInput | undefined;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 139,
+        "line": 140,
         "className": "ProjectModelInitOptions",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "projectId",
+          "jsdoc": "当前 ProjectModel 绑定的项目 ID。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前 ProjectModel 绑定的项目 ID。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 141,
-            "className": "ProjectModelInitOptions",
-            "memberName": "projectId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "project",
+          "jsdoc": "可选项目基础信息；缺省字段由 ProjectModel 使用默认值补齐。",
           "schema": {
-            "title": "ProjectInfoInput | undefined"
+            "$ref": "#/$defs/ProjectInfoInput"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 可选项目基础信息；缺省字段由 ProjectModel 使用默认值补齐。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-            "line": 143,
-            "className": "ProjectModelInitOptions",
-            "memberName": "project",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.980Z"
+  "generatedAt": "2026-06-11T16:38:13.067Z",
+  "$defs": {
+    "ProjectNavigationDirtyScope": {
+      "type": "object",
+      "title": "ProjectNavigationDirtyScope",
+      "description": "Project Navigation Dirty Scope 的语义模型。"
+    },
+    "ProjectModelEvent": {
+      "type": "object",
+      "title": "ProjectModelEvent",
+      "description": "Project Model Event 的事件载荷。"
+    },
+    "ProjectModelEventListener": {
+      "type": "object",
+      "title": "ProjectModelEventListener",
+      "description": "Project Model Event Listener 的语义模型。"
+    },
+    "ProjectPageFileWriteCommand": {
+      "type": "object",
+      "title": "ProjectPageFileWriteCommand",
+      "description": "Project Page File Write Command 的命令参数。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "fileName": {
+          "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectNavigationProjection": {
+      "type": "object",
+      "title": "ProjectNavigationProjection",
+      "description": "Project Navigation Projection 的语义模型。",
+      "properties": {
+        "navigationRoot": {
+          "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectModelData"
+        },
+        "treeData": {
+          "type": "array",
+          "items": {
+            "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+          }
+        },
+        "selectedNode": {
+          "anyOf": [
+            {
+              "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selectedNodeId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "navigationLocation": {
+          "anyOf": [
+            {
+              "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeLocation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "navigationDraft": {
+          "anyOf": [
+            {
+              "$ref": "../navigation/navigation-edit.d.ts.json#/$defs/NavigationNodeDraft"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pageFeatures": {
+          "type": "array",
+          "items": {
+            "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectPageNodeSummary"
+          }
+        }
+      }
+    },
+    "ProjectActivePageProjection": {
+      "type": "object",
+      "title": "ProjectActivePageProjection",
+      "description": "Project Active Page Projection 的语义模型。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "ruleJson": {
+          "type": "string"
+        },
+        "pageDataJson": {
+          "type": "string"
+        },
+        "script": {
+          "type": "string"
+        },
+        "style": {
+          "type": "string"
+        },
+        "parseErrors": {
+          "type": "object",
+          "title": "Record<PageNodeFileName, string | null>"
+        },
+        "isLoaded": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ProjectDirtyProjection": {
+      "type": "object",
+      "title": "ProjectDirtyProjection",
+      "description": "Project Dirty Projection 的语义模型。",
+      "properties": {
+        "dirtyFiles": {
+          "type": "object",
+          "title": "Set<PageNodeFileName>"
+        },
+        "hasAnyFileDirty": {
+          "type": "boolean"
+        },
+        "navigationDirty": {
+          "type": "boolean"
+        },
+        "hasAnyDirty": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ProjectPlanningInput": {
+      "type": "object",
+      "title": "ProjectPlanningInput",
+      "description": "项目级策划输入：短需求 + 可选详细说明附件引用。"
+    },
+    "NavigationPlanningInput": {
+      "type": "object",
+      "title": "NavigationPlanningInput",
+      "description": "单个导航节点策划输入：节点 description + 可选附件引用。"
+    },
+    "ProjectInfo": {
+      "type": "object",
+      "title": "ProjectInfo",
+      "description": "Project Info 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectType": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "homeNodeId": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectInfoInput": {
+      "type": "object",
+      "title": "ProjectInfoInput",
+      "description": "Project Info Input 的输入数据。",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectModelInitOptions": {
+      "type": "object",
+      "title": "ProjectModelInitOptions",
+      "description": "纯领域构造参数（无 IO）。",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "project": {
+          "$ref": "#/$defs/ProjectInfoInput"
+        }
+      }
+    }
+  }
 }

@@ -1,34 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/business/business-session.ts — 业务会话管理
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Host 层的会话编排核心。连接业务注册、会话存储、工具循环
- *   和 AI 传输层，形成完整的"用户发消息→AI 推理→工具调用→结果返回"闭环。
- *
- * 【核心类】
- *   AiAgentSession  — Host 内部业务会话
- *     ├─ 持有 AiAgentMessageSender（消息发送编排）
- *     │    └─ 持有 AiAgentToolLoopRunner（工具循环执行）
- *     └─ 持有 AiAgentMessageSendState（选中业务缓存）
- *
- * 【数据流】
- *   1. host.run[alias](input) → 解析 alias 并创建内部 task
- *   2. new AiAgentSession(options, task.target)
- *   3. session.start()  → startAiAgentRegistrationSession() → 创建/接入 sessionStore 记录 + 生成工具规约
- *   4. session.send(task.toChatRequest()) → senderCore.send()
- *      ├─ resolveSelectedBusiness() → 查找/复用 registration
- *      ├─ latestUserInput() → 提取用户消息 → appendMessage('user')
- *      └─ toolLoopRunner.runToolLoop() → AI 推理 → 工具调用 → 生命周期判断
- *   5. 会话结束 → stopSession() → onEndBusinessInstance() → releaseModuleInstance()
- *
- * 【独立函数】
- *   runAiAgent           — AiAgent 门面使用的一站式内部运行函数
- *   createAiAgentSession — 内部会话工厂函数
- *   startAiAgentRegistrationSession    — 启动注册会话（创建/接入 sessionStore 记录 + 固定工具规约）
- *
- * 【消费方】Host 初始化代码、页面级 AI 助手入口
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/business/business-session
+ * 职责：编排一次业务会话的生命周期，把 registration、task、sessionStore、transport 回调和 tool loop 串成可运行 session。
+ * 边界：负责 session 层启动、消息发送和状态保存，不定义业务输入契约，也不实现具体工具 schema。
+ * AI用途：排查用户消息进入工具循环、会话记录落库或 turn 回调触发顺序时，优先从本模块建立调用链。
  */
 
 import type { AiJsonParams } from '../../json'

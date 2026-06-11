@@ -7,7 +7,7 @@
     "sourceFile": "src/services/tenant-scope.ts",
     "packageName": "app",
     "modulePath": "services/tenant-scope",
-    "jsdoc": "@module app:services/tenant-scope\napp 的 services/tenant-scope 模块。\n导出 ClassModel symbol: TenantProjectScope（共 1 个 symbol）。",
+    "jsdoc": "@module app:services/tenant-scope\n职责：提供主应用 tenant-scope 能力，围绕 TenantProjectScope 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/tenant-scope。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "TenantProjectScope"
@@ -20,53 +20,52 @@
     "TenantProjectScope": {
       "kind": "TenantProjectScope",
       "className": "TenantProjectScope",
-      "jsdoc": "/** Tenant Project Scope 的语义模型。 */",
+      "jsdoc": "Tenant Project Scope 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** project Id 标识。 */\n    projectId: string;\n}",
       "provenance": {
         "file": "declarations/src/services/tenant-scope.d.ts",
-        "line": 7,
+        "line": 8,
         "className": "TenantProjectScope",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "tenantId",
+          "jsdoc": "tenant Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tenant Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/tenant-scope.d.ts",
-            "line": 9,
-            "className": "TenantProjectScope",
-            "memberName": "tenantId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "projectId",
+          "jsdoc": "project Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** project Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/tenant-scope.d.ts",
-            "line": 11,
-            "className": "TenantProjectScope",
-            "memberName": "projectId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.110Z"
+  "generatedAt": "2026-06-11T16:38:13.120Z",
+  "$defs": {
+    "TenantProjectScope": {
+      "type": "object",
+      "title": "TenantProjectScope",
+      "description": "Tenant Project Scope 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

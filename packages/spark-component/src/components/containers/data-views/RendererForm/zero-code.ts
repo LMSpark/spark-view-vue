@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-component:components/containers/data-views/RendererForm/zero-code
- * RendererForm 模块，属于 SPARK component table-level/data-view-container。
- * 组件目录: containers/data-views。
- * 导出 ClassModel symbol: RendererFormZeroCodeOptions（共 1 个 symbol）。
+ * 职责：封装 RendererForm（r-form）的 zero-code 行为层，向配置动作和脚本暴露稳定的组件操作 API。
+ * 边界：只编排 table-level/data-view-container 的运行时能力、原生组件引用和事件控制，不声明视觉 props，也不持久化业务数据。
+ * AI用途：当动作、脚本或 ClassModel 需要调用 renderer form 的选择、刷新、编辑、分页或树/表操作时，使用本模块确认 API 语义。
  */
 import type { DataView } from '@spark-appworks/spark-data'
 import type { LoggerApi } from '@spark-appworks/spark-utils'

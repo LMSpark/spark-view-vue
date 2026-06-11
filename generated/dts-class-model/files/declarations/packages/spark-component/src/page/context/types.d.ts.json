@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/page/context/types.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "page/context/types",
-    "jsdoc": "渲染器类型定义 — 脚本沙箱上下文与组件访问 API（执行层）\n页面渲染器 Props（编排层）已迁移至 SparkPageRenderer.vue <script> 块。",
+    "jsdoc": "@module @spark-appworks/spark-component:page/context/types\n职责：定义 types 相关的内部类型契约，支撑渲染器、props、zero-code 和运行时状态协作。\n边界：只描述 component-runtime 的类型结构，不直接渲染界面，也不发起数据请求。\nAI用途：跨文件修改 types 行为或补齐配置类型时，用本模块确认共享类型边界。\n\n渲染器类型定义 — 脚本沙箱上下文与组件访问 API（执行层）\n页面渲染器 Props（编排层）已迁移至 SparkPageRenderer.vue <script> 块。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "PageComponentAccessApi",
@@ -22,12 +22,12 @@
     "PageComponentAccessApi": {
       "kind": "PageComponentAccessApi",
       "className": "PageComponentAccessApi",
-      "jsdoc": "/** 页面脚本组件访问 API（由渲染器根节点注入） */",
+      "jsdoc": "页面脚本组件访问 API（由渲染器根节点注入）",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 按组件 id 获取实例快照（只读元数据，不返回组件 API 对象） */\n    get(id: string): PageComponentInstanceEntry | null;\n    /** 列出页面组件实例（可按 type 过滤，只读元数据） */\n    list(type?: string): PageComponentInstanceEntry[];\n    /** 按组件 id 获取组件暴露 API（用于脚本调用组件能力） */\n    getApi<T = unknown>(id: string): T | null;\n    /** 按 type 获取同类组件 API 列表 */\n    getApisByType<T = unknown>(type: string): T[];\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/page/context/types.d.ts",
-        "line": 14,
+        "line": 20,
         "className": "PageComponentAccessApi",
         "declarationKind": "type"
       },
@@ -37,7 +37,7 @@
     "PageContext": {
       "kind": "PageContext",
       "className": "PageContext",
-      "jsdoc": "/**\n * 页面脚本运行时上下文。\n *\n * 继承 `ScriptContext`（spark-project-model，框架无关契约），\n * 在此基础上添加 spark-component 层具体注入字段：\n * - `$dataSet` — DataSet 实例（具体类型）\n * - `$components` — 覆盖为更完整的 `PageComponentAccessApi`\n * - `SparkData` — 数据工具命名空间\n * - `h` — 渲染函数（Render* 专用）\n * - Timer API — 沙箱白名单\n */",
+      "jsdoc": "页面脚本运行时上下文。\n继承 `ScriptContext`（spark-project-model，框架无关契约），\n在此基础上添加 spark-component 层具体注入字段：\n- `$dataSet` — DataSet 实例（具体类型）\n- `$components` — 覆盖为更完整的 `PageComponentAccessApi`\n- `SparkData` — 数据工具命名空间\n- `h` — 渲染函数（Render* 专用）\n- Timer API — 沙箱白名单",
       "shapeKind": "type",
       "declarationTypeText": "ScriptContext & {\n    /** 页面 DataSet（比 ScriptContext 额外注入的具体类型） */\n    $dataSet: DataSetContract | null;\n    /** 组件访问 API（覆盖 ScriptContext 基类，提供更丰富方法） */\n    $components: PageComponentAccessApi;\n    /** SPARK 数据空间工具命名空间（createTreeManager 等，Render* 函数用） */\n    SparkData: typeof SparkData;\n    /** 渲染函数（运行时由渲染层注入，Render* 函数专用） */\n    h: typeof h;\n    /** set Timeout 回调。 */\n    setTimeout: (handler: (...args: unknown[]) => void, timeout?: number) => number;\n    /** clear Timeout 回调。 */\n    clearTimeout: (id?: number) => void;\n    /** set Interval 回调。 */\n    setInterval: (handler: (...args: unknown[]) => void, timeout?: number) => number;\n    /** clear Interval 回调。 */\n    clearInterval: (id?: number) => void;\n}",
       "declarationRelations": [
@@ -53,142 +53,152 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-component/src/page/context/types.d.ts",
-        "line": 35,
+        "line": 41,
         "className": "PageContext",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "$dataSet",
+          "jsdoc": "页面 DataSet（比 ScriptContext 额外注入的具体类型）",
           "schema": {
-            "title": "DataSetContract | null"
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataSetContract"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 页面 DataSet（比 ScriptContext 额外注入的具体类型） */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/page/context/types.d.ts",
-            "line": 37,
-            "className": "PageContext",
-            "memberName": "$dataSet",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "$components",
+          "jsdoc": "组件访问 API（覆盖 ScriptContext 基类，提供更丰富方法）",
           "schema": {
-            "title": "PageComponentAccessApi"
+            "$ref": "#/$defs/PageComponentAccessApi"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 组件访问 API（覆盖 ScriptContext 基类，提供更丰富方法） */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/page/context/types.d.ts",
-            "line": 39,
-            "className": "PageContext",
-            "memberName": "$components",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "SparkData",
+          "jsdoc": "SPARK 数据空间工具命名空间（createTreeManager 等，Render* 函数用）",
           "schema": {
+            "type": "object",
             "title": "typeof SparkData"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** SPARK 数据空间工具命名空间（createTreeManager 等，Render* 函数用） */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/page/context/types.d.ts",
-            "line": 41,
-            "className": "PageContext",
-            "memberName": "SparkData",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "h",
+          "jsdoc": "渲染函数（运行时由渲染层注入，Render* 函数专用）",
           "schema": {
+            "type": "object",
             "title": "typeof h"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 渲染函数（运行时由渲染层注入，Render* 函数专用） */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/page/context/types.d.ts",
-            "line": 43,
-            "className": "PageContext",
-            "memberName": "h",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "setTimeout",
+          "jsdoc": "set Timeout 回调。",
           "schema": {
+            "type": "object",
             "title": "(handler: (...args: unknown[]) => void, timeout?: number) => number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** set Timeout 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/page/context/types.d.ts",
-            "line": 45,
-            "className": "PageContext",
-            "memberName": "setTimeout",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "clearTimeout",
+          "jsdoc": "clear Timeout 回调。",
           "schema": {
+            "type": "object",
             "title": "(id?: number) => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** clear Timeout 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/page/context/types.d.ts",
-            "line": 47,
-            "className": "PageContext",
-            "memberName": "clearTimeout",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "setInterval",
+          "jsdoc": "set Interval 回调。",
           "schema": {
+            "type": "object",
             "title": "(handler: (...args: unknown[]) => void, timeout?: number) => number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** set Interval 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/page/context/types.d.ts",
-            "line": 49,
-            "className": "PageContext",
-            "memberName": "setInterval",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "clearInterval",
+          "jsdoc": "clear Interval 回调。",
           "schema": {
+            "type": "object",
             "title": "(id?: number) => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** clear Interval 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/page/context/types.d.ts",
-            "line": 51,
-            "className": "PageContext",
-            "memberName": "clearInterval",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.642Z"
+  "generatedAt": "2026-06-11T16:38:12.905Z",
+  "$defs": {
+    "PageComponentAccessApi": {
+      "type": "object",
+      "title": "PageComponentAccessApi",
+      "description": "页面脚本组件访问 API（由渲染器根节点注入）"
+    },
+    "PageContext": {
+      "type": "object",
+      "title": "PageContext",
+      "description": "页面脚本运行时上下文。\n继承 `ScriptContext`（spark-project-model，框架无关契约），\n在此基础上添加 spark-component 层具体注入字段：\n- `$dataSet` — DataSet 实例（具体类型）\n- `$components` — 覆盖为更完整的 `PageComponentAccessApi`\n- `SparkData` — 数据工具命名空间\n- `h` — 渲染函数（Render* 专用）\n- Timer API — 沙箱白名单",
+      "properties": {
+        "$dataSet": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataSetContract"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "$components": {
+          "$ref": "#/$defs/PageComponentAccessApi"
+        },
+        "SparkData": {
+          "type": "object",
+          "title": "typeof SparkData"
+        },
+        "h": {
+          "type": "object",
+          "title": "typeof h"
+        },
+        "setTimeout": {
+          "type": "object",
+          "title": "(handler: (...args: unknown[]) => void, timeout?: number) => number"
+        },
+        "clearTimeout": {
+          "type": "object",
+          "title": "(id?: number) => void"
+        },
+        "setInterval": {
+          "type": "object",
+          "title": "(handler: (...args: unknown[]) => void, timeout?: number) => number"
+        },
+        "clearInterval": {
+          "type": "object",
+          "title": "(id?: number) => void"
+        }
+      }
+    }
+  }
 }

@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-app/src/navigation/action-registry.ts",
     "packageName": "@spark-appworks/spark-app",
     "modulePath": "navigation/action-registry",
-    "jsdoc": "@module @spark-appworks/spark-app:navigation/action-registry\n@spark-appworks/spark-app 的 navigation/action-registry 模块。\n导出 ClassModel symbol: NavigationActionContext, NavigationActionHandler, NavigationActionRegistry（共 3 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-app:navigation/action-registry\n职责：提供应用壳层 action-registry 能力，围绕 NavigationActionContext、NavigationActionHandler、NavigationActionRegistry 连接导航、认证、插件、主题或 AI 宿主接线。\n边界：只负责 spark-app 基础设施和运行时接线，不定义底层 DataSet，也不实现组件渲染细节。\nAI用途：需要理解应用层如何把路由、服务和组件系统组装起来时，用本模块定位 navigation/action-registry。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "NavigationActionContext",
@@ -24,64 +24,68 @@
     "NavigationActionContext": {
       "kind": "NavigationActionContext",
       "className": "NavigationActionContext",
-      "jsdoc": "/** Navigation Action Context 的运行上下文。 */",
+      "jsdoc": "Navigation Action Context 的运行上下文。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** command 字段。 */\n    command: string;\n    /** node 字段。 */\n    node?: ProjectNodeData;\n    /** 来源对象。 */\n    source?: 'navigation' | 'toolbar' | 'user-menu' | 'app-shell';\n}",
       "provenance": {
         "file": "declarations/packages/spark-app/src/navigation/action-registry.d.ts",
-        "line": 9,
+        "line": 10,
         "className": "NavigationActionContext",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "command",
+          "jsdoc": "command 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** command 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/action-registry.d.ts",
-            "line": 11,
-            "className": "NavigationActionContext",
-            "memberName": "command",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "node",
+          "jsdoc": "node 字段。",
           "schema": {
+            "type": "object",
             "title": "ProjectNodeData"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** node 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/action-registry.d.ts",
-            "line": 13,
-            "className": "NavigationActionContext",
-            "memberName": "node",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "source",
+          "jsdoc": "来源对象。",
           "schema": {
-            "title": "'navigation' | 'toolbar' | 'user-menu' | 'app-shell'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "navigation"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "toolbar"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "user-menu"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "app-shell"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 来源对象。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/navigation/action-registry.d.ts",
-            "line": 15,
-            "className": "NavigationActionContext",
-            "memberName": "source",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -89,12 +93,12 @@
     "NavigationActionHandler": {
       "kind": "NavigationActionHandler",
       "className": "NavigationActionHandler",
-      "jsdoc": "/** Navigation Action Handler 的回调函数契约。 */",
+      "jsdoc": "Navigation Action Handler 的回调函数契约。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    (context: NavigationActionContext): void | Promise<void>;\n}",
       "provenance": {
         "file": "declarations/packages/spark-app/src/navigation/action-registry.d.ts",
-        "line": 18,
+        "line": 19,
         "className": "NavigationActionHandler",
         "declarationKind": "type"
       },
@@ -104,12 +108,12 @@
     "NavigationActionRegistry": {
       "kind": "NavigationActionRegistry",
       "className": "NavigationActionRegistry",
-      "jsdoc": "/** Navigation Action Registry 的语义模型。 */",
+      "jsdoc": "Navigation Action Registry 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    register(command: string, handler: NavigationActionHandler): () => void;\n    unregister(command: string): boolean;\n    has(command: string): boolean;\n    execute(command: string, context?: Omit<NavigationActionContext, 'command'>): Promise<boolean>;\n    getCommands(): string[];\n}",
       "provenance": {
         "file": "declarations/packages/spark-app/src/navigation/action-registry.d.ts",
-        "line": 22,
+        "line": 23,
         "className": "NavigationActionRegistry",
         "declarationKind": "type"
       },
@@ -117,5 +121,59 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.931Z"
+  "generatedAt": "2026-06-11T16:38:12.631Z",
+  "$defs": {
+    "NavigationActionContext": {
+      "type": "object",
+      "title": "NavigationActionContext",
+      "description": "Navigation Action Context 的运行上下文。",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "node": {
+          "type": "object",
+          "title": "ProjectNodeData"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "navigation"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "toolbar"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "user-menu"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "app-shell"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "NavigationActionHandler": {
+      "type": "object",
+      "title": "NavigationActionHandler",
+      "description": "Navigation Action Handler 的回调函数契约。"
+    },
+    "NavigationActionRegistry": {
+      "type": "object",
+      "title": "NavigationActionRegistry",
+      "description": "Navigation Action Registry 的语义模型。"
+    }
+  }
 }

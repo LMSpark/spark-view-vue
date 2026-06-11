@@ -1,4 +1,10 @@
 /**
+ * @module app:services/page-design-gates
+ * 职责：提供应用运行时 service 层的 page design gates 能力，连接项目模型、AI Host、租户上下文或页面设计流程。
+ * 边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。
+ * AI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。
+ */
+/**
  * pageDesign 人工闸门：从 readPlanningProjection 读取 planningStatus / implGate，fail-fast 拒绝未放行页面。
  */
 import type { ProjectPageNodeSummary } from '@spark-appworks/spark-project-model'

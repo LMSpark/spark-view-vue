@@ -1,11 +1,13 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/knowledge/class-model-knowledge-service
- * @spark-appworks/spark-ai 的 class-model/knowledge/class-model-knowledge-service 模块。
- * 导出 ClassModel symbol: ClassModelKnowledgeQueryInput, ClassModelModelGuideInput, ClassModelAttributeGuideInput, ClassModelMethodGuideInput, ClassModelKnowledgeProvider, ClassModelKnowledgeServiceOptions, ClassModelKnowledgeService（共 7 个 symbol）。
+ * 职责：把 ClassModel surface 转成 query、modelGuide、attributeGuide 和 methodGuide 的可读知识结果。
+ * 边界：只做知识检索和文本投影，不执行工具、不修改模型实例，也不读取生成文件系统。
+ * AI用途：LLM 需要按 kind/action/attribute 获取模型知识时，用本模块理解查询如何收敛到可见上下文。
  */
 import type { AiJsonValue } from '../../json'
 import type { ClassModel, ClassModelDocument, SourceProvenanceMeta } from '../class-model'
 import type { DtsClassModelSurfaceDocument } from '../class-model/dts-surface-types'
+import type { DtsTypeMeta } from '../class-model/types'
 import { jsonSchemaToTypeText } from '../class-model/json-schema-to-type'
 import {
   listAttributeReachableKinds,
@@ -13,6 +15,7 @@ import {
 } from '../class-model/model-projection'
 import {
   renderAttributeTypeText,
+  renderDtsTypeMeta,
   renderMethodSignature,
 } from '../class-model/signature-renderer'
 import {
@@ -98,7 +101,7 @@ public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
                 methods: model.methods.map(method => ({
                   name: method.name,
                   summary: summarizeJsDoc(method.jsdoc),
-                  signature: `${method.name}(${method.paramsTypeText ?? ''})`,
+                  signature: method.signatureText ?? `${method.name}(${method.paramsTypeText ?? ''})`,
                 })),
               }
             : {}),
@@ -238,13 +241,43 @@ function listSurfaceLinkedClassNames(surface: DtsClassModelSurfaceDocument, mode
   for (const relation of model.declarationRelations ?? []) {
     collectTypeRefs(surface, linked, relation.targetName ?? relation.typeText)
   }
-  for (const attribute of model.attributes) collectTypeRefs(surface, linked, schemaTitle(attribute.schema))
+  for (const attribute of model.attributes) collectSchemaTypeRefs(surface, linked, attribute.schema)
   for (const method of model.methods) {
+    collectTypeRefs(surface, linked, method.signatureText)
+    for (const parameter of method.parameters ?? []) {
+      collectDtsTypeRefs(surface, linked, parameter.type)
+    }
+    collectDtsTypeRefs(surface, linked, method.returnType)
     collectTypeRefs(surface, linked, method.paramsTypeText)
     collectTypeRefs(surface, linked, method.returnTypeText)
-    collectTypeRefs(surface, linked, schemaTitle(method.returnSchema))
+    collectSchemaTypeRefs(surface, linked, method.returnSchema)
+    if (method.paramsSchema !== undefined) {
+      for (const schema of Object.values(method.paramsSchema.properties ?? {})) {
+        collectSchemaTypeRefs(surface, linked, schema)
+      }
+    }
   }
   return [...linked]
+}
+
+function collectDtsTypeRefs(
+  surface: DtsClassModelSurfaceDocument,
+  linked: Set<string>,
+  typeMeta: DtsTypeMeta | undefined,
+): void {
+  if (typeMeta === undefined) return
+  if (typeMeta.type === 'reference') {
+    collectTypeRefs(surface, linked, typeMeta.name)
+    for (const typeArgument of typeMeta.typeArguments ?? []) collectDtsTypeRefs(surface, linked, typeArgument)
+    return
+  }
+  if (typeMeta.type === 'array') {
+    collectDtsTypeRefs(surface, linked, typeMeta.elementType)
+    return
+  }
+  if (typeMeta.type === 'union' || typeMeta.type === 'intersection') {
+    for (const item of typeMeta.types) collectDtsTypeRefs(surface, linked, item)
+  }
 }
 
 function collectTypeRefs(surface: DtsClassModelSurfaceDocument, linked: Set<string>, text: string | undefined): void {
@@ -255,9 +288,19 @@ function collectTypeRefs(surface: DtsClassModelSurfaceDocument, linked: Set<stri
   }
 }
 
-function schemaTitle(schema: ClassModel['attributes'][number]['schema'] | undefined): string | undefined {
-  if (schema === undefined || schema === true || schema === false || typeof schema !== 'object') return undefined
-  return typeof schema.title === 'string' ? schema.title : undefined
+function collectSchemaTypeRefs(
+  surface: DtsClassModelSurfaceDocument,
+  linked: Set<string>,
+  schema: ClassModel['attributes'][number]['schema'] | undefined,
+): void {
+  if (schema === undefined || schema === true || schema === false || typeof schema !== 'object') return
+  if (typeof schema.$ref === 'string') collectTypeRefs(surface, linked, schema.$ref)
+  if (typeof schema.title === 'string') collectTypeRefs(surface, linked, schema.title)
+  if (schema.items !== undefined) collectSchemaTypeRefs(surface, linked, schema.items)
+  for (const child of Object.values(schema.properties ?? {})) collectSchemaTypeRefs(surface, linked, child)
+  for (const child of schema.anyOf ?? []) collectSchemaTypeRefs(surface, linked, child)
+  for (const child of schema.oneOf ?? []) collectSchemaTypeRefs(surface, linked, child)
+  for (const child of schema.allOf ?? []) collectSchemaTypeRefs(surface, linked, child)
 }
 
 function renderSurfaceClassModel(model: ClassModel): string {
@@ -351,11 +394,38 @@ function renderComponentProfile(provenance: SourceProvenanceMeta | undefined): s
 }
 
 function renderSurfaceMethod(method: ClassModel['methods'][number]): string {
-  const returnText = method.returnTypeText ?? jsonSchemaToTypeText(method.returnSchema)
+  if (method.signatureText !== undefined && method.signatureText.trim().length > 0) {
+    return [
+      method.jsdoc.trim(),
+      method.signatureText,
+    ].filter(part => part.length > 0).join('\n')
+  }
+  const returnText = method.returnTypeText
+    ?? (method.returnType === undefined ? undefined : renderDtsTypeMeta(method.returnType))
+    ?? (method.returnSchema === undefined ? 'unknown' : jsonSchemaToTypeText(method.returnSchema))
   return [
     method.jsdoc.trim(),
-    `${method.name}(${method.paramsTypeText ?? ''}): ${returnText}`,
+    `${method.name}(${surfaceMethodParamsText(method)}): ${returnText}`,
   ].filter(part => part.length > 0).join('\n')
+}
+
+function surfaceMethodParamsText(method: ClassModel['methods'][number]): string {
+  if (method.paramsTypeText !== undefined && method.paramsTypeText.trim().length > 0) {
+    return method.paramsTypeText
+  }
+  if (method.parameters !== undefined) {
+    return method.parameters.map(parameter => `${parameter.name}: ${renderDtsTypeMeta(parameter.type)}`).join(', ')
+  }
+  if (method.paramsSchema === undefined) return ''
+  const properties = method.paramsSchema.properties
+  if (properties === undefined) return ''
+  const required = new Set(method.paramsSchema.required ?? [])
+  return Object.entries(properties)
+    .map(([name, schema]) => {
+      const optional = required.has(name) ? '' : '?'
+      return `${name}${optional}: ${jsonSchemaToTypeText(schema)}`
+    })
+    .join(', ')
 }
 
 type ProjectedModel = ReturnType<typeof projectClassModelForGuide>

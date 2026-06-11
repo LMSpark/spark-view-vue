@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "agent/business/class-model-agent-adapter",
-    "jsdoc": "agent/business · ClassModel 业务注册适配器。\nLLM 语义：把业务 class + DTS ClassModel/兼容 metadata 桥接为 Agent 可执行的\nClassModel 7-tool runtime。这里不再合成旧 AiModule、path router 或 direct function tool。",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/class-model-agent-adapter\n职责：把业务 class、DTS ClassModel bundle 和知识服务适配为 Agent 可注册的 ClassModel 7-tool runtime。\n边界：只做 ClassModel 业务注册适配，不恢复旧 AiModule/path router，也不绕过统一工具闭集直接调用函数。\nAI用途：新增或排查 ClassModel 驱动的业务 Agent 时，用本模块确认 metadata、runtime 和 registration 的接线方式。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ClassModelAgentAdapterConstructor",
@@ -28,7 +28,7 @@
     "ClassModelAgentAdapterConstructor": {
       "kind": "ClassModelAgentAdapterConstructor",
       "className": "ClassModelAgentAdapterConstructor",
-      "jsdoc": "/** Class Model Agent Adapter Constructor 的语义模型。 */",
+      "jsdoc": "Class Model Agent Adapter Constructor 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "new (...args: never[]) => T",
       "provenance": {
@@ -43,7 +43,7 @@
     "ClassModelAgentAdapterRegisterCommand": {
       "kind": "ClassModelAgentAdapterRegisterCommand",
       "className": "ClassModelAgentAdapterRegisterCommand",
-      "jsdoc": "/** Class Model Agent Adapter Register Command 的命令参数。 */",
+      "jsdoc": "Class Model Agent Adapter Register Command 的命令参数。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    host: AiAgentHost;\n    alias: string;\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiModuleMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
       "declarationRelations": [
@@ -65,7 +65,7 @@
     "ClassModelAgentAdapterRegistrationCommand": {
       "kind": "ClassModelAgentAdapterRegistrationCommand",
       "className": "ClassModelAgentAdapterRegistrationCommand",
-      "jsdoc": "/** Class Model Agent Adapter Registration Command 的命令参数。 */",
+      "jsdoc": "Class Model Agent Adapter Registration Command 的命令参数。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiModuleMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
       "declarationRelations": [
@@ -87,7 +87,7 @@
     "ClassModelAgentAdapterRegisterOptions": {
       "kind": "ClassModelAgentAdapterRegisterOptions",
       "className": "ClassModelAgentAdapterRegisterOptions",
-      "jsdoc": "/** Class Model Agent Adapter Register Options 的调用配置。 */",
+      "jsdoc": "Class Model Agent Adapter Register Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    moduleId?: string;\n    instance?: T;\n    constructArgs?: readonly unknown[];\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    dtsClassModelManifestUrl?: string;\n    rootClassName?: string;\n    knowledge?: ClassModelKnowledgeProvider;\n    inputContract?: AiAgentInputContract;\n    sessionStore?: AiAgentSessionStore;\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    executionToolNames?: ReadonlySet<string>;\n    planWithoutToolMarkers?: readonly string[];\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
       "declarationRelations": [
@@ -109,7 +109,7 @@
     "ClassModelAgentAdapter": {
       "kind": "ClassModelAgentAdapter",
       "className": "ClassModelAgentAdapter",
-      "jsdoc": "/** Class Model Agent Adapter 的语义模型。 */",
+      "jsdoc": "Class Model Agent Adapter 的语义模型。",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
@@ -121,62 +121,89 @@
       "methods": [
         {
           "name": "register",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "command": {
-                "title": "ClassModelAgentAdapterRegisterCommand<T>"
+          "jsdoc": "执行 register 操作。",
+          "signatureText": "static register<T>(command: ClassModelAgentAdapterRegisterCommand<T>): AiAgentHost",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "command",
+              "type": {
+                "type": "reference",
+                "name": "ClassModelAgentAdapterRegisterCommand",
+                "sourcePath": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                ]
               }
-            },
-            "required": [
-              "command"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "AiAgentHost"
-          },
-          "returnTypeText": "AiAgentHost",
-          "jsdoc": "/** 执行 register 操作。 */",
-          "paramsTypeText": "command: Readonly<{ host: AiAgentHost<{}>; alias: string; moduleClass: ClassModelAgentAdapterConstructor<T>; metadata?: Readonly<{ schemaVersion: 1 | 2; rootApi: Readonly<{ kind: string; name: string; description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; constructorSignature?: Readonly<{ description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; paramsSchema: AiJsonSchemaObject; }> | undefined; actions: readonly Readonly<{ name: string; methodName: string; description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; paramsSchema: AiJsonSchemaObject; paramsTypeText?: string | undefined; takesContext?: boolean | undefined; resultSchema?: any; returnTypeText?: string | undefined; resultApis?: readonly Readonly<{ resultPath: readonly string[]; api?: Readonly<any> | undefined; $ref?: string | undefined; }>[] | undefined; usageRules?: readonly string[] | undefined; requiredBeforeCall?: readonly string[] | undefined; failureModes?: readonly Readonly<{ code: string; when: string; fix: string; }>[] | undefined; example?: any; examples?: readonly Readonly<{ user?: string | undefined; intent?: string | undefined; args?: any; call?: any; }>[] | undefined; antiExamples?: readonly Readonly<{ user?: string | undefined; reason: string; args?: any; }>[] | undefined; }>[]; attributes?: readonly Readonly<{ name: string; description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; schema: AiJsonSchema; readable: boolean; writable: boolean; api?: Readonly<any> | undefined; }>[] | undefined; }>; apiRegistry?: Readonly<Record<string, Readonly<{ kind: string; name: string; description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; constructorSignature?: Readonly<{ description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; paramsSchema: AiJsonSchemaObject; }> | undefined; actions: readonly Readonly<{ name: string; methodName: string; description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; paramsSchema: AiJsonSchemaObject; paramsTypeText?: string | undefined; takesContext?: boolean | undefined; resultSchema?: any; returnTypeText?: string | undefined; resultApis?: readonly Readonly<{ resultPath: readonly string[]; api?: Readonly<any> | undefined; $ref?: string | undefined; }>[] | undefined; usageRules?: readonly string[] | undefined; requiredBeforeCall?: readonly string[] | undefined; failureModes?: readonly Readonly<{ code: string; when: string; fix: string; }>[] | undefined; example?: any; examples?: readonly Readonly<{ user?: string | undefined; intent?: string | undefined; args?: any; call?: any; }>[] | undefined; antiExamples?: readonly Readonly<{ user?: string | undefined; reason: string; args?: any; }>[] | undefined; }>[]; attributes?: readonly Readonly<{ name: string; description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; schema: AiJsonSchema; readable: boolean; writable: boolean; api?: Readonly<any> | undefined; }>[] | undefined; }>>> | undefined; }> | undefined; options: Readonly<{ moduleId?: string | undefined; instance?: T | undefined; constructArgs?: readonly unknown[] | undefined; resolveInstance?: ((context: AiAgentRuntimeContext) => T) | undefined; jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>> | undefined; dtsClassModelManifestUrl?: string | undefined; rootClassName?: string | undefined; knowledge?: Readonly<{ query(input: Readonly<{ kind?: string | undefined; keyword?: string | undefined; includeMembers: boolean; }>): any; modelGuide(input: Readonly<{ kind: string; }>): string | Promise<string>; attributeGuide(input: Readonly<{ kind: string; attributeName: string; }>): string | Promise<string>; methodGuide(input: Readonly<{ kind: string; methodName: string; }>): string | Promise<string>; }> | undefined; inputContract?: Readonly<{ paramsSchema: AiJsonSchemaObject; identityField: string; normalize(input: AiJsonParams): AiJsonParams; toScope(normalizedInput: AiJsonParams): AiAgentScope; toOrchestration(normalizedInput: AiJsonParams): Readonly<{ userMessage: string; systemPrompt: string; title?: string | undefined; readonlySteps?: readonly string[] | undefined; }>; }> | undefined; sessionStore?: AiAgentSessionStore | undefined; systemPrompt?: ((instance: T, context: AiAgentRuntimeContext) => string | undefined) | undefined; beforeFunctionCall?: ((instance: T, options: AiAgentBeforeFunctionCallOptions) => Readonly<{ status: AiAgentBeforeFunctionCallStatus; reason?: string | undefined; fix?: string | undefined; finalAssistantMessage?: string | undefined; releaseInstance?: boolean | undefined; }> | Promise<Readonly<{ status: AiAgentBeforeFunctionCallStatus; reason?: string | undefined; fix?: string | undefined; finalAssistantMessage?: string | undefined; releaseInstance?: boolean | undefined; }>>) | undefined; afterFunctionCall?: ((instance: T, options: AiAgentAfterFunctionCallOptions) => Readonly<{ status: AiAgentLifecycleStatus; reason?: string | undefined; finalAssistantMessage?: string | undefined; releaseInstance?: boolean | undefined; }> | Promise<Readonly<{ status: AiAgentLifecycleStatus; reason?: string | undefined; finalAssistantMessage?: string | undefined; releaseInstance?: boolean | undefined; }>>) | undefined; onStartSession?: ((instance: T, context: AiAgentRuntimeContext) => void | Promise<void>) | undefined; onEndBusinessInstance?: ((instance: T, context: AiAgentRuntimeContext, directive: Readonly<{ status: AiAgentLifecycleStatus; reason?: string | undefined; finalAssistantMessage?: string | undefined; releaseInstance?: boolean | undefined; }>) => void | Promise<void>) | undefined; releaseModuleInstance?: ((instance: T, moduleInstanceId: string) => void) | undefined; toolLoopNudge?: ((context: Readonly<{ reason: AiAgentToolLoopNudgeReason; moduleInstanceId: string; runtimeContext: AiAgentRuntimeContext; }>) => string | undefined) | undefined; executionToolNames?: ReadonlySet<string> | undefined; planWithoutToolMarkers?: readonly string[] | undefined; enrichRecoveryHints?: ((command: Readonly<{ protocolToolName: string; args: AiJsonParams; callResult: Readonly<{ ok: false; code: string; msg: string; fix: string; checks?: readonly Readonly<{ level: \"error\" | \"warn\" | \"info\"; code: string; message: string; hint?: string | undefined; }>[] | undefined; }>; moduleInstanceId?: string | undefined; }>) => readonly string[]) | undefined; }>; }>",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-            "line": 59,
-            "className": "ClassModelAgentAdapter",
-            "memberName": "register",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "AiAgentHost",
+            "sourcePath": "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts"
           }
         },
         {
           "name": "createRegistration",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "command": {
-                "title": "ClassModelAgentAdapterRegistrationCommand<T>"
+          "jsdoc": "创建 Registration。",
+          "signatureText": "static createRegistration<T>(command: ClassModelAgentAdapterRegistrationCommand<T>): AiAgentRegistration",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "command",
+              "type": {
+                "type": "reference",
+                "name": "ClassModelAgentAdapterRegistrationCommand",
+                "sourcePath": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                ]
               }
-            },
-            "required": [
-              "command"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "AiAgentRegistration"
-          },
-          "returnTypeText": "AiAgentRegistration",
-          "jsdoc": "/** 创建 Registration。 */",
-          "paramsTypeText": "command: Readonly<{ moduleClass: ClassModelAgentAdapterConstructor<T>; metadata?: Readonly<{ schemaVersion: 1 | 2; rootApi: Readonly<{ kind: string; name: string; description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; constructorSignature?: Readonly<{ description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; paramsSchema: AiJsonSchemaObject; }> | undefined; actions: readonly Readonly<{ name: string; methodName: string; description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; paramsSchema: AiJsonSchemaObject; paramsTypeText?: string | undefined; takesContext?: boolean | undefined; resultSchema?: any; returnTypeText?: string | undefined; resultApis?: readonly Readonly<{ resultPath: readonly string[]; api?: Readonly<any> | undefined; $ref?: string | undefined; }>[] | undefined; usageRules?: readonly string[] | undefined; requiredBeforeCall?: readonly string[] | undefined; failureModes?: readonly Readonly<{ code: string; when: string; fix: string; }>[] | undefined; example?: any; examples?: readonly Readonly<{ user?: string | undefined; intent?: string | undefined; args?: any; call?: any; }>[] | undefined; antiExamples?: readonly Readonly<{ user?: string | undefined; reason: string; args?: any; }>[] | undefined; }>[]; attributes?: readonly Readonly<{ name: string; description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; schema: AiJsonSchema; readable: boolean; writable: boolean; api?: Readonly<any> | undefined; }>[] | undefined; }>; apiRegistry?: Readonly<Record<string, Readonly<{ kind: string; name: string; description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; constructorSignature?: Readonly<{ description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; paramsSchema: AiJsonSchemaObject; }> | undefined; actions: readonly Readonly<{ name: string; methodName: string; description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; paramsSchema: AiJsonSchemaObject; paramsTypeText?: string | undefined; takesContext?: boolean | undefined; resultSchema?: any; returnTypeText?: string | undefined; resultApis?: readonly Readonly<{ resultPath: readonly string[]; api?: Readonly<any> | undefined; $ref?: string | undefined; }>[] | undefined; usageRules?: readonly string[] | undefined; requiredBeforeCall?: readonly string[] | undefined; failureModes?: readonly Readonly<{ code: string; when: string; fix: string; }>[] | undefined; example?: any; examples?: readonly Readonly<{ user?: string | undefined; intent?: string | undefined; args?: any; call?: any; }>[] | undefined; antiExamples?: readonly Readonly<{ user?: string | undefined; reason: string; args?: any; }>[] | undefined; }>[]; attributes?: readonly Readonly<{ name: string; description: string; jsdoc?: string | undefined; provenance?: Readonly<{ file: string; line: number; className: string; memberName?: string | undefined; typeEntryFile?: string | undefined; }> | undefined; schema: AiJsonSchema; readable: boolean; writable: boolean; api?: Readonly<any> | undefined; }>[] | undefined; }>>> | undefined; }> | undefined; options: Readonly<{ moduleId?: string | undefined; instance?: T | undefined; constructArgs?: readonly unknown[] | undefined; resolveInstance?: ((context: AiAgentRuntimeContext) => T) | undefined; jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>> | undefined; dtsClassModelManifestUrl?: string | undefined; rootClassName?: string | undefined; knowledge?: Readonly<{ query(input: Readonly<{ kind?: string | undefined; keyword?: string | undefined; includeMembers: boolean; }>): any; modelGuide(input: Readonly<{ kind: string; }>): string | Promise<string>; attributeGuide(input: Readonly<{ kind: string; attributeName: string; }>): string | Promise<string>; methodGuide(input: Readonly<{ kind: string; methodName: string; }>): string | Promise<string>; }> | undefined; inputContract?: Readonly<{ paramsSchema: AiJsonSchemaObject; identityField: string; normalize(input: AiJsonParams): AiJsonParams; toScope(normalizedInput: AiJsonParams): AiAgentScope; toOrchestration(normalizedInput: AiJsonParams): Readonly<{ userMessage: string; systemPrompt: string; title?: string | undefined; readonlySteps?: readonly string[] | undefined; }>; }> | undefined; sessionStore?: AiAgentSessionStore | undefined; systemPrompt?: ((instance: T, context: AiAgentRuntimeContext) => string | undefined) | undefined; beforeFunctionCall?: ((instance: T, options: AiAgentBeforeFunctionCallOptions) => Readonly<{ status: AiAgentBeforeFunctionCallStatus; reason?: string | undefined; fix?: string | undefined; finalAssistantMessage?: string | undefined; releaseInstance?: boolean | undefined; }> | Promise<Readonly<{ status: AiAgentBeforeFunctionCallStatus; reason?: string | undefined; fix?: string | undefined; finalAssistantMessage?: string | undefined; releaseInstance?: boolean | undefined; }>>) | undefined; afterFunctionCall?: ((instance: T, options: AiAgentAfterFunctionCallOptions) => Readonly<{ status: AiAgentLifecycleStatus; reason?: string | undefined; finalAssistantMessage?: string | undefined; releaseInstance?: boolean | undefined; }> | Promise<Readonly<{ status: AiAgentLifecycleStatus; reason?: string | undefined; finalAssistantMessage?: string | undefined; releaseInstance?: boolean | undefined; }>>) | undefined; onStartSession?: ((instance: T, context: AiAgentRuntimeContext) => void | Promise<void>) | undefined; onEndBusinessInstance?: ((instance: T, context: AiAgentRuntimeContext, directive: Readonly<{ status: AiAgentLifecycleStatus; reason?: string | undefined; finalAssistantMessage?: string | undefined; releaseInstance?: boolean | undefined; }>) => void | Promise<void>) | undefined; releaseModuleInstance?: ((instance: T, moduleInstanceId: string) => void) | undefined; toolLoopNudge?: ((context: Readonly<{ reason: AiAgentToolLoopNudgeReason; moduleInstanceId: string; runtimeContext: AiAgentRuntimeContext; }>) => string | undefined) | undefined; executionToolNames?: ReadonlySet<string> | undefined; planWithoutToolMarkers?: readonly string[] | undefined; enrichRecoveryHints?: ((command: Readonly<{ protocolToolName: string; args: AiJsonParams; callResult: Readonly<{ ok: false; code: string; msg: string; fix: string; checks?: readonly Readonly<{ level: \"error\" | \"warn\" | \"info\"; code: string; message: string; hint?: string | undefined; }>[] | undefined; }>; moduleInstanceId?: string | undefined; }>) => readonly string[]) | undefined; }>; }>",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-            "line": 61,
-            "className": "ClassModelAgentAdapter",
-            "memberName": "createRegistration",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "AiAgentRegistration",
+            "sourcePath": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.734Z"
+  "generatedAt": "2026-06-11T16:38:12.547Z",
+  "$defs": {
+    "ClassModelAgentAdapterConstructor": {
+      "type": "object",
+      "title": "ClassModelAgentAdapterConstructor",
+      "description": "Class Model Agent Adapter Constructor 的语义模型。"
+    },
+    "ClassModelAgentAdapterRegisterCommand": {
+      "type": "object",
+      "title": "ClassModelAgentAdapterRegisterCommand",
+      "description": "Class Model Agent Adapter Register Command 的命令参数。"
+    },
+    "ClassModelAgentAdapterRegistrationCommand": {
+      "type": "object",
+      "title": "ClassModelAgentAdapterRegistrationCommand",
+      "description": "Class Model Agent Adapter Registration Command 的命令参数。"
+    },
+    "ClassModelAgentAdapterRegisterOptions": {
+      "type": "object",
+      "title": "ClassModelAgentAdapterRegisterOptions",
+      "description": "Class Model Agent Adapter Register Options 的调用配置。"
+    },
+    "ClassModelAgentAdapter": {
+      "type": "object",
+      "title": "ClassModelAgentAdapter",
+      "description": "Class Model Agent Adapter 的语义模型。"
+    }
+  }
 }

@@ -1,18 +1,8 @@
 /**
- * container-ui.ts
- *
- * 容器 UI 基础设施层：工具栏投影、模块上下文生命周期、同步深度守卫。
- *
- * 职责：
- * - useContainerModuleContext : 订阅 ModuleContext 并在卸载时自动清理
- * - useContainerToolbar       : toolbar SparkNode → 可见性/位置/样式投影
- * - useDataViewSyncGuard      : 同步操作深度追踪，防止 DataView 事件循环回写
- *
- * 消费方：
- * - useContainerModuleContext : container-form-detail.ts
- * - useContainerToolbar       : RendererCollapse.vue、RendererSteps.vue、RendererTabs.vue、
- *                               RendererTable.vue、RendererTree input.ts
- * - useDataViewSyncGuard      : 事件同步保护场景（深度追踪）
+ * @module @spark-appworks/spark-component:components/containers/runtime/container-ui
+ * 职责：提供 container ui 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。
+ * 边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。
+ * AI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。
  */
 
 import { computed, onUnmounted, ref, toValue } from 'vue'

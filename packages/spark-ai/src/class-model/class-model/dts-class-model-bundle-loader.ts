@@ -1,9 +1,10 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/dts-class-model-bundle-loader
- * @spark-appworks/spark-ai 的 class-model/class-model/dts-class-model-bundle-loader 模块。
- * 导出 ClassModel symbol: DtsClassModelBundleLoaderOptions, DtsClassModelBundleLoader（共 2 个 symbol）。
+ * 职责：维护 DTS ClassModel 知识链路中的 dts-class-model-bundle-loader 能力，围绕 DtsClassModelBundleLoaderOptions、DtsClassModelBundleLoader 提供声明投影、协议读取、知识查询或运行时适配。
+ * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。
+ * AI用途：当需要判断 ClassModel 在 class-model/class-model/dts-class-model-bundle-loader 这一段如何生成、加载或投影时，用本模块定位职责。
  */
-import type { ClassModel } from './types'
+import type { ClassModel, DtsTypeMeta } from './types'
 import type {
   DtsClassModelBundleManifest,
   DtsFileProjectionDocument,
@@ -123,16 +124,43 @@ public buildLoadedSurface(configPath = ''): DtsClassModelSurfaceDocument {
 
 function listLinkedClassNames(manifest: DtsClassModelBundleManifest, model: ClassModel): readonly string[] {
   const linked = new Set<string>()
-  for (const attribute of model.attributes) collectFromTypeText(manifest, linked, readSchemaTitle(attribute.schema))
+  for (const attribute of model.attributes) collectFromSchema(manifest, linked, attribute.schema)
   for (const method of model.methods) {
+    collectFromTypeText(manifest, linked, method.signatureText)
+    for (const parameter of method.parameters ?? []) {
+      collectFromDtsType(manifest, linked, parameter.type)
+    }
+    collectFromDtsType(manifest, linked, method.returnType)
     collectFromTypeText(manifest, linked, method.paramsTypeText)
     collectFromTypeText(manifest, linked, method.returnTypeText)
-    collectFromTypeText(manifest, linked, readSchemaTitle(method.returnSchema))
-    for (const schema of Object.values(method.paramsSchema.properties ?? {})) {
-      collectFromTypeText(manifest, linked, readSchemaTitle(schema))
+    collectFromSchema(manifest, linked, method.returnSchema)
+    if (method.paramsSchema !== undefined) {
+      for (const schema of Object.values(method.paramsSchema.properties ?? {})) {
+        collectFromSchema(manifest, linked, schema)
+      }
     }
   }
   return [...linked]
+}
+
+function collectFromDtsType(
+  manifest: DtsClassModelBundleManifest,
+  linked: Set<string>,
+  typeMeta: DtsTypeMeta | undefined,
+): void {
+  if (typeMeta === undefined) return
+  if (typeMeta.type === 'reference') {
+    collectFromTypeText(manifest, linked, typeMeta.name)
+    for (const typeArgument of typeMeta.typeArguments ?? []) collectFromDtsType(manifest, linked, typeArgument)
+    return
+  }
+  if (typeMeta.type === 'array') {
+    collectFromDtsType(manifest, linked, typeMeta.elementType)
+    return
+  }
+  if (typeMeta.type === 'union' || typeMeta.type === 'intersection') {
+    for (const item of typeMeta.types) collectFromDtsType(manifest, linked, item)
+  }
 }
 
 function collectFromTypeText(
@@ -146,9 +174,19 @@ function collectFromTypeText(
   }
 }
 
-function readSchemaTitle(schema: ClassModel['attributes'][number]['schema'] | undefined): string | undefined {
-  if (schema === undefined || schema === true || schema === false || typeof schema !== 'object') return undefined
-  return typeof schema.title === 'string' ? schema.title : undefined
+function collectFromSchema(
+  manifest: DtsClassModelBundleManifest,
+  linked: Set<string>,
+  schema: ClassModel['attributes'][number]['schema'] | undefined,
+): void {
+  if (schema === undefined || schema === true || schema === false || typeof schema !== 'object') return
+  if (typeof schema.$ref === 'string') collectFromTypeText(manifest, linked, schema.$ref)
+  if (typeof schema.title === 'string') collectFromTypeText(manifest, linked, schema.title)
+  if (schema.items !== undefined) collectFromSchema(manifest, linked, schema.items)
+  for (const child of Object.values(schema.properties ?? {})) collectFromSchema(manifest, linked, child)
+  for (const child of schema.anyOf ?? []) collectFromSchema(manifest, linked, child)
+  for (const child of schema.oneOf ?? []) collectFromSchema(manifest, linked, child)
+  for (const child of schema.allOf ?? []) collectFromSchema(manifest, linked, child)
 }
 
 function containsTypeReference(typeText: string, className: string): boolean {

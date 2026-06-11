@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/layout/RendererSteps/zero-code.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/layout/RendererSteps/zero-code",
-    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererSteps/zero-code\nRendererSteps 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: StepsEmit, RendererStepsZeroCodeOptions（共 2 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererSteps/zero-code\n职责：封装 RendererSteps（r-steps）的 zero-code 行为层，向配置动作和脚本暴露稳定的组件操作 API。\n边界：只编排 container/layout-container 的运行时能力、原生组件引用和事件控制，不声明视觉 props，也不持久化业务数据。\nAI用途：当动作、脚本或 ClassModel 需要调用 renderer steps 的选择、刷新、编辑、分页或树/表操作时，使用本模块确认 API 语义。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "StepsEmit",
@@ -27,7 +27,7 @@
     "StepsEmit": {
       "kind": "StepsEmit",
       "className": "StepsEmit",
-      "jsdoc": "/** Steps Emit 的语义模型。 */",
+      "jsdoc": "Steps Emit 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    (event: 'update:modelValue', value: string | number): void;\n}",
       "provenance": {
@@ -47,7 +47,7 @@
     "RendererStepsZeroCodeOptions": {
       "kind": "RendererStepsZeroCodeOptions",
       "className": "RendererStepsZeroCodeOptions",
-      "jsdoc": "/** Renderer Steps Zero Code Options 的调用配置。 */",
+      "jsdoc": "Renderer Steps Zero Code Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** emit 字段。 */\n    emit: StepsEmit;\n    /** step Configs 字段。 */\n    stepConfigs: ValueRef<SparkNode[]>;\n    /** active Step Name 名称。 */\n    activeStepName: ValueRef<string | number | undefined>;\n    /** active Step Index 字段。 */\n    activeStepIndex: ValueRef<number>;\n    /** get Step Name 名称。 */\n    getStepName: (step: SparkNode, index: number) => string | number;\n    /** on Step Change 事件回调。 */\n    onStepChange: ((value: string | number, step: SparkNode, index: number) => void) | undefined;\n}",
       "provenance": {
@@ -64,133 +64,103 @@
       "attributes": [
         {
           "name": "emit",
+          "jsdoc": "emit 字段。",
           "schema": {
-            "title": "StepsEmit"
+            "$ref": "#/$defs/StepsEmit"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** emit 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSteps/zero-code.d.ts",
-            "line": 17,
-            "className": "RendererStepsZeroCodeOptions",
-            "memberName": "emit",
-            "declarationKind": "interface",
-            "componentName": "RendererSteps",
-            "componentType": "r-steps",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": true
         },
         {
           "name": "stepConfigs",
+          "jsdoc": "step Configs 字段。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<SparkNode[]>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** step Configs 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSteps/zero-code.d.ts",
-            "line": 19,
-            "className": "RendererStepsZeroCodeOptions",
-            "memberName": "stepConfigs",
-            "declarationKind": "interface",
-            "componentName": "RendererSteps",
-            "componentType": "r-steps",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": true
         },
         {
           "name": "activeStepName",
+          "jsdoc": "active Step Name 名称。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<string | number | undefined>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** active Step Name 名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSteps/zero-code.d.ts",
-            "line": 21,
-            "className": "RendererStepsZeroCodeOptions",
-            "memberName": "activeStepName",
-            "declarationKind": "interface",
-            "componentName": "RendererSteps",
-            "componentType": "r-steps",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": true
         },
         {
           "name": "activeStepIndex",
+          "jsdoc": "active Step Index 字段。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<number>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** active Step Index 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSteps/zero-code.d.ts",
-            "line": 23,
-            "className": "RendererStepsZeroCodeOptions",
-            "memberName": "activeStepIndex",
-            "declarationKind": "interface",
-            "componentName": "RendererSteps",
-            "componentType": "r-steps",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": true
         },
         {
           "name": "getStepName",
+          "jsdoc": "get Step Name 名称。",
           "schema": {
+            "type": "object",
             "title": "(step: SparkNode, index: number) => string | number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** get Step Name 名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSteps/zero-code.d.ts",
-            "line": 25,
-            "className": "RendererStepsZeroCodeOptions",
-            "memberName": "getStepName",
-            "declarationKind": "interface",
-            "componentName": "RendererSteps",
-            "componentType": "r-steps",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": true
         },
         {
           "name": "onStepChange",
+          "jsdoc": "on Step Change 事件回调。",
           "schema": {
-            "title": "((value: string | number, step: SparkNode, index: number) => void) | undefined"
+            "type": "object",
+            "title": "(value: string | number, step: SparkNode, index: number) => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** on Step Change 事件回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererSteps/zero-code.d.ts",
-            "line": 27,
-            "className": "RendererStepsZeroCodeOptions",
-            "memberName": "onStepChange",
-            "declarationKind": "interface",
-            "componentName": "RendererSteps",
-            "componentType": "r-steps",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.207Z"
+  "generatedAt": "2026-06-11T16:38:12.736Z",
+  "$defs": {
+    "StepsEmit": {
+      "type": "object",
+      "title": "StepsEmit",
+      "description": "Steps Emit 的语义模型。"
+    },
+    "RendererStepsZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererStepsZeroCodeOptions",
+      "description": "Renderer Steps Zero Code Options 的调用配置。",
+      "properties": {
+        "emit": {
+          "$ref": "#/$defs/StepsEmit"
+        },
+        "stepConfigs": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<SparkNode[]>"
+        },
+        "activeStepName": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<string | number | undefined>"
+        },
+        "activeStepIndex": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<number>"
+        },
+        "getStepName": {
+          "type": "object",
+          "title": "(step: SparkNode, index: number) => string | number"
+        },
+        "onStepChange": {
+          "type": "object",
+          "title": "(value: string | number, step: SparkNode, index: number) => void"
+        }
+      }
+    }
+  }
 }

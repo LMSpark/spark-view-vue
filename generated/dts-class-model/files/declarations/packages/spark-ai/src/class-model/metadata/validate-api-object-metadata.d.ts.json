@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/metadata/validate-api-object-metadata",
-    "jsdoc": "class-model/metadata · API 对象元数据校验\nFail-fast 校验 API 对象图，避免 LLM 看见无法执行的 action 契约。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/metadata/validate-api-object-metadata\n职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/validate-api-object-metadata 的 ApiObjectValidationFinding、AiApiObjectMetadataValidationError语义。\n边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。\nAI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。\n\nclass-model/metadata · API 对象元数据校验\nFail-fast 校验 API 对象图，避免 LLM 看见无法执行的 action 契约。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ApiObjectValidationFinding",
@@ -22,7 +22,7 @@
     "ApiObjectValidationFinding": {
       "kind": "ApiObjectValidationFinding",
       "className": "ApiObjectValidationFinding",
-      "jsdoc": "/** Api Object Validation Finding 的语义模型。 */",
+      "jsdoc": "Api Object Validation Finding 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn';\n    rule: string;\n    message: string;\n    fix?: string;\n}>",
       "declarationRelations": [
@@ -34,7 +34,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.d.ts",
-        "line": 8,
+        "line": 14,
         "className": "ApiObjectValidationFinding",
         "declarationKind": "type"
       },
@@ -44,7 +44,7 @@
     "AiApiObjectMetadataValidationError": {
       "kind": "AiApiObjectMetadataValidationError",
       "className": "AiApiObjectMetadataValidationError",
-      "jsdoc": "/** Ai Api Object Metadata Validation Error 的错误信息。 */",
+      "jsdoc": "Ai Api Object Metadata Validation Error 的错误信息。",
       "shapeKind": "class",
       "declarationRelations": [
         {
@@ -55,78 +55,73 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.d.ts",
-        "line": 15,
+        "line": 21,
         "className": "AiApiObjectMetadataValidationError",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "kind": {
-              "type": "string",
-              "title": "string"
-            },
-            "findings": {
-              "type": "array",
-              "title": "readonly ApiObjectValidationFinding[]",
-              "items": true
+        "jsdoc": "创建 Ai Api Object Metadata Validation Error 实例。",
+        "signatureText": "constructor(\n    /** 校验失败的 API object kind。 */\n    kind: string, \n    /** 该 API object 上收集到的全部校验发现。 */\n    findings: readonly ApiObjectValidationFinding[])",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "kind",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
             }
           },
-          "required": [
-            "kind",
-            "findings"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Ai Api Object Metadata Validation Error 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.d.ts",
-          "line": 21,
-          "className": "AiApiObjectMetadataValidationError",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          {
+            "name": "findings",
+            "type": {
+              "type": "unknown",
+              "name": "readonly ApiObjectValidationFinding[]"
+            }
+          }
+        ]
       },
       "attributes": [
         {
           "name": "kind",
+          "jsdoc": "校验失败的 API object kind。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 校验失败的 API object kind。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.d.ts",
-            "line": 17,
-            "className": "AiApiObjectMetadataValidationError",
-            "memberName": "kind",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "findings",
+          "jsdoc": "该 API object 上收集到的全部校验发现。",
           "schema": {
-            "type": "array",
-            "title": "readonly ApiObjectValidationFinding[]",
-            "items": true
+            "type": "array"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 该 API object 上收集到的全部校验发现。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.d.ts",
-            "line": 19,
-            "className": "AiApiObjectMetadataValidationError",
-            "memberName": "findings",
-            "declarationKind": "class"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.854Z"
+  "generatedAt": "2026-06-11T16:38:12.606Z",
+  "$defs": {
+    "ApiObjectValidationFinding": {
+      "type": "object",
+      "title": "ApiObjectValidationFinding",
+      "description": "Api Object Validation Finding 的语义模型。"
+    },
+    "AiApiObjectMetadataValidationError": {
+      "type": "object",
+      "title": "AiApiObjectMetadataValidationError",
+      "description": "Ai Api Object Metadata Validation Error 的错误信息。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "findings": {
+          "type": "array"
+        }
+      }
+    }
+  }
 }

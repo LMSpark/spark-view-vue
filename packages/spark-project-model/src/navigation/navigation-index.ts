@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-project-model:navigation/navigation-index
+ * 职责：提供项目模型和页面配置域中的 navigation index 能力，支撑 navigation、page content、project session 或远程 IO。
+ * 边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。
+ * AI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。
+ */
 /** NavigationIndex — 导航 nodesById 的内存索引（树投影 / 查找），非存储形状。 */
 import type { ProjectNodeData, ProjectNodeLocation } from './project-node'
 import { buildProjectNavigationTree, findFlatNodeLocation } from './navigation-tree'

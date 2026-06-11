@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-project-model/src/navigation/navigation-index.ts",
     "packageName": "@spark-appworks/spark-project-model",
     "modulePath": "navigation/navigation-index",
-    "jsdoc": "NavigationIndex — 导航 nodesById 的内存索引（树投影 / 查找），非存储形状。",
+    "jsdoc": "@module @spark-appworks/spark-project-model:navigation/navigation-index\n职责：提供项目模型和页面配置域中的 navigation index 能力，支撑 navigation、page content、project session 或远程 IO。\n边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。\nAI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。\n\nNavigationIndex — 导航 nodesById 的内存索引（树投影 / 查找），非存储形状。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "NavigationTreeNodeLike",
@@ -22,66 +22,42 @@
     "NavigationTreeNodeLike": {
       "kind": "NavigationTreeNodeLike",
       "className": "NavigationTreeNodeLike",
-      "jsdoc": "/** Navigation Tree Node Like 的语义模型。 */",
+      "jsdoc": "Navigation Tree Node Like 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    /** pid 字段。 */\n    readonly pid: string;\n    /** order 字段。 */\n    readonly order: number;\n    toNodeData(): ProjectNodeData;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-        "line": 4,
+        "line": 10,
         "className": "NavigationTreeNodeLike",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "id",
+          "jsdoc": "唯一标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 唯一标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-            "line": 6,
-            "className": "NavigationTreeNodeLike",
-            "memberName": "id",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "pid",
+          "jsdoc": "pid 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** pid 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-            "line": 8,
-            "className": "NavigationTreeNodeLike",
-            "memberName": "pid",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "order",
+          "jsdoc": "order 字段。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** order 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-            "line": 10,
-            "className": "NavigationTreeNodeLike",
-            "memberName": "order",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -89,226 +65,193 @@
     "NavigationIndex": {
       "kind": "NavigationIndex",
       "className": "NavigationIndex",
-      "jsdoc": "/**\n * 导航索引：id → node 映射 + pid → children 查询。\n */",
+      "jsdoc": "导航索引：id → node 映射 + pid → children 查询。",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-        "line": 17,
+        "line": 23,
         "className": "NavigationIndex",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "nodesById": {
-              "title": "Map<string, TNode>"
+        "jsdoc": "创建 Navigation Index 实例。",
+        "signatureText": "constructor(nodesById: Map<string, TNode>)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "nodesById",
+            "type": {
+              "type": "reference",
+              "name": "Map",
+              "typeArguments": [
+                {
+                  "type": "intrinsic",
+                  "name": "string"
+                },
+                {
+                  "type": "reference",
+                  "name": "TNode",
+                  "refersToTypeParameter": true
+                }
+              ]
             }
-          },
-          "required": [
-            "nodesById"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Navigation Index 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-          "line": 22,
-          "className": "NavigationIndex",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          }
+        ]
       },
       "attributes": [],
       "methods": [
         {
           "name": "rebuild",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 执行 rebuild 操作。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-            "line": 24,
-            "className": "NavigationIndex",
-            "memberName": "rebuild",
-            "declarationKind": "class"
+          "jsdoc": "执行 rebuild 操作。",
+          "signatureText": "rebuild(): void",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "invalidateTree",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 执行 invalidate Tree 操作。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-            "line": 26,
-            "className": "NavigationIndex",
-            "memberName": "invalidateTree",
-            "declarationKind": "class"
+          "jsdoc": "执行 invalidate Tree 操作。",
+          "signatureText": "invalidateTree(): void",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "getChildren",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "pid": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "读取 Children。",
+          "signatureText": "getChildren(pid: string): readonly TNode[]",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "pid",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
-            },
-            "required": [
-              "pid"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "array",
-            "title": "readonly TNode[]",
-            "items": true
-          },
-          "returnTypeText": "readonly TNode[]",
-          "jsdoc": "/** 读取 Children。 */",
-          "paramsTypeText": "pid: string",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-            "line": 28,
-            "className": "NavigationIndex",
-            "memberName": "getChildren",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "unknown",
+            "name": "readonly TNode[]"
           }
         },
         {
           "name": "collectDescendants",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "nodeId": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "执行 collect Descendants 操作。",
+          "signatureText": "collectDescendants(nodeId: string): TNode[]",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "nodeId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
-            },
-            "required": [
-              "nodeId"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
+            }
+          ],
+          "returnType": {
             "type": "array",
-            "title": "TNode[]",
-            "items": true
-          },
-          "returnTypeText": "TNode[]",
-          "jsdoc": "/** 执行 collect Descendants 操作。 */",
-          "paramsTypeText": "nodeId: string",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-            "line": 30,
-            "className": "NavigationIndex",
-            "memberName": "collectDescendants",
-            "declarationKind": "class"
+            "elementType": {
+              "type": "reference",
+              "name": "TNode",
+              "refersToTypeParameter": true
+            }
           }
         },
         {
           "name": "nextChildOrder",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "pid": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "执行 next Child Order 操作。",
+          "signatureText": "nextChildOrder(pid: string): number",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "pid",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
-            },
-            "required": [
-              "pid"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "number",
-            "title": "number"
-          },
-          "returnTypeText": "number",
-          "jsdoc": "/** 执行 next Child Order 操作。 */",
-          "paramsTypeText": "pid: string",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-            "line": 32,
-            "className": "NavigationIndex",
-            "memberName": "nextChildOrder",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "number"
           }
         },
         {
           "name": "buildTree",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
+          "jsdoc": "执行 build Tree 操作。",
+          "signatureText": "buildTree(): ProjectNodeData[]",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
             "type": "array",
-            "title": "ProjectNodeData[]",
-            "items": true
-          },
-          "returnTypeText": "ProjectNodeData[]",
-          "jsdoc": "/** 执行 build Tree 操作。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-            "line": 34,
-            "className": "NavigationIndex",
-            "memberName": "buildTree",
-            "declarationKind": "class"
+            "elementType": {
+              "type": "reference",
+              "name": "ProjectNodeData",
+              "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+            }
           }
         },
         {
           "name": "findNodeLocation",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "targetId": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "执行 find Node Location 操作。",
+          "signatureText": "findNodeLocation(targetId: string): ProjectNodeLocation | null",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "targetId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
-            },
-            "required": [
-              "targetId"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "ProjectNodeLocation | null"
-          },
-          "returnTypeText": "ProjectNodeLocation | null",
-          "jsdoc": "/** 执行 find Node Location 操作。 */",
-          "paramsTypeText": "targetId: string",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
-            "line": 36,
-            "className": "NavigationIndex",
-            "memberName": "findNodeLocation",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "ProjectNodeLocation",
+                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.907Z"
+  "generatedAt": "2026-06-11T16:38:13.045Z",
+  "$defs": {
+    "NavigationTreeNodeLike": {
+      "type": "object",
+      "title": "NavigationTreeNodeLike",
+      "description": "Navigation Tree Node Like 的语义模型。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "pid": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        }
+      }
+    },
+    "NavigationIndex": {
+      "type": "object",
+      "title": "NavigationIndex",
+      "description": "导航索引：id → node 映射 + pid → children 查询。"
+    }
+  }
 }

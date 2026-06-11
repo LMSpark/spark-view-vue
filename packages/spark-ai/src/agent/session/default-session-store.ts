@@ -1,21 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * host/session/default-session-store.ts — 内存会话存储实现
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】AiAgentSessionStore 的默认实现。纯内存存储，不持久化。
- *   适合单页应用内的会话管理。业务方可通过继承 AiAgentSessionStore
- *   替换为 localStorage / IndexedDB / 服务端存储。
- *
- * 【设计要点】
- *   - 内部 MutableSession 可变，对外暴露的 AiAgentSessionRecord 只读（clone 返回）
- *   - sessionKey = "moduleId\0moduleInstanceId"（用 null 字符分隔，避免碰撞）
- *   - 每条历史记录都有全局递增 seq 和基于 instanceId 的唯一 id
- *   - cloneUnknown 通过 JSON 序列化/反序列化实现深拷贝（不可序列化的值保留引用）
- *   - 若 sessionStore 被复用（同一 key 再次 startSession），复用已有 session 并重置为 Started
- *
- * 【消费方】business-registry（默认注入）、业务方自定义存储
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/session/default-session-store
+ * 职责：定义或实现 Agent 会话存储、诊断和运行轨迹中的 default session store 能力。
+ * 边界：只维护 session 层状态和观测数据，不生成业务输入契约，也不直接执行工具 runtime。
+ * AI用途：追踪会话记录、诊断事件或 run trace 时，用本模块确认 session 数据如何保存和读取。
  */
 
 import type { AiAgentAppendMessageOptions, AiAgentRuntimeContext } from '../business/scope-types'

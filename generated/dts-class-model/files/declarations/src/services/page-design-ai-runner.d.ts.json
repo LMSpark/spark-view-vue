@@ -7,7 +7,7 @@
     "sourceFile": "src/services/page-design-ai-runner.ts",
     "packageName": "app",
     "modulePath": "services/page-design-ai-runner",
-    "jsdoc": "@module app:services/page-design-ai-runner\napp 的 services/page-design-ai-runner 模块。\n导出 ClassModel symbol: PageDesignAiRunOptions, PageDesignAiRunEvents, PageDesignAiRunCommand, PageDesignAiRunResult（共 4 个 symbol）。",
+    "jsdoc": "@module app:services/page-design-ai-runner\n职责：提供应用层 pageDesign 的 page-design-ai-runner 能力，围绕 PageDesignAiRunOptions、PageDesignAiRunEvents、PageDesignAiRunCommand 等 4 个公开契约 接线 AI runner、业务门禁、知识服务或编辑器状态。\n边界：只编排 app 层页面设计流程，不替代 spark-ai Host，也不直接实现底层组件渲染器。\nAI用途：排查 pageDesign 会话、工具门禁或页面四文件生成链路时，用本模块定位 services/page-design-ai-runner。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "PageDesignAiRunOptions",
@@ -26,7 +26,7 @@
     "PageDesignAiRunOptions": {
       "kind": "PageDesignAiRunOptions",
       "className": "PageDesignAiRunOptions",
-      "jsdoc": "/** Page Design Ai Run Options 的调用配置。 */",
+      "jsdoc": "Page Design Ai Run Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** description 字段。 */\n    description: string;\n    /** mode 字段。 */\n    mode?: PageDesignRunMode;\n    /** allowed Operations 字段。 */\n    allowedOperations?: PageDesignAllowedOperations;\n    /** preserve Existing Interactions 字段。 */\n    preserveExistingInteractions?: boolean;\n    /** 未声明 implGate 时 fail-fast；生产 runner 建议 true。 */\n    strictImplGate?: boolean;\n}",
       "provenance": {
@@ -38,86 +38,50 @@
       "attributes": [
         {
           "name": "description",
+          "jsdoc": "description 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** description 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 9,
-            "className": "PageDesignAiRunOptions",
-            "memberName": "description",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "mode",
+          "jsdoc": "mode 字段。",
           "schema": {
+            "type": "object",
             "title": "PageDesignRunMode"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** mode 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 11,
-            "className": "PageDesignAiRunOptions",
-            "memberName": "mode",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "allowedOperations",
+          "jsdoc": "allowed Operations 字段。",
           "schema": {
+            "type": "object",
             "title": "PageDesignAllowedOperations"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** allowed Operations 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 13,
-            "className": "PageDesignAiRunOptions",
-            "memberName": "allowedOperations",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "preserveExistingInteractions",
+          "jsdoc": "preserve Existing Interactions 字段。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** preserve Existing Interactions 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 15,
-            "className": "PageDesignAiRunOptions",
-            "memberName": "preserveExistingInteractions",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "strictImplGate",
+          "jsdoc": "未声明 implGate 时 fail-fast；生产 runner 建议 true。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 未声明 implGate 时 fail-fast；生产 runner 建议 true。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 17,
-            "className": "PageDesignAiRunOptions",
-            "memberName": "strictImplGate",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -125,7 +89,7 @@
     "PageDesignAiRunEvents": {
       "kind": "PageDesignAiRunEvents",
       "className": "PageDesignAiRunEvents",
-      "jsdoc": "/**\n * DevSystem 侧 channel：仅转发 tool call 状态，不承载 stream/delta/reasoning（见 trace / spark-ai）。\n */",
+      "jsdoc": "DevSystem 侧 channel：仅转发 tool call 状态，不承载 stream/delta/reasoning（见 trace / spark-ai）。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** on Tool Call 事件回调。 */\n    onToolCall?: (record: AiAgentToolCallRecord) => void;\n}",
       "provenance": {
@@ -137,19 +101,13 @@
       "attributes": [
         {
           "name": "onToolCall",
+          "jsdoc": "on Tool Call 事件回调。",
           "schema": {
+            "type": "object",
             "title": "(record: AiAgentToolCallRecord) => void"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** on Tool Call 事件回调。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 24,
-            "className": "PageDesignAiRunEvents",
-            "memberName": "onToolCall",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -157,7 +115,7 @@
     "PageDesignAiRunCommand": {
       "kind": "PageDesignAiRunCommand",
       "className": "PageDesignAiRunCommand",
-      "jsdoc": "/** Page Design Ai Run Command 的命令参数。 */",
+      "jsdoc": "Page Design Ai Run Command 的命令参数。",
       "shapeKind": "type",
       "declarationTypeText": "PageDesignAiRunOptions & {\n    /** page Id 标识。 */\n    pageId: string;\n    /** editor 字段。 */\n    editor: ProjectWorkspace;\n    /** consume Capability 字段。 */\n    consumeCapability: SparkCapabilityConsumer | null;\n    /** events 字段。 */\n    events?: PageDesignAiRunEvents;\n    /** trace 字段。 */\n    trace?: AiRunTraceSink;\n    /** adapter 字段。 */\n    adapter?: AiRunAdapterState;\n    /** before Function Call 字段。 */\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    /** on Abort 事件回调。 */\n    onAbort?: AiRunAbortHandler;\n    /** user Message 字段。 */\n    userMessage?: string;\n    /** 自动化/headless 调用可打开；DevSystem 默认保持手动保存语义。 */\n    saveDirtyFilesAfterRun?: boolean;\n}",
       "declarationRelations": [
@@ -180,166 +138,106 @@
       "attributes": [
         {
           "name": "pageId",
+          "jsdoc": "page Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** page Id 标识。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 29,
-            "className": "PageDesignAiRunCommand",
-            "memberName": "pageId",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "editor",
+          "jsdoc": "editor 字段。",
           "schema": {
+            "type": "object",
             "title": "ProjectWorkspace"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** editor 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 31,
-            "className": "PageDesignAiRunCommand",
-            "memberName": "editor",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "consumeCapability",
+          "jsdoc": "consume Capability 字段。",
           "schema": {
-            "title": "SparkCapabilityConsumer | null"
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "SparkCapabilityConsumer"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** consume Capability 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 33,
-            "className": "PageDesignAiRunCommand",
-            "memberName": "consumeCapability",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "events",
+          "jsdoc": "events 字段。",
           "schema": {
-            "title": "PageDesignAiRunEvents"
+            "$ref": "#/$defs/PageDesignAiRunEvents"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** events 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 35,
-            "className": "PageDesignAiRunCommand",
-            "memberName": "events",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "trace",
+          "jsdoc": "trace 字段。",
           "schema": {
+            "type": "object",
             "title": "AiRunTraceSink"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** trace 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 37,
-            "className": "PageDesignAiRunCommand",
-            "memberName": "trace",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "adapter",
+          "jsdoc": "adapter 字段。",
           "schema": {
+            "type": "object",
             "title": "AiRunAdapterState"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** adapter 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 39,
-            "className": "PageDesignAiRunCommand",
-            "memberName": "adapter",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "beforeFunctionCall",
+          "jsdoc": "before Function Call 字段。",
           "schema": {
+            "type": "object",
             "title": "AiRunBeforeFunctionCall"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** before Function Call 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 41,
-            "className": "PageDesignAiRunCommand",
-            "memberName": "beforeFunctionCall",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "onAbort",
+          "jsdoc": "on Abort 事件回调。",
           "schema": {
+            "type": "object",
             "title": "AiRunAbortHandler"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** on Abort 事件回调。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 43,
-            "className": "PageDesignAiRunCommand",
-            "memberName": "onAbort",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "userMessage",
+          "jsdoc": "user Message 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** user Message 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 45,
-            "className": "PageDesignAiRunCommand",
-            "memberName": "userMessage",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "saveDirtyFilesAfterRun",
+          "jsdoc": "自动化/headless 调用可打开；DevSystem 默认保持手动保存语义。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 自动化/headless 调用可打开；DevSystem 默认保持手动保存语义。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 47,
-            "className": "PageDesignAiRunCommand",
-            "memberName": "saveDirtyFilesAfterRun",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -347,7 +245,7 @@
     "PageDesignAiRunResult": {
       "kind": "PageDesignAiRunResult",
       "className": "PageDesignAiRunResult",
-      "jsdoc": "/** Page Design Ai Run Result 的返回结果。 */",
+      "jsdoc": "Page Design Ai Run Result 的返回结果。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** saw Tool Call 字段。 */\n    sawToolCall: boolean;\n    /** files 字段。 */\n    files: ProjectActivePageProjection;\n    /** dirty File Names 字段。 */\n    dirtyFileNames: PageNodeFileName[];\n    /** saved Dirty File Names 字段。 */\n    savedDirtyFileNames: PageNodeFileName[];\n}",
       "provenance": {
@@ -359,76 +257,167 @@
       "attributes": [
         {
           "name": "sawToolCall",
+          "jsdoc": "saw Tool Call 字段。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** saw Tool Call 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 52,
-            "className": "PageDesignAiRunResult",
-            "memberName": "sawToolCall",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "files",
+          "jsdoc": "files 字段。",
           "schema": {
+            "type": "object",
             "title": "ProjectActivePageProjection"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** files 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 54,
-            "className": "PageDesignAiRunResult",
-            "memberName": "files",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "dirtyFileNames",
+          "jsdoc": "dirty File Names 字段。",
           "schema": {
             "type": "array",
-            "title": "PageNodeFileName[]",
-            "items": true
+            "items": {
+              "type": "object",
+              "title": "PageNodeFileName"
+            }
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** dirty File Names 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 56,
-            "className": "PageDesignAiRunResult",
-            "memberName": "dirtyFileNames",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "savedDirtyFileNames",
+          "jsdoc": "saved Dirty File Names 字段。",
           "schema": {
             "type": "array",
-            "title": "PageNodeFileName[]",
-            "items": true
+            "items": {
+              "type": "object",
+              "title": "PageNodeFileName"
+            }
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** saved Dirty File Names 字段。 */",
-          "provenance": {
-            "file": "declarations/src/services/page-design-ai-runner.d.ts",
-            "line": 58,
-            "className": "PageDesignAiRunResult",
-            "memberName": "savedDirtyFileNames",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.081Z"
+  "generatedAt": "2026-06-11T16:38:13.104Z",
+  "$defs": {
+    "PageDesignAiRunOptions": {
+      "type": "object",
+      "title": "PageDesignAiRunOptions",
+      "description": "Page Design Ai Run Options 的调用配置。",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "object",
+          "title": "PageDesignRunMode"
+        },
+        "allowedOperations": {
+          "type": "object",
+          "title": "PageDesignAllowedOperations"
+        },
+        "preserveExistingInteractions": {
+          "type": "boolean"
+        },
+        "strictImplGate": {
+          "type": "boolean"
+        }
+      }
+    },
+    "PageDesignAiRunEvents": {
+      "type": "object",
+      "title": "PageDesignAiRunEvents",
+      "description": "DevSystem 侧 channel：仅转发 tool call 状态，不承载 stream/delta/reasoning（见 trace / spark-ai）。",
+      "properties": {
+        "onToolCall": {
+          "type": "object",
+          "title": "(record: AiAgentToolCallRecord) => void"
+        }
+      }
+    },
+    "PageDesignAiRunCommand": {
+      "type": "object",
+      "title": "PageDesignAiRunCommand",
+      "description": "Page Design Ai Run Command 的命令参数。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "editor": {
+          "type": "object",
+          "title": "ProjectWorkspace"
+        },
+        "consumeCapability": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "SparkCapabilityConsumer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "events": {
+          "$ref": "#/$defs/PageDesignAiRunEvents"
+        },
+        "trace": {
+          "type": "object",
+          "title": "AiRunTraceSink"
+        },
+        "adapter": {
+          "type": "object",
+          "title": "AiRunAdapterState"
+        },
+        "beforeFunctionCall": {
+          "type": "object",
+          "title": "AiRunBeforeFunctionCall"
+        },
+        "onAbort": {
+          "type": "object",
+          "title": "AiRunAbortHandler"
+        },
+        "userMessage": {
+          "type": "string"
+        },
+        "saveDirtyFilesAfterRun": {
+          "type": "boolean"
+        }
+      }
+    },
+    "PageDesignAiRunResult": {
+      "type": "object",
+      "title": "PageDesignAiRunResult",
+      "description": "Page Design Ai Run Result 的返回结果。",
+      "properties": {
+        "sawToolCall": {
+          "type": "boolean"
+        },
+        "files": {
+          "type": "object",
+          "title": "ProjectActivePageProjection"
+        },
+        "dirtyFileNames": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "PageNodeFileName"
+          }
+        },
+        "savedDirtyFileNames": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "PageNodeFileName"
+          }
+        }
+      }
+    }
+  }
 }

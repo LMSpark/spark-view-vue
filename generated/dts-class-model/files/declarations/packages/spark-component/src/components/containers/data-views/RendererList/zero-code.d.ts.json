@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/data-views/RendererList/zero-code.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/data-views/RendererList/zero-code",
-    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererList/zero-code\nRendererList 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: RendererListZeroCodeOptions（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererList/zero-code\n职责：封装 RendererList（r-list）的 zero-code 行为层，向配置动作和脚本暴露稳定的组件操作 API。\n边界：只编排 table-level/data-view-container 的运行时能力、原生组件引用和事件控制，不声明视觉 props，也不持久化业务数据。\nAI用途：当动作、脚本或 ClassModel 需要调用 renderer list 的选择、刷新、编辑、分页或树/表操作时，使用本模块确认 API 语义。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "RendererListZeroCodeOptions"
@@ -25,7 +25,7 @@
     "RendererListZeroCodeOptions": {
       "kind": "RendererListZeroCodeOptions",
       "className": "RendererListZeroCodeOptions",
-      "jsdoc": "/** Renderer List Zero Code Options 的调用配置。 */",
+      "jsdoc": "Renderer List Zero Code Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 组件属性集合。 */\n    props: Readonly<Record<string, unknown>>;\n    /** resolved View 字段。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** 行数据集合。 */\n    rows: ValueRef<readonly DataRow[]>;\n}",
       "provenance": {
@@ -42,70 +42,58 @@
       "attributes": [
         {
           "name": "props",
+          "jsdoc": "组件属性集合。",
           "schema": {
+            "type": "object",
             "title": "Readonly<Record<string, unknown>>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 组件属性集合。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/zero-code.d.ts",
-            "line": 13,
-            "className": "RendererListZeroCodeOptions",
-            "memberName": "props",
-            "declarationKind": "interface",
-            "componentName": "RendererList",
-            "componentType": "r-list",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "resolvedView",
+          "jsdoc": "resolved View 字段。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<DataView | null>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** resolved View 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/zero-code.d.ts",
-            "line": 15,
-            "className": "RendererListZeroCodeOptions",
-            "memberName": "resolvedView",
-            "declarationKind": "interface",
-            "componentName": "RendererList",
-            "componentType": "r-list",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "rows",
+          "jsdoc": "行数据集合。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<readonly DataRow[]>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 行数据集合。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/zero-code.d.ts",
-            "line": 17,
-            "className": "RendererListZeroCodeOptions",
-            "memberName": "rows",
-            "declarationKind": "interface",
-            "componentName": "RendererList",
-            "componentType": "r-list",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.063Z"
+  "generatedAt": "2026-06-11T16:38:12.689Z",
+  "$defs": {
+    "RendererListZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererListZeroCodeOptions",
+      "description": "Renderer List Zero Code Options 的调用配置。",
+      "properties": {
+        "props": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        },
+        "resolvedView": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<DataView | null>"
+        },
+        "rows": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<readonly DataRow[]>"
+        }
+      }
+    }
+  }
 }

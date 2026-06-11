@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/fields/data-components/composables/useFieldControlState",
-    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useFieldControlState\n@spark-appworks/spark-component:components/fields/data-components/composables/useFieldControlState 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: FieldContextStateLike, ControlledFieldStateLike, OptionalWithUndefined, FieldControlProps, UseFieldControlStateOptions（共 5 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useFieldControlState\n职责：提供 useFieldControlState（未注册组件类型）相关的组合式状态或行为封装，复用字段值、选项、权限、动作和交互控制逻辑。\n边界：只服务 field-level/data-field 的 setup/runtime 组合，不直接声明页面配置，也不替代组件 props。\nAI用途：需要理解 use field control state 的响应式状态来源、值转换或事件副作用时，使用本模块定位实际运行规则。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "FieldContextStateLike",
@@ -31,7 +31,7 @@
     "FieldContextStateLike": {
       "kind": "FieldContextStateLike",
       "className": "FieldContextStateLike",
-      "jsdoc": "/** 字段上下文对控件层暴露的只读显示和校验状态。 */",
+      "jsdoc": "字段上下文对控件层暴露的只读显示和校验状态。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 字段绑定的数据列名。 */\n    fieldName: ComputedRef<string>;\n    /** 字段显示标题，通常来自列标题或组件 title。 */\n    displayLabel: ComputedRef<string>;\n    /** 当前字段在当前上下文下是否隐藏。 */\n    isCurrentFieldHidden: ComputedRef<boolean>;\n    /** 当前字段是否应该渲染；隐藏和权限判断后的最终结果。 */\n    shouldRenderCurrentField: ComputedRef<boolean>;\n    /** 当前字段的展示文本。 */\n    currentDisplayValue: ComputedRef<string>;\n    /** 指定表格行中的该字段单元格是否隐藏。 */\n    isTableCellHidden: (row: DataRow) => boolean;\n    /** 指定表格行中的该字段单元格展示文本。 */\n    getTableCellDisplayValue: (row: DataRow) => string;\n    /** 当前字段的表单校验规则。 */\n    validationRules: ComputedRef<FormItemRule[]>;\n}",
       "provenance": {
@@ -46,155 +46,83 @@
       "attributes": [
         {
           "name": "fieldName",
+          "jsdoc": "字段绑定的数据列名。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<string>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 字段绑定的数据列名。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 14,
-            "className": "FieldContextStateLike",
-            "memberName": "fieldName",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "displayLabel",
+          "jsdoc": "字段显示标题，通常来自列标题或组件 title。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<string>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 字段显示标题，通常来自列标题或组件 title。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 16,
-            "className": "FieldContextStateLike",
-            "memberName": "displayLabel",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "isCurrentFieldHidden",
+          "jsdoc": "当前字段在当前上下文下是否隐藏。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<boolean>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前字段在当前上下文下是否隐藏。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 18,
-            "className": "FieldContextStateLike",
-            "memberName": "isCurrentFieldHidden",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "shouldRenderCurrentField",
+          "jsdoc": "当前字段是否应该渲染；隐藏和权限判断后的最终结果。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<boolean>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前字段是否应该渲染；隐藏和权限判断后的最终结果。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 20,
-            "className": "FieldContextStateLike",
-            "memberName": "shouldRenderCurrentField",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "currentDisplayValue",
+          "jsdoc": "当前字段的展示文本。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<string>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前字段的展示文本。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 22,
-            "className": "FieldContextStateLike",
-            "memberName": "currentDisplayValue",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "isTableCellHidden",
+          "jsdoc": "指定表格行中的该字段单元格是否隐藏。",
           "schema": {
+            "type": "object",
             "title": "(row: DataRow) => boolean"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 指定表格行中的该字段单元格是否隐藏。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 24,
-            "className": "FieldContextStateLike",
-            "memberName": "isTableCellHidden",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "getTableCellDisplayValue",
+          "jsdoc": "指定表格行中的该字段单元格展示文本。",
           "schema": {
+            "type": "object",
             "title": "(row: DataRow) => string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 指定表格行中的该字段单元格展示文本。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 26,
-            "className": "FieldContextStateLike",
-            "memberName": "getTableCellDisplayValue",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "validationRules",
+          "jsdoc": "当前字段的表单校验规则。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<FormItemRule[]>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前字段的表单校验规则。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 28,
-            "className": "FieldContextStateLike",
-            "memberName": "validationRules",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -202,7 +130,7 @@
     "ControlledFieldStateLike": {
       "kind": "ControlledFieldStateLike",
       "className": "ControlledFieldStateLike",
-      "jsdoc": "/** 字段控件与数据源之间的受控值同步状态。 */",
+      "jsdoc": "字段控件与数据源之间的受控值同步状态。",
       "shapeKind": "type",
       "declarationTypeText": "FieldContextStateLike & {\n    /** 当前字段值，已经按字段组件类型收窄。 */\n    fieldValue: ComputedRef<TValue>;\n    /** 当前字段所在的上下文数据行。 */\n    contextData: DataRow | null;\n    /** 当前字段所在的数据源，可以是 DataView 或外部传入对象。 */\n    dataSource: unknown;\n    /** 当前 DataView 当前行。 */\n    currentRow: ComputedRef<DataRow | null>;\n    /** 将控件值同步回字段状态。 */\n    syncValue: (value: TValue) => void;\n}",
       "declarationRelations": [
@@ -228,98 +156,57 @@
       "attributes": [
         {
           "name": "fieldValue",
+          "jsdoc": "当前字段值，已经按字段组件类型收窄。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<TValue>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前字段值，已经按字段组件类型收窄。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 33,
-            "className": "ControlledFieldStateLike",
-            "memberName": "fieldValue",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "contextData",
+          "jsdoc": "当前字段所在的上下文数据行。",
           "schema": {
-            "title": "DataRow | null"
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前字段所在的上下文数据行。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 35,
-            "className": "ControlledFieldStateLike",
-            "memberName": "contextData",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "dataSource",
-          "schema": {
-            "title": "unknown"
-          },
+          "jsdoc": "当前字段所在的数据源，可以是 DataView 或外部传入对象。",
+          "schema": true,
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前字段所在的数据源，可以是 DataView 或外部传入对象。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 37,
-            "className": "ControlledFieldStateLike",
-            "memberName": "dataSource",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "currentRow",
+          "jsdoc": "当前 DataView 当前行。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<DataRow | null>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前 DataView 当前行。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 39,
-            "className": "ControlledFieldStateLike",
-            "memberName": "currentRow",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "syncValue",
+          "jsdoc": "将控件值同步回字段状态。",
           "schema": {
+            "type": "object",
             "title": "(value: TValue) => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 将控件值同步回字段状态。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 41,
-            "className": "ControlledFieldStateLike",
-            "memberName": "syncValue",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -327,7 +214,7 @@
     "OptionalWithUndefined": {
       "kind": "OptionalWithUndefined",
       "className": "OptionalWithUndefined",
-      "jsdoc": "/** 将选中 props 的每个字段都允许显式传 undefined。 */",
+      "jsdoc": "将选中 props 的每个字段都允许显式传 undefined。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    [K in keyof T]?: T[K] | undefined;\n}",
       "provenance": {
@@ -345,7 +232,7 @@
     "FieldControlProps": {
       "kind": "FieldControlProps",
       "className": "FieldControlProps",
-      "jsdoc": "/** 字段控件层消费的通用组件属性子集。 */",
+      "jsdoc": "字段控件层消费的通用组件属性子集。",
       "shapeKind": "type",
       "declarationTypeText": "OptionalWithUndefined<Pick<SparkNodeProps, 'type' | 'children'>> & OptionalWithUndefined<Pick<SparkFieldSemanticProps, 'width' | 'resizable' | 'onChange' | 'titleAlign' | 'valueAlign' | 'headerCellClassName' | 'cellClassName' | 'titleClassName' | 'valueClassName' | 'sortable'>>",
       "declarationRelations": [
@@ -375,7 +262,7 @@
     "UseFieldControlStateOptions": {
       "kind": "UseFieldControlStateOptions",
       "className": "UseFieldControlStateOptions",
-      "jsdoc": "/** 创建字段控件运行态所需的输入。 */",
+      "jsdoc": "创建字段控件运行态所需的输入。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 字段组件 props 中与字段上下文和 onChange 相关的子集。 */\n    props: FieldControlProps;\n    /** 字段组件类型，props.type 缺失时作为默认值。 */\n    fieldType: string;\n    /** 字段值、行上下文和展示上下文的聚合状态。 */\n    state: ControlledFieldStateLike<TValue>;\n    /** 向 Vue v-model/update 事件发出新值。 */\n    emitUpdate: (value: TValue) => void;\n}",
       "provenance": {
@@ -390,84 +277,148 @@
       "attributes": [
         {
           "name": "props",
+          "jsdoc": "字段组件 props 中与字段上下文和 onChange 相关的子集。",
           "schema": {
-            "title": "FieldControlProps"
+            "$ref": "#/$defs/FieldControlProps"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 字段组件 props 中与字段上下文和 onChange 相关的子集。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 52,
-            "className": "UseFieldControlStateOptions",
-            "memberName": "props",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "fieldType",
+          "jsdoc": "字段组件类型，props.type 缺失时作为默认值。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 字段组件类型，props.type 缺失时作为默认值。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 54,
-            "className": "UseFieldControlStateOptions",
-            "memberName": "fieldType",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "state",
+          "jsdoc": "字段值、行上下文和展示上下文的聚合状态。",
           "schema": {
+            "$ref": "#/$defs/ControlledFieldStateLike",
             "title": "ControlledFieldStateLike<TValue>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 字段值、行上下文和展示上下文的聚合状态。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 56,
-            "className": "UseFieldControlStateOptions",
-            "memberName": "state",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "emitUpdate",
+          "jsdoc": "向 Vue v-model/update 事件发出新值。",
           "schema": {
+            "type": "object",
             "title": "(value: TValue) => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 向 Vue v-model/update 事件发出新值。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useFieldControlState.d.ts",
-            "line": 58,
-            "className": "UseFieldControlStateOptions",
-            "memberName": "emitUpdate",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.449Z"
+  "generatedAt": "2026-06-11T16:38:12.839Z",
+  "$defs": {
+    "FieldContextStateLike": {
+      "type": "object",
+      "title": "FieldContextStateLike",
+      "description": "字段上下文对控件层暴露的只读显示和校验状态。",
+      "properties": {
+        "fieldName": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "displayLabel": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "isCurrentFieldHidden": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "shouldRenderCurrentField": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        },
+        "currentDisplayValue": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        },
+        "isTableCellHidden": {
+          "type": "object",
+          "title": "(row: DataRow) => boolean"
+        },
+        "getTableCellDisplayValue": {
+          "type": "object",
+          "title": "(row: DataRow) => string"
+        },
+        "validationRules": {
+          "type": "object",
+          "title": "ComputedRef<FormItemRule[]>"
+        }
+      }
+    },
+    "ControlledFieldStateLike": {
+      "type": "object",
+      "title": "ControlledFieldStateLike",
+      "description": "字段控件与数据源之间的受控值同步状态。",
+      "properties": {
+        "fieldValue": {
+          "type": "object",
+          "title": "ComputedRef<TValue>"
+        },
+        "contextData": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dataSource": true,
+        "currentRow": {
+          "type": "object",
+          "title": "ComputedRef<DataRow | null>"
+        },
+        "syncValue": {
+          "type": "object",
+          "title": "(value: TValue) => void"
+        }
+      }
+    },
+    "OptionalWithUndefined": {
+      "type": "object",
+      "title": "OptionalWithUndefined",
+      "description": "将选中 props 的每个字段都允许显式传 undefined。"
+    },
+    "FieldControlProps": {
+      "type": "object",
+      "title": "FieldControlProps",
+      "description": "字段控件层消费的通用组件属性子集。"
+    },
+    "UseFieldControlStateOptions": {
+      "type": "object",
+      "title": "UseFieldControlStateOptions",
+      "description": "创建字段控件运行态所需的输入。",
+      "properties": {
+        "props": {
+          "$ref": "#/$defs/FieldControlProps"
+        },
+        "fieldType": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/ControlledFieldStateLike",
+          "title": "ControlledFieldStateLike<TValue>"
+        },
+        "emitUpdate": {
+          "type": "object",
+          "title": "(value: TValue) => void"
+        }
+      }
+    }
+  }
 }

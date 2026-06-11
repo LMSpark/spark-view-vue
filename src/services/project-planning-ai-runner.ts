@@ -1,7 +1,8 @@
 /**
  * @module app:services/project-planning-ai-runner
- * app 的 services/project-planning-ai-runner 模块。
- * 导出 ClassModel symbol: ProjectPlanningAiRunOptions, ProjectPlanningAiRunEvents, ProjectPlanningAiRunCommand, ProjectPlanningAiRunResult（共 4 个 symbol）。
+ * 职责：提供应用层 projectPlanning 的 project-planning-ai-runner 能力，围绕 ProjectPlanningAiRunOptions、ProjectPlanningAiRunEvents、ProjectPlanningAiRunCommand 等 4 个公开契约 编排项目需求、导航规划和 AI 业务注册。
+ * 边界：只停留在项目规划阶段，不生成页面 rule/pagedata/script/template，也不越界进入 pageDesign。
+ * AI用途：规划模块/页面概要或排查项目策划 Agent 时，用本模块理解 services/project-planning-ai-runner。
  */
 /**
  * projectPlanning headless AI runner（无 DevSystem / 无 UI 依赖）。

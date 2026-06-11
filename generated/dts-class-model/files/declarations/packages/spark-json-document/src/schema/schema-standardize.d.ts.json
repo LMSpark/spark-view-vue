@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-json-document/src/schema/schema-standardize.ts",
     "packageName": "@spark-appworks/spark-json-document",
     "modulePath": "schema/schema-standardize",
-    "jsdoc": "@module @spark-appworks/spark-json-document:schema/schema-standardize\n@spark-appworks/spark-json-document 的 schema/schema-standardize 模块。\n导出 ClassModel symbol: StandardJsonSchema, StandardJsonSchemaObject（共 2 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-json-document:schema/schema-standardize\n职责：提供 JSON 文档和 schema 处理中的 schema-standardize 能力，围绕 StandardJsonSchema、StandardJsonSchemaObject 管理 schema 标准化、解析、校验或树策略。\n边界：只处理 JSON/schema/tree 抽象，不依赖 SPARK 页面运行时，也不直接操作业务 DataSet。\nAI用途：生成或校验 JSON 配置结构时，用本模块确认 schema/schema-standardize 的 schema 语义。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "StandardJsonSchema",
@@ -22,7 +22,7 @@
     "StandardJsonSchema": {
       "kind": "StandardJsonSchema",
       "className": "StandardJsonSchema",
-      "jsdoc": "/** Standard Json Schema 的语义模型。 */",
+      "jsdoc": "Standard Json Schema 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "boolean | StandardJsonSchemaObject",
       "declarationRelations": [
@@ -38,7 +38,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-        "line": 13,
+        "line": 14,
         "className": "StandardJsonSchema",
         "declarationKind": "type"
       },
@@ -48,292 +48,239 @@
     "StandardJsonSchemaObject": {
       "kind": "StandardJsonSchemaObject",
       "className": "StandardJsonSchemaObject",
-      "jsdoc": "/** Standard Json Schema Object 的语义模型。 */",
+      "jsdoc": "Standard Json Schema Object 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    [keyword: string]: unknown;\n    /** $ref 字段。 */\n    $ref?: string;\n    /** 类型标识。 */\n    type?: string | readonly string[];\n    /** properties 字段。 */\n    properties?: Readonly<Record<string, StandardJsonSchema>>;\n    /** 是否必填。 */\n    required?: readonly string[];\n    /** items 字段。 */\n    items?: StandardJsonSchema;\n    /** prefix Items 字段。 */\n    prefixItems?: readonly StandardJsonSchema[];\n    /** additional Properties 字段。 */\n    additionalProperties?: StandardJsonSchema;\n    /** enum 字段。 */\n    enum?: readonly unknown[];\n    /** const 字段。 */\n    const?: unknown;\n    /** any Of 字段。 */\n    anyOf?: readonly StandardJsonSchema[];\n    /** one Of 字段。 */\n    oneOf?: readonly StandardJsonSchema[];\n    /** all Of 字段。 */\n    allOf?: readonly StandardJsonSchema[];\n    /** not 字段。 */\n    not?: StandardJsonSchema;\n    /** 显示标题。 */\n    title?: string;\n    /** description 字段。 */\n    description?: string;\n    /** $defs 字段。 */\n    $defs?: Readonly<Record<string, StandardJsonSchema>>;\n}",
       "provenance": {
         "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-        "line": 15,
+        "line": 16,
         "className": "StandardJsonSchemaObject",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "$ref",
+          "jsdoc": "$ref 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** $ref 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 18,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "$ref",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "type",
+          "jsdoc": "类型标识。",
           "schema": {
-            "type": "array",
-            "title": "string | readonly string[]",
-            "items": true
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array"
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 类型标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 20,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "type",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "properties",
+          "jsdoc": "properties 字段。",
           "schema": {
+            "type": "object",
             "title": "Readonly<Record<string, StandardJsonSchema>>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** properties 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 22,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "properties",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "required",
+          "jsdoc": "是否必填。",
           "schema": {
-            "type": "array",
-            "title": "readonly string[]",
-            "items": true
+            "type": "array"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否必填。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 24,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "required",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "items",
+          "jsdoc": "items 字段。",
           "schema": {
-            "title": "StandardJsonSchema"
+            "$ref": "#/$defs/StandardJsonSchema"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** items 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 26,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "items",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "prefixItems",
+          "jsdoc": "prefix Items 字段。",
           "schema": {
-            "type": "array",
-            "title": "readonly StandardJsonSchema[]",
-            "items": true
+            "type": "array"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** prefix Items 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 28,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "prefixItems",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "additionalProperties",
+          "jsdoc": "additional Properties 字段。",
           "schema": {
-            "title": "StandardJsonSchema"
+            "$ref": "#/$defs/StandardJsonSchema"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** additional Properties 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 30,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "additionalProperties",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "enum",
+          "jsdoc": "enum 字段。",
           "schema": {
-            "type": "array",
-            "title": "readonly unknown[]",
-            "items": true
+            "type": "array"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** enum 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 32,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "enum",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "const",
-          "schema": {
-            "title": "unknown"
-          },
+          "jsdoc": "const 字段。",
+          "schema": true,
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** const 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 34,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "const",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "anyOf",
+          "jsdoc": "any Of 字段。",
           "schema": {
-            "type": "array",
-            "title": "readonly StandardJsonSchema[]",
-            "items": true
+            "type": "array"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** any Of 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 36,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "anyOf",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "oneOf",
+          "jsdoc": "one Of 字段。",
           "schema": {
-            "type": "array",
-            "title": "readonly StandardJsonSchema[]",
-            "items": true
+            "type": "array"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** one Of 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 38,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "oneOf",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "allOf",
+          "jsdoc": "all Of 字段。",
           "schema": {
-            "type": "array",
-            "title": "readonly StandardJsonSchema[]",
-            "items": true
+            "type": "array"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** all Of 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 40,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "allOf",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "not",
+          "jsdoc": "not 字段。",
           "schema": {
-            "title": "StandardJsonSchema"
+            "$ref": "#/$defs/StandardJsonSchema"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** not 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 42,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "not",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "title",
+          "jsdoc": "显示标题。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 显示标题。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 44,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "title",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "description",
+          "jsdoc": "description 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** description 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 46,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "description",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "$defs",
+          "jsdoc": "$defs 字段。",
           "schema": {
+            "type": "object",
             "title": "Readonly<Record<string, StandardJsonSchema>>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** $defs 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
-            "line": 48,
-            "className": "StandardJsonSchemaObject",
-            "memberName": "$defs",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.846Z"
+  "generatedAt": "2026-06-11T16:38:13.020Z",
+  "$defs": {
+    "StandardJsonSchema": {
+      "type": "object",
+      "title": "StandardJsonSchema",
+      "description": "Standard Json Schema 的语义模型。"
+    },
+    "StandardJsonSchemaObject": {
+      "type": "object",
+      "title": "StandardJsonSchemaObject",
+      "description": "Standard Json Schema Object 的语义模型。",
+      "properties": {
+        "$ref": {
+          "type": "string"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
+        "properties": {
+          "type": "object",
+          "title": "Readonly<Record<string, StandardJsonSchema>>"
+        },
+        "required": {
+          "type": "array"
+        },
+        "items": {
+          "$ref": "#/$defs/StandardJsonSchema"
+        },
+        "prefixItems": {
+          "type": "array"
+        },
+        "additionalProperties": {
+          "$ref": "#/$defs/StandardJsonSchema"
+        },
+        "enum": {
+          "type": "array"
+        },
+        "const": true,
+        "anyOf": {
+          "type": "array"
+        },
+        "oneOf": {
+          "type": "array"
+        },
+        "allOf": {
+          "type": "array"
+        },
+        "not": {
+          "$ref": "#/$defs/StandardJsonSchema"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "$defs": {
+          "type": "object",
+          "title": "Readonly<Record<string, StandardJsonSchema>>"
+        }
+      }
+    }
+  }
 }

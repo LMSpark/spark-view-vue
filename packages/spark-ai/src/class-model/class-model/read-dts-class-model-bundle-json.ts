@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/read-dts-class-model-bundle-json
- * @spark-appworks/spark-ai 的 class-model/class-model/read-dts-class-model-bundle-json 模块。
- * 该 DTS shard 当前不导出 ClassModel symbol。
+ * 职责：结构化校验 DTS ClassModel manifest 和 shard JSON，读取 module、model、attribute、method、provenance 与 relation 字段。
+ * 边界：只做 JSON 协议解析和 fail-fast 校验，不生成 bundle、不访问网络，也不修复缺失语义。
+ * AI用途：运行时或测试加载 generated/dts-class-model 失败时，用本模块确认是哪一层 JSON 字段不符合协议。
  */
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
 import type {
@@ -12,7 +13,10 @@ import type {
   ComponentClassModelLayer,
   ComponentClassModelLevel,
   ConstructorMeta,
+  DtsTypeMeta,
   MethodMeta,
+  MethodParameterMeta,
+  MethodParameterStyle,
   SourceProvenanceMeta,
 } from './types'
 import type {
@@ -84,6 +88,11 @@ const MODULE_JSDOC_SOURCES = new Set<DtsFileModuleJsDocSource>([
   'inferred',
 ])
 
+const METHOD_PARAMETER_STYLES = new Set<MethodParameterStyle>([
+  'positional',
+  'named',
+])
+
 type DeclarationKindReadCommand<T extends string> = Readonly<{
   record: Record<string, unknown>
   field: string
@@ -151,6 +160,12 @@ export function readDtsFileProjectionDocument(value: unknown): DtsFileProjection
   const generatedAt = readOptionalString(record, 'generatedAt', 'projection.generatedAt')
   const sourcePath = readRequiredString(record, 'sourcePath', 'projection.sourcePath')
   const symbols = readRequiredStringArray(record, 'symbols', 'projection.symbols')
+  const schemaDefs = readOptionalStringKeyedRecord({
+    record,
+    field: '$defs',
+    path: 'projection.$defs',
+    parseEntry: parseJsonSchemaObject,
+  })
   const models = readRequiredStringKeyedRecord({
     record,
     field: 'models',
@@ -164,6 +179,7 @@ export function readDtsFileProjectionDocument(value: unknown): DtsFileProjection
     sourcePath,
     module,
     symbols,
+    ...(schemaDefs === undefined ? {} : { $defs: schemaDefs }),
     models,
     ...(generatedAt === undefined ? {} : { generatedAt }),
   }
@@ -345,21 +361,127 @@ function parseAttributeMeta(value: unknown, path: string): AttributeMeta {
 
 function parseMethodMeta(value: unknown, path: string): MethodMeta {
   const record = requireJsonRecord(value, path)
+  const paramsSchema = readOptionalJsonSchemaObject(record, 'paramsSchema', `${path}.paramsSchema`)
   const returnSchema = readOptionalJsonSchema(record, 'returnSchema', `${path}.returnSchema`)
-  const returnTypeText = readOptionalString(record, 'returnTypeText', `${path}.returnTypeText`)
+  const returnType = readOptionalDtsTypeMeta(record, 'returnType', `${path}.returnType`)
   const takesContext = readOptionalBoolean(record, 'takesContext', `${path}.takesContext`)
-  const paramsTypeText = readOptionalString(record, 'paramsTypeText', `${path}.paramsTypeText`)
   const provenance = readOptionalSourceProvenance(record, 'provenance', `${path}.provenance`)
   return {
     name: readRequiredString(record, 'name', `${path}.name`),
-    paramsSchema: readRequiredJsonSchemaObject(record, 'paramsSchema', `${path}.paramsSchema`),
+    signatureText: readRequiredString(record, 'signatureText', `${path}.signatureText`),
+    parameterStyle: readRequiredDeclarationKind({
+      record,
+      field: 'parameterStyle',
+      path: `${path}.parameterStyle`,
+      allowed: METHOD_PARAMETER_STYLES,
+    }),
+    parameters: readRequiredArray({
+      record,
+      field: 'parameters',
+      path: `${path}.parameters`,
+      parseEntry: parseMethodParameterMeta,
+    }),
+    ...(returnType === undefined ? {} : { returnType }),
+    ...(paramsSchema === undefined ? {} : { paramsSchema }),
     ...(returnSchema === undefined ? {} : { returnSchema }),
-    ...(returnTypeText === undefined ? {} : { returnTypeText }),
     ...(takesContext === undefined ? {} : { takesContext }),
     jsdoc: readRequiredString(record, 'jsdoc', `${path}.jsdoc`),
-    ...(paramsTypeText === undefined ? {} : { paramsTypeText }),
     ...(provenance === undefined ? {} : { provenance }),
   }
+}
+
+function parseMethodParameterMeta(value: unknown, path: string): MethodParameterMeta {
+  const record = requireJsonRecord(value, path)
+  return {
+    name: readRequiredString(record, 'name', `${path}.name`),
+    type: readRequiredDtsTypeMeta(record, 'type', `${path}.type`),
+  }
+}
+
+function readOptionalDtsTypeMeta(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): DtsTypeMeta | undefined {
+  if (!Object.hasOwn(record, field)) return undefined
+  return parseDtsTypeMeta(record[field], path)
+}
+
+function readRequiredDtsTypeMeta(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): DtsTypeMeta {
+  if (!Object.hasOwn(record, field)) {
+    throw new Error(`Missing required field ${path}`)
+  }
+  return parseDtsTypeMeta(record[field], path)
+}
+
+function parseDtsTypeMeta(value: unknown, path: string): DtsTypeMeta {
+  const record = requireJsonRecord(value, path)
+  const type = readRequiredString(record, 'type', `${path}.type`)
+  if (type === 'intrinsic') {
+    return { type, name: readRequiredString(record, 'name', `${path}.name`) }
+  }
+  if (type === 'reference') {
+    const sourcePath = readOptionalString(record, 'sourcePath', `${path}.sourcePath`)
+    const refersToTypeParameter = readOptionalBoolean(record, 'refersToTypeParameter', `${path}.refersToTypeParameter`)
+    const typeArguments = readOptionalArray({
+      record,
+      field: 'typeArguments',
+      path: `${path}.typeArguments`,
+      parseEntry: parseDtsTypeMeta,
+    })
+    return {
+      type,
+      name: readRequiredString(record, 'name', `${path}.name`),
+      ...(sourcePath === undefined ? {} : { sourcePath }),
+      ...(refersToTypeParameter === undefined ? {} : { refersToTypeParameter }),
+      ...(typeArguments === undefined ? {} : { typeArguments }),
+    }
+  }
+  if (type === 'array') {
+    return { type, elementType: readRequiredDtsTypeMeta(record, 'elementType', `${path}.elementType`) }
+  }
+  if (type === 'union' || type === 'intersection') {
+    return {
+      type,
+      types: readRequiredArray({
+        record,
+        field: 'types',
+        path: `${path}.types`,
+        parseEntry: parseDtsTypeMeta,
+      }),
+    }
+  }
+  if (type === 'literal') {
+    return { type, value: readRequiredDtsLiteralValue(record, 'value', `${path}.value`) }
+  }
+  if (type === 'unknown') {
+    return { type, name: readRequiredString(record, 'name', `${path}.name`) }
+  }
+  throw new Error(`Invalid DTS type discriminator at ${path}.type: ${type}`)
+}
+
+function readRequiredDtsLiteralValue(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): string | number | boolean | null {
+  if (!Object.hasOwn(record, field)) throw new Error(`Missing required field ${path}`)
+  const value = record[field]
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) return value
+  throw new Error(`Expected ${path} to be a string, number, boolean, or null`)
+}
+
+function readOptionalJsonSchemaObject(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): AiJsonSchemaObject | undefined {
+  if (!Object.hasOwn(record, field)) return undefined
+  return parseJsonSchemaObject(record[field], path)
 }
 
 function readOptionalConstructorMeta(
@@ -373,10 +495,24 @@ function readOptionalConstructorMeta(
 
 function parseConstructorMeta(value: unknown, path: string): ConstructorMeta {
   const record = requireJsonRecord(value, path)
+  const paramsSchema = readOptionalJsonSchemaObject(record, 'paramsSchema', `${path}.paramsSchema`)
   const provenance = readOptionalSourceProvenance(record, 'provenance', `${path}.provenance`)
   return {
-    paramsSchema: readRequiredJsonSchemaObject(record, 'paramsSchema', `${path}.paramsSchema`),
     jsdoc: readRequiredString(record, 'jsdoc', `${path}.jsdoc`),
+    signatureText: readRequiredString(record, 'signatureText', `${path}.signatureText`),
+    parameterStyle: readRequiredDeclarationKind({
+      record,
+      field: 'parameterStyle',
+      path: `${path}.parameterStyle`,
+      allowed: METHOD_PARAMETER_STYLES,
+    }),
+    parameters: readRequiredArray({
+      record,
+      field: 'parameters',
+      path: `${path}.parameters`,
+      parseEntry: parseMethodParameterMeta,
+    }),
+    ...(paramsSchema === undefined ? {} : { paramsSchema }),
     ...(provenance === undefined ? {} : { provenance }),
   }
 }
@@ -478,17 +614,6 @@ function parseJsonSchema(value: unknown, path: string): AiJsonSchema {
   throw new Error(`${path} must be a JSON Schema object or boolean.`)
 }
 
-function readRequiredJsonSchemaObject(
-  record: Record<string, unknown>,
-  field: string,
-  path: string,
-): AiJsonSchemaObject {
-  if (!Object.hasOwn(record, field)) {
-    throw new Error(`${path} is required.`)
-  }
-  return parseJsonSchemaObject(record[field], path)
-}
-
 function parseJsonSchemaObject(value: unknown, path: string): AiJsonSchemaObject {
   if (!isJsonRecord(value)) {
     throw new Error(`${path} must be a JSON Schema object.`)
@@ -503,6 +628,22 @@ function readRequiredStringKeyedRecord<T>(
   if (!Object.hasOwn(record, field)) {
     throw new Error(`${path} is required.`)
   }
+  const raw = record[field]
+  if (!isJsonRecord(raw)) {
+    throw new Error(`${path} must be an object.`)
+  }
+  const result: Record<string, T> = {}
+  for (const [key, entry] of Object.entries(raw)) {
+    result[key] = parseEntry(entry, `${path}.${key}`)
+  }
+  return result
+}
+
+function readOptionalStringKeyedRecord<T>(
+  command: StringKeyedRecordReadCommand<T>,
+): Record<string, T> | undefined {
+  const { record, field, path, parseEntry } = command
+  if (!Object.hasOwn(record, field)) return undefined
   const raw = record[field]
   if (!isJsonRecord(raw)) {
     throw new Error(`${path} must be an object.`)

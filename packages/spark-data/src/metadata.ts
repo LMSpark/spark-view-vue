@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-data:metadata
- * @spark-appworks/spark-data 的 metadata 模块。
- * 导出 ClassModel symbol: TableMetadataLike（共 1 个 symbol）。
+ * 职责：提供数据层 metadata 能力，围绕 TableMetadataLike 描述 DataSet、DataTable、DataView、策略委托或数据绑定键。
+ * 边界：保持框架无关，只处理数据模型、校验和本地策略，不依赖 Vue、路由或 Element Plus。
+ * AI用途：生成页面数据绑定、DataViewKey 或数据策略调用时，用本模块确认 metadata 的数据语义。
  */
 import { isRecord } from '@spark-appworks/spark-utils'
 import type { DataSetMetadata, TableMetadata, ViewMetadata } from './types'

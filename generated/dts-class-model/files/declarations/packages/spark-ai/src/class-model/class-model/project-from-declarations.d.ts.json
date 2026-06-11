@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/class-model/class-model/project-from-declarations.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/class-model/project-from-declarations",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/project-from-declarations\n@spark-appworks/spark-ai 的 class-model/class-model/project-from-declarations 模块。\n导出 ClassModel symbol: ProjectDtsSourceFileProjectionOptions（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/project-from-declarations\n职责：从 TypeScript DTS AST 和 TypeChecker 投影 ClassModel，抽取类、接口、类型别名、枚举、成员、声明关系和模块语义。\n边界：只读取声明结构和 JSDoc，不生成业务代码、不执行脚本，也不把 VCM 旧链路重新引入。\nAI用途：排查 .d.ts 到 JSON 的字段丢失、关系断链或组件分层识别时，用本模块定位投影逻辑。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "ProjectDtsSourceFileProjectionOptions"
@@ -20,7 +20,7 @@
     "ProjectDtsSourceFileProjectionOptions": {
       "kind": "ProjectDtsSourceFileProjectionOptions",
       "className": "ProjectDtsSourceFileProjectionOptions",
-      "jsdoc": "/** Project Dts Source File Projection Options 的调用配置。 */",
+      "jsdoc": "Project Dts Source File Projection Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    sourceFile: ts.SourceFile;\n    checker: ts.TypeChecker;\n    exportedOnly?: boolean;\n}>",
       "declarationRelations": [
@@ -40,5 +40,12 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.819Z"
+  "generatedAt": "2026-06-11T16:38:12.595Z",
+  "$defs": {
+    "ProjectDtsSourceFileProjectionOptions": {
+      "type": "object",
+      "title": "ProjectDtsSourceFileProjectionOptions",
+      "description": "Project Dts Source File Projection Options 的调用配置。"
+    }
+  }
 }

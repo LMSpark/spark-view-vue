@@ -1,18 +1,8 @@
 /**
- * DataTable — 数据表（表结构定义、配置管理、视图容器）
- *
- * 职责（按功能分区）：
- *  - 表元数据：管理 tableName、columns、resourceType/resourceId/businessCategory、api、crudConfig（不含具体数据）
- *  - 视图容器：维护 default 与命名视图的集合（不遍历、不协调、不关心运行时状态）
- *  - 配置中心：提供 api 和 crudConfig 给 DataView 使用
- *  - 序列化：提供 toJson()/fromJson 用于持久化与恢复
- *
- * 设计要点：
- *  - 纯结构定义，不包含任何数据操作（数据操作在 DataView）
- *  - 不遍历视图、不执行跨视图协调、不关心视图运行时状态（协调逻辑在 DataSet）
- *  - `default` 视图为主数据源，命名视图保存独立的过滤/排序/分页状态
- *  - CrudOperationConfig 作为表级属性，所有视图共享同一配置
- *  - 符合 SOLID：单一职责（结构定义）、依赖倒置（不依赖运行时状态）
+ * @module @spark-appworks/spark-data:data-table
+ * 职责：提供 spark-data 数据管线中的 data table 能力，支撑 DataSet、DataTable、DataView、树或 CRUD 状态协作。
+ * 边界：保持框架无关，只维护数据模型和操作协议，不导入 Vue、Element Plus 或应用路由。
+ * AI用途：处理页面数据绑定、DataViewKey、行状态、树结构或 CRUD 行为时，用本模块确认数据层语义。
  */
 
 import { DataView } from './data-view'

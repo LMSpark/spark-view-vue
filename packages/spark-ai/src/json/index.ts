@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-ai:json/index
+ * 职责：提供 AI JSON 参数和 schema 处理中的 index 能力，支撑输入校验、类型收敛和运行时保护。
+ * 边界：只处理 JSON 值与 schema，不依赖 Vue、Host 或业务组件。
+ * AI用途：当业务输入需要校验、规整或解释 JSON schema 时，用本模块确认基础 JSON 契约。
+ */
+/**
  * ═══════════════════════════════════════════════════════════════
  * json/index.ts — SPARK AI json 公共入口（deprecated re-export 层）
  * ═══════════════════════════════════════════════════════════════

@@ -1,15 +1,8 @@
 /**
- * SparkApp Namespace
- * L1 应用基础设施层 - 统一命名空间
- *
- * 职责：提供应用层核心功能
- * - bootstrap: 应用初始化流水线
- * - context: 应用上下文管理（用户、租户、权限）
- * - router: 路由守卫
- * - error: 错误处理
- * - config: 配置加载
- *
- * 原则：L1 不依赖 L2/L4-L6，保持依赖方向正确
+ * @module @spark-appworks/spark-app:namespace
+ * 职责：提供 spark-app 应用壳中的 namespace 能力，连接路由、导航、认证、插件、页面 UI 或 AI 桥接。
+ * 边界：负责应用层编排，不下沉实现底层数据模型，也不直接改写组件包的渲染协议。
+ * AI用途：排查页面打开、导航状态、权限上下文或应用侧 AI 接线时，用本模块确认 app 层入口。
  */
 
 import { bootstrap } from './bootstrap'

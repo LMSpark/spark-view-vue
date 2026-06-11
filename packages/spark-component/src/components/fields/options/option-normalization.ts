@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-component:components/fields/options/option-normalization
- * @spark-appworks/spark-component 的 components/fields/options/option-normalization 模块。
- * 导出 ClassModel symbol: FieldOption, NormalizeOptionFields（共 2 个 symbol）。
+ * 职责：维护 @spark-appworks/spark-component 中 components/fields/options/option-normalization 的模块能力，围绕 FieldOption、NormalizeOptionFields 提供稳定的公开契约。
+ * 边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。
+ * AI用途：需要定位 components/fields/options/option-normalization 的声明、导出和使用边界时，从本模块开始。
  */
 // 这里不再为 JS 基础类型保留导出别名，选项值直接使用原生联合类型。
 

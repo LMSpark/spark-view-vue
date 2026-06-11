@@ -1,10 +1,12 @@
 /**
  * @module @spark-appworks/spark-ai:agent/native-runtime/dts-native-script-runner
- * @spark-appworks/spark-ai 的 agent/native-runtime/dts-native-script-runner 模块。
- * 导出 ClassModel symbol: DtsNativeScriptRunCommand（共 1 个 symbol）。
+ * 职责：定义 DTS ClassModel 脚本运行命令，让 native runtime 能在受控上下文中执行模型脚本。
+ * 边界：只描述脚本调用输入输出，不负责生成脚本、不注册工具，也不直接访问页面配置文件。
+ * AI用途：需要把 model_script tool call 交给本地脚本执行器时，用本模块确认命令载荷形状。
  */
 import type {
   AiJsonSchema,
+  AiJsonSchemaObject,
   AiJsonValue,
 } from '../../json'
 import type { AiAgentRuntimeHostContext } from '../tool-runtime'
@@ -14,6 +16,7 @@ import {
   type ClassModel,
   type DtsClassModelSurfaceDocument,
 } from '../../class-model/class-model'
+import type { DtsTypeMeta } from '../../class-model/class-model/types'
 import type {
   AiApiActionMetadata,
   AiApiAttributeMetadata,
@@ -120,7 +123,7 @@ function createApiFromSurface(
               description: summarizeJsDoc(constructorMeta.jsdoc),
               ...(constructorMeta.jsdoc.trim().length === 0 ? {} : { jsdoc: constructorMeta.jsdoc }),
               ...(constructorMeta.provenance === undefined ? {} : { provenance: constructorMeta.provenance }),
-              paramsSchema: constructorMeta.paramsSchema,
+              paramsSchema: requiredConstructorParamsSchema(model.className, constructorMeta),
             },
           }),
       actions: [],
@@ -141,19 +144,27 @@ function createApiFromSurface(
 
     api.actions = model.methods
       .filter(method => !method.name.startsWith('static '))
-      .map(method => ({
-        name: method.name,
-        methodName: method.name,
-        description: summarizeJsDoc(method.jsdoc),
-        ...(method.jsdoc.trim().length === 0 ? {} : { jsdoc: method.jsdoc }),
-        ...(method.provenance === undefined ? {} : { provenance: method.provenance }),
-        paramsSchema: method.paramsSchema,
-        ...(method.paramsTypeText === undefined ? {} : { paramsTypeText: method.paramsTypeText }),
-        takesContext: false,
-        ...(method.returnSchema === undefined ? {} : { resultSchema: method.returnSchema }),
-        ...(method.returnTypeText === undefined ? {} : { returnTypeText: method.returnTypeText }),
-        ...resultApiProperty(surface, method, toApi),
-      }))
+      .map((method) => {
+        if (method.paramsSchema === undefined) {
+          throw new Error(
+            `DTS method "${model.className}.${method.name}" only preserves signatureText; executable paramsSchema must come from runtime metadata.`,
+          )
+        }
+        return {
+          name: method.name,
+          methodName: method.name,
+          ...(method.signatureText === undefined ? {} : { signatureText: method.signatureText }),
+          description: summarizeJsDoc(method.jsdoc),
+          ...(method.jsdoc.trim().length === 0 ? {} : { jsdoc: method.jsdoc }),
+          ...(method.provenance === undefined ? {} : { provenance: method.provenance }),
+          paramsSchema: method.paramsSchema,
+          ...(method.paramsTypeText === undefined ? {} : { paramsTypeText: method.paramsTypeText }),
+          takesContext: false,
+          ...(method.returnSchema === undefined ? {} : { resultSchema: method.returnSchema }),
+          ...(method.returnTypeText === undefined ? {} : { returnTypeText: method.returnTypeText }),
+          ...resultApiProperty(surface, method, toApi),
+        }
+      })
 
     return api
   }
@@ -199,12 +210,46 @@ function resultApiProperty(
     : { resultApis: [{ resultPath: [], api: toApi(className) }] }
 }
 
+function requiredConstructorParamsSchema(
+  className: string,
+  constructorMeta: NonNullable<ClassModel['constructorMeta']>,
+): AiJsonSchemaObject {
+  if (constructorMeta.paramsSchema === undefined) {
+    throw new Error(
+      `DTS constructor "${className}" only preserves signatureText; executable paramsSchema must come from runtime metadata.`,
+    )
+  }
+  return constructorMeta.paramsSchema
+}
+
 function resolveMethodReturnClassName(
   surface: DtsClassModelSurfaceDocument,
   method: ClassModel['methods'][number],
 ): string | undefined {
-  return resolveClassNameFromTypeText(surface, method.returnTypeText)
+  return resolveClassNameFromDtsType(surface, method.returnType)
+    ?? resolveClassNameFromTypeText(surface, method.returnTypeText)
     ?? resolveSchemaClassName(surface, method.returnSchema)
+}
+
+function resolveClassNameFromDtsType(
+  surface: DtsClassModelSurfaceDocument,
+  typeMeta: DtsTypeMeta | undefined,
+): string | undefined {
+  if (typeMeta === undefined) return undefined
+  if (typeMeta.type === 'reference') {
+    return surface.models[typeMeta.name] === undefined
+      ? firstDefined(typeMeta.typeArguments?.map(typeArgument => resolveClassNameFromDtsType(surface, typeArgument)) ?? [])
+      : typeMeta.name
+  }
+  if (typeMeta.type === 'array') return resolveClassNameFromDtsType(surface, typeMeta.elementType)
+  if (typeMeta.type === 'union' || typeMeta.type === 'intersection') {
+    return firstDefined(typeMeta.types.map(item => resolveClassNameFromDtsType(surface, item)))
+  }
+  return undefined
+}
+
+function firstDefined<T>(items: ReadonlyArray<T | undefined>): T | undefined {
+  return items.find(item => item !== undefined)
 }
 
 function resolveSchemaClassName(

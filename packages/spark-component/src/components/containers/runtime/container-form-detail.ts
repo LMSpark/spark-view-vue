@@ -1,22 +1,8 @@
 /**
- * container-form-detail.ts
- *
- * 表单/详情容器编排层：r-form 与 r-detail 的完整运行时编排。
- *
- * 职责：
- * - useFormDetailContainer    : 6 个分区的完整容器编排（布局/能力/镜像/工具栏/作用域/输出）
- * - buildFormDetailContainerProps : 规范化构建入参（避免消费端重复展开可选字段）
- * - FormDetailContainerConsumerProps : 两侧容器组件的最小输入形状
- *
- * 工作流程（6 分区）：
- *   1. 布局层     : children → CSS Grid 投影（useContainerGrid）
- *   2. 能力接入层  : dataViewKey → DataView 解析 + 能力注入（useContainerDataSource）
- *   3. 上下文镜像层 : DataView.currentRow / aggregateResult → contextData（shallowReactive）
- *   4. 工具栏投影层 : toolbar SparkNode → 可见性/位置（useContainerToolbar）
- *   5. 作用域构建层 : contextData → 字段渲染默认作用域（createCurrentRowScope）
- *   6. 对外输出层  : 汇总所有状态并返回
- *
- * 消费方：RendererForm.vue、RendererDetail.vue
+ * @module @spark-appworks/spark-component:components/containers/runtime/container-form-detail
+ * 职责：提供 container form detail 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。
+ * 边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。
+ * AI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。
  */
 
 import { computed, shallowReactive, toRef, watch } from 'vue'

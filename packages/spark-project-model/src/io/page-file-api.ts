@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-project-model:io/page-file-api
+ * 职责：提供项目模型和页面配置域中的 page file api 能力，支撑 navigation、page content、project session 或远程 IO。
+ * 边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。
+ * AI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。
+ */
+/**
  * Page file API.
  *
  * 管理 PageNode 四文件的远端写入、页面文件创建/删除和版本操作。

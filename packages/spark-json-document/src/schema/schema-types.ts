@@ -1,24 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * schema/schema-types.ts — JSON Schema 类型定义（单一事实源 SSOT）
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】最底层基础类型，被 schema/ 内部模块和外部消费方共同依赖。
- *   本文件不依赖包内任何其他模块。
- *
- * 【设计决策】
- *   - 使用标准 JSON Schema (Draft 2020-12 子集)，不再使用项目私有 DSL。
- *   - 统一命名为 JsonSchema/JsonSchemaObject（去掉旧 Ai 前缀）。
- *   - 旧 AiJsonSchema/AiJsonSchemaObject 在 spark-ai/json 中保留为 deprecated alias。
- *
- * ═══════════════════════════════════════════════════════════════
- * 类型层级（自底向上）：
- *
- *   JsonSchemaType     — JSON Schema type 字段允许的字符串枚举
- *
- *   JsonSchema         — Schema 节点（boolean | JsonSchemaObject）
- *     └─ JsonSchemaObject — 完整 Schema 节点（type/properties/items 等）
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-json-document:schema/schema-types
+ * 职责：提供 JSON Document/schema 处理中的 schema types 能力，支撑 schema 标准化、审计和元数据保留。
+ * 边界：只处理 JSON schema/document 结构，不耦合应用页面、Vue 组件或 AI 会话状态。
+ * AI用途：校验或标准化配置 schema 时，用本模块确认 JSON 文档层的规则来源。
  */
 
 // ═══════════════════════════════════════════════════════════════

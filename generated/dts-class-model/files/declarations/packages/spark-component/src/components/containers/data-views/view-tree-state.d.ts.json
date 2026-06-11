@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/data-views/view-tree-state.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/data-views/view-tree-state",
-    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/view-tree-state\n@spark-appworks/spark-component:components/containers/data-views/view-tree-state 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: RendererTreeViewState, TreeTableRowsInput, RendererTreeViewStateOptions（共 3 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/view-tree-state\n职责：支撑 view-tree-state（未注册组件类型）在 table-level/data-view-container 中的运行时协作，补齐配置、状态或渲染器之间的连接逻辑。\n边界：只覆盖当前组件目录 containers/data-views 的局部能力，不定义全局页面模型，也不越级操作业务数据源。\nAI用途：需要判断 view tree state 的组件分层、辅助类型或内部接线时，用本模块作为局部语义入口。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "RendererTreeViewState",
@@ -27,7 +27,7 @@
     "RendererTreeViewState": {
       "kind": "RendererTreeViewState",
       "className": "RendererTreeViewState",
-      "jsdoc": "/** 树形视图态（RendererTree 专用扩展）。 */",
+      "jsdoc": "树形视图态（RendererTree 专用扩展）。",
       "shapeKind": "type",
       "declarationTypeText": "DataViewState & {\n    /** tree Data 字段。 */\n    treeData: ComputedRef<TreeNode[]>;\n    /** tree Id Field 字段。 */\n    treeIdField: ComputedRef<string>;\n}",
       "declarationRelations": [
@@ -53,41 +53,23 @@
       "attributes": [
         {
           "name": "treeData",
+          "jsdoc": "tree Data 字段。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<TreeNode[]>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tree Data 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-tree-state.d.ts",
-            "line": 8,
-            "className": "RendererTreeViewState",
-            "memberName": "treeData",
-            "declarationKind": "interface",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "treeIdField",
+          "jsdoc": "tree Id Field 字段。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<string>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tree Id Field 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-tree-state.d.ts",
-            "line": 10,
-            "className": "RendererTreeViewState",
-            "memberName": "treeIdField",
-            "declarationKind": "interface",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -95,7 +77,7 @@
     "TreeTableRowsInput": {
       "kind": "TreeTableRowsInput",
       "className": "TreeTableRowsInput",
-      "jsdoc": "/** Tree Table Rows Input 的输入数据。 */",
+      "jsdoc": "Tree Table Rows Input 的输入数据。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    view: DataView | null | undefined;\n    rows: readonly DataRow[];\n    treeConfig: TreeConfig | undefined;\n    primaryKey: string | undefined;\n}>",
       "declarationRelations": [
@@ -120,7 +102,7 @@
     "RendererTreeViewStateOptions": {
       "kind": "RendererTreeViewStateOptions",
       "className": "RendererTreeViewStateOptions",
-      "jsdoc": "/** Renderer Tree View State Options 的调用配置。 */",
+      "jsdoc": "Renderer Tree View State Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** data State 状态。 */\n    dataState: DataViewState;\n}",
       "provenance": {
@@ -135,26 +117,48 @@
       "attributes": [
         {
           "name": "dataState",
+          "jsdoc": "data State 状态。",
           "schema": {
-            "title": "DataViewState"
+            "$ref": "view-runtime-state.d.ts.json#/$defs/DataViewState"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** data State 状态。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/view-tree-state.d.ts",
-            "line": 23,
-            "className": "RendererTreeViewStateOptions",
-            "memberName": "dataState",
-            "declarationKind": "interface",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.109Z"
+  "generatedAt": "2026-06-11T16:38:12.712Z",
+  "$defs": {
+    "RendererTreeViewState": {
+      "type": "object",
+      "title": "RendererTreeViewState",
+      "description": "树形视图态（RendererTree 专用扩展）。",
+      "properties": {
+        "treeData": {
+          "type": "object",
+          "title": "ComputedRef<TreeNode[]>"
+        },
+        "treeIdField": {
+          "type": "object",
+          "title": "ComputedRef<string>"
+        }
+      }
+    },
+    "TreeTableRowsInput": {
+      "type": "object",
+      "title": "TreeTableRowsInput",
+      "description": "Tree Table Rows Input 的输入数据。"
+    },
+    "RendererTreeViewStateOptions": {
+      "type": "object",
+      "title": "RendererTreeViewStateOptions",
+      "description": "Renderer Tree View State Options 的调用配置。",
+      "properties": {
+        "dataState": {
+          "$ref": "view-runtime-state.d.ts.json#/$defs/DataViewState"
+        }
+      }
+    }
+  }
 }

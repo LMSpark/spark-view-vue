@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-data:dataset-history
- * @spark-appworks/spark-data 的 dataset-history 模块。
- * 导出 ClassModel symbol: DataSetHistoryStorageAdapter, DataSetHistoryScope, DataSetSnapshotSelector, DataSetHistorySnapshot, DataSetHistoryListOptions, DataSetSnapshotCommitOptions, DataSetCommitSnapshotOptions（共 7 个 symbol）。
+ * 职责：提供数据层 dataset-history 能力，围绕 DataSetHistoryStorageAdapter、DataSetHistoryScope、DataSetSnapshotSelector 等 7 个公开契约 描述 DataSet、DataTable、DataView、策略委托或数据绑定键。
+ * 边界：保持框架无关，只处理数据模型、校验和本地策略，不依赖 Vue、路由或 Element Plus。
+ * AI用途：生成页面数据绑定、DataViewKey 或数据策略调用时，用本模块确认 dataset-history 的数据语义。
  */
 import { deepClone, isRecord } from '@spark-appworks/spark-utils'
 

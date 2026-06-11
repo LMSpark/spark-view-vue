@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-data:core/platform-scoped-url
- * @spark-appworks/spark-data 的 core/platform-scoped-url 模块。
- * 该 DTS shard 当前不导出 ClassModel symbol。
+ * 职责：提供数据层 platform-scoped-url 能力，围绕 模块入口、副作用注册或内部组合逻辑 描述 DataSet、DataTable、DataView、策略委托或数据绑定键。
+ * 边界：保持框架无关，只处理数据模型、校验和本地策略，不依赖 Vue、路由或 Element Plus。
+ * AI用途：生成页面数据绑定、DataViewKey 或数据策略调用时，用本模块确认 core/platform-scoped-url 的数据语义。
  */
 const ABSOLUTE_URL_RE = /^[a-z][a-z\d+\-.]*:/i
 const PLATFORM_SCOPED_RESOURCE_RE = /^\/(?:api\/)?(?:navigation|data|pages-config)(?:\/|$)/

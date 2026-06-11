@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-component:page/binding/bind-normalize
+ * 职责：提供 bind normalize 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。
+ * 边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。
+ * AI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。
+ */
+/**
  * 事件归一化工具
  *
  * 从 SparkNode 输入中提取/转换事件处理器与 Props 回调。

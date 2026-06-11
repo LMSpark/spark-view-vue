@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-ai:agent/native-runtime/native-script-sandbox
+ * 职责：提供 ClassModel 原生脚本执行沙箱，把脚本 this/ctx、错误投影和 JSON 返回值规整为统一结果。
+ * 边界：这是受控执行上下文而非强安全隔离，不负责业务注册、工具 schema 生成或持久化。
+ * AI用途：排查脚本动作执行、上下文注入和错误返回格式时，用本模块确认 sandbox 语义。
+ */
+/**
  * agent/native-runtime · ClassModel 脚本执行沙箱。
  *
  * LLM 脚本中的 this 就是调用方提供的模块上下文；ctx 是同一对象的别名。

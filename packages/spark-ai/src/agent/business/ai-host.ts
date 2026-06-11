@@ -1,27 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/business/ai-host.ts — AI Host 顶层入口
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Agent 层的公共门面，是外部系统接入 AI 能力的唯一入口。
- *   位于 agent 层最顶端，向下编排 business-session、business-task、
- *   business-registry 等组件完成"注册 → 运行 → 会话"的完整闭环。
- *
- * 【核心类】
- *   AiAgentHost  — AI 业务宿主编排器
- *     ├─ 持 有 AiAgentRegistry（业务注册表）
- *     ├─ 管理 alias↔moduleId 双向映射
- *     ├─ 提供 register/ensure/has/run 四个公共方法
- *     └─ 委托 runAiAgent() 执 行完整的"task 创建 → session 启动 → 消息发送"流程
- *
- * 【数据流】
- *   1. 外部系统 createAiAgentHost({ turnCallbacks }) → 创建 Host 实例
- *   2. host.register(alias, registration) → 注册业务到内部 registry + 建立别名映射
- *   3. host.run(alias, input) → 解析别名 → 委托 runAiAgent() 创建 task + session + 发送消息
- *   4. runAiAgent 内部调用 session.start() → session.send() → 启动工具循环
- *
- * 【消费方】APP 层初始化代码、页面级 AI 助手入口
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/business/ai-host
+ * 职责：提供 AI Agent 的 Host 门面，统一管理业务注册、alias/moduleId 映射、dry-run 诊断和 run 入口。
+ * 边界：负责把外部业务调用编排到 registry、task 和 session，不直接实现工具循环、传输回调或业务输入契约。
+ * AI用途：定位业务入口如何被注册、校验、运行或诊断时，先读本模块确认 Host 对外承诺和向下委托关系。
  */
 
 import { defineCapability, isCallable, isRecord } from '@spark-appworks/spark-utils'

@@ -1,18 +1,8 @@
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │  AI HOST · 业务注册合约                                                      │
- * │  Business Registration Contract                                              │
- * │                                                                              │
- * │  本文件定义业务接入 AI Host 的注册入口——外部系统将自身能力封装为                │
- * │  AiAgentToolRuntime 后，投影成 AiAgentRegistration，再交给 AiAgentHost          │
- * │  register/ensure 按 alias 暴露给业务层运行。                                     │
- * │                                                                              │
- * │  数据流向：                                                                   │
- * │    外部系统 ──(封装)──> AiAgentToolRuntime                              │
- * │                    ──(包装)──> AiAgentRegistration                     │
- * │                    ──(注册)──> AiAgentHost.register/ensure ──> AiAgentBusiness  │
- * │                    ──(驱动)──> AiAgentToolLoopRunner ──> LLM                   │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * @module @spark-appworks/spark-ai:agent/business/registration-types
+ * 职责：定义 AI 业务注册合约，包括业务描述、输入契约、工具运行时、会话存储和生命周期钩子。
+ * 边界：只提供 registration 数据结构，不负责注册表存储、Host alias 映射或 session 执行。
+ * AI用途：新增业务入口或生成注册代码时，用本模块确认 registration 必填字段和可扩展能力。
  */
 
 import type { AiJsonParams } from '../../json'

@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-project-model:navigation/navigation-kinds
+ * 职责：提供项目模型和页面配置域中的 navigation kinds 能力，支撑 navigation、page content、project session 或远程 IO。
+ * 边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。
+ * AI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。
+ */
 /** 按 nodeKind 特化的导航节点 class（仅非配置页 kind；不含 page/sub-page）。 */
 import { ProjectNode, type ProjectNodeFamily, type ProjectNodeModelOptions } from './project-node'
 

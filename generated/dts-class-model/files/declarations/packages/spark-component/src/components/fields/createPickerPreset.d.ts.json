@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/fields/createPickerPreset.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/fields/createPickerPreset",
-    "jsdoc": "@module @spark-appworks/spark-component:components/fields/createPickerPreset\n@spark-appworks/spark-component 的 components/fields/createPickerPreset 模块。\n导出 ClassModel symbol: PickerPresetDefaults（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/createPickerPreset\n职责：维护 @spark-appworks/spark-component 中 components/fields/createPickerPreset 的模块能力，围绕 PickerPresetDefaults 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 components/fields/createPickerPreset 的声明、导出和使用边界时，从本模块开始。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "PickerPresetDefaults"
@@ -20,7 +20,7 @@
     "PickerPresetDefaults": {
       "kind": "PickerPresetDefaults",
       "className": "PickerPresetDefaults",
-      "jsdoc": "/** Picker Preset Defaults 的语义模型。 */",
+      "jsdoc": "Picker Preset Defaults 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 占位提示文本。 */\n    placeholder: string;\n    /** button Text 文本。 */\n    buttonText: string;\n    /** readonly Button Text 文本。 */\n    readonlyButtonText: string;\n    /** entity Name 名称。 */\n    entityName: string;\n}",
       "provenance": {
@@ -32,75 +32,64 @@
       "attributes": [
         {
           "name": "placeholder",
+          "jsdoc": "占位提示文本。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 占位提示文本。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/createPickerPreset.d.ts",
-            "line": 5,
-            "className": "PickerPresetDefaults",
-            "memberName": "placeholder",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "buttonText",
+          "jsdoc": "button Text 文本。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** button Text 文本。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/createPickerPreset.d.ts",
-            "line": 7,
-            "className": "PickerPresetDefaults",
-            "memberName": "buttonText",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "readonlyButtonText",
+          "jsdoc": "readonly Button Text 文本。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** readonly Button Text 文本。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/createPickerPreset.d.ts",
-            "line": 9,
-            "className": "PickerPresetDefaults",
-            "memberName": "readonlyButtonText",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "entityName",
+          "jsdoc": "entity Name 名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** entity Name 名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/createPickerPreset.d.ts",
-            "line": 11,
-            "className": "PickerPresetDefaults",
-            "memberName": "entityName",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.428Z"
+  "generatedAt": "2026-06-11T16:38:12.819Z",
+  "$defs": {
+    "PickerPresetDefaults": {
+      "type": "object",
+      "title": "PickerPresetDefaults",
+      "description": "Picker Preset Defaults 的语义模型。",
+      "properties": {
+        "placeholder": {
+          "type": "string"
+        },
+        "buttonText": {
+          "type": "string"
+        },
+        "readonlyButtonText": {
+          "type": "string"
+        },
+        "entityName": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

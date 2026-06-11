@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-project-model:navigation/project-node
- * @spark-appworks/spark-project-model 的 navigation/project-node 模块。
- * 导出 ClassModel symbol: ChildPlacement, NavNodeKind, NavPermissionMode, ProjectNodeFamily, ProjectDescriptionContext, NavContextItem, NavContextConfig, ProjectNodeData 等（共 18 个 symbol）。
+ * 职责：提供项目模型层 project-node 能力，围绕 ChildPlacement、NavNodeKind、NavPermissionMode 等 18 个公开契约 处理导航、页面文件、配置内容、工作区或远端 IO 契约。
+ * 边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。
+ * AI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 navigation/project-node。
  */
 /**
  * 项目导航节点基 class。

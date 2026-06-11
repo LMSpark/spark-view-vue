@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/ai/types.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "ai/types",
-    "jsdoc": "AI 会话监视组件 — 共享领域类型（SSOT）。\nStreamDisplayEntry、ToolCallDisplayItem、ReasoningDisplayItem\n等流展示类型只在这里定义。UI 组件只消费外部传入的展示投影。",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/types\n职责：定义 types 相关的内部类型契约，支撑渲染器、props、zero-code 和运行时状态协作。\n边界：只描述 component-runtime 的类型结构，不直接渲染界面，也不发起数据请求。\nAI用途：跨文件修改 types 行为或补齐配置类型时，用本模块确认共享类型边界。\n\nAI 会话监视组件 — 共享领域类型（SSOT）。\nStreamDisplayEntry、ToolCallDisplayItem、ReasoningDisplayItem\n等流展示类型只在这里定义。UI 组件只消费外部传入的展示投影。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ToolCallDisplayItem",
@@ -30,7 +30,7 @@
     "ToolCallDisplayItem": {
       "kind": "ToolCallDisplayItem",
       "className": "ToolCallDisplayItem",
-      "jsdoc": "/** Tool Call Display Item 的语义模型。 */",
+      "jsdoc": "Tool Call Display Item 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    toolName: string;\n    argsPreview: string;\n    turnId: string;\n    round: number;\n    callId: string | null;\n    status: 'success' | 'error';\n    resultSummary: string | null;\n    durationMs: number;\n}>",
       "declarationRelations": [
@@ -42,7 +42,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-component/src/ai/types.d.ts",
-        "line": 9,
+        "line": 15,
         "className": "ToolCallDisplayItem",
         "declarationKind": "type"
       },
@@ -52,7 +52,7 @@
     "ReasoningDisplayItem": {
       "kind": "ReasoningDisplayItem",
       "className": "ReasoningDisplayItem",
-      "jsdoc": "/** Reasoning Display Item 的语义模型。 */",
+      "jsdoc": "Reasoning Display Item 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    text: string;\n    turnId: string;\n    collapsed: boolean;\n}>",
       "declarationRelations": [
@@ -64,7 +64,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-component/src/ai/types.d.ts",
-        "line": 20,
+        "line": 26,
         "className": "ReasoningDisplayItem",
         "declarationKind": "type"
       },
@@ -74,7 +74,7 @@
     "StreamDisplayEntry": {
       "kind": "StreamDisplayEntry",
       "className": "StreamDisplayEntry",
-      "jsdoc": "/**\n * 流视图中的一条渲染条目。\n * 真正的状态机在 spark-ai，UI 只消费这个简版投影。\n */",
+      "jsdoc": "流视图中的一条渲染条目。\n真正的状态机在 spark-ai，UI 只消费这个简版投影。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    kind: 'user-message';\n    content: string;\n    timestamp: number;\n}> | Readonly<{\n    kind: 'assistant-delta';\n    content: string;\n    turnId: string;\n}> | Readonly<{\n    kind: 'assistant-complete';\n    content: string;\n    turnId: string;\n}> | Readonly<{\n    kind: 'reasoning';\n    item: ReasoningDisplayItem;\n}> | Readonly<{\n    kind: 'tool-call';\n    item: ToolCallDisplayItem;\n}> | Readonly<{\n    kind: 'error';\n    message: string;\n    timestamp: number;\n}> | Readonly<{\n    kind: 'system-message';\n    content: string;\n    timestamp: number;\n}>",
       "declarationRelations": [
@@ -116,7 +116,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-component/src/ai/types.d.ts",
-        "line": 29,
+        "line": 35,
         "className": "StreamDisplayEntry",
         "declarationKind": "type"
       },
@@ -126,7 +126,7 @@
     "SessionDiagnosticIssue": {
       "kind": "SessionDiagnosticIssue",
       "className": "SessionDiagnosticIssue",
-      "jsdoc": "/** Session Diagnostic Issue 的语义模型。 */",
+      "jsdoc": "Session Diagnostic Issue 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
       "declarationRelations": [
@@ -138,7 +138,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-component/src/ai/types.d.ts",
-        "line": 57,
+        "line": 63,
         "className": "SessionDiagnosticIssue",
         "declarationKind": "type"
       },
@@ -148,7 +148,7 @@
     "SessionDiagnosticsData": {
       "kind": "SessionDiagnosticsData",
       "className": "SessionDiagnosticsData",
-      "jsdoc": "/**\n * 诊断数据——永远有值（非 null）。\n * 由外部 runtime/diagnostics 层生成；UI 只渲染摘要投影，不读取完整 session。\n */",
+      "jsdoc": "诊断数据——永远有值（非 null）。\n由外部 runtime/diagnostics 层生成；UI 只渲染摘要投影，不读取完整 session。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    summary: AiAgentSessionSummary;\n    transcript: readonly AiAgentSessionTranscriptEntry[];\n    issues: readonly SessionDiagnosticIssue[];\n}>",
       "declarationRelations": [
@@ -160,7 +160,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-component/src/ai/types.d.ts",
-        "line": 67,
+        "line": 73,
         "className": "SessionDiagnosticsData",
         "declarationKind": "type"
       },
@@ -170,7 +170,7 @@
     "ToolApprovalDisplayItem": {
       "kind": "ToolApprovalDisplayItem",
       "className": "ToolApprovalDisplayItem",
-      "jsdoc": "/**\n * 待审批工具调用的展示条目。\n * 只包含调用方映射后的展示字段，不依赖上游包类型。\n */",
+      "jsdoc": "待审批工具调用的展示条目。\n只包含调用方映射后的展示字段，不依赖上游包类型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    id: string;\n    toolName: string;\n    argsPreview: string;\n    moduleId: string;\n}>",
       "declarationRelations": [
@@ -182,7 +182,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-component/src/ai/types.d.ts",
-        "line": 76,
+        "line": 82,
         "className": "ToolApprovalDisplayItem",
         "declarationKind": "type"
       },
@@ -190,5 +190,37 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.019Z"
+  "generatedAt": "2026-06-11T16:38:12.676Z",
+  "$defs": {
+    "ToolCallDisplayItem": {
+      "type": "object",
+      "title": "ToolCallDisplayItem",
+      "description": "Tool Call Display Item 的语义模型。"
+    },
+    "ReasoningDisplayItem": {
+      "type": "object",
+      "title": "ReasoningDisplayItem",
+      "description": "Reasoning Display Item 的语义模型。"
+    },
+    "StreamDisplayEntry": {
+      "type": "object",
+      "title": "StreamDisplayEntry",
+      "description": "流视图中的一条渲染条目。\n真正的状态机在 spark-ai，UI 只消费这个简版投影。"
+    },
+    "SessionDiagnosticIssue": {
+      "type": "object",
+      "title": "SessionDiagnosticIssue",
+      "description": "Session Diagnostic Issue 的语义模型。"
+    },
+    "SessionDiagnosticsData": {
+      "type": "object",
+      "title": "SessionDiagnosticsData",
+      "description": "诊断数据——永远有值（非 null）。\n由外部 runtime/diagnostics 层生成；UI 只渲染摘要投影，不读取完整 session。"
+    },
+    "ToolApprovalDisplayItem": {
+      "type": "object",
+      "title": "ToolApprovalDisplayItem",
+      "description": "待审批工具调用的展示条目。\n只包含调用方映射后的展示字段，不依赖上游包类型。"
+    }
+  }
 }

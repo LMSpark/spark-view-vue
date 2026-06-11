@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-data:dataset-crud-tool
- * @spark-appworks/spark-data 的 dataset-crud-tool 模块。
- * 导出 ClassModel symbol: DataSetCrudToolCreateTableOptions, DataSetCrudToolColumnUpdate, DataSetCrudToolUpdateTableOptions, RelationSelector, DataSetCrudToolTableNameParams, DataSetCrudToolReplaceFromJsonOptions, DataSetCrudToolColumnSelectorParams, DataSetCrudToolCreateColumnParams 等（共 33 个 symbol）。
+ * 职责：提供数据层 dataset-crud-tool 能力，围绕 DataSetCrudToolCreateTableOptions、DataSetCrudToolColumnUpdate、DataSetCrudToolUpdateTableOptions 等 33 个公开契约 描述 DataSet、DataTable、DataView、策略委托或数据绑定键。
+ * 边界：保持框架无关，只处理数据模型、校验和本地策略，不依赖 Vue、路由或 Element Plus。
+ * AI用途：生成页面数据绑定、DataViewKey 或数据策略调用时，用本模块确认 dataset-crud-tool 的数据语义。
  */
 import { DataSet } from './dataset'
 import { SnapshotHistory, deepClone, isRecord } from '@spark-appworks/spark-utils'

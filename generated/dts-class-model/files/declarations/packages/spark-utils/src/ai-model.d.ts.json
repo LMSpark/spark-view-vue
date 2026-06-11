@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-utils/src/ai-model.ts",
     "packageName": "@spark-appworks/spark-utils",
     "modulePath": "ai-model",
-    "jsdoc": "@see docs/ai/AI_MODEL_SPEC.md",
+    "jsdoc": "@module @spark-appworks/spark-utils:ai-model\n职责：提供框架无关的 ai model 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。\n边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。\nAI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "SparkAIModel"
@@ -20,61 +20,70 @@
     "SparkAIModel": {
       "kind": "SparkAIModel",
       "className": "SparkAIModel",
-      "jsdoc": "/** AI 可编辑模型协议基类。协议只强制 toJson；save/load/fromJson 由子类按需添加。 */",
+      "jsdoc": "AI 可编辑模型协议基类。协议只强制 toJson；save/load/fromJson 由子类按需添加。",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/ai-model.d.ts",
-        "line": 3,
+        "line": 9,
         "className": "SparkAIModel",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "_options": {
-              "title": "Record<string, unknown>"
+        "jsdoc": "创建 Spark AIModel 实例。",
+        "signatureText": "constructor(_options: Record<string, unknown>)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "_options",
+            "type": {
+              "type": "reference",
+              "name": "Record",
+              "typeArguments": [
+                {
+                  "type": "intrinsic",
+                  "name": "string"
+                },
+                {
+                  "type": "intrinsic",
+                  "name": "unknown"
+                }
+              ]
             }
-          },
-          "required": [
-            "_options"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Spark AIModel 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-utils/src/ai-model.d.ts",
-          "line": 5,
-          "className": "SparkAIModel",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          }
+        ]
       },
       "attributes": [],
       "methods": [
         {
           "name": "toJson",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Record<string, unknown>"
-          },
-          "returnTypeText": "Record<string, unknown>",
-          "jsdoc": "/** 执行 to Json 操作。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/ai-model.d.ts",
-            "line": 7,
-            "className": "SparkAIModel",
-            "memberName": "toJson",
-            "declarationKind": "class"
+          "jsdoc": "执行 to Json 操作。",
+          "signatureText": "abstract toJson(): Record<string, unknown>",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.987Z"
+  "generatedAt": "2026-06-11T16:38:13.072Z",
+  "$defs": {
+    "SparkAIModel": {
+      "type": "object",
+      "title": "SparkAIModel",
+      "description": "AI 可编辑模型协议基类。协议只强制 toJson；save/load/fromJson 由子类按需添加。"
+    }
+  }
 }

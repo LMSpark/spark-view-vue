@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/agent/transport/transport-types.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "agent/transport/transport-types",
-    "jsdoc": "═══════════════════════════════════════════════════════════════\nagent/transport/transport-types.ts — 传输层类型契约\n═══════════════════════════════════════════════════════════════\n【架构定位】Host 层与 APP 层的 AI turn 契约。定义工具规约形状、\n消息格式、AI turn 命令/事件类型，以及 APP 层注入的 I/O 回调。\n【核心类型】\nAiAgentTransportToolSpec   — 工具规约（对齐 OpenAI function tool spec）\nAiAgentTransportMessage    — 传输层消息（含 tool_calls / tool_call_id）\nAiAgentTransportToolCall   — 传输层工具调用\nAiAgentStreamTurnInput     — AI turn 启动输入\nAiAgentStreamTurnResult    — AI turn 汇总结果\nAiAgentTurnCallbacks       — APP 层实现的 turn I/O 回调\n【与工具 runtime 的关系】\n本层的 ToolSpec 直接承载 runtime 输出的固定工具 JSON Schema。\n【消费方】business-session、tool-loop-runner、APP 层 ai-turn bridge\n═══════════════════════════════════════════════════════════════",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/transport/transport-types\n职责：定义 Agent transport 层的 transport types 协议，把 session/tool-loop 事件投影为应用可消费事件。\n边界：只描述传输事件和回调契约，不实现业务注册、不保存会话，也不渲染 UI。\nAI用途：对齐 SSE、turn callback 或前端事件消费字段时，用本模块确认传输边界。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "AiAgentTransportToolSpec",
@@ -36,7 +36,7 @@
     "AiAgentTransportToolSpec": {
       "kind": "AiAgentTransportToolSpec",
       "className": "AiAgentTransportToolSpec",
-      "jsdoc": "/** 传输层工具规约（对齐 OpenAI function tool spec） */",
+      "jsdoc": "传输层工具规约（对齐 OpenAI function tool spec）",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        /** OpenAI strict function calling：要求模型参数严格匹配 JSON Schema。 */\n        readonly strict?: boolean;\n    };\n}>",
       "declarationRelations": [
@@ -48,7 +48,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 28,
+        "line": 12,
         "className": "AiAgentTransportToolSpec",
         "declarationKind": "type"
       },
@@ -58,7 +58,7 @@
     "AiAgentTransportMessage": {
       "kind": "AiAgentTransportMessage",
       "className": "AiAgentTransportMessage",
-      "jsdoc": "/** 传输层消息（对齐 OpenAI message 格式，支持 tool_calls） */",
+      "jsdoc": "传输层消息（对齐 OpenAI message 格式，支持 tool_calls）",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    /** system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiAgentStreamTurnInput.systemPrompt */\n    role: 'user' | 'assistant' | 'system' | 'tool';\n    content: string;\n    tool_call_id?: string;\n    tool_calls?: readonly AiAgentTransportToolCall[];\n}>",
       "declarationRelations": [
@@ -70,7 +70,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 39,
+        "line": 23,
         "className": "AiAgentTransportMessage",
         "declarationKind": "type"
       },
@@ -80,7 +80,7 @@
     "AiAgentTransportToolCall": {
       "kind": "AiAgentTransportToolCall",
       "className": "AiAgentTransportToolCall",
-      "jsdoc": "/** 传输层工具调用 */",
+      "jsdoc": "传输层工具调用",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    id: string;\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly arguments: string;\n    };\n}>",
       "declarationRelations": [
@@ -92,7 +92,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 47,
+        "line": 31,
         "className": "AiAgentTransportToolCall",
         "declarationKind": "type"
       },
@@ -102,7 +102,7 @@
     "AiAgentStreamTurnInput": {
       "kind": "AiAgentStreamTurnInput",
       "className": "AiAgentStreamTurnInput",
-      "jsdoc": "/** AI turn 启动输入（模型事件通过 APP 公共 SSE 返回） */",
+      "jsdoc": "AI turn 启动输入（模型事件通过 APP 公共 SSE 返回）",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    messages: readonly AiAgentTransportMessage[];\n    signal?: AbortSignal;\n    onStreamEvent?: (event: AiAgentStreamEvent) => void;\n    onDelta?: (delta: string) => void;\n    onReasoning?: (reasoning: string) => void;\n    onUsage?: (usage: Record<string, unknown>) => void;\n}>",
       "declarationRelations": [
@@ -114,7 +114,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 56,
+        "line": 40,
         "className": "AiAgentStreamTurnInput",
         "declarationKind": "type"
       },
@@ -124,7 +124,7 @@
     "AiAgentPrepareSessionInput": {
       "kind": "AiAgentPrepareSessionInput",
       "className": "AiAgentPrepareSessionInput",
-      "jsdoc": "/** 后端 V4 会话准备输入；用于在 executeTurn 前显式确保 session 存在且 scope 正确。 */",
+      "jsdoc": "后端 V4 会话准备输入；用于在 executeTurn 前显式确保 session 存在且 scope 正确。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    systemPrompt: string;\n    tools: readonly AiAgentTransportToolSpec[];\n    signal?: AbortSignal;\n}>",
       "declarationRelations": [
@@ -136,7 +136,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 70,
+        "line": 54,
         "className": "AiAgentPrepareSessionInput",
         "declarationKind": "type"
       },
@@ -146,7 +146,7 @@
     "AiAgentStreamTurnResult": {
       "kind": "AiAgentStreamTurnResult",
       "className": "AiAgentStreamTurnResult",
-      "jsdoc": "/** AI turn 汇总结果 */",
+      "jsdoc": "AI turn 汇总结果",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    text: string;\n    reasoning?: string;\n    toolCalls: readonly AiAgentTransportToolCall[];\n    /** true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。 */\n    assistantMessagePersisted?: boolean;\n}>",
       "declarationRelations": [
@@ -158,7 +158,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 78,
+        "line": 62,
         "className": "AiAgentStreamTurnResult",
         "declarationKind": "type"
       },
@@ -168,7 +168,7 @@
     "AiAgentAppendMessagesInput": {
       "kind": "AiAgentAppendMessagesInput",
       "className": "AiAgentAppendMessagesInput",
-      "jsdoc": "/** 追加消息请求输入 */",
+      "jsdoc": "追加消息请求输入",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    sessionId: string;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    messages: readonly AiAgentTransportMessage[];\n}>",
       "declarationRelations": [
@@ -180,7 +180,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 86,
+        "line": 70,
         "className": "AiAgentAppendMessagesInput",
         "declarationKind": "type"
       },
@@ -190,7 +190,7 @@
     "AiAgentAppSseEventSource": {
       "kind": "AiAgentAppSseEventSource",
       "className": "AiAgentAppSseEventSource",
-      "jsdoc": "/** Ai Agent App Sse Event Source 的语义模型。 */",
+      "jsdoc": "Ai Agent App Sse Event Source 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    on(name: AiAgentAppSseEventName, listener: (event: AiAgentAppSseEvent) => void): () => void;\n}>",
       "declarationRelations": [
@@ -202,7 +202,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 93,
+        "line": 77,
         "className": "AiAgentAppSseEventSource",
         "declarationKind": "type"
       },
@@ -212,7 +212,7 @@
     "AiAgentTurnCallbacks": {
       "kind": "AiAgentTurnCallbacks",
       "className": "AiAgentTurnCallbacks",
-      "jsdoc": "/** APP 层实现的三个 I/O 操作；spark-ai 只调用，不实现网络请求。 */",
+      "jsdoc": "APP 层实现的三个 I/O 操作；spark-ai 只调用，不实现网络请求。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    /** 可选：在 turn 前显式准备后端 session。 */\n    prepareSession?: (input: AiAgentPrepareSessionInput) => Promise<void>;\n    /** 启动一次模型 turn，聚合 APP SSE 事件后返回结果。 */\n    executeTurn: (input: AiAgentStreamTurnInput) => Promise<AiAgentStreamTurnResult>;\n    /** 将工具调用结果同步到后端会话。 */\n    appendMessages: (input: AiAgentAppendMessagesInput) => Promise<void>;\n}>",
       "declarationRelations": [
@@ -224,7 +224,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts",
-        "line": 97,
+        "line": 81,
         "className": "AiAgentTurnCallbacks",
         "declarationKind": "type"
       },
@@ -232,5 +232,52 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.801Z"
+  "generatedAt": "2026-06-11T16:38:12.586Z",
+  "$defs": {
+    "AiAgentTransportToolSpec": {
+      "type": "object",
+      "title": "AiAgentTransportToolSpec",
+      "description": "传输层工具规约（对齐 OpenAI function tool spec）"
+    },
+    "AiAgentTransportMessage": {
+      "type": "object",
+      "title": "AiAgentTransportMessage",
+      "description": "传输层消息（对齐 OpenAI message 格式，支持 tool_calls）"
+    },
+    "AiAgentTransportToolCall": {
+      "type": "object",
+      "title": "AiAgentTransportToolCall",
+      "description": "传输层工具调用"
+    },
+    "AiAgentStreamTurnInput": {
+      "type": "object",
+      "title": "AiAgentStreamTurnInput",
+      "description": "AI turn 启动输入（模型事件通过 APP 公共 SSE 返回）"
+    },
+    "AiAgentPrepareSessionInput": {
+      "type": "object",
+      "title": "AiAgentPrepareSessionInput",
+      "description": "后端 V4 会话准备输入；用于在 executeTurn 前显式确保 session 存在且 scope 正确。"
+    },
+    "AiAgentStreamTurnResult": {
+      "type": "object",
+      "title": "AiAgentStreamTurnResult",
+      "description": "AI turn 汇总结果"
+    },
+    "AiAgentAppendMessagesInput": {
+      "type": "object",
+      "title": "AiAgentAppendMessagesInput",
+      "description": "追加消息请求输入"
+    },
+    "AiAgentAppSseEventSource": {
+      "type": "object",
+      "title": "AiAgentAppSseEventSource",
+      "description": "Ai Agent App Sse Event Source 的语义模型。"
+    },
+    "AiAgentTurnCallbacks": {
+      "type": "object",
+      "title": "AiAgentTurnCallbacks",
+      "description": "APP 层实现的三个 I/O 操作；spark-ai 只调用，不实现网络请求。"
+    }
+  }
 }

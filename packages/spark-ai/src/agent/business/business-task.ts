@@ -1,30 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/business/business-task.ts — Agent 业务 Task 构造工厂
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Agent 层的输入 → Task 转换层。负责将外部输入
- *   （kindID + JSON 参数）校验、规整、转换为可执行的 AiAgentTask。
- *   Task 是 LLM 对话的起点，承载归一化输入、Scope 和编排计划。
- *
- * 【核心类型/函数】
- *   AiAgentTask                 — 可执行任务对象（toChatRequest 生成 LLM 请求）
- *   AiAgentInputContract        — 输入契约（schema + normalize + toScope + toOrchestration）
- *   AiAgentOrchestrationPlan    — 编排计划（userMessage + systemPrompt）
- *   createAiAgentTask           — 从注册表 + kindID + raw input 构造 Task
- *
- * 【数据流】
- *   1. 外部调用 createAiAgentTask(registry, kindID, rawInput)
- *   2. 查注册表 → 获取 inputContract
- *   3. coerceInputRecord → 类型规整（仅允许 JSON 可序列化值）
- *   4. validateTaskInput × 2（normalize 前后各一次 schema 校验）
- *   5. contract.toScope → 构造 scope（含 businessRegistrationId + identity）
- *   6. assertScopeMatchesInput → 校验 scope 一致性
- *   7. contract.toOrchestration → 生成编排计划
- *   8. new AiAgentTask → 返回可执行任务
- *
- * 【消费方】ai-host.ts（createAiAgentTask）；注册对象由 ClassModelAgentAdapter.createRegistration 构造
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/business/business-task
+ * 职责：把业务输入转换成 AiAgentTask，生成 target、scope、用户消息、系统提示和 orchestration plan。
+ * 边界：只负责 task 构造和输入契约执行，不管理 Host 注册表、不保存 session，也不执行模型调用。
+ * AI用途：需要理解 pageDesign/projectPlanning 等业务输入如何变成 Agent 请求时，用本模块核对字段流向。
  */
 
 import {

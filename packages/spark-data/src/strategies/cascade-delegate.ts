@@ -1,13 +1,8 @@
 /**
- * CascadeDelegate — 级联订阅委托
- *
- * 从 DataView 提取的级联职责：
- * - 订阅父视图独立事件（currentRowChanged / selectedRowsChanged / rowsChanged / cleared）
- * - 按 dependencyType 选择订阅哪些事件
- * - 响应源数据变化：清空 or 重新请求
- * - 可取消的级联请求管理
- *
- * 遵循 SOLID：子订阅父，父不知子。
+ * @module @spark-appworks/spark-data:strategies/cascade-delegate
+ * 职责：提供 spark-data 数据管线中的 cascade delegate 能力，支撑 DataSet、DataTable、DataView、树或 CRUD 状态协作。
+ * 边界：保持框架无关，只维护数据模型和操作协议，不导入 Vue、Element Plus 或应用路由。
+ * AI用途：处理页面数据绑定、DataViewKey、行状态、树结构或 CRUD 行为时，用本模块确认数据层语义。
  */
 
 import { Logger } from '@spark-appworks/spark-utils'

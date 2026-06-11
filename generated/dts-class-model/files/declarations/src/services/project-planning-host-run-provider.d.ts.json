@@ -7,11 +7,11 @@
     "sourceFile": "src/services/project-planning-host-run-provider.ts",
     "packageName": "app",
     "modulePath": "services/project-planning-host-run-provider",
-    "jsdoc": "APP 壳层 projectPlanning Host Run provider（隔离式门面实例）。\n无 UI：SSE / 后端下发 ai-host-run-request 时，按 projectId 准备 headless\nProjectWorkspace，运行结束可选保存 navigation 后丢弃，不污染 DevSystem session。",
+    "jsdoc": "@module app:services/project-planning-host-run-provider\n职责：提供应用运行时 service 层的 project planning host run provider 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nAPP 壳层 projectPlanning Host Run provider（隔离式门面实例）。\n无 UI：SSE / 后端下发 ai-host-run-request 时，按 projectId 准备 headless\nProjectWorkspace，运行结束可选保存 navigation 后丢弃，不污染 DevSystem session。",
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
   "symbols": [],
   "models": {},
-  "generatedAt": "2026-06-11T12:20:27.101Z"
+  "generatedAt": "2026-06-11T16:38:13.116Z"
 }

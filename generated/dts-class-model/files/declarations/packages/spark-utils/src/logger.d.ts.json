@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-utils/src/logger.ts",
     "packageName": "@spark-appworks/spark-utils",
     "modulePath": "logger",
-    "jsdoc": "@module @spark-appworks/spark-utils:logger\n@spark-appworks/spark-utils 的 logger 模块。\n导出 ClassModel symbol: LogLevel, LoggerApi, LogTransport（共 3 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-utils:logger\n职责：提供框架无关基础设施 logger 能力，围绕 LogLevel、LoggerApi、LogTransport 支撑 capability、HTTP、日志、脚本类型或历史快照。\n边界：保持底层工具包纯净，不依赖 Vue、spark-data 或应用壳层，也不承载业务配置。\nAI用途：需要跨包复用基础能力或确认底层协议时，用本模块理解 logger。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "LogLevel",
@@ -24,7 +24,7 @@
     "LogLevel": {
       "kind": "LogLevel",
       "className": "LogLevel",
-      "jsdoc": "/** 日志级别 */",
+      "jsdoc": "日志级别",
       "shapeKind": "type",
       "declarationTypeText": "'debug' | 'info' | 'warn' | 'error'",
       "declarationRelations": [
@@ -47,7 +47,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-utils/src/logger.d.ts",
-        "line": 7,
+        "line": 8,
         "className": "LogLevel",
         "declarationKind": "type"
       },
@@ -57,12 +57,12 @@
     "LoggerApi": {
       "kind": "LoggerApi",
       "className": "LoggerApi",
-      "jsdoc": "/** Logger API */",
+      "jsdoc": "Logger API",
       "shapeKind": "type",
       "declarationTypeText": "{\n    debug(...args: unknown[]): void;\n    info(...args: unknown[]): void;\n    warn(...args: unknown[]): void;\n    error(...args: unknown[]): void;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/logger.d.ts",
-        "line": 9,
+        "line": 10,
         "className": "LoggerApi",
         "declarationKind": "type"
       },
@@ -72,12 +72,12 @@
     "LogTransport": {
       "kind": "LogTransport",
       "className": "LogTransport",
-      "jsdoc": "/**\n * 日志传输器接口（与 spark-app LogTransport 结构兼容）\n *\n * spark-utils 是最底层包，此接口定义为传输器的基础契约。\n * spark-app 的 LogTransport 扩展了 `flush?()` / `destroy?()`，但 send 签名一致，\n * 因此同一个 transport 实例可同时注册到两个系统。\n */",
+      "jsdoc": "日志传输器接口（与 spark-app LogTransport 结构兼容）\nspark-utils 是最底层包，此接口定义为传输器的基础契约。\nspark-app 的 LogTransport 扩展了 `flush?()` / `destroy?()`，但 send 签名一致，\n因此同一个 transport 实例可同时注册到两个系统。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    send(level: LogLevel, message: string, meta?: Record<string, unknown>): void | Promise<void>;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/logger.d.ts",
-        "line": 22,
+        "line": 23,
         "className": "LogTransport",
         "declarationKind": "type"
       },
@@ -85,5 +85,22 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.025Z"
+  "generatedAt": "2026-06-11T16:38:13.091Z",
+  "$defs": {
+    "LogLevel": {
+      "type": "object",
+      "title": "LogLevel",
+      "description": "日志级别"
+    },
+    "LoggerApi": {
+      "type": "object",
+      "title": "LoggerApi",
+      "description": "Logger API"
+    },
+    "LogTransport": {
+      "type": "object",
+      "title": "LogTransport",
+      "description": "日志传输器接口（与 spark-app LogTransport 结构兼容）\nspark-utils 是最底层包，此接口定义为传输器的基础契约。\nspark-app 的 LogTransport 扩展了 `flush?()` / `destroy?()`，但 send 签名一致，\n因此同一个 transport 实例可同时注册到两个系统。"
+    }
+  }
 }

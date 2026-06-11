@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/agent/transport/app-sse-events.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "agent/transport/app-sse-events",
-    "jsdoc": "═══════════════════════════════════════════════════════════════\nagent/transport/app-sse-events.ts — APP 层 SSE 事件类型定义\n═══════════════════════════════════════════════════════════════\n【架构定位】Agent 传输层的 SSE 事件契约。定义 APP 层推送事件的基础类型\n和事件名枚举。本文件不依赖任何框架，是 spark-ai 与 APP 层的双向契约。\n【核心类型】\nAiAgentAppSseEventName  — SSE 事件名联合类型（业务事件 + llm-frame + 通配后缀）\nAiAgentAppSseEvent<T>   — SSE 事件结构（name / ok / data / raw 字段）\n【事件分类】\n业务事件：page-config / data-batch-job / data-change / notification\nAI 事件：ai-host-run-* / llm-frame（承载 APP 侧执行请求与模型 turn 帧）\n【消费方】turn-event-collector（监听 llm-frame）、APP 层 SSE 实现\n═══════════════════════════════════════════════════════════════",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/transport/app-sse-events\n职责：定义 Agent transport 层的 app sse events 协议，把 session/tool-loop 事件投影为应用可消费事件。\n边界：只描述传输事件和回调契约，不实现业务注册、不保存会话，也不渲染 UI。\nAI用途：对齐 SSE、turn callback 或前端事件消费字段时，用本模块确认传输边界。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "AiAgentAppSseEventName",
@@ -22,7 +22,7 @@
     "AiAgentAppSseEventName": {
       "kind": "AiAgentAppSseEventName",
       "className": "AiAgentAppSseEventName",
-      "jsdoc": "/**\n * SSE 事件名联合类型。\n *\n * 预定义的事件名：\n *   page-config              — 页面配置变更\n *   data-batch-job           — 批量数据任务状态\n *   data-change              — 数据变更通知\n *   notification             — 通用通知\n *   ai-host-run-request      — 定向触发 APP Host run\n *   ai-host-run-result       — APP Host run 执行回执\n *   llm-frame                — AI 推理帧事件（核心：delta/reasoning/result/error/done）\n *\n * `string & {}` 后缀允许业务方扩展自定义事件名，同时保留 IDE 自动补全。\n */",
+      "jsdoc": "SSE 事件名联合类型。\n预定义的事件名：\npage-config              — 页面配置变更\ndata-batch-job           — 批量数据任务状态\ndata-change              — 数据变更通知\nnotification             — 通用通知\nai-host-run-request      — 定向触发 APP Host run\nai-host-run-result       — APP Host run 执行回执\nllm-frame                — AI 推理帧事件（核心：delta/reasoning/result/error/done）\n`string & {}` 后缀允许业务方扩展自定义事件名，同时保留 IDE 自动补全。",
       "shapeKind": "type",
       "declarationTypeText": "'page-config' | 'data-batch-job' | 'data-change' | 'notification' | 'ai-host-run-request' | 'ai-host-run-result' | 'llm-frame' | (string & {})",
       "declarationRelations": [
@@ -61,7 +61,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/transport/app-sse-events.d.ts",
-        "line": 35,
+        "line": 22,
         "className": "AiAgentAppSseEventName",
         "declarationKind": "type"
       },
@@ -71,7 +71,7 @@
     "AiAgentAppSseEvent": {
       "kind": "AiAgentAppSseEvent",
       "className": "AiAgentAppSseEvent",
-      "jsdoc": "/**\n * APP SSE 事件结构。\n *\n * 字段说明：\n *   name            — 事件名（如 llm-frame）\n *   ok              — 事件是否成功（false 表示 error 事件）\n *   data            — 已解析的事件数据（泛型 T）\n *   rawData         — 原始 JSON 字符串\n *   rawPayload      — 原始解析荷载（未做类型转换）\n *   protocolVersion — 可选协议版本号\n *   context         — API 信封上下文（可选）\n *   event           — API 信封事件（可选）\n */",
+      "jsdoc": "APP SSE 事件结构。\n字段说明：\nname            — 事件名（如 llm-frame）\nok              — 事件是否成功（false 表示 error 事件）\ndata            — 已解析的事件数据（泛型 T）\nrawData         — 原始 JSON 字符串\nrawPayload      — 原始解析荷载（未做类型转换）\nprotocolVersion — 可选协议版本号\ncontext         — API 信封上下文（可选）\nevent           — API 信封事件（可选）",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    name: AiAgentAppSseEventName;\n    ok: boolean;\n    data: T;\n    rawData: string;\n    rawPayload: unknown;\n    protocolVersion?: number;\n    context?: ApiEnvelopeContext;\n    event?: ApiEnvelopeEvent;\n}>",
       "declarationRelations": [
@@ -83,7 +83,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/transport/app-sse-events.d.ts",
-        "line": 49,
+        "line": 36,
         "className": "AiAgentAppSseEvent",
         "declarationKind": "type"
       },
@@ -91,5 +91,17 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.797Z"
+  "generatedAt": "2026-06-11T16:38:12.586Z",
+  "$defs": {
+    "AiAgentAppSseEventName": {
+      "type": "object",
+      "title": "AiAgentAppSseEventName",
+      "description": "SSE 事件名联合类型。\n预定义的事件名：\npage-config              — 页面配置变更\ndata-batch-job           — 批量数据任务状态\ndata-change              — 数据变更通知\nnotification             — 通用通知\nai-host-run-request      — 定向触发 APP Host run\nai-host-run-result       — APP Host run 执行回执\nllm-frame                — AI 推理帧事件（核心：delta/reasoning/result/error/done）\n`string & {}` 后缀允许业务方扩展自定义事件名，同时保留 IDE 自动补全。"
+    },
+    "AiAgentAppSseEvent": {
+      "type": "object",
+      "title": "AiAgentAppSseEvent",
+      "description": "APP SSE 事件结构。\n字段说明：\nname            — 事件名（如 llm-frame）\nok              — 事件是否成功（false 表示 error 事件）\ndata            — 已解析的事件数据（泛型 T）\nrawData         — 原始 JSON 字符串\nrawPayload      — 原始解析荷载（未做类型转换）\nprotocolVersion — 可选协议版本号\ncontext         — API 信封上下文（可选）\nevent           — API 信封事件（可选）"
+    }
+  }
 }

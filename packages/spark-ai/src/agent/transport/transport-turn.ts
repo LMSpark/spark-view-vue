@@ -1,18 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/transport/transport-turn.ts — AI turn 线路标识投影
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Agent 传输层的 turn/stream 标识构造。spark-ai 拥有
- *   纯 key 格式定义，APP 和脚本桥接层无需重复构造 turnKey/streamKey，
- *   同时保持 HTTP I/O 在包外。
- *
- * 【核心类型/函数】
- *   AiAgentTransportTurn      — turn 标识结构（turnId + turnKey + streamKey）
- *   createAiAgentTransportTurn — 从 scope + turnMeta 构造标识
- *
- * 【消费方】Agent 传输层（SSE 流、HTTP 请求标识）
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/transport/transport-turn
+ * 职责：定义 Agent transport 层的 transport turn 协议，把 session/tool-loop 事件投影为应用可消费事件。
+ * 边界：只描述传输事件和回调契约，不实现业务注册、不保存会话，也不渲染 UI。
+ * AI用途：对齐 SSE、turn callback 或前端事件消费字段时，用本模块确认传输边界。
  */
 
 import { createAiAgentStreamKey, createAiAgentTurnKey } from '../business/business-scope'

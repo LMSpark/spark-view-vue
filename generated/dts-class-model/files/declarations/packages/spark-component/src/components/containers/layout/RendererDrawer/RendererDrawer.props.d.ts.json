@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/layout/RendererDrawer/RendererDrawer.props.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/layout/RendererDrawer/RendererDrawer.props",
-    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererDrawer/RendererDrawer.props\nRendererDrawer 模块，属于 SPARK component container/layout-container。\n组件目录: containers/layout。\n导出 ClassModel symbol: RDrawerProps（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererDrawer/RendererDrawer.props\n职责：定义 RendererDrawer（r-drawer）的配置属性契约，把页面 JSON 中的字段、数据绑定、显示选项和交互开关约束成可生成的类型。\n边界：只描述 container/layout-container 组件的声明式配置，不读取 DataSet、不触发运行时事件，也不直接渲染 DOM。\nAI用途：生成或修订页面配置时，用本模块判断 renderer drawer 允许哪些 props、哪些字段属于数据绑定，避免把运行时 API 写进配置。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "RDrawerProps"
@@ -25,7 +25,7 @@
     "RDrawerProps": {
       "kind": "RDrawerProps",
       "className": "RDrawerProps",
-      "jsdoc": "/** RDrawer Props 的属性契约。 */",
+      "jsdoc": "RDrawer Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "SparkNodeProps & SparkVisibilityContainerProps & SparkGridLayoutProps & {\n    /** 结构化头部 */\n    header?: RHeaderProps;\n    /** 结构化底部 */\n    footer?: RFooterProps;\n    /** 抽屉标题 */\n    title?: string;\n    /** 控制显隐 */\n    modelValue?: boolean;\n    /** 内容区 CSS 类名 */\n    bodyClass?: string;\n}",
       "declarationRelations": [
@@ -63,115 +63,76 @@
       "attributes": [
         {
           "name": "header",
+          "jsdoc": "结构化头部",
           "schema": {
-            "title": "RHeaderProps"
+            "$ref": "../../zones/RendererHeader.types.d.ts.json#/$defs/RHeaderProps"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 结构化头部 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererDrawer/RendererDrawer.props.d.ts",
-            "line": 13,
-            "className": "RDrawerProps",
-            "memberName": "header",
-            "declarationKind": "interface",
-            "componentName": "RendererDrawer",
-            "componentType": "r-drawer",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         },
         {
           "name": "footer",
+          "jsdoc": "结构化底部",
           "schema": {
-            "title": "RFooterProps"
+            "$ref": "../../zones/RendererFooter.types.d.ts.json#/$defs/RFooterProps"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 结构化底部 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererDrawer/RendererDrawer.props.d.ts",
-            "line": 15,
-            "className": "RDrawerProps",
-            "memberName": "footer",
-            "declarationKind": "interface",
-            "componentName": "RendererDrawer",
-            "componentType": "r-drawer",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         },
         {
           "name": "title",
+          "jsdoc": "抽屉标题",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 抽屉标题 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererDrawer/RendererDrawer.props.d.ts",
-            "line": 17,
-            "className": "RDrawerProps",
-            "memberName": "title",
-            "declarationKind": "interface",
-            "componentName": "RendererDrawer",
-            "componentType": "r-drawer",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         },
         {
           "name": "modelValue",
+          "jsdoc": "控制显隐",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 控制显隐 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererDrawer/RendererDrawer.props.d.ts",
-            "line": 19,
-            "className": "RDrawerProps",
-            "memberName": "modelValue",
-            "declarationKind": "interface",
-            "componentName": "RendererDrawer",
-            "componentType": "r-drawer",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         },
         {
           "name": "bodyClass",
+          "jsdoc": "内容区 CSS 类名",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 内容区 CSS 类名 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/layout/RendererDrawer/RendererDrawer.props.d.ts",
-            "line": 21,
-            "className": "RDrawerProps",
-            "memberName": "bodyClass",
-            "declarationKind": "interface",
-            "componentName": "RendererDrawer",
-            "componentType": "r-drawer",
-            "componentLevel": "container",
-            "componentLayer": "layout-container",
-            "componentDirectory": "containers/layout"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.165Z"
+  "generatedAt": "2026-06-11T16:38:12.727Z",
+  "$defs": {
+    "RDrawerProps": {
+      "type": "object",
+      "title": "RDrawerProps",
+      "description": "RDrawer Props 的属性契约。",
+      "properties": {
+        "header": {
+          "$ref": "../../zones/RendererHeader.types.d.ts.json#/$defs/RHeaderProps"
+        },
+        "footer": {
+          "$ref": "../../zones/RendererFooter.types.d.ts.json#/$defs/RFooterProps"
+        },
+        "title": {
+          "type": "string"
+        },
+        "modelValue": {
+          "type": "boolean"
+        },
+        "bodyClass": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

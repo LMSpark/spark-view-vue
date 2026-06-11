@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/system/plugin.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "system/plugin",
-    "jsdoc": "SPARK Vue 插件\n职责：\n- 创建并注入 Registry\n- 保持 spark-data 框架无关；Vue 响应式适配由组件级 DataView 状态/事件桥处理",
+    "jsdoc": "@module @spark-appworks/spark-component:system/plugin\n职责：提供 plugin 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "SparkPluginOptions"
@@ -20,35 +20,40 @@
     "SparkPluginOptions": {
       "kind": "SparkPluginOptions",
       "className": "SparkPluginOptions",
-      "jsdoc": "/** Spark Plugin Options 的调用配置。 */",
+      "jsdoc": "Spark Plugin Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 自定义注册表（测试/隔离场景用） */\n    registry?: ComponentRegistry;\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/system/plugin.d.ts",
-        "line": 11,
+        "line": 10,
         "className": "SparkPluginOptions",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "registry",
+          "jsdoc": "自定义注册表（测试/隔离场景用）",
           "schema": {
-            "title": "ComponentRegistry"
+            "$ref": "../core/types.d.ts.json#/$defs/ComponentRegistry"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 自定义注册表（测试/隔离场景用） */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/system/plugin.d.ts",
-            "line": 13,
-            "className": "SparkPluginOptions",
-            "memberName": "registry",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.685Z"
+  "generatedAt": "2026-06-11T16:38:12.920Z",
+  "$defs": {
+    "SparkPluginOptions": {
+      "type": "object",
+      "title": "SparkPluginOptions",
+      "description": "Spark Plugin Options 的调用配置。",
+      "properties": {
+        "registry": {
+          "$ref": "../core/types.d.ts.json#/$defs/ComponentRegistry"
+        }
+      }
+    }
+  }
 }

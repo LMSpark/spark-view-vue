@@ -1,8 +1,8 @@
 <!--
 @module @spark-appworks/spark-component:components/display/data-components/DisplayAvatar
-DisplayAvatar 模块，属于 SPARK component display/data-display。
-组件目录: display/data-components。
-该 DTS shard 当前不导出 ClassModel symbol。
+职责：实现 DisplayAvatar（display-avatar）的 Vue 渲染入口，把配置 props、数据上下文和事件桥接成用户可见的组件界面。
+边界：负责 display/data-display 的视图组合与事件转发，不定义跨组件数据模型，也不替代 zero-code 行为 API。
+AI用途：需要理解 display avatar 的实际渲染结构、slot/toolbar/状态呈现或事件触发点时，优先查看本模块。
 -->
 <template>
   <el-avatar

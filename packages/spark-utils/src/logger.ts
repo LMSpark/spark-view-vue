@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-utils:logger
- * @spark-appworks/spark-utils 的 logger 模块。
- * 导出 ClassModel symbol: LogLevel, LoggerApi, LogTransport（共 3 个 symbol）。
+ * 职责：提供框架无关基础设施 logger 能力，围绕 LogLevel、LoggerApi、LogTransport 支撑 capability、HTTP、日志、脚本类型或历史快照。
+ * 边界：保持底层工具包纯净，不依赖 Vue、spark-data 或应用壳层，也不承载业务配置。
+ * AI用途：需要跨包复用基础能力或确认底层协议时，用本模块理解 logger。
  */
 // Note: Logger 系统本身需要使用 console 输出日志，禁用 no-console 规则是合理的
 /* eslint-disable no-console */

@@ -1,34 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/tool-loop/tool-loop-runner.ts — AI Host 工具循环执行器
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Agent 层的核心编排引擎。负责"用户消息 → AI 推理 →
- *   工具调用 → AI 再推理"的完整闭环。每个 turn 内可执行多轮（round）
- *   工具调用，直到 LLM 自然结束、业务终止或达到上限。
- *
- * 【核心类】
- *   AiAgentToolLoopRunner — 工具循环执行器
- *     ├─ runToolLoop()              — 主循环入口
- *     ├─ completeLifecycleDirective  — 生命周期终止流程
- *     └─ appendMessagesToTransport   — 消息同步到传输层
- *
- * 【单轮执行流程】
- *   1. 构建系统提示词（业务 systemPrompt + 请求 systemPrompt + 知识快照）
- *   2. 提取最新用户消息 → 发送给 LLM（turnCallbacks.executeTurn）
- *   3. LLM 返回文本 + 工具调用列表
- *   4. 依次执行工具调用（toolCallExecutor.execute）
- *   5. 将 assistant(tool_calls) + tool 结果 append 到后端会话
- *   6. 检查生命周期指令：continue → 下一轮；complete/abort → 结束
- *   7. 结束时：发送最终消息 → appendMessages → stopSession → 释放实例
- *
- * 【终止条件】
- *   · LLM 不再返回工具调用（自然结束）
- *   · 业务生命周期回调返回 complete/abort（业务主动终止）
- *   · 达到 maxToolRounds 上限（安全阀）
- *
- * 【消费方】business-session.ts（AiAgentMessageSender.send）
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/tool-loop/tool-loop-runner
+ * 职责：支撑 Agent tool loop 的 tool loop runner 能力，处理工具调用、结果映射、诊断事件或 payload 编解码。
+ * 边界：只服务单次 turn 内的工具循环，不定义业务注册协议，也不直接管理 UI 或持久化页面状态。
+ * AI用途：排查工具调用为什么继续、完成、失败或被映射成回调事件时，用本模块定位 loop 内部语义。
  */
 
 import type { AiJsonParams } from '../../json'

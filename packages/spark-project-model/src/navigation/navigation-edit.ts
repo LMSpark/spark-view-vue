@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-project-model:navigation/navigation-edit
+ * 职责：提供项目模型和页面配置域中的 navigation edit 能力，支撑 navigation、page content、project session 或远程 IO。
+ * 边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。
+ * AI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。
+ */
+/**
  * 导航编辑领域模型 — PageNode 的导航属性子模型。
  *
  * 持有导航节点表单草稿和 patch 生成规则。

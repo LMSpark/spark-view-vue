@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "agent/native-runtime/dts-native-script-runner",
-    "jsdoc": "@module @spark-appworks/spark-ai:agent/native-runtime/dts-native-script-runner\n@spark-appworks/spark-ai 的 agent/native-runtime/dts-native-script-runner 模块。\n导出 ClassModel symbol: DtsNativeScriptRunCommand（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/native-runtime/dts-native-script-runner\n职责：定义 DTS ClassModel 脚本运行命令，让 native runtime 能在受控上下文中执行模型脚本。\n边界：只描述脚本调用输入输出，不负责生成脚本、不注册工具，也不直接访问页面配置文件。\nAI用途：需要把 model_script tool call 交给本地脚本执行器时，用本模块确认命令载荷形状。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "DtsNativeScriptRunCommand"
@@ -20,7 +20,7 @@
     "DtsNativeScriptRunCommand": {
       "kind": "DtsNativeScriptRunCommand",
       "className": "DtsNativeScriptRunCommand",
-      "jsdoc": "/** Dts Native Script Run Command 的命令参数。 */",
+      "jsdoc": "Dts Native Script Run Command 的命令参数。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    instance: TInstance;\n    manifestUrl: string;\n    rootClassName: string;\n    host?: AiAgentRuntimeHostContext;\n    fetchJson?: (url: string) => Promise<unknown>;\n    script: string;\n}>",
       "declarationRelations": [
@@ -32,7 +32,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.d.ts",
-        "line": 11,
+        "line": 12,
         "className": "DtsNativeScriptRunCommand",
         "declarationKind": "type"
       },
@@ -40,5 +40,12 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.751Z"
+  "generatedAt": "2026-06-11T16:38:12.559Z",
+  "$defs": {
+    "DtsNativeScriptRunCommand": {
+      "type": "object",
+      "title": "DtsNativeScriptRunCommand",
+      "description": "Dts Native Script Run Command 的命令参数。"
+    }
+  }
 }

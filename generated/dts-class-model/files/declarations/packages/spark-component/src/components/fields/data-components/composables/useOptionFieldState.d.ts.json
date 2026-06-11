@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/fields/data-components/composables/useOptionFieldState",
-    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useOptionFieldState\n@spark-appworks/spark-component:components/fields/data-components/composables/useOptionFieldState 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: OptionalWithUndefined, OptionFieldStateProps, UseOptionFieldStateOptions（共 3 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useOptionFieldState\n职责：提供 useOptionFieldState（未注册组件类型）相关的组合式状态或行为封装，复用字段值、选项、权限、动作和交互控制逻辑。\n边界：只服务 field-level/data-field 的 setup/runtime 组合，不直接声明页面配置，也不替代组件 props。\nAI用途：需要理解 use option field state 的响应式状态来源、值转换或事件副作用时，使用本模块定位实际运行规则。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "OptionalWithUndefined",
@@ -27,7 +27,7 @@
     "OptionalWithUndefined": {
       "kind": "OptionalWithUndefined",
       "className": "OptionalWithUndefined",
-      "jsdoc": "/** 将选中 props 的每个字段都允许显式传 undefined。 */",
+      "jsdoc": "将选中 props 的每个字段都允许显式传 undefined。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    [K in keyof T]?: T[K] | undefined;\n}",
       "provenance": {
@@ -45,7 +45,7 @@
     "OptionFieldStateProps": {
       "kind": "OptionFieldStateProps",
       "className": "OptionFieldStateProps",
-      "jsdoc": "/** 选项类字段组件共享的受控值和选项 props。 */",
+      "jsdoc": "选项类字段组件共享的受控值和选项 props。",
       "shapeKind": "type",
       "declarationTypeText": "OptionalWithUndefined<Omit<SparkOptionFieldProps<TValue>, 'modelValue' | 'value' | 'options'>> & {\n    /** Vue v-model 当前值。 */\n    modelValue?: TValue | undefined;\n    /** 兼容非 v-model 场景的当前值。 */\n    value?: TValue | undefined;\n    /** 原始选项集合，后续由 useFieldOptions 归一化。 */\n    options?: unknown[] | undefined;\n}",
       "declarationRelations": [
@@ -71,60 +71,27 @@
       "attributes": [
         {
           "name": "modelValue",
-          "schema": {
-            "title": "TValue | undefined"
-          },
+          "jsdoc": "Vue v-model 当前值。",
+          "schema": true,
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** Vue v-model 当前值。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.d.ts",
-            "line": 16,
-            "className": "OptionFieldStateProps",
-            "memberName": "modelValue",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "value",
-          "schema": {
-            "title": "TValue | undefined"
-          },
+          "jsdoc": "兼容非 v-model 场景的当前值。",
+          "schema": true,
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 兼容非 v-model 场景的当前值。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.d.ts",
-            "line": 18,
-            "className": "OptionFieldStateProps",
-            "memberName": "value",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "options",
+          "jsdoc": "原始选项集合，后续由 useFieldOptions 归一化。",
           "schema": {
-            "title": "unknown[] | undefined"
+            "type": "array",
+            "items": true
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 原始选项集合，后续由 useFieldOptions 归一化。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.d.ts",
-            "line": 20,
-            "className": "OptionFieldStateProps",
-            "memberName": "options",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -132,7 +99,7 @@
     "UseOptionFieldStateOptions": {
       "kind": "UseOptionFieldStateOptions",
       "className": "UseOptionFieldStateOptions",
-      "jsdoc": "/** 创建选项类字段运行态所需的输入。 */",
+      "jsdoc": "创建选项类字段运行态所需的输入。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 选项字段组件 props。 */\n    props: OptionFieldStateProps<TValue>;\n    /** 字段组件类型，用于字段上下文注册。 */\n    fieldType: string;\n    /** 当前值缺失或无效时使用的默认值。 */\n    fallbackValue: TValue;\n    /** 向 Vue v-model/update 事件发出新值。 */\n    emitUpdate: (value: TValue) => void;\n    /** 将未知原始值转换成字段组件的值类型。 */\n    coerce: (rawValue: unknown) => TValue;\n    /** 自定义当前值展示文本。 */\n    formatDisplay?: (value: unknown, helpers: ReturnType<typeof useFieldOptions>) => string;\n}",
       "provenance": {
@@ -147,122 +114,110 @@
       "attributes": [
         {
           "name": "props",
+          "jsdoc": "选项字段组件 props。",
           "schema": {
+            "$ref": "#/$defs/OptionFieldStateProps",
             "title": "OptionFieldStateProps<TValue>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 选项字段组件 props。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.d.ts",
-            "line": 25,
-            "className": "UseOptionFieldStateOptions",
-            "memberName": "props",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "fieldType",
+          "jsdoc": "字段组件类型，用于字段上下文注册。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 字段组件类型，用于字段上下文注册。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.d.ts",
-            "line": 27,
-            "className": "UseOptionFieldStateOptions",
-            "memberName": "fieldType",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "fallbackValue",
-          "schema": {
-            "title": "TValue"
-          },
+          "jsdoc": "当前值缺失或无效时使用的默认值。",
+          "schema": true,
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前值缺失或无效时使用的默认值。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.d.ts",
-            "line": 29,
-            "className": "UseOptionFieldStateOptions",
-            "memberName": "fallbackValue",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "emitUpdate",
+          "jsdoc": "向 Vue v-model/update 事件发出新值。",
           "schema": {
+            "type": "object",
             "title": "(value: TValue) => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 向 Vue v-model/update 事件发出新值。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.d.ts",
-            "line": 31,
-            "className": "UseOptionFieldStateOptions",
-            "memberName": "emitUpdate",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "coerce",
+          "jsdoc": "将未知原始值转换成字段组件的值类型。",
           "schema": {
+            "type": "object",
             "title": "(rawValue: unknown) => TValue"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 将未知原始值转换成字段组件的值类型。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.d.ts",
-            "line": 33,
-            "className": "UseOptionFieldStateOptions",
-            "memberName": "coerce",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "formatDisplay",
+          "jsdoc": "自定义当前值展示文本。",
           "schema": {
+            "type": "object",
             "title": "(value: unknown, helpers: ReturnType<typeof useFieldOptions>) => string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 自定义当前值展示文本。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.d.ts",
-            "line": 35,
-            "className": "UseOptionFieldStateOptions",
-            "memberName": "formatDisplay",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.459Z"
+  "generatedAt": "2026-06-11T16:38:12.845Z",
+  "$defs": {
+    "OptionalWithUndefined": {
+      "type": "object",
+      "title": "OptionalWithUndefined",
+      "description": "将选中 props 的每个字段都允许显式传 undefined。"
+    },
+    "OptionFieldStateProps": {
+      "type": "object",
+      "title": "OptionFieldStateProps",
+      "description": "选项类字段组件共享的受控值和选项 props。",
+      "properties": {
+        "modelValue": true,
+        "value": true,
+        "options": {
+          "type": "array",
+          "items": true
+        }
+      }
+    },
+    "UseOptionFieldStateOptions": {
+      "type": "object",
+      "title": "UseOptionFieldStateOptions",
+      "description": "创建选项类字段运行态所需的输入。",
+      "properties": {
+        "props": {
+          "$ref": "#/$defs/OptionFieldStateProps",
+          "title": "OptionFieldStateProps<TValue>"
+        },
+        "fieldType": {
+          "type": "string"
+        },
+        "fallbackValue": true,
+        "emitUpdate": {
+          "type": "object",
+          "title": "(value: TValue) => void"
+        },
+        "coerce": {
+          "type": "object",
+          "title": "(rawValue: unknown) => TValue"
+        },
+        "formatDisplay": {
+          "type": "object",
+          "title": "(value: unknown, helpers: ReturnType<typeof useFieldOptions>) => string"
+        }
+      }
+    }
+  }
 }

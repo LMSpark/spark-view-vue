@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-utils/src/http/FileLoader.ts",
     "packageName": "@spark-appworks/spark-utils",
     "modulePath": "http/FileLoader",
-    "jsdoc": "FileLoader — HTTP 文件加载 + 自动计算结果缓存\n## 基础用法（返回原始 JSON）\n```ts\nconst result = await loader.load<RuleConfig[]>('/page/rule.json')\n```\n## 内联变换（一次性）\n```ts\nconst result = await loader.load<DataSet>('/pagedata.json', {\ntransform: buildDataSet\n})\n```\n## 预绑定变换（业务代码零感知）\n```ts\n// 基础设施层：\nconst dataSetLoader = fileLoader.withTransform(buildDataSet)\n// 业务代码：\nconst ds = await dataSetLoader.load('/order-page/pagedata.json')\n```\n缓存策略：所有结果（原始内容 & 变换产物）均以 sourceTimestamp 标记。\n源文件变更 → timestamp 变化 → 缓存自动失效 → 重新加载并计算。",
+    "jsdoc": "@module @spark-appworks/spark-utils:http/FileLoader\n职责：提供框架无关的 File Loader 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。\n边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。\nAI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。\n\nFileLoader — HTTP 文件加载 + 自动计算结果缓存\n## 基础用法（返回原始 JSON）\n```ts\nconst result = await loader.load<RuleConfig[]>('/page/rule.json')\n```\n## 内联变换（一次性）\n```ts\nconst result = await loader.load<DataSet>('/pagedata.json', {\ntransform: buildDataSet\n})\n```\n## 预绑定变换（业务代码零感知）\n```ts\n// 基础设施层：\nconst dataSetLoader = fileLoader.withTransform(buildDataSet)\n// 业务代码：\nconst ds = await dataSetLoader.load('/order-page/pagedata.json')\n```\n缓存策略：所有结果（原始内容 & 变换产物）均以 sourceTimestamp 标记。\n源文件变更 → timestamp 变化 → 缓存自动失效 → 重新加载并计算。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "LoadOptionBase",
@@ -36,49 +36,33 @@
     "LoadOptionBase": {
       "kind": "LoadOptionBase",
       "className": "LoadOptionBase",
-      "jsdoc": "/** Load Option Base 的语义模型。 */",
+      "jsdoc": "Load Option Base 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** false = 返回原始字符串，不 JSON.parse（默认 true） */\n    /** 跳过缓存强制重新请求（默认 false） */\n    forceRefresh?: boolean;\n    /** 过期级别（覆盖全局默认值），对应 expirationTiers 中的 level */\n    expirationLevel?: number;\n}",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 30,
+        "line": 36,
         "className": "LoadOptionBase",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "forceRefresh",
+          "jsdoc": "跳过缓存强制重新请求（默认 false）",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 跳过缓存强制重新请求（默认 false） */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 33,
-            "className": "LoadOptionBase",
-            "memberName": "forceRefresh",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "expirationLevel",
+          "jsdoc": "过期级别（覆盖全局默认值），对应 expirationTiers 中的 level",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 过期级别（覆盖全局默认值），对应 expirationTiers 中的 level */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 35,
-            "className": "LoadOptionBase",
-            "memberName": "expirationLevel",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -86,7 +70,7 @@
     "FileLoaderStoreInput": {
       "kind": "FileLoaderStoreInput",
       "className": "FileLoaderStoreInput",
-      "jsdoc": "/** File Loader Store Input 的输入数据。 */",
+      "jsdoc": "File Loader Store Input 的输入数据。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    key: string;\n    data: unknown;\n    sourceTimestamp: string;\n    expirationLevel?: number | undefined;\n}>",
       "declarationRelations": [
@@ -98,7 +82,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 38,
+        "line": 44,
         "className": "FileLoaderStoreInput",
         "declarationKind": "type"
       },
@@ -108,7 +92,7 @@
     "JsonLoadOptions": {
       "kind": "JsonLoadOptions",
       "className": "JsonLoadOptions",
-      "jsdoc": "/** Json Load Options 的调用配置。 */",
+      "jsdoc": "Json Load Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "LoadOptionBase & {\n    /** parse JSON 字段。 */\n    parseJSON?: true;\n}",
       "declarationRelations": [
@@ -124,26 +108,22 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 45,
+        "line": 51,
         "className": "JsonLoadOptions",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "parseJSON",
+          "jsdoc": "parse JSON 字段。",
           "schema": {
-            "title": "true"
+            "type": "boolean",
+            "enum": [
+              true
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** parse JSON 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 47,
-            "className": "JsonLoadOptions",
-            "memberName": "parseJSON",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -151,7 +131,7 @@
     "TextLoadOptions": {
       "kind": "TextLoadOptions",
       "className": "TextLoadOptions",
-      "jsdoc": "/** Text Load Options 的调用配置。 */",
+      "jsdoc": "Text Load Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "LoadOptionBase & {\n    /** parse JSON 字段。 */\n    parseJSON: false;\n}",
       "declarationRelations": [
@@ -167,26 +147,22 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 50,
+        "line": 56,
         "className": "TextLoadOptions",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "parseJSON",
+          "jsdoc": "parse JSON 字段。",
           "schema": {
-            "title": "false"
+            "type": "boolean",
+            "enum": [
+              false
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** parse JSON 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 52,
-            "className": "TextLoadOptions",
-            "memberName": "parseJSON",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -194,7 +170,7 @@
     "TransformLoadOptions": {
       "kind": "TransformLoadOptions",
       "className": "TransformLoadOptions",
-      "jsdoc": "/** Transform Load Options 的调用配置。 */",
+      "jsdoc": "Transform Load Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "LoadOptionBase & {\n    /**\n       * 对原始文件内容应用变换，结果自动缓存（缓存键=文件路径）。\n       * 提供后 load() 返回 T（变换结果），而非原始 JSON。\n       */\n    transform: (rawContent: string) => T | Promise<T>;\n}",
       "declarationRelations": [
@@ -210,26 +186,20 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 55,
+        "line": 61,
         "className": "TransformLoadOptions",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "transform",
+          "jsdoc": "对原始文件内容应用变换，结果自动缓存（缓存键=文件路径）。\n提供后 load() 返回 T（变换结果），而非原始 JSON。",
           "schema": {
+            "type": "object",
             "title": "(rawContent: string) => T | Promise<T>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/**\n       * 对原始文件内容应用变换，结果自动缓存（缓存键=文件路径）。\n       * 提供后 load() 返回 T（变换结果），而非原始 JSON。\n       */",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 60,
-            "className": "TransformLoadOptions",
-            "memberName": "transform",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -237,7 +207,7 @@
     "LoadOptions": {
       "kind": "LoadOptions",
       "className": "LoadOptions",
-      "jsdoc": "/** load() 选项 */",
+      "jsdoc": "load() 选项",
       "shapeKind": "type",
       "declarationTypeText": "JsonLoadOptions | TextLoadOptions | TransformLoadOptions<T>",
       "declarationRelations": [
@@ -259,7 +229,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 63,
+        "line": 69,
         "className": "LoadOptions",
         "declarationKind": "type"
       },
@@ -269,7 +239,7 @@
     "TransformedFileLoadOptions": {
       "kind": "TransformedFileLoadOptions",
       "className": "TransformedFileLoadOptions",
-      "jsdoc": "/** Transformed File Load Options 的调用配置。 */",
+      "jsdoc": "Transformed File Load Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Pick<LoadOptionBase, 'forceRefresh'>",
       "declarationRelations": [
@@ -281,7 +251,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 65,
+        "line": 71,
         "className": "TransformedFileLoadOptions",
         "declarationKind": "type"
       },
@@ -291,105 +261,131 @@
     "TransformedFileLoader": {
       "kind": "TransformedFileLoader",
       "className": "TransformedFileLoader",
-      "jsdoc": "/** Transformed File Loader 的语义模型。 */",
+      "jsdoc": "Transformed File Loader 的语义模型。",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 67,
+        "line": 73,
         "className": "TransformedFileLoader",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "owner": {
-              "title": "FileLoader"
-            },
-            "transform": {
-              "title": "(rawContent: string) => T | Promise<T>"
+        "jsdoc": "创建带变换缓存的文件加载器。",
+        "signatureText": "constructor(owner: FileLoader, transform: (rawContent: string) => T | Promise<T>)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "owner",
+            "type": {
+              "type": "reference",
+              "name": "FileLoader",
+              "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
             }
           },
-          "required": [
-            "owner",
-            "transform"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建带变换缓存的文件加载器。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-          "line": 72,
-          "className": "TransformedFileLoader",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          {
+            "name": "transform",
+            "type": {
+              "type": "unknown",
+              "name": "(rawContent: string) => T | Promise<T>"
+            }
+          }
+        ]
       },
       "attributes": [],
       "methods": [
         {
           "name": "load",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "fileName": {
-                "type": "string",
-                "title": "string"
-              },
-              "opts": {
-                "title": "TransformedFileLoadOptions"
+          "jsdoc": "加载单个文件并返回变换后的结果。",
+          "signatureText": "load(fileName: string, opts?: TransformedFileLoadOptions): Promise<FileLoadResult<T>>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "fileName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
             },
-            "required": [
-              "fileName"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<FileLoadResult<T>>"
-          },
-          "returnTypeText": "Promise<FileLoadResult<T>>",
-          "jsdoc": "/** 加载单个文件并返回变换后的结果。 */",
-          "paramsTypeText": "fileName: string, opts?: TransformedFileLoadOptions | undefined",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 74,
-            "className": "TransformedFileLoader",
-            "memberName": "load",
-            "declarationKind": "class"
+            {
+              "name": "opts",
+              "type": {
+                "type": "reference",
+                "name": "TransformedFileLoadOptions",
+                "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "FileLoadResult",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                ]
+              }
+            ]
           }
         },
         {
           "name": "loadBatch",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "fileNames": {
+          "jsdoc": "批量加载文件并返回每个文件的变换结果。",
+          "signatureText": "loadBatch(fileNames: string[], opts?: TransformedFileLoadOptions): Promise<Map<string, FileLoadResult<T>>>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "fileNames",
+              "type": {
                 "type": "array",
-                "title": "string[]",
-                "items": true
-              },
-              "opts": {
-                "title": "TransformedFileLoadOptions"
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
               }
             },
-            "required": [
-              "fileNames"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<Map<string, FileLoadResult<T>>>"
-          },
-          "returnTypeText": "Promise<Map<string, FileLoadResult<T>>>",
-          "jsdoc": "/** 批量加载文件并返回每个文件的变换结果。 */",
-          "paramsTypeText": "fileNames: string[], opts?: TransformedFileLoadOptions | undefined",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 76,
-            "className": "TransformedFileLoader",
-            "memberName": "loadBatch",
-            "declarationKind": "class"
+            {
+              "name": "opts",
+              "type": {
+                "type": "reference",
+                "name": "TransformedFileLoadOptions",
+                "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "Map",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "FileLoadResult",
+                    "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "T",
+                        "refersToTypeParameter": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         }
       ]
@@ -397,499 +393,622 @@
     "FileLoader": {
       "kind": "FileLoader",
       "className": "FileLoader",
-      "jsdoc": "/** File Loader 的语义模型。 */",
+      "jsdoc": "File Loader 的语义模型。",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-        "line": 82,
+        "line": 88,
         "className": "FileLoader",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "options": {
-              "title": "FileLoadOptions"
+        "jsdoc": "创建 File Loader 实例。",
+        "signatureText": "constructor(options: FileLoadOptions)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "options",
+            "type": {
+              "type": "reference",
+              "name": "FileLoadOptions",
+              "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
             }
-          },
-          "required": [
-            "options"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 File Loader 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-          "line": 90,
-          "className": "FileLoader",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          }
+        ]
       },
       "attributes": [],
       "methods": [
         {
           "name": "on",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "event": {
-                "title": "K"
-              },
-              "listener": {
-                "title": "(payload: FileLoaderEventMap[K]) => void"
+          "jsdoc": "订阅 FileLoader 事件（file-loaded / file-missing / file-error）",
+          "signatureText": "on<K extends keyof FileLoaderEventMap>(event: K, listener: (payload: FileLoaderEventMap[K]) => void): () => void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "event",
+              "type": {
+                "type": "reference",
+                "name": "K",
+                "refersToTypeParameter": true
               }
             },
-            "required": [
-              "event",
-              "listener"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "() => void"
-          },
-          "returnTypeText": "() => void",
-          "jsdoc": "/** 订阅 FileLoader 事件（file-loaded / file-missing / file-error） */",
-          "paramsTypeText": "event: K, listener: (payload: FileLoaderEventMap[K]) => void",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 94,
-            "className": "FileLoader",
-            "memberName": "on",
-            "declarationKind": "class"
+            {
+              "name": "listener",
+              "type": {
+                "type": "unknown",
+                "name": "(payload: FileLoaderEventMap[K]) => void"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "unknown",
+            "name": "() => void"
           }
         },
         {
           "name": "loadText",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "fileName": {
-                "type": "string",
-                "title": "string"
-              },
-              "options": {
-                "title": "TransformedFileLoadOptions"
+          "jsdoc": "以纯文本形式加载文件。",
+          "signatureText": "loadText(fileName: string, options?: TransformedFileLoadOptions): Promise<FileLoadResult<string>>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "fileName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
             },
-            "required": [
-              "fileName"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<FileLoadResult<string>>"
-          },
-          "returnTypeText": "Promise<FileLoadResult<string>>",
-          "jsdoc": "/** 以纯文本形式加载文件。 */",
-          "paramsTypeText": "fileName: string, options?: TransformedFileLoadOptions | undefined",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 102,
-            "className": "FileLoader",
-            "memberName": "loadText",
-            "declarationKind": "class"
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "TransformedFileLoadOptions",
+                "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "FileLoadResult",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
+              }
+            ]
           }
         },
         {
           "name": "load",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "fileName": {
-                "type": "string",
-                "title": "string"
-              },
-              "options": {
-                "title": "TransformLoadOptions<T>"
+          "jsdoc": "加载文件并使用 transform 返回变换结果。\n以纯文本形式加载文件。\n加载文件并按 JSON 解析返回。",
+          "signatureText": "load<T>(fileName: string, options: TransformLoadOptions<T>): Promise<FileLoadResult<T>>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "fileName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
             },
-            "required": [
-              "fileName",
-              "options"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<FileLoadResult<T>>"
-          },
-          "returnTypeText": "Promise<FileLoadResult<T>>",
-          "jsdoc": "/** 加载文件并使用 transform 返回变换结果。 */",
-          "paramsTypeText": "fileName: string, options: TransformLoadOptions<T>",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 109,
-            "className": "FileLoader",
-            "memberName": "load",
-            "declarationKind": "class"
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "TransformLoadOptions",
+                "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                ]
+              }
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "FileLoadResult",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                ]
+              }
+            ]
           }
         },
         {
           "name": "load",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "fileName": {
-                "type": "string",
-                "title": "string"
-              },
-              "options": {
-                "title": "TextLoadOptions"
+          "jsdoc": "加载文件并使用 transform 返回变换结果。\n以纯文本形式加载文件。\n加载文件并按 JSON 解析返回。",
+          "signatureText": "load(fileName: string, options: TextLoadOptions): Promise<FileLoadResult<string>>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "fileName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
             },
-            "required": [
-              "fileName",
-              "options"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<FileLoadResult<string>>"
-          },
-          "returnTypeText": "Promise<FileLoadResult<string>>",
-          "jsdoc": "/** 以纯文本形式加载文件。 */",
-          "paramsTypeText": "fileName: string, options: TextLoadOptions",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 111,
-            "className": "FileLoader",
-            "memberName": "load",
-            "declarationKind": "class"
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "TextLoadOptions",
+                "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "FileLoadResult",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
+              }
+            ]
           }
         },
         {
           "name": "load",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "fileName": {
-                "type": "string",
-                "title": "string"
-              },
-              "options": {
-                "title": "JsonLoadOptions"
+          "jsdoc": "加载文件并使用 transform 返回变换结果。\n以纯文本形式加载文件。\n加载文件并按 JSON 解析返回。",
+          "signatureText": "load(fileName: string, options?: JsonLoadOptions): Promise<FileLoadResult<unknown>>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "fileName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
             },
-            "required": [
-              "fileName"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<FileLoadResult<unknown>>"
-          },
-          "returnTypeText": "Promise<FileLoadResult<unknown>>",
-          "jsdoc": "/** 加载文件并按 JSON 解析返回。 */",
-          "paramsTypeText": "fileName: string, options?: JsonLoadOptions | undefined",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 113,
-            "className": "FileLoader",
-            "memberName": "load",
-            "declarationKind": "class"
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "JsonLoadOptions",
+                "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "FileLoadResult",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            ]
           }
         },
         {
           "name": "loadBatch",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "fileNames": {
+          "jsdoc": "批量加载文件并使用 transform 返回变换结果。\n批量以纯文本形式加载文件。\n批量加载文件并按 JSON 解析返回。",
+          "signatureText": "loadBatch<T>(fileNames: string[], options: TransformLoadOptions<T>): Promise<Map<string, FileLoadResult<T>>>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "fileNames",
+              "type": {
                 "type": "array",
-                "title": "string[]",
-                "items": true
-              },
-              "options": {
-                "title": "TransformLoadOptions<T>"
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
               }
             },
-            "required": [
-              "fileNames",
-              "options"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<Map<string, FileLoadResult<T>>>"
-          },
-          "returnTypeText": "Promise<Map<string, FileLoadResult<T>>>",
-          "jsdoc": "/** 批量加载文件并使用 transform 返回变换结果。 */",
-          "paramsTypeText": "fileNames: string[], options: TransformLoadOptions<T>",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 115,
-            "className": "FileLoader",
-            "memberName": "loadBatch",
-            "declarationKind": "class"
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "TransformLoadOptions",
+                "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                ]
+              }
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "Map",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "FileLoadResult",
+                    "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "T",
+                        "refersToTypeParameter": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
           "name": "loadBatch",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "fileNames": {
+          "jsdoc": "批量加载文件并使用 transform 返回变换结果。\n批量以纯文本形式加载文件。\n批量加载文件并按 JSON 解析返回。",
+          "signatureText": "loadBatch(fileNames: string[], options: TextLoadOptions): Promise<Map<string, FileLoadResult<string>>>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "fileNames",
+              "type": {
                 "type": "array",
-                "title": "string[]",
-                "items": true
-              },
-              "options": {
-                "title": "TextLoadOptions"
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
               }
             },
-            "required": [
-              "fileNames",
-              "options"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<Map<string, FileLoadResult<string>>>"
-          },
-          "returnTypeText": "Promise<Map<string, FileLoadResult<string>>>",
-          "jsdoc": "/** 批量以纯文本形式加载文件。 */",
-          "paramsTypeText": "fileNames: string[], options: TextLoadOptions",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 117,
-            "className": "FileLoader",
-            "memberName": "loadBatch",
-            "declarationKind": "class"
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "TextLoadOptions",
+                "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "Map",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "FileLoadResult",
+                    "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
           "name": "loadBatch",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "fileNames": {
+          "jsdoc": "批量加载文件并使用 transform 返回变换结果。\n批量以纯文本形式加载文件。\n批量加载文件并按 JSON 解析返回。",
+          "signatureText": "loadBatch(fileNames: string[], options?: JsonLoadOptions): Promise<Map<string, FileLoadResult<unknown>>>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "fileNames",
+              "type": {
                 "type": "array",
-                "title": "string[]",
-                "items": true
-              },
-              "options": {
-                "title": "JsonLoadOptions"
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
               }
             },
-            "required": [
-              "fileNames"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<Map<string, FileLoadResult<unknown>>>"
-          },
-          "returnTypeText": "Promise<Map<string, FileLoadResult<unknown>>>",
-          "jsdoc": "/** 批量加载文件并按 JSON 解析返回。 */",
-          "paramsTypeText": "fileNames: string[], options?: JsonLoadOptions | undefined",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 119,
-            "className": "FileLoader",
-            "memberName": "loadBatch",
-            "declarationKind": "class"
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "JsonLoadOptions",
+                "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "Map",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "FileLoadResult",
+                    "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "unknown"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         },
         {
           "name": "withTransform",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "transform": {
-                "title": "(rawContent: string) => T | Promise<T>"
+          "jsdoc": "预绑定变换函数，返回业务代码直接使用的子加载器。\n```ts\n// 基础设施层（一次）：\nconst dataSetLoader = fileLoader.withTransform(buildDataSet)\n// 业务代码（任意多处）：\nconst ds = await dataSetLoader.load('/order-page/pagedata.json')\n```",
+          "signatureText": "withTransform<T>(transform: (rawContent: string) => T | Promise<T>): TransformedFileLoader<T>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "transform",
+              "type": {
+                "type": "unknown",
+                "name": "(rawContent: string) => T | Promise<T>"
               }
-            },
-            "required": [
-              "transform"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "TransformedFileLoader<T>"
-          },
-          "returnTypeText": "TransformedFileLoader<T>",
-          "jsdoc": "/**\n     * 预绑定变换函数，返回业务代码直接使用的子加载器。\n     *\n     * ```ts\n     * // 基础设施层（一次）：\n     * const dataSetLoader = fileLoader.withTransform(buildDataSet)\n     *\n     * // 业务代码（任意多处）：\n     * const ds = await dataSetLoader.load('/order-page/pagedata.json')\n     * ```\n     */",
-          "paramsTypeText": "transform: (rawContent: string) => T | Promise<T>",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 131,
-            "className": "FileLoader",
-            "memberName": "withTransform",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "TransformedFileLoader",
+            "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              }
+            ]
           }
         },
         {
           "name": "store",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "input": {
-                "title": "FileLoaderStoreInput"
+          "jsdoc": "手动缓存任意计算结果。\n通常不需要在业务代码中调用；优先使用 withTransform() 或 load({ transform })。",
+          "signatureText": "store(input: FileLoaderStoreInput): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "FileLoaderStoreInput",
+                "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
               }
-            },
-            "required": [
-              "input"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/**\n     * 手动缓存任意计算结果。\n     * 通常不需要在业务代码中调用；优先使用 withTransform() 或 load({ transform })。\n     */",
-          "paramsTypeText": "input: Readonly<{ key: string; data: unknown; sourceTimestamp: string; expirationLevel?: number | undefined; }>",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 136,
-            "className": "FileLoader",
-            "memberName": "store",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "retrieve",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "key": {
-                "type": "string",
-                "title": "string"
-              },
-              "sourceTimestamp": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "取回计算结果缓存，时间戳不匹配返回 null。\n通常不需要在业务代码中调用；优先使用 withTransform() 或 load({ transform })。",
+          "signatureText": "retrieve(key: string, sourceTimestamp: string): unknown",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "key",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
             },
-            "required": [
-              "key",
-              "sourceTimestamp"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "unknown"
-          },
-          "returnTypeText": "unknown",
-          "jsdoc": "/**\n     * 取回计算结果缓存，时间戳不匹配返回 null。\n     * 通常不需要在业务代码中调用；优先使用 withTransform() 或 load({ transform })。\n     */",
-          "paramsTypeText": "key: string, sourceTimestamp: string",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 141,
-            "className": "FileLoader",
-            "memberName": "retrieve",
-            "declarationKind": "class"
+            {
+              "name": "sourceTimestamp",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "unknown"
           }
         },
         {
           "name": "clearCache",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "key": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "清除缓存（不传 key 则清全部）",
+          "signatureText": "clearCache(key?: string): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "key",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
-            },
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 清除缓存（不传 key 则清全部） */",
-          "paramsTypeText": "key?: string | undefined",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 143,
-            "className": "FileLoader",
-            "memberName": "clearCache",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "hasCache",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "key": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "检查是否有缓存",
+          "signatureText": "hasCache(key: string): boolean",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "key",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
-            },
-            "required": [
-              "key"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean",
-            "title": "boolean"
-          },
-          "returnTypeText": "boolean",
-          "jsdoc": "/** 检查是否有缓存 */",
-          "paramsTypeText": "key: string",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 145,
-            "className": "FileLoader",
-            "memberName": "hasCache",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "boolean"
           }
         },
         {
           "name": "getCacheStats",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "{\n        size: number;\n        keys: string[];\n    }"
-          },
-          "returnTypeText": "{\n        size: number;\n        keys: string[];\n    }",
-          "jsdoc": "/** 获取内存缓存统计信息 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 147,
-            "className": "FileLoader",
-            "memberName": "getCacheStats",
-            "declarationKind": "class"
+          "jsdoc": "获取内存缓存统计信息",
+          "signatureText": "getCacheStats(): {\n        size: number;\n        keys: string[];\n    }",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "unknown",
+            "name": "{\n        size: number;\n        keys: string[];\n    }"
           }
         },
         {
           "name": "getTimestamp",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "key": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "获取缓存的 sourceTimestamp（不存在则返回 null）",
+          "signatureText": "getTimestamp(key: string): string | null",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "key",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
-            },
-            "required": [
-              "key"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "string | null"
-          },
-          "returnTypeText": "string | null",
-          "jsdoc": "/** 获取缓存的 sourceTimestamp（不存在则返回 null） */",
-          "paramsTypeText": "key: string",
-          "provenance": {
-            "file": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
-            "line": 152,
-            "className": "FileLoader",
-            "memberName": "getTimestamp",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:27.002Z"
+  "generatedAt": "2026-06-11T16:38:13.080Z",
+  "$defs": {
+    "LoadOptionBase": {
+      "type": "object",
+      "title": "LoadOptionBase",
+      "description": "Load Option Base 的语义模型。",
+      "properties": {
+        "forceRefresh": {
+          "type": "boolean"
+        },
+        "expirationLevel": {
+          "type": "number"
+        }
+      }
+    },
+    "FileLoaderStoreInput": {
+      "type": "object",
+      "title": "FileLoaderStoreInput",
+      "description": "File Loader Store Input 的输入数据。"
+    },
+    "JsonLoadOptions": {
+      "type": "object",
+      "title": "JsonLoadOptions",
+      "description": "Json Load Options 的调用配置。",
+      "properties": {
+        "parseJSON": {
+          "type": "boolean",
+          "enum": [
+            true
+          ]
+        }
+      }
+    },
+    "TextLoadOptions": {
+      "type": "object",
+      "title": "TextLoadOptions",
+      "description": "Text Load Options 的调用配置。",
+      "properties": {
+        "parseJSON": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        }
+      }
+    },
+    "TransformLoadOptions": {
+      "type": "object",
+      "title": "TransformLoadOptions",
+      "description": "Transform Load Options 的调用配置。",
+      "properties": {
+        "transform": {
+          "type": "object",
+          "title": "(rawContent: string) => T | Promise<T>"
+        }
+      }
+    },
+    "LoadOptions": {
+      "type": "object",
+      "title": "LoadOptions",
+      "description": "load() 选项"
+    },
+    "TransformedFileLoadOptions": {
+      "type": "object",
+      "title": "TransformedFileLoadOptions",
+      "description": "Transformed File Load Options 的调用配置。"
+    },
+    "TransformedFileLoader": {
+      "type": "object",
+      "title": "TransformedFileLoader",
+      "description": "Transformed File Loader 的语义模型。"
+    },
+    "FileLoader": {
+      "type": "object",
+      "title": "FileLoader",
+      "description": "File Loader 的语义模型。"
+    }
+  }
 }

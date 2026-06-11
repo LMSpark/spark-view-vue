@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-component:permission/PermissionChecker
+ * 职责：提供 Permission Checker 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。
+ * 边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。
+ * AI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。
+ */
+/**
  * 权限检查器 — 纯函数集
  *
  * 提供模型级、实例级和字段级的权限验证。

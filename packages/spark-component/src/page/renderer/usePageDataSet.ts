@@ -1,19 +1,8 @@
 /**
- * DataSet 管理 Composable
- *
- * 位于 spark-component 渲染层，负责 DataSet 实例的引用管理。
- * DataSet 自身通过事件总线驱动 UI 更新，不需要 Vue 响应式包装。
- *
- * 职责单一：仅关注 DataSet 引用的持有/释放，不持有 UI/Rule 相关依赖。
- * DataSet ↔ el-table 的同步由 SparkPageRenderer 渲染器内部负责。
- *
- * 数据转换统一由上游 PageNode 完成，
- * 本 composable 只接受已编译好的 DataSet 实例，不做任何归一化。
- *
- * ⚠️ 不调用 DataSet.destroy()——DataSet 实例由 PageNode 持有，
- * 同一页面的多次进入共享同一个 DataSet 对象。调用 destroy() 会导致
- * 第二次进入页面时拿到已销毁的 DataSet，表格无数据。
- * 清除实例引用即可，GC 由缓存策略负责。
+ * @module @spark-appworks/spark-component:page/renderer/usePageDataSet
+ * 职责：提供 use Page Data Set 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。
+ * 边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。
+ * AI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。
  */
 
 import { onUnmounted } from 'vue'

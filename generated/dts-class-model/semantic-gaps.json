@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11T12:20:27.162Z",
+  "generatedAt": "2026-06-11T16:38:13.893Z",
   "gapCount": 0,
   "notes": [
     ".d.ts 是类型关系真源；declarationRelations 保留 extends / alias / intersection / union 等直接声明边。",

@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/projection/dts-renderer
- * @spark-appworks/spark-ai 的 class-model/projection/dts-renderer 模块。
- * 导出 ClassModel symbol: ModelGuideRenderInput, ModelGuide, AttributeGuideRenderInput, AttributeGuide, MethodGuideRenderInput, MethodGuide（共 6 个 symbol）。
+ * 职责：维护 DTS ClassModel 知识链路中的 dts-renderer 能力，围绕 ModelGuideRenderInput、ModelGuide、AttributeGuideRenderInput 等 6 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。
+ * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。
+ * AI用途：当需要判断 ClassModel 在 class-model/projection/dts-renderer 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AttributeMeta, ClassModel, ClassModelDocument, JsDocMeta, MethodMeta } from '../class-model'
 import { projectClassModelForGuide } from '../class-model/model-projection'

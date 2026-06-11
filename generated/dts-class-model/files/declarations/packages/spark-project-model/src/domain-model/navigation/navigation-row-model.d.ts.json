@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-project-model/src/domain-model/navigation/navigation-row-model.ts",
     "packageName": "@spark-appworks/spark-project-model",
     "modulePath": "domain-model/navigation/navigation-row-model",
-    "jsdoc": "@module @spark-appworks/spark-project-model:domain-model/navigation/navigation-row-model\n@spark-appworks/spark-project-model 的 domain-model/navigation/navigation-row-model 模块。\n导出 ClassModel symbol: NavigationRowModel（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-project-model:domain-model/navigation/navigation-row-model\n职责：提供项目模型层 navigation-row-model 能力，围绕 NavigationRowModel 处理导航、页面文件、配置内容、工作区或远端 IO 契约。\n边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。\nAI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 domain-model/navigation/navigation-row-model。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "NavigationRowModel"
@@ -20,7 +20,7 @@
     "NavigationRowModel": {
       "kind": "NavigationRowModel",
       "className": "NavigationRowModel",
-      "jsdoc": "/**\n * 导航节点 DB 扁平静态投影。\n *\n * 树结构由 parentId 表达，不含 children。\n */",
+      "jsdoc": "导航节点 DB 扁平静态投影。\n树结构由 parentId 表达，不含 children。",
       "shapeKind": "class",
       "declarationRelations": [
         {
@@ -31,300 +31,256 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-        "line": 14,
+        "line": 15,
         "className": "NavigationRowModel",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "options": {
-              "title": "{\n        id: string;\n        parentId: string;\n        projectId: string;\n        tenantId: string;\n        title: string;\n        description?: string;\n        nodeKind?: string;\n        planningAttachmentRef?: string;\n        path?: string;\n        icon?: string;\n        pageConfig?: PageConfigModel | null;\n    }"
+        "jsdoc": "@param options.id 节点 ID（NODE_ID）。\n@param options.parentId 父节点 ID（PARENT_ID）。\n@param options.projectId 项目 ID（PROJECT_ID）。\n@param options.tenantId 租户 ID（TENANT_ID）。\n@param options.title 节点标题（TITLE）。\n@param options.description 节点描述（DESCRIPTION）。\n@param options.nodeKind 节点类型（NODE_KIND）。\n@param options.pageConfig 页面配置；非配置页为 null。",
+        "signatureText": "constructor(options: {\n        id: string;\n        parentId: string;\n        projectId: string;\n        tenantId: string;\n        title: string;\n        description?: string;\n        nodeKind?: string;\n        planningAttachmentRef?: string;\n        path?: string;\n        icon?: string;\n        pageConfig?: PageConfigModel | null;\n    })",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "options",
+            "type": {
+              "type": "unknown",
+              "name": "{\n        id: string;\n        parentId: string;\n        projectId: string;\n        tenantId: string;\n        title: string;\n        description?: string;\n        nodeKind?: string;\n        planningAttachmentRef?: string;\n        path?: string;\n        icon?: string;\n        pageConfig?: PageConfigModel | null;\n    }"
             }
-          },
-          "required": [
-            "options"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/**\n     * @param options.id 节点 ID（NODE_ID）。\n     * @param options.parentId 父节点 ID（PARENT_ID）。\n     * @param options.projectId 项目 ID（PROJECT_ID）。\n     * @param options.tenantId 租户 ID（TENANT_ID）。\n     * @param options.title 节点标题（TITLE）。\n     * @param options.description 节点描述（DESCRIPTION）。\n     * @param options.nodeKind 节点类型（NODE_KIND）。\n     * @param options.pageConfig 页面配置；非配置页为 null。\n     */",
-        "provenance": {
-          "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-          "line": 47,
-          "className": "NavigationRowModel",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          }
+        ]
       },
       "attributes": [
         {
           "name": "id",
+          "jsdoc": "唯一标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 唯一标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 16,
-            "className": "NavigationRowModel",
-            "memberName": "id",
-            "declarationKind": "class"
-          }
+          "writable": true
         },
         {
           "name": "parentId",
+          "jsdoc": "parent Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** parent Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 18,
-            "className": "NavigationRowModel",
-            "memberName": "parentId",
-            "declarationKind": "class"
-          }
+          "writable": true
         },
         {
           "name": "projectId",
+          "jsdoc": "project Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** project Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 20,
-            "className": "NavigationRowModel",
-            "memberName": "projectId",
-            "declarationKind": "class"
-          }
+          "writable": true
         },
         {
           "name": "tenantId",
+          "jsdoc": "tenant Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** tenant Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 22,
-            "className": "NavigationRowModel",
-            "memberName": "tenantId",
-            "declarationKind": "class"
-          }
+          "writable": true
         },
         {
           "name": "title",
+          "jsdoc": "显示标题。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 显示标题。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 24,
-            "className": "NavigationRowModel",
-            "memberName": "title",
-            "declarationKind": "class"
-          }
+          "writable": true
         },
         {
           "name": "description",
+          "jsdoc": "description 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** description 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 26,
-            "className": "NavigationRowModel",
-            "memberName": "description",
-            "declarationKind": "class"
-          }
+          "writable": true
         },
         {
           "name": "nodeKind",
+          "jsdoc": "node Kind 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** node Kind 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 28,
-            "className": "NavigationRowModel",
-            "memberName": "nodeKind",
-            "declarationKind": "class"
-          }
+          "writable": true
         },
         {
           "name": "planningAttachmentRef",
+          "jsdoc": "planning Attachment Ref 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** planning Attachment Ref 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 30,
-            "className": "NavigationRowModel",
-            "memberName": "planningAttachmentRef",
-            "declarationKind": "class"
-          }
+          "writable": true
         },
         {
           "name": "path",
+          "jsdoc": "资源路径。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 资源路径。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 32,
-            "className": "NavigationRowModel",
-            "memberName": "path",
-            "declarationKind": "class"
-          }
+          "writable": true
         },
         {
           "name": "icon",
+          "jsdoc": "icon 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** icon 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 34,
-            "className": "NavigationRowModel",
-            "memberName": "icon",
-            "declarationKind": "class"
-          }
+          "writable": true
         },
         {
           "name": "pageConfig",
+          "jsdoc": "page Config 配置。",
           "schema": {
-            "title": "PageConfigModel | null"
+            "anyOf": [
+              {
+                "$ref": "../page/page-config-model.d.ts.json#/$defs/PageConfigModel"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** page Config 配置。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 36,
-            "className": "NavigationRowModel",
-            "memberName": "pageConfig",
-            "declarationKind": "class"
-          }
+          "writable": true
         }
       ],
       "methods": [
         {
           "name": "toJson",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Record<string, unknown>"
-          },
-          "returnTypeText": "Record<string, unknown>",
-          "jsdoc": "/** 执行 to Json 操作。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 61,
-            "className": "NavigationRowModel",
-            "memberName": "toJson",
-            "declarationKind": "class"
+          "jsdoc": "执行 to Json 操作。",
+          "signatureText": "toJson(): Record<string, unknown>",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
           }
         },
         {
           "name": "save",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "options": {
-                "title": "{\n        client: NavigationClient;\n    }"
+          "jsdoc": "将当前行导航属性写入远端（不含 pageConfig 四文件）。\n@param options.client Workspace 提供的 NavigationClient。",
+          "signatureText": "save(options: {\n        client: NavigationClient;\n    }): Promise<void>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        client: NavigationClient;\n    }"
               }
-            },
-            "required": [
-              "options"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<void>"
-          },
-          "returnTypeText": "Promise<void>",
-          "jsdoc": "/**\n     * 将当前行导航属性写入远端（不含 pageConfig 四文件）。\n     *\n     * @param options.client Workspace 提供的 NavigationClient。\n     */",
-          "paramsTypeText": "options: { client: NavigationClient; }",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 67,
-            "className": "NavigationRowModel",
-            "memberName": "save",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
           }
         },
         {
           "name": "load",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "options": {
-                "title": "{\n        id: string;\n        projectId: string;\n        tenantId: string;\n        client: NavigationClient;\n    }"
+          "jsdoc": "从项目导航树中按 id 定位并恢复单行。\n@param options.id 导航节点 id。\n@param options.projectId 项目 id（用于扁平行字段）。\n@param options.tenantId 租户 id。\n@param options.client NavigationClient。",
+          "signatureText": "static load(options: {\n        id: string;\n        projectId: string;\n        tenantId: string;\n        client: NavigationClient;\n    }): Promise<NavigationRowModel>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        id: string;\n        projectId: string;\n        tenantId: string;\n        client: NavigationClient;\n    }"
               }
-            },
-            "required": [
-              "options"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Promise<NavigationRowModel>"
-          },
-          "returnTypeText": "Promise<NavigationRowModel>",
-          "jsdoc": "/**\n     * 从项目导航树中按 id 定位并恢复单行。\n     *\n     * @param options.id 导航节点 id。\n     * @param options.projectId 项目 id（用于扁平行字段）。\n     * @param options.tenantId 租户 id。\n     * @param options.client NavigationClient。\n     */",
-          "paramsTypeText": "options: { id: string; projectId: string; tenantId: string; client: NavigationClient; }",
-          "provenance": {
-            "file": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-            "line": 78,
-            "className": "NavigationRowModel",
-            "memberName": "load",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "NavigationRowModel",
+                "sourcePath": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts"
+              }
+            ]
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.867Z"
+  "generatedAt": "2026-06-11T16:38:13.026Z",
+  "$defs": {
+    "NavigationRowModel": {
+      "type": "object",
+      "title": "NavigationRowModel",
+      "description": "导航节点 DB 扁平静态投影。\n树结构由 parentId 表达，不含 children。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "parentId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "pageConfig": {
+          "anyOf": [
+            {
+              "$ref": "../page/page-config-model.d.ts.json#/$defs/PageConfigModel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
 }

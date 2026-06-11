@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-ai:agent/tool-loop/function-call-recovery-enricher
+ * 职责：支撑 Agent tool loop 的 function call recovery enricher 能力，处理工具调用、结果映射、诊断事件或 payload 编解码。
+ * 边界：只服务单次 turn 内的工具循环，不定义业务注册协议，也不直接管理 UI 或持久化页面状态。
+ * AI用途：排查工具调用为什么继续、完成、失败或被映射成回调事件时，用本模块定位 loop 内部语义。
+ */
+/**
  * FC 失败恢复提示：把 tool result 的 code/msg/fix 映射成 ClassModel
  * 查询、guide 和 model_script 重试步骤，回灌给 LLM 形成失败自修复闭环。
  */

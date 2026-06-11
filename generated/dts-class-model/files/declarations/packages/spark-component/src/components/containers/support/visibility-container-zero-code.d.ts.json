@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/support/visibility-container-zero-code.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/support/visibility-container-zero-code",
-    "jsdoc": "@module @spark-appworks/spark-component:components/containers/support/visibility-container-zero-code\n@spark-appworks/spark-component 的 components/containers/support/visibility-container-zero-code 模块。\n导出 ClassModel symbol: VisibilityContainerZeroCodeOptions（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/support/visibility-container-zero-code\n职责：维护 @spark-appworks/spark-component 中 components/containers/support/visibility-container-zero-code 的模块能力，围绕 VisibilityContainerZeroCodeOptions 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 components/containers/support/visibility-container-zero-code 的声明、导出和使用边界时，从本模块开始。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "VisibilityContainerZeroCodeOptions"
@@ -20,115 +20,112 @@
     "VisibilityContainerZeroCodeOptions": {
       "kind": "VisibilityContainerZeroCodeOptions",
       "className": "VisibilityContainerZeroCodeOptions",
-      "jsdoc": "/** Visibility Container Zero Code Options 的调用配置。 */",
+      "jsdoc": "Visibility Container Zero Code Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** visible Value 字段。 */\n    visibleValue: ValueRef<boolean>;\n    /** commit Visible Value 回调。 */\n    commitVisibleValue: (value: boolean) => void;\n    /** on Open 事件回调。 */\n    onOpen: (() => void) | undefined;\n    /** on Close 事件回调。 */\n    onClose: (() => void) | undefined;\n    /** on Opened 事件回调。 */\n    onOpened: (() => void) | undefined;\n    /** on Closed 事件回调。 */\n    onClosed: (() => void) | undefined;\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/components/containers/support/visibility-container-zero-code.d.ts",
-        "line": 9,
+        "line": 10,
         "className": "VisibilityContainerZeroCodeOptions",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "visibleValue",
+          "jsdoc": "visible Value 字段。",
           "schema": {
+            "$ref": "../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<boolean>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** visible Value 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/support/visibility-container-zero-code.d.ts",
-            "line": 11,
-            "className": "VisibilityContainerZeroCodeOptions",
-            "memberName": "visibleValue",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "commitVisibleValue",
+          "jsdoc": "commit Visible Value 回调。",
           "schema": {
+            "type": "object",
             "title": "(value: boolean) => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** commit Visible Value 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/support/visibility-container-zero-code.d.ts",
-            "line": 13,
-            "className": "VisibilityContainerZeroCodeOptions",
-            "memberName": "commitVisibleValue",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "onOpen",
+          "jsdoc": "on Open 事件回调。",
           "schema": {
-            "title": "(() => void) | undefined"
+            "type": "object",
+            "title": "() => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** on Open 事件回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/support/visibility-container-zero-code.d.ts",
-            "line": 15,
-            "className": "VisibilityContainerZeroCodeOptions",
-            "memberName": "onOpen",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "onClose",
+          "jsdoc": "on Close 事件回调。",
           "schema": {
-            "title": "(() => void) | undefined"
+            "type": "object",
+            "title": "() => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** on Close 事件回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/support/visibility-container-zero-code.d.ts",
-            "line": 17,
-            "className": "VisibilityContainerZeroCodeOptions",
-            "memberName": "onClose",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "onOpened",
+          "jsdoc": "on Opened 事件回调。",
           "schema": {
-            "title": "(() => void) | undefined"
+            "type": "object",
+            "title": "() => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** on Opened 事件回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/support/visibility-container-zero-code.d.ts",
-            "line": 19,
-            "className": "VisibilityContainerZeroCodeOptions",
-            "memberName": "onOpened",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "onClosed",
+          "jsdoc": "on Closed 事件回调。",
           "schema": {
-            "title": "(() => void) | undefined"
+            "type": "object",
+            "title": "() => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** on Closed 事件回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/support/visibility-container-zero-code.d.ts",
-            "line": 21,
-            "className": "VisibilityContainerZeroCodeOptions",
-            "memberName": "onClosed",
-            "declarationKind": "interface"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.285Z"
+  "generatedAt": "2026-06-11T16:38:12.772Z",
+  "$defs": {
+    "VisibilityContainerZeroCodeOptions": {
+      "type": "object",
+      "title": "VisibilityContainerZeroCodeOptions",
+      "description": "Visibility Container Zero Code Options 的调用配置。",
+      "properties": {
+        "visibleValue": {
+          "$ref": "../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<boolean>"
+        },
+        "commitVisibleValue": {
+          "type": "object",
+          "title": "(value: boolean) => void"
+        },
+        "onOpen": {
+          "type": "object",
+          "title": "() => void"
+        },
+        "onClose": {
+          "type": "object",
+          "title": "() => void"
+        },
+        "onOpened": {
+          "type": "object",
+          "title": "() => void"
+        },
+        "onClosed": {
+          "type": "object",
+          "title": "() => void"
+        }
+      }
+    }
+  }
 }

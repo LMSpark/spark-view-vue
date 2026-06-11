@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-project-model:domain-model/project/project-root-model
- * @spark-appworks/spark-project-model 的 domain-model/project/project-root-model 模块。
- * 导出 ClassModel symbol: ProjectRootModelEvent, ProjectRootModel（共 2 个 symbol）。
+ * 职责：提供项目模型层 project-root-model 能力，围绕 ProjectRootModelEvent、ProjectRootModel 处理导航、页面文件、配置内容、工作区或远端 IO 契约。
+ * 边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。
+ * AI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 domain-model/project/project-root-model。
  */
 import { SparkAIModel } from '@spark-appworks/spark-utils'
 import type { NavigationClient } from '../../io/navigation-client'

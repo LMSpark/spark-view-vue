@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/display/non-data-components/DisplayAlert.props",
-    "jsdoc": "@module @spark-appworks/spark-component:components/display/non-data-components/DisplayAlert.props\nDisplayAlert 模块，属于 SPARK component display/static-display。\n组件目录: display/non-data-components。\n导出 ClassModel symbol: RAlertProps（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/display/non-data-components/DisplayAlert.props\n职责：定义 DisplayAlert（r-alert）的配置属性契约，把页面 JSON 中的字段、数据绑定、显示选项和交互开关约束成可生成的类型。\n边界：只描述 display/static-display 组件的声明式配置，不读取 DataSet、不触发运行时事件，也不直接渲染 DOM。\nAI用途：生成或修订页面配置时，用本模块判断 display alert 允许哪些 props、哪些字段属于数据绑定，避免把运行时 API 写进配置。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "RAlertProps"
@@ -25,7 +25,7 @@
     "RAlertProps": {
       "kind": "RAlertProps",
       "className": "RAlertProps",
-      "jsdoc": "/** RAlert Props 的属性契约。 */",
+      "jsdoc": "RAlert Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "SparkNodeProps & {\n    /** 标题 */\n    title?: string;\n    /** 描述文本 */\n    description?: string;\n    /** 提示类型 */\n    alertType?: 'success' | 'warning' | 'info' | 'error';\n    /** 是否可关闭 */\n    closable?: boolean;\n    /** 关闭按钮文本 */\n    closeText?: string;\n    /** 是否居中 */\n    center?: boolean;\n    /** 是否显示图标 */\n    showIcon?: boolean;\n    /** 主题效果 */\n    effect?: 'light' | 'dark';\n}",
       "declarationRelations": [
@@ -53,181 +53,188 @@
       "attributes": [
         {
           "name": "title",
+          "jsdoc": "标题",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 标题 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.d.ts",
-            "line": 11,
-            "className": "RAlertProps",
-            "memberName": "title",
-            "declarationKind": "interface",
-            "componentName": "DisplayAlert",
-            "componentType": "r-alert",
-            "componentLevel": "display",
-            "componentLayer": "static-display",
-            "componentDirectory": "display/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "description",
+          "jsdoc": "描述文本",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 描述文本 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.d.ts",
-            "line": 13,
-            "className": "RAlertProps",
-            "memberName": "description",
-            "declarationKind": "interface",
-            "componentName": "DisplayAlert",
-            "componentType": "r-alert",
-            "componentLevel": "display",
-            "componentLayer": "static-display",
-            "componentDirectory": "display/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "alertType",
+          "jsdoc": "提示类型",
           "schema": {
-            "title": "'success' | 'warning' | 'info' | 'error'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "success"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warning"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 提示类型 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.d.ts",
-            "line": 15,
-            "className": "RAlertProps",
-            "memberName": "alertType",
-            "declarationKind": "interface",
-            "componentName": "DisplayAlert",
-            "componentType": "r-alert",
-            "componentLevel": "display",
-            "componentLayer": "static-display",
-            "componentDirectory": "display/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "closable",
+          "jsdoc": "是否可关闭",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否可关闭 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.d.ts",
-            "line": 17,
-            "className": "RAlertProps",
-            "memberName": "closable",
-            "declarationKind": "interface",
-            "componentName": "DisplayAlert",
-            "componentType": "r-alert",
-            "componentLevel": "display",
-            "componentLayer": "static-display",
-            "componentDirectory": "display/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "closeText",
+          "jsdoc": "关闭按钮文本",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 关闭按钮文本 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.d.ts",
-            "line": 19,
-            "className": "RAlertProps",
-            "memberName": "closeText",
-            "declarationKind": "interface",
-            "componentName": "DisplayAlert",
-            "componentType": "r-alert",
-            "componentLevel": "display",
-            "componentLayer": "static-display",
-            "componentDirectory": "display/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "center",
+          "jsdoc": "是否居中",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否居中 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.d.ts",
-            "line": 21,
-            "className": "RAlertProps",
-            "memberName": "center",
-            "declarationKind": "interface",
-            "componentName": "DisplayAlert",
-            "componentType": "r-alert",
-            "componentLevel": "display",
-            "componentLayer": "static-display",
-            "componentDirectory": "display/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "showIcon",
+          "jsdoc": "是否显示图标",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否显示图标 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.d.ts",
-            "line": 23,
-            "className": "RAlertProps",
-            "memberName": "showIcon",
-            "declarationKind": "interface",
-            "componentName": "DisplayAlert",
-            "componentType": "r-alert",
-            "componentLevel": "display",
-            "componentLayer": "static-display",
-            "componentDirectory": "display/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "effect",
+          "jsdoc": "主题效果",
           "schema": {
-            "title": "'light' | 'dark'"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "light"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "dark"
+                ]
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 主题效果 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.d.ts",
-            "line": 25,
-            "className": "RAlertProps",
-            "memberName": "effect",
-            "declarationKind": "interface",
-            "componentName": "DisplayAlert",
-            "componentType": "r-alert",
-            "componentLevel": "display",
-            "componentLayer": "static-display",
-            "componentDirectory": "display/non-data-components"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.341Z"
+  "generatedAt": "2026-06-11T16:38:12.793Z",
+  "$defs": {
+    "RAlertProps": {
+      "type": "object",
+      "title": "RAlertProps",
+      "description": "RAlert Props 的属性契约。",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "alertType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            }
+          ]
+        },
+        "closable": {
+          "type": "boolean"
+        },
+        "closeText": {
+          "type": "string"
+        },
+        "center": {
+          "type": "boolean"
+        },
+        "showIcon": {
+          "type": "boolean"
+        },
+        "effect": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "light"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "dark"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
 }

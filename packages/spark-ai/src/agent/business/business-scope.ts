@@ -1,29 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/business/business-scope.ts — 业务作用域工厂函数
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】纯函数工具集。负责从原始 ID 字符串构造类型安全的
- *   AiAgentScope / AiAgentRuntimeContext 等作用域对象。
- *
- * 【设计原则】
- *   - SSOT：AiAgentTarget 是业务坐标唯一来源；Scope/RuntimeContext/sessionId 都是它的投影
- *   - 所有输入字符串都经过 normalizeRequiredText 校验（非空、去空白）
- *   - sessionId = "kind:instanceId"（冒号拼接，全局唯一）
- *   - turnKey 用于一次对话 turn 的隔离（kind + instanceId + turnId）
- *   - streamKey 用于 turn 内更细的 stream/诊断流（turnKey + streamId）
- *
- * 【函数清单】
- *   normalizeAiAgentTarget     — 规范化业务定位（校验 + 去空白）
- *   createAiAgentSessionId     — 生成会话 ID
- *   createAiAgentScope         — 构造业务作用域
- *   createAiAgentTurnKey               — 生成 turn 隔离键
- *   createAiAgentStreamKey             — 生成 turn 内 stream 键
- *   toAiAgentRuntimeScope              — Scope → RuntimeContext 投影
- *   latestUserInput                   — 从请求历史中提取最新用户消息
- *
- * 【消费方】business-session、turn-event-collector、tool-loop-runner、APP turn bridge
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/business/business-scope
+ * 职责：从业务注册 ID、实例 ID、turnId 和 streamId 构造 AiAgentScope、sessionId、turnKey 与 runtime scope。
+ * 边界：只做业务坐标校验和投影，不访问注册表、不持久化会话，也不读取页面或项目状态。
+ * AI用途：需要追踪一次业务对话的 session、turn、stream 如何命名和隔离时，从这里确认作用域 SSOT。
  */
 
 import {

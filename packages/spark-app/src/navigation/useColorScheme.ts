@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-app:navigation/useColorScheme
- * @spark-appworks/spark-app 的 navigation/useColorScheme 模块。
- * 导出 ClassModel symbol: PrimaryPreset, NavColorSet, NavPreset, StyleColorSet, StylePreset（共 5 个 symbol）。
+ * 职责：提供应用壳层 useColorScheme 能力，围绕 PrimaryPreset、NavColorSet、NavPreset 等 5 个公开契约 连接导航、认证、插件、主题或 AI 宿主接线。
+ * 边界：只负责 spark-app 基础设施和运行时接线，不定义底层 DataSet，也不实现组件渲染细节。
+ * AI用途：需要理解应用层如何把路由、服务和组件系统组装起来时，用本模块定位 navigation/useColorScheme。
  */
 import { ref, computed, watch } from 'vue'
 import { isRecord } from '@spark-appworks/spark-utils'

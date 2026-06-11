@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-utils:snapshot-history
- * @spark-appworks/spark-utils 的 snapshot-history 模块。
- * 导出 ClassModel symbol: SnapshotHistory（共 1 个 symbol）。
+ * 职责：提供框架无关基础设施 snapshot-history 能力，围绕 SnapshotHistory 支撑 capability、HTTP、日志、脚本类型或历史快照。
+ * 边界：保持底层工具包纯净，不依赖 Vue、spark-data 或应用壳层，也不承载业务配置。
+ * AI用途：需要跨包复用基础能力或确认底层协议时，用本模块理解 snapshot-history。
  */
 /**
  * 通用快照历史管理器 — push / undo / redo / cursor。

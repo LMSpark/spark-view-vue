@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-json-document:schema/schema-standardize
- * @spark-appworks/spark-json-document 的 schema/schema-standardize 模块。
- * 导出 ClassModel symbol: StandardJsonSchema, StandardJsonSchemaObject（共 2 个 symbol）。
+ * 职责：提供 JSON 文档和 schema 处理中的 schema-standardize 能力，围绕 StandardJsonSchema、StandardJsonSchemaObject 管理 schema 标准化、解析、校验或树策略。
+ * 边界：只处理 JSON/schema/tree 抽象，不依赖 SPARK 页面运行时，也不直接操作业务 DataSet。
+ * AI用途：生成或校验 JSON 配置结构时，用本模块确认 schema/schema-standardize 的 schema 语义。
  */
 /**
  * Canonicalize JSON Schema fragments to Draft 2020-12 shapes used by spark-json-document.

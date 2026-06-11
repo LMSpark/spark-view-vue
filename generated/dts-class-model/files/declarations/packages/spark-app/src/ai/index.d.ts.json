@@ -7,11 +7,11 @@
     "sourceFile": "packages/spark-app/src/ai/index.ts",
     "packageName": "@spark-appworks/spark-app",
     "modulePath": "ai/index",
-    "jsdoc": "@module @spark-appworks/spark-app:ai/index\n@spark-appworks/spark-app 的 ai/index 模块。\n该 DTS shard 当前不导出 ClassModel symbol。",
+    "jsdoc": "@module @spark-appworks/spark-app:ai/index\n职责：提供应用壳层 ai 能力，围绕 模块入口、副作用注册或内部组合逻辑 连接导航、认证、插件、主题或 AI 宿主接线。\n边界：只负责 spark-app 基础设施和运行时接线，不定义底层 DataSet，也不实现组件渲染细节。\nAI用途：需要理解应用层如何把路由、服务和组件系统组装起来时，用本模块定位 ai/index。",
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
   "symbols": [],
   "models": {},
-  "generatedAt": "2026-06-11T12:20:25.884Z"
+  "generatedAt": "2026-06-11T16:38:12.615Z"
 }

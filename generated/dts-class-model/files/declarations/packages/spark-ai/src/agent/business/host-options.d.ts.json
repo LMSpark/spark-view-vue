@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/agent/business/host-options.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "agent/business/host-options",
-    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/host-options\n@spark-appworks/spark-ai 的 agent/business/host-options 模块。\n导出 ClassModel symbol: AiAgentOptions（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/host-options\n职责：定义 AiAgentHost 的配置契约，描述模型客户端、工具审批、会话存储、诊断和业务注册所需的宿主依赖。\n边界：只声明 Host 启动参数，不实现 ToolLoop、不管理 UI，也不定义具体业务输入。\nAI用途：接入或排查 AI Host 初始化时，用本模块确认哪些依赖必须由应用层注入。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "AiAgentOptions"
@@ -20,7 +20,7 @@
     "AiAgentOptions": {
       "kind": "AiAgentOptions",
       "className": "AiAgentOptions",
-      "jsdoc": "/** Ai Agent Options 的调用配置。 */",
+      "jsdoc": "Ai Agent Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
       "declarationRelations": [
@@ -32,7 +32,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/host-options.d.ts",
-        "line": 10,
+        "line": 11,
         "className": "AiAgentOptions",
         "declarationKind": "type"
       },
@@ -40,5 +40,12 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.737Z"
+  "generatedAt": "2026-06-11T16:38:12.547Z",
+  "$defs": {
+    "AiAgentOptions": {
+      "type": "object",
+      "title": "AiAgentOptions",
+      "description": "Ai Agent Options 的调用配置。"
+    }
+  }
 }

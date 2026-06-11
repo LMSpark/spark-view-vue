@@ -1,7 +1,8 @@
 /**
  * @module app:services/page-design-ai-runner
- * app 的 services/page-design-ai-runner 模块。
- * 导出 ClassModel symbol: PageDesignAiRunOptions, PageDesignAiRunEvents, PageDesignAiRunCommand, PageDesignAiRunResult（共 4 个 symbol）。
+ * 职责：提供应用层 pageDesign 的 page-design-ai-runner 能力，围绕 PageDesignAiRunOptions、PageDesignAiRunEvents、PageDesignAiRunCommand 等 4 个公开契约 接线 AI runner、业务门禁、知识服务或编辑器状态。
+ * 边界：只编排 app 层页面设计流程，不替代 spark-ai Host，也不直接实现底层组件渲染器。
+ * AI用途：排查 pageDesign 会话、工具门禁或页面四文件生成链路时，用本模块定位 services/page-design-ai-runner。
  */
 /**
  * DevSystem 面板内 pageDesign AI — 使用 DevSystem 当前 ProjectWorkspace。

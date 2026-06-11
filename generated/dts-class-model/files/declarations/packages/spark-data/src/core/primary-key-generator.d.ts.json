@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-data/src/core/primary-key-generator.ts",
     "packageName": "@spark-appworks/spark-data",
     "modulePath": "core/primary-key-generator",
-    "jsdoc": "主键生成器 — 支持多种客户端主键生成策略\n策略一览：\n- `uuid`（推荐）— UUID v4，全局唯一，无状态\n- `auto-increment` — 自增整数，简单场景 / 测试用\n- `timestamp` — 时间戳 + 自增后缀，趋势递增\n- `custom` — 自定义生成函数",
+    "jsdoc": "@module @spark-appworks/spark-data:core/primary-key-generator\n职责：提供 spark-data 数据管线中的 primary key generator 能力，支撑 DataSet、DataTable、DataView、树或 CRUD 状态协作。\n边界：保持框架无关，只维护数据模型和操作协议，不导入 Vue、Element Plus 或应用路由。\nAI用途：处理页面数据绑定、DataViewKey、行状态、树结构或 CRUD 行为时，用本模块确认数据层语义。\n\n主键生成器 — 支持多种客户端主键生成策略\n策略一览：\n- `uuid`（推荐）— UUID v4，全局唯一，无状态\n- `auto-increment` — 自增整数，简单场景 / 测试用\n- `timestamp` — 时间戳 + 自增后缀，趋势递增\n- `custom` — 自定义生成函数",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "PrimaryKeyStrategy",
@@ -24,7 +24,7 @@
     "PrimaryKeyStrategy": {
       "kind": "PrimaryKeyStrategy",
       "className": "PrimaryKeyStrategy",
-      "jsdoc": "/**\n * 主键生成策略类型\n */",
+      "jsdoc": "主键生成策略类型",
       "shapeKind": "type",
       "declarationTypeText": "'auto-increment' | 'uuid' | 'timestamp' | 'custom'",
       "declarationRelations": [
@@ -47,7 +47,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts",
-        "line": 14,
+        "line": 20,
         "className": "PrimaryKeyStrategy",
         "declarationKind": "type"
       },
@@ -57,81 +57,52 @@
     "PrimaryKeyGeneratorConfig": {
       "kind": "PrimaryKeyGeneratorConfig",
       "className": "PrimaryKeyGeneratorConfig",
-      "jsdoc": "/**\n * 主键生成器配置\n */",
+      "jsdoc": "主键生成器配置",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 生成策略 */\n    strategy: PrimaryKeyStrategy;\n    /** 主键字段名 */\n    fields: string;\n    /** 自定义生成函数（strategy='custom' 时必需） */\n    generator?: (row: Partial<DataRow>, existingRows: DataRow[]) => string | number | Record<string, string | number>;\n    /** 自增起始值（strategy='auto-increment' 时，默认 1） */\n    startValue?: number;\n}",
       "provenance": {
         "file": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts",
-        "line": 18,
+        "line": 24,
         "className": "PrimaryKeyGeneratorConfig",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "strategy",
+          "jsdoc": "生成策略",
           "schema": {
-            "title": "PrimaryKeyStrategy"
+            "$ref": "#/$defs/PrimaryKeyStrategy"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 生成策略 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts",
-            "line": 20,
-            "className": "PrimaryKeyGeneratorConfig",
-            "memberName": "strategy",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "fields",
+          "jsdoc": "主键字段名",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 主键字段名 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts",
-            "line": 22,
-            "className": "PrimaryKeyGeneratorConfig",
-            "memberName": "fields",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "generator",
+          "jsdoc": "自定义生成函数（strategy='custom' 时必需）",
           "schema": {
+            "type": "object",
             "title": "(row: Partial<DataRow>, existingRows: DataRow[]) => string | number | Record<string, string | number>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 自定义生成函数（strategy='custom' 时必需） */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts",
-            "line": 24,
-            "className": "PrimaryKeyGeneratorConfig",
-            "memberName": "generator",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "startValue",
+          "jsdoc": "自增起始值（strategy='auto-increment' 时，默认 1）",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 自增起始值（strategy='auto-increment' 时，默认 1） */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts",
-            "line": 26,
-            "className": "PrimaryKeyGeneratorConfig",
-            "memberName": "startValue",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -139,123 +110,148 @@
     "PrimaryKeyGenerator": {
       "kind": "PrimaryKeyGenerator",
       "className": "PrimaryKeyGenerator",
-      "jsdoc": "/**\n * 主键生成器\n *\n * 支持多种生成策略，可为新记录自动生成主键值。\n */",
+      "jsdoc": "主键生成器\n支持多种生成策略，可为新记录自动生成主键值。",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts",
-        "line": 33,
+        "line": 39,
         "className": "PrimaryKeyGenerator",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "config": {
-              "title": "PrimaryKeyGeneratorConfig"
+        "jsdoc": "创建 Primary Key Generator 实例。",
+        "signatureText": "constructor(config: PrimaryKeyGeneratorConfig)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "config",
+            "type": {
+              "type": "reference",
+              "name": "PrimaryKeyGeneratorConfig",
+              "sourcePath": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts"
             }
-          },
-          "required": [
-            "config"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Primary Key Generator 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts",
-          "line": 37,
-          "className": "PrimaryKeyGenerator",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          }
+        ]
       },
       "attributes": [],
       "methods": [
         {
           "name": "generate",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "row": {
-                "title": "Partial<DataRow>"
-              },
-              "existingRows": {
-                "type": "array",
-                "title": "DataRow[]",
-                "items": true
+          "jsdoc": "为新记录生成主键值\n@param row - 部分数据行（可能已包含部分字段值）\n@param existingRows - 已存在的行数据（用于自增计算）\n@returns 主键值",
+          "signatureText": "generate(row: Partial<DataRow>, existingRows?: DataRow[]): string | number",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "Partial",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow",
+                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  }
+                ]
               }
             },
-            "required": [
-              "row"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "string | number"
-          },
-          "returnTypeText": "string | number",
-          "jsdoc": "/**\n     * 为新记录生成主键值\n     *\n     * @param row - 部分数据行（可能已包含部分字段值）\n     * @param existingRows - 已存在的行数据（用于自增计算）\n     * @returns 主键值\n     */",
-          "paramsTypeText": "row: Partial<DataRow>, existingRows?: DataRow[] | undefined",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts",
-            "line": 45,
-            "className": "PrimaryKeyGenerator",
-            "memberName": "generate",
-            "declarationKind": "class"
+            {
+              "name": "existingRows",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "DataRow",
+                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                }
+              }
+            }
+          ],
+          "returnType": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            ]
           }
         },
         {
           "name": "resetAutoIncrement",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "value": {
-                "type": "number",
-                "title": "number"
+          "jsdoc": "重置自增计数器",
+          "signatureText": "resetAutoIncrement(value: number): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
               }
-            },
-            "required": [
-              "value"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 重置自增计数器 */",
-          "paramsTypeText": "value: number",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts",
-            "line": 51,
-            "className": "PrimaryKeyGenerator",
-            "memberName": "resetAutoIncrement",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "getConfig",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Readonly<PrimaryKeyGeneratorConfig>"
-          },
-          "returnTypeText": "Readonly<PrimaryKeyGeneratorConfig>",
-          "jsdoc": "/** 获取当前配置 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts",
-            "line": 53,
-            "className": "PrimaryKeyGenerator",
-            "memberName": "getConfig",
-            "declarationKind": "class"
+          "jsdoc": "获取当前配置",
+          "signatureText": "getConfig(): Readonly<PrimaryKeyGeneratorConfig>",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "reference",
+            "name": "Readonly",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "PrimaryKeyGeneratorConfig",
+                "sourcePath": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts"
+              }
+            ]
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.699Z"
+  "generatedAt": "2026-06-11T16:38:12.927Z",
+  "$defs": {
+    "PrimaryKeyStrategy": {
+      "type": "object",
+      "title": "PrimaryKeyStrategy",
+      "description": "主键生成策略类型"
+    },
+    "PrimaryKeyGeneratorConfig": {
+      "type": "object",
+      "title": "PrimaryKeyGeneratorConfig",
+      "description": "主键生成器配置",
+      "properties": {
+        "strategy": {
+          "$ref": "#/$defs/PrimaryKeyStrategy"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "generator": {
+          "type": "object",
+          "title": "(row: Partial<DataRow>, existingRows: DataRow[]) => string | number | Record<string, string | number>"
+        },
+        "startValue": {
+          "type": "number"
+        }
+      }
+    },
+    "PrimaryKeyGenerator": {
+      "type": "object",
+      "title": "PrimaryKeyGenerator",
+      "description": "主键生成器\n支持多种生成策略，可为新记录自动生成主键值。"
+    }
+  }
 }

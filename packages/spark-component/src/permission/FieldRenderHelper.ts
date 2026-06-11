@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-component:permission/FieldRenderHelper
+ * 职责：提供 Field Render Helper 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。
+ * 边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。
+ * AI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。
+ */
+/**
  * 字段渲染状态计算 — 纯函数
  *
  * 结合字段配置和权限，计算字段的最终渲染状态。

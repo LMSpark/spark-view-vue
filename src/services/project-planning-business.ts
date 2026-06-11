@@ -1,4 +1,10 @@
 /**
+ * @module app:services/project-planning-business
+ * 职责：提供应用运行时 service 层的 project planning business 能力，连接项目模型、AI Host、租户上下文或页面设计流程。
+ * 边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。
+ * AI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。
+ */
+/**
  * 项目策划 AI 输入契约与 Host 业务注册。
  *
  * 策划阶段只消费 navigation description + 附件详细说明，产出子模块/页面概要；

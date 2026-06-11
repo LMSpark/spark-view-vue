@@ -1,19 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/session/session-diagnostics.ts — AI 会话历史诊断工具
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Agent 会话层的只读诊断入口。从 AiAgentSessionRecord
- *   提取摘要和转录视图，用于 Agent 能力诊断、冒烟运行摘要、
- *   调试面板或日志导出。不修改 sessionStore 状态。
- *
- * 【核心函数】
- *   summarizeAiAgentSessionRecord  — 汇总会话数量、失败工具调用、最后助手文本
- *   createAiAgentSessionTranscript  — 将 session history 转为方向标识的调试转录
- *   previewAiAgentDiagnosticValue   — 安全序列化并裁剪诊断值
- *
- * 【消费方】APP 层调试面板、冒烟运行摘要、日志导出
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/session/session-diagnostics
+ * 职责：定义或实现 Agent 会话存储、诊断和运行轨迹中的 session diagnostics 能力。
+ * 边界：只维护 session 层状态和观测数据，不生成业务输入契约，也不直接执行工具 runtime。
+ * AI用途：追踪会话记录、诊断事件或 run trace 时，用本模块确认 session 数据如何保存和读取。
  */
 
 import type {

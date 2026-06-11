@@ -1,4 +1,10 @@
 /**
+ * @module app:services/navigation-sync
+ * 职责：提供应用运行时 service 层的 navigation sync 能力，连接项目模型、AI Host、租户上下文或页面设计流程。
+ * 边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。
+ * AI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。
+ */
+/**
  * 已提交导航的统一同步 — 单次 DTO 灌入 committed ProjectModel，再投影到壳层 UI 与编辑宿主。
  *
  * 运行时侧栏读 committed ProjectModel 的 snapshot 投影；DevSystem 读 editable ProjectModel。

@@ -1,31 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/tool-loop/tool-call-executor.ts — 工具调用执行器
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Agent 层的单次工具调用执行单元。将 LLM 返回的
- *   OpenAI-style tool_call（function.name + function.arguments）
- *   路由到 ClassModel runtime 执行，收集结果并写回 sessionStore。
- *
- * 【核心类】
- *   AiAgentToolCallExecutor — 工具调用执行器
- *     ├─ execute()            — 主流程：校验 → 解析 → 执行 → 写历史 → 回调
- *     └─ completeExecution()  — 统一后处理：sessionStore 写入 + 生命周期钩子 + 诊断事件
- *
- * 【执行流程】
- *   1. 从 transport tool_call 提取 function.name
- *   2. 校验固定 toolName（resolveToolName）
- *   3. 解析 JSON 参数字符串 → Record<string, AiJsonValue>
- *   4. 调用 registration.beforeFunctionCall 做执行前策略裁决
- *   5. 调用 registration.runtime.executeTool 执行路由
- *   6. 将 AiAgentToolResult 转换为 AiAgentFunctionCallResult
- *   7. 写入 sessionStore（appendFunctionCall）
- *   8. 调用业务方 afterFunctionCall 生命周期钩子
- *   9. 发送诊断事件（emitToolResultEvent）+ 业务回调（onToolCall）
- *  10. 返回 toolMessage（role: 'tool'）和生命周期指令
- *
- * 【消费方】tool-loop-runner.ts（runToolLoop 内每个 tool_call 循环）
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/tool-loop/tool-call-executor
+ * 职责：支撑 Agent tool loop 的 tool call executor 能力，处理工具调用、结果映射、诊断事件或 payload 编解码。
+ * 边界：只服务单次 turn 内的工具循环，不定义业务注册协议，也不直接管理 UI 或持久化页面状态。
+ * AI用途：排查工具调用为什么继续、完成、失败或被映射成回调事件时，用本模块定位 loop 内部语义。
  */
 
 import type { AiJsonParams } from '../../json'

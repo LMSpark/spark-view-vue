@@ -1,4 +1,10 @@
 /**
+ * @module app:registries/vue-page-registry
+ * 职责：提供 src 应用层的 vue page registry 能力，连接运行时上下文、视图组件和服务。
+ * 边界：只服务应用入口和组合层，不修改基础包协议，也不承担服务端职责。
+ * AI用途：排查应用启动、运行时上下文或局部 UI 接线时，用本模块确认源码入口。
+ */
+/**
  * Vue system-page registry.
  *
  * JSON config only declares pages. This registry binds those declarations to

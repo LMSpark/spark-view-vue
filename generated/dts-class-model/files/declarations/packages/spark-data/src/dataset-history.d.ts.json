@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-data/src/dataset-history.ts",
     "packageName": "@spark-appworks/spark-data",
     "modulePath": "dataset-history",
-    "jsdoc": "@module @spark-appworks/spark-data:dataset-history\n@spark-appworks/spark-data 的 dataset-history 模块。\n导出 ClassModel symbol: DataSetHistoryStorageAdapter, DataSetHistoryScope, DataSetSnapshotSelector, DataSetHistorySnapshot, DataSetHistoryListOptions, DataSetSnapshotCommitOptions, DataSetCommitSnapshotOptions（共 7 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-data:dataset-history\n职责：提供数据层 dataset-history 能力，围绕 DataSetHistoryStorageAdapter、DataSetHistoryScope、DataSetSnapshotSelector 等 7 个公开契约 描述 DataSet、DataTable、DataView、策略委托或数据绑定键。\n边界：保持框架无关，只处理数据模型、校验和本地策略，不依赖 Vue、路由或 Element Plus。\nAI用途：生成页面数据绑定、DataViewKey 或数据策略调用时，用本模块确认 dataset-history 的数据语义。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "DataSetHistoryStorageAdapter",
@@ -32,7 +32,7 @@
     "DataSetHistoryStorageAdapter": {
       "kind": "DataSetHistoryStorageAdapter",
       "className": "DataSetHistoryStorageAdapter",
-      "jsdoc": "/** Data Set History Storage Adapter 的语义模型。 */",
+      "jsdoc": "Data Set History Storage Adapter 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    getItem(key: string): string | null;\n    setItem(key: string, value: string): void;\n    removeItem(key: string): void;\n}",
       "provenance": {
@@ -47,7 +47,7 @@
     "DataSetHistoryScope": {
       "kind": "DataSetHistoryScope",
       "className": "DataSetHistoryScope",
-      "jsdoc": "/** Data Set History Scope 的语义模型。 */",
+      "jsdoc": "Data Set History Scope 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** data Set Name 名称。 */\n    dataSetName?: string;\n    /** page Id 标识。 */\n    pageId?: string;\n    /** scope Id 标识。 */\n    scopeId?: string;\n    /** namespace 字段。 */\n    namespace?: string;\n}",
       "provenance": {
@@ -59,71 +59,39 @@
       "attributes": [
         {
           "name": "dataSetName",
+          "jsdoc": "data Set Name 名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** data Set Name 名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 11,
-            "className": "DataSetHistoryScope",
-            "memberName": "dataSetName",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "pageId",
+          "jsdoc": "page Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** page Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 13,
-            "className": "DataSetHistoryScope",
-            "memberName": "pageId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "scopeId",
+          "jsdoc": "scope Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** scope Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 15,
-            "className": "DataSetHistoryScope",
-            "memberName": "scopeId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "namespace",
+          "jsdoc": "namespace 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** namespace 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 17,
-            "className": "DataSetHistoryScope",
-            "memberName": "namespace",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -131,7 +99,7 @@
     "DataSetSnapshotSelector": {
       "kind": "DataSetSnapshotSelector",
       "className": "DataSetSnapshotSelector",
-      "jsdoc": "/** Data Set Snapshot Selector 的语义模型。 */",
+      "jsdoc": "Data Set Snapshot Selector 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** entry Id 标识。 */\n    entryId?: string;\n    /** version 字段。 */\n    version?: number;\n}",
       "provenance": {
@@ -143,37 +111,21 @@
       "attributes": [
         {
           "name": "entryId",
+          "jsdoc": "entry Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** entry Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 22,
-            "className": "DataSetSnapshotSelector",
-            "memberName": "entryId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "version",
+          "jsdoc": "version 字段。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** version 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 24,
-            "className": "DataSetSnapshotSelector",
-            "memberName": "version",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -181,7 +133,7 @@
     "DataSetHistorySnapshot": {
       "kind": "DataSetHistorySnapshot",
       "className": "DataSetHistorySnapshot",
-      "jsdoc": "/** Data Set History Snapshot 的语义模型。 */",
+      "jsdoc": "Data Set History Snapshot 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** version 字段。 */\n    version: number;\n    /** 事件时间戳。 */\n    timestamp: number;\n    /** data Set Name 名称。 */\n    dataSetName: string;\n    /** page Id 标识。 */\n    pageId?: string;\n    /** 展示标签。 */\n    label?: string;\n    /** summary 字段。 */\n    summary?: string;\n    /** snapshot 字段。 */\n    snapshot: DataSetMetadata;\n    /** source Data 字段。 */\n    sourceData?: Record<string, unknown>;\n}",
       "provenance": {
@@ -193,154 +145,85 @@
       "attributes": [
         {
           "name": "id",
+          "jsdoc": "唯一标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 唯一标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 29,
-            "className": "DataSetHistorySnapshot",
-            "memberName": "id",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "version",
+          "jsdoc": "version 字段。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** version 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 31,
-            "className": "DataSetHistorySnapshot",
-            "memberName": "version",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "timestamp",
+          "jsdoc": "事件时间戳。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 事件时间戳。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 33,
-            "className": "DataSetHistorySnapshot",
-            "memberName": "timestamp",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "dataSetName",
+          "jsdoc": "data Set Name 名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** data Set Name 名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 35,
-            "className": "DataSetHistorySnapshot",
-            "memberName": "dataSetName",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "pageId",
+          "jsdoc": "page Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** page Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 37,
-            "className": "DataSetHistorySnapshot",
-            "memberName": "pageId",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "label",
+          "jsdoc": "展示标签。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 展示标签。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 39,
-            "className": "DataSetHistorySnapshot",
-            "memberName": "label",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "summary",
+          "jsdoc": "summary 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** summary 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 41,
-            "className": "DataSetHistorySnapshot",
-            "memberName": "summary",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "snapshot",
+          "jsdoc": "snapshot 字段。",
           "schema": {
-            "title": "DataSetMetadata"
+            "$ref": "types.d.ts.json#/$defs/DataSetMetadata"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** snapshot 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 43,
-            "className": "DataSetHistorySnapshot",
-            "memberName": "snapshot",
-            "declarationKind": "interface"
-          }
+          "writable": true
         },
         {
           "name": "sourceData",
+          "jsdoc": "source Data 字段。",
           "schema": {
+            "type": "object",
             "title": "Record<string, unknown>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** source Data 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 45,
-            "className": "DataSetHistorySnapshot",
-            "memberName": "sourceData",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -348,7 +231,7 @@
     "DataSetHistoryListOptions": {
       "kind": "DataSetHistoryListOptions",
       "className": "DataSetHistoryListOptions",
-      "jsdoc": "/** Data Set History List Options 的调用配置。 */",
+      "jsdoc": "Data Set History List Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "DataSetHistoryScope & {\n    /** adapter 字段。 */\n    adapter?: DataSetHistoryStorageAdapter | null;\n}",
       "declarationRelations": [
@@ -371,19 +254,19 @@
       "attributes": [
         {
           "name": "adapter",
+          "jsdoc": "adapter 字段。",
           "schema": {
-            "title": "DataSetHistoryStorageAdapter | null"
+            "anyOf": [
+              {
+                "$ref": "#/$defs/DataSetHistoryStorageAdapter"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** adapter 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 50,
-            "className": "DataSetHistoryListOptions",
-            "memberName": "adapter",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -391,7 +274,7 @@
     "DataSetSnapshotCommitOptions": {
       "kind": "DataSetSnapshotCommitOptions",
       "className": "DataSetSnapshotCommitOptions",
-      "jsdoc": "/** Data Set Snapshot Commit Options 的调用配置。 */",
+      "jsdoc": "Data Set Snapshot Commit Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "DataSetHistoryListOptions & {\n    /** max Entries 字段。 */\n    maxEntries?: number;\n    /** 展示标签。 */\n    label?: string;\n    /** summary 字段。 */\n    summary?: string;\n    /** source Data 字段。 */\n    sourceData?: Record<string, unknown>;\n    /** version 字段。 */\n    version?: number;\n    /** 事件时间戳。 */\n    timestamp?: number;\n}",
       "declarationRelations": [
@@ -414,104 +297,58 @@
       "attributes": [
         {
           "name": "maxEntries",
+          "jsdoc": "max Entries 字段。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** max Entries 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 55,
-            "className": "DataSetSnapshotCommitOptions",
-            "memberName": "maxEntries",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "label",
+          "jsdoc": "展示标签。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 展示标签。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 57,
-            "className": "DataSetSnapshotCommitOptions",
-            "memberName": "label",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "summary",
+          "jsdoc": "summary 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** summary 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 59,
-            "className": "DataSetSnapshotCommitOptions",
-            "memberName": "summary",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "sourceData",
+          "jsdoc": "source Data 字段。",
           "schema": {
+            "type": "object",
             "title": "Record<string, unknown>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** source Data 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 61,
-            "className": "DataSetSnapshotCommitOptions",
-            "memberName": "sourceData",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "version",
+          "jsdoc": "version 字段。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** version 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 63,
-            "className": "DataSetSnapshotCommitOptions",
-            "memberName": "version",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "timestamp",
+          "jsdoc": "事件时间戳。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 事件时间戳。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 65,
-            "className": "DataSetSnapshotCommitOptions",
-            "memberName": "timestamp",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -519,7 +356,7 @@
     "DataSetCommitSnapshotOptions": {
       "kind": "DataSetCommitSnapshotOptions",
       "className": "DataSetCommitSnapshotOptions",
-      "jsdoc": "/** Data Set Commit Snapshot Options 的调用配置。 */",
+      "jsdoc": "Data Set Commit Snapshot Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Omit<DataSetSnapshotCommitOptions, 'version'> & {\n    /** bump Version 字段。 */\n    bumpVersion?: boolean;\n}",
       "declarationRelations": [
@@ -542,24 +379,143 @@
       "attributes": [
         {
           "name": "bumpVersion",
+          "jsdoc": "bump Version 字段。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** bump Version 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/dataset-history.d.ts",
-            "line": 70,
-            "className": "DataSetCommitSnapshotOptions",
-            "memberName": "bumpVersion",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.736Z"
+  "generatedAt": "2026-06-11T16:38:12.963Z",
+  "$defs": {
+    "DataSetHistoryStorageAdapter": {
+      "type": "object",
+      "title": "DataSetHistoryStorageAdapter",
+      "description": "Data Set History Storage Adapter 的语义模型。"
+    },
+    "DataSetHistoryScope": {
+      "type": "object",
+      "title": "DataSetHistoryScope",
+      "description": "Data Set History Scope 的语义模型。",
+      "properties": {
+        "dataSetName": {
+          "type": "string"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "scopeId": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        }
+      }
+    },
+    "DataSetSnapshotSelector": {
+      "type": "object",
+      "title": "DataSetSnapshotSelector",
+      "description": "Data Set Snapshot Selector 的语义模型。",
+      "properties": {
+        "entryId": {
+          "type": "string"
+        },
+        "version": {
+          "type": "number"
+        }
+      }
+    },
+    "DataSetHistorySnapshot": {
+      "type": "object",
+      "title": "DataSetHistorySnapshot",
+      "description": "Data Set History Snapshot 的语义模型。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "dataSetName": {
+          "type": "string"
+        },
+        "pageId": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "snapshot": {
+          "$ref": "types.d.ts.json#/$defs/DataSetMetadata"
+        },
+        "sourceData": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    },
+    "DataSetHistoryListOptions": {
+      "type": "object",
+      "title": "DataSetHistoryListOptions",
+      "description": "Data Set History List Options 的调用配置。",
+      "properties": {
+        "adapter": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DataSetHistoryStorageAdapter"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "DataSetSnapshotCommitOptions": {
+      "type": "object",
+      "title": "DataSetSnapshotCommitOptions",
+      "description": "Data Set Snapshot Commit Options 的调用配置。",
+      "properties": {
+        "maxEntries": {
+          "type": "number"
+        },
+        "label": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "sourceData": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        },
+        "version": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
+    },
+    "DataSetCommitSnapshotOptions": {
+      "type": "object",
+      "title": "DataSetCommitSnapshotOptions",
+      "description": "Data Set Commit Snapshot Options 的调用配置。",
+      "properties": {
+        "bumpVersion": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
 }

@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-ai:class-model/metadata/resolve-api-object-metadata
+ * 职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/resolve-api-object-metadata 的 JsonSchemaObject、ResolveModuleMetadataJsonOptions语义。
+ * 边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。
+ * AI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。
+ */
+/**
  * Resolve compact module metadata (apiRegistry + action result $ref) into inline API trees.
  *
  * JSON Schema $ref 默认保留给运行时 AJV + schemaDefs；仅 legacy 调用方可 inlineSchemaRefs。

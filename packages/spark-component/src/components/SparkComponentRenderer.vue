@@ -1,7 +1,8 @@
 <!--
 @module @spark-appworks/spark-component:components/SparkComponentRenderer
-@spark-appworks/spark-component 的 components/SparkComponentRenderer 模块。
-导出 ClassModel symbol: RendererProps（共 1 个 symbol）。
+职责：维护 @spark-appworks/spark-component 中 components/SparkComponentRenderer 的模块能力，围绕 RendererProps 提供稳定的公开契约。
+边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。
+AI用途：需要定位 components/SparkComponentRenderer 的声明、导出和使用边界时，从本模块开始。
 -->
 <template>
   <!-- 已注册：SparkNode 运行时输入 + 事件处理器 → 统一作为 Vue Props 传递 -->

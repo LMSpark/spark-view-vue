@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/class-model/dts-bundle-types",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-types\n@spark-appworks/spark-ai 的 class-model/class-model/dts-bundle-types 模块。\n导出 ClassModel symbol: DtsFileProjectionDocument, DtsFileModuleJsDocSource, DtsFileModuleSemanticMeta, DtsClassModelBundleFileEntry, DtsClassModelBundleClassEntry, DtsClassModelBundleManifest, DtsClassModelDuplicateRecord, DtsClassModelSemanticGapKind 等（共 11 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-types\n职责：定义 DTS ClassModel bundle、per-file projection、module semantic metadata、duplicate record 和 semantic gap report 的持久化协议。\n边界：只维护 JSON 结构契约，不读取文件系统、不执行 TypeScript 投影，也不渲染知识提示词。\nAI用途：修改 generated/dts-class-model 协议或消费 manifest/shard 时，用本模块确认字段含义和兼容边界。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "DtsFileProjectionDocument",
@@ -40,19 +40,19 @@
     "DtsFileProjectionDocument": {
       "kind": "DtsFileProjectionDocument",
       "className": "DtsFileProjectionDocument",
-      "jsdoc": "/** Dts File Projection Document 的语义模型。 */",
+      "jsdoc": "Dts File Projection Document 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    sourcePath: string;\n    module: DtsFileModuleSemanticMeta;\n    symbols: readonly string[];\n    models: Readonly<Record<string, ClassModel>>;\n    generatedAt?: string;\n}>",
+      "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    sourcePath: string;\n    module: DtsFileModuleSemanticMeta;\n    symbols: readonly string[];\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    models: Readonly<Record<string, ClassModel>>;\n    generatedAt?: string;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    sourcePath: string;\n    module: DtsFileModuleSemanticMeta;\n    symbols: readonly string[];\n    models: Readonly<Record<string, ClassModel>>;\n    generatedAt?: string;\n}>",
+          "typeText": "Readonly<{\n    schemaVersion: typeof DTS_FILE_PROJECTION_VERSION;\n    sourcePath: string;\n    module: DtsFileModuleSemanticMeta;\n    symbols: readonly string[];\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    models: Readonly<Record<string, ClassModel>>;\n    generatedAt?: string;\n}>",
           "targetName": "Readonly"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 11,
+        "line": 13,
         "className": "DtsFileProjectionDocument",
         "declarationKind": "type"
       },
@@ -62,7 +62,7 @@
     "DtsFileModuleJsDocSource": {
       "kind": "DtsFileModuleJsDocSource",
       "className": "DtsFileModuleJsDocSource",
-      "jsdoc": "/** Dts File Module JsDoc Source 标记模块语义来自源码注释还是路径推导。 */",
+      "jsdoc": "Dts File Module JsDoc Source 标记模块语义来自源码注释还是路径推导。",
       "shapeKind": "type",
       "declarationTypeText": "'leading-jsdoc' | 'source-file-jsdoc' | 'inferred'",
       "declarationRelations": [
@@ -81,7 +81,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 20,
+        "line": 23,
         "className": "DtsFileModuleJsDocSource",
         "declarationKind": "type"
       },
@@ -91,7 +91,7 @@
     "DtsFileModuleSemanticMeta": {
       "kind": "DtsFileModuleSemanticMeta",
       "className": "DtsFileModuleSemanticMeta",
-      "jsdoc": "/** Dts File Module Semantic Meta 描述单个 DTS shard 的模块级入口语义。 */",
+      "jsdoc": "Dts File Module Semantic Meta 描述单个 DTS shard 的模块级入口语义。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    name: string;\n    sourcePath: string;\n    sourceFile: string;\n    packageName?: string;\n    modulePath: string;\n    jsdoc: string;\n    jsdocSource: DtsFileModuleJsDocSource;\n    symbols: readonly string[];\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n}>",
       "declarationRelations": [
@@ -103,7 +103,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 22,
+        "line": 25,
         "className": "DtsFileModuleSemanticMeta",
         "declarationKind": "type"
       },
@@ -113,7 +113,7 @@
     "DtsClassModelBundleFileEntry": {
       "kind": "DtsClassModelBundleFileEntry",
       "className": "DtsClassModelBundleFileEntry",
-      "jsdoc": "/** Dts Class Model Bundle File Entry 的语义模型。 */",
+      "jsdoc": "Dts Class Model Bundle File Entry 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    file: string;\n    module: DtsFileModuleSemanticMeta;\n}>",
       "declarationRelations": [
@@ -125,7 +125,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 38,
+        "line": 41,
         "className": "DtsClassModelBundleFileEntry",
         "declarationKind": "type"
       },
@@ -135,7 +135,7 @@
     "DtsClassModelBundleClassEntry": {
       "kind": "DtsClassModelBundleClassEntry",
       "className": "DtsClassModelBundleClassEntry",
-      "jsdoc": "/** Dts Class Model Bundle Class Entry 的语义模型。 */",
+      "jsdoc": "Dts Class Model Bundle Class Entry 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    sourcePath: string;\n    file: string;\n}>",
       "declarationRelations": [
@@ -147,7 +147,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 43,
+        "line": 46,
         "className": "DtsClassModelBundleClassEntry",
         "declarationKind": "type"
       },
@@ -157,7 +157,7 @@
     "DtsClassModelBundleManifest": {
       "kind": "DtsClassModelBundleManifest",
       "className": "DtsClassModelBundleManifest",
-      "jsdoc": "/** Dts Class Model Bundle Manifest 的语义模型。 */",
+      "jsdoc": "Dts Class Model Bundle Manifest 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_BUNDLE_VERSION;\n    protocol: typeof DTS_CLASS_MODEL_BUNDLE_PROTOCOL;\n    generatedAt: string;\n    scannedFileCount: number;\n    files: Readonly<Record<string, DtsClassModelBundleFileEntry>>;\n    classIndex: Readonly<Record<string, DtsClassModelBundleClassEntry>>;\n    duplicates?: readonly DtsClassModelDuplicateRecord[];\n}>",
       "declarationRelations": [
@@ -169,7 +169,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 48,
+        "line": 51,
         "className": "DtsClassModelBundleManifest",
         "declarationKind": "type"
       },
@@ -179,7 +179,7 @@
     "DtsClassModelDuplicateRecord": {
       "kind": "DtsClassModelDuplicateRecord",
       "className": "DtsClassModelDuplicateRecord",
-      "jsdoc": "/** Dts Class Model Duplicate Record 的记录结构。 */",
+      "jsdoc": "Dts Class Model Duplicate Record 的记录结构。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    className: string;\n    keptFile: string;\n    skippedFile: string;\n}>",
       "declarationRelations": [
@@ -191,7 +191,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 58,
+        "line": 61,
         "className": "DtsClassModelDuplicateRecord",
         "declarationKind": "type"
       },
@@ -201,7 +201,7 @@
     "DtsClassModelSemanticGapKind": {
       "kind": "DtsClassModelSemanticGapKind",
       "className": "DtsClassModelSemanticGapKind",
-      "jsdoc": "/** Dts Class Model Semantic Gap Kind 的语义模型。 */",
+      "jsdoc": "Dts Class Model Semantic Gap Kind 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "'module' | 'model' | 'constructor' | 'attribute' | 'method'",
       "declarationRelations": [
@@ -228,7 +228,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 64,
+        "line": 67,
         "className": "DtsClassModelSemanticGapKind",
         "declarationKind": "type"
       },
@@ -238,19 +238,19 @@
     "DtsClassModelSemanticGap": {
       "kind": "DtsClassModelSemanticGap",
       "className": "DtsClassModelSemanticGap",
-      "jsdoc": "/** Dts Class Model Semantic Gap 的语义模型。 */",
+      "jsdoc": "Dts Class Model Semantic Gap 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    kind: DtsClassModelSemanticGapKind;\n    className: string;\n    moduleName?: string;\n    memberName?: string;\n    reason: 'missing-jsdoc' | 'inferred-module-jsdoc';\n    chainBreak: string;\n    fixHint: string;\n    declarationFile: string;\n    declarationLine: number;\n    sourceFile: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: NonNullable<SourceProvenanceMeta['declarationKind']>;\n}>",
+      "declarationTypeText": "Readonly<{\n    kind: DtsClassModelSemanticGapKind;\n    className: string;\n    moduleName?: string;\n    memberName?: string;\n    reason: 'missing-jsdoc' | 'inferred-module-jsdoc' | 'weak-module-jsdoc';\n    chainBreak: string;\n    fixHint: string;\n    declarationFile: string;\n    declarationLine: number;\n    sourceFile: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: NonNullable<SourceProvenanceMeta['declarationKind']>;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    kind: DtsClassModelSemanticGapKind;\n    className: string;\n    moduleName?: string;\n    memberName?: string;\n    reason: 'missing-jsdoc' | 'inferred-module-jsdoc';\n    chainBreak: string;\n    fixHint: string;\n    declarationFile: string;\n    declarationLine: number;\n    sourceFile: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: NonNullable<SourceProvenanceMeta['declarationKind']>;\n}>",
+          "typeText": "Readonly<{\n    kind: DtsClassModelSemanticGapKind;\n    className: string;\n    moduleName?: string;\n    memberName?: string;\n    reason: 'missing-jsdoc' | 'inferred-module-jsdoc' | 'weak-module-jsdoc';\n    chainBreak: string;\n    fixHint: string;\n    declarationFile: string;\n    declarationLine: number;\n    sourceFile: string;\n    componentName?: string;\n    componentType?: string;\n    componentLevel?: ComponentClassModelLevel;\n    componentLayer?: ComponentClassModelLayer;\n    componentDirectory?: string;\n    declarationKind?: NonNullable<SourceProvenanceMeta['declarationKind']>;\n}>",
           "targetName": "Readonly"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 66,
+        "line": 69,
         "className": "DtsClassModelSemanticGap",
         "declarationKind": "type"
       },
@@ -260,7 +260,7 @@
     "DtsClassModelSemanticGapReport": {
       "kind": "DtsClassModelSemanticGapReport",
       "className": "DtsClassModelSemanticGapReport",
-      "jsdoc": "/** Dts Class Model Semantic Gap Report 的语义模型。 */",
+      "jsdoc": "Dts Class Model Semantic Gap Report 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    generatedAt: string;\n    gapCount: number;\n    notes: readonly string[];\n    gaps: readonly DtsClassModelSemanticGap[];\n}>",
       "declarationRelations": [
@@ -272,7 +272,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 85,
+        "line": 88,
         "className": "DtsClassModelSemanticGapReport",
         "declarationKind": "type"
       },
@@ -282,7 +282,7 @@
     "ProjectDtsFileProjectionOptions": {
       "kind": "ProjectDtsFileProjectionOptions",
       "className": "ProjectDtsFileProjectionOptions",
-      "jsdoc": "/** Project Dts File Projection Options 的调用配置。 */",
+      "jsdoc": "Project Dts File Projection Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    absolutePath: string;\n    exportedOnly?: boolean;\n}>",
       "declarationRelations": [
@@ -294,7 +294,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 92,
+        "line": 95,
         "className": "ProjectDtsFileProjectionOptions",
         "declarationKind": "type"
       },
@@ -302,5 +302,62 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.810Z"
+  "generatedAt": "2026-06-11T16:38:12.589Z",
+  "$defs": {
+    "DtsFileProjectionDocument": {
+      "type": "object",
+      "title": "DtsFileProjectionDocument",
+      "description": "Dts File Projection Document 的语义模型。"
+    },
+    "DtsFileModuleJsDocSource": {
+      "type": "object",
+      "title": "DtsFileModuleJsDocSource",
+      "description": "Dts File Module JsDoc Source 标记模块语义来自源码注释还是路径推导。"
+    },
+    "DtsFileModuleSemanticMeta": {
+      "type": "object",
+      "title": "DtsFileModuleSemanticMeta",
+      "description": "Dts File Module Semantic Meta 描述单个 DTS shard 的模块级入口语义。"
+    },
+    "DtsClassModelBundleFileEntry": {
+      "type": "object",
+      "title": "DtsClassModelBundleFileEntry",
+      "description": "Dts Class Model Bundle File Entry 的语义模型。"
+    },
+    "DtsClassModelBundleClassEntry": {
+      "type": "object",
+      "title": "DtsClassModelBundleClassEntry",
+      "description": "Dts Class Model Bundle Class Entry 的语义模型。"
+    },
+    "DtsClassModelBundleManifest": {
+      "type": "object",
+      "title": "DtsClassModelBundleManifest",
+      "description": "Dts Class Model Bundle Manifest 的语义模型。"
+    },
+    "DtsClassModelDuplicateRecord": {
+      "type": "object",
+      "title": "DtsClassModelDuplicateRecord",
+      "description": "Dts Class Model Duplicate Record 的记录结构。"
+    },
+    "DtsClassModelSemanticGapKind": {
+      "type": "object",
+      "title": "DtsClassModelSemanticGapKind",
+      "description": "Dts Class Model Semantic Gap Kind 的语义模型。"
+    },
+    "DtsClassModelSemanticGap": {
+      "type": "object",
+      "title": "DtsClassModelSemanticGap",
+      "description": "Dts Class Model Semantic Gap 的语义模型。"
+    },
+    "DtsClassModelSemanticGapReport": {
+      "type": "object",
+      "title": "DtsClassModelSemanticGapReport",
+      "description": "Dts Class Model Semantic Gap Report 的语义模型。"
+    },
+    "ProjectDtsFileProjectionOptions": {
+      "type": "object",
+      "title": "ProjectDtsFileProjectionOptions",
+      "description": "Project Dts File Projection Options 的调用配置。"
+    }
+  }
 }

@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:agent/business/business-kit
- * @spark-appworks/spark-ai 的 agent/business/business-kit 模块。
- * 导出 ClassModel symbol: AiBusinessIdOptions, AiBusinessInputOptions, CreateSimpleInputContractOptions（共 3 个 symbol）。
+ * 职责：构建业务级 AI 输入契约，把 businessId、paramsSchema、identity/message 字段、systemPrompt、title 和 readonlySteps 标准化成 AiAgentInputContract。
+ * 边界：只处理输入校验、scope 创建和 orchestration 文案组装，不创建会话、不执行工具，也不持久化业务状态。
+ * AI用途：注册新的 pageDesign、projectPlanning 等业务入口时，用本模块确认输入字段如何转成会话 scope、用户消息和系统提示。
  */
 import type {
   AiJsonParams,

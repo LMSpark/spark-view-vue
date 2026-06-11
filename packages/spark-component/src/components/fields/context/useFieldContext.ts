@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-component:components/fields/context/useFieldContext
- * @spark-appworks/spark-component 的 components/fields/context/useFieldContext 模块。
- * 导出 ClassModel symbol: FieldContextProps, FieldPermissionForContext, OptionalWithUndefined, FieldContextInputProps（共 4 个 symbol）。
+ * 职责：维护 @spark-appworks/spark-component 中 components/fields/context/useFieldContext 的模块能力，围绕 FieldContextProps、FieldPermissionForContext、OptionalWithUndefined 等 4 个公开契约 提供稳定的公开契约。
+ * 边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。
+ * AI用途：需要定位 components/fields/context/useFieldContext 的声明、导出和使用边界时，从本模块开始。
  */
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'

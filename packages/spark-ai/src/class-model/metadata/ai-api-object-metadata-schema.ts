@@ -1,8 +1,8 @@
 /**
- * class-model/metadata · API 对象元数据。
- *
- * LLM 语义：一个 API 对象描述 LLM 可调用的业务 action，以及 action 返回值中
- * 继续可操作的 API-bearing 对象位置。
+ * @module @spark-appworks/spark-ai:class-model/metadata/ai-api-object-metadata-schema
+ * 职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/ai-api-object-metadata-schema 的 AiApiActionFailureMode、AiApiActionExample、AiApiActionAntiExample 等 11 个公开类型语义。
+ * 边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。
+ * AI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。
  */
 
 import type { AiJsonSchema, AiJsonSchemaObject, AiJsonValue } from '../../json'
@@ -88,6 +88,7 @@ export type AiApiAttributeMetadata = Readonly<{
 export type AiApiActionMetadata = Readonly<{
   name: string
   methodName: string
+  signatureText?: string
   description: string
   jsdoc?: AiApiJsDocMetadata
   provenance?: AiApiSourceProvenanceMetadata
@@ -124,4 +125,3 @@ export type AiModuleMetadataJson = Readonly<{
   /** schemaVersion=2 时：按 kind 去重后的 action 返回 API 注册表。 */
   apiRegistry?: Readonly<Record<string, AiApiObjectMetadata>>
 }>
-

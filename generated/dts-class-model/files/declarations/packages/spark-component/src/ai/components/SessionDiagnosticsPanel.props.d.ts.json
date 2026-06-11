@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/ai/components/SessionDiagnosticsPanel.props.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "ai/components/SessionDiagnosticsPanel.props",
-    "jsdoc": "@module @spark-appworks/spark-component:ai/components/SessionDiagnosticsPanel.props\n@spark-appworks/spark-component 的 ai/components/SessionDiagnosticsPanel.props 模块。\n导出 ClassModel symbol: SessionDiagnosticsPanelProps（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/SessionDiagnosticsPanel.props\n职责：维护 @spark-appworks/spark-component 中 ai/components/SessionDiagnosticsPanel.props 的模块能力，围绕 SessionDiagnosticsPanelProps 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 ai/components/SessionDiagnosticsPanel.props 的声明、导出和使用边界时，从本模块开始。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "SessionDiagnosticsPanelProps"
@@ -20,7 +20,7 @@
     "SessionDiagnosticsPanelProps": {
       "kind": "SessionDiagnosticsPanelProps",
       "className": "SessionDiagnosticsPanelProps",
-      "jsdoc": "/** Session Diagnostics Panel Props 的属性契约。 */",
+      "jsdoc": "Session Diagnostics Panel Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    data: SessionDiagnosticsData;\n    loading?: boolean;\n}>",
       "declarationRelations": [
@@ -32,7 +32,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-component/src/ai/components/SessionDiagnosticsPanel.props.d.ts",
-        "line": 8,
+        "line": 9,
         "className": "SessionDiagnosticsPanelProps",
         "declarationKind": "type",
         "componentName": "SessionDiagnosticsPanel"
@@ -41,5 +41,12 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.009Z"
+  "generatedAt": "2026-06-11T16:38:12.673Z",
+  "$defs": {
+    "SessionDiagnosticsPanelProps": {
+      "type": "object",
+      "title": "SessionDiagnosticsPanelProps",
+      "description": "Session Diagnostics Panel Props 的属性契约。"
+    }
+  }
 }

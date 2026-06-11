@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/agent/business/business-kit.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "agent/business/business-kit",
-    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/business-kit\n@spark-appworks/spark-ai 的 agent/business/business-kit 模块。\n导出 ClassModel symbol: AiBusinessIdOptions, AiBusinessInputOptions, CreateSimpleInputContractOptions（共 3 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/business-kit\n职责：构建业务级 AI 输入契约，把 businessId、paramsSchema、identity/message 字段、systemPrompt、title 和 readonlySteps 标准化成 AiAgentInputContract。\n边界：只处理输入校验、scope 创建和 orchestration 文案组装，不创建会话、不执行工具，也不持久化业务状态。\nAI用途：注册新的 pageDesign、projectPlanning 等业务入口时，用本模块确认输入字段如何转成会话 scope、用户消息和系统提示。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "AiBusinessIdOptions",
@@ -24,7 +24,7 @@
     "AiBusinessIdOptions": {
       "kind": "AiBusinessIdOptions",
       "className": "AiBusinessIdOptions",
-      "jsdoc": "/** Ai Business Id Options 的调用配置。 */",
+      "jsdoc": "Ai Business Id Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    businessId: string;\n}>",
       "declarationRelations": [
@@ -36,7 +36,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/business-kit.d.ts",
-        "line": 9,
+        "line": 10,
         "className": "AiBusinessIdOptions",
         "declarationKind": "type"
       },
@@ -46,7 +46,7 @@
     "AiBusinessInputOptions": {
       "kind": "AiBusinessInputOptions",
       "className": "AiBusinessInputOptions",
-      "jsdoc": "/** Ai Business Input Options 的调用配置。 */",
+      "jsdoc": "Ai Business Input Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    paramsSchema: AiJsonSchemaObject;\n    identityField: keyof TInput & string;\n    messageField: keyof TInput & string;\n    normalize?: (input: AiJsonParams) => TInput;\n    systemPrompt: string | ((input: TInput) => string);\n    title?: string | ((input: TInput) => string | undefined);\n    readonlySteps?: readonly string[] | ((input: TInput) => readonly string[] | undefined);\n}>",
       "declarationRelations": [
@@ -58,7 +58,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/business-kit.d.ts",
-        "line": 13,
+        "line": 14,
         "className": "AiBusinessInputOptions",
         "declarationKind": "type"
       },
@@ -68,7 +68,7 @@
     "CreateSimpleInputContractOptions": {
       "kind": "CreateSimpleInputContractOptions",
       "className": "CreateSimpleInputContractOptions",
-      "jsdoc": "/** Create Simple Input Contract Options 的调用配置。 */",
+      "jsdoc": "Create Simple Input Contract Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "AiBusinessIdOptions & AiBusinessInputOptions<TInput>",
       "declarationRelations": [
@@ -85,7 +85,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/business-kit.d.ts",
-        "line": 23,
+        "line": 24,
         "className": "CreateSimpleInputContractOptions",
         "declarationKind": "type"
       },
@@ -93,5 +93,22 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.667Z"
+  "generatedAt": "2026-06-11T16:38:12.507Z",
+  "$defs": {
+    "AiBusinessIdOptions": {
+      "type": "object",
+      "title": "AiBusinessIdOptions",
+      "description": "Ai Business Id Options 的调用配置。"
+    },
+    "AiBusinessInputOptions": {
+      "type": "object",
+      "title": "AiBusinessInputOptions",
+      "description": "Ai Business Input Options 的调用配置。"
+    },
+    "CreateSimpleInputContractOptions": {
+      "type": "object",
+      "title": "CreateSimpleInputContractOptions",
+      "description": "Create Simple Input Contract Options 的调用配置。"
+    }
+  }
 }

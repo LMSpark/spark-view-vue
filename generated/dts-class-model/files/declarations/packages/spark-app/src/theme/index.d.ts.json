@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-app/src/theme/index.ts",
     "packageName": "@spark-appworks/spark-app",
     "modulePath": "theme/index",
-    "jsdoc": "SPARK 主题服务\n基于 Vue 响应式状态实现，支持：\n- light / dark / auto（跟随系统偏好）三模式\n- Element Plus 暗黑模式自动切换（html.dark class）\n- localStorage 持久化\n- 通过 SPARK 能力系统 provide 给组件树\n@example\n```ts\nimport { createThemeService } from '@spark-appworks/spark-app'\nconst theme = createThemeService()\ntheme.setMode('dark')\nconsole.log(theme.isDark) // true\n```",
+    "jsdoc": "@module @spark-appworks/spark-app:theme/index\n职责：提供 spark-app 应用壳中的 index 能力，连接路由、导航、认证、插件、页面 UI 或 AI 桥接。\n边界：负责应用层编排，不下沉实现底层数据模型，也不直接改写组件包的渲染协议。\nAI用途：排查页面打开、导航状态、权限上下文或应用侧 AI 接线时，用本模块确认 app 层入口。\n\nSPARK 主题服务\n基于 Vue 响应式状态实现，支持：\n- light / dark / auto（跟随系统偏好）三模式\n- Element Plus 暗黑模式自动切换（html.dark class）\n- localStorage 持久化\n- 通过 SPARK 能力系统 provide 给组件树\n@example\n```ts\nimport { createThemeService } from '@spark-appworks/spark-app'\nconst theme = createThemeService()\ntheme.setMode('dark')\nconsole.log(theme.isDark) // true\n```",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ThemeCapability",
@@ -24,7 +24,7 @@
     "ThemeCapability": {
       "kind": "ThemeCapability",
       "className": "ThemeCapability",
-      "jsdoc": "/** Theme Capability 的语义模型。 */",
+      "jsdoc": "Theme Capability 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "ComponentThemeCapability & {\n    setStorageScope(scopeKey: string | null): void;\n}",
       "declarationRelations": [
@@ -40,7 +40,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-app/src/theme/index.d.ts",
-        "line": 23,
+        "line": 29,
         "className": "ThemeCapability",
         "declarationKind": "type"
       },
@@ -50,64 +50,50 @@
     "ThemeServiceOptions": {
       "kind": "ThemeServiceOptions",
       "className": "ThemeServiceOptions",
-      "jsdoc": "/** 主题服务配置 */",
+      "jsdoc": "主题服务配置",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 初始模式（默认 'auto'） */\n    initialMode?: ThemeMode;\n    /** localStorage 存储键名（默认 'spark-theme-mode'） */\n    storageKey?: string;\n    /** localStorage 作用域；设置后存储键为 `${storageKey}:${storageScope}` */\n    storageScope?: string | null;\n}",
       "provenance": {
         "file": "declarations/packages/spark-app/src/theme/index.d.ts",
-        "line": 29,
+        "line": 35,
         "className": "ThemeServiceOptions",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "initialMode",
+          "jsdoc": "初始模式（默认 'auto'）",
           "schema": {
+            "type": "object",
             "title": "ThemeMode"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 初始模式（默认 'auto'） */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/theme/index.d.ts",
-            "line": 31,
-            "className": "ThemeServiceOptions",
-            "memberName": "initialMode",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "storageKey",
+          "jsdoc": "localStorage 存储键名（默认 'spark-theme-mode'）",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** localStorage 存储键名（默认 'spark-theme-mode'） */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/theme/index.d.ts",
-            "line": 33,
-            "className": "ThemeServiceOptions",
-            "memberName": "storageKey",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "storageScope",
+          "jsdoc": "localStorage 作用域；设置后存储键为 `${storageKey}:${storageScope}`",
           "schema": {
-            "title": "string | null"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** localStorage 作用域；设置后存储键为 `${storageKey}:${storageScope}` */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/theme/index.d.ts",
-            "line": 35,
-            "className": "ThemeServiceOptions",
-            "memberName": "storageScope",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -115,7 +101,7 @@
     "ThemeServiceReactive": {
       "kind": "ThemeServiceReactive",
       "className": "ThemeServiceReactive",
-      "jsdoc": "/** 响应式主题服务（内部使用，组件层可直接读 ref） */",
+      "jsdoc": "响应式主题服务（内部使用，组件层可直接读 ref）",
       "shapeKind": "type",
       "declarationTypeText": "ThemeCapability & {\n    /** 响应式当前模式 */\n    readonly modeRef: Ref<ThemeMode>;\n    /** 响应式 isDark */\n    readonly isDarkRef: ComputedRef<boolean>;\n}",
       "declarationRelations": [
@@ -131,46 +117,80 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-app/src/theme/index.d.ts",
-        "line": 38,
+        "line": 44,
         "className": "ThemeServiceReactive",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "modeRef",
+          "jsdoc": "响应式当前模式",
           "schema": {
+            "type": "object",
             "title": "Ref<ThemeMode>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 响应式当前模式 */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/theme/index.d.ts",
-            "line": 40,
-            "className": "ThemeServiceReactive",
-            "memberName": "modeRef",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "isDarkRef",
+          "jsdoc": "响应式 isDark",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<boolean>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 响应式 isDark */",
-          "provenance": {
-            "file": "declarations/packages/spark-app/src/theme/index.d.ts",
-            "line": 42,
-            "className": "ThemeServiceReactive",
-            "memberName": "isDarkRef",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.984Z"
+  "generatedAt": "2026-06-11T16:38:12.660Z",
+  "$defs": {
+    "ThemeCapability": {
+      "type": "object",
+      "title": "ThemeCapability",
+      "description": "Theme Capability 的语义模型。"
+    },
+    "ThemeServiceOptions": {
+      "type": "object",
+      "title": "ThemeServiceOptions",
+      "description": "主题服务配置",
+      "properties": {
+        "initialMode": {
+          "type": "object",
+          "title": "ThemeMode"
+        },
+        "storageKey": {
+          "type": "string"
+        },
+        "storageScope": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ThemeServiceReactive": {
+      "type": "object",
+      "title": "ThemeServiceReactive",
+      "description": "响应式主题服务（内部使用，组件层可直接读 ref）",
+      "properties": {
+        "modeRef": {
+          "type": "object",
+          "title": "Ref<ThemeMode>"
+        },
+        "isDarkRef": {
+          "type": "object",
+          "title": "ComputedRef<boolean>"
+        }
+      }
+    }
+  }
 }

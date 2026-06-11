@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:agent/tool-runtime/tool-runtime-types
- * @spark-appworks/spark-ai 的 agent/tool-runtime/tool-runtime-types 模块。
- * 导出 ClassModel symbol: AiAgentToolCheckLevel, AiAgentToolCheck, AiAgentToolResultOptions, AiAgentToolResult, AiAgentToolSpec, AiAgentRuntimeHostContext, AiAgentToolRuntimeKnowledgeProjection, AiAgentToolRuntimeInspectFinding 等（共 10 个 symbol）。
+ * 职责：定义 AI 工具运行时的工具规格、校验等级、执行结果、知识投影和 inspect 报告等核心类型。
+ * 边界：只声明工具运行协议，不实现具体工具、不控制 LLM 循环，也不处理传输层 SSE。
+ * AI用途：新增或诊断工具时，用本模块确认 tool spec、tool result 和 runtime host context 的语义。
  */
 import type { AiJsonParams, AiJsonSchemaObject, AiJsonValue } from '../../json'
 

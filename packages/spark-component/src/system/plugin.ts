@@ -1,9 +1,8 @@
 /**
- * SPARK Vue 插件
- *
- * 职责：
- * - 创建并注入 Registry
- * - 保持 spark-data 框架无关；Vue 响应式适配由组件级 DataView 状态/事件桥处理
+ * @module @spark-appworks/spark-component:system/plugin
+ * 职责：提供 plugin 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。
+ * 边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。
+ * AI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。
  */
 
 import type { App, Plugin } from 'vue'

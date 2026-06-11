@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-component:page/context/buildPageContext
+ * 职责：提供 build Page Context 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。
+ * 边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。
+ * AI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。
+ */
+/**
  * 脚本沙箱上下文（PageContext）构建工厂
  *
  * 构建传入 `with (__ctx)` 沙箱的完整上下文对象。

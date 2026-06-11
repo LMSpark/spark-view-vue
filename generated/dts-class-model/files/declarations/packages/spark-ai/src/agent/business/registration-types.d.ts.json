@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/agent/business/registration-types.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "agent/business/registration-types",
-    "jsdoc": "┌─────────────────────────────────────────────────────────────────────────────┐\n│  AI HOST · 业务注册合约                                                      │\n│  Business Registration Contract                                              │\n│                                                                              │\n│  本文件定义业务接入 AI Host 的注册入口——外部系统将自身能力封装为                │\n│  AiAgentToolRuntime 后，投影成 AiAgentRegistration，再交给 AiAgentHost          │\n│  register/ensure 按 alias 暴露给业务层运行。                                     │\n│                                                                              │\n│  数据流向：                                                                   │\n│    外部系统 ──(封装)──> AiAgentToolRuntime                              │\n│                    ──(包装)──> AiAgentRegistration                     │\n│                    ──(注册)──> AiAgentHost.register/ensure ──> AiAgentBusiness  │\n│                    ──(驱动)──> AiAgentToolLoopRunner ──> LLM                   │\n└─────────────────────────────────────────────────────────────────────────────┘",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/registration-types\n职责：定义 AI 业务注册合约，包括业务描述、输入契约、工具运行时、会话存储和生命周期钩子。\n边界：只提供 registration 数据结构，不负责注册表存储、Host alias 映射或 session 执行。\nAI用途：新增业务入口或生成注册代码时，用本模块确认 registration 必填字段和可扩展能力。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "AiAgentToolLoopNudgeReason",
@@ -26,7 +26,7 @@
     "AiAgentToolLoopNudgeReason": {
       "kind": "AiAgentToolLoopNudgeReason",
       "className": "AiAgentToolLoopNudgeReason",
-      "jsdoc": "/** Ai Agent Tool Loop Nudge Reason 的语义模型。 */",
+      "jsdoc": "Ai Agent Tool Loop Nudge Reason 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "'plan_without_tool' | 'execution_phase' | 'model_script_retry'",
       "declarationRelations": [
@@ -45,7 +45,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-        "line": 25,
+        "line": 15,
         "className": "AiAgentToolLoopNudgeReason",
         "declarationKind": "type"
       },
@@ -55,7 +55,7 @@
     "AiAgentToolLoopNudgeContext": {
       "kind": "AiAgentToolLoopNudgeContext",
       "className": "AiAgentToolLoopNudgeContext",
-      "jsdoc": "/** Ai Agent Tool Loop Nudge Context 的运行上下文。 */",
+      "jsdoc": "Ai Agent Tool Loop Nudge Context 的运行上下文。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    reason: AiAgentToolLoopNudgeReason;\n    moduleInstanceId: string;\n    runtimeContext: AiAgentRuntimeContext;\n}>",
       "declarationRelations": [
@@ -67,7 +67,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-        "line": 27,
+        "line": 17,
         "className": "AiAgentToolLoopNudgeContext",
         "declarationKind": "type"
       },
@@ -77,7 +77,7 @@
     "AiAgentRegistrationOptions": {
       "kind": "AiAgentRegistrationOptions",
       "className": "AiAgentRegistrationOptions",
-      "jsdoc": "/** Ai Agent Registration Options 的调用配置。 */",
+      "jsdoc": "Ai Agent Registration Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    /** 业务模块唯一标识，对应注册 runtime 的根业务 ID */\n    moduleId: string;\n    /** 面向 LLM 的业务名称，出现在系统提示中 */\n    name: string;\n    /** 面向 LLM 的业务描述，说明该业务能做什么 */\n    description: string;\n    /** ClassModel 工具运行时——承载工具闭集、知识快照和脚本执行 */\n    runtime: AiAgentToolRuntime;\n    /** 注册化输入契约；新任务入口用它校验输入、定位实例并生成 LLM 编排规则 */\n    inputContract?: AiAgentInputContract<TInput>;\n    /** 会话历史持久化存储；必须显式注入，registry 不再自动创建默认 store。 */\n    sessionStore: AiAgentSessionStore;\n    /**\n     * 动态系统提示生成器——每次会话轮次开始前调用，返回值拼接到 LLM 系统消息末尾。\n     * 可用于注入当前上下文相关的指引（如当前页面、当前数据源等）。\n     */\n    systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined;\n    /**\n     * 工具调用前置处理器——runtime.executeTool 前触发。\n     * 典型用途：人工审批、权限策略、只读/危险操作拦截。reject/abort 不会执行 runtime 工具。\n     */\n    beforeFunctionCall?: (options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    /**\n     * 工具调用后置处理器——LLM 每次完成工具调用后触发。\n     * 接收本次调用的上下文（工具名称、参数、返回值），返回生命周期指令。\n     * 典型用途：校验结果、追加后续提示、标记步骤完成。\n     */\n    afterFunctionCall?: (options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    /** 会话启动回调——AiAgentBusiness.createSession() 时调用一次 */\n    onStartSession?: (context: AiAgentRuntimeContext) => void | Promise<void>;\n    /**\n     * 业务实例结束回调——AiAgentBusiness.endInstance() 时调用。\n     * context 提供当前运行时上下文，directive 携带结束指令。\n     */\n    onEndBusinessInstance?: (context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    /**\n     * 模块实例释放回调——业务实例被清理时调用。\n     * 用于释放外部系统持有的资源（如关闭 WebSocket、清理临时文件等）。\n     */\n    releaseModuleInstance?: (moduleInstanceId: string) => void;\n    /** tool-loop 回合纠偏：业务 SOP 由 app 层注入，内核只保留协议级 nudge。 */\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    /** 视为“已进入执行阶段”的工具名；默认仅 model_script。 */\n    executionToolNames?: ReadonlySet<string>;\n    /** 扩展 plan-without-tool 检测关键词（小写匹配）。 */\n    planWithoutToolMarkers?: readonly string[];\n    /** FC 失败恢复：业务域补充 RECOVERY_HINT。 */\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
       "declarationRelations": [
@@ -89,7 +89,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-        "line": 33,
+        "line": 23,
         "className": "AiAgentRegistrationOptions",
         "declarationKind": "type"
       },
@@ -99,303 +99,276 @@
     "AiAgentRegistration": {
       "kind": "AiAgentRegistration",
       "className": "AiAgentRegistration",
-      "jsdoc": "/** Ai Agent Registration 的语义模型。 */",
+      "jsdoc": "Ai Agent Registration 的语义模型。",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-        "line": 84,
+        "line": 74,
         "className": "AiAgentRegistration",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "options": {
-              "title": "AiAgentRegistrationOptions<TInput>"
+        "jsdoc": "创建 Ai Agent Registration 实例。",
+        "signatureText": "constructor(options: AiAgentRegistrationOptions<TInput>)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "options",
+            "type": {
+              "type": "reference",
+              "name": "AiAgentRegistrationOptions",
+              "sourcePath": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "name": "TInput",
+                  "refersToTypeParameter": true
+                }
+              ]
             }
-          },
-          "required": [
-            "options"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Ai Agent Registration 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-          "line": 118,
-          "className": "AiAgentRegistration",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          }
+        ]
       },
       "attributes": [
         {
           "name": "moduleId",
+          "jsdoc": "module Id 标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** module Id 标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 86,
-            "className": "AiAgentRegistration",
-            "memberName": "moduleId",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "name",
+          "jsdoc": "显示或业务名称。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 显示或业务名称。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 88,
-            "className": "AiAgentRegistration",
-            "memberName": "name",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "description",
+          "jsdoc": "description 字段。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** description 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 90,
-            "className": "AiAgentRegistration",
-            "memberName": "description",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "runtime",
+          "jsdoc": "工具运行时——工具调用时从中读取知识并执行 model_script",
           "schema": {
-            "title": "AiAgentToolRuntime"
+            "$ref": "../tool-runtime/tool-runtime-types.d.ts.json#/$defs/AiAgentToolRuntime"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 工具运行时——工具调用时从中读取知识并执行 model_script */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 92,
-            "className": "AiAgentRegistration",
-            "memberName": "runtime",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "inputContract",
+          "jsdoc": "kindID 的注册化输入契约；由 host.run[alias]() 的内部 task 创建使用",
           "schema": {
+            "$ref": "business-task.d.ts.json#/$defs/AiAgentInputContract",
             "title": "AiAgentInputContract<TInput>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** kindID 的注册化输入契约；由 host.run[alias]() 的内部 task 创建使用 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 94,
-            "className": "AiAgentRegistration",
-            "memberName": "inputContract",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "sessionStore",
+          "jsdoc": "会话历史持久化存储",
           "schema": {
-            "title": "AiAgentSessionStore"
+            "$ref": "../session/session-types.d.ts.json#/$defs/AiAgentSessionStore"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 会话历史持久化存储 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 96,
-            "className": "AiAgentRegistration",
-            "memberName": "sessionStore",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "systemPrompt",
+          "jsdoc": "系统提示注入",
           "schema": {
+            "type": "object",
             "title": "(context: AiAgentRuntimeContext) => string | undefined"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 系统提示注入 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 98,
-            "className": "AiAgentRegistration",
-            "memberName": "systemPrompt",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "beforeFunctionCall",
+          "jsdoc": "工具调用前处理",
           "schema": {
+            "type": "object",
             "title": "(options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 工具调用前处理 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 100,
-            "className": "AiAgentRegistration",
-            "memberName": "beforeFunctionCall",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "afterFunctionCall",
+          "jsdoc": "工具调用后处理",
           "schema": {
+            "type": "object",
             "title": "(options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 工具调用后处理 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 102,
-            "className": "AiAgentRegistration",
-            "memberName": "afterFunctionCall",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "onStartSession",
+          "jsdoc": "会话启动",
           "schema": {
+            "type": "object",
             "title": "(context: AiAgentRuntimeContext) => void | Promise<void>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 会话启动 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 104,
-            "className": "AiAgentRegistration",
-            "memberName": "onStartSession",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "onEndBusinessInstance",
+          "jsdoc": "业务实例结束",
           "schema": {
+            "type": "object",
             "title": "(context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 业务实例结束 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 106,
-            "className": "AiAgentRegistration",
-            "memberName": "onEndBusinessInstance",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "releaseModuleInstance",
+          "jsdoc": "资源释放",
           "schema": {
+            "type": "object",
             "title": "(moduleInstanceId: string) => void"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 资源释放 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 108,
-            "className": "AiAgentRegistration",
-            "memberName": "releaseModuleInstance",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "toolLoopNudge",
+          "jsdoc": "tool-loop 业务纠偏",
           "schema": {
+            "type": "object",
             "title": "(context: AiAgentToolLoopNudgeContext) => string | undefined"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** tool-loop 业务纠偏 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 110,
-            "className": "AiAgentRegistration",
-            "memberName": "toolLoopNudge",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "executionToolNames",
+          "jsdoc": "execution Tool Names 字段。",
           "schema": {
+            "type": "object",
             "title": "ReadonlySet<string>"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** execution Tool Names 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 112,
-            "className": "AiAgentRegistration",
-            "memberName": "executionToolNames",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "planWithoutToolMarkers",
+          "jsdoc": "plan Without Tool Markers 字段。",
           "schema": {
-            "type": "array",
-            "title": "readonly string[]",
-            "items": true
+            "type": "array"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** plan Without Tool Markers 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 114,
-            "className": "AiAgentRegistration",
-            "memberName": "planWithoutToolMarkers",
-            "declarationKind": "class"
-          }
+          "writable": false
         },
         {
           "name": "enrichRecoveryHints",
+          "jsdoc": "enrich Recovery Hints 回调。",
           "schema": {
-            "type": "array",
-            "title": "(command: EnrichFunctionCallFailureCommand) => readonly string[]",
-            "items": true
+            "type": "object",
+            "title": "(command: EnrichFunctionCallFailureCommand) => readonly string[]"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** enrich Recovery Hints 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-            "line": 116,
-            "className": "AiAgentRegistration",
-            "memberName": "enrichRecoveryHints",
-            "declarationKind": "class"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:25.745Z"
+  "generatedAt": "2026-06-11T16:38:12.553Z",
+  "$defs": {
+    "AiAgentToolLoopNudgeReason": {
+      "type": "object",
+      "title": "AiAgentToolLoopNudgeReason",
+      "description": "Ai Agent Tool Loop Nudge Reason 的语义模型。"
+    },
+    "AiAgentToolLoopNudgeContext": {
+      "type": "object",
+      "title": "AiAgentToolLoopNudgeContext",
+      "description": "Ai Agent Tool Loop Nudge Context 的运行上下文。"
+    },
+    "AiAgentRegistrationOptions": {
+      "type": "object",
+      "title": "AiAgentRegistrationOptions",
+      "description": "Ai Agent Registration Options 的调用配置。"
+    },
+    "AiAgentRegistration": {
+      "type": "object",
+      "title": "AiAgentRegistration",
+      "description": "Ai Agent Registration 的语义模型。",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "runtime": {
+          "$ref": "../tool-runtime/tool-runtime-types.d.ts.json#/$defs/AiAgentToolRuntime"
+        },
+        "inputContract": {
+          "$ref": "business-task.d.ts.json#/$defs/AiAgentInputContract",
+          "title": "AiAgentInputContract<TInput>"
+        },
+        "sessionStore": {
+          "$ref": "../session/session-types.d.ts.json#/$defs/AiAgentSessionStore"
+        },
+        "systemPrompt": {
+          "type": "object",
+          "title": "(context: AiAgentRuntimeContext) => string | undefined"
+        },
+        "beforeFunctionCall": {
+          "type": "object",
+          "title": "(options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>"
+        },
+        "afterFunctionCall": {
+          "type": "object",
+          "title": "(options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>"
+        },
+        "onStartSession": {
+          "type": "object",
+          "title": "(context: AiAgentRuntimeContext) => void | Promise<void>"
+        },
+        "onEndBusinessInstance": {
+          "type": "object",
+          "title": "(context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>"
+        },
+        "releaseModuleInstance": {
+          "type": "object",
+          "title": "(moduleInstanceId: string) => void"
+        },
+        "toolLoopNudge": {
+          "type": "object",
+          "title": "(context: AiAgentToolLoopNudgeContext) => string | undefined"
+        },
+        "executionToolNames": {
+          "type": "object",
+          "title": "ReadonlySet<string>"
+        },
+        "planWithoutToolMarkers": {
+          "type": "array"
+        },
+        "enrichRecoveryHints": {
+          "type": "object",
+          "title": "(command: EnrichFunctionCallFailureCommand) => readonly string[]"
+        }
+      }
+    }
+  }
 }

@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-component:components/containers/data-views/RendererTree/zero-code
- * RendererTree 模块，属于 SPARK component table-level/data-view-container。
- * 组件目录: containers/data-views。
- * 导出 ClassModel symbol: TreeNode, ElTreeNode, ElTreeComponent, NativeTreeLike, NativeTreeNodeLike, TreeEventControl, TreeEventHandler, RendererTreeBehaviorProps 等（共 9 个 symbol）。
+ * 职责：封装 RendererTree（r-tree）的 zero-code 行为层，向配置动作和脚本暴露稳定的组件操作 API。
+ * 边界：只编排 table-level/data-view-container 的运行时能力、原生组件引用和事件控制，不声明视觉 props，也不持久化业务数据。
+ * AI用途：当动作、脚本或 ClassModel 需要调用 renderer tree 的选择、刷新、编辑、分页或树/表操作时，使用本模块确认 API 语义。
  */
 import { nextTick } from 'vue'
 import { isDataRow, type DataView, type DataRow } from '@spark-appworks/spark-data'

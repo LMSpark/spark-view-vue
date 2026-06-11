@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-utils:sandbox
+ * 职责：提供框架无关的 sandbox 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。
+ * 边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。
+ * AI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。
+ */
+/**
  * 共享沙箱工具
  *
  * 供 `spark-data`（计算列表达式）和 `spark-component`（页面脚本）两个沙箱统一使用。

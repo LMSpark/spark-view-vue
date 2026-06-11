@@ -1,24 +1,8 @@
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │  AI HOST · 诊断事件发射器                                                     │
- * │  Diagnostic Stream Event Emitters                                            │
- * │                                                                              │
- * │  本模块负责在 Tool Loop 执行期间向外推送诊断性质的 stream 事件，                 │
- * │  用于前端实时展示 LLM 请求/响应、工具调用结果等调试信息。                         │
- * │                                                                              │
- * │  事件类型：                                                                   │
- * │    · llm-request  — LLM API 请求发出前（含 messages、tools 等）               │
- * │    · llm-append   — LLM 流式响应追加文本                                      │
- * │    · tool-result  — 工具调用完成，携带执行结果                                 │
- * │                                                                              │
- * │  路由机制：                                                                   │
- * │    每个事件携带 turnKey（kind + instanceId + turnId）和 streamKey。             │
- * │    前端根据 turnKey 聚合同一回合，再按 streamKey 分发细粒度流。                 │
- * │    eventModuleId 决定事件归属哪个模块（kind 级别），                             │
- * │    由 eventModuleIdFromProtocolCall() 从协议调用参数中提取。                    │
- * │                                                                              │
- * │  调用方：tool-loop-runner.ts 在执行 LLM 调用和工具回调时触发                    │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * @module @spark-appworks/spark-ai:agent/tool-loop/diagnostic-events
+ * 职责：支撑 Agent tool loop 的 diagnostic events 能力，处理工具调用、结果映射、诊断事件或 payload 编解码。
+ * 边界：只服务单次 turn 内的工具循环，不定义业务注册协议，也不直接管理 UI 或持久化页面状态。
+ * AI用途：排查工具调用为什么继续、完成、失败或被映射成回调事件时，用本模块定位 loop 内部语义。
  */
 
 import { createAiAgentStreamKey, createAiAgentTurnKey } from '../business/business-scope'

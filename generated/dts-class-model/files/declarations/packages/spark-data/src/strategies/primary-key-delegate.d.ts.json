@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-data/src/strategies/primary-key-delegate.ts",
     "packageName": "@spark-appworks/spark-data",
     "modulePath": "strategies/primary-key-delegate",
-    "jsdoc": "PrimaryKeyDelegate — 主键管理委托\n封装 DataView 中所有主键相关的状态和逻辑：\n- 单列主键 / 多列合成主键（_pk）\n- `_pk` 统一计算列：无论单列还是多列主键，所有行均自动计算 `_pk` 字段\n- 主键值强转（coercePkValue）\n- 主键生成器（PrimaryKeyGenerator）\nDataView 通过构造函数注入四个轻量回调持有对 DataView 资源的引用，\n避免循环依赖和双向耦合。\n## `_pk` 统一计算列\n所有 PK 配置（单列 / 多列 / 默认 'id'）均注册 `_pk` 计算列，由\n`ensurePkColumn()` 统一管理。`getPkKey(row)` 优先读取预计算的 `row._pk`，\n避免每次调用时的类型强转开销。\n- 单列 PK：`_pk = coercePkValue(row[field], col)` — 预计算 + 类型强转\n- 多列 PK：`_pk = fields.map(f => String(row[f])).join('+')` — 拼接字符串\n- `primaryKey` getter 仍返回逻辑字段名（供级联、事件元数据等使用）\n- `_pk` 是保留字段名，业务表不应使用",
+    "jsdoc": "@module @spark-appworks/spark-data:strategies/primary-key-delegate\n职责：提供 spark-data 数据管线中的 primary key delegate 能力，支撑 DataSet、DataTable、DataView、树或 CRUD 状态协作。\n边界：保持框架无关，只维护数据模型和操作协议，不导入 Vue、Element Plus 或应用路由。\nAI用途：处理页面数据绑定、DataViewKey、行状态、树结构或 CRUD 行为时，用本模块确认数据层语义。\n\nPrimaryKeyDelegate — 主键管理委托\n封装 DataView 中所有主键相关的状态和逻辑：\n- 单列主键 / 多列合成主键（_pk）\n- `_pk` 统一计算列：无论单列还是多列主键，所有行均自动计算 `_pk` 字段\n- 主键值强转（coercePkValue）\n- 主键生成器（PrimaryKeyGenerator）\nDataView 通过构造函数注入四个轻量回调持有对 DataView 资源的引用，\n避免循环依赖和双向耦合。\n## `_pk` 统一计算列\n所有 PK 配置（单列 / 多列 / 默认 'id'）均注册 `_pk` 计算列，由\n`ensurePkColumn()` 统一管理。`getPkKey(row)` 优先读取预计算的 `row._pk`，\n避免每次调用时的类型强转开销。\n- 单列 PK：`_pk = coercePkValue(row[field], col)` — 预计算 + 类型强转\n- 多列 PK：`_pk = fields.map(f => String(row[f])).join('+')` — 拼接字符串\n- `primaryKey` getter 仍返回逻辑字段名（供级联、事件元数据等使用）\n- `_pk` 是保留字段名，业务表不应使用",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "PrimaryKeyDelegate"
@@ -20,334 +20,289 @@
     "PrimaryKeyDelegate": {
       "kind": "PrimaryKeyDelegate",
       "className": "PrimaryKeyDelegate",
-      "jsdoc": "/** Primary Key Delegate 的语义模型。 */",
+      "jsdoc": "Primary Key Delegate 的语义模型。",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-        "line": 27,
+        "line": 33,
         "className": "PrimaryKeyDelegate",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "_getColumns": {
-              "type": "array",
-              "title": "() => DataColumn[]",
-              "items": true
-            },
-            "_getColumnMap": {
-              "title": "() => Map<string, DataColumn> | undefined"
-            },
-            "_getRows": {
-              "type": "array",
-              "title": "() => DataRow[]",
-              "items": true
-            },
-            "_registerComputed": {
-              "title": "(name: string, fn: (row: DataRow) => unknown) => void"
+        "jsdoc": "@param _getColumns        获取当前 DataTable 的列定义（用于推导主键）\n@param _getColumnMap      获取列名→列定义 Map（用于 _coercePkValue O(1) 查找）\n@param _getRows           获取当前行数组（用于主键生成器 / 补计算触发点）\n@param _registerComputed  向 ComputedColumnDelegate 注册计算列（用于合成 _pk）",
+        "signatureText": "constructor(_getColumns: () => DataColumn[], _getColumnMap: () => Map<string, DataColumn> | undefined, _getRows: () => DataRow[], _registerComputed: (name: string, fn: (row: DataRow) => unknown) => void)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "_getColumns",
+            "type": {
+              "type": "unknown",
+              "name": "() => DataColumn[]"
             }
           },
-          "required": [
-            "_getColumns",
-            "_getColumnMap",
-            "_getRows",
-            "_registerComputed"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/**\n     * @param _getColumns        获取当前 DataTable 的列定义（用于推导主键）\n     * @param _getColumnMap      获取列名→列定义 Map（用于 _coercePkValue O(1) 查找）\n     * @param _getRows           获取当前行数组（用于主键生成器 / 补计算触发点）\n     * @param _registerComputed  向 ComputedColumnDelegate 注册计算列（用于合成 _pk）\n     */",
-        "provenance": {
-          "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-          "line": 51,
-          "className": "PrimaryKeyDelegate",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          {
+            "name": "_getColumnMap",
+            "type": {
+              "type": "unknown",
+              "name": "() => Map<string, DataColumn> | undefined"
+            }
+          },
+          {
+            "name": "_getRows",
+            "type": {
+              "type": "unknown",
+              "name": "() => DataRow[]"
+            }
+          },
+          {
+            "name": "_registerComputed",
+            "type": {
+              "type": "unknown",
+              "name": "(name: string, fn: (row: DataRow) => unknown) => void"
+            }
+          }
+        ]
       },
       "attributes": [],
       "methods": [
         {
           "name": "ensurePkColumn",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/**\n     * 统一注册 `_pk` 计算列——无论单列还是多列主键。\n     *\n     * 调用时机：\n     * - `dataTable` setter（列定义变更时）\n     * - `primaryKey` setter（显式覆盖时）\n     *\n     * 幺等：字段列表不变时跳过重新注册。\n     * 补计算（`_computedDelegate.apply(rows)`）由调用方负责。\n     */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-            "line": 62,
-            "className": "PrimaryKeyDelegate",
-            "memberName": "ensurePkColumn",
-            "declarationKind": "class"
+          "jsdoc": "统一注册 `_pk` 计算列——无论单列还是多列主键。\n调用时机：\n- `dataTable` setter（列定义变更时）\n- `primaryKey` setter（显式覆盖时）\n幺等：字段列表不变时跳过重新注册。\n补计算（`_computedDelegate.apply(rows)`）由调用方负责。",
+          "signatureText": "ensurePkColumn(): void",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "getPkColumnMeta",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "DataColumn"
-          },
-          "returnTypeText": "DataColumn",
-          "jsdoc": "/**\n     * 返回 `_pk` 列的元数据（DataColumn）。\n     *\n     * 类型推导规则：\n     * - 单列 PK 且有列定义 → 继承源列 type\n     * - 多列 PK / 无列定义 → `'string'`\n     */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-            "line": 90,
-            "className": "PrimaryKeyDelegate",
-            "memberName": "getPkColumnMeta",
-            "declarationKind": "class"
+          "jsdoc": "返回 `_pk` 列的元数据（DataColumn）。\n类型推导规则：\n- 单列 PK 且有列定义 → 继承源列 type\n- 多列 PK / 无列定义 → `'string'`",
+          "signatureText": "getPkColumnMeta(): DataColumn",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "reference",
+            "name": "DataColumn",
+            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
           }
         },
         {
           "name": "resetPrimaryKey",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/**\n     * 清除显式覆盖，恢复从 DataTable 列定义自动推导主键。\n     * 同时清除 `_pk` 计算列注册状态，下次 `ensurePkColumn()` 时重新注册。\n     *\n     * @example\n     * view.primaryKey = 'uuid'  // 显式覆盖\n     * view.resetPrimaryKey()    // 恢复列推导\n     */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-            "line": 114,
-            "className": "PrimaryKeyDelegate",
-            "memberName": "resetPrimaryKey",
-            "declarationKind": "class"
+          "jsdoc": "清除显式覆盖，恢复从 DataTable 列定义自动推导主键。\n同时清除 `_pk` 计算列注册状态，下次 `ensurePkColumn()` 时重新注册。\n@example view.primaryKey = 'uuid'  // 显式覆盖\nview.resetPrimaryKey()    // 恢复列推导",
+          "signatureText": "resetPrimaryKey(): void",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "getPkKey",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "row": {
-                "title": "DataRow"
+          "jsdoc": "获取行的主键值（标量）。\n**快速路径**：若 `_pk` 计算列已注册（`ensurePkColumn()` 已调用），\n直接读取预计算的 `row._pk`——O(1) 字段读取，无类型强转。\n**未注册路径**：若 `_pk` 尚未注册（非托管行 / 初始化前调用），\n回退到 `row[primaryKey]` + `coercePkValue` 运行时强转。\n所有内部 Map/Set/`===` 比较均使用此方法。",
+          "signatureText": "getPkKey(row: DataRow): string | number | undefined",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
               }
-            },
-            "required": [
-              "row"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "string | number | undefined"
-          },
-          "returnTypeText": "string | number | undefined",
-          "jsdoc": "/**\n     * 获取行的主键值（标量）。\n     *\n     * **快速路径**：若 `_pk` 计算列已注册（`ensurePkColumn()` 已调用），\n     * 直接读取预计算的 `row._pk`——O(1) 字段读取，无类型强转。\n     *\n     * **未注册路径**：若 `_pk` 尚未注册（非托管行 / 初始化前调用），\n     * 回退到 `row[primaryKey]` + `coercePkValue` 运行时强转。\n     *\n     * 所有内部 Map/Set/`===` 比较均使用此方法。\n     */",
-          "paramsTypeText": "row: DataRow",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-            "line": 135,
-            "className": "PrimaryKeyDelegate",
-            "memberName": "getPkKey",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            ]
           }
         },
         {
           "name": "buildServerPk",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "row": {
-                "title": "DataRow"
+          "jsdoc": "从行数据构建服务端 PK payload（用于 CRUD HTTP 请求）。\n对于自动合成 _pk 的多列主键，返回原始字段的 Record：\n`{ orderId: 1, productId: 10 }`\n对于单列主键，返回单字段 Record：\n`{ id: 42 }`\n@internal 供 saveChanges / CrudDelegate 等构建服务端请求使用",
+          "signatureText": "buildServerPk(row: DataRow): Record<string, unknown>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
               }
-            },
-            "required": [
-              "row"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Record<string, unknown>"
-          },
-          "returnTypeText": "Record<string, unknown>",
-          "jsdoc": "/**\n     * 从行数据构建服务端 PK payload（用于 CRUD HTTP 请求）。\n     *\n     * 对于自动合成 _pk 的多列主键，返回原始字段的 Record：\n     *   `{ orderId: 1, productId: 10 }`\n     * 对于单列主键，返回单字段 Record：\n     *   `{ id: 42 }`\n     *\n     * @internal 供 saveChanges / CrudDelegate 等构建服务端请求使用\n     */",
-          "paramsTypeText": "row: DataRow",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-            "line": 146,
-            "className": "PrimaryKeyDelegate",
-            "memberName": "buildServerPk",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
           }
         },
         {
           "name": "isSamePrimaryKey",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "row1": {
-                "title": "DataRow"
-              },
-              "row2": {
-                "title": "DataRow"
+          "jsdoc": "检查两行是否有相同的主键。\n优先使用 `_pk`（预计算）进行比较，否则回退到 `isSameRow`。",
+          "signatureText": "isSamePrimaryKey(row1: DataRow, row2: DataRow): boolean",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row1",
+              "type": {
+                "type": "reference",
+                "name": "DataRow",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
               }
             },
-            "required": [
-              "row1",
-              "row2"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "type": "boolean",
-            "title": "boolean"
-          },
-          "returnTypeText": "boolean",
-          "jsdoc": "/**\n     * 检查两行是否有相同的主键。\n     *\n     * 优先使用 `_pk`（预计算）进行比较，否则回退到 `isSameRow`。\n     */",
-          "paramsTypeText": "row1: DataRow, row2: DataRow",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-            "line": 152,
-            "className": "PrimaryKeyDelegate",
-            "memberName": "isSamePrimaryKey",
-            "declarationKind": "class"
+            {
+              "name": "row2",
+              "type": {
+                "type": "reference",
+                "name": "DataRow",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "boolean"
           }
         },
         {
           "name": "setPrimaryKeyGenerator",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "config": {
-                "title": "PrimaryKeyGeneratorConfig"
+          "jsdoc": "配置主键生成器\n@param config 主键生成器配置\n@example ```ts\n// UUID生成器\nview.setPrimaryKeyGenerator({ strategy: 'uuid', fields: 'id' })\n// 自增ID\nview.setPrimaryKeyGenerator({ strategy: 'auto-increment', fields: 'id', startValue: 1000 })\n```",
+          "signatureText": "setPrimaryKeyGenerator(config: PrimaryKeyGeneratorConfig): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "config",
+              "type": {
+                "type": "reference",
+                "name": "PrimaryKeyGeneratorConfig",
+                "sourcePath": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts"
               }
-            },
-            "required": [
-              "config"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/**\n     * 配置主键生成器\n     *\n     * @param config 主键生成器配置\n     *\n     * @example\n     * ```ts\n     * // UUID生成器\n     * view.setPrimaryKeyGenerator({ strategy: 'uuid', fields: 'id' })\n     * // 自增ID\n     * view.setPrimaryKeyGenerator({ strategy: 'auto-increment', fields: 'id', startValue: 1000 })\n     * ```\n     */",
-          "paramsTypeText": "config: PrimaryKeyGeneratorConfig",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-            "line": 166,
-            "className": "PrimaryKeyDelegate",
-            "memberName": "setPrimaryKeyGenerator",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "removePrimaryKeyGenerator",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 移除主键生成器 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-            "line": 168,
-            "className": "PrimaryKeyDelegate",
-            "memberName": "removePrimaryKeyGenerator",
-            "declarationKind": "class"
+          "jsdoc": "移除主键生成器",
+          "signatureText": "removePrimaryKeyGenerator(): void",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "generatePrimaryKey",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "row": {
-                "title": "Partial<DataRow>"
+          "jsdoc": "为新记录生成主键值\n@throws 如果未配置主键生成器",
+          "signatureText": "generatePrimaryKey(row: Partial<DataRow>): DataRow",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "Partial",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow",
+                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  }
+                ]
               }
-            },
-            "required": [
-              "row"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "DataRow"
-          },
-          "returnTypeText": "DataRow",
-          "jsdoc": "/**\n     * 为新记录生成主键值\n     *\n     * @throws 如果未配置主键生成器\n     */",
-          "paramsTypeText": "row: Partial<DataRow>",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-            "line": 174,
-            "className": "PrimaryKeyDelegate",
-            "memberName": "generatePrimaryKey",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "DataRow",
+            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
           }
         },
         {
           "name": "ensurePrimaryKey",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "row": {
-                "title": "Partial<DataRow>"
+          "jsdoc": "为新记录生成主键值（如果配置了生成器且行中缺少主键）\n@param row 部分数据行\n@returns 包含主键的数据行（如果需要生成）或原始数据（如果已有主键）",
+          "signatureText": "ensurePrimaryKey(row: Partial<DataRow>): DataRow",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "Partial",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow",
+                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  }
+                ]
               }
-            },
-            "required": [
-              "row"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "DataRow"
-          },
-          "returnTypeText": "DataRow",
-          "jsdoc": "/**\n     * 为新记录生成主键值（如果配置了生成器且行中缺少主键）\n     *\n     * @param row 部分数据行\n     * @returns 包含主键的数据行（如果需要生成）或原始数据（如果已有主键）\n     */",
-          "paramsTypeText": "row: Partial<DataRow>",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-            "line": 181,
-            "className": "PrimaryKeyDelegate",
-            "memberName": "ensurePrimaryKey",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "DataRow",
+            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
           }
         },
         {
           "name": "getPrimaryKeyGeneratorConfig",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Readonly<PrimaryKeyGeneratorConfig> | undefined"
-          },
-          "returnTypeText": "Readonly<PrimaryKeyGeneratorConfig> | undefined",
-          "jsdoc": "/** 获取主键生成器配置 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
-            "line": 183,
-            "className": "PrimaryKeyDelegate",
-            "memberName": "getPrimaryKeyGeneratorConfig",
-            "declarationKind": "class"
+          "jsdoc": "获取主键生成器配置",
+          "signatureText": "getPrimaryKeyGeneratorConfig(): Readonly<PrimaryKeyGeneratorConfig> | undefined",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "Readonly",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "PrimaryKeyGeneratorConfig",
+                    "sourcePath": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts"
+                  }
+                ]
+              }
+            ]
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.796Z"
+  "generatedAt": "2026-06-11T16:38:12.995Z",
+  "$defs": {
+    "PrimaryKeyDelegate": {
+      "type": "object",
+      "title": "PrimaryKeyDelegate",
+      "description": "Primary Key Delegate 的语义模型。"
+    }
+  }
 }

@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-component:permission/index
+ * 职责：汇总导出 permission 的组件、props、types 和 zero-code 能力。
+ * 边界：只维护目录级公开表面，不实现具体渲染逻辑，也不创建新的运行时状态。
+ * AI用途：判断某个组件能力是否应对外暴露或被注册表扫描时，用本模块确认导出入口。
+ */
+/**
  * 权限系统模块 — 权限数据的唯一消费者
  *
  * ## 定位

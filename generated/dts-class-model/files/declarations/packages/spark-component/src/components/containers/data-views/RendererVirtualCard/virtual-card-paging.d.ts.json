@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/containers/data-views/RendererVirtualCard/virtual-card-paging",
-    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererVirtualCard/virtual-card-paging\nRendererVirtualCard 模块，属于 SPARK component table-level/data-view-container。\n组件目录: containers/data-views。\n导出 ClassModel symbol: VirtualCardViewportExpose, WheelPageEvent, VirtualCardPagingOptions（共 3 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererVirtualCard/virtual-card-paging\n职责：支撑 RendererVirtualCard（r-virtual-card）在 table-level/data-view-container 中的运行时协作，补齐配置、状态或渲染器之间的连接逻辑。\n边界：只覆盖当前组件目录 containers/data-views 的局部能力，不定义全局页面模型，也不越级操作业务数据源。\nAI用途：需要判断 renderer virtual card 的组件分层、辅助类型或内部接线时，用本模块作为局部语义入口。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "VirtualCardViewportExpose",
@@ -29,7 +29,7 @@
     "VirtualCardViewportExpose": {
       "kind": "VirtualCardViewportExpose",
       "className": "VirtualCardViewportExpose",
-      "jsdoc": "/** 虚拟卡片视口组件对分页逻辑暴露的滚动能力。 */",
+      "jsdoc": "虚拟卡片视口组件对分页逻辑暴露的滚动能力。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 将视口滚动到指定像素位置。 */\n    setScrollTop(value: number): void;\n    /** 返回当前视口高度。 */\n    viewportHeight(): number;\n    /** 返回当前视口滚动位置。 */\n    viewportScrollTop(): number;\n}",
       "provenance": {
@@ -49,7 +49,7 @@
     "WheelPageEvent": {
       "kind": "WheelPageEvent",
       "className": "WheelPageEvent",
-      "jsdoc": "/** 只读取滚轮纵向位移的分页事件。 */",
+      "jsdoc": "只读取滚轮纵向位移的分页事件。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 滚轮纵向滚动距离，正数向后翻页。 */\n    deltaY: number;\n}",
       "provenance": {
@@ -66,25 +66,12 @@
       "attributes": [
         {
           "name": "deltaY",
+          "jsdoc": "滚轮纵向滚动距离，正数向后翻页。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 滚轮纵向滚动距离，正数向后翻页。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 15,
-            "className": "WheelPageEvent",
-            "memberName": "deltaY",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         }
       ],
       "methods": []
@@ -92,7 +79,7 @@
     "VirtualCardPagingOptions": {
       "kind": "VirtualCardPagingOptions",
       "className": "VirtualCardPagingOptions",
-      "jsdoc": "/** r-virtual-card 虚拟分页、缓存和预加载策略配置。 */",
+      "jsdoc": "r-virtual-card 虚拟分页、缓存和预加载策略配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 视口组件 ref，用于读取和设置滚动位置。 */\n    viewportRef: Ref<VirtualCardViewportExpose | null>;\n    /** 当前解析出的 DataView。 */\n    resolvedView: ComputedRef<DataView | null>;\n    /** 当前 DataView 行数据。 */\n    rows: ComputedRef<readonly DataRow[]>;\n    /** 当前查询总条数。 */\n    total: ComputedRef<number>;\n    /** DataView 当前页码。 */\n    page: ComputedRef<number>;\n    /** DataView 当前分页大小。 */\n    pageSize: ComputedRef<number>;\n    /** DataView 当前请求状态。 */\n    requestState: ComputedRef<RequestState>;\n    /** 桌面端单页虚拟高度。 */\n    pageHeight: () => number;\n    /** 移动端单页虚拟高度。 */\n    mobilePageHeight: () => number;\n    /** 切换移动端页高的视口宽度阈值。 */\n    mobileBreakpoint: () => number;\n    /** 当前页前后额外渲染的页数。 */\n    overscanPages: () => number;\n    /** 当前页前后预加载的页数。 */\n    prefetchPages: () => number;\n    /** 内存中最多保留的页缓存数量。 */\n    maxCachedPages: () => number;\n    /** 滚动停止后等待加载的毫秒数。 */\n    settleDelay: () => number;\n    /** 滚轮累计多少像素至少跳一页。 */\n    wheelStepPx: () => number;\n    /** 单次滚轮最多跳过的页数。 */\n    maxWheelJumpPages: () => number;\n    /** 通知外层切换到指定页。 */\n    dispatchPageChange: (page: number) => Promise<void>;\n}",
       "provenance": {
@@ -109,364 +96,269 @@
       "attributes": [
         {
           "name": "viewportRef",
+          "jsdoc": "视口组件 ref，用于读取和设置滚动位置。",
           "schema": {
+            "type": "object",
             "title": "Ref<VirtualCardViewportExpose | null>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 视口组件 ref，用于读取和设置滚动位置。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 20,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "viewportRef",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "resolvedView",
+          "jsdoc": "当前解析出的 DataView。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<DataView | null>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前解析出的 DataView。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 22,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "resolvedView",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "rows",
+          "jsdoc": "当前 DataView 行数据。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<readonly DataRow[]>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前 DataView 行数据。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 24,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "rows",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "total",
+          "jsdoc": "当前查询总条数。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<number>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前查询总条数。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 26,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "total",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "page",
+          "jsdoc": "DataView 当前页码。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<number>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** DataView 当前页码。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 28,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "page",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "pageSize",
+          "jsdoc": "DataView 当前分页大小。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<number>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** DataView 当前分页大小。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 30,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "pageSize",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "requestState",
+          "jsdoc": "DataView 当前请求状态。",
           "schema": {
+            "type": "object",
             "title": "ComputedRef<RequestState>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** DataView 当前请求状态。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 32,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "requestState",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "pageHeight",
+          "jsdoc": "桌面端单页虚拟高度。",
           "schema": {
+            "type": "object",
             "title": "() => number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 桌面端单页虚拟高度。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 34,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "pageHeight",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "mobilePageHeight",
+          "jsdoc": "移动端单页虚拟高度。",
           "schema": {
+            "type": "object",
             "title": "() => number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 移动端单页虚拟高度。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 36,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "mobilePageHeight",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "mobileBreakpoint",
+          "jsdoc": "切换移动端页高的视口宽度阈值。",
           "schema": {
+            "type": "object",
             "title": "() => number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 切换移动端页高的视口宽度阈值。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 38,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "mobileBreakpoint",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "overscanPages",
+          "jsdoc": "当前页前后额外渲染的页数。",
           "schema": {
+            "type": "object",
             "title": "() => number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前页前后额外渲染的页数。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 40,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "overscanPages",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "prefetchPages",
+          "jsdoc": "当前页前后预加载的页数。",
           "schema": {
+            "type": "object",
             "title": "() => number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 当前页前后预加载的页数。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 42,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "prefetchPages",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "maxCachedPages",
+          "jsdoc": "内存中最多保留的页缓存数量。",
           "schema": {
+            "type": "object",
             "title": "() => number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 内存中最多保留的页缓存数量。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 44,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "maxCachedPages",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "settleDelay",
+          "jsdoc": "滚动停止后等待加载的毫秒数。",
           "schema": {
+            "type": "object",
             "title": "() => number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 滚动停止后等待加载的毫秒数。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 46,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "settleDelay",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "wheelStepPx",
+          "jsdoc": "滚轮累计多少像素至少跳一页。",
           "schema": {
+            "type": "object",
             "title": "() => number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 滚轮累计多少像素至少跳一页。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 48,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "wheelStepPx",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "maxWheelJumpPages",
+          "jsdoc": "单次滚轮最多跳过的页数。",
           "schema": {
+            "type": "object",
             "title": "() => number"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 单次滚轮最多跳过的页数。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 50,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "maxWheelJumpPages",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         },
         {
           "name": "dispatchPageChange",
+          "jsdoc": "通知外层切换到指定页。",
           "schema": {
+            "type": "object",
             "title": "(page: number) => Promise<void>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 通知外层切换到指定页。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/virtual-card-paging.d.ts",
-            "line": 52,
-            "className": "VirtualCardPagingOptions",
-            "memberName": "dispatchPageChange",
-            "declarationKind": "interface",
-            "componentName": "RendererVirtualCard",
-            "componentType": "r-virtual-card",
-            "componentLevel": "table-level",
-            "componentLayer": "data-view-container",
-            "componentDirectory": "containers/data-views"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.097Z"
+  "generatedAt": "2026-06-11T16:38:12.702Z",
+  "$defs": {
+    "VirtualCardViewportExpose": {
+      "type": "object",
+      "title": "VirtualCardViewportExpose",
+      "description": "虚拟卡片视口组件对分页逻辑暴露的滚动能力。"
+    },
+    "WheelPageEvent": {
+      "type": "object",
+      "title": "WheelPageEvent",
+      "description": "只读取滚轮纵向位移的分页事件。",
+      "properties": {
+        "deltaY": {
+          "type": "number"
+        }
+      }
+    },
+    "VirtualCardPagingOptions": {
+      "type": "object",
+      "title": "VirtualCardPagingOptions",
+      "description": "r-virtual-card 虚拟分页、缓存和预加载策略配置。",
+      "properties": {
+        "viewportRef": {
+          "type": "object",
+          "title": "Ref<VirtualCardViewportExpose | null>"
+        },
+        "resolvedView": {
+          "type": "object",
+          "title": "ComputedRef<DataView | null>"
+        },
+        "rows": {
+          "type": "object",
+          "title": "ComputedRef<readonly DataRow[]>"
+        },
+        "total": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "page": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "pageSize": {
+          "type": "object",
+          "title": "ComputedRef<number>"
+        },
+        "requestState": {
+          "type": "object",
+          "title": "ComputedRef<RequestState>"
+        },
+        "pageHeight": {
+          "type": "object",
+          "title": "() => number"
+        },
+        "mobilePageHeight": {
+          "type": "object",
+          "title": "() => number"
+        },
+        "mobileBreakpoint": {
+          "type": "object",
+          "title": "() => number"
+        },
+        "overscanPages": {
+          "type": "object",
+          "title": "() => number"
+        },
+        "prefetchPages": {
+          "type": "object",
+          "title": "() => number"
+        },
+        "maxCachedPages": {
+          "type": "object",
+          "title": "() => number"
+        },
+        "settleDelay": {
+          "type": "object",
+          "title": "() => number"
+        },
+        "wheelStepPx": {
+          "type": "object",
+          "title": "() => number"
+        },
+        "maxWheelJumpPages": {
+          "type": "object",
+          "title": "() => number"
+        },
+        "dispatchPageChange": {
+          "type": "object",
+          "title": "(page: number) => Promise<void>"
+        }
+      }
+    }
+  }
 }

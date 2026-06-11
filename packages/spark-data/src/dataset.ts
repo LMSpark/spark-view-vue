@@ -1,9 +1,8 @@
 /**
- * DataSet — 数据空间协调器（容器 + 数据管理）
- *
- * 职责：表注册管理查询、关系注册管理查询、数据加载协调
- * 不操作下层：不主动调用 DataView/DataTable 的方法来改变它们的状态
- * 不消费下层：不订阅 DataView 的事件（DataSet 是顶层）
+ * @module @spark-appworks/spark-data:dataset
+ * 职责：提供 spark-data 数据管线中的 dataset 能力，支撑 DataSet、DataTable、DataView、树或 CRUD 状态协作。
+ * 边界：保持框架无关，只维护数据模型和操作协议，不导入 Vue、Element Plus 或应用路由。
+ * AI用途：处理页面数据绑定、DataViewKey、行状态、树结构或 CRUD 行为时，用本模块确认数据层语义。
  */
 
 import type {

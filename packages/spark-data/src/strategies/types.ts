@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-data:strategies/types
- * @spark-appworks/spark-data 的 strategies/types 模块。
- * 导出 ClassModel symbol: CrudOperation, CrudLifecycleEvent, CrudLifecycleEventInput（共 3 个 symbol）。
+ * 职责：提供数据层 types 能力，围绕 CrudOperation、CrudLifecycleEvent、CrudLifecycleEventInput 描述 DataSet、DataTable、DataView、策略委托或数据绑定键。
+ * 边界：保持框架无关，只处理数据模型、校验和本地策略，不依赖 Vue、路由或 Element Plus。
+ * AI用途：生成页面数据绑定、DataViewKey 或数据策略调用时，用本模块确认 strategies/types 的数据语义。
  */
 import type { CrudResult } from '../types'
 

@@ -1,26 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/tool-loop/turn-event-collector.ts — AI turn APP SSE 事件收集器
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Agent 层的纯编排组件。消费方提供 APP SSE 事件源，
- *   本收集器将中立的 llm-frame 事件聚合为一个完整的 turn 结果。
- *   不处理网络请求，只做事件过滤、状态管理和结果汇总。
- *
- * 【核心类型】
- *   TurnEventCollector  — 收集器接口（result Promise + close 方法）
- *   TurnEventState      — 内部状态机（text/reasoning/toolCalls 聚合）
- *
- * 【数据流】
- *   1. createTurnEventCollector({ input, source }) → 注册 llm-frame 事件监听
- *   2. 收到 delta 事件 → 追加 text（可选 onDelta 回调）
- *   3. 收到 reasoning 事件 → 追加 reasoning（可选 onReasoning 回调）
- *   4. 收到 result 事件 → 汇总 text + toolCalls，触发完成
- *   5. 收到 done 事件 → 以当前累积状态完成
- *   6. 收到 error / 超时 / abort → reject
- *
- * 【消费方】transport 层的 executeTurn 实现（APP 层注入）
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/tool-loop/turn-event-collector
+ * 职责：支撑 Agent tool loop 的 turn event collector 能力，处理工具调用、结果映射、诊断事件或 payload 编解码。
+ * 边界：只服务单次 turn 内的工具循环，不定义业务注册协议，也不直接管理 UI 或持久化页面状态。
+ * AI用途：排查工具调用为什么继续、完成、失败或被映射成回调事件时，用本模块定位 loop 内部语义。
  */
 
 import type { AiAgentStreamEvent } from '../chat/chat-types'

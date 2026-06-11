@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-component:components/containers/layout/state
- * @spark-appworks/spark-component:components/containers/layout/state 模块，属于 SPARK component container/layout-container。
- * 组件目录: containers/layout。
- * 导出 ClassModel symbol: UnifiedValueBridgeOptions, CommitValueOptions（共 2 个 symbol）。
+ * 职责：支撑 state（未注册组件类型）在 container/layout-container 中的运行时协作，补齐配置、状态或渲染器之间的连接逻辑。
+ * 边界：只覆盖当前组件目录 containers/layout 的局部能力，不定义全局页面模型，也不越级操作业务数据源。
+ * AI用途：需要判断 state 的组件分层、辅助类型或内部接线时，用本模块作为局部语义入口。
  */
 import { onBeforeUnmount, shallowRef, watch, type ShallowRef } from 'vue'
 import type { ValueRef } from '../../shared-types.js'

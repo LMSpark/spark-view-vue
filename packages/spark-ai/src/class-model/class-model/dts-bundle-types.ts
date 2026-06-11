@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-types
- * @spark-appworks/spark-ai 的 class-model/class-model/dts-bundle-types 模块。
- * 导出 ClassModel symbol: DtsFileProjectionDocument, DtsFileModuleJsDocSource, DtsFileModuleSemanticMeta, DtsClassModelBundleFileEntry, DtsClassModelBundleClassEntry, DtsClassModelBundleManifest, DtsClassModelDuplicateRecord, DtsClassModelSemanticGapKind 等（共 11 个 symbol）。
+ * 职责：定义 DTS ClassModel bundle、per-file projection、module semantic metadata、duplicate record 和 semantic gap report 的持久化协议。
+ * 边界：只维护 JSON 结构契约，不读取文件系统、不执行 TypeScript 投影，也不渲染知识提示词。
+ * AI用途：修改 generated/dts-class-model 协议或消费 manifest/shard 时，用本模块确认字段含义和兼容边界。
  */
 import type {
   ClassModel,
@@ -9,6 +10,7 @@ import type {
   ComponentClassModelLevel,
   SourceProvenanceMeta,
 } from './types'
+import type { AiJsonSchemaObject } from '../../json'
 
 export const DTS_FILE_PROJECTION_VERSION = 1 as const
 export const DTS_CLASS_MODEL_BUNDLE_PROTOCOL = 'spark-appworks.dts-class-model.bundle' as const
@@ -20,6 +22,7 @@ export type DtsFileProjectionDocument = Readonly<{
   sourcePath: string
   module: DtsFileModuleSemanticMeta
   symbols: readonly string[]
+  $defs?: Readonly<Record<string, AiJsonSchemaObject>>
   models: Readonly<Record<string, ClassModel>>
   generatedAt?: string
 }>
@@ -91,7 +94,7 @@ export type DtsClassModelSemanticGap = Readonly<{
   className: string
   moduleName?: string
   memberName?: string
-  reason: 'missing-jsdoc' | 'inferred-module-jsdoc'
+  reason: 'missing-jsdoc' | 'inferred-module-jsdoc' | 'weak-module-jsdoc'
   chainBreak: string
   fixHint: string
   declarationFile: string

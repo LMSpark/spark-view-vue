@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-project-model:project/project-model
+ * 职责：提供项目模型和页面配置域中的 project model 能力，支撑 navigation、page content、project session 或远程 IO。
+ * 边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。
+ * AI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。
+ */
+/**
  * ProjectModel — 软件项目根 class。
  *
  * 组合 design（设计内容 class 树）与 session（编辑状态）。

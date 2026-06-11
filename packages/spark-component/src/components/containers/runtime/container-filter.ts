@@ -1,19 +1,8 @@
 /**
- * container-filter.ts
- *
- * 容器过滤面板层：过滤表达式构建、双向绑定模型管理与 DataView 过滤应用。
- *
- * 职责：
- * - useFilterPanel : 从过滤器节点配置生成表达式，管理 filterModel，应用到 DataView
- *
- * 工作流程：
- *   filterChildren (SparkNode[]) → 描述符 → 模型同步 → filterExpression → DataView.setFilter/executeFilter
- *
- * 两种过滤值类型：
- *   1. input     : 用户输入的双向绑定值（filterModel[field]）
- *   2. field-ref : 常驻字段引用（filterValueRefField），无需用户输入，直接引用 DataView 字段值
- *
- * 消费方：RendererFilter.vue
+ * @module @spark-appworks/spark-component:components/containers/runtime/container-filter
+ * 职责：提供 container filter 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。
+ * 边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。
+ * AI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。
  */
 
 import { computed, reactive, toValue, watch } from 'vue'

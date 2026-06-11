@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-component:components/support/beforeRender
- * @spark-appworks/spark-component:components/support/beforeRender 模块，属于 SPARK component infrastructure/support。
- * 组件目录: support。
- * 导出 ClassModel symbol: BeforeRenderContext, BeforeRenderState, MergeBeforeRenderOptions（共 3 个 symbol）。
+ * 职责：支撑 beforeRender（未注册组件类型）在 infrastructure/support 中的运行时协作，补齐配置、状态或渲染器之间的连接逻辑。
+ * 边界：只覆盖当前组件目录 support 的局部能力，不定义全局页面模型，也不越级操作业务数据源。
+ * AI用途：需要判断 before render 的组件分层、辅助类型或内部接线时，用本模块作为局部语义入口。
  */
 import type { DataRow, DataView, ModelPermission } from '@spark-appworks/spark-data'
 import { isRecord } from '@spark-appworks/spark-utils'

@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:agent/native-runtime/native-script-runner
- * @spark-appworks/spark-ai 的 agent/native-runtime/native-script-runner 模块。
- * 导出 ClassModel symbol: AiNativeRuntimeSchemaDefs, AiNativeScriptContextCommand, AiNativeScriptRunCommand（共 3 个 symbol）。
+ * 职责：执行 native script 命令，连接 schema defs、脚本上下文和运行结果，让 ClassModel 脚本在本地安全落地。
+ * 边界：负责受控执行和结果包装，不负责 LLM 对话、不决定工具选择，也不保存会话。
+ * AI用途：排查 model_script 执行失败、参数 schema 或返回值映射时，用本模块定位运行链路。
  */
 import type {
   AiJsonSchema,

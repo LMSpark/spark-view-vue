@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-data/src/strategies/computed-column-delegate.ts",
     "packageName": "@spark-appworks/spark-data",
     "modulePath": "strategies/computed-column-delegate",
-    "jsdoc": "ComputedColumnDelegate — 计算列管理器\n职责：\n- 表达式编译（`new Function` + `with` 沙箱）、子表聚合函数注入\n- 已编译函数注册表（`ComputedColumnDelegate`）\n- 编译缓存管理（列指纹 + ctx 变更检测）\n- 聚合解析器构建（通过 DataView 访问 DataSet/DataRelation）\nDataView 仅保留薄代理（setComputedContext / recomputeColumns / aggregateResult getter），\n所有编排逻辑委托到本文件。\n## 表达式格式\n```\n\"price * qty\"\n\"firstName + ' ' + lastName\"\n\"ctx.taxRate ? amount * ctx.taxRate : amount\"\n// 子表聚合（需配置 DataRelation；第一个参数按 childTable 匹配，当前读取 default 视图）\n\"$sum('OrderItems', 'amount')\"\n\"$count('OrderItems')\"\n\"$avg('Scores', 'score')\"\n\"$min('Bids', 'price')\"\n\"$max('Bids', 'price')\"\n\"$list('Tags', 'name').join(', ')\"\n\"$join('Tags', 'name', ' | ')\"    // 字符串连接，第三参数为分隔符（默认 ', '）\n```",
+    "jsdoc": "@module @spark-appworks/spark-data:strategies/computed-column-delegate\n职责：提供 spark-data 数据管线中的 computed column delegate 能力，支撑 DataSet、DataTable、DataView、树或 CRUD 状态协作。\n边界：保持框架无关，只维护数据模型和操作协议，不导入 Vue、Element Plus 或应用路由。\nAI用途：处理页面数据绑定、DataViewKey、行状态、树结构或 CRUD 行为时，用本模块确认数据层语义。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ComputedColumnContext",
@@ -22,12 +22,12 @@
     "ComputedColumnContext": {
       "kind": "ComputedColumnContext",
       "className": "ComputedColumnContext",
-      "jsdoc": "/** 表达式求值时可传入的外部上下文（在表达式中以 `ctx` 变量引用） */",
+      "jsdoc": "表达式求值时可传入的外部上下文（在表达式中以 `ctx` 变量引用）",
       "shapeKind": "type",
       "declarationTypeText": "{\n    [key: string]: unknown;\n}",
       "provenance": {
         "file": "declarations/packages/spark-data/src/strategies/computed-column-delegate.d.ts",
-        "line": 32,
+        "line": 10,
         "className": "ComputedColumnContext",
         "declarationKind": "type"
       },
@@ -37,251 +37,200 @@
     "ComputedColumnDelegate": {
       "kind": "ComputedColumnDelegate",
       "className": "ComputedColumnDelegate",
-      "jsdoc": "/**\n * 计算列管理器——编译、求值、缓存的统一委托。\n *\n * 通过 DataView 访问运行时状态，自身管理：\n * - 已编译函数注册表（Map<name, fn>）\n * - 编译缓存（列指纹字符串 + ctx 对象引用，=== 比较，零序列化开销）\n * - 聚合解析器构建（DataRelation → 子行解析）\n */",
+      "jsdoc": "计算列管理器——编译、求值、缓存的统一委托。\n通过 DataView 访问运行时状态，自身管理：\n- 已编译函数注册表（Map<name, fn>）\n- 编译缓存（列指纹字符串 + ctx 对象引用，=== 比较，零序列化开销）\n- 聚合解析器构建（DataRelation → 子行解析）",
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-data/src/strategies/computed-column-delegate.d.ts",
-        "line": 43,
+        "line": 21,
         "className": "ComputedColumnDelegate",
         "declarationKind": "class"
       },
       "constructorMeta": {
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "host": {
-              "title": "DataView"
+        "jsdoc": "创建 Computed Column Delegate 实例。",
+        "signatureText": "constructor(host: DataView)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "host",
+            "type": {
+              "type": "reference",
+              "name": "DataView",
+              "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
             }
-          },
-          "required": [
-            "host"
-          ],
-          "additionalProperties": false
-        },
-        "jsdoc": "/** 创建 Computed Column Delegate 实例。 */",
-        "provenance": {
-          "file": "declarations/packages/spark-data/src/strategies/computed-column-delegate.d.ts",
-          "line": 53,
-          "className": "ComputedColumnDelegate",
-          "memberName": "constructor",
-          "declarationKind": "class"
-        }
+          }
+        ]
       },
       "attributes": [],
       "methods": [
         {
           "name": "setContext",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "ctx": {
-                "title": "ComputedColumnContext"
+          "jsdoc": "设置计算列共享上下文，失效缓存并触发重编译。",
+          "signatureText": "setContext(ctx: ComputedColumnContext): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "ctx",
+              "type": {
+                "type": "reference",
+                "name": "ComputedColumnContext",
+                "sourcePath": "declarations/packages/spark-data/src/strategies/computed-column-delegate.d.ts"
               }
-            },
-            "required": [
-              "ctx"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 设置计算列共享上下文，失效缓存并触发重编译。 */",
-          "paramsTypeText": "ctx: ComputedColumnContext",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/computed-column-delegate.d.ts",
-            "line": 57,
-            "className": "ComputedColumnDelegate",
-            "memberName": "setContext",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "invalidateCache",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** @internal 失效编译缓存，下次 syncFromConfig 将强制重编译。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/computed-column-delegate.d.ts",
-            "line": 61,
-            "className": "ComputedColumnDelegate",
-            "memberName": "invalidateCache",
-            "declarationKind": "class"
+          "jsdoc": "@internal 失效编译缓存，下次 syncFromConfig 将强制重编译。",
+          "signatureText": "invalidateCache(): void",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "syncFromConfig",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/**\n     * 从宿主的 DataTable 列定义编译并注册计算列。\n     * 内置编译缓存：列指纹 + ctx 不变时跳过。\n     */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/computed-column-delegate.d.ts",
-            "line": 66,
-            "className": "ComputedColumnDelegate",
-            "memberName": "syncFromConfig",
-            "declarationKind": "class"
+          "jsdoc": "从宿主的 DataTable 列定义编译并注册计算列。\n内置编译缓存：列指纹 + ctx 不变时跳过。",
+          "signatureText": "syncFromConfig(): void",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "register",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "title": "string"
-              },
-              "fn": {
-                "title": "ComputedColumnFn"
+          "jsdoc": "注册计算列（已编译函数）。",
+          "signatureText": "register(name: string, fn: ComputedColumnFn): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "name",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
             },
-            "required": [
-              "name",
-              "fn"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 注册计算列（已编译函数）。 */",
-          "paramsTypeText": "name: string, fn: ComputedColumnFn",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/computed-column-delegate.d.ts",
-            "line": 68,
-            "className": "ComputedColumnDelegate",
-            "memberName": "register",
-            "declarationKind": "class"
+            {
+              "name": "fn",
+              "type": {
+                "type": "reference",
+                "name": "ComputedColumnFn",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              }
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "remove",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "title": "string"
+          "jsdoc": "移除计算列定义（已求值的历史数据保留）。",
+          "signatureText": "remove(name: string): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "name",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
               }
-            },
-            "required": [
-              "name"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 移除计算列定义（已求值的历史数据保留）。 */",
-          "paramsTypeText": "name: string",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/computed-column-delegate.d.ts",
-            "line": 70,
-            "className": "ComputedColumnDelegate",
-            "memberName": "remove",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "apply",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "rows": {
+          "jsdoc": "对行集合就地写入所有计算列。无计算列时短路返回，零开销。",
+          "signatureText": "apply(rows: DataRow[]): void",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rows",
+              "type": {
                 "type": "array",
-                "title": "DataRow[]",
-                "items": true
+                "elementType": {
+                  "type": "reference",
+                  "name": "DataRow",
+                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                }
               }
-            },
-            "required": [
-              "rows"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 对行集合就地写入所有计算列。无计算列时短路返回，零开销。 */",
-          "paramsTypeText": "rows: DataRow[]",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/computed-column-delegate.d.ts",
-            "line": 72,
-            "className": "ComputedColumnDelegate",
-            "memberName": "apply",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         },
         {
           "name": "strip",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {
-              "data": {
-                "title": "Partial<DataRow>"
+          "jsdoc": "剥离计算列字段，返回浅拷贝；无计算列时返回原对象（零开销）。",
+          "signatureText": "strip(data: Partial<DataRow>): Partial<DataRow>",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "data",
+              "type": {
+                "type": "reference",
+                "name": "Partial",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow",
+                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  }
+                ]
               }
-            },
-            "required": [
-              "data"
-            ],
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "Partial<DataRow>"
-          },
-          "returnTypeText": "Partial<DataRow>",
-          "jsdoc": "/** 剥离计算列字段，返回浅拷贝；无计算列时返回原对象（零开销）。 */",
-          "paramsTypeText": "data: Partial<DataRow>",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/computed-column-delegate.d.ts",
-            "line": 74,
-            "className": "ComputedColumnDelegate",
-            "memberName": "strip",
-            "declarationKind": "class"
+            }
+          ],
+          "returnType": {
+            "type": "reference",
+            "name": "Partial",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "DataRow",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              }
+            ]
           }
         },
         {
           "name": "destroy",
-          "paramsSchema": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "returnSchema": {
-            "title": "void"
-          },
-          "returnTypeText": "void",
-          "jsdoc": "/** 清空所有状态（DataView.destroy 时调用）。 */",
-          "paramsTypeText": "",
-          "provenance": {
-            "file": "declarations/packages/spark-data/src/strategies/computed-column-delegate.d.ts",
-            "line": 76,
-            "className": "ComputedColumnDelegate",
-            "memberName": "destroy",
-            "declarationKind": "class"
+          "jsdoc": "清空所有状态（DataView.destroy 时调用）。",
+          "signatureText": "destroy(): void",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "returnType": {
+            "type": "intrinsic",
+            "name": "void"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.784Z"
+  "generatedAt": "2026-06-11T16:38:12.986Z",
+  "$defs": {
+    "ComputedColumnContext": {
+      "type": "object",
+      "title": "ComputedColumnContext",
+      "description": "表达式求值时可传入的外部上下文（在表达式中以 `ctx` 变量引用）"
+    },
+    "ComputedColumnDelegate": {
+      "type": "object",
+      "title": "ComputedColumnDelegate",
+      "description": "计算列管理器——编译、求值、缓存的统一委托。\n通过 DataView 访问运行时状态，自身管理：\n- 已编译函数注册表（Map<name, fn>）\n- 编译缓存（列指纹字符串 + ctx 对象引用，=== 比较，零序列化开销）\n- 聚合解析器构建（DataRelation → 子行解析）"
+    }
+  }
 }

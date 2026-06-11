@@ -1,17 +1,8 @@
 /**
- * 页面内容加载器 - 统一读取四文件原文
- *
- * 职责：通过后端页面配置文件 API 加载四文件原文，并管理客户端缓存策略。
- *
- * ## 数据流
- * ```
- * loadPageFileContent(pageId, filename)
- *   └── fileLoader.load(path, { parseJSON: false }) → PageContentLoadResult<string>
- * ```
- *
- * ## 缓存策略
- * - FileLoader 时间戳协议（localStorage / sessionStorage / memory）
- * - 后端 API 走 timestamp/notModified + 客户端缓存
+ * @module @spark-appworks/spark-project-model:io/page-content-loader
+ * 职责：提供项目模型和页面配置域中的 page content loader 能力，支撑 navigation、page content、project session 或远程 IO。
+ * 边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。
+ * AI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。
  */
 
 import type { PageContentLoadResult, PageNodeLoadOptions } from '../page/page-file'

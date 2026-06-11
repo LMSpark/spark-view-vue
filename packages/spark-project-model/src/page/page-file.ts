@@ -1,3 +1,9 @@
+/**
+ * @module @spark-appworks/spark-project-model:page/page-file
+ * 职责：提供项目模型和页面配置域中的 page file 能力，支撑 navigation、page content、project session 或远程 IO。
+ * 边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。
+ * AI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。
+ */
 /** 页面四文件：路径常量、IO 类型、文本 parse/serialize。 */
 import { DataSet, getSparkNodeChildren, SparkNodeTree, type SparkNode } from '@spark-appworks/spark-data'
 import { parsePageData } from './compile-files'

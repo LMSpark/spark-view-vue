@@ -1,16 +1,8 @@
 /**
- * SelectionDelegate — 选中状态委托
- *
- * 从 DataView 提取的选中状态管理职责：
- * - currentRow / selectedRows 的 getter / setter（带幂等守卫）
- * - 基于主键的 set / add / remove 系列操作（strict 模式支持）
- * - 数据加载后自动首选（autoCurrentFirst / autoSelectFirst）
- * - 无效选中状态清理（行数据刷新后同步调用）
- * - 行索引缓存管理（rowIndexMap，O(n) 构建 O(1) 查找）
- *
- * 通过 DataView 宿主交互：
- * - delegate 是 DataView 的内部职责切分，不再维护单实现宿主接口
- * - 选中状态字段与宿主同引用，外部访问 DataView.currentRow 等字段时即可读到最新值
+ * @module @spark-appworks/spark-data:strategies/selection-delegate
+ * 职责：提供 spark-data 数据管线中的 selection delegate 能力，支撑 DataSet、DataTable、DataView、树或 CRUD 状态协作。
+ * 边界：保持框架无关，只维护数据模型和操作协议，不导入 Vue、Element Plus 或应用路由。
+ * AI用途：处理页面数据绑定、DataViewKey、行状态、树结构或 CRUD 行为时，用本模块确认数据层语义。
  */
 
 import { Logger } from '@spark-appworks/spark-utils'

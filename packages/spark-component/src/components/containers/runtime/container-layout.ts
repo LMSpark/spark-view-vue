@@ -1,16 +1,8 @@
 /**
- * container-layout.ts
- *
- * 容器布局层：CSS Grid 投影与子元素跨度计算。
- *
- * 职责：
- * - useContainerGrid     : 将 children + 布局配置映射为 CSS Grid 容器样式及子元素跨度样式
- * - useCompositeItemGrid : 复合容器（Tabs / Collapse 等）内容区布局适配（useContainerGrid 薄包装）
- * - normalizeGridGap / normalizeSpan : 公共布局参数标准化工具
- *
- * 消费方：RendererFieldScope.vue、RendererSection.vue、RendererDrawer.vue、
- *         RendererDialog.vue、RendererTabPane.vue、RendererStepItem.vue、
- *         RendererCollapseItem.vue、container-form-detail.ts
+ * @module @spark-appworks/spark-component:components/containers/runtime/container-layout
+ * 职责：提供 container layout 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。
+ * 边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。
+ * AI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。
  */
 
 import { computed, toValue } from 'vue'

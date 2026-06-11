@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/fields/data-components/composables/useSwitchNullValue",
-    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useSwitchNullValue\n@spark-appworks/spark-component:components/fields/data-components/composables/useSwitchNullValue 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: BoundBooleanColumn, UseSwitchNullValueOptions（共 2 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/composables/useSwitchNullValue\n职责：提供 useSwitchNullValue（未注册组件类型）相关的组合式状态或行为封装，复用字段值、选项、权限、动作和交互控制逻辑。\n边界：只服务 field-level/data-field 的 setup/runtime 组合，不直接声明页面配置，也不替代组件 props。\nAI用途：需要理解 use switch null value 的响应式状态来源、值转换或事件副作用时，使用本模块定位实际运行规则。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
       "BoundBooleanColumn",
@@ -25,7 +25,7 @@
     "BoundBooleanColumn": {
       "kind": "BoundBooleanColumn",
       "className": "BoundBooleanColumn",
-      "jsdoc": "/** Bound Boolean Column 的语义模型。 */",
+      "jsdoc": "Bound Boolean Column 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 类型标识。 */\n    type: string;\n    /** 是否 allow DBNull。 */\n    allowDBNull?: boolean | undefined;\n}",
       "provenance": {
@@ -40,42 +40,21 @@
       "attributes": [
         {
           "name": "type",
+          "jsdoc": "类型标识。",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 类型标识。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.d.ts",
-            "line": 6,
-            "className": "BoundBooleanColumn",
-            "memberName": "type",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "allowDBNull",
+          "jsdoc": "是否 allow DBNull。",
           "schema": {
-            "title": "boolean | undefined"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否 allow DBNull。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.d.ts",
-            "line": 8,
-            "className": "BoundBooleanColumn",
-            "memberName": "allowDBNull",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         }
       ],
       "methods": []
@@ -83,7 +62,7 @@
     "UseSwitchNullValueOptions": {
       "kind": "UseSwitchNullValueOptions",
       "className": "UseSwitchNullValueOptions",
-      "jsdoc": "/** Use Switch Null Value Options 的调用配置。 */",
+      "jsdoc": "Use Switch Null Value Options 的调用配置。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** bound Column 字段。 */\n    boundColumn: ValueRef<BoundBooleanColumn | null | undefined>;\n    /** context Data 字段。 */\n    contextData: DataRow | null;\n    /** data Source 字段。 */\n    dataSource: unknown;\n    /** 绑定字段名。 */\n    fieldName: ValueRef<string>;\n    /** sync Value 回调。 */\n    syncValue: (value: boolean | null) => void;\n}",
       "provenance": {
@@ -98,102 +77,107 @@
       "attributes": [
         {
           "name": "boundColumn",
+          "jsdoc": "bound Column 字段。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<BoundBooleanColumn | null | undefined>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** bound Column 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.d.ts",
-            "line": 13,
-            "className": "UseSwitchNullValueOptions",
-            "memberName": "boundColumn",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "contextData",
+          "jsdoc": "context Data 字段。",
           "schema": {
-            "title": "DataRow | null"
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** context Data 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.d.ts",
-            "line": 15,
-            "className": "UseSwitchNullValueOptions",
-            "memberName": "contextData",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "dataSource",
-          "schema": {
-            "title": "unknown"
-          },
+          "jsdoc": "data Source 字段。",
+          "schema": true,
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** data Source 字段。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.d.ts",
-            "line": 17,
-            "className": "UseSwitchNullValueOptions",
-            "memberName": "dataSource",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "fieldName",
+          "jsdoc": "绑定字段名。",
           "schema": {
+            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
             "title": "ValueRef<string>"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** 绑定字段名。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.d.ts",
-            "line": 19,
-            "className": "UseSwitchNullValueOptions",
-            "memberName": "fieldName",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         },
         {
           "name": "syncValue",
+          "jsdoc": "sync Value 回调。",
           "schema": {
+            "type": "object",
             "title": "(value: boolean | null) => void"
           },
           "readable": true,
-          "writable": true,
-          "jsdoc": "/** sync Value 回调。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/composables/useSwitchNullValue.d.ts",
-            "line": 21,
-            "className": "UseSwitchNullValueOptions",
-            "memberName": "syncValue",
-            "declarationKind": "interface",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": true
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.465Z"
+  "generatedAt": "2026-06-11T16:38:12.847Z",
+  "$defs": {
+    "BoundBooleanColumn": {
+      "type": "object",
+      "title": "BoundBooleanColumn",
+      "description": "Bound Boolean Column 的语义模型。",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "allowDBNull": {
+          "type": "boolean"
+        }
+      }
+    },
+    "UseSwitchNullValueOptions": {
+      "type": "object",
+      "title": "UseSwitchNullValueOptions",
+      "description": "Use Switch Null Value Options 的调用配置。",
+      "properties": {
+        "boundColumn": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<BoundBooleanColumn | null | undefined>"
+        },
+        "contextData": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dataSource": true,
+        "fieldName": {
+          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "title": "ValueRef<string>"
+        },
+        "syncValue": {
+          "type": "object",
+          "title": "(value: boolean | null) => void"
+        }
+      }
+    }
+  }
 }

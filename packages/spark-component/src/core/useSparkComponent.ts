@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-component:core/useSparkComponent
- * @spark-appworks/spark-component 的 core/useSparkComponent 模块。
- * 导出 ClassModel symbol: CapabilityKey, CapabilityContext, LoggerApi, SparkCapabilityConsumer, UseSparkComponentReturn, UseSparkPageComponentReturn, UseSparkCapabilityReaderReturn, UseSparkComponentOptions 等（共 11 个 symbol）。
+ * 职责：维护 @spark-appworks/spark-component 中 core/useSparkComponent 的模块能力，围绕 CapabilityKey、CapabilityContext、LoggerApi 等 11 个公开契约 提供稳定的公开契约。
+ * 边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。
+ * AI用途：需要定位 core/useSparkComponent 的声明、导出和使用边界时，从本模块开始。
  */
 /**
  * 文件概述：

@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/permission/usePermission.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "permission/usePermission",
-    "jsdoc": "usePermission — 权限 API composable\n统一封装 PAGE_PERMISSION_MODE / SUBTREE_FIELD_POLICY 能力消费 + 权限判断/字段状态。\n消费方只需调用本 composable 返回的方法，无需自行 sparkConsume 权限模式。\n设计原则：\n- permissionMode 由后端随导航配置下发，PageRenderer 通过 sparkProvide 注入\n- subtreeFieldPolicy 只描述子树内字段输入策略，不改变页面级 permissionMode\n- 前端权限仅为渲染层表现，真正安全由后端控制\n- 所有权限判断收口到本模块，方便统一维护",
+    "jsdoc": "@module @spark-appworks/spark-component:permission/usePermission\n职责：提供 use Permission 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\n\nusePermission — 权限 API composable\n统一封装 PAGE_PERMISSION_MODE / SUBTREE_FIELD_POLICY 能力消费 + 权限判断/字段状态。\n消费方只需调用本 composable 返回的方法，无需自行 sparkConsume 权限模式。\n设计原则：\n- permissionMode 由后端随导航配置下发，PageRenderer 通过 sparkProvide 注入\n- subtreeFieldPolicy 只描述子树内字段输入策略，不改变页面级 permissionMode\n- 前端权限仅为渲染层表现，真正安全由后端控制\n- 所有权限判断收口到本模块，方便统一维护",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "UsePermissionReturn"
@@ -20,51 +20,54 @@
     "UsePermissionReturn": {
       "kind": "UsePermissionReturn",
       "className": "UsePermissionReturn",
-      "jsdoc": "/** Use Permission Return 的语义模型。 */",
+      "jsdoc": "Use Permission Return 的语义模型。",
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 当前页面权限模式（后端下发），undefined 表示能力未注入；渲染器默认提供 'masked'。 */\n    readonly permissionMode: NavPermissionMode | undefined;\n    /** 当前子树级字段输入策略；通常仅筛选条件等本地输入子树会提供。 */\n    readonly subtreeFieldPolicy: SubtreeFieldPolicy | undefined;\n    /** 判断动作是否被权限允许 */\n    isPermitted(action: PermissionAction | undefined, context?: Omit<PermissionActionContext, 'permissionMode'>): boolean;\n    /** 判断模型级动作（create/import/export）是否允许 */\n    isModelActionAllowed(action: SparkNode, modelPerm: ModelPermission | undefined): boolean;\n    /** 判断行级动作（edit/delete/create-child）是否允许 */\n    isRowActionAllowed(action: SparkNode, row: DataRow | undefined): boolean;\n    /** 解析字段权限状态（可见性 + 可编辑性） */\n    resolveFieldState(field: string | undefined, row: DataRow | null | undefined, config?: Omit<FieldRenderConfig, 'field'>): FieldRenderState | null;\n}",
       "provenance": {
         "file": "declarations/packages/spark-component/src/permission/usePermission.d.ts",
-        "line": 19,
+        "line": 25,
         "className": "UsePermissionReturn",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "permissionMode",
+          "jsdoc": "当前页面权限模式（后端下发），undefined 表示能力未注入；渲染器默认提供 'masked'。",
           "schema": {
-            "title": "NavPermissionMode | undefined"
+            "type": "object",
+            "title": "NavPermissionMode"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 当前页面权限模式（后端下发），undefined 表示能力未注入；渲染器默认提供 'masked'。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/permission/usePermission.d.ts",
-            "line": 21,
-            "className": "UsePermissionReturn",
-            "memberName": "permissionMode",
-            "declarationKind": "interface"
-          }
+          "writable": false
         },
         {
           "name": "subtreeFieldPolicy",
+          "jsdoc": "当前子树级字段输入策略；通常仅筛选条件等本地输入子树会提供。",
           "schema": {
-            "title": "SubtreeFieldPolicy | undefined"
+            "$ref": "../core/capability-keys.d.ts.json#/$defs/SubtreeFieldPolicy"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 当前子树级字段输入策略；通常仅筛选条件等本地输入子树会提供。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/permission/usePermission.d.ts",
-            "line": 23,
-            "className": "UsePermissionReturn",
-            "memberName": "subtreeFieldPolicy",
-            "declarationKind": "interface"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.675Z"
+  "generatedAt": "2026-06-11T16:38:12.917Z",
+  "$defs": {
+    "UsePermissionReturn": {
+      "type": "object",
+      "title": "UsePermissionReturn",
+      "description": "Use Permission Return 的语义模型。",
+      "properties": {
+        "permissionMode": {
+          "type": "object",
+          "title": "NavPermissionMode"
+        },
+        "subtreeFieldPolicy": {
+          "$ref": "../core/capability-keys.d.ts.json#/$defs/SubtreeFieldPolicy"
+        }
+      }
+    }
+  }
 }

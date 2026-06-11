@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/fields/data-components/FieldSlider.props.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/fields/data-components/FieldSlider.props",
-    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/FieldSlider.props\nFieldSlider 模块，属于 SPARK component field-level/data-field。\n组件目录: fields/data-components。\n导出 ClassModel symbol: RSliderProps（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/data-components/FieldSlider.props\n职责：定义 FieldSlider（r-slider）的配置属性契约，把页面 JSON 中的字段、数据绑定、显示选项和交互开关约束成可生成的类型。\n边界：只描述 field-level/data-field 组件的声明式配置，不读取 DataSet、不触发运行时事件，也不直接渲染 DOM。\nAI用途：生成或修订页面配置时，用本模块判断 field slider 允许哪些 props、哪些字段属于数据绑定，避免把运行时 API 写进配置。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "RSliderProps"
@@ -25,7 +25,7 @@
     "RSliderProps": {
       "kind": "RSliderProps",
       "className": "RSliderProps",
-      "jsdoc": "/** RSlider Props 的属性契约。 */",
+      "jsdoc": "RSlider Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "SparkNodeProps & SparkBoundedFieldProps<number> & {\n    /** 滑块步进值。 */\n    step?: number;\n    /** 是否显示数值输入框。 */\n    showInput?: boolean;\n}",
       "declarationRelations": [
@@ -58,51 +58,40 @@
       "attributes": [
         {
           "name": "step",
+          "jsdoc": "滑块步进值。",
           "schema": {
-            "type": "number",
-            "title": "number"
+            "type": "number"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 滑块步进值。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldSlider.props.d.ts",
-            "line": 11,
-            "className": "RSliderProps",
-            "memberName": "step",
-            "declarationKind": "interface",
-            "componentName": "FieldSlider",
-            "componentType": "r-slider",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         },
         {
           "name": "showInput",
+          "jsdoc": "是否显示数值输入框。",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否显示数值输入框。 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/data-components/FieldSlider.props.d.ts",
-            "line": 13,
-            "className": "RSliderProps",
-            "memberName": "showInput",
-            "declarationKind": "interface",
-            "componentName": "FieldSlider",
-            "componentType": "r-slider",
-            "componentLevel": "field-level",
-            "componentLayer": "data-field",
-            "componentDirectory": "fields/data-components"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.542Z"
+  "generatedAt": "2026-06-11T16:38:12.869Z",
+  "$defs": {
+    "RSliderProps": {
+      "type": "object",
+      "title": "RSliderProps",
+      "description": "RSlider Props 的属性契约。",
+      "properties": {
+        "step": {
+          "type": "number"
+        },
+        "showInput": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
 }

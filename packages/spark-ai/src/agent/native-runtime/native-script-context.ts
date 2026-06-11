@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:agent/native-runtime/native-script-context
- * @spark-appworks/spark-ai 的 agent/native-runtime/native-script-context 模块。
- * 导出 ClassModel symbol: ScriptCallback, ScriptActionArg, AiNativePathContext, AiApiScriptContextCommand, ExecuteAiApiActionCommand, AiApiScriptActionFailure（共 6 个 symbol）。
+ * 职责：构建 native script 可访问的受控上下文，封装路径上下文、动作调用、回调和失败结果。
+ * 边界：只暴露白名单脚本能力，不泄露浏览器全局对象、不绕过 Host 工具审批，也不直接修改业务存储。
+ * AI用途：编写或审查 AI 生成脚本时，用本模块确认脚本能调用哪些 API、错误如何返回。
  */
 import { readJsonProperty } from '@spark-appworks/spark-json-document'
 import { AiJsonSchemaValidator, type AiJsonParams, type AiJsonSchemaValidateOptions } from '../../json'

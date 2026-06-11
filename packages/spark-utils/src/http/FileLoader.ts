@@ -1,4 +1,10 @@
 /**
+ * @module @spark-appworks/spark-utils:http/FileLoader
+ * 职责：提供框架无关的 File Loader 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。
+ * 边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。
+ * AI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。
+ */
+/**
  * FileLoader — HTTP 文件加载 + 自动计算结果缓存
  *
  * ## 基础用法（返回原始 JSON）

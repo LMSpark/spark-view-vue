@@ -1,27 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * schema/schema-validator.ts — 通用 JSON Schema 参数校验器
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】schema 层顶部，依赖 schema-types.ts 和 AJV 2020。
- *   负责将 LLM 传入的 JSON 参数按 paramsSchema 校验，输出中文诊断。
- *
- * 【设计决策】
- *   - 基于 AJV 2020（标准 JSON Schema 校验引擎），不自己实现校验逻辑。
- *   - 文档级 $defs 通过 schemaDefs 注入，由 AJV 原生解析 #/$defs/* $ref（非自研 inline）。
- *   - 所有方法为 static，类不持有状态，全局复用单一 Ajv2020 实例。
- *   - AJV error keyword → 中文消息映射集中在一处，便于统一调整措辞。
- *   - JSON Pointer 路径转 $.a.b[0] 格式，方便 LLM 理解错误位置。
- *
- * ═══════════════════════════════════════════════════════════════
- * 校验流程（validateDeserializedParams）：
- *
- *   ① params 必须是 JSON 对象（非 null/非数组）
- *   ② schema 根必须是 type=object 的标准 JSON Schema
- *   ③ ajv.compile(schema) → 编译校验器
- *   ④ validate(params) → 收集 issues
- *   ⑤ ok=false 时用 formatJsonValidationIssues 生成中文诊断
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-json-document:schema/schema-validator
+ * 职责：提供 JSON Document/schema 处理中的 schema validator 能力，支撑 schema 标准化、审计和元数据保留。
+ * 边界：只处理 JSON schema/document 结构，不耦合应用页面、Vue 组件或 AI 会话状态。
+ * AI用途：校验或标准化配置 schema 时，用本模块确认 JSON 文档层的规则来源。
  */
 
 import Ajv2020, { type ErrorObject } from 'ajv/dist/2020.js'

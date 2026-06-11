@@ -1,24 +1,8 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * agent/transport/transport-types.ts — 传输层类型契约
- * ═══════════════════════════════════════════════════════════════
- *
- * 【架构定位】Host 层与 APP 层的 AI turn 契约。定义工具规约形状、
- *   消息格式、AI turn 命令/事件类型，以及 APP 层注入的 I/O 回调。
- *
- * 【核心类型】
- *   AiAgentTransportToolSpec   — 工具规约（对齐 OpenAI function tool spec）
- *   AiAgentTransportMessage    — 传输层消息（含 tool_calls / tool_call_id）
- *   AiAgentTransportToolCall   — 传输层工具调用
- *   AiAgentStreamTurnInput     — AI turn 启动输入
- *   AiAgentStreamTurnResult    — AI turn 汇总结果
- *   AiAgentTurnCallbacks       — APP 层实现的 turn I/O 回调
- *
- * 【与工具 runtime 的关系】
- *   本层的 ToolSpec 直接承载 runtime 输出的固定工具 JSON Schema。
- *
- * 【消费方】business-session、tool-loop-runner、APP 层 ai-turn bridge
- * ═══════════════════════════════════════════════════════════════
+ * @module @spark-appworks/spark-ai:agent/transport/transport-types
+ * 职责：定义 Agent transport 层的 transport types 协议，把 session/tool-loop 事件投影为应用可消费事件。
+ * 边界：只描述传输事件和回调契约，不实现业务注册、不保存会话，也不渲染 UI。
+ * AI用途：对齐 SSE、turn callback 或前端事件消费字段时，用本模块确认传输边界。
  */
 
 import type { AiAgentScope } from '../business/scope-types'

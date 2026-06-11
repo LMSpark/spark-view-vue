@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "components/fields/non-data-components/TreeNodeSummary.props",
-    "jsdoc": "@module @spark-appworks/spark-component:components/fields/non-data-components/TreeNodeSummary.props\nTreeNodeSummary 模块，属于 SPARK component field-level/field-support。\n组件目录: fields/non-data-components。\n导出 ClassModel symbol: RTreeNodeSummaryProps（共 1 个 symbol）。",
+    "jsdoc": "@module @spark-appworks/spark-component:components/fields/non-data-components/TreeNodeSummary.props\n职责：定义 TreeNodeSummary（r-tree-node-summary）的配置属性契约，把页面 JSON 中的字段、数据绑定、显示选项和交互开关约束成可生成的类型。\n边界：只描述 field-level/field-support 组件的声明式配置，不读取 DataSet、不触发运行时事件，也不直接渲染 DOM。\nAI用途：生成或修订页面配置时，用本模块判断 tree node summary 允许哪些 props、哪些字段属于数据绑定，避免把运行时 API 写进配置。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "RTreeNodeSummaryProps"
@@ -25,7 +25,7 @@
     "RTreeNodeSummaryProps": {
       "kind": "RTreeNodeSummaryProps",
       "className": "RTreeNodeSummaryProps",
-      "jsdoc": "/** RTree Node Summary Props 的属性契约。 */",
+      "jsdoc": "RTree Node Summary Props 的属性契约。",
       "shapeKind": "type",
       "declarationTypeText": "SparkNodeProps & {\n    /** 名称字段名 */\n    nameField?: string;\n    /** 类型字段名 */\n    typeField?: string;\n    /** 状态字段名 */\n    statusField?: string;\n    /** 负责人字段名 */\n    ownerField?: string;\n    /** 元信息字段名 */\n    metaField?: string;\n    /** 扩展字段名 */\n    extraField?: string;\n    /** 是否展示类型 */\n    showType?: boolean;\n    /** 是否展示状态 */\n    showStatus?: boolean;\n    /** 是否展示负责人 */\n    showOwner?: boolean;\n    /** 是否展示元信息 */\n    showMeta?: boolean;\n    /** 是否展示扩展信息 */\n    showExtra?: boolean;\n}",
       "declarationRelations": [
@@ -53,249 +53,148 @@
       "attributes": [
         {
           "name": "nameField",
+          "jsdoc": "名称字段名",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 名称字段名 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.d.ts",
-            "line": 11,
-            "className": "RTreeNodeSummaryProps",
-            "memberName": "nameField",
-            "declarationKind": "interface",
-            "componentName": "TreeNodeSummary",
-            "componentType": "r-tree-node-summary",
-            "componentLevel": "field-level",
-            "componentLayer": "field-support",
-            "componentDirectory": "fields/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "typeField",
+          "jsdoc": "类型字段名",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 类型字段名 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.d.ts",
-            "line": 13,
-            "className": "RTreeNodeSummaryProps",
-            "memberName": "typeField",
-            "declarationKind": "interface",
-            "componentName": "TreeNodeSummary",
-            "componentType": "r-tree-node-summary",
-            "componentLevel": "field-level",
-            "componentLayer": "field-support",
-            "componentDirectory": "fields/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "statusField",
+          "jsdoc": "状态字段名",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 状态字段名 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.d.ts",
-            "line": 15,
-            "className": "RTreeNodeSummaryProps",
-            "memberName": "statusField",
-            "declarationKind": "interface",
-            "componentName": "TreeNodeSummary",
-            "componentType": "r-tree-node-summary",
-            "componentLevel": "field-level",
-            "componentLayer": "field-support",
-            "componentDirectory": "fields/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "ownerField",
+          "jsdoc": "负责人字段名",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 负责人字段名 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.d.ts",
-            "line": 17,
-            "className": "RTreeNodeSummaryProps",
-            "memberName": "ownerField",
-            "declarationKind": "interface",
-            "componentName": "TreeNodeSummary",
-            "componentType": "r-tree-node-summary",
-            "componentLevel": "field-level",
-            "componentLayer": "field-support",
-            "componentDirectory": "fields/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "metaField",
+          "jsdoc": "元信息字段名",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 元信息字段名 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.d.ts",
-            "line": 19,
-            "className": "RTreeNodeSummaryProps",
-            "memberName": "metaField",
-            "declarationKind": "interface",
-            "componentName": "TreeNodeSummary",
-            "componentType": "r-tree-node-summary",
-            "componentLevel": "field-level",
-            "componentLayer": "field-support",
-            "componentDirectory": "fields/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "extraField",
+          "jsdoc": "扩展字段名",
           "schema": {
-            "type": "string",
-            "title": "string"
+            "type": "string"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 扩展字段名 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.d.ts",
-            "line": 21,
-            "className": "RTreeNodeSummaryProps",
-            "memberName": "extraField",
-            "declarationKind": "interface",
-            "componentName": "TreeNodeSummary",
-            "componentType": "r-tree-node-summary",
-            "componentLevel": "field-level",
-            "componentLayer": "field-support",
-            "componentDirectory": "fields/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "showType",
+          "jsdoc": "是否展示类型",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否展示类型 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.d.ts",
-            "line": 23,
-            "className": "RTreeNodeSummaryProps",
-            "memberName": "showType",
-            "declarationKind": "interface",
-            "componentName": "TreeNodeSummary",
-            "componentType": "r-tree-node-summary",
-            "componentLevel": "field-level",
-            "componentLayer": "field-support",
-            "componentDirectory": "fields/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "showStatus",
+          "jsdoc": "是否展示状态",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否展示状态 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.d.ts",
-            "line": 25,
-            "className": "RTreeNodeSummaryProps",
-            "memberName": "showStatus",
-            "declarationKind": "interface",
-            "componentName": "TreeNodeSummary",
-            "componentType": "r-tree-node-summary",
-            "componentLevel": "field-level",
-            "componentLayer": "field-support",
-            "componentDirectory": "fields/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "showOwner",
+          "jsdoc": "是否展示负责人",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否展示负责人 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.d.ts",
-            "line": 27,
-            "className": "RTreeNodeSummaryProps",
-            "memberName": "showOwner",
-            "declarationKind": "interface",
-            "componentName": "TreeNodeSummary",
-            "componentType": "r-tree-node-summary",
-            "componentLevel": "field-level",
-            "componentLayer": "field-support",
-            "componentDirectory": "fields/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "showMeta",
+          "jsdoc": "是否展示元信息",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否展示元信息 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.d.ts",
-            "line": 29,
-            "className": "RTreeNodeSummaryProps",
-            "memberName": "showMeta",
-            "declarationKind": "interface",
-            "componentName": "TreeNodeSummary",
-            "componentType": "r-tree-node-summary",
-            "componentLevel": "field-level",
-            "componentLayer": "field-support",
-            "componentDirectory": "fields/non-data-components"
-          }
+          "writable": false
         },
         {
           "name": "showExtra",
+          "jsdoc": "是否展示扩展信息",
           "schema": {
-            "type": "boolean",
-            "title": "boolean"
+            "type": "boolean"
           },
           "readable": true,
-          "writable": false,
-          "jsdoc": "/** 是否展示扩展信息 */",
-          "provenance": {
-            "file": "declarations/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.d.ts",
-            "line": 31,
-            "className": "RTreeNodeSummaryProps",
-            "memberName": "showExtra",
-            "declarationKind": "interface",
-            "componentName": "TreeNodeSummary",
-            "componentType": "r-tree-node-summary",
-            "componentLevel": "field-level",
-            "componentLayer": "field-support",
-            "componentDirectory": "fields/non-data-components"
-          }
+          "writable": false
         }
       ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T12:20:26.578Z"
+  "generatedAt": "2026-06-11T16:38:12.879Z",
+  "$defs": {
+    "RTreeNodeSummaryProps": {
+      "type": "object",
+      "title": "RTreeNodeSummaryProps",
+      "description": "RTree Node Summary Props 的属性契约。",
+      "properties": {
+        "nameField": {
+          "type": "string"
+        },
+        "typeField": {
+          "type": "string"
+        },
+        "statusField": {
+          "type": "string"
+        },
+        "ownerField": {
+          "type": "string"
+        },
+        "metaField": {
+          "type": "string"
+        },
+        "extraField": {
+          "type": "string"
+        },
+        "showType": {
+          "type": "boolean"
+        },
+        "showStatus": {
+          "type": "boolean"
+        },
+        "showOwner": {
+          "type": "boolean"
+        },
+        "showMeta": {
+          "type": "boolean"
+        },
+        "showExtra": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
 }

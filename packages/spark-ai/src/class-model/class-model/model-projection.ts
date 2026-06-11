@@ -1,7 +1,8 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/model-projection
- * @spark-appworks/spark-ai 的 class-model/class-model/model-projection 模块。
- * 该 DTS shard 当前不导出 ClassModel symbol。
+ * 职责：维护 DTS ClassModel 知识链路中的 model-projection 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。
+ * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。
+ * AI用途：当需要判断 ClassModel 在 class-model/class-model/model-projection 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type {
   AiApiActionMetadata,
@@ -158,9 +159,10 @@ function createAttributeMeta(attribute: AiApiAttributeMetadata): AttributeMeta {
 function createMethodMeta(action: AiApiActionMetadata): MethodMeta {
   return {
     name: action.name,
+    ...(action.signatureText === undefined ? {} : { signatureText: action.signatureText }),
+    ...(action.returnTypeText === undefined ? {} : { returnTypeText: action.returnTypeText }),
     paramsSchema: action.paramsSchema,
     ...(action.resultSchema === undefined ? {} : { returnSchema: action.resultSchema }),
-    ...(action.returnTypeText === undefined ? {} : { returnTypeText: action.returnTypeText }),
     ...(action.takesContext === undefined ? {} : { takesContext: action.takesContext }),
     jsdoc: jsdocFromAction(action),
     ...(action.paramsTypeText === undefined ? {} : { paramsTypeText: action.paramsTypeText }),

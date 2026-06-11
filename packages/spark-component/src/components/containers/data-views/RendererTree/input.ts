@@ -1,8 +1,8 @@
 /**
  * @module @spark-appworks/spark-component:components/containers/data-views/RendererTree/input
- * RendererTree 模块，属于 SPARK component table-level/data-view-container。
- * 组件目录: containers/data-views。
- * 导出 ClassModel symbol: RendererTreeInputProps, RendererTreeInputOptions（共 2 个 symbol）。
+ * 职责：支撑 RendererTree（r-enderer-tree-input）在 table-level/data-view-container 中的运行时协作，补齐配置、状态或渲染器之间的连接逻辑。
+ * 边界：只覆盖当前组件目录 containers/data-views 的局部能力，不定义全局页面模型，也不越级操作业务数据源。
+ * AI用途：需要判断 renderer tree 的组件分层、辅助类型或内部接线时，用本模块作为局部语义入口。
  */
 import { computed } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../../internal'
