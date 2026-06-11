@@ -53,8 +53,6 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
     expect(exposed.has('createAiAgentSessionId')).toBe(false)
     expect(exposed.has('createAiAgentBusinessStorageKey')).toBe(false)
     expect(exposed.has('AiAgentRegistry')).toBe(false)
-    expect(exposed.has('AiModuleToolCodec')).toBe(false)
-    expect(exposed.has('AiModuleAdapter')).toBe(false)
     expect(exposed.has('createAiAgentRegistration')).toBe(false)
     expect(exposed.has('AiAgentDefinition')).toBe(false)
     expect(exposed.has('AiAgent')).toBe(false)

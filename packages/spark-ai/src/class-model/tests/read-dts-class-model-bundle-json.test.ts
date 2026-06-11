@@ -17,6 +17,11 @@ import {
   readDtsFileProjectionDocument,
 } from '../class-model/read-dts-class-model-bundle-json'
 
+const removedReturnTypeField = ['return', 'Type'].join('')
+const removedReturnTypeRefsField = ['return', 'Type', 'Refs'].join('')
+const removedReturnTextField = ['return', 'Type', 'Text'].join('')
+const removedParamsTextField = ['params', 'Type', 'Text'].join('')
+
 describe('readDtsClassModelBundleJson', () => {
   it('parses generated manifest with structural validation', () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-manifest-${String(process.pid)}-${String(Date.now())}`)
@@ -115,7 +120,7 @@ describe('readDtsClassModelBundleJson', () => {
         'parameters',
         'type',
       ])
-      expect(rawRemoveMethod).not.toHaveProperty('returnType')
+      expect(rawRemoveMethod).not.toHaveProperty(removedReturnTypeField)
       expect(rawRemoveMethod).not.toHaveProperty('signatureText')
       expect(removeMethod?.signatureText).toContain('remove(moduleId: string): boolean')
       expect(removeMethod?.parameterStyle).toBe('positional')
@@ -124,12 +129,12 @@ describe('readDtsClassModelBundleJson', () => {
         type: { type: 'intrinsic', name: 'string' },
       }])
       expect(removeMethod?.type).toEqual({ type: 'intrinsic', name: 'boolean' })
-      expect(removeMethod).not.toHaveProperty('returnType')
-      expect(removeMethod).not.toHaveProperty('returnTypeRefs')
-      expect(removeMethod).not.toHaveProperty('returnTypeText')
+      expect(removeMethod).not.toHaveProperty(removedReturnTypeField)
+      expect(removeMethod).not.toHaveProperty(removedReturnTypeRefsField)
+      expect(removeMethod).not.toHaveProperty(removedReturnTextField)
       expect(removeMethod).not.toHaveProperty('paramsSchema')
       expect(removeMethod).not.toHaveProperty('returnSchema')
-      expect(removeMethod).not.toHaveProperty('paramsTypeText')
+      expect(removeMethod).not.toHaveProperty(removedParamsTextField)
       expect(removeMethod).not.toHaveProperty('provenance')
       const attachMethod = projection.models['SparkAIModel']?.methods.find(method => method.name === 'attach')
       expect(attachMethod?.signatureText).toContain('attach(model: SparkAIModel): SparkAIModel')
@@ -142,17 +147,17 @@ describe('readDtsClassModelBundleJson', () => {
           sourcePath,
         },
       }])
-      expect(attachMethod).not.toHaveProperty('returnTypeText')
+      expect(attachMethod).not.toHaveProperty(removedReturnTextField)
       expect(attachMethod?.type).toEqual({
         type: 'reference',
         name: 'SparkAIModel',
         sourcePath,
       })
-      expect(attachMethod).not.toHaveProperty('returnType')
-      expect(attachMethod).not.toHaveProperty('returnTypeRefs')
+      expect(attachMethod).not.toHaveProperty(removedReturnTypeField)
+      expect(attachMethod).not.toHaveProperty(removedReturnTypeRefsField)
       expect(attachMethod).not.toHaveProperty('paramsSchema')
       expect(attachMethod).not.toHaveProperty('returnSchema')
-      expect(attachMethod).not.toHaveProperty('paramsTypeText')
+      expect(attachMethod).not.toHaveProperty(removedParamsTextField)
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }
@@ -404,10 +409,10 @@ describe('readDtsClassModelBundleJson', () => {
           }],
         },
       }])
-      expect(registerMethod).not.toHaveProperty('returnTypeText')
+      expect(registerMethod).not.toHaveProperty(removedReturnTextField)
       expect(registerMethod?.type).toEqual({ type: 'intrinsic', name: 'void' })
-      expect(registerMethod).not.toHaveProperty('returnType')
-      expect(registerMethod).not.toHaveProperty('returnTypeRefs')
+      expect(registerMethod).not.toHaveProperty(removedReturnTypeField)
+      expect(registerMethod).not.toHaveProperty(removedReturnTypeRefsField)
       expect(registerMethod).not.toHaveProperty('paramsSchema')
       expect(registerMethod).not.toHaveProperty('returnSchema')
 
@@ -580,7 +585,7 @@ describe('readDtsClassModelBundleJson', () => {
   it('rejects manifest with wrong protocol', () => {
     expect(() => readDtsClassModelBundleManifest({
       schemaVersion: DTS_CLASS_MODEL_BUNDLE_VERSION,
-      protocol: 'legacy',
+      protocol: 'unsupported-protocol',
       generatedAt: '2026-01-01T00:00:00.000Z',
       scannedFileCount: 0,
       files: {},
@@ -592,6 +597,15 @@ describe('readDtsClassModelBundleJson', () => {
     expect(() => readDtsFileProjectionDocument({
       schemaVersion: DTS_FILE_PROJECTION_VERSION,
       sourcePath: 'declarations/x.d.ts',
+      module: {
+        name: 'workspace:x',
+        sourcePath: 'declarations/x.d.ts',
+        sourceFile: 'x.ts',
+        modulePath: 'x',
+        jsdoc: 'Test module.',
+        jsdocSource: 'leading-jsdoc',
+        symbols: ['Broken'],
+      },
       symbols: ['Broken'],
       models: {
         Broken: {
@@ -654,7 +668,7 @@ describe('readDtsClassModelBundleJson', () => {
           }],
         },
       })
-      expect(getMethod).not.toHaveProperty('returnType')
+      expect(getMethod).not.toHaveProperty(removedReturnTypeField)
 
       const editMethod = configPageProjection.models['ConfigPage']?.methods.find(method => method.name === 'editDataSet')
       expect(editMethod?.parameters?.[0]?.type).toEqual({

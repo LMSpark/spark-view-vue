@@ -46,7 +46,7 @@ export function evaluateProjectPlanningToolGate(
   if (toolName !== 'model_script') {
     return { ok: true }
   }
-  const script = readVcmScriptBody(options.args)
+  const script = readModelScriptBody(options.args)
   if (script === undefined) {
     return { ok: true }
   }
@@ -86,7 +86,7 @@ function evaluateProjectActionLookupGate(
   }
 }
 
-function readVcmScriptBody(args: AiAgentBeforeFunctionCallOptions['args']): string | undefined {
+function readModelScriptBody(args: AiAgentBeforeFunctionCallOptions['args']): string | undefined {
   const script = args['script']
   if (typeof script !== 'string') return undefined
   const trimmed = script.trim()

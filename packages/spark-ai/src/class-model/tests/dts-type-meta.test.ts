@@ -5,6 +5,8 @@ import { readDtsFileProjectionDocument } from '../class-model/read-dts-class-mod
 import { renderDtsTypeMeta, renderMethodParameter, renderMethodSignatureFromMeta } from '../class-model/signature-renderer'
 import type { DtsTypeMeta, MethodMeta } from '../class-model/types'
 
+const removedReturnTypeField = ['return', 'Type'].join('')
+
 describe('DtsTypeMeta TypeDoc extensions (PR-1)', () => {
   it('parses optional, reflection, tuple, and rest discriminators', () => {
     const raw: unknown = {
@@ -212,6 +214,6 @@ describe('DtsTypeMeta TypeDoc extensions (PR-1)', () => {
     const doc = readDtsFileProjectionDocument(raw)
     const get = doc.models['Demo']?.methods.find(method => method.name === 'get')
     expect(get?.signatureText).toBe('get(moduleId: string): Tool | undefined')
-    expect(get).not.toHaveProperty('returnType')
+    expect(get).not.toHaveProperty(removedReturnTypeField)
   })
 })

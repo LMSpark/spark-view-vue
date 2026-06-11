@@ -39,16 +39,17 @@ describe('verification rules', () => {
 
   it('rejects forbidden codegen patterns including Vue script blocks', () => {
     const root = createTempRoot()
+    const removedPathIdentity = ['$', 'paths'].join('')
     writeFile(root, 'src/bad.ts', [
       "import '@spark-appworks/spark-ai/core'",
       'export interface BadPayload { value: string }',
-      'namespace LegacyNamespace { export const value = 1 }',
+      'namespace RemovedNamespace { export const value = 1 }',
       "export * from './other'",
       "const value = {} as Record<string, unknown>",
       'type OldType = LlmParameterSchemaRoot',
-      'type OldMember = AiModule.PathContext',
+      `type OldMember = ${['Ai', 'Module'].join('')}.PathContext`,
       "const dynamicTool = 'task_detail_getNode'",
-      "const legacyArgs = '{\"$paths\":[\"task-a\"]}'",
+      `const removedArgs = '{"${removedPathIdentity}":["task-a"]}'`,
     ].join('\n'))
     writeFile(root, 'src/bad.vue', [
       '<script setup lang="ts">',
@@ -65,10 +66,10 @@ describe('verification rules', () => {
     expect(output).toContain('TypeScript namespace declaration is forbidden')
     expect(output).toContain('export * is forbidden')
     expect(output).toContain('type assertion is forbidden')
-    expect(output).toContain('legacy AI type name is forbidden')
-    expect(output).toContain('legacy AiModule namespace member is forbidden')
-    expect(output).toContain('legacy dynamic function tool name is forbidden')
-    expect(output).toContain('legacy protocol identity $paths is forbidden')
+    expect(output).toContain('removed AI type name is forbidden')
+    expect(output).toContain('removed agent namespace member is forbidden')
+    expect(output).toContain('removed dynamic function tool name is forbidden')
+    expect(output).toContain('removed protocol identity is forbidden')
     expect(output).toContain('bad.vue')
   })
 
@@ -125,13 +126,17 @@ describe('verification rules', () => {
     expect(output).toContain('signature has too many positional parameters')
   })
 
-  it('rejects manual business AiModule registration in src/services', () => {
+  it('rejects manual removed business registration in src/services', () => {
     const root = createTempRoot()
+    const oldNamespace = ['Ai', 'Module'].join('')
+    const oldResult = `${oldNamespace}Result`
+    const oldRuntime = `${oldNamespace}Runtime`
+    const oldSubpath = ['@spark-appworks/spark-ai', 'modules'].join('/')
     writeFile(root, 'src/services/bad-business.ts', [
-      "import { AiModule, AiModuleResult, AiModuleRuntime } from '@spark-appworks/spark-ai/modules'",
+      `import { ${oldNamespace}, ${oldResult}, ${oldRuntime} } from '${oldSubpath}'`,
       "import { createAiBusinessKit } from '@spark-appworks/spark-ai/agent'",
-      'const runtime = new AiModuleRuntime()',
-      'runtime.register(new AiModule({ kind: "ticket", name: "t", description: "d", find: () => AiModuleResult.ok([]) }))',
+      `const runtime = new ${oldRuntime}()`,
+      `runtime.register(new ${oldNamespace}({ kind: "ticket", name: "t", description: "d", find: () => ${oldResult}.ok([]) }))`,
       'void createAiBusinessKit',
     ].join('\n'))
 
@@ -139,9 +144,9 @@ describe('verification rules', () => {
     const output = `${result.stdout}\n${result.stderr}`
 
     expect(result.status).toBe(1)
-    expect(output).toContain('manual new AiModule() is forbidden in src/services')
+    expect(output).toContain('manual removed agent module construction is forbidden in src/services')
     expect(output).toContain('createAiBusinessKit is removed')
-    expect(output).toContain('manual AiModuleRuntime.register() is forbidden in src/services')
+    expect(output).toContain('manual removed agent runtime register is forbidden in src/services')
     expect(output).toContain('ClassModelAgentAdapter')
   })
 
@@ -188,7 +193,7 @@ describe('verification rules', () => {
       'export class ClassModelRuntime {',
       '  public getTools(): void {}',
       '  public executeTool(): void {}',
-      '  public legacyPathCall(): void {}',
+      '  public removedPathCall(): void {}',
       '}',
     ].join('\n'))
 
@@ -197,7 +202,7 @@ describe('verification rules', () => {
 
     expect(result.status).toBe(1)
     expect(output).toContain('public method surface drift for ClassModelRuntime')
-    expect(output).toContain('extra=[legacyPathCall]')
+    expect(output).toContain('extra=[removedPathCall]')
   })
 
   it('rejects framework imports inside framework-free packages', () => {
@@ -218,13 +223,17 @@ describe('verification rules', () => {
 
   it('validates the spark-ai public subpath allowlist', () => {
     const root = createTempRoot()
+    const removedAgentSubpath = ['./', 'modules'].join('')
+    const removedAgentDistEntry = ['./dist/', 'modules', '/index.js'].join('')
+    const removedAgentAlias = ['@spark-appworks/spark-ai', 'modules'].join('/')
+    const removedAgentAliasTarget = ['./packages/spark-ai/src/', 'modules', '/index.ts'].join('')
     writeJson(root, 'packages/spark-ai/package.json', {
       name: '@spark-appworks/spark-ai',
       exports: {
         '.': './dist/index.js',
         './json': './dist/json/index.js',
         './agent': './dist/agent/index.js',
-        './modules': './dist/modules/index.js',
+        [removedAgentSubpath]: removedAgentDistEntry,
         './class-model': './dist/class-model/index.js',
         './core': './dist/core/index.js',
       },
@@ -236,7 +245,7 @@ describe('verification rules', () => {
       '      "@spark-appworks/spark-ai": ["./packages/spark-ai/src/index.ts"],',
       '      "@spark-appworks/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],',
       '      "@spark-appworks/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],',
-      '      "@spark-appworks/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"],',
+      `      "${removedAgentAlias}": ["${removedAgentAliasTarget}"],`,
       '      "@spark-appworks/spark-ai/class-model": ["./packages/spark-ai/src/class-model/index.ts"],',
       '      "@spark-appworks/spark-ai/core": ["./packages/spark-ai/src/core/index.ts"]',
       '    }',

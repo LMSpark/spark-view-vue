@@ -1,7 +1,7 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/index
  * 职责：维护 DTS ClassModel 知识链路中的 class-model 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。
- * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。
+ * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
  * AI用途：当需要判断 ClassModel 在 class-model/index 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 export type {
@@ -21,7 +21,7 @@ export type {
 export {
   AiApiObjectMetadataValidationError,
   collectNestedApiRecords,
-  resolveModuleMetadataJson,
+  resolveRuntimeApiMetadataJson,
   validateApiObjectMetadata,
   walkAiApiMetadataGraph,
 } from './metadata'
@@ -37,7 +37,7 @@ export type {
   AiApiObjectMetadata,
   AiApiResultApiRef,
   AiApiSourceProvenanceMetadata,
-  AiModuleMetadataJson,
+  AiRuntimeApiMetadataJson,
   AiApiMetadataGraphEdge,
   AiApiMetadataGraphNode,
   AiApiNestedApiRecord,
@@ -49,7 +49,7 @@ export {
   CLASS_MODEL_DOCUMENT_VERSION,
   collectModuleApiKinds,
   compareClassModelDocumentsForBuildConsistency,
-  createClassModelDocumentFromModuleMetadata,
+  createClassModelDocumentFromRuntimeApiMetadata,
   createClassModelDocumentFromRuntimeDocument,
   jsonSchemaToTypeText,
   buildDtsClassModelBundle,

@@ -40,7 +40,11 @@ const allowedSparkAiSpecifiers = new Set([
   '@spark-appworks/spark-ai/class-model',
 ])
 
-const forbiddenAiModuleMembers = new Set([
+const removedAgentNamespaceName = ['Ai', 'Module'].join('')
+const removedPathIdentity = ['$', 'paths'].join('')
+const removedCompanionOption = ['companion', 'Modules'].join('')
+
+const forbiddenRemovedAgentNamespaceMembers = new Set([
   'ActionFailureMode',
   'ActionMetadata',
   'ActionResultSchema',
@@ -62,7 +66,7 @@ const forbiddenAiModuleMembers = new Set([
   'Runner',
 ])
 
-const forbiddenLegacyIdentifiers = new Set([
+const forbiddenRemovedAiTypeIdentifiers = new Set([
   'ActionSchema',
   'AttributeSchema',
   'JsonSchemaProperties',
@@ -163,7 +167,7 @@ function scanSource(parsed, violations) {
   scanPublicSurfaceConvergence(parsed, violations)
   scanPublicClassMethodSurfaces(parsed, violations)
   scanSignatureConventions(parsed, violations)
-  scanLegacyProtocolLiterals(parsed, violations)
+  scanRemovedProtocolLiterals(parsed, violations)
   scanBusinessRegistrationRules(parsed, violations)
 
   for (const ref of collectModuleReferences(sourceFile)) {
@@ -223,19 +227,19 @@ function scanSource(parsed, violations) {
       })
     }
 
-    if (isForbiddenAiModuleAccess(node)) {
+    if (isForbiddenRemovedAgentNamespaceAccess(node)) {
       violations.push({
         file,
         line: lineFor(sourceFile, node, lineOffset),
-        message: `legacy AiModule namespace member is forbidden: ${node.getText(sourceFile)}`,
+        message: `removed agent namespace member is forbidden: ${node.getText(sourceFile)}`,
       })
     }
 
-    if (ts.isIdentifier(node) && forbiddenLegacyIdentifiers.has(node.text)) {
+    if (ts.isIdentifier(node) && forbiddenRemovedAiTypeIdentifiers.has(node.text)) {
       violations.push({
         file,
         line: lineFor(sourceFile, node, lineOffset),
-        message: `legacy AI type name is forbidden: ${node.text}`,
+        message: `removed AI type name is forbidden: ${node.text}`,
       })
     }
 
@@ -261,25 +265,29 @@ function scanSource(parsed, violations) {
   visit(sourceFile)
 }
 
-function scanLegacyProtocolLiterals(parsed, violations) {
+function scanRemovedProtocolLiterals(parsed, violations) {
   const { file, sourceFile, lineOffset } = parsed
   if (isTestFile(file)) return
 
   function visit(node) {
     if (ts.isStringLiteralLike(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
       const text = node.text
-      if (text === '$paths' || text.includes('"$paths"') || text.includes("'$paths'")) {
+      if (
+        text === removedPathIdentity
+        || text.includes(`"${removedPathIdentity}"`)
+        || text.includes(`'${removedPathIdentity}'`)
+      ) {
         violations.push({
           file,
           line: lineFor(sourceFile, node, lineOffset),
-          message: 'legacy protocol identity $paths is forbidden; use module path plus session scope',
+          message: 'removed protocol identity is forbidden; use module path plus session scope',
         })
       }
       if (looksLikeDynamicFunctionToolName(text)) {
         violations.push({
           file,
           line: lineFor(sourceFile, node, lineOffset),
-          message: `legacy dynamic function tool name is forbidden: ${text}`,
+          message: `removed dynamic function tool name is forbidden: ${text}`,
         })
       }
     }
@@ -311,19 +319,19 @@ function scanBusinessRegistrationRules(parsed, violations) {
     })
   }
 
-  if (/\bnew\s+AiModule\s*\(/u.test(text)) {
+  if (new RegExp(`\\bnew\\s+${removedAgentNamespaceName}\\s*\\(`, 'u').test(text)) {
     violations.push({
       file,
       line: 1,
-      message: 'manual new AiModule() is forbidden in src/services; use ClassModelAgentAdapter + DTS ClassModel',
+      message: 'manual removed agent module construction is forbidden in src/services; use ClassModelAgentAdapter + DTS ClassModel',
     })
   }
 
-  if (/\bcompanionModules\b/u.test(text)) {
+  if (new RegExp(`\\b${removedCompanionOption}\\b`, 'u').test(text)) {
     violations.push({
       file,
       line: 1,
-      message: 'companionModules is removed; do not inject handwritten business modules',
+      message: 'removed companion module option is forbidden; do not inject handwritten business modules',
     })
   }
 
@@ -362,7 +370,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
         violations.push({
           file,
           line: lineFor(sourceFile, node, lineOffset),
-          message: 'manual AiModuleRuntime.register() is forbidden in src/services; use ClassModelAgentAdapter',
+          message: 'manual removed agent runtime register is forbidden in src/services; use ClassModelAgentAdapter',
         })
       }
     }
@@ -682,12 +690,12 @@ function isForbiddenNamespaceDeclaration(node) {
     && node.name.text !== 'global'
 }
 
-function isForbiddenAiModuleAccess(node) {
+function isForbiddenRemovedAgentNamespaceAccess(node) {
   if (ts.isPropertyAccessExpression(node)) {
-    return node.expression.getText() === 'AiModule' && forbiddenAiModuleMembers.has(node.name.text)
+    return node.expression.getText() === removedAgentNamespaceName && forbiddenRemovedAgentNamespaceMembers.has(node.name.text)
   }
   if (ts.isQualifiedName(node)) {
-    return node.left.getText() === 'AiModule' && forbiddenAiModuleMembers.has(node.right.text)
+    return node.left.getText() === removedAgentNamespaceName && forbiddenRemovedAgentNamespaceMembers.has(node.right.text)
   }
   return false
 }

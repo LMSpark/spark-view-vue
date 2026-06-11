@@ -26,7 +26,7 @@ export {
 } from './class-model'
 
 export type {
-  AiModuleMetadataJson,
+  AiRuntimeApiMetadataJson,
   ClassModelDocument,
   ClassModelKnowledgeProvider,
 } from './class-model'

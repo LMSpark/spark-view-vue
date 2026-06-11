@@ -1,7 +1,7 @@
 /**
  * @module @spark-appworks/spark-ai:agent/business/class-model-agent-adapter
  * 职责：把业务 class、DTS ClassModel bundle 和知识服务适配为 Agent 可注册的 ClassModel 7-tool runtime。
- * 边界：只做 ClassModel 业务注册适配，不恢复旧 AiModule/path router，也不绕过统一工具闭集直接调用函数。
+ * 边界：只做 ClassModel 业务注册适配，不恢复旧动态模块路径路由，也不绕过统一工具闭集直接调用函数。
  * AI用途：新增或排查 ClassModel 驱动的业务 Agent 时，用本模块确认 metadata、runtime 和 registration 的接线方式。
  */
 
@@ -9,12 +9,12 @@ import type { AiJsonSchemaObject, AiJsonValue } from '../../json'
 import {
   auditClassModelReflectionConnectivity,
   collectClassModelFailureModeRecoveryHints,
-  createClassModelDocumentFromModuleMetadata,
+  createClassModelDocumentFromRuntimeApiMetadata,
   listAttributeReachableKinds,
-  resolveModuleMetadataJson,
+  resolveRuntimeApiMetadataJson,
   validateApiObjectMetadata,
   ClassModelRuntime,
-  type AiModuleMetadataJson,
+  type AiRuntimeApiMetadataJson,
   type ClassModelDocument,
   type ClassModelReflectionConnectivityIssue,
   type ClassModelKnowledgeProvider,
@@ -61,14 +61,14 @@ export type ClassModelAgentAdapterRegisterCommand<T> = Readonly<{
   host: AiAgentHost
   alias: string
   moduleClass: ClassModelAgentAdapterConstructor<T>
-  metadata?: AiModuleMetadataJson
+  metadata?: AiRuntimeApiMetadataJson
   options: ClassModelAgentAdapterRegisterOptions<T>
 }>
 
 /** Class Model Agent Adapter Registration Command 的命令参数。 */
 export type ClassModelAgentAdapterRegistrationCommand<T> = Readonly<{
   moduleClass: ClassModelAgentAdapterConstructor<T>
-  metadata?: AiModuleMetadataJson
+  metadata?: AiRuntimeApiMetadataJson
   options: ClassModelAgentAdapterRegisterOptions<T>
 }>
 
@@ -125,7 +125,7 @@ public static createRegistration<T>(
   ): AiAgentRegistration {
     const metadata = command.metadata === undefined
       ? undefined
-      : resolveModuleMetadataJson(command.metadata)
+      : resolveRuntimeApiMetadataJson(command.metadata)
     if (metadata !== undefined) validateApiObjectMetadata(metadata.rootApi)
     const rootClassName = metadata?.rootApi.kind ?? command.options.rootClassName ?? command.moduleClass.name
 
@@ -134,7 +134,7 @@ public static createRegistration<T>(
       : command.options.instance
     const document = metadata === undefined
       ? undefined
-      : createClassModelDocumentFromModuleMetadata({
+      : createClassModelDocumentFromRuntimeApiMetadata({
           module: metadata,
           ...(command.options.jsonSchemaDefs === undefined ? {} : { schemaDefs: command.options.jsonSchemaDefs }),
         })
@@ -189,7 +189,7 @@ public static createRegistration<T>(
 }
 
 function buildClassModelEnrichRecoveryHints(
-  metadata: AiModuleMetadataJson | undefined,
+  metadata: AiRuntimeApiMetadataJson | undefined,
   enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[],
 ): (command: EnrichFunctionCallFailureCommand) => readonly string[] {
   return command => {
@@ -207,7 +207,7 @@ function buildClassModelEnrichRecoveryHints(
 }
 
 type ClassModelAgentToolRuntimeOptions<T> = Readonly<{
-  metadata?: AiModuleMetadataJson
+  metadata?: AiRuntimeApiMetadataJson
   document?: ClassModelDocument
   rootClassName: string
   options: ClassModelAgentAdapterRegisterOptions<T>
@@ -365,7 +365,7 @@ function createClassModelPromptSnapshot(document: ClassModelDocument): string {
     'model_query 只列 attribute.api 属性链可达 kind；动作入口与 callback 契约用 model_action_guide（含 resultApis）。',
     '执行前先用 model_query 定位 kind/member；读写或调用前用 model_attribute_guide/model_action_guide 查看 schema、usageRules、failureModes。',
     '唯一执行入口是 model_script({ script })；script 是 async function body，this 绑定当前业务根实例，沿原生对象链调用。',
-    '任务完成必须调用 agent_complete({ summary })；不要使用旧 module_* 工具、path 直调或 direct function tool。',
+    '任务完成必须调用 agent_complete({ summary })；所有执行都通过 model_script，不要绕过 ClassModel 工具闭集。',
   ].join('\n')
 }
 
@@ -394,7 +394,7 @@ function createDtsNativePromptSnapshot(rootClassName: string): string {
     `根模型 className="${rootClassName}"；知识来源为 generated/dts-class-model。`,
     '执行前先用 model_query 定位 kind/member；读写或调用前用 model_attribute_guide/model_action_guide 查看 schema。',
     '唯一执行入口是 model_script({ script })；script 是 async function body，this 绑定当前业务根实例，沿原生对象链调用。',
-    '任务完成必须调用 agent_complete({ summary })；不要使用旧 module_* 工具、path 直调或 direct function tool。',
+    '任务完成必须调用 agent_complete({ summary })；所有执行都通过 model_script，不要绕过 ClassModel 工具闭集。',
   ].join('\n')
 }
 

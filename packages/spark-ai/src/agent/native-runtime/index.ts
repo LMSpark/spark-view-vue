@@ -17,7 +17,7 @@ export {
 } from './native-script-runner'
 
 export {
-  createDtsNativeModuleMetadata,
+  createDtsNativeRuntimeApiMetadata,
   executeDtsNativeScript,
 } from './dts-native-script-runner'
 

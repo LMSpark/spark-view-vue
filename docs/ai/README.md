@@ -9,13 +9,14 @@
 3. [AI_MODEL_SPEC.md](AI_MODEL_SPEC.md)：模型 class 规范。
 4. [ai-code-generation-behavior.md](ai-code-generation-behavior.md)：Codex / LLM 修改本仓库时必须遵守的代码生成规则。
 5. [AI_CODE_GENERATION_BEHAVIOR.en.md](AI_CODE_GENERATION_BEHAVIOR.en.md)：代码生成规则英文版。
+6. [AI_CODE_CHANGE_PROTOCOL.md](AI_CODE_CHANGE_PROTOCOL.md)：代码修改强制流程（6 阶段工作流），由 CLAUDE.md 导入。
 
 ## 当前口径
 
 - DTS ClassModel 由 `.d.ts`、源码注释和 TypeScript 类型生成，不维护手写目录、参数说明或 runtime 路线图。
 - 后端 AI 只负责 LLM 通信、APP SSE 通信、会话记录落库和查询。
 - 页面设计业务只能通过 `spark-project-model` 的项目模型和 PageNode 子模型沉淀事实。
-- 生成代码必须服从：理念 > 逻辑 > AI 生成代码规则 > SSOT || SOLID > 该删则删 || 该合则合 || 该拆则拆 > 兼容。
+- 生成代码必须服从：理念 > 逻辑 > AI 生成代码规则 > SSOT || SOLID > 该删则删 || 该合则合 || 该拆则拆 > 迁移便利。
 
 ## 写作规则
 

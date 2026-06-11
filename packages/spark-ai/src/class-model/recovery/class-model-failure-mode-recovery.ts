@@ -13,7 +13,7 @@
 import type {
   AiApiActionFailureMode,
   AiApiObjectMetadata,
-  AiModuleMetadataJson,
+  AiRuntimeApiMetadataJson,
 } from '../metadata'
 
 /** Class Model Failure Mode Recovery Command 的命令参数。 */
@@ -33,7 +33,7 @@ export type ClassModelFailureModeRecoveryContext = Readonly<{
 }>
 
 export function collectClassModelFailureModeRecoveryHints(
-  metadata: AiModuleMetadataJson,
+  metadata: AiRuntimeApiMetadataJson,
   command: ClassModelFailureModeRecoveryCommand,
 ): readonly string[] {
   const code = command.callResult.code
@@ -55,7 +55,7 @@ export function collectClassModelFailureModeRecoveryHints(
 }
 
 function collectFailureModeCandidates(
-  metadata: AiModuleMetadataJson,
+  metadata: AiRuntimeApiMetadataJson,
   code: string,
 ): readonly ClassModelFailureModeRecoveryContext[] {
   const out: ClassModelFailureModeRecoveryContext[] = []
@@ -70,7 +70,7 @@ function collectFailureModeCandidates(
   return out
 }
 
-function collectModuleApis(metadata: AiModuleMetadataJson): readonly AiApiObjectMetadata[] {
+function collectModuleApis(metadata: AiRuntimeApiMetadataJson): readonly AiApiObjectMetadata[] {
   const apis: AiApiObjectMetadata[] = [metadata.rootApi]
   if (metadata.apiRegistry !== undefined) {
     for (const api of Object.values(metadata.apiRegistry)) {

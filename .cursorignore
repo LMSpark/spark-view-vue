@@ -17,4 +17,3 @@ artifacts/
 !.env.local.example
 !.env.java.example
 
-src/services/page-design/page-design-module-metadata.runtime.generated.json

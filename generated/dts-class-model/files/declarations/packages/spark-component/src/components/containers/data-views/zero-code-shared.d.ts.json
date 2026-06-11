@@ -70,7 +70,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.592Z",
+  "generatedAt": "2026-06-11T22:53:14.132Z",
   "$defs": {
     "CreateContainerCrudContextOptions": {
       "type": "object",

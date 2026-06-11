@@ -771,7 +771,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.950Z",
+  "generatedAt": "2026-06-11T22:53:14.452Z",
   "$defs": {
     "HttpClientBase": {
       "type": "object",

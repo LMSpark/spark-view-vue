@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "agent/business/class-model-agent-adapter",
-    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/class-model-agent-adapter\n职责：把业务 class、DTS ClassModel bundle 和知识服务适配为 Agent 可注册的 ClassModel 7-tool runtime。\n边界：只做 ClassModel 业务注册适配，不恢复旧 AiModule/path router，也不绕过统一工具闭集直接调用函数。\nAI用途：新增或排查 ClassModel 驱动的业务 Agent 时，用本模块确认 metadata、runtime 和 registration 的接线方式。",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/class-model-agent-adapter\n职责：把业务 class、DTS ClassModel bundle 和知识服务适配为 Agent 可注册的 ClassModel 7-tool runtime。\n边界：只做 ClassModel 业务注册适配，不恢复旧动态模块路径路由，也不绕过统一工具闭集直接调用函数。\nAI用途：新增或排查 ClassModel 驱动的业务 Agent 时，用本模块确认 metadata、runtime 和 registration 的接线方式。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ClassModelAgentAdapterConstructor",
@@ -45,11 +45,11 @@
       "className": "ClassModelAgentAdapterRegisterCommand",
       "jsdoc": "Class Model Agent Adapter Register Command 的命令参数。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    host: AiAgentHost;\n    alias: string;\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiModuleMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
+      "declarationTypeText": "Readonly<{\n    host: AiAgentHost;\n    alias: string;\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    host: AiAgentHost;\n    alias: string;\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiModuleMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
+          "typeText": "Readonly<{\n    host: AiAgentHost;\n    alias: string;\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
           "targetName": "Readonly"
         }
       ],
@@ -67,11 +67,11 @@
       "className": "ClassModelAgentAdapterRegistrationCommand",
       "jsdoc": "Class Model Agent Adapter Registration Command 的命令参数。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiModuleMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
+      "declarationTypeText": "Readonly<{\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiModuleMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
+          "typeText": "Readonly<{\n    moduleClass: ClassModelAgentAdapterConstructor<T>;\n    metadata?: AiRuntimeApiMetadataJson;\n    options: ClassModelAgentAdapterRegisterOptions<T>;\n}>",
           "targetName": "Readonly"
         }
       ],
@@ -176,7 +176,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.473Z",
+  "generatedAt": "2026-06-11T22:53:13.937Z",
   "$defs": {
     "ClassModelAgentAdapterConstructor": {
       "type": "object",

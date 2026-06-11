@@ -27,6 +27,7 @@ const standardMarkdownNames = new Set([
 const legacyMarkdownAllowlist = new Set([
   'docs/SPARK_APPWORKS_PROJECT_DEEP_DIVE_ZH.md',
   'docs/SPARK_VIEW_PROJECT_DEEP_DIVE_ZH.md',
+  'docs/ai/AI_CODE_CHANGE_PROTOCOL.md',
   'docs/ai/AI_CODE_GENERATION_BEHAVIOR.en.md',
   'docs/ai/AI_MODEL_SPEC.md',
   'docs/architecture/DATAFLOW_ARCHITECTURE.md',

@@ -5,7 +5,7 @@
  * AI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。
  */
 /**
- * Module metadata schema inlining — delegates JSON Schema logic to spark-json-document.
+ * Runtime API metadata schema inlining — delegates JSON Schema logic to spark-json-document.
  */
 
 import {
@@ -13,25 +13,25 @@ import {
   type JsonSchemaDefs,
 } from '@spark-appworks/spark-json-document'
 
-import type { AiModuleMetadataJson } from './ai-api-object-metadata-schema'
+import type { AiRuntimeApiMetadataJson } from './ai-api-object-metadata-schema'
 
 export { dereferenceJsonSchema } from '@spark-appworks/spark-json-document'
 
-const MODULE_METADATA_SCHEMA_SLOT_KEYS = ['paramsSchema', 'resultSchema', 'schema'] as const
+const RUNTIME_API_METADATA_SCHEMA_SLOT_KEYS = ['paramsSchema', 'resultSchema', 'schema'] as const
 
-export function dereferenceModuleMetadataSchemas(
-  module: AiModuleMetadataJson,
+export function dereferenceRuntimeApiMetadataSchemas(
+  module: AiRuntimeApiMetadataJson,
   defs: JsonSchemaDefs | undefined,
-): AiModuleMetadataJson {
+): AiRuntimeApiMetadataJson {
   if (defs === undefined || Object.keys(defs).length === 0) return module
-  const visited = dereferenceSchemaSlotsInValue(module, defs, MODULE_METADATA_SCHEMA_SLOT_KEYS)
-  if (!isAiModuleMetadataJson(visited)) {
-    throw new Error('dereferenceModuleMetadataSchemas produced invalid module metadata.')
+  const visited = dereferenceSchemaSlotsInValue(module, defs, RUNTIME_API_METADATA_SCHEMA_SLOT_KEYS)
+  if (!isAiRuntimeApiMetadataJson(visited)) {
+    throw new Error('dereferenceRuntimeApiMetadataSchemas produced invalid runtime API metadata.')
   }
   return visited
 }
 
-function isAiModuleMetadataJson(value: unknown): value is AiModuleMetadataJson {
+function isAiRuntimeApiMetadataJson(value: unknown): value is AiRuntimeApiMetadataJson {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
   const schemaVersion: unknown = Reflect.get(value, 'schemaVersion')
   if (schemaVersion !== 1 && schemaVersion !== 2) return false

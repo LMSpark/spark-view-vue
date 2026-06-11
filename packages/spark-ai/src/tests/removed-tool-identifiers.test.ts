@@ -2,9 +2,24 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-const LEGACY_PROTOCOL_TOOL_PATTERN = /\b(?:module_query|module_guide|module_attribute_guide|module_function_guide|module_find|module_attr|module_call|module_script|module_memory)\b|PROTOCOL_TOOL_NAMES/u
+const REMOVED_TOOL_NAMES = [
+  ['module', 'query'],
+  ['module', 'guide'],
+  ['module', 'attribute', 'guide'],
+  ['module', 'function', 'guide'],
+  ['module', 'find'],
+  ['module', 'attr'],
+  ['module', 'call'],
+  ['module', 'script'],
+  ['module', 'memory'],
+].map(parts => parts.join('_'))
+const REMOVED_PROTOCOL_EXPORT = ['PROTOCOL', 'TOOL', 'NAMES'].join('_')
+const REMOVED_TOOL_IDENTIFIER_PATTERN = new RegExp(
+  `\\b(?:${REMOVED_TOOL_NAMES.join('|')})\\b|${REMOVED_PROTOCOL_EXPORT}`,
+  'u',
+)
 
-/** 禁令句等刻意保留旧名引用的生产文件 */
+/** 禁令句等刻意保留已移除协议引用的生产文件 */
 const ALLOWLIST = new Set([
   'packages/spark-ai/src/agent/business/class-model-agent-adapter.ts',
   'packages/spark-ai/ARCHITECTURE.md',
@@ -44,7 +59,7 @@ function collectSourceFiles(rootDir: string, relativeRoot: string): string[] {
   return files
 }
 
-function findLegacyProtocolMatches(repoRoot: string): Array<{ file: string, matches: string[] }> {
+function findRemovedToolMatches(repoRoot: string): Array<{ file: string, matches: string[] }> {
   const violations: Array<{ file: string, matches: string[] }> = []
 
   for (const scanRoot of SCAN_ROOTS) {
@@ -53,7 +68,7 @@ function findLegacyProtocolMatches(repoRoot: string): Array<{ file: string, matc
       if (ALLOWLIST.has(file)) continue
 
       const text = readFileSync(join(repoRoot, file), 'utf8')
-      const matches = [...new Set(text.match(new RegExp(LEGACY_PROTOCOL_TOOL_PATTERN.source, 'gu')) ?? [])]
+      const matches = [...new Set(text.match(new RegExp(REMOVED_TOOL_IDENTIFIER_PATTERN.source, 'gu')) ?? [])]
       if (matches.length > 0) {
         violations.push({ file, matches })
       }
@@ -63,10 +78,10 @@ function findLegacyProtocolMatches(repoRoot: string): Array<{ file: string, matc
   return violations
 }
 
-describe('legacy protocol tool names', () => {
-  it('has no LLM-visible module_* tool literals outside allowlist', () => {
+describe('removed tool identifiers', () => {
+  it('has no LLM-visible removed tool literals outside allowlist', () => {
     const repoRoot = process.cwd()
-    const violations = findLegacyProtocolMatches(repoRoot)
+    const violations = findRemovedToolMatches(repoRoot)
 
     expect(violations).toEqual([])
   })

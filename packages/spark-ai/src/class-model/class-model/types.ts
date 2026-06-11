@@ -1,13 +1,13 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/types
  * 职责：维护 DTS ClassModel 知识链路中的 types 能力，围绕 ClassModelDocument、SourceProvenanceMeta、ComponentClassModelLevel 等 11 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。
- * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。
+ * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
  * AI用途：当需要判断 ClassModel 在 class-model/class-model/types 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
-import type { AiModuleMetadataJson } from '../metadata'
+import type { AiRuntimeApiMetadataJson } from '../metadata'
 
-/** ClassModel 投影版本；它独立于旧 runtime metadata 的 schemaVersion。 */
+/** ClassModel 投影版本；它独立于 runtime API metadata 的 schemaVersion。 */
 export const CLASS_MODEL_DOCUMENT_VERSION = 1 as const
 
 /**
@@ -19,7 +19,7 @@ export const CLASS_MODEL_DOCUMENT_VERSION = 1 as const
 export type ClassModelDocument = Readonly<{
   schemaVersion: typeof CLASS_MODEL_DOCUMENT_VERSION
   rootKind: string
-  module: AiModuleMetadataJson
+  module: AiRuntimeApiMetadataJson
   $defs?: Readonly<Record<string, AiJsonSchemaObject>>
 }>
 
@@ -142,6 +142,7 @@ export type DtsReflectionSignature = Readonly<{
   type: DtsTypeMeta
 }>
 
+/** DTS reflection 类型：承载函数或对象字面量中的签名树，用于回调参数和内联函数类型的递归寻址。 */
 export type DtsReflectionTypeMeta = Readonly<{
   type: 'reflection'
   declaration: Readonly<{
@@ -165,13 +166,9 @@ export type MethodMeta = Readonly<{
   parameters?: readonly MethodParameterMeta[]
   /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */
   type?: DtsTypeMeta
-  /** @deprecated 旧 bundle 读侧兼容 alias；新 bundle 只写 `type`。 */
-  returnType?: DtsTypeMeta
   paramsSchema?: AiJsonSchemaObject
   returnSchema?: AiJsonSchema
-  returnTypeText?: string
   takesContext?: boolean
   jsdoc: JsDocMeta
-  paramsTypeText?: string
   provenance?: SourceProvenanceMeta
 }>

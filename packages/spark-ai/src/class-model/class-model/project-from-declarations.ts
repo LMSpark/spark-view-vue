@@ -1,7 +1,7 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/project-from-declarations
  * 职责：从 TypeScript DTS AST 和 TypeChecker 投影 ClassModel，抽取类、接口、类型别名、枚举、成员、声明关系和模块语义。
- * 边界：只读取声明结构和 JSDoc，不生成业务代码、不执行脚本，也不把 VCM 旧链路重新引入。
+ * 边界：只读取声明结构和 JSDoc，不生成业务代码、不执行脚本，也不引入额外知识链路。
  * AI用途：排查 .d.ts 到 JSON 的字段丢失、关系断链或组件分层识别时，用本模块定位投影逻辑。
  */
 import { relative, resolve } from 'node:path'
@@ -21,7 +21,6 @@ import {
 } from './dts-bundle-types'
 import {
   paramsSchemaFromSignature,
-  signatureParamsTypeText,
   typeToAiJsonSchema,
 } from './dts-type-schema'
 import type {
@@ -706,7 +705,6 @@ function projectMethodMember(command: MethodMemberCommand): MethodMeta {
     throw new Error(`Missing method signature for ${className}.${memberName}`)
   }
   const returnType = context.checker.getReturnTypeOfSignature(signature)
-  const returnTypeText = methodReturnTypeTextFromDeclaration(context.checker, signature, member, sourceFile)
   const returnTypeMeta = methodReturnTypeMetaFromDeclaration(
     context.checker,
     context.repoRoot,
@@ -721,9 +719,7 @@ function projectMethodMember(command: MethodMemberCommand): MethodMeta {
     type: returnTypeMeta,
     paramsSchema: paramsSchemaFromSignature(context.checker, signature),
     returnSchema: typeToAiJsonSchema(context.checker, returnType, member.type),
-    returnTypeText,
     jsdoc: readJsDoc(context.checker, member),
-    paramsTypeText: signatureParamsTypeText(context.checker, signature),
     provenance: createProvenance({
       file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
       line,
@@ -743,7 +739,6 @@ function projectMethodSignature(command: MethodSignatureCommand): MethodMeta {
     throw new Error(`Missing method signature for ${className}.${memberName}`)
   }
   const returnType = context.checker.getReturnTypeOfSignature(signature)
-  const returnTypeText = methodReturnTypeTextFromDeclaration(context.checker, signature, member, sourceFile)
   const returnTypeMeta = methodReturnTypeMetaFromDeclaration(
     context.checker,
     context.repoRoot,
@@ -758,9 +753,7 @@ function projectMethodSignature(command: MethodSignatureCommand): MethodMeta {
     type: returnTypeMeta,
     paramsSchema: paramsSchemaFromSignature(context.checker, signature),
     returnSchema: typeToAiJsonSchema(context.checker, returnType, member.type),
-    returnTypeText,
     jsdoc: readJsDoc(context.checker, member),
-    paramsTypeText: signatureParamsTypeText(context.checker, signature),
     provenance: createProvenance({
       file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
       line,
@@ -1030,16 +1023,6 @@ function literalDtsTypeMeta(typeNode: ts.LiteralTypeNode, sourceFile: ts.SourceF
   if (literal.kind === ts.SyntaxKind.FalseKeyword) return { type: 'literal', value: false }
   if (literal.kind === ts.SyntaxKind.NullKeyword) return { type: 'literal', value: null }
   return { type: 'unknown', name: typeNode.getText(sourceFile) }
-}
-
-function methodReturnTypeTextFromDeclaration(
-  checker: ts.TypeChecker,
-  signature: ts.Signature,
-  member: ts.MethodDeclaration | ts.MethodSignature,
-  sourceFile: ts.SourceFile,
-): string {
-  if (member.type !== undefined) return member.type.getText(sourceFile)
-  return checker.typeToString(checker.getReturnTypeOfSignature(signature), undefined, ts.TypeFormatFlags.NoTruncation)
 }
 
 function resolveAliasedSymbol(checker: ts.TypeChecker, symbol: ts.Symbol | undefined): ts.Symbol | undefined {

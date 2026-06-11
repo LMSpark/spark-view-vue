@@ -15,7 +15,7 @@ These rules apply whenever generating, modifying, refactoring, reviewing, or tes
 ## Priority
 
 - Business philosophy and runtime correctness come first.
-- These AI code generation rules take precedence over legacy compatibility surfaces when the two conflict.
+- These AI code generation rules take precedence over outdated migration surfaces when the two conflict.
 - Existing local patterns and package boundaries take precedence over generic framework habits.
 - Do not add silent fallbacks that hide missing APIs, invalid config, or inconsistent state.
 

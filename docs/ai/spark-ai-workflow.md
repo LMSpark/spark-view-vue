@@ -28,13 +28,31 @@ model_query → model_class_guide / model_attribute_guide / model_action_guide �
 ```
 
 - 组装 UI 前只查模型动作：`model_action_guide({ kind: "SparkNodeTree", actionName: "addNode" })`
-- **不要**用 `/kind[id]` path；**不要**用旧 `module_*` 工具名
+- 通过 `model_script({ script })` 执行对象链调用；不要提交 `/kind[id]` 形式的路径参数
 
 ## 相位门控（Host 自动 nudge）
 
 - 读完 `model_action_guide` 仍只查目录 → 强制 `model_script`
 - `model_script` 失败 → 按 RECOVERY_HINT 修正，必要时回查对应 action guide
 - 正文伪 tool_call / 只写计划 → 强制真实 OpenAI tool_calls
+
+## 渐进澄清（human_question 随属性链推进）
+
+订单（业务需求）初始只有意图，参数表不是预先固定，而是随知识探索逐层生长。澄清不是一次问全，而是「知识探索」与「提问补全」两个指针交替推进：
+
+```text
+意图"我要请假申请"
+  → model_query / model_class_guide：知识体系定位请假流程 root model
+  → model_attribute_guide：暴露当前层字段（申请人 / 假期类型 / 起止日期…）
+  → human_question：缺哪问哪（"你是谁？请什么假？"）
+  → 人答回填 → 顺 attribute.api 走到子 model（申请人 → 员工，发现"要工号不要人名"）
+  → 再 attribute_guide → 再 human_question … 直到属性链到叶子、无新字段冒出
+  → 收敛 → model_script 生产四文件
+```
+
+- **参数表会生长**：`attribute.api` 指向子 model kind，每深入一层才暴露下一层字段与约束（代码：`class-model/class-model/model-projection.ts` 的 `listAttributeReachableKinds` / `projectClassModelForGuide`，可达才投影）。
+- **收敛 = 探索到底**，不是填满一张预设表：属性链 BFS 走到叶子、当前层 required 已补全、无新 `attribute.api` 子 kind 待问，即可进入生产。
+- `human_question` 的 `missingFacts` / `candidateOptions` 参数承载「当前层还缺什么」，是渐进澄清的接口锚点（见 [`../../packages/spark-ai/ARCHITECTURE.md`](../../packages/spark-ai/ARCHITECTURE.md) 工具闭集表）。
 
 ## 生成物
 
@@ -53,6 +71,6 @@ model_query → model_class_guide / model_attribute_guide / model_action_guide �
 
 ## 未实现（勿假设存在）
 
-- 旧 metadata / catalog 旁路
+- Runtime API metadata / catalog 之外的第二知识真源
 - `verifyPageDesignModelEdit` root action
 - `model_query({ includePayloads: true })`

@@ -1,6 +1,6 @@
 # ClassModel 签名对齐 TypeDoc JSONOutput 改造清单
 
-> 状态：设计有效（2026-06）。**不引入 VCM `callbackApis`**；mutator 回调子模型从 TypeDoc 式 `reflection` 签名树解析。
+> 状态：设计有效（2026-06）。mutator 回调子模型从 TypeDoc 式 `reflection` 签名树解析。
 > 参考：[TypeDoc JSONOutput](https://typedoc.org/api/modules/JSONOutput.html) · 现状类型 [`types.ts`](../class-model/types.ts)
 
 ## 目标
@@ -76,11 +76,11 @@ type MethodParameterMeta = Readonly<{
 
 可选性来源：`parameter.questionToken`、`parameter.initializer`、或 `type` 为 `optional`。
 
-### 1.4 `MethodMeta` 命名（可选 breaking，分阶段）
+### 1.4 `MethodMeta` 命名
 
 | 现状 | TypeDoc 对齐 | 策略 |
 |------|--------------|------|
-| `returnType` | `type` | **Phase A** 双写 `returnType` + `type`；**Phase B** 读侧优先 `type`，废弃 `returnType` |
+| `type` | `type` | 当前协议只写 `type`，读侧只接受 `type` |
 | `parameters` | `parameters` | 保持 |
 | `signatureText` | 无（派生） | 保留；增加 `assertSignatureMatchesTypeTree` 校验 |
 
@@ -89,7 +89,7 @@ type MethodParameterMeta = Readonly<{
 ### 1.5 schemaVersion
 
 - bundle `schemaVersion: 1` 可不变；用 **`dtsTypeMetaVersion: 2`** 或文档级 note 标记新 discriminator。
-- `read-dts-class-model-bundle-json.ts`：**向后兼容**读 `optional`/`reflection`/`tuple`/`rest`；旧 bundle 仍可读。
+- `read-dts-class-model-bundle-json.ts`：fail-fast 读取当前字段；缺 `module`、缺 `parameters`、缺 `type` 时直接报错。
 
 ---
 
@@ -143,7 +143,7 @@ type MethodParameterMeta = Readonly<{
 
 ```typescript
 // methodGuide / renderMethodSignature
-// 1. 若 parameters + type/returnType 完整 → 从 type 树渲染
+// 1. 若 parameters + type 完整 → 从 type 树渲染
 // 2. 否则 fallback signatureText
 ```
 
@@ -153,8 +153,8 @@ type MethodParameterMeta = Readonly<{
 
 ### 4.1 `build-dts-class-model-bundle.ts` · `compactMethodMetaForBundle`
 
-- 持久化：`parameters`（含 flags）、`type`/`returnType`（双写期）
-- **不再**依赖 bundle 外 `returnTypeText` / `paramsSchema` / `returnSchema` 做 ref 闭包
+- 持久化：`parameters`（含 flags）、`type`
+- **不再**依赖 bundle 外 params/return 字符串字段做 ref 闭包
 
 ### 4.2 `read-dts-class-model-bundle-json.ts` · `parseDtsTypeMeta`
 
@@ -162,7 +162,7 @@ type MethodParameterMeta = Readonly<{
 
 `parseMethodParameterMeta`：读 `flags`、`defaultValue`。
 
-`parseMethodMeta`：读 `type` 字段；`returnType` 作为 alias 归一化到 `type`。
+`parseMethodMeta`：读 `type` 字段；缺失时 fail-fast。
 
 ### 4.3 `dts-class-model-bundle-loader.ts` · `collectFromDtsType`
 
@@ -172,7 +172,7 @@ type MethodParameterMeta = Readonly<{
 - `tuple` → elements
 - `reflection` → signatures[].parameters[].type + signature.type
 
-**移除**对 `returnTypeText` 的闭包依赖（bundle 内已无此字段时）。
+**移除**对返回类型字符串字段的闭包依赖。
 
 ---
 
@@ -180,7 +180,7 @@ type MethodParameterMeta = Readonly<{
 
 - `methodGuide`：签名行从 type 树渲染；JSDoc `@param` 保留。
 - `collectDtsTypeRefs`：支持 `reflection` 内 `DataSetCrudTool` 等 reference 的 `sourcePath` 闭包。
-- **mutator 子模型发现**：从 `parameters[name=run].type.reflection.signatures[0].parameters[0]` 取回调首参 type → 挂 linked kind（**替代 VCM callbackApis 在 ClassModel 线的职责**）。
+- **mutator 子模型发现**：从 `parameters[name=run].type.reflection.signatures[0].parameters[0]` 取回调首参 type → 挂 linked kind。
 
 ---
 
@@ -212,11 +212,11 @@ type MethodParameterMeta = Readonly<{
 ## 7. 实施顺序（建议 PR 切分）
 
 ```text
-PR-1  types.ts + parseDtsTypeMeta + renderDtsTypeMeta（新 discriminator，读侧兼容）  ← 已完成
+PR-1  types.ts + parseDtsTypeMeta + renderDtsTypeMeta（当前 discriminator）  ← 已完成
 PR-2  project-from-declarations（生成 reflection/optional/tuple/rest；去 union filter）  ← 已完成
 PR-3  bundle-loader ref 闭包 + knowledge methodGuide 改 SSOT  ← 已完成
 PR-4  全量 regen generated/dts-class-model + golden 测试  ← 已完成
-PR-5  MethodMeta.returnType → type 重命名；signatureText 改派生  ← 已完成
+PR-5  MethodMeta.type 定稿；signatureText 改派生  ← 已完成
 ```
 
 ---
@@ -237,11 +237,11 @@ PR-5  MethodMeta.returnType → type 重命名；signatureText 改派生  ← �
 
 ---
 
-## 9. 与 VCM / native-runtime 边界
+## 9. 与 native-runtime 边界
 
 - **ClassModel 线**：`.d.ts` → TypeDoc 式 type 树 → methodGuide；mutator 回调首参从 `reflection` 解析。
-- **VCM metadata 线**：仍用 `resultApis`（暂不迁 `callbackApis`）；两线通过 **同一 .d.ts 声明** 语义一致，不要求 JSON 字段同名。
-- **native-runtime**：继续消费 VCM `paramsSchema` / Proxy；ClassModel 改造**不阻塞** script 执行。
+- **Runtime metadata 线**：运行时执行元数据继续承载 `resultApis`；通过 **同一 .d.ts 声明** 保持语义一致，不要求 JSON 字段同名。
+- **native-runtime**：继续消费 runtime `paramsSchema` / Proxy；ClassModel 改造**不阻塞** script 执行。
 
 ---
 
@@ -250,7 +250,7 @@ PR-5  MethodMeta.returnType → type 重命名；signatureText 改派生  ← �
 | TypeDoc | SPARK 字段 |
 |---------|------------|
 | `SignatureReflection.parameters` | `MethodMeta.parameters` |
-| `SignatureReflection.type` | `MethodMeta.type`（现 `returnType`） |
+| `SignatureReflection.type` | `MethodMeta.type` |
 | `ParameterReflection.flags.isOptional` | `parameters[].flags.isOptional` |
 | `Type.optional` | `DtsTypeMeta optional` |
 | `Type.reflection` | `DtsTypeMeta reflection` |

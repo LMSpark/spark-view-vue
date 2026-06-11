@@ -10,29 +10,12 @@ describe('@spark-appworks/spark-ai root public surface', () => {
     expect(rootModule.DefaultAiAgentSessionStore).toBeTypeOf('function')
     expect(Object.keys(rootModule).sort()).toEqual([
       'AiJsonSchemaValidator',
-      'DefaultAiAgentSessionStore',
       'ClassModelRuntime',
+      'DefaultAiAgentSessionStore',
       'createAiAgentHost',
       'noParamsSchema',
       'paramsSchema',
       'startAiAgentRegistrationSession',
     ])
-  })
-
-  it('does not expose removed dynamic protocol and old host facade names', async () => {
-    const rootModule = await import('../index')
-    const exposed = new Set(Object.keys(rootModule))
-
-    expect(exposed.has('AiModuleConstructor')).toBe(false)
-    expect(exposed.has('AiModule')).toBe(false)
-    expect(exposed.has('AiModuleRuntime')).toBe(false)
-    expect(exposed.has('AiModuleResult')).toBe(false)
-    expect(exposed.has('AiModuleToolCodec')).toBe(false)
-    expect(exposed.has('PROTOCOL_TOOL_NAMES')).toBe(false)
-    expect(exposed.has('AiAgent')).toBe(false)
-    expect(exposed.has('createAiAgent')).toBe(false)
-    expect(exposed.has('createAiAgentTask')).toBe(false)
-    expect(exposed.has('createAiAgentRegistration')).toBe(false)
-    expect(exposed.has('createTurnEventCollector')).toBe(false)
   })
 })

@@ -16,7 +16,7 @@
 
 ```text
 ClassModelAgentAdapter.register({ host, alias, metadata, moduleClass, options })
-  ├─ resolveModuleMetadataJson(metadata)
+  ├─ resolveRuntimeApiMetadataJson(metadata)
   ├─ createClassModelDocumentFromRuntimeDocument()
   ├─ new ClassModelRuntime({ document, knowledge, scriptExecutor })
   │    └─ model_script → executeAiNativeScript(instance, rootApi, script)

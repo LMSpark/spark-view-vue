@@ -108,7 +108,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.494Z",
+  "generatedAt": "2026-06-11T22:53:13.959Z",
   "$defs": {
     "ToolArgsParseError": {
       "type": "object",

@@ -122,7 +122,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.967Z",
+  "generatedAt": "2026-06-11T22:53:14.467Z",
   "$defs": {
     "ProjectPlanningAiRunOptions": {
       "type": "object",

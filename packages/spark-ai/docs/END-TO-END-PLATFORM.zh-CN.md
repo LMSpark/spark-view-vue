@@ -1,7 +1,7 @@
 # SPARK AI 端到端平台方案
 
 > 从 `.d.ts` 声明 → ClassModel JSON → LLM 知识体系 → **业务工厂（能力包）** → **工单 + 聊天** → **Script 变更执行** → **交付**。  
-> 状态：2026-06，以 **main** 已落地代码为准；旧 `module_*` / path 直调已移除。
+> 状态：2026-06，以 **main** 已落地代码为准；执行入口收敛为 ClassModel 7 工具闭集。
 
 ---
 
@@ -410,12 +410,12 @@ LLM tool_call
 
 **Gates**（pageDesign）：`beforeFunctionCall` 在 `model_script` 执行前校验 mutation 范围（nodeTree/dataSet/script/style/navigation）。
 
-### 8.4 双轨说明（metadata vs DTS）
+### 8.4 执行入口说明
 
 | 路径 | 条件 | 执行器 |
 |------|------|--------|
 | **DTS 主线（生产）** | 仅 `dtsClassModelManifestUrl` + Worker knowledge | `executeDtsNativeScript` |
-| **Metadata 辅线** | 传入 `AiModuleMetadataJson` | `executeAiNativeScript` |
+| **Runtime API 输入（内部）** | 已有 `AiRuntimeApiMetadataJson` | `executeAiNativeScript` |
 
 pageDesign / projectPlanning 均走 **DTS 主线**。
 
@@ -516,7 +516,7 @@ createAiHostRunBridge()
 | semantic-gaps | 2 条弱 JSDoc | 补 JSDoc 后 regen |
 | orders 独立业务 | 无；仅为 pageId 示例 | 若需独立 SOP，新 alias + Model |
 | Worker 依赖 | 浏览器 Worker 必须 | Node 侧可直载 loader（测试已覆盖） |
-| signatureText CI diff | 可选 warn | golden 对比派生签名 vs 旧 AST 文本 |
+| signatureText CI diff | 可选 warn | golden 对比派生签名 vs AST 文本 |
 
 ---
 

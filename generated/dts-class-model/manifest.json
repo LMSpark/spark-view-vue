@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "protocol": "spark-appworks.dts-class-model.bundle",
-  "generatedAt": "2026-06-11T21:36:02.452Z",
+  "generatedAt": "2026-06-11T22:53:14.946Z",
   "scannedFileCount": 667,
   "files": {
     "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts": {
@@ -118,7 +118,7 @@
         "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "agent/business/class-model-agent-adapter",
-        "jsdoc": "@module @spark-appworks/spark-ai:agent/business/class-model-agent-adapter\n职责：把业务 class、DTS ClassModel bundle 和知识服务适配为 Agent 可注册的 ClassModel 7-tool runtime。\n边界：只做 ClassModel 业务注册适配，不恢复旧 AiModule/path router，也不绕过统一工具闭集直接调用函数。\nAI用途：新增或排查 ClassModel 驱动的业务 Agent 时，用本模块确认 metadata、runtime 和 registration 的接线方式。",
+        "jsdoc": "@module @spark-appworks/spark-ai:agent/business/class-model-agent-adapter\n职责：把业务 class、DTS ClassModel bundle 和知识服务适配为 Agent 可注册的 ClassModel 7-tool runtime。\n边界：只做 ClassModel 业务注册适配，不恢复旧动态模块路径路由，也不绕过统一工具闭集直接调用函数。\nAI用途：新增或排查 ClassModel 驱动的业务 Agent 时，用本模块确认 metadata、runtime 和 registration 的接线方式。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ClassModelAgentAdapterConstructor",
@@ -622,7 +622,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/consistency.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/consistency",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/consistency\n职责：维护 DTS ClassModel 知识链路中的 consistency 能力，围绕 ClassModelBuildConsistencyIssue 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/consistency 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/consistency\n职责：维护 DTS ClassModel 知识链路中的 consistency 能力，围绕 ClassModelBuildConsistencyIssue 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/consistency 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ClassModelBuildConsistencyIssue"
@@ -637,7 +637,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/dts-bundle-types",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-types\n职责：定义 DTS ClassModel bundle、per-file projection、module semantic metadata、duplicate record 和 semantic gap report 的持久化协议。\n边界：只维护 JSON 结构契约，不读取文件系统、不执行 TypeScript 投影，也不渲染知识提示词。\nAI用途：修改 generated/dts-class-model 协议或消费 manifest/shard 时，用本模块确认字段含义和兼容边界。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-types\n职责：定义 DTS ClassModel bundle、per-file projection、module semantic metadata、duplicate record 和 semantic gap report 的持久化协议。\n边界：只维护 JSON 结构契约，不读取文件系统、不执行 TypeScript 投影，也不渲染知识提示词。\nAI用途：修改 generated/dts-class-model 协议或消费 manifest/shard 时，用本模块确认字段含义和协议边界。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "DtsFileProjectionDocument",
@@ -662,7 +662,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/dts-class-model-bundle-loader",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-class-model-bundle-loader\n职责：维护 DTS ClassModel 知识链路中的 dts-class-model-bundle-loader 能力，围绕 DtsClassModelBundleLoaderOptions、DtsClassModelBundleLoader 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/dts-class-model-bundle-loader 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-class-model-bundle-loader\n职责：维护 DTS ClassModel 知识链路中的 dts-class-model-bundle-loader 能力，围绕 DtsClassModelBundleLoaderOptions、DtsClassModelBundleLoader 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/dts-class-model-bundle-loader 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "DtsClassModelBundleLoaderOptions",
@@ -678,7 +678,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-surface-types.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/dts-surface-types",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-surface-types\n职责：维护 DTS ClassModel 知识链路中的 dts-surface-types 能力，围绕 DtsClassModelSurfaceDocument、ProjectDtsClassModelSurfaceOptions 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/dts-surface-types 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-surface-types\n职责：维护 DTS ClassModel 知识链路中的 dts-surface-types 能力，围绕 DtsClassModelSurfaceDocument、ProjectDtsClassModelSurfaceOptions 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/dts-surface-types 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "DtsClassModelSurfaceDocument",
@@ -694,7 +694,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-type-meta-ops.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/dts-type-meta-ops",
-        "jsdoc": "DtsTypeMeta 遍历与 MethodMeta 返回类型归一化（TypeDoc 对齐）。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-type-meta-ops\n职责：提供 DtsTypeMeta 类型树的遍历、引用收集和 MethodMeta 返回类型归一化能力。\n边界：只处理 .d.ts 投影后的类型元数据，不读取源文件、不执行工具，也不生成运行时 schema。\nAI用途：当需要判断参数/返回类型如何递归寻址、渲染或参与闭包加载时，用本模块定位类型树规则。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -707,7 +707,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-type-schema.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/dts-type-schema",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-type-schema\n职责：维护 DTS ClassModel 知识链路中的 dts-type-schema 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/dts-type-schema 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-type-schema\n职责：维护 DTS ClassModel 知识链路中的 dts-type-schema 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/dts-type-schema 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -720,7 +720,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/from-runtime-metadata.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/from-runtime-metadata",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/from-runtime-metadata\n职责：维护 DTS ClassModel 知识链路中的 from-runtime-metadata 能力，围绕 RuntimeDocumentInput 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/from-runtime-metadata 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/from-runtime-metadata\n职责：维护 DTS ClassModel 知识链路中的 from-runtime-metadata 能力，围绕 RuntimeDocumentInput 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/from-runtime-metadata 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "RuntimeDocumentInput"
@@ -735,7 +735,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/index.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/index",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/index\n职责：维护 DTS ClassModel 知识链路中的 class-model 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/index 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/index\n职责：维护 DTS ClassModel 知识链路中的 class-model 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/index 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -748,7 +748,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/json-schema-to-type.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/json-schema-to-type",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/json-schema-to-type\n职责：维护 DTS ClassModel 知识链路中的 json-schema-to-type 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/json-schema-to-type 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/json-schema-to-type\n职责：维护 DTS ClassModel 知识链路中的 json-schema-to-type 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/json-schema-to-type 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -761,7 +761,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/model-projection.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/model-projection",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/model-projection\n职责：维护 DTS ClassModel 知识链路中的 model-projection 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/model-projection 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/model-projection\n职责：维护 DTS ClassModel 知识链路中的 model-projection 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/model-projection 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -774,7 +774,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/project-from-declarations.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/project-from-declarations",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/project-from-declarations\n职责：从 TypeScript DTS AST 和 TypeChecker 投影 ClassModel，抽取类、接口、类型别名、枚举、成员、声明关系和模块语义。\n边界：只读取声明结构和 JSDoc，不生成业务代码、不执行脚本，也不把 VCM 旧链路重新引入。\nAI用途：排查 .d.ts 到 JSON 的字段丢失、关系断链或组件分层识别时，用本模块定位投影逻辑。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/project-from-declarations\n职责：从 TypeScript DTS AST 和 TypeChecker 投影 ClassModel，抽取类、接口、类型别名、枚举、成员、声明关系和模块语义。\n边界：只读取声明结构和 JSDoc，不生成业务代码、不执行脚本，也不引入额外知识链路。\nAI用途：排查 .d.ts 到 JSON 的字段丢失、关系断链或组件分层识别时，用本模块定位投影逻辑。",
         "jsdocSource": "source-file-jsdoc",
         "symbols": [
           "ProjectDtsSourceFileProjectionOptions"
@@ -802,7 +802,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/reflection-connectivity.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/reflection-connectivity",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/reflection-connectivity\n职责：维护 DTS ClassModel 知识链路中的 reflection-connectivity 能力，围绕 ClassModelReflectionConnectivityIssue 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/reflection-connectivity 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/reflection-connectivity\n职责：维护 DTS ClassModel 知识链路中的 reflection-connectivity 能力，围绕 ClassModelReflectionConnectivityIssue 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/reflection-connectivity 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "source-file-jsdoc",
         "symbols": [
           "ClassModelReflectionConnectivityIssue"
@@ -817,7 +817,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/signature-renderer.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/signature-renderer",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/signature-renderer\n职责：维护 DTS ClassModel 知识链路中的 signature-renderer 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/signature-renderer 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/signature-renderer\n职责：维护 DTS ClassModel 知识链路中的 signature-renderer 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/signature-renderer 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "source-file-jsdoc",
         "symbols": []
       }
@@ -830,7 +830,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/types.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/types",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/types\n职责：维护 DTS ClassModel 知识链路中的 types 能力，围绕 ClassModelDocument、SourceProvenanceMeta、ComponentClassModelLevel 等 11 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/types 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/types\n职责：维护 DTS ClassModel 知识链路中的 types 能力，围绕 ClassModelDocument、SourceProvenanceMeta、ComponentClassModelLevel 等 11 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/types 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ClassModelDocument",
@@ -860,7 +860,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/index.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/index",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/index\n职责：维护 DTS ClassModel 知识链路中的 class-model 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/index 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/index\n职责：维护 DTS ClassModel 知识链路中的 class-model 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/index 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -894,7 +894,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/knowledge/dts-bundle-class-model-knowledge-service",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/dts-bundle-class-model-knowledge-service\n职责：维护 DTS ClassModel 知识链路中的 dts-bundle-class-model-knowledge-service 能力，围绕 DtsBundleClassModelKnowledgeServiceOptions、DtsBundleClassModelKnowledgeService 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/dts-bundle-class-model-knowledge-service 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/dts-bundle-class-model-knowledge-service\n职责：维护 DTS ClassModel 知识链路中的 dts-bundle-class-model-knowledge-service 能力，围绕 DtsBundleClassModelKnowledgeServiceOptions、DtsBundleClassModelKnowledgeService 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/dts-bundle-class-model-knowledge-service 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "DtsBundleClassModelKnowledgeServiceOptions",
@@ -910,7 +910,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/knowledge/index.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/knowledge/index",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/index\n职责：维护 DTS ClassModel 知识链路中的 knowledge 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/index 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/index\n职责：维护 DTS ClassModel 知识链路中的 knowledge 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/index 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -923,7 +923,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/knowledge/worker-knowledge-api",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-api\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-api 能力，围绕 ClassModelKnowledgeWorkerInitInput、ClassModelKnowledgeWorkerApi 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-api 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-api\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-api 能力，围绕 ClassModelKnowledgeWorkerInitInput、ClassModelKnowledgeWorkerApi 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-api 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ClassModelKnowledgeWorkerInitInput",
@@ -939,7 +939,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/knowledge/worker-knowledge-client",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-client\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-client 能力，围绕 WorkerClassModelKnowledgeProvider 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-client 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-client\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-client 能力，围绕 WorkerClassModelKnowledgeProvider 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-client 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "source-file-jsdoc",
         "symbols": [
           "WorkerClassModelKnowledgeProvider"
@@ -954,7 +954,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/knowledge/worker-knowledge-handler",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-handler\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-handler 能力，围绕 CreateClassModelKnowledgeWorkerApiOptions 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-handler 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-handler\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-handler 能力，围绕 CreateClassModelKnowledgeWorkerApiOptions 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-handler 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "CreateClassModelKnowledgeWorkerApiOptions"
@@ -982,7 +982,7 @@
           "AiApiAttributeMetadata",
           "AiApiActionMetadata",
           "AiApiResultApiRef",
-          "AiModuleMetadataJson"
+          "AiRuntimeApiMetadataJson"
         ]
       }
     },
@@ -994,7 +994,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/metadata/index.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/metadata/index",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/metadata/index\n职责：维护 DTS ClassModel 知识链路中的 metadata 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/metadata/index 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/metadata/index\n职责：维护 DTS ClassModel 知识链路中的 metadata 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/metadata/index 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -1007,7 +1007,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/metadata/json-schema-dereference.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/metadata/json-schema-dereference",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/metadata/json-schema-dereference\n职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/json-schema-dereference 的 AI 运行时语义。\n边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。\nAI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。\n\nModule metadata schema inlining — delegates JSON Schema logic to spark-json-document.",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/metadata/json-schema-dereference\n职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/json-schema-dereference 的 AI 运行时语义。\n边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。\nAI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。\n\nRuntime API metadata schema inlining — delegates JSON Schema logic to spark-json-document.",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -1037,11 +1037,11 @@
         "sourceFile": "packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/metadata/resolve-api-object-metadata",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/metadata/resolve-api-object-metadata\n职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/resolve-api-object-metadata 的 JsonSchemaObject、ResolveModuleMetadataJsonOptions语义。\n边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。\nAI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。\n\nResolve compact module metadata (apiRegistry + action result $ref) into inline API trees.\nJSON Schema $ref 默认保留给运行时 AJV + schemaDefs；仅 legacy 调用方可 inlineSchemaRefs。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/metadata/resolve-api-object-metadata\n职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/resolve-api-object-metadata 的 JsonSchemaObject、ResolveRuntimeApiMetadataJsonOptions语义。\n边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。\nAI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。\n\nResolve compact runtime API metadata (apiRegistry + action result $ref) into inline API trees.\nJSON Schema $ref 默认保留给运行时 AJV + schemaDefs；仅显式 inline 调用方可 inlineSchemaRefs。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "JsonSchemaObject",
-          "ResolveModuleMetadataJsonOptions"
+          "ResolveRuntimeApiMetadataJsonOptions"
         ]
       }
     },
@@ -1069,7 +1069,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/projection/dts-renderer.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/projection/dts-renderer",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/projection/dts-renderer\n职责：维护 DTS ClassModel 知识链路中的 dts-renderer 能力，围绕 ModelGuideRenderInput、ModelGuide、AttributeGuideRenderInput 等 6 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/projection/dts-renderer 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/projection/dts-renderer\n职责：维护 DTS ClassModel 知识链路中的 dts-renderer 能力，围绕 ModelGuideRenderInput、ModelGuide、AttributeGuideRenderInput 等 6 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/projection/dts-renderer 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ModelGuideRenderInput",
@@ -1089,7 +1089,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/projection/index.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/projection/index",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/projection/index\n职责：维护 DTS ClassModel 知识链路中的 projection 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/projection/index 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/projection/index\n职责：维护 DTS ClassModel 知识链路中的 projection 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/projection/index 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -1118,7 +1118,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/recovery/index.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/recovery/index",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/recovery/index\n职责：维护 DTS ClassModel 知识链路中的 recovery 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/recovery/index 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/recovery/index\n职责：维护 DTS ClassModel 知识链路中的 recovery 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/recovery/index 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -1131,7 +1131,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/runtime/class-model-runtime.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/runtime/class-model-runtime",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/runtime/class-model-runtime\n职责：维护 DTS ClassModel 知识链路中的 class-model-runtime 能力，围绕 ClassModelScriptCommand、ClassModelRuntimeOptions、ClassModelToolArgs 等 8 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/runtime/class-model-runtime 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/runtime/class-model-runtime\n职责：维护 DTS ClassModel 知识链路中的 class-model-runtime 能力，围绕 ClassModelScriptCommand、ClassModelRuntimeOptions、ClassModelToolArgs 等 8 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/runtime/class-model-runtime 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ClassModelScriptCommand",
@@ -1153,7 +1153,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/runtime/index.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/runtime/index",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/runtime/index\n职责：维护 DTS ClassModel 知识链路中的 runtime 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/runtime/index 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/runtime/index\n职责：维护 DTS ClassModel 知识链路中的 runtime 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/runtime/index 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -1166,7 +1166,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/tools/class-model-tool-schema-recovery.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/tools/class-model-tool-schema-recovery",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/tools/class-model-tool-schema-recovery\n职责：维护 DTS ClassModel 知识链路中的 class-model-tool-schema-recovery 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/tools/class-model-tool-schema-recovery 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/tools/class-model-tool-schema-recovery\n职责：维护 DTS ClassModel 知识链路中的 class-model-tool-schema-recovery 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/tools/class-model-tool-schema-recovery 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "source-file-jsdoc",
         "symbols": []
       }
@@ -1179,7 +1179,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/tools/class-model-tool-specs.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/tools/class-model-tool-specs",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/tools/class-model-tool-specs\n职责：维护 DTS ClassModel 知识链路中的 class-model-tool-specs 能力，围绕 ClassModelToolSpec 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/tools/class-model-tool-specs 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/tools/class-model-tool-specs\n职责：维护 DTS ClassModel 知识链路中的 class-model-tool-specs 能力，围绕 ClassModelToolSpec 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/tools/class-model-tool-specs 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ClassModelToolSpec"
@@ -1194,7 +1194,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/tools/index.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/tools/index",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/tools/index\n职责：维护 DTS ClassModel 知识链路中的 tools 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/tools/index 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/tools/index\n职责：维护 DTS ClassModel 知识链路中的 tools 能力，围绕 模块入口、副作用注册或内部组合逻辑 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/tools/index 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -1207,7 +1207,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/tools/tool-names.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/tools/tool-names",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/tools/tool-names\n职责：维护 DTS ClassModel 知识链路中的 tool-names 能力，围绕 ClassModelToolName 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/tools/tool-names 这一段如何生成、加载或投影时，用本模块定位职责。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/tools/tool-names\n职责：维护 DTS ClassModel 知识链路中的 tool-names 能力，围绕 ClassModelToolName 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/tools/tool-names 这一段如何生成、加载或投影时，用本模块定位职责。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ClassModelToolName"
@@ -12099,7 +12099,7 @@
       "sourcePath": "declarations/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
       "file": "files/declarations/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts.json"
     },
-    "AiModuleMetadataJson": {
+    "AiRuntimeApiMetadataJson": {
       "sourcePath": "declarations/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
       "file": "files/declarations/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts.json"
     },
@@ -12119,7 +12119,7 @@
       "sourcePath": "declarations/packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.d.ts",
       "file": "files/declarations/packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.d.ts.json"
     },
-    "ResolveModuleMetadataJsonOptions": {
+    "ResolveRuntimeApiMetadataJsonOptions": {
       "sourcePath": "declarations/packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.d.ts",
       "file": "files/declarations/packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.d.ts.json"
     },

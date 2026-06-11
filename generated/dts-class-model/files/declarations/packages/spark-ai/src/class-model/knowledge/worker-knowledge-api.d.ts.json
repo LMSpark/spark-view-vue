@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/knowledge/worker-knowledge-api",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-api\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-api 能力，围绕 ClassModelKnowledgeWorkerInitInput、ClassModelKnowledgeWorkerApi 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-api 这一段如何生成、加载或投影时，用本模块定位职责。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-api\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-api 能力，围绕 ClassModelKnowledgeWorkerInitInput、ClassModelKnowledgeWorkerApi 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-api 这一段如何生成、加载或投影时，用本模块定位职责。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ClassModelKnowledgeWorkerInitInput",
@@ -64,7 +64,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.513Z",
+  "generatedAt": "2026-06-11T22:53:13.983Z",
   "$defs": {
     "ClassModelKnowledgeWorkerInitInput": {
       "type": "object",

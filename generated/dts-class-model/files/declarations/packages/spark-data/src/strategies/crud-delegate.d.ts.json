@@ -572,7 +572,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.820Z",
+  "generatedAt": "2026-06-11T22:53:14.377Z",
   "$defs": {
     "EmitCrudLifecycleFn": {
       "type": "object",

@@ -54,7 +54,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.581Z",
+  "generatedAt": "2026-06-11T22:53:14.105Z",
   "$defs": {
     "RendererVirtualCardApi": {
       "type": "object",

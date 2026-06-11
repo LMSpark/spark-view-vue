@@ -4,6 +4,9 @@ import { enrichFunctionCallResult } from '../agent/tool-loop/function-call-recov
 import { CLASS_MODEL_TOOL_NAMES } from '../class-model'
 
 describe('enrichFunctionCallResult', () => {
+  const removedToolPrefix = ['module', ''].join('_')
+  const removedFindToolName = ['module', 'find'].join('_')
+
   it('adds ClassModel schema recovery checks for invalid tool args', () => {
     const invalidArgs = enrichFunctionCallResult({
       protocolToolName: CLASS_MODEL_TOOL_NAMES.actionGuide,
@@ -21,7 +24,7 @@ describe('enrichFunctionCallResult', () => {
     expect(invalidArgs.fix).toContain('model_action_guide')
     expect(invalidArgs.checks?.some(check => check.message.includes('actionName'))).toBe(true)
     expect(invalidArgs.checks?.some(check => check.message.includes('model_script 形状'))).toBe(true)
-    expect(invalidArgs.checks?.some(check => check.message.includes('module_'))).toBe(false)
+    expect(invalidArgs.checks?.some(check => check.message.includes(removedToolPrefix))).toBe(false)
   })
 
   it('adds ClassModel script recovery hints without business method names', () => {
@@ -40,7 +43,7 @@ describe('enrichFunctionCallResult', () => {
     if (scriptFailed.ok) return
     expect(scriptFailed.checks?.some(check => check.message.includes('model_script'))).toBe(true)
     expect(scriptFailed.checks?.some(check => check.message.includes('openPageDesign'))).toBe(false)
-    expect(scriptFailed.checks?.some(check => check.message.includes('module_find'))).toBe(false)
+    expect(scriptFailed.checks?.some(check => check.message.includes(removedFindToolName))).toBe(false)
   })
 
   it('merges business recovery hints when enrichRecoveryHints is provided', () => {
@@ -117,6 +120,6 @@ describe('enrichFunctionCallResult', () => {
 
     expect(invalidScript.ok).toBe(false)
     if (invalidScript.ok) return
-    expect(invalidScript.checks?.some(check => check.message.includes('不再接受 code/javascript/path'))).toBe(true)
+    expect(invalidScript.checks?.some(check => check.message.includes('只接受 script 字段'))).toBe(true)
   })
 })

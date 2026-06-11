@@ -74,7 +74,7 @@ Core rules:
 When constructing Spark UI nodes through pageDesign AI tools:
 
 1. Read `model_action_guide` for the target action (e.g. `node-tree` / `addNode`) and use its `paramsSchema` / `examples`.
-2. Build or mutate page structure via `model_script` on the native object chain (`openPageDesign` → `editNodeTree` / `editDataSet`), not `/kind[id]` path direct calls.
+2. Build or mutate page structure via `model_script` on the native object chain (`openPageDesign` → `editNodeTree` / `editDataSet`), not `/kind[id]` path addressing.
 3. Construct SparkNode `type` / `props` only from ClassModel contracts and existing renderer patterns; do not invent props.
 4. Persist four files through the script return value; outer `ProjectWorkspace` handles save.
 

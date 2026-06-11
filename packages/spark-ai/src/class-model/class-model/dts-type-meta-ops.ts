@@ -1,14 +1,17 @@
 /**
- * DtsTypeMeta 遍历与 MethodMeta 返回类型归一化（TypeDoc 对齐）。
+ * @module @spark-appworks/spark-ai:class-model/class-model/dts-type-meta-ops
+ * 职责：提供 DtsTypeMeta 类型树的遍历、引用收集和 MethodMeta 返回类型归一化能力。
+ * 边界：只处理 .d.ts 投影后的类型元数据，不读取源文件、不执行工具，也不生成运行时 schema。
+ * AI用途：当需要判断参数/返回类型如何递归寻址、渲染或参与闭包加载时，用本模块定位类型树规则。
  */
 import type { DtsTypeMeta, MethodMeta } from './types'
 
-/** TypeDoc `SignatureReflection.type`；读侧 `returnType` 为兼容别名。 */
+/** TypeDoc `SignatureReflection.type`。 */
 export function resolveMethodReturnType(method: MethodMeta): DtsTypeMeta | undefined {
-  return method.type ?? method.returnType
+  return method.type
 }
 
-/** parameters + type/returnType 完整时可从 type 树渲染完整签名。 */
+/** parameters + type 完整时可从 type 树渲染完整签名。 */
 export function canRenderMethodSignatureFromTypeTree(method: MethodMeta): boolean {
   return method.parameters !== undefined && resolveMethodReturnType(method) !== undefined
 }

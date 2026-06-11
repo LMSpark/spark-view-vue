@@ -249,8 +249,6 @@ function listSurfaceLinkedClassNames(surface: DtsClassModelSurfaceDocument, mode
       collectDtsTypeRefs(surface, linked, parameter.type)
     }
     collectDtsTypeRefs(surface, linked, resolveMethodReturnType(method))
-    collectTypeRefs(surface, linked, method.paramsTypeText)
-    collectTypeRefs(surface, linked, method.returnTypeText)
     collectSchemaTypeRefs(surface, linked, method.returnSchema)
     if (method.paramsSchema !== undefined) {
       for (const schema of Object.values(method.paramsSchema.properties ?? {})) {

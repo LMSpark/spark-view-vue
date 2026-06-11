@@ -1,7 +1,7 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/tools/class-model-tool-specs
  * 职责：维护 DTS ClassModel 知识链路中的 class-model-tool-specs 能力，围绕 ClassModelToolSpec 提供声明投影、协议读取、知识查询或运行时适配。
- * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不回退到 VCM，也不直接执行业务页面逻辑。
+ * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
  * AI用途：当需要判断 ClassModel 在 class-model/tools/class-model-tool-specs 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiJsonSchemaObject } from '../../json'
@@ -19,11 +19,11 @@ export type ClassModelToolSpec = Readonly<{
 
 export function listClassModelToolSpecs(): readonly ClassModelToolSpec[] {
   return [
-    buildVcmQueryTool(),
-    buildVcmModelGuideTool(),
-    buildVcmAttributeGuideTool(),
-    buildVcmActionGuideTool(),
-    buildVcmScriptTool(),
+    buildClassModelQueryTool(),
+    buildClassModelGuideTool(),
+    buildClassModelAttributeGuideTool(),
+    buildClassModelActionGuideTool(),
+    buildClassModelScriptTool(),
     buildHumanQuestionTool(),
     buildAgentCompleteTool(),
   ]
@@ -33,7 +33,7 @@ export function findClassModelToolSpec(toolName: string): ClassModelToolSpec | u
   return listClassModelToolSpecs().find(spec => spec.function.name === toolName)
 }
 
-function buildVcmQueryTool(): ClassModelToolSpec {
+function buildClassModelQueryTool(): ClassModelToolSpec {
   return toolSpec({
     name: CLASS_MODEL_TOOL_NAMES.query,
     description: 'Query the ClassModel ClassModel catalog before choosing model, attribute, or method guides.',
@@ -45,7 +45,7 @@ function buildVcmQueryTool(): ClassModelToolSpec {
   })
 }
 
-function buildVcmModelGuideTool(): ClassModelToolSpec {
+function buildClassModelGuideTool(): ClassModelToolSpec {
   return toolSpec({
     name: CLASS_MODEL_TOOL_NAMES.modelGuide,
     description: 'Render one ClassModel as d.ts-like declaration with native JSDoc.',
@@ -56,7 +56,7 @@ function buildVcmModelGuideTool(): ClassModelToolSpec {
   })
 }
 
-function buildVcmAttributeGuideTool(): ClassModelToolSpec {
+function buildClassModelAttributeGuideTool(): ClassModelToolSpec {
   return toolSpec({
     name: CLASS_MODEL_TOOL_NAMES.attributeGuide,
     description: 'Render one ClassModel attribute declaration with native JSDoc.',
@@ -68,7 +68,7 @@ function buildVcmAttributeGuideTool(): ClassModelToolSpec {
   })
 }
 
-function buildVcmActionGuideTool(): ClassModelToolSpec {
+function buildClassModelActionGuideTool(): ClassModelToolSpec {
   return toolSpec({
     name: CLASS_MODEL_TOOL_NAMES.actionGuide,
     description: 'Render one ClassModel public action declaration with native JSDoc.',
@@ -80,7 +80,7 @@ function buildVcmActionGuideTool(): ClassModelToolSpec {
   })
 }
 
-function buildVcmScriptTool(): ClassModelToolSpec {
+function buildClassModelScriptTool(): ClassModelToolSpec {
   return toolSpec({
     name: CLASS_MODEL_TOOL_NAMES.script,
     description: 'Execute model_script through the injected business script executor after reading relevant guides.',

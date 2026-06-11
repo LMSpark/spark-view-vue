@@ -22,7 +22,7 @@ import type {
   AiApiActionMetadata,
   AiApiAttributeMetadata,
   AiApiObjectMetadata,
-  AiModuleMetadataJson,
+  AiRuntimeApiMetadataJson,
 } from '../../class-model/metadata'
 import { executeModuleScript } from './native-script-sandbox'
 import { createAiApiScriptContext } from './native-script-context'
@@ -60,7 +60,7 @@ export async function executeDtsNativeScript(
     )
   }
 
-  const metadata = await createDtsNativeModuleMetadata({
+  const metadata = await createDtsNativeRuntimeApiMetadata({
     manifestUrl: command.manifestUrl,
     rootClassName: command.rootClassName,
     ...(command.fetchJson === undefined ? {} : { fetchJson: command.fetchJson }),
@@ -74,11 +74,11 @@ export async function executeDtsNativeScript(
   return await executeModuleScript(command.script, context)
 }
 
-export async function createDtsNativeModuleMetadata(command: Readonly<{
+export async function createDtsNativeRuntimeApiMetadata(command: Readonly<{
   manifestUrl: string
   rootClassName: string
   fetchJson?: (url: string) => Promise<unknown>
-}>): Promise<AiModuleMetadataJson> {
+}>): Promise<AiRuntimeApiMetadataJson> {
   const loader = new DtsClassModelBundleLoader({
     manifestUrl: command.manifestUrl,
     ...(command.fetchJson === undefined ? {} : { fetchJson: command.fetchJson }),
@@ -159,10 +159,8 @@ function createApiFromSurface(
           ...(method.jsdoc.trim().length === 0 ? {} : { jsdoc: method.jsdoc }),
           ...(method.provenance === undefined ? {} : { provenance: method.provenance }),
           paramsSchema: method.paramsSchema,
-          ...(method.paramsTypeText === undefined ? {} : { paramsTypeText: method.paramsTypeText }),
           takesContext: false,
           ...(method.returnSchema === undefined ? {} : { resultSchema: method.returnSchema }),
-          ...(method.returnTypeText === undefined ? {} : { returnTypeText: method.returnTypeText }),
           ...resultApiProperty(surface, method, toApi),
         }
       })
@@ -228,7 +226,6 @@ function resolveMethodReturnClassName(
   method: ClassModel['methods'][number],
 ): string | undefined {
   return resolveClassNameFromDtsType(surface, resolveMethodReturnType(method))
-    ?? resolveClassNameFromTypeText(surface, method.returnTypeText)
     ?? resolveSchemaClassName(surface, method.returnSchema)
 }
 

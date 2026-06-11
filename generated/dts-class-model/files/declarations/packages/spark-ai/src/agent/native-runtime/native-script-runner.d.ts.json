@@ -48,11 +48,11 @@
       "className": "AiNativeScriptContextCommand",
       "jsdoc": "Ai Native Script Context Command 的命令参数。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    instance: TInstance;\n    metadata: AiModuleMetadataJson;\n    host?: AiAgentRuntimeHostContext;\n    schemaDefs?: AiNativeRuntimeSchemaDefs;\n}>",
+      "declarationTypeText": "Readonly<{\n    instance: TInstance;\n    metadata: AiRuntimeApiMetadataJson;\n    host?: AiAgentRuntimeHostContext;\n    schemaDefs?: AiNativeRuntimeSchemaDefs;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    instance: TInstance;\n    metadata: AiModuleMetadataJson;\n    host?: AiAgentRuntimeHostContext;\n    schemaDefs?: AiNativeRuntimeSchemaDefs;\n}>",
+          "typeText": "Readonly<{\n    instance: TInstance;\n    metadata: AiRuntimeApiMetadataJson;\n    host?: AiAgentRuntimeHostContext;\n    schemaDefs?: AiNativeRuntimeSchemaDefs;\n}>",
           "targetName": "Readonly"
         }
       ],
@@ -93,7 +93,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.484Z",
+  "generatedAt": "2026-06-11T22:53:13.952Z",
   "$defs": {
     "AiNativeRuntimeSchemaDefs": {
       "type": "object",

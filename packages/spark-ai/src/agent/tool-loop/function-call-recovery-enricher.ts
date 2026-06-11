@@ -143,7 +143,7 @@ function appendProtocolRecoveryHints(
     if (schemaHint !== undefined) hints.push(schemaHint)
   }
   if (code === 'INVALID_CLASS_MODEL_TOOL_ARGS' && toolName === CLASS_MODEL_TOOL_NAMES.script) {
-    hints.push('model_script 不再接受 code/javascript/path 等旧字段。')
+    hints.push('model_script 只接受 script 字段；请按工具 schema 重写参数。')
   }
 }
 

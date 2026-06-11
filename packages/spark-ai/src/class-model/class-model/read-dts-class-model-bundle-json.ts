@@ -175,12 +175,10 @@ export function readDtsFileProjectionDocument(value: unknown): DtsFileProjection
     path: 'projection.models',
     parseEntry: parseClassModel,
   })
-  const module = readOptionalModuleMeta(record, 'module', 'projection.module')
-    ?? createLegacyModuleMeta(sourcePath, symbols)
   return {
     schemaVersion: DTS_FILE_PROJECTION_VERSION,
     sourcePath,
-    module,
+    module: readRequiredModuleMeta(record, 'module', 'projection.module'),
     symbols,
     ...(schemaDefs === undefined ? {} : { $defs: schemaDefs }),
     models,
@@ -191,20 +189,20 @@ export function readDtsFileProjectionDocument(value: unknown): DtsFileProjection
 function parseBundleFileEntry(value: unknown, path: string): DtsClassModelBundleFileEntry {
   const record = requireJsonRecord(value, path)
   const file = readRequiredString(record, 'file', `${path}.file`)
-  const module = readOptionalModuleMeta(record, 'module', `${path}.module`)
-    ?? createLegacyModuleMeta(path.replace(/^manifest\.files\./u, ''), [])
   return {
     file,
-    module,
+    module: readRequiredModuleMeta(record, 'module', `${path}.module`),
   }
 }
 
-function readOptionalModuleMeta(
+function readRequiredModuleMeta(
   record: Record<string, unknown>,
   field: string,
   path: string,
-): DtsFileModuleSemanticMeta | undefined {
-  if (!Object.hasOwn(record, field)) return undefined
+): DtsFileModuleSemanticMeta {
+  if (!Object.hasOwn(record, field)) {
+    throw new Error(`${path} is required.`)
+  }
   return parseModuleMeta(record[field], path)
 }
 
@@ -246,34 +244,6 @@ function parseModuleMeta(value: unknown, path: string): DtsFileModuleSemanticMet
     ...(componentLayer === undefined ? {} : { componentLayer }),
     ...(componentDirectory === undefined ? {} : { componentDirectory }),
   }
-}
-
-function createLegacyModuleMeta(sourcePath: string, symbols: readonly string[]): DtsFileModuleSemanticMeta {
-  const sourceFile = sourceFileFromDeclarationFile(sourcePath)
-  const modulePath = sourceFile.replace(/^packages\/[^/]+\/src\//u, '').replace(/^src\//u, '').replace(/\.vue$|\.ts$/u, '')
-  const packageMatch = /^packages\/([^/]+)\/src\//u.exec(sourceFile)
-  const packageName = packageMatch?.[1] === undefined
-    ? sourceFile.startsWith('src/') ? 'app' : undefined
-    : `@spark-appworks/${packageMatch[1]}`
-  return {
-    name: packageName === undefined ? modulePath : `${packageName}:${modulePath}`,
-    sourcePath,
-    sourceFile,
-    ...(packageName === undefined ? {} : { packageName }),
-    modulePath,
-    jsdoc: `${packageName ?? 'workspace'} 的 ${modulePath} 模块。`,
-    jsdocSource: 'inferred',
-    symbols,
-  }
-}
-
-function sourceFileFromDeclarationFile(declarationFile: string): string {
-  const sourcePath = declarationFile.startsWith('declarations/')
-    ? declarationFile.slice('declarations/'.length)
-    : declarationFile
-  if (sourcePath.endsWith('.vue.d.ts')) return sourcePath.slice(0, -'.d.ts'.length)
-  if (sourcePath.endsWith('.d.ts')) return `${sourcePath.slice(0, -'.d.ts'.length)}.ts`
-  return sourcePath
 }
 
 function parseBundleClassEntry(value: unknown, path: string): DtsClassModelBundleClassEntry {
@@ -367,7 +337,6 @@ function parseMethodMeta(value: unknown, path: string): MethodMeta {
   const paramsSchema = readOptionalJsonSchemaObject(record, 'paramsSchema', `${path}.paramsSchema`)
   const returnSchema = readOptionalJsonSchema(record, 'returnSchema', `${path}.returnSchema`)
   const returnTypeMeta = readOptionalDtsTypeMeta(record, 'type', `${path}.type`)
-    ?? readOptionalDtsTypeMeta(record, 'returnType', `${path}.returnType`)
   const takesContext = readOptionalBoolean(record, 'takesContext', `${path}.takesContext`)
   const provenance = readOptionalSourceProvenance(record, 'provenance', `${path}.provenance`)
   const core: MethodMeta = {

@@ -1,28 +1,28 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/metadata/resolve-api-object-metadata
- * 职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/resolve-api-object-metadata 的 JsonSchemaObject、ResolveModuleMetadataJsonOptions语义。
+ * 职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/resolve-api-object-metadata 的 JsonSchemaObject、ResolveRuntimeApiMetadataJsonOptions语义。
  * 边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。
  * AI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。
  */
 /**
- * Resolve compact module metadata (apiRegistry + action result $ref) into inline API trees.
+ * Resolve compact runtime API metadata (apiRegistry + action result $ref) into inline API trees.
  *
- * JSON Schema $ref 默认保留给运行时 AJV + schemaDefs；仅 legacy 调用方可 inlineSchemaRefs。
+ * JSON Schema $ref 默认保留给运行时 AJV + schemaDefs；仅显式 inline 调用方可 inlineSchemaRefs。
  */
 
 import type {
   AiApiActionMetadata,
   AiApiObjectMetadata,
   AiApiResultApiRef,
-  AiModuleMetadataJson,
+  AiRuntimeApiMetadataJson,
 } from './ai-api-object-metadata-schema'
-import { dereferenceModuleMetadataSchemas } from './json-schema-dereference'
+import { dereferenceRuntimeApiMetadataSchemas } from './json-schema-dereference'
 
 /** Json Schema Object 的语义模型。 */
 type JsonSchemaObject = Readonly<Record<string, unknown>>
 
-/** Resolve Module Metadata Json Options 的调用配置。 */
-export type ResolveModuleMetadataJsonOptions = Readonly<{
+/** Resolve Runtime API Metadata Json Options 的调用配置。 */
+export type ResolveRuntimeApiMetadataJsonOptions = Readonly<{
   schemaDefs?: Readonly<Record<string, JsonSchemaObject>>
   /** @default false — true 时在注册前 inline #/$defs/*；false 时留给 AJV 2020 解析。 */
   inlineSchemaRefs?: boolean
@@ -34,15 +34,15 @@ type CompactResultApiRef = Readonly<{
   api?: never
 }>
 
-export function resolveModuleMetadataJson(
-  module: AiModuleMetadataJson,
-  options: ResolveModuleMetadataJsonOptions = {},
-): AiModuleMetadataJson {
-  const withSchemas: AiModuleMetadataJson =
+export function resolveRuntimeApiMetadataJson(
+  module: AiRuntimeApiMetadataJson,
+  options: ResolveRuntimeApiMetadataJsonOptions = {},
+): AiRuntimeApiMetadataJson {
+  const withSchemas: AiRuntimeApiMetadataJson =
     options.inlineSchemaRefs === true
       && options.schemaDefs !== undefined
       && Object.keys(options.schemaDefs).length > 0
-      ? dereferenceModuleMetadataSchemas(module, options.schemaDefs)
+      ? dereferenceRuntimeApiMetadataSchemas(module, options.schemaDefs)
       : module
 
   if (withSchemas.schemaVersion !== 2 || withSchemas.apiRegistry === undefined) {

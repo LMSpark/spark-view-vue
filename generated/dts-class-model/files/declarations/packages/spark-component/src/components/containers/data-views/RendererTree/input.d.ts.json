@@ -112,7 +112,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.575Z",
+  "generatedAt": "2026-06-11T22:53:14.082Z",
   "$defs": {
     "RendererTreeInputProps": {
       "type": "object",

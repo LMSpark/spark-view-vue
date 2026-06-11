@@ -1,6 +1,6 @@
 # Native Runtime 与全新 AI 流程
 
-> 状态：有效（2026-06）。本文从 `packages/spark-ai/src/agent/native-runtime` 出发，说明旧 `src/modules` 删除后的 ClassModel 流程。
+> 状态：有效（2026-06）。本文从 `packages/spark-ai/src/agent/native-runtime` 出发，说明 DTS ClassModel 驱动的执行流程。
 
 ## 一句话
 
@@ -16,7 +16,7 @@ DTS ClassModel runtime
   -> 业务实例
 ```
 
-旧 path/direct-call runtime 不参与，也没有兼容层。
+执行只通过 ClassModel 工具闭集进入 native-runtime。
 
 ## 关键文件
 
@@ -34,7 +34,7 @@ DTS ClassModel runtime
 ```text
 page-design-business.ts
   -> ClassModelAgentAdapter.register()
-     -> resolveModuleMetadataJson()
+     -> resolveRuntimeApiMetadataJson()
      -> createClassModelDocumentFromRuntimeDocument()
      -> new ClassModelRuntime({ document, knowledge, scriptExecutor })
      -> host.register(AiAgentRegistration)
@@ -74,7 +74,7 @@ LLM request
 | `human_question` | `context`, `reason`, `missingFacts?`, `candidateOptions?` |
 | `agent_complete` | `summary` |
 
-所有工具都运行时拒绝未知参数。旧别名不会被接受。
+所有工具都运行时拒绝未知参数。额外别名不会被接受。
 
 ## native-script-context
 
@@ -117,16 +117,14 @@ ClassModelRuntime.executeTool('model_script')
 
 失败会返回 `AiAgentToolResult.fail(...)`，recovery hint 只提示 `model_action_guide` / `model_script` 修正方式。
 
-## 不兼容删除点
+## 当前边界
 
-- 删除 `packages/spark-ai/src/modules`。
-- 删除 package export `./modules`。
-- 删除 Vite/Vitest/tsconfig 的 modules alias。
-- 删除 `AiModuleAdapter`、`AiModuleRuntime`、`AiModuleResult` 公共导出。
-- 删除旧工具名映射。
-- 删除 direct-call path 协议。
+- 只暴露 `@spark-appworks/spark-ai/json`、`/class-model`、`/agent` 这些当前入口。
+- 工具名固定为 ClassModel 7 工具闭集。
+- `model_script` 参数只接受 `{ script }`。
+- script 通过 native object chain 执行，不开放路径字符串调用协议。
 
-旧工具名或旧参数进入新 runtime 时会 fail-fast，不做 silent fallback。
+未知工具名或未知参数进入 runtime 时会 fail-fast，不做 silent fallback。
 
 ## pageDesign 端到端
 
@@ -151,7 +149,7 @@ DevSystem
 |------|------|
 | LLM 传 `methodName` | 改用 `model_action_guide({ kind, actionName })` |
 | LLM 传 `code` | 改用 `model_script({ script })` |
-| LLM 传 `path` | 说明仍在旧 direct-call 思维，重新查 `model_class_guide` |
+| LLM 传 `path` | `model_script` 只接受 `{ script }`，重新查 `model_class_guide` |
 | action 参数不对 | 先读 `model_action_guide`，按签名重写脚本 |
 | pageDesign 被门禁拒绝 | 检查 planningStatus / implGate / upstreamContractsSatisfied |
 

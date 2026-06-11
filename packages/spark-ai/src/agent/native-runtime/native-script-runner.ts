@@ -12,9 +12,9 @@ import type {
 import type { AiAgentRuntimeHostContext } from '../tool-runtime'
 import { AiAgentToolResult } from '../tool-runtime'
 import {
-  resolveModuleMetadataJson,
+  resolveRuntimeApiMetadataJson,
   validateApiObjectMetadata,
-  type AiModuleMetadataJson,
+  type AiRuntimeApiMetadataJson,
 } from '../../class-model'
 import { executeModuleScript } from './native-script-sandbox'
 import { createAiApiScriptContext } from './native-script-context'
@@ -25,7 +25,7 @@ export type AiNativeRuntimeSchemaDefs = Readonly<Record<string, AiJsonSchema>>
 /** Ai Native Script Context Command 的命令参数。 */
 export type AiNativeScriptContextCommand<TInstance = unknown> = Readonly<{
   instance: TInstance
-  metadata: AiModuleMetadataJson
+  metadata: AiRuntimeApiMetadataJson
   host?: AiAgentRuntimeHostContext
   schemaDefs?: AiNativeRuntimeSchemaDefs
 }>
@@ -39,7 +39,7 @@ export type AiNativeScriptRunCommand<TInstance = unknown> =
 export function createAiNativeScriptContext(
   command: AiNativeScriptContextCommand,
 ): Readonly<Record<string, unknown>> {
-  const metadata = resolveModuleMetadataJson(command.metadata)
+  const metadata = resolveRuntimeApiMetadataJson(command.metadata)
   validateApiObjectMetadata(metadata.rootApi)
   return createAiApiScriptContext({
     instance: command.instance,

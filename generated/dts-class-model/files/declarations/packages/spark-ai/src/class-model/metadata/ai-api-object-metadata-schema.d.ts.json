@@ -20,7 +20,7 @@
       "AiApiAttributeMetadata",
       "AiApiActionMetadata",
       "AiApiResultApiRef",
-      "AiModuleMetadataJson"
+      "AiRuntimeApiMetadataJson"
     ]
   },
   "symbols": [
@@ -34,7 +34,7 @@
     "AiApiAttributeMetadata",
     "AiApiActionMetadata",
     "AiApiResultApiRef",
-    "AiModuleMetadataJson"
+    "AiRuntimeApiMetadataJson"
   ],
   "models": {
     "AiApiActionFailureMode": {
@@ -189,11 +189,11 @@
       "className": "AiApiAttributeMetadata",
       "jsdoc": "API 属性元数据。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    name: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    /** 子 module kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */\n    api?: AiApiObjectMetadata;\n}>",
+      "declarationTypeText": "Readonly<{\n    name: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    /** 子 API kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */\n    api?: AiApiObjectMetadata;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    name: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    /** 子 module kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */\n    api?: AiApiObjectMetadata;\n}>",
+          "typeText": "Readonly<{\n    name: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    /** 子 API kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */\n    api?: AiApiObjectMetadata;\n}>",
           "targetName": "Readonly"
         }
       ],
@@ -211,11 +211,11 @@
       "className": "AiApiActionMetadata",
       "jsdoc": "API action 元数据。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    name: string;\n    methodName: string;\n    signatureText?: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    paramsSchema: AiJsonSchemaObject;\n    /** 构建期 TS 反射参数列表；callback 方法签名真源，不单独投影 callback kind 边。 */\n    paramsTypeText?: string;\n    takesContext?: boolean;\n    resultSchema?: AiJsonSchema;\n    /** 构建期 TS 反射返回类型；void/primitive 不依赖 resultSchema。 */\n    returnTypeText?: string;\n    resultApis?: readonly AiApiResultApiRef[];\n    usageRules?: readonly string[];\n    requiredBeforeCall?: readonly string[];\n    failureModes?: readonly AiApiActionFailureMode[];\n    /** 旧版单参数示例；新代码优先 examples。 */\n    example?: AiJsonValue;\n    examples?: readonly AiApiActionExample[];\n    antiExamples?: readonly AiApiActionAntiExample[];\n}>",
+      "declarationTypeText": "Readonly<{\n    name: string;\n    methodName: string;\n    signatureText?: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    paramsSchema: AiJsonSchemaObject;\n    takesContext?: boolean;\n    resultSchema?: AiJsonSchema;\n    resultApis?: readonly AiApiResultApiRef[];\n    usageRules?: readonly string[];\n    requiredBeforeCall?: readonly string[];\n    failureModes?: readonly AiApiActionFailureMode[];\n    /** 单参数示例；多示例场景优先 examples。 */\n    example?: AiJsonValue;\n    examples?: readonly AiApiActionExample[];\n    antiExamples?: readonly AiApiActionAntiExample[];\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    name: string;\n    methodName: string;\n    signatureText?: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    paramsSchema: AiJsonSchemaObject;\n    /** 构建期 TS 反射参数列表；callback 方法签名真源，不单独投影 callback kind 边。 */\n    paramsTypeText?: string;\n    takesContext?: boolean;\n    resultSchema?: AiJsonSchema;\n    /** 构建期 TS 反射返回类型；void/primitive 不依赖 resultSchema。 */\n    returnTypeText?: string;\n    resultApis?: readonly AiApiResultApiRef[];\n    usageRules?: readonly string[];\n    requiredBeforeCall?: readonly string[];\n    failureModes?: readonly AiApiActionFailureMode[];\n    /** 旧版单参数示例；新代码优先 examples。 */\n    example?: AiJsonValue;\n    examples?: readonly AiApiActionExample[];\n    antiExamples?: readonly AiApiActionAntiExample[];\n}>",
+          "typeText": "Readonly<{\n    name: string;\n    methodName: string;\n    signatureText?: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    paramsSchema: AiJsonSchemaObject;\n    takesContext?: boolean;\n    resultSchema?: AiJsonSchema;\n    resultApis?: readonly AiApiResultApiRef[];\n    usageRules?: readonly string[];\n    requiredBeforeCall?: readonly string[];\n    failureModes?: readonly AiApiActionFailureMode[];\n    /** 单参数示例；多示例场景优先 examples。 */\n    example?: AiJsonValue;\n    examples?: readonly AiApiActionExample[];\n    antiExamples?: readonly AiApiActionAntiExample[];\n}>",
           "targetName": "Readonly"
         }
       ],
@@ -233,27 +233,27 @@
       "className": "AiApiResultApiRef",
       "jsdoc": "action 返回值中的 API-bearing 对象引用（runtime 紧凑格式用 $ref，解析后为 api）。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */\n    resultPath: readonly string[];\n    api?: AiApiObjectMetadata;\n    /** 紧凑 runtime JSON：指向 apiRegistry 中的 module kind。 */\n    $ref?: string;\n}>",
+      "declarationTypeText": "Readonly<{\n    /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */\n    resultPath: readonly string[];\n    api?: AiApiObjectMetadata;\n    /** 紧凑 runtime JSON：指向 apiRegistry 中的 API kind。 */\n    $ref?: string;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */\n    resultPath: readonly string[];\n    api?: AiApiObjectMetadata;\n    /** 紧凑 runtime JSON：指向 apiRegistry 中的 module kind。 */\n    $ref?: string;\n}>",
+          "typeText": "Readonly<{\n    /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */\n    resultPath: readonly string[];\n    api?: AiApiObjectMetadata;\n    /** 紧凑 runtime JSON：指向 apiRegistry 中的 API kind。 */\n    $ref?: string;\n}>",
           "targetName": "Readonly"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
-        "line": 102,
+        "line": 98,
         "className": "AiApiResultApiRef",
         "declarationKind": "type"
       },
       "attributes": [],
       "methods": []
     },
-    "AiModuleMetadataJson": {
-      "kind": "AiModuleMetadataJson",
-      "className": "AiModuleMetadataJson",
-      "jsdoc": "完整业务模块元数据。",
+    "AiRuntimeApiMetadataJson": {
+      "kind": "AiRuntimeApiMetadataJson",
+      "className": "AiRuntimeApiMetadataJson",
+      "jsdoc": "运行时 API 元数据：由 DTS ClassModel 或显式注册入口投影出脚本可执行的 API surface。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    schemaVersion: 1 | 2;\n    rootApi: AiApiObjectMetadata;\n    /** schemaVersion=2 时：按 kind 去重后的 action 返回 API 注册表。 */\n    apiRegistry?: Readonly<Record<string, AiApiObjectMetadata>>;\n}>",
       "declarationRelations": [
@@ -265,15 +265,15 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
-        "line": 110,
-        "className": "AiModuleMetadataJson",
+        "line": 106,
+        "className": "AiRuntimeApiMetadataJson",
         "declarationKind": "type"
       },
       "attributes": [],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.515Z",
+  "generatedAt": "2026-06-11T22:53:13.987Z",
   "$defs": {
     "AiApiActionFailureMode": {
       "type": "object",
@@ -325,10 +325,10 @@
       "title": "AiApiResultApiRef",
       "description": "action 返回值中的 API-bearing 对象引用（runtime 紧凑格式用 $ref，解析后为 api）。"
     },
-    "AiModuleMetadataJson": {
+    "AiRuntimeApiMetadataJson": {
       "type": "object",
-      "title": "AiModuleMetadataJson",
-      "description": "完整业务模块元数据。"
+      "title": "AiRuntimeApiMetadataJson",
+      "description": "运行时 API 元数据：由 DTS ClassModel 或显式注册入口投影出脚本可执行的 API surface。"
     }
   }
 }

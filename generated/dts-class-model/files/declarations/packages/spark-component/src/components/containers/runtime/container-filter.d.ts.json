@@ -234,7 +234,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.619Z",
+  "generatedAt": "2026-06-11T22:53:14.179Z",
   "$defs": {
     "ErrorLoggerLike": {
       "type": "object",

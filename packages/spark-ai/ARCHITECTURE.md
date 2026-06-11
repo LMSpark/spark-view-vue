@@ -12,7 +12,7 @@ spark-ai 的 AI 知识面只来自 TypeScript 声明：
   -> Web Worker 按 className 加载对应 JSON
 ```
 
-没有旧 registry、没有额外 catalog、没有约定标签。`.d.ts` 是编译期知识边界，运行时实例是执行边界。
+没有额外 registry、没有额外 catalog、没有约定标签。`.d.ts` 是编译期知识边界，运行时实例是执行边界。
 
 ## 运行时
 
@@ -36,7 +36,7 @@ spark-ai 的 AI 知识面只来自 TypeScript 声明：
 | `human_question` | `context`, `reason`, `missingFacts?`, `candidateOptions?` |
 | `agent_complete` | `summary` |
 
-未知工具名和多余参数都 fail-fast，不做旧协议别名映射。
+未知工具名和多余参数都 fail-fast，不做额外别名映射。
 
 ## 生成命令
 

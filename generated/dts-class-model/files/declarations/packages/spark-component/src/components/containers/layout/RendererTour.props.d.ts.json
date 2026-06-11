@@ -239,7 +239,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.616Z",
+  "generatedAt": "2026-06-11T22:53:14.173Z",
   "$defs": {
     "TourStep": {
       "type": "object",

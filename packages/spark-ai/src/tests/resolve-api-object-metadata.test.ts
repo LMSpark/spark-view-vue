@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { resolveModuleMetadataJson, type AiModuleMetadataJson } from '../class-model'
+import { resolveRuntimeApiMetadataJson, type AiRuntimeApiMetadataJson } from '../class-model'
 
-describe('resolveModuleMetadataJson', () => {
+describe('resolveRuntimeApiMetadataJson', () => {
   it('expands apiRegistry $ref into inline resultApis for adapter consumption', () => {
-    const childApi: AiModuleMetadataJson['rootApi'] = {
+    const childApi: AiRuntimeApiMetadataJson['rootApi'] = {
       kind: 'child-api',
       name: 'Child',
       description: 'Child API',
@@ -18,7 +18,7 @@ describe('resolveModuleMetadataJson', () => {
       ],
     }
 
-    const resolved = resolveModuleMetadataJson({
+    const resolved = resolveRuntimeApiMetadataJson({
       schemaVersion: 2,
       rootApi: {
         kind: 'root-api',

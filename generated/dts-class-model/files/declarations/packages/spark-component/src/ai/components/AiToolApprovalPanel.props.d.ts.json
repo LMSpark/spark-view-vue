@@ -41,7 +41,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.558Z",
+  "generatedAt": "2026-06-11T22:53:14.041Z",
   "$defs": {
     "AiToolApprovalPanelProps": {
       "type": "object",

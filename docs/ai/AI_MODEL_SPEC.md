@@ -2,7 +2,7 @@
 
 > AI 要读写的 **business class** 长什么样。目录、命名、导出见 `docs/ai/ai-code-generation-behavior.md`。
 >
-> **无旧 registry、无自定义标签、无 metadata 第二真源。** 模型 class 与其 `.d.ts` 声明就是 AI 知识真源。
+> **无额外 registry、无自定义标签、无 metadata 第二真源。** 模型 class 与其 `.d.ts` 声明就是 AI 知识真源。
 
 ---
 
@@ -87,7 +87,7 @@ UI          →  subscribe，读字段 / 调 API
 | **懂结构** | 同上 class 的 TS 声明 + JSDoc（直接读源码语义） |
 | **工具侧重静态索引** | `.d.ts` → `generated/dts-class-model/` → 按 **className 按需** `resolveDtsClassModel` |
 
-**没有** 旧 registry、没有约定标签、没有 metadata 第二真源、没有额外 catalog。
+**没有** 额外 registry、没有约定标签、没有 metadata 第二真源、没有额外 catalog。
 
 ### 知识有界
 
@@ -97,7 +97,7 @@ UI          →  subscribe，读字段 / 调 API
 | 实例 **已引用** 的子 model class（根 → 行 → 页配置） | 仓库里所有 export class |
 | 各 class **短 JSDoc**（流程、约束） | 规范全文、SOP 副本 |
 
-边界靠 **模型结构设计**：class 少、public 字段少、API 少——三层例子即标准。旧 `ProjectModel` + projection 会把知识撑爆。
+边界靠 **模型结构设计**：class 少、public 字段少、API 少——三层例子即标准。过大的 `ProjectModel` + projection 会把知识撑爆。
 
 ---
 
@@ -134,4 +134,3 @@ SparkNodeTree toJson/fromJson，文件持久化在模型外
 - 代码组织与命名：`docs/ai/ai-code-generation-behavior.md`
 - dts-class-model 投影（工具索引，非设计中心）：`packages/spark-ai/src/class-model/class-model/project-from-declarations.ts`
 - 协议基类：`packages/spark-utils/src/ai-model.ts`
-

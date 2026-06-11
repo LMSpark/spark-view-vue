@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-bundle-types.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/class-model/dts-bundle-types",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-types\n职责：定义 DTS ClassModel bundle、per-file projection、module semantic metadata、duplicate record 和 semantic gap report 的持久化协议。\n边界：只维护 JSON 结构契约，不读取文件系统、不执行 TypeScript 投影，也不渲染知识提示词。\nAI用途：修改 generated/dts-class-model 协议或消费 manifest/shard 时，用本模块确认字段含义和兼容边界。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-types\n职责：定义 DTS ClassModel bundle、per-file projection、module semantic metadata、duplicate record 和 semantic gap report 的持久化协议。\n边界：只维护 JSON 结构契约，不读取文件系统、不执行 TypeScript 投影，也不渲染知识提示词。\nAI用途：修改 generated/dts-class-model 协议或消费 manifest/shard 时，用本模块确认字段含义和协议边界。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "DtsFileProjectionDocument",
@@ -302,7 +302,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.503Z",
+  "generatedAt": "2026-06-11T22:53:13.967Z",
   "$defs": {
     "DtsFileProjectionDocument": {
       "type": "object",

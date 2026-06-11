@@ -80,7 +80,7 @@ export type AiApiAttributeMetadata = Readonly<{
   schema: AiJsonSchema
   readable: boolean
   writable: boolean
-  /** 子 module kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */
+  /** 子 API kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */
   api?: AiApiObjectMetadata
 }>
 
@@ -93,17 +93,13 @@ export type AiApiActionMetadata = Readonly<{
   jsdoc?: AiApiJsDocMetadata
   provenance?: AiApiSourceProvenanceMetadata
   paramsSchema: AiJsonSchemaObject
-  /** 构建期 TS 反射参数列表；callback 方法签名真源，不单独投影 callback kind 边。 */
-  paramsTypeText?: string
   takesContext?: boolean
   resultSchema?: AiJsonSchema
-  /** 构建期 TS 反射返回类型；void/primitive 不依赖 resultSchema。 */
-  returnTypeText?: string
   resultApis?: readonly AiApiResultApiRef[]
   usageRules?: readonly string[]
   requiredBeforeCall?: readonly string[]
   failureModes?: readonly AiApiActionFailureMode[]
-  /** 旧版单参数示例；新代码优先 examples。 */
+  /** 单参数示例；多示例场景优先 examples。 */
   example?: AiJsonValue
   examples?: readonly AiApiActionExample[]
   antiExamples?: readonly AiApiActionAntiExample[]
@@ -114,12 +110,12 @@ export type AiApiResultApiRef = Readonly<{
   /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */
   resultPath: readonly string[]
   api?: AiApiObjectMetadata
-  /** 紧凑 runtime JSON：指向 apiRegistry 中的 module kind。 */
+  /** 紧凑 runtime JSON：指向 apiRegistry 中的 API kind。 */
   $ref?: string
 }>
 
-/** 完整业务模块元数据。 */
-export type AiModuleMetadataJson = Readonly<{
+/** 运行时 API 元数据：由 DTS ClassModel 或显式注册入口投影出脚本可执行的 API surface。 */
+export type AiRuntimeApiMetadataJson = Readonly<{
   schemaVersion: 1 | 2
   rootApi: AiApiObjectMetadata
   /** schemaVersion=2 时：按 kind 去重后的 action 返回 API 注册表。 */

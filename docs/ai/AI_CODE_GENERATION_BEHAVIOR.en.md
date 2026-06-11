@@ -4,14 +4,14 @@
 
 ## 0. Governance Priority
 
-AI code generation rules are production-line quality gates, ranked after philosophy and logic, before compatibility. In case of conflict:
+AI code generation rules are production-line quality gates, ranked after philosophy and logic, before migration convenience. In case of conflict:
 
-`Philosophy > Logic > AI Code Generation Rules > SSOT || SOLID > Delete || Merge || Split > Compatibility`
+`Philosophy > Logic > AI Code Generation Rules > SSOT || SOLID > Delete || Merge || Split > Migration Convenience`
 
 - Business philosophy and closed-loop production lines take precedence over formal rules. If rules harm philosophy or logic, fix the rules.
-- AI code generation rules take precedence over legacy public surfaces and compatibility layers. Flattened exports, old protocols, and old paths kept for compatibility should be narrowed.
+- AI code generation rules take precedence over outdated public surfaces and migration layers. Flattened exports, outdated protocols, and outdated paths should be narrowed.
 - SSOT and SOLID serve business logic — do not use them as mechanical slogans.
-- When you find real duplication, wrong boundaries, or outdated compatibility layers: delete what should be deleted, merge what should be merged, split what should be split. Compatibility comes last; only keep migration paths with clear business value.
+- When you find real duplication, wrong boundaries, or outdated migration layers: delete what should be deleted, merge what should be merged, split what should be split. Migration convenience comes last; only keep migration paths with clear business value.
 
 ## 1. Code Organization Hierarchy
 
@@ -261,7 +261,7 @@ When adding or renaming a class, answer these questions in order:
 #### Class File Organization Rules
 
 - When a directory exceeds **7 class files**, it MUST be split into subdirectories by domain.
-- Classes sharing a clear prefix (e.g., `XxxDelegate`, `XxxAiModule`, `XxxModel`) MUST be placed in a subdirectory named after that prefix.
+- Classes sharing a clear prefix (e.g., `XxxDelegate`, `XxxAgent`, `XxxModel`) MUST be placed in a subdirectory named after that prefix.
 - One class per file, but related classes MUST co-reside in the same subdirectory, not be scattered across different directories.
 
 #### Anti-Pattern: Class Flat-Land
@@ -570,8 +570,8 @@ export function objectSchema(
 - `pnpm run verify:rules` MUST pass.
 - Forbidden: non-allowlist `interface` proliferation, `Interface/Impl` mechanical naming, TypeScript `namespace`.
 - Forbidden: non-`as const` type assertions and angle-bracket type assertions.
-- Forbidden: legacy `@spark-appworks/spark-ai/core`, `/protocol`, `/runtime`, `/adapter` subpaths.
-- Forbidden: legacy `ModuleKind.PathContext`, `ModuleKind.OperationResult` namespace types.
+- Forbidden: removed `@spark-appworks/spark-ai/core`, `/protocol`, `/runtime`, `/adapter` subpaths.
+- Forbidden: removed `ModuleKind.PathContext`, `ModuleKind.OperationResult` namespace types.
 - Framework-agnostic packages MUST NOT import Vue, Vue Router, Element Plus, VueUse, or Pinia.
 - Cross-package relative imports that bypass `@spark-appworks/*` are FORBIDDEN between workspace packages.
 - **Single-directory file limit**: A single directory MUST NOT exceed 10 `.ts`/`.vue` files (excluding `index.ts`); beyond that, split into subdirectories.

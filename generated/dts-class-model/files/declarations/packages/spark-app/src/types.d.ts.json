@@ -736,7 +736,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.557Z",
+  "generatedAt": "2026-06-11T22:53:14.031Z",
   "$defs": {
     "AppEnvironment": {
       "type": "object",

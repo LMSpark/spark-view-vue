@@ -1,6 +1,6 @@
 # native-runtime
 
-DTS ClassModel / 兼容 metadata → 可执行脚本 API 的运行时层。
+DTS ClassModel / Runtime API metadata → 可执行脚本 API 的运行时层。
 
 ## 职责
 
@@ -12,8 +12,8 @@ DTS ClassModel / 兼容 metadata → 可执行脚本 API 的运行时层。
 | API | 调用方 |
 |-----|--------|
 | `createAiApiScriptContext` | `ClassModelAgentAdapter`（`model_script` 的 `this`）、单测 |
-| `executeAiNativeScript` | metadata-first 直跑、单测 |
-| `executeModuleScript` | 已移除；`model_script` 直接走 `native-script-sandbox.ts` |
+| `executeAiNativeScript` | Runtime API metadata 执行入口、单测 |
+| `executeModuleScript` | native sandbox 内部执行器 |
 
 ## 文档
 

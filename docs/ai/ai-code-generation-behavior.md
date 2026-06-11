@@ -4,14 +4,14 @@
 
 ## 0. 治理优先级
 
-AI 代码生成规则是生产线质量门，排在理念和逻辑之后、兼容之前。遇到冲突时按以下顺序裁决：
+AI 代码生成规则是生产线质量门，排在理念和逻辑之后、迁移便利之前。遇到冲突时按以下顺序裁决：
 
-`理念 > 逻辑 > AI 生成代码规则 > SSOT || SOLID > 该删则删 || 该合则合 || 该拆则拆 > 兼容`
+`理念 > 逻辑 > AI 生成代码规则 > SSOT || SOLID > 该删则删 || 该合则合 || 该拆则拆 > 迁移便利`
 
 - 理念和业务生产线闭环优先于形式规则；规则如果误伤理念或逻辑，应修正规则。
-- AI 生成代码规则优先于旧公共面和旧兼容层；为了兼容而保留的扁平导出、旧协议和旧路径，该收窄就收窄。
+- AI 生成代码规则优先于过期公共面和迁移层；扁平导出、过期协议和过期路径，该收窄就收窄。
 - SSOT 和 SOLID 服务于业务逻辑，不用作机械口号。
-- 发现真实重复、错误边界或过时兼容层时，该删则删、该合则合、该拆则拆；兼容排最后，只保留有明确业务价值的迁移路径。
+- 发现真实重复、错误边界或过时迁移层时，该删则删、该合则合、该拆则拆；迁移便利排最后，只保留有明确业务价值的迁移路径。
 
 ## 1. 代码组织层次
 
@@ -260,7 +260,7 @@ export class OrderService {
 #### class 文件组织规则
 
 - 同一目录下 class 文件超过 **7 个** 时，必须按领域拆分子目录。
-- 共享明确前缀的 class（如 `XxxDelegate`、`XxxAiModule`、`XxxModel`）必须放入以该前缀命名的子目录。
+- 共享明确前缀的 class（如 `XxxDelegate`、`XxxAgent`、`XxxModel`）必须放入以该前缀命名的子目录。
 - 一个 class 一个文件，但相关的 class 应共处于同一个子目录，不是散落在不同目录。
 
 #### 反例：class 大平层
@@ -569,8 +569,8 @@ export function objectSchema(
 - `pnpm run verify:rules` 必须通过。
 - 禁止非 allowlist `interface`、`Interface/Impl` 机械命名、TypeScript `namespace`。
 - 禁止非 `as const` 类型断言和尖括号类型断言。
-- 禁止旧 `@spark-appworks/spark-ai/core`、`/protocol`、`/runtime`、`/adapter` 等 subpath。
-- 禁止旧 `ModuleKind.PathContext`、`ModuleKind.OperationResult` 等 namespace 类型。
+- 禁止已移除的 `@spark-appworks/spark-ai/core`、`/protocol`、`/runtime`、`/adapter` 等 subpath。
+- 禁止已移除的 `ModuleKind.PathContext`、`ModuleKind.OperationResult` 等 namespace 类型。
 - 框架无关包禁止导入 Vue、Vue Router、Element Plus、VueUse 或 Pinia。
 - workspace 包之间禁止绕过 `@spark-appworks/*` 的跨包相对导入。
 - **单目录文件数**：单个目录下 `.ts`/`.vue` 文件不得超过 10 个（不含 `index.ts`）；超过必须拆子目录。

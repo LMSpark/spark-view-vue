@@ -53,7 +53,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T21:36:01.725Z",
+  "generatedAt": "2026-06-11T22:53:14.322Z",
   "$defs": {
     "UsePermissionReturn": {
       "type": "object",

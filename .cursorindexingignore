@@ -17,5 +17,4 @@ temp-*.txt
 temp-*.cjs
 temp-*.mts
 
-src/services/page-design/page-design-module-metadata.runtime.generated.json
 packages/vxe-table/helper/vetur/*.json
