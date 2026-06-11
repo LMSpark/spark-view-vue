@@ -62,18 +62,18 @@ pnpm run dev
 
 ```
 packages/
-├── spark-ai/                    # 🤖 AI 运行时（Function Calling 会话、组件知识目录、页面编辑工具）
+├── spark-ai/                    # 🤖 AI 运行时（Function Calling 会话、DTS ClassModel 知识、页面编辑工具）
 ├── spark-app/                   # 🏗️ 应用层基础设施（路由、认证、配置、插件系统）
 ├── spark-component/             # ⚙️ 组件核心系统（注册表、能力管理、上下文、页面渲染器）
 ├── spark-data/                  # 📊 数据空间（DataSet、DataView、TreeManager、关系与聚合）
 ├── spark-project-model/           # 📄 软件项目模型（ProjectModel、项目节点、配置页内容子模型）
 ├── spark-utils/                 # 🛠️ 共享工具（Logger、HTTP、能力键、基础类型）
-├── vite-plugin-spark-catalog/   # VCM native metadata 生成（VcmNativeAgentAdapter 消费）
+├── vite-plugin-spark-catalog/   # 组件扫描配置与命名工具
 └── vxe-table/                   # 📋 表格插件工作区（VXE Table 集成与适配）
 ```
 
 - 运行时主线：`spark-app` + `spark-component` + `spark-data` + `spark-project-model`
-- AI 主线：`spark-ai` + `vite-plugin-spark-catalog` + `spark-ai-server`
+- AI 主线：`spark-ai` + `generated/dts-class-model` + `spark-ai-server`
 - 公共基础：`spark-utils`
 - 目录索引： [packages/README.md](packages/README.md) 、 [scripts/README.md](scripts/README.md) 、 [tools/README.md](tools/README.md)
 

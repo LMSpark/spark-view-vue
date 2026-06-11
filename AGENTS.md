@@ -37,8 +37,8 @@ packages/
 ├── spark-project-model/  # 页面配置解析、脚本上下文、配置加载
 ├── spark-component/    # Vue 渲染器、组件注册表、能力接线
 ├── spark-app/          # 应用壳、路由、认证、插件、启动引导
-├── spark-ai/           # VCM-native AI 运行时：7 工具闭集、Host/ToolLoop、SSE 传输（见 packages/spark-ai/ARCHITECTURE.md）
-├── vite-plugin-spark-catalog/ # VCM module metadata 生成
+├── spark-ai/           # ClassModel AI 运行时：7 工具闭集、Host/ToolLoop、SSE 传输（见 packages/spark-ai/ARCHITECTURE.md）
+├── vite-plugin-spark-catalog/ # 组件扫描配置与命名工具
 └── vxe-table/          # VXE Table 集成
 spark-ai-server/        # Spring Boot 后端（Java）— 非 Java 任务跳过
 src/                    # 应用入口、视图、启动引导
@@ -81,7 +81,7 @@ Codex 生成或修改代码时，必须遵守 `docs/ai/ai-code-generation-behavi
 - 函数/方法签名必须短：默认最多 3 个位置参数；4 个及以上改成具名 options/command 对象。
 - 参数类型不要内联大对象或深层泛型；提取具名 type/class，让签名读起来像业务动作而不是类型展览。
 - 参数列表里不要写 JSDoc；说明放到 options type、class 字段或函数上方。
-- 注释只解释契约、约束、优先级和风险；VCM/LLM 可见语义必须在首次声明处用自然语言夹注释 + 结构化 tag 标注。
+- 注释只解释契约、约束、优先级和风险；LLM 可见语义必须在首次声明处用自然语言写清楚。
 
 ## DataViewKey 绑定格式
 
@@ -99,7 +99,7 @@ Codex 生成或修改代码时，必须遵守 `docs/ai/ai-code-generation-behavi
 ## 大文件 — 不要直接修改
 
 这些目录文件很大，不应直接编辑：
-- `generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json`
+- `generated/dts-class-model/files/**`
 
 ## Commit Message 格式
 

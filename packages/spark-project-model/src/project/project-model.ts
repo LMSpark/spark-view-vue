@@ -55,10 +55,6 @@ export type {
 /**
  * 项目模型根。
  *
- * @moduleAbility pageDesign.project
- * @moduleKind project
- * @vcmSession 编排会话；无整包 toJson；跨页经显式 project action。
- * @moduleActionMode explicit
  */
 export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   readonly design: ProjectDesign<TNode>
@@ -101,7 +97,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
 
   /** 导航树根 DTO，含子节点树与布局元数据。
    *
-   * @vcmIgnore 承载轴过大；策划用 readPlanningProjection，结构化导航用 readNavigationProjection。
    */
   get navigationRoot(): ProjectModelData { return this.design.navigationRoot }
   get navigationDraft(): NavigationNodeDraft | null { return this.session.navigationDraft }
@@ -122,7 +117,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 当前活动配置页；需先 openPageDesign(pageId) 才有值。
    *
-   * @usageRule 页面四文件读写先取 activePage，再访问 nodeTree / dataSetTool。
    */
   get activePage(): ConfigPageNode | null {
     return this.getActivePage()
@@ -134,9 +128,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 替换导航根节点的 children，返回更新后的导航根数据。
    *
-   * @moduleMutation navigation write 修改内存导航 children；是否持久化由外层工作区提交流程决定。
-   * @usageRule 只替换导航树结构与节点概要，不读取或写入配置页四文件。
-   * @failureMode INVALID_TOOL_ARGS children 结构错误 => 先读 replaceNavigationChildren 的 paramsSchema.children，再按数组组织导航节点
    * @param children 新的导航 children 树；每个节点必须包含稳定 id、title、nodeKind。
    */
   replaceNavigationChildren(children: ProjectNodeData[]): ProjectModelData {
@@ -155,12 +146,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 按 pageId 打开配置页设计上下文，返回 ConfigPageNode 四文件子模型。
    *
-   * @moduleMutation config-page read 进入页面四文件编辑面，不直接落盘。
-   * @requiredBeforeCall 先用 vcm_query / vcm_model_guide 确认 project 能力，并确认 pageId 存在于 readPlanningProjection。
-   * @usageRule 进入 config-page 后再调用 getNodeTree / getDataSetTool / editNodeTree / editDataSet。
-   * @failureMode PAGE_NOT_FOUND pageId 不存在 => 先 readPlanningProjection 确认 pageFeatures，必要时 human_question
-   * @failureMode INVALID_TOOL_ARGS 参数形状错误 => 先读 vcm_action_guide，脚本内使用 this.openPageDesign({ pageId: "<pageId>" }) 或 this.openPageDesign("<pageId>")
-   * @failureMode SCRIPT_EXECUTION_FAILED editDataSet 或 editNodeTree is not a function => 必须先 await this.openPageDesign({ pageId: "<pageId>" }) 得到 page，再调用 page.editDataSet / page.editNodeTree
    * @param pageId 目标配置页 pageId，必须来自输入。
    */
   openPageDesign(pageId: string): ConfigPageNode { return this.design.openPageDesign(pageId) }
@@ -174,14 +159,12 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 策划轴投影别名；与 readPageSummaries 同源。
    *
-   * @moduleMutation planning read 只读策划事实，不修改模型。
    */
   readPlanningProjection(): ProjectPageNodeSummary[] { return this.readPageSummaries() }
 
   /**
    * 读取项目级策划输入：navigation 根 description（短需求）+ 可选策划附件引用。
    *
-   * @moduleMutation planning read 只读策划输入，不修改模型。
    */
   readProjectPlanningInput(): ProjectPlanningInput {
     const navigationRoot = toNavigationRootNodeData(this.navigationRoot)
@@ -200,7 +183,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 读取单个导航节点策划输入。
    *
-   * @moduleMutation planning read 只读节点策划输入，不修改模型。
    * @param nodeId 目标导航节点 id。
    */
   readNavigationNodePlanningInput(nodeId: string): NavigationPlanningInput {
@@ -212,7 +194,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 读取全部导航节点策划输入（扁平遍历顺序）。
    *
-   * @moduleMutation planning read 只读节点策划输入，不修改模型。
    */
   readNavigationPlanningInputs(): readonly NavigationPlanningInput[] {
     return this.flatRows.map(model => toNavigationPlanningInput(model.toNodeData()))
@@ -221,7 +202,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 更新根模块 childPlacement（项目级 header / sidebar 布局）。
    *
-   * @vcmIgnore app-list 项目设置专用，不在 pageDesign AI 面暴露。
    */
   applyProjectLayoutEdit(childPlacement: 'header' | 'sidebar'): NavigationNodeDraftApplyResult {
     const root = this.design.rootNode
@@ -362,7 +342,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 写入指定配置页四文件文本到内存模型。
    *
-   * @moduleMutation page-files write 修改内存四文件；落盘由 ProjectWorkspace 编排。
    * @param command 页面文件写入命令，包含目标 pageId、文件名和新文本。
    */
   writePageFile(command: ProjectPageFileWriteCommand): void {
@@ -374,7 +353,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 读取指定配置页四文件文本。
    *
-   * @moduleMutation page-files read 只读内存中的 rule/pagedata/script/style 文本。
    * @param fileName 四文件名。
    * @param pageId 可选 pageId；省略时使用当前 activePage。
    */
@@ -417,8 +395,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 通过 DataSetCrudTool 修改当前 active 页的 pagedata.json 内存模型。
    *
-   * @vcmIgnore 请先 openPageDesign(pageId)，在 ConfigPageNode 上 editDataSet。
-   * @vcmScriptOnly
    */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
     const page = this.requireActivePageDesign()
@@ -433,8 +409,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 通过 SparkNodeTree 修改当前 active 页的 rule.json 节点树。
    *
-   * @vcmIgnore 请先 openPageDesign(pageId)，在 ConfigPageNode 上 editNodeTree。
-   * @vcmScriptOnly
    */
   async editNodeTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
     const page = this.requireActivePageDesign()
@@ -458,7 +432,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 读取承载轴投影：导航树、选中节点与 pageFeatures。
    *
-   * @vcmIgnore pageDesign 请优先 readPlanningProjection；本 action 供 DevSystem 承载轴 UI。
    */
   readNavigationProjection(): ProjectNavigationProjection {
     const navigationRoot = this.design.navigationRoot
@@ -642,3 +615,4 @@ function toNavigationPlanningInput(node: ProjectNodeData): NavigationPlanningInp
     ...(planningAttachmentRef === undefined ? {} : { planningAttachmentRef }),
   }
 }
+

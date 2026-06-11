@@ -10,9 +10,10 @@
 - [spark-project-model/README.md](spark-project-model/README.md)：页面配置加载、脚本上下文与配置装配。
 - [spark-utils/README.md](spark-utils/README.md)：公共底层工具和能力键。
 
-## VCM module metadata
+## AI 生成物
 
-- [vite-plugin-spark-catalog/README.md](vite-plugin-spark-catalog/README.md)：VCM native metadata 生成（`VcmNativeAgentAdapter` 消费）。
+- [vite-plugin-spark-catalog/README.md](vite-plugin-spark-catalog/README.md)：组件扫描配置与命名工具。
+- `scripts/generate-dts-class-model.mjs`：`.d.ts` → `generated/dts-class-model`。
 
 ## 插件与集成
 

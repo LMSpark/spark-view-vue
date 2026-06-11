@@ -12,7 +12,7 @@ describe('executeModuleScript', () => {
     expect(result.ok).toBe(false)
     if (result.ok) return
     const hint = result.checks?.[0]?.hint ?? ''
-    expect(hint).toContain('vcm_action_guide')
+    expect(hint).toContain('model_action_guide')
     expect(hint).not.toContain('openPageDesign')
     expect(hint).not.toContain('editDataSet')
     expect(hint).not.toContain('editNodeTree')
@@ -24,7 +24,7 @@ describe('executeModuleScript', () => {
       instance: {},
       metadata: {
         schemaVersion: 1,
-        rootApi: { className: 'Demo', kind: 'Demo', name: 'Demo', description: 'demo', actions: [] },
+        rootApi: { kind: 'demo', name: 'Demo', description: 'demo', actions: [] },
       },
       script: '   ',
     })

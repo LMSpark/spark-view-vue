@@ -71,7 +71,7 @@ for (const file of files) {
 }
 
 if (findings.length > 0) {
-  console.error('AI business boundary check failed: HR domain terms leaked into common VCM/Spark AI layers.')
+  console.error('AI business boundary check failed: HR domain terms leaked into common ClassModel/Spark AI layers.')
   for (const finding of findings.slice(0, 40)) {
     console.error(`${finding.file}:${finding.line} [${finding.term}] ${finding.text}`)
   }

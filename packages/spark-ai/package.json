@@ -6,12 +6,12 @@
   "types": "./dist/index.d.ts",
   "private": false,
   "license": "MIT",
-  "description": "Spark AI agent runtime - json schema, VCM-native tools, sessions, tool loop, and transport contracts",
+  "description": "Spark AI agent runtime - json schema, ClassModel tools, sessions, tool loop, and transport contracts",
   "keywords": [
     "spark",
     "ai",
     "agent",
-    "vcm-native",
+    "class-model",
     "tool-calling",
     "json-schema",
     "sse"
@@ -37,9 +37,9 @@
       "types": "./dist/agent/index.d.ts",
       "import": "./dist/agent/index.js"
     },
-    "./vcm-native": {
-      "types": "./dist/vcm-native/index.d.ts",
-      "import": "./dist/vcm-native/index.js"
+    "./class-model": {
+      "types": "./dist/class-model/index.d.ts",
+      "import": "./dist/class-model/index.js"
     }
   },
   "dependencies": {

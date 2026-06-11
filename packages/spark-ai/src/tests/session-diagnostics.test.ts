@@ -40,7 +40,7 @@ function sessionRecord(): AiAgentSessionRecord {
         id: 'f1',
         seq: 2,
         timestamp: 2000,
-        toolName: 'vcm_script',
+        toolName: 'model_script',
         args: { script: 'return this.summarize()' },
         status: 'failed',
         error: { ok: false, code: 'BAD', msg: 'bad args', fix: 'fix args' },
@@ -72,7 +72,7 @@ describe('session diagnostics', () => {
       messageCount: 2,
       toolCallCount: 1,
       failedToolCallCount: 1,
-      functionNames: ['vcm_script'],
+      functionNames: ['model_script'],
       lastAssistantText: '已完成',
     })
   })
@@ -82,7 +82,7 @@ describe('session diagnostics', () => {
 
     expect(transcript).toHaveLength(3)
     expect(transcript[0]).toMatchObject({ direction: 'USER => AGENT', content: expect.stringContaining('...<truncated') })
-    expect(transcript[1]).toMatchObject({ direction: 'AGENT TOOL => LLM', toolName: 'vcm_script' })
+    expect(transcript[1]).toMatchObject({ direction: 'AGENT TOOL => LLM', toolName: 'model_script' })
     expect(transcript[2]).toMatchObject({ direction: 'LLM => AGENT', content: '已完成' })
   })
 })

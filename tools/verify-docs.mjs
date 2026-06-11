@@ -40,7 +40,6 @@ const legacyMarkdownAllowlist = new Set([
   'docs/guides/QUICKSTART.md',
   'docs/guides/SAVE_DATASET_ACTION.md',
   'docs/guides/TREE_CAPABILITY.md',
-  'docs/ai/VCM_NATIVE_CLASS_SPEC.md',
   'packages/spark-project-model/src/MODEL-HIERARCHY.md',
   'packages/spark-project-model/src/STRUCTURE.md',
   'packages/spark-utils/REQUEST_GUIDE.md',

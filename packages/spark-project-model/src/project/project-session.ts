@@ -17,7 +17,6 @@ type ProjectSessionOwner = {
 
 /**
  * ProjectModel 持有的设计过程态：选中、活动页、dirty 与导航草稿（不落盘）。
- * @vcmSession 运行时过程态；不落盘，无独立序列化。
  */
 export class ProjectSession {
   private readonly state: ProjectSessionState = {
@@ -118,3 +117,4 @@ export class ProjectSession {
     }
   }
 }
+

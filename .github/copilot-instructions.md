@@ -45,10 +45,10 @@
   - **Three-question checklist before adding an interface:** Will 2+ classes implement it? Does it have an external consumer? Can related interfaces merge into one contract file? One "no" → don't use interface.
   - **Function signature hard constraints:** Max 3 positional params (constructor param-props max 4); no inline JSDoc in parameter lists; no anonymous inline object types as parameters; use `?` not `| undefined`.
   - **Export convergence:** Module public surface ≤ single-digit symbols; public barrel `export *` is forbidden.
-- **UI 组装强制 SOP**（pageDesign / VCM 模型）：
-  1. 先 `vcm_action_guide({ kind, actionName })` 读取目标 VCM action 契约（如 `node-tree` / `addNode`）。
-  2. 结构改写走 `vcm_script` 原生对象链（`openPageDesign` → `editNodeTree` / `editDataSet`），不要用 `/kind[id]` path 直调。
-  3. SparkNode 的 `type` / `props` 必须来自 VCM schema、示例或已有页面模式，禁止凭空构造 props。
+- **UI 组装强制 SOP**（pageDesign / ClassModel）：
+  1. 先 `model_action_guide({ kind, actionName })` 读取目标 action 契约（如 `node-tree` / `addNode`）。
+  2. 结构改写走 `model_script` 原生对象链（`openPageDesign` → `editNodeTree` / `editDataSet`），不要用 `/kind[id]` path 直调。
+  3. SparkNode 的 `type` / `props` 必须来自 ClassModel 契约、示例或已有页面模式，禁止凭空构造 props。
   4. 脚本 return 四文件结果，落盘由外层 `ProjectWorkspace` 处理。
 - 配置优先：优先使用 `rule.json`、`pagedata.json`、view metadata 和现有渲染器能力。只有配置无法表达行为时才使用 `script.js`。
 - DataSet 管线单向： `pagedata.json` -> `parsePageData()` -> `DataSet` -> `usePageDataSet()` -> `PAGE_DATASET` -> `dataViewKey + dataMember + dataField` -> `DataView` -> UI. 不要重新引入渲染器侧 raw JSON 归一化、`pageData` 或 `$data` 旁路。
@@ -92,7 +92,7 @@
 - [docs/architecture/PERMISSION_SYSTEM.md](../docs/architecture/PERMISSION_SYSTEM.md) — 权限模型规范
 - [docs/architecture/PLATFORM_TENANT_ROUTING.md](../docs/architecture/PLATFORM_TENANT_ROUTING.md) — tenant/project 路由和 API 作用域
 - [docs/ai/README.md](../docs/ai/README.md) — AI 治理与 spark-ai 工作流
-- [packages/spark-ai/ARCHITECTURE.md](../packages/spark-ai/ARCHITECTURE.md) — VCM-native 七工具与 Turn 生命周期
+- [packages/spark-ai/ARCHITECTURE.md](../packages/spark-ai/ARCHITECTURE.md) — ClassModel 七工具与 Turn 生命周期
 - [packages/README.md](../packages/README.md) — 包级入口
 - [tests/README.md](../tests/README.md) — 根级测试范围和约定
 - [spark-ai-server/README.md](../spark-ai-server/README.md) — 后端、API 和 SSE 调试上下文

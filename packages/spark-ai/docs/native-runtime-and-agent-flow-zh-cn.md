@@ -1,17 +1,17 @@
 # Native Runtime 与全新 AI 流程
 
-> 状态：有效（2026-06）。本文从 `packages/spark-ai/src/agent/native-runtime` 出发，说明旧 `src/modules` 删除后的 VCM-native 流程。
+> 状态：有效（2026-06）。本文从 `packages/spark-ai/src/agent/native-runtime` 出发，说明旧 `src/modules` 删除后的 ClassModel 流程。
 
 ## 一句话
 
 新流程只有一条主线：
 
 ```text
-VCM runtime metadata
+DTS ClassModel runtime
   -> ClassModelDocument
-  -> VcmNativeRuntime 7 工具闭集
+  -> ClassModelRuntime 7 工具闭集
   -> ToolLoop
-  -> vcm_script
+  -> model_script
   -> native-runtime
   -> 业务实例
 ```
@@ -25,18 +25,18 @@ VCM runtime metadata
 | `agent/native-runtime/native-script-context.ts` | 创建脚本可见的链式 API surface，执行单个 action |
 | `agent/native-runtime/native-script-runner.ts` | 接收 root metadata、schema defs、instance、script，组装执行上下文 |
 | `agent/native-runtime/native-script-sandbox.ts` | 执行脚本并把异常转换为 `AiAgentToolResult` |
-| `agent/business/vcm-native-agent-adapter.ts` | 业务注册入口，连接 metadata、ClassModel、VcmNativeRuntime、Host |
+| `agent/business/class-model-agent-adapter.ts` | 业务注册入口，连接 metadata、ClassModel、ClassModelRuntime、Host |
 | `agent/tool-runtime/tool-runtime-types.ts` | Agent 层工具运行时抽象 |
-| `vcm-native/runtime/vcm-native-runtime.ts` | 7 个 VCM-native tool 的运行时实现 |
+| `class-model/runtime/class-model-runtime.ts` | 7 个 ClassModel tool 的运行时实现 |
 
 ## 注册流程
 
 ```text
 page-design-business.ts
-  -> VcmNativeAgentAdapter.register()
+  -> ClassModelAgentAdapter.register()
      -> resolveModuleMetadataJson()
      -> createClassModelDocumentFromRuntimeDocument()
-     -> new VcmNativeRuntime({ document, knowledge, scriptExecutor })
+     -> new ClassModelRuntime({ document, knowledge, scriptExecutor })
      -> host.register(AiAgentRegistration)
 ```
 
@@ -53,11 +53,11 @@ resolveInstance(host.moduleInstanceId)
 ```text
 LLM request
   -> AiAgentToolLoopRunner.getTools()
-  -> VcmNativeRuntime.getTools()
+  -> ClassModelRuntime.getTools()
   -> LLM tool_call
   -> tool-call-executor
   -> registration.runtime.executeTool()
-  -> VcmNativeRuntime.executeTool()
+  -> ClassModelRuntime.executeTool()
 ```
 
 工具返回统一是 `AiAgentToolResult`。`agent_complete` 会写入 lifecycle state，ToolLoop 据此收尾。
@@ -66,19 +66,19 @@ LLM request
 
 | 工具 | 参数 |
 |------|------|
-| `vcm_query` | `className?`, `keyword?`, `includeMembers?`（兼容遗留 `kind`） |
-| `vcm_model_guide` | `className` |
-| `vcm_attribute_guide` | `className`, `attributeName` |
-| `vcm_action_guide` | `className`, `actionName`, `componentType?` |
-| `vcm_script` | `script` |
+| `model_query` | `kind?`, `keyword?`, `includeMembers?` |
+| `model_class_guide` | `kind` |
+| `model_attribute_guide` | `kind`, `attributeName` |
+| `model_action_guide` | `kind`, `actionName` |
+| `model_script` | `script` |
 | `human_question` | `context`, `reason`, `missingFacts?`, `candidateOptions?` |
 | `agent_complete` | `summary` |
 
-所有工具都运行时拒绝未知参数。guide/query 短期仍接受遗留 `kind` 参数（值须为 className）。
+所有工具都运行时拒绝未知参数。旧别名不会被接受。
 
 ## native-script-context
 
-`createAiApiScriptContext()` 根据 VCM metadata 把业务实例包装成脚本 API：
+`createAiApiScriptContext()` 根据业务实例把公开 API 包装成脚本 API：
 
 ```text
 attribute read/write
@@ -93,28 +93,29 @@ action call
 
 脚本中的 `this` 是 root API surface。业务对象仍是原始 class 实例，LLM 看到的是由 metadata 投影出的原生方法签名。
 
-## vcm_script
+## model_script
 
 典型脚本：
 
 ```javascript
-const row = this.navigationNodes[0]
-row.pageConfig.ruleJson = '...'
-await this.save({ client, fileApi })
-return row.pageConfig.toJson()
+const page = await this.openPageDesign({ pageId: 'orders' })
+await page.editDataSet(async (ds) => {
+  ds.createTable({ tableName: 'Orders', columns: [] })
+})
+return page.getFileText('pagedata.json')
 ```
 
 执行链路：
 
 ```text
-VcmNativeRuntime.executeTool('vcm_script')
+ClassModelRuntime.executeTool('model_script')
   -> scriptExecutor({ script, host })
   -> executeAiNativeScript()
   -> createAiNativeScriptContext()
   -> executeNativeScriptInSandbox()
 ```
 
-失败会返回 `AiAgentToolResult.fail(...)`，recovery hint 只提示 `vcm_action_guide` / `vcm_script` 修正方式。
+失败会返回 `AiAgentToolResult.fail(...)`，recovery hint 只提示 `model_action_guide` / `model_script` 修正方式。
 
 ## 不兼容删除点
 
@@ -134,9 +135,9 @@ DevSystem
   -> runPageDesignAiSession()
   -> appAiAgent.run('page-design', input)
   -> pageDesign registration
-  -> VCM-native tools
-  -> vcm_script
-  -> ProjectRootModel / NavigationRowModel / PageConfigModel 字段链
+  -> ClassModel tools
+  -> model_script
+  -> ProjectModel / ConfigPageNode / DataSetCrudTool / SparkNodeTree
 ```
 
 门禁：
@@ -148,10 +149,10 @@ DevSystem
 
 | 现象 | 处理 |
 |------|------|
-| LLM 传 `methodName` | 改用 `vcm_action_guide({ className, actionName })` |
-| LLM 传 `code` | 改用 `vcm_script({ script })` |
-| LLM 传 `path` | 说明仍在旧 direct-call 思维，重新查 `vcm_model_guide` |
-| action 参数不对 | 先读 `vcm_action_guide`，按签名重写脚本 |
+| LLM 传 `methodName` | 改用 `model_action_guide({ kind, actionName })` |
+| LLM 传 `code` | 改用 `model_script({ script })` |
+| LLM 传 `path` | 说明仍在旧 direct-call 思维，重新查 `model_class_guide` |
+| action 参数不对 | 先读 `model_action_guide`，按签名重写脚本 |
 | pageDesign 被门禁拒绝 | 检查 planningStatus / implGate / upstreamContractsSatisfied |
 
 ## 验证命令

@@ -81,9 +81,6 @@
  * @description 树形容器，支持懒加载、节点操作和编辑器侧面板。
  * @category container
  * @binding dataViewKey-driven
- * @provides DATA_SOURCE
- * @provides CONTEXT_DATA
- * @consumes PAGE_DATASET
  * @notes 树形原生属性需通过 props.treeProps 显式声明（如 defaultExpandAll、showCheckbox）
  */
 /**
@@ -432,3 +429,4 @@ const rawNodeActionsToolbarConfig = computed<SparkNode>(() => ({
   color: #303133;
 }
 </style>
+

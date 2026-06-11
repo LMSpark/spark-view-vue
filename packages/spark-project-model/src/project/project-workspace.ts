@@ -107,7 +107,6 @@ function toPageFilesApiBaseUrl(pageApi: string): string {
 
 /**
  * 项目 IO 编排层：将 ProjectModel 的操作委托到远端 API。
- * @vcmSession IO 编排会话；序列化走 ProjectModel + NavigationClient + PageFileApi。
  */
 export class ProjectWorkspace {
   readonly project: ProjectModel
@@ -616,3 +615,4 @@ export class ProjectWorkspace {
     throw new Error('ProjectReferenceClient 未配置，无法读取跨项目引用')
   }
 }
+

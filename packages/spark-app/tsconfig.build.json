@@ -13,7 +13,7 @@
       "@spark-appworks/spark-ai": ["../spark-ai/dist/index.d.ts"],
       "@spark-appworks/spark-ai/json": ["../spark-ai/dist/json/index.d.ts"],
       "@spark-appworks/spark-ai/agent": ["../spark-ai/dist/agent/index.d.ts"],
-      "@spark-appworks/spark-ai/vcm-native": ["../spark-ai/dist/vcm-native/index.d.ts"]
+      "@spark-appworks/spark-ai/class-model": ["../spark-ai/dist/class-model/index.d.ts"]
     },
     "declarationDir": "./dist/types",
     "declaration": true,

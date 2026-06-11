@@ -1402,9 +1402,9 @@ function validateLeaveTypeOptions(nodes, tables) {
   }
 }
 
-// ── 10.4 VCM 知识链会话校验 ──
+// ── 10.4 ClassModel 知识链会话校验 ──
 
-const VCM_QUERY_TOOL_NAMES = new Set(['vcm_query', 'vcm_model_guide'])
+const CLASS_MODEL_QUERY_TOOL_NAMES = new Set(['model_query', 'model_class_guide'])
 
 function collectSessionToolNames(sessionRecord) {
   const names = []
@@ -1419,13 +1419,13 @@ function collectSessionToolNames(sessionRecord) {
   return names
 }
 
-function validatePageDesignVcmGuidesFromSession(sessionRecord) {
+function validatePageDesignClassModelGuidesFromSession(sessionRecord) {
   const toolNames = collectSessionToolNames(sessionRecord)
   const matchedToolNames = toolNames.filter(name =>
-    VCM_QUERY_TOOL_NAMES.has(name) || name === 'vcm_action_guide',
+    CLASS_MODEL_QUERY_TOOL_NAMES.has(name) || name === 'model_action_guide',
   )
-  const hasQuery = toolNames.some(name => VCM_QUERY_TOOL_NAMES.has(name))
-  const hasGuide = toolNames.includes('vcm_action_guide')
+  const hasQuery = toolNames.some(name => CLASS_MODEL_QUERY_TOOL_NAMES.has(name))
+  const hasGuide = toolNames.includes('model_action_guide')
   if (hasQuery && hasGuide) {
     return { ok: true, matchedToolNames }
   }
@@ -1433,14 +1433,14 @@ function validatePageDesignVcmGuidesFromSession(sessionRecord) {
     ok: false,
     matchedToolNames,
     issue: hasQuery || hasGuide
-      ? 'session must record both vcm_query/vcm_model_guide and vcm_action_guide before node-tree writes'
-      : 'session did not record VCM guide or query tool usage',
+      ? 'session must record both model_query/model_class_guide and model_action_guide before node-tree writes'
+      : 'session did not record ClassModel guide or query tool usage',
   }
 }
 
 // ── 10.5 合并验收入口 ──
 
-// PAGE_DESIGN_AI_TRACE[e2e-artifact-assertions]: 合并字段组语义 + 提交闭环 + VCM guide 三重验收。
+// PAGE_DESIGN_AI_TRACE[e2e-artifact-assertions]: 合并字段组语义 + 提交闭环 + ClassModel guide 三重验收。
 function validateArtifacts(files, sessionRecord) {
   const checks = []
   const issues = []
@@ -1554,10 +1554,10 @@ function validateArtifacts(files, sessionRecord) {
     if (!check.ok) issues.push(`closure check failed: ${check.name}`)
   }
 
-  // 阶段 D：VCM guide 校验
-  const vcmGuideValidation = validatePageDesignVcmGuidesFromSession(sessionRecord)
-  checks.push({ name: 'vcmGuides', ok: vcmGuideValidation.ok, detail: vcmGuideValidation })
-  if (!vcmGuideValidation.ok) issues.push('VCM guide validation failed')
+  // 阶段 D：ClassModel guide 校验
+  const classModelGuideValidation = validatePageDesignClassModelGuidesFromSession(sessionRecord)
+  checks.push({ name: 'classModelGuides', ok: classModelGuideValidation.ok, detail: classModelGuideValidation })
+  if (!classModelGuideValidation.ok) issues.push('ClassModel guide validation failed')
 
   return {
     ok: issues.length === 0,
@@ -1583,7 +1583,7 @@ function validateArtifacts(files, sessionRecord) {
     dataViewKeys: dataViewKeys.keys,
     submitClosure,
     leaveTypeOptions,
-    vcmGuideValidation,
+    classModelGuideValidation,
   }
 }
 
@@ -1762,9 +1762,9 @@ function runValidateDirOnly(validateDir) {
   }))
   const sessionRecord = {
     history: [
-      { kind: 'functionCall', toolName: 'vcm_query' },
-      { kind: 'functionCall', toolName: 'vcm_action_guide' },
-      { kind: 'functionCall', toolName: 'vcm_script' },
+      { kind: 'functionCall', toolName: 'model_query' },
+      { kind: 'functionCall', toolName: 'model_action_guide' },
+      { kind: 'functionCall', toolName: 'model_script' },
     ],
   }
   const artifactValidation = validateArtifacts(files, sessionRecord)

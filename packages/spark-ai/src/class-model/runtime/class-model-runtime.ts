@@ -1,0 +1,242 @@
+import type { AiJsonValue } from '../../json'
+import type { ClassModelDocument } from '../class-model'
+import {
+  ClassModelKnowledgeService,
+  type ClassModelKnowledgeProvider,
+} from '../knowledge'
+import { listClassModelToolSpecs, type ClassModelToolSpec } from '../tools/class-model-tool-specs'
+import { CLASS_MODEL_TOOL_NAMES, isClassModelToolName, type ClassModelToolName } from '../tools'
+
+export type ClassModelScriptCommand = Readonly<{
+  script: string
+  host?: unknown
+}>
+
+export type ClassModelRuntimeOptions = Readonly<{
+  document?: ClassModelDocument
+  knowledge?: ClassModelKnowledgeProvider
+  scriptExecutor: ClassModelScriptExecutor
+}>
+
+export type ClassModelToolArgs = Readonly<Record<string, AiJsonValue>>
+
+export type { ClassModelToolSpec } from '../tools/class-model-tool-specs'
+
+export type ClassModelToolResult = Readonly<{
+  ok: boolean
+  data?: AiJsonValue
+  checks?: readonly ClassModelToolCheck[]
+  state?: Readonly<Record<string, unknown>>
+}>
+
+export type ClassModelToolCheck = Readonly<{
+  level: 'error' | 'warn' | 'info'
+  code: string
+  message: string
+  hint?: string
+}>
+
+export type ClassModelScriptExecutorResult = AiJsonValue | ClassModelToolResult
+
+export type ClassModelScriptExecutor =
+  (command: ClassModelScriptCommand) => ClassModelScriptExecutorResult | Promise<ClassModelScriptExecutorResult>
+
+/**
+ * ClassModel tool runtime。
+ *
+ * 这是 ClassModel 的运行时投影，不是旧 path/direct runtime 的新分支。
+ * runtime 主要负责执行：暴露 7 个 OpenAI tools、校验参数、调度脚本执行器。
+ * ClassModel 查询、索引和 guide 投影属于 knowledge 边界，可替换成 Web Worker provider。
+ */
+export class ClassModelRuntime {
+  private readonly knowledge: ClassModelKnowledgeProvider
+  private readonly scriptExecutor: ClassModelScriptExecutor
+
+  public constructor(options: ClassModelRuntimeOptions) {
+    this.knowledge = options.knowledge ?? createDefaultKnowledgeProvider(options)
+    this.scriptExecutor = options.scriptExecutor
+  }
+
+  public getTools(): readonly ClassModelToolSpec[] {
+    return listClassModelToolSpecs()
+  }
+
+  public async executeTool(
+    toolName: string,
+    rawArgs: ClassModelToolArgs,
+    host?: unknown,
+  ): Promise<ClassModelToolResult> {
+    if (!isClassModelToolName(toolName)) {
+      return failResult(
+        'UNKNOWN_CLASS_MODEL_TOOL',
+        `工具 "${toolName}" 未在 ClassModel 工具闭集中定义。`,
+        `可用工具: ${Object.values(CLASS_MODEL_TOOL_NAMES).join(', ')}`,
+      )
+    }
+
+    try {
+      return await this.route(toolName, rawArgs, host)
+    } catch (error) {
+      if (error instanceof ClassModelToolArgsError) {
+        return failResult('INVALID_CLASS_MODEL_TOOL_ARGS', error.message, '请按工具 schema 补齐参数后重试。')
+      }
+      throw error
+    }
+  }
+
+  private async route(
+    toolName: ClassModelToolName,
+    args: ClassModelToolArgs,
+    host?: unknown,
+  ): Promise<ClassModelToolResult> {
+    switch (toolName) {
+      case CLASS_MODEL_TOOL_NAMES.query: {
+        rejectUnknownArgs(toolName, args, ['kind', 'keyword', 'includeMembers'])
+        return okResult(await this.knowledge.query({
+          ...optionalStringProperty(args, 'kind'),
+          ...optionalStringProperty(args, 'keyword'),
+          includeMembers: args['includeMembers'] === true,
+        }))
+      }
+      case CLASS_MODEL_TOOL_NAMES.modelGuide: {
+        rejectUnknownArgs(toolName, args, ['kind'])
+        return okResult(await this.knowledge.modelGuide({
+          kind: requireString(args, 'kind'),
+        }))
+      }
+      case CLASS_MODEL_TOOL_NAMES.attributeGuide: {
+        rejectUnknownArgs(toolName, args, ['kind', 'attributeName'])
+        return okResult(await this.knowledge.attributeGuide({
+          kind: requireString(args, 'kind'),
+          attributeName: requireString(args, 'attributeName'),
+        }))
+      }
+      case CLASS_MODEL_TOOL_NAMES.actionGuide: {
+        rejectUnknownArgs(toolName, args, ['kind', 'actionName'])
+        return okResult(await this.knowledge.methodGuide({
+          kind: requireString(args, 'kind'),
+          methodName: requireString(args, 'actionName'),
+        }))
+      }
+      case CLASS_MODEL_TOOL_NAMES.script: {
+        rejectUnknownArgs(toolName, args, ['script'])
+        return normalizeScriptExecutionResult(await this.scriptExecutor({
+          script: requireString(args, 'script'),
+          ...(host === undefined ? {} : { host }),
+        }))
+      }
+      case CLASS_MODEL_TOOL_NAMES.humanQuestion: {
+        rejectUnknownArgs(toolName, args, ['context', 'reason', 'missingFacts', 'candidateOptions'])
+        return okResult({
+          awaitingHuman: true,
+          context: requireString(args, 'context'),
+          reason: requireString(args, 'reason'),
+          ...optionalStringArrayProperty(args, 'missingFacts'),
+          ...optionalStringArrayProperty(args, 'candidateOptions'),
+        })
+      }
+      case CLASS_MODEL_TOOL_NAMES.agentComplete: {
+        rejectUnknownArgs(toolName, args, ['summary'])
+        const summary = requireString(args, 'summary').trim()
+        return okResult({
+          completed: true,
+          summary,
+        }, undefined, {
+          agentLifecycle: 'complete',
+          finalAssistantMessage: summary,
+        })
+      }
+    }
+  }
+}
+
+class ClassModelToolArgsError extends Error {
+  public constructor(message: string) {
+    super(message)
+    this.name = 'ClassModelToolArgsError'
+  }
+}
+
+function createDefaultKnowledgeProvider(options: ClassModelRuntimeOptions): ClassModelKnowledgeProvider {
+  if (options.document === undefined) {
+    throw new Error('ClassModelRuntime requires either knowledge provider or ClassModelDocument.')
+  }
+  return new ClassModelKnowledgeService({
+    document: options.document,
+  })
+}
+
+function okResult(
+  data: AiJsonValue,
+  checks?: readonly ClassModelToolCheck[],
+  state?: Readonly<Record<string, unknown>>,
+): ClassModelToolResult {
+  return {
+    ok: true,
+    data,
+    ...(checks === undefined || checks.length === 0 ? {} : { checks }),
+    ...(state === undefined ? {} : { state }),
+  }
+}
+
+function failResult(code: string, message: string, hint?: string): ClassModelToolResult {
+  return {
+    ok: false,
+    checks: [{
+      level: 'error',
+      code,
+      message,
+      ...(hint === undefined ? {} : { hint }),
+    }],
+  }
+}
+
+function normalizeScriptExecutionResult(result: ClassModelScriptExecutorResult): ClassModelToolResult {
+  return isClassModelToolResult(result) ? result : okResult(result)
+}
+
+function isClassModelToolResult(value: ClassModelScriptExecutorResult): value is ClassModelToolResult {
+  return value !== null
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && typeof Reflect.get(value, 'ok') === 'boolean'
+}
+
+function requireString(args: ClassModelToolArgs, key: string): string {
+  const value = optionalString(args, key)
+  if (value === undefined) throw new ClassModelToolArgsError(`参数 "${key}" 缺失或非字符串。`)
+  return value
+}
+
+function rejectUnknownArgs(
+  toolName: ClassModelToolName,
+  args: ClassModelToolArgs,
+  allowedKeys: readonly string[],
+): void {
+  const allowed = new Set(allowedKeys)
+  const extra = Object.keys(args).filter(key => !allowed.has(key)).sort()
+  if (extra.length === 0) return
+  const allowedText = allowedKeys.length === 0 ? '(none)' : allowedKeys.join(', ')
+  throw new ClassModelToolArgsError(
+    `工具 "${toolName}" 不接受参数: ${extra.join(', ')}。允许参数: ${allowedText}。`,
+  )
+}
+
+function optionalString(args: ClassModelToolArgs, key: string): string | undefined {
+  const value = args[key]
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
+}
+
+function optionalStringProperty(args: ClassModelToolArgs, key: string): Record<string, string> {
+  const value = optionalString(args, key)
+  return value === undefined ? {} : { [key]: value }
+}
+
+function optionalStringArrayProperty(args: ClassModelToolArgs, key: string): Record<string, readonly string[]> {
+  const value = args[key]
+  if (value === undefined) return {}
+  if (!Array.isArray(value) || !value.every(item => typeof item === 'string')) {
+    throw new ClassModelToolArgsError(`参数 "${key}" 必须是字符串数组。`)
+  }
+  return { [key]: value }
+}

@@ -55,6 +55,7 @@ export type CreateAiAgentHostOptions = Readonly<{
 export type AiAgentHostRunResult = Readonly<{
   task: AiAgentTask
   session: AiAgentSession
+  resultExtras?: Readonly<Record<string, unknown>>
 }>
 
 /** 泛型注册表映射：alias → registration，供泛型类型推断使用 */
@@ -446,7 +447,7 @@ function diagnosticsFromInspectReport(report: AiAgentToolRuntimeInspectReport): 
   return [{
     level: 'info',
     code: 'RUNTIME_INSPECT_OK',
-    message: `VCM-native runtime inspect passed: moduleCount=${report.moduleCount}; rootKinds=[${report.rootKinds.join(', ')}]`,
+    message: `ClassModel runtime inspect passed: moduleCount=${report.moduleCount}; rootKinds=[${report.rootKinds.join(', ')}]`,
   }]
 }
 

@@ -7,7 +7,7 @@ import {
 } from '../tool-approval-bridge'
 
 function createBeforeFunctionCallOptions(
-  toolName = 'vcm_script',
+  toolName = 'model_script',
 ): AiAgentBeforeFunctionCallOptions {
   return {
     moduleId: 'pageDesign',
@@ -38,7 +38,7 @@ describe('AiToolApprovalBridge', () => {
       moduleId: 'pageDesign',
       moduleInstanceId: 'orders',
       instanceId: 'orders',
-      toolName: 'vcm_script',
+      toolName: 'model_script',
       args: {
         script: 'return page.openPageDesign("orders")',
       },
@@ -58,8 +58,8 @@ describe('AiToolApprovalBridge', () => {
       },
     })
 
-    const first = bridge.beforeFunctionCall(createBeforeFunctionCallOptions('vcm_script'))
-    const second = bridge.beforeFunctionCall(createBeforeFunctionCallOptions('vcm_model_guide'))
+    const first = bridge.beforeFunctionCall(createBeforeFunctionCallOptions('model_script'))
+    const second = bridge.beforeFunctionCall(createBeforeFunctionCallOptions('model_class_guide'))
 
     expect(bridge.listPending().map((request) => request.id)).toEqual(['approval-1', 'approval-2'])
     expect(bridge.cancelPending('用户停止运行')).toBe(2)

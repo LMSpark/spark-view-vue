@@ -5,20 +5,20 @@
 
 [iterate-page-design-e2e] round 1/3
 [iterate-page-design-e2e] round 1: exit=2 ok=false tools=3 failedTools=1 aborted=false durationMs=113409
-  - vcm_script: SCRIPT_EXECUTION_FAILED 鑴氭湰鎵ц澶辫触: Function statements require a function name
+  - model_script: SCRIPT_EXECUTION_FAILED 鑴氭湰鎵ц澶辫触: Function statements require a function name
   reason: artifact: LeaveRequest missing column: applicantName
-  reason: artifact: VCM guide validation failed
-  reason: vcm_script: SCRIPT_EXECUTION_FAILED 鑴氭湰鎵ц澶辫触: Function statements require a function name
+  reason: artifact: ClassModel guide validation failed
+  reason: model_script: SCRIPT_EXECUTION_FAILED 鑴氭湰鎵ц澶辫触: Function statements require a function name
 
 [iterate-page-design-e2e] round 2/3
 [iterate-page-design-e2e] round 2: exit=2 ok=false tools=9 failedTools=1 aborted=false durationMs=69485
-  - vcm_query: INVALID_VCM_NATIVE_TOOL_ARGS 宸ュ叿 "vcm_query" 涓嶆帴鍙楀弬鏁? member, select銆傚厑璁稿弬鏁? kind, keyword, includeMembers銆?  reason: artifact: LeaveRequest missing column: applicantName
+  - model_query: INVALID_CLASS_MODEL_TOOL_ARGS 宸ュ叿 "model_query" 涓嶆帴鍙楀弬鏁? member, select銆傚厑璁稿弬鏁? kind, keyword, includeMembers銆?  reason: artifact: LeaveRequest missing column: applicantName
   reason: artifact: submit button does not close the application flow
   reason: artifact: closure check failed: submitClosure
-  reason: vcm_query: INVALID_VCM_NATIVE_TOOL_ARGS 宸ュ叿 "vcm_query" 涓嶆帴鍙楀弬鏁? member, select銆傚厑璁稿弬鏁? kind, keyword, includeMembers銆?
+  reason: model_query: INVALID_CLASS_MODEL_TOOL_ARGS 宸ュ叿 "model_query" 涓嶆帴鍙楀弬鏁? member, select銆傚厑璁稿弬鏁? kind, keyword, includeMembers銆?
 [iterate-page-design-e2e] round 3/3
 [iterate-page-design-e2e] round 3: exit=2 ok=false tools=14 failedTools=6 aborted=false durationMs=218333
-  - vcm_query: INVALID_VCM_NATIVE_TOOL_ARGS 宸ュ叿 "vcm_query" 涓嶆帴鍙楀弬鏁? member, query銆傚厑璁稿弬鏁? kind, keyword, includeMembers銆?  - vcm_attribute_guide: INVALID_VCM_NATIVE_TOOL_ARGS 鍙傛暟 "attributeName" 缂哄け鎴栭潪瀛楃涓层€?  - vcm_action_guide: INVALID_VCM_NATIVE_TOOL_ARGS 鍙傛暟 "kind" 缂哄け鎴栭潪瀛楃涓层€?  reason: artifact: LeaveRequest missing column: applicantName
+  - model_query: INVALID_CLASS_MODEL_TOOL_ARGS 宸ュ叿 "model_query" 涓嶆帴鍙楀弬鏁? member, query銆傚厑璁稿弬鏁? kind, keyword, includeMembers銆?  - model_attribute_guide: INVALID_CLASS_MODEL_TOOL_ARGS 鍙傛暟 "attributeName" 缂哄け鎴栭潪瀛楃涓层€?  - model_action_guide: INVALID_CLASS_MODEL_TOOL_ARGS 鍙傛暟 "kind" 缂哄け鎴栭潪瀛楃涓层€?  reason: artifact: LeaveRequest missing column: applicantName
   reason: artifact: rule.json missing usable leave type options
   reason: artifact: closure check failed: leaveTypeOptions
 {
@@ -27,4 +27,4 @@
   "message": "all rounds failed"
 }
 鈥塃LIFECYCLE鈥?Command failed with exit code 2.
-  reason: vcm_query: INVALID_VCM_NATIVE_TOOL_ARGS 宸ュ叿 "vcm_query" 涓嶆帴鍙楀弬鏁? member, query銆傚厑璁稿弬鏁? kind, keyword, includeMembers銆?
+  reason: model_query: INVALID_CLASS_MODEL_TOOL_ARGS 宸ュ叿 "model_query" 涓嶆帴鍙楀弬鏁? member, query銆傚厑璁稿弬鏁? kind, keyword, includeMembers銆?

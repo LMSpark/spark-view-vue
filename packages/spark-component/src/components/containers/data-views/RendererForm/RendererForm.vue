@@ -51,9 +51,6 @@
  * @description 数据表单容器，通过 CONTEXT_DATA 能力向子组件暴露表单数据。
  * @category container
  * @binding dataViewKey-driven
- * @provides DATA_SOURCE
- * @provides CONTEXT_DATA
- * @consumes PAGE_DATASET
  * @notes children 内放 r-* 字段组件用于编辑 currentRow
  * @notes 工具栏通过结构化 `toolbar` 区域声明
  */
@@ -173,3 +170,4 @@ registerApi(formApi)
   min-width: 0;
 }
 </style>
+

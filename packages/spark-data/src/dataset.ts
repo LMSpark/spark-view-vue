@@ -1801,13 +1801,6 @@ export class DataSet extends SparkAIModel implements DataSetContract {
 
   // ===== 序列化 =====
 
-  /** 结束编辑前校验：数据集名称非空。 */
-  validate(): void {
-    if (this.dataSetName.trim().length === 0) {
-      throw new Error('DataSet.validate: missing dataSetName')
-    }
-  }
-
   /**
    * 序列化为 JSON 友好的元数据对象
    * @returns 数据集元数据

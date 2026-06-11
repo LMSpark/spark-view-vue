@@ -47,9 +47,6 @@ export type DataTableAddColumnsResult = {
  * 其中 `api` 负责定义“各 CRUD 操作映射到哪个端点”，`crudConfig` 负责定义“调用这些端点时采用什么通用运行策略”。
  * 数据操作由 DataView 负责。
  *
- * @moduleKind data-table
- * @vcmSerializable 表元数据快照；须 toJson + static fromJson。
- * @moduleName Data Table
  */
 export class DataTable {
   // ===== DataSet 引用 =====
@@ -243,7 +240,6 @@ export class DataTable {
   /**
    * 获取已存在的视图（不会创建新视图）。
    *
-   * @moduleMutation pagedata.json read 读取指定 data-view。
    * @param viewId 视图 ID。
    */
   getView(viewId: string): DataView | undefined {
@@ -504,3 +500,4 @@ export class DataTable {
     return t
   }
 }
+

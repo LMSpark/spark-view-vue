@@ -32,7 +32,7 @@
  */
 
 import type { AiJsonParams } from '../../json'
-import { VCM_NATIVE_TOOL_NAMES } from '../../vcm-native'
+import { CLASS_MODEL_TOOL_NAMES } from '../../class-model'
 import { createAiAgentSessionId, toAiAgentRuntimeScope } from '../business/business-scope'
 import type { AiAgentLifecycleDirective } from '../business/lifecycle-types'
 import type { AiAgentRegistration } from '../business/registration-types'
@@ -78,8 +78,8 @@ const TOOL_PRODUCTION_LINE_PROMPT = [
 
 const PSEUDO_TOOL_CALL_NUDGE = [
   '上一次回复把工具调用写进了 assistant 正文（如 <tool_call> 标签），runtime 无法执行。',
-  '请改用 OpenAI tool_calls 通道重新发起；vcm_script 的参数名必须是 script，不是 code。',
-  '若上一步失败，先读 tool result 里的 RECOVERY_HINT / fix，再 vcm_query/vcm_action_guide 后重试。',
+  '请改用 OpenAI tool_calls 通道重新发起；model_script 的参数名必须是 script，不是 code。',
+  '若上一步失败，先读 tool result 里的 RECOVERY_HINT / fix，再 model_query/model_action_guide 后重试。',
 ].join('\n')
 
 const MAX_PSEUDO_TOOL_CALL_NUDGES = 2
@@ -92,18 +92,18 @@ const GENERIC_PLAN_WITHOUT_TOOL_NUDGE = [
 const MAX_PLAN_WITHOUT_TOOL_NUDGES = 3
 
 const CATALOG_DISCOVERY_TOOL_NAMES = new Set<string>([
-  VCM_NATIVE_TOOL_NAMES.query,
-  VCM_NATIVE_TOOL_NAMES.modelGuide,
-  VCM_NATIVE_TOOL_NAMES.attributeGuide,
-  VCM_NATIVE_TOOL_NAMES.actionGuide,
+  CLASS_MODEL_TOOL_NAMES.query,
+  CLASS_MODEL_TOOL_NAMES.modelGuide,
+  CLASS_MODEL_TOOL_NAMES.attributeGuide,
+  CLASS_MODEL_TOOL_NAMES.actionGuide,
 ])
 
 const DEFAULT_EXECUTION_TOOL_NAMES = new Set<string>([
-  VCM_NATIVE_TOOL_NAMES.script,
+  CLASS_MODEL_TOOL_NAMES.script,
 ])
 
 const MAX_EXECUTION_PHASE_NUDGES = 3
-const MAX_VCM_SCRIPT_RETRY_NUDGES = 3
+const MAX_CLASS_MODEL_SCRIPT_RETRY_NUDGES = 3
 
 /* ── 输入/输出类型 ──────────────────────────────────────────── */
 
@@ -131,7 +131,7 @@ export class AiAgentToolLoopRunner {
    * 执行工具循环主流程。
    *
    * 每轮（round）：
-   *   1. 读取 VCM-native 固定协议工具规约
+   *   1. 读取 ClassModel 固定协议工具规约
    *   2. 发送 LLM 诊断事件（llm-request）
    *   3. 调用 turnCallbacks.executeTurn 获取 AI 响应
    *   4. 将 AI 文本回复写入 sessionStore
@@ -149,7 +149,7 @@ export class AiAgentToolLoopRunner {
     const maxRounds = this.maxToolRounds
     const sessionStore = requireSessionStore(registration)
 
-    // 拼接系统提示词：业务自定义 + 请求编排 + VCM 知识快照
+    // 拼接系统提示词：业务自定义 + 请求编排 + ClassModel 知识快照
     const systemPrompt = [
       registration.systemPrompt?.(runtimeContext),
       request.systemPrompt,
@@ -173,7 +173,7 @@ export class AiAgentToolLoopRunner {
     let pseudoToolCallNudgeCount = 0
     let planWithoutToolNudgeCount = 0
     let executionPhaseNudgeCount = 0
-    let vcmScriptRetryNudgeCount = 0
+    let classModelScriptRetryNudgeCount = 0
 
     for (let round = 0; maxRounds === undefined || round < maxRounds; round += 1) {
       // AbortSignal 检查：外部取消信号触发时立即退出
@@ -339,14 +339,14 @@ export class AiAgentToolLoopRunner {
         continue
       }
 
-      const vcmScriptRetryNudge = resolveToolLoopNudge(registration, runtimeContext, 'vcm_script_retry')
+      const classModelScriptRetryNudge = resolveToolLoopNudge(registration, runtimeContext, 'model_script_retry')
       if (
-        vcmScriptRetryNudge !== undefined
-        && vcmScriptRetryNudgeCount < MAX_VCM_SCRIPT_RETRY_NUDGES
+        classModelScriptRetryNudge !== undefined
+        && classModelScriptRetryNudgeCount < MAX_CLASS_MODEL_SCRIPT_RETRY_NUDGES
         && shouldNudgeModuleScriptRetry(sessionStore, runtimeContext)
       ) {
-        vcmScriptRetryNudgeCount += 1
-        pendingMessages = [{ role: 'user', content: vcmScriptRetryNudge }]
+        classModelScriptRetryNudgeCount += 1
+        pendingMessages = [{ role: 'user', content: classModelScriptRetryNudge }]
         continue
       }
 
@@ -522,7 +522,7 @@ export function resolvePlanWithoutToolNudge<TInput extends AiJsonParams>(
 export function resolveToolLoopNudge<TInput extends AiJsonParams>(
   registration: AiAgentRegistration<TInput>,
   runtimeContext: AiAgentRuntimeContext,
-  reason: Extract<AiAgentToolLoopNudgeReason, 'execution_phase' | 'vcm_script_retry'>,
+  reason: Extract<AiAgentToolLoopNudgeReason, 'execution_phase' | 'model_script_retry'>,
 ): string | undefined {
   const nudge = registration.toolLoopNudge?.({
     reason,
@@ -542,13 +542,13 @@ function mentionsPendingToolExecution(
   const normalized = text.trim().toLowerCase()
   if (normalized.length === 0) return false
   const markers = [
-    VCM_NATIVE_TOOL_NAMES.script,
+    CLASS_MODEL_TOOL_NAMES.script,
     '接下来我将',
     '我将使用',
     '我将调用',
     '下一步将',
     'next i will',
-    'i will use vcm_script',
+    'i will use model_script',
     'i will call',
     ...(extraMarkers ?? []),
   ]
@@ -579,7 +579,7 @@ function shouldNudgeExecutionPhase(command: ShouldNudgeExecutionPhaseCommand): b
 
   for (const entry of history) {
     if (!isCompletedFunctionCall(entry)) continue
-    if (entry.toolName === VCM_NATIVE_TOOL_NAMES.actionGuide) functionGuideSucceeded = true
+    if (entry.toolName === CLASS_MODEL_TOOL_NAMES.actionGuide) functionGuideSucceeded = true
     if (executionNames.has(entry.toolName)) executionStarted = true
   }
 
@@ -589,7 +589,7 @@ function shouldNudgeExecutionPhase(command: ShouldNudgeExecutionPhaseCommand): b
   const roundIsCatalogOnly = roundToolNames.every(name => CATALOG_DISCOVERY_TOOL_NAMES.has(name))
   if (!roundIsCatalogOnly) return false
 
-  return roundToolNames.includes(VCM_NATIVE_TOOL_NAMES.actionGuide) || functionGuideSucceeded
+  return roundToolNames.includes(CLASS_MODEL_TOOL_NAMES.actionGuide) || functionGuideSucceeded
 }
 
 function shouldNudgeModuleScriptRetry(
@@ -600,7 +600,7 @@ function shouldNudgeModuleScriptRetry(
   for (let index = history.length - 1; index >= 0; index -= 1) {
     const entry = history[index]
     if (entry?.kind !== 'functionCall') continue
-    return entry.toolName === VCM_NATIVE_TOOL_NAMES.script && entry.status === 'failed'
+    return entry.toolName === CLASS_MODEL_TOOL_NAMES.script && entry.status === 'failed'
   }
   return false
 }

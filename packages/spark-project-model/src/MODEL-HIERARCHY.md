@@ -50,7 +50,7 @@
 
 DevSystem 左侧树不展示隐式 homepage 壳节点；项目首页与模块栏布局在租户应用列表维护。
 
-### AI / VCM 入口
+### AI 入口
 
 ```text
 ProjectModel（pageDesign.project）
@@ -81,7 +81,7 @@ readProjectPlanningInput()
 
 勿恢复独立 `NavigationDesign` 或 `PlanningModel`。
 
-AI/VCM 只消费这里暴露的项目模型入口，不在本包维护独立运行态路线图。
+AI 只消费这里暴露的项目模型入口，不在本包维护独立运行态路线图。
 
 ---
 

@@ -4,7 +4,6 @@
  * - `createComponentRegistry()` 创建隔离实例（测试/多实例）
  * - `getGlobalRegistry()` 返回应用级单例
  *
- * @module registry
  */
 
 import { Logger } from '@spark-appworks/spark-utils'
@@ -114,3 +113,4 @@ export function createComponentRegistry(): ComponentRegistry {
     }
   }
 }
+

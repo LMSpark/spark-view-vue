@@ -1,6 +1,6 @@
 export {
   createSimpleInputContract,
-  VcmNativeAgentAdapter,
+  ClassModelAgentAdapter,
 } from '@spark-appworks/spark-ai/agent'
 
 export type {

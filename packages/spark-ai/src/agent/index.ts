@@ -7,7 +7,7 @@
  *   1. 业务类型与注册（scope-types / registration-types）
  *   2. 业务作用域工厂（business-scope）
  *   3. 业务会话（business-session）
- *   4. VCM native runtime（metadata -> script context / script execution）
+ *   4. ClassModel runtime（metadata -> script context / script execution）
  *   5. 聊天 DTO（chat-types）
  *   6. 会话存储（session-types / default-session-store）
  *   7. APP turn 回调契约与事件类型（transport-types / app-sse-events）
@@ -51,8 +51,8 @@ export {
 } from './business/business-kit'
 
 export {
-  VcmNativeAgentAdapter,
-} from './business/vcm-native-agent-adapter'
+  ClassModelAgentAdapter,
+} from './business/class-model-agent-adapter'
 
 export {
   AiAgentRuntimeContext,
@@ -76,10 +76,10 @@ export type {
 } from './tool-loop/function-call-recovery-enricher'
 
 export type {
-  VcmNativeAgentAdapterRegistrationCommand,
-  VcmNativeAgentAdapterRegisterCommand,
-  VcmNativeAgentAdapterRegisterOptions,
-} from './business/vcm-native-agent-adapter'
+  ClassModelAgentAdapterRegistrationCommand,
+  ClassModelAgentAdapterRegisterCommand,
+  ClassModelAgentAdapterRegisterOptions,
+} from './business/class-model-agent-adapter'
 
 export type {
   AiBusinessInputOptions,
@@ -147,7 +147,7 @@ export type {
   AiAgentRunResult,
 } from './business/business-session'
 
-// ── 4. VCM native runtime ───────────────────────────────────
+// ── 4. ClassModel runtime ───────────────────────────────────
 
 export {
   AiApiScriptActionFailure,

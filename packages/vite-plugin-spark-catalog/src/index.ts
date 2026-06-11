@@ -1,17 +1,16 @@
-/**
- * VCM module metadata 生成工具包。
- *
- * 产出 `page-design-module-metadata.*.generated.json`，供 `VcmNativeAgentAdapter` 注册 LLM 知识体系。
- *
- * @module @spark-appworks/vite-plugin-spark-catalog
- */
+export {
+  ASYNC_COMPONENTS,
+  COMPONENT_EXCLUDE_PATTERNS,
+  COMPONENT_SCAN_PATTERNS,
+  SIZE_THRESHOLD,
+  SYNC_COMPONENTS,
+} from './scan-config'
 
 export {
-  generateModuleAbilityMetadata,
-  type ModuleAbilityMetadataGeneratorOptions,
-  type ModuleMetadataDiagnosticActionSummary,
-  type ModuleMetadataDiagnosticFinding,
-  type ModuleMetadataDiagnosticModuleSummary,
-  type ModuleMetadataDiagnostics,
-  type ModuleMetadataGenerationResult,
-} from './module-metadata-generator'
+  buildImplicitSkillDescription,
+  createLogger,
+  inferSkillType,
+  normalizePath,
+  parseSkillMeta,
+  toKebabCase,
+} from './utils'

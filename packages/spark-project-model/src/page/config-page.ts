@@ -53,10 +53,6 @@ type ConfigPageFileModel = {
  * 持有当前页面的 rule.json、pagedata.json、script.js、style.css 子模型。
  * 四文件持久化由 ProjectWorkspace 或 PageContentLoader 编排。
  *
- * @moduleKind config-page
- * @vcmSession 当前页设计会话；四文件由文件 API 编排，无整包 toJson。
- * @moduleAbility pageDesign.configPage
- * @moduleActionMode explicit
  */
 export class ConfigPageNode extends ProjectNode {
   readonly rule: PageRuleFile
@@ -148,7 +144,6 @@ export class ConfigPageNode extends ProjectNode {
   /**
    * 读取四文件文本。
    *
-   * @moduleMutation page-files read 只读内存四文件文本。
    * @param name 要读取的页面文件名。
    */
   getFileText(name: PageNodeFileName): string {
@@ -158,7 +153,6 @@ export class ConfigPageNode extends ProjectNode {
   /**
    * 写入四文件文本到内存模型。
    *
-   * @moduleMutation page-files write 修改内存四文件文本，不直接落盘。
    * @param name 要写入的页面文件名。
    * @param text 新的文件文本内容。
    */
@@ -236,7 +230,6 @@ export class ConfigPageNode extends ProjectNode {
   /**
    * 读取 rule.json 节点树。
    *
-   * @moduleMutation rule.json read 只读当前页面 SparkNodeTree。
    */
   getNodeTree(): SparkNodeTreeModel {
     return this.rule.getTree()
@@ -245,13 +238,6 @@ export class ConfigPageNode extends ProjectNode {
   /**
    * 修改 rule.json 节点树。
    *
-   * @moduleMutation rule.json write 在 mutator 内修改 SparkNodeTree。
-   * @vcmScriptOnly
-   * @requiredBeforeCall 写 node-tree 前必须先通过 VCM 元数据确认 SparkNode 结构、组件 type 和 props schema。
-   * @usageRule 结构批量改写优先 vcm_script；direct call 不支持。
-   * @usageRule openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree=>...) / page.editDataSet(async ds=>...)，勿用 page.call()。
-   * @failureMode SCHEMA_VALIDATION_FAILED 节点 props 不符合 SparkNode 契约 => 按 paramsSchema 与组件原生 props schema 修正
-   * @failureMode SCRIPT_EXECUTION_FAILED 误用 call 链式代理 => 改用 page.editNodeTree / page.editDataSet 等方法
    * @param run 节点树编辑回调；回调参数是当前页面 SparkNodeTree。
    */
   async editNodeTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
@@ -261,7 +247,6 @@ export class ConfigPageNode extends ProjectNode {
   /**
    * 读取 pagedata 数据集工具入口。
    *
-   * @moduleMutation pagedata.json read 进入 DataSetCrudTool 操作面。
    */
   getDataSetTool(): DataSetCrudTool {
     return this.dataSet.getTool()
@@ -270,13 +255,6 @@ export class ConfigPageNode extends ProjectNode {
   /**
    * 修改 pagedata.json 数据集模型。
    *
-   * @moduleMutation pagedata.json write 在 mutator 内通过 DataSetCrudTool 修改 DataSet。
-   * @vcmScriptOnly
-   * @requiredBeforeCall 先 getDataSetTool 确认当前页 DataSet 已加载。
-   * @usageRule DataViewKey 必须使用 table@viewId 格式；禁止旧成员拼接键。
-   * @failureMode TABLE_NOT_FOUND 表名不存在 Table not found => 先在 dataset 上 createTable 或 vcm_action_guide 查 getTable 契约
-   * @failureMode SCHEMA_VALIDATION_FAILED requires callback => editDataSet 必须直接传 async callback，勿把 createTable 参数对象当作 run
-   * @failureMode SCRIPT_EXECUTION_FAILED run is not a function => editDataSet 直接传 async callback，勿把 createTable 参数对象当成 run
    * @param run 数据集编辑回调；回调参数是当前页面 DataSetCrudTool。
    */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
@@ -334,3 +312,4 @@ export class ConfigSubPageNode extends ConfigPageNode {
     }
   }
 }
+

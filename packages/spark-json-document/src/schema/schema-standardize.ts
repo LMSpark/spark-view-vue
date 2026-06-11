@@ -237,7 +237,7 @@ function mergeSchemaAnnotations(
     : undefined
   if (description === undefined) return schema
   // 单分支 allOf/anyOf/oneOf 常用于“命名类型 $ref + 参数语义”包装；
-  // 展开时必须保留外层 description，否则 VCM 的 @param 语义会在池化前丢失。
+  // 展开时必须保留外层 description，否则 ClassModel 的 @param 语义会在池化前丢失。
   if (schema === true) return { description }
   if (schema === false) return schema
   if (typeof schema.description === 'string' && schema.description.trim().length > 0) return schema

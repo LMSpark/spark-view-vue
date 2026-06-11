@@ -1,5 +1,5 @@
 /**
- * agent/native-runtime · VCM-native 脚本执行沙箱。
+ * agent/native-runtime · ClassModel 脚本执行沙箱。
  *
  * LLM 脚本中的 this 就是调用方提供的模块上下文；ctx 是同一对象的别名。
  * 这里的沙箱是统一执行上下文，不是高安全隔离；function calling 与脚本都可以进入它。
@@ -10,7 +10,7 @@ import { toErrorMessage } from '@spark-appworks/spark-utils'
 import { coerceJsonValue, type AiJsonValue } from '../../json'
 import { AiAgentToolCheck, AiAgentToolResult } from '../tool-runtime'
 
-const SCRIPT_RECOVERY_HINT = '按 tool result RECOVERY_HINT 修正；契约见 vcm_action_guide / vcm_model_guide（ClassModel 知识索引）。'
+const SCRIPT_RECOVERY_HINT = '按 tool result RECOVERY_HINT 修正；契约见 model_action_guide / model_class_guide（ClassModel 知识索引）。'
 
 export type AiNativeScriptSandboxContext = Readonly<Record<string, unknown>>
 

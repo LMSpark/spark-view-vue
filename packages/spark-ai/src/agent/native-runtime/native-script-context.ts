@@ -1,7 +1,7 @@
 import { readJsonProperty } from '@spark-appworks/spark-json-document'
 import { AiJsonSchemaValidator, type AiJsonParams, type AiJsonSchemaValidateOptions } from '../../json'
 import { AiAgentToolResult, type AiAgentRuntimeHostContext } from '../tool-runtime'
-import type { AiApiActionMetadata, AiApiObjectMetadata, AiApiResultApiRef } from '../../vcm-native'
+import type { AiApiActionMetadata, AiApiObjectMetadata, AiApiResultApiRef } from '../../class-model'
 
 type MethodTarget = Readonly<Record<string, unknown>>
 type ScriptCallback = (...args: readonly unknown[]) => unknown
@@ -172,14 +172,14 @@ function executeAiApiActionValue(
     return AiAgentToolResult.failCode(
       'SCHEMA_VALIDATION_FAILED',
       `${command.action.name} 参数不符合 paramsSchema: ${validation.issues.map(issue => issue.message).join('; ')}`,
-      '先读取 vcm_action_guide 或脚本上下文对应方法的 paramsSchema，再按 schema 修正参数。',
+      '先读取 model_action_guide 或脚本上下文对应方法的 paramsSchema，再按 schema 修正参数。',
     )
   }
   if (!isMethodTarget(command.target)) {
     return AiAgentToolResult.failCode(
       'FUNCTION_NOT_IMPLEMENTED',
       `${command.action.name} 未实现方法 "${command.action.methodName}"`,
-      '检查业务 class 是否实现了 VCM 元数据声明的 methodName。',
+      '检查业务 class 是否实现了 ClassModel 声明的 methodName。',
     )
   }
   const method = command.target[command.action.methodName]
@@ -187,7 +187,7 @@ function executeAiApiActionValue(
     return AiAgentToolResult.failCode(
       'FUNCTION_NOT_IMPLEMENTED',
       `${command.action.name} 未实现方法 "${command.action.methodName}"`,
-      '检查业务 class 是否实现了 VCM 元数据声明的 methodName。',
+      '检查业务 class 是否实现了 ClassModel 声明的 methodName。',
     )
   }
   const raw = callApiMethod({
@@ -666,13 +666,13 @@ function callApiMethod(command: CallApiMethodCommand): unknown {
       return AiAgentToolResult.failCode(
         'SCHEMA_VALIDATION_FAILED',
         `${command.action.name}.run must be a function, received ${typeof runValue}.`,
-        `在 vcm_script 中 ${command.action.name} 需要传 callback；见 vcm_action_guide 与 RECOVERY_HINT。`,
+        `在 model_script 中 ${command.action.name} 需要传 callback；见 model_action_guide 与 RECOVERY_HINT。`,
       )
     }
     return AiAgentToolResult.failCode(
       'SCHEMA_VALIDATION_FAILED',
       `${command.action.name} requires a callback argument; compatible { run } must be a function.`,
-      `${command.action.name} 需要 callback 参数；见 vcm_action_guide（ClassModel 知识索引）与 RECOVERY_HINT。`,
+      `${command.action.name} 需要 callback 参数；见 model_action_guide（ClassModel 知识索引）与 RECOVERY_HINT。`,
     )
   }
   if (command.action.takesContext === true) return command.method.call(command.target, command.ctx, command.args)
@@ -715,7 +715,7 @@ function normalizeScriptActionArgList(
   return normalizePositionalScriptArgs(action, args)
 }
 
-/** vcm_script 常把 mutator 回调和原生对象参数直接传入；这里归一化为 VCM paramsSchema。 */
+/** model_script 常把 mutator 回调和原生对象参数直接传入；这里归一化为 ClassModel paramsSchema。 */
 function normalizeScriptActionArgs(
   action: AiApiActionMetadata,
   args: unknown,

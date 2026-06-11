@@ -195,8 +195,8 @@ describe('createTurnEventCollector', () => {
           id: 'call-1',
           type: 'function',
           function: {
-            name: 'vcm_query',
-            arguments: JSON.stringify({ className: 'ProjectRootModel', keyword: 'sampleKind' }),
+            name: 'model_query',
+            arguments: JSON.stringify({ kind: 'project', keyword: 'sampleKind' }),
           },
         }],
       }),
@@ -208,8 +208,8 @@ describe('createTurnEventCollector', () => {
         id: 'call-1',
         type: 'function',
         function: {
-          name: 'vcm_query',
-          arguments: JSON.stringify({ className: 'ProjectRootModel', keyword: 'sampleKind' }),
+          name: 'model_query',
+          arguments: JSON.stringify({ kind: 'project', keyword: 'sampleKind' }),
         },
       }],
     })
@@ -227,8 +227,8 @@ describe('createTurnEventCollector', () => {
       text: [
         '```json',
         JSON.stringify({
-          tool_call: 'vcm_query',
-          args: { className: 'ProjectRootModel', keyword: 'sampleKind' },
+          tool_call: 'model_query',
+          args: { kind: 'project', keyword: 'sampleKind' },
         }),
         '```',
       ].join('\n'),
@@ -240,8 +240,8 @@ describe('createTurnEventCollector', () => {
         id: 'call_text_1',
         type: 'function',
         function: {
-          name: 'vcm_query',
-          arguments: JSON.stringify({ className: 'ProjectRootModel', keyword: 'sampleKind' }),
+          name: 'model_query',
+          arguments: JSON.stringify({ kind: 'project', keyword: 'sampleKind' }),
         },
       }],
     })
@@ -264,8 +264,8 @@ describe('createTurnEventCollector', () => {
             id: 'call-1',
             type: 'function',
             function: {
-              name: 'vcm_query',
-              arguments: JSON.stringify({ className: 'ProjectRootModel', keyword: 'sampleKind' }),
+              name: 'model_query',
+              arguments: JSON.stringify({ kind: 'project', keyword: 'sampleKind' }),
             },
           }],
         }),
@@ -275,7 +275,7 @@ describe('createTurnEventCollector', () => {
             id: 'call-2',
             type: 'function',
             function: {
-              name: 'vcm_script',
+              name: 'model_script',
               arguments: JSON.stringify({ script: 'return { ok: true }' }),
             },
           }],
@@ -291,15 +291,15 @@ describe('createTurnEventCollector', () => {
           id: 'call-1',
           type: 'function',
           function: {
-            name: 'vcm_query',
-            arguments: JSON.stringify({ className: 'ProjectRootModel', keyword: 'sampleKind' }),
+            name: 'model_query',
+            arguments: JSON.stringify({ kind: 'project', keyword: 'sampleKind' }),
           },
         },
         {
           id: 'call-2',
           type: 'function',
           function: {
-            name: 'vcm_script',
+            name: 'model_script',
             arguments: JSON.stringify({ script: 'return { ok: true }' }),
           },
         },
@@ -316,7 +316,7 @@ describe('createTurnEventCollector', () => {
     })
 
     hub.emit(createTurnAppEvent('result', {
-      text: '<tool_call>vcm_query({"className":"ProjectRootModel","keyword":"leave"})',
+      text: '<tool_call>model_query({"kind":"project","keyword":"leave"})',
     }))
 
     await expect(collector.result).resolves.toEqual({
@@ -325,9 +325,9 @@ describe('createTurnEventCollector', () => {
         id: 'call_inline_1',
         type: 'function',
         function: {
-          name: 'vcm_query',
+          name: 'model_query',
           arguments: JSON.stringify({
-            className: 'ProjectRootModel',
+            kind: 'project',
             keyword: 'leave',
           }),
         },
@@ -335,7 +335,7 @@ describe('createTurnEventCollector', () => {
     })
   })
 
-  it('recovers bare VCM function-style tool calls emitted as assistant text', async () => {
+  it('recovers bare ClassModel function-style tool calls emitted as assistant text', async () => {
     const hub = createTestEventHub()
     const collector = createTurnEventCollector({
       input: createTurnInput(),
@@ -343,7 +343,7 @@ describe('createTurnEventCollector', () => {
       timeoutMs: 1_000,
     })
 
-    const call = 'vcm_action_guide({"className":"ProjectRootModel","actionName":"readProjectPlanningInput"})'
+    const call = 'model_action_guide({"kind":"project","actionName":"readProjectPlanningInput"})'
     hub.emit(createTurnAppEvent('result', {
       text: `${call}${call}`,
     }))
@@ -354,9 +354,9 @@ describe('createTurnEventCollector', () => {
         id: 'call_bare_1',
         type: 'function',
         function: {
-          name: 'vcm_action_guide',
+          name: 'model_action_guide',
           arguments: JSON.stringify({
-            className: 'ProjectRootModel',
+            kind: 'project',
             actionName: 'readProjectPlanningInput',
           }),
         },
@@ -364,7 +364,7 @@ describe('createTurnEventCollector', () => {
     })
   })
 
-  it('recovers bare vcm_script pseudo calls without renaming arguments', async () => {
+  it('recovers bare model_script pseudo calls without renaming arguments', async () => {
     const hub = createTestEventHub()
     const collector = createTurnEventCollector({
       input: createTurnInput(),
@@ -373,7 +373,7 @@ describe('createTurnEventCollector', () => {
     })
 
     hub.emit(createTurnAppEvent('result', {
-      text: 'vcm_script({"script":"return await this.readProjectPlanningInput()"})',
+      text: 'model_script({"script":"return await this.readProjectPlanningInput()"})',
     }))
 
     await expect(collector.result).resolves.toEqual({
@@ -382,7 +382,7 @@ describe('createTurnEventCollector', () => {
         id: 'call_bare_1',
         type: 'function',
         function: {
-          name: 'vcm_script',
+          name: 'model_script',
           arguments: JSON.stringify({
             script: 'return await this.readProjectPlanningInput()',
           }),
@@ -401,7 +401,7 @@ describe('createTurnEventCollector', () => {
 
     hub.emit(createTurnAppEvent('result', {
       text: [
-        '<tool_call>vcm_query',
+        '<tool_call>model_query',
         '<arg_key>kind</arg_key><arg_value>demoModule</arg_value>',
         '</tool_call>',
       ].join(''),
@@ -413,7 +413,7 @@ describe('createTurnEventCollector', () => {
         id: 'call_argtag_1',
         type: 'function',
         function: {
-          name: 'vcm_query',
+          name: 'model_query',
           arguments: JSON.stringify({ kind: 'demoModule' }),
         },
       }],
@@ -430,7 +430,7 @@ describe('createTurnEventCollector', () => {
 
     hub.emit(createTurnAppEvent('result', {
       text: [
-        '<tool_call>vcm_query',
+        '<tool_call>model_query',
         '<arg_key>kind</arg_key><arg_value>demoModule</arg_value>',
         '<arg_key>keyword</arg_key><arg_value>orders</arg_value>',
         '</tool_call>',
@@ -443,14 +443,14 @@ describe('createTurnEventCollector', () => {
         id: 'call_argtag_1',
         type: 'function',
         function: {
-          name: 'vcm_query',
+          name: 'model_query',
           arguments: JSON.stringify({ kind: 'demoModule', keyword: 'orders' }),
         },
       }],
     })
   })
 
-  it('does not map recovered vcm_script code arg to script', async () => {
+  it('does not map recovered model_script code arg to script', async () => {
     const hub = createTestEventHub()
     const collector = createTurnEventCollector({
       input: createTurnInput(),
@@ -460,7 +460,7 @@ describe('createTurnEventCollector', () => {
 
     hub.emit(createTurnAppEvent('result', {
       text: [
-        '<tool_call>vcm_script',
+        '<tool_call>model_script',
         '<arg_key>code</arg_key><arg_value>return await this.readPlanningProjection()</arg_value>',
         '</tool_call>',
       ].join(''),
@@ -472,7 +472,7 @@ describe('createTurnEventCollector', () => {
         id: 'call_argtag_1',
         type: 'function',
         function: {
-          name: 'vcm_script',
+          name: 'model_script',
           arguments: JSON.stringify({
             code: 'return await this.readPlanningProjection()',
           }),
@@ -492,7 +492,7 @@ describe('createTurnEventCollector', () => {
     hub.emit(createTurnAppEvent('result', {
       text: [
         '<｜DSML｜tool_calls>',
-        '<｜DSML｜invoke name="vcm_script">',
+        '<｜DSML｜invoke name="model_script">',
         '<｜DSML｜parameter name="script" string="true">return { ok: true }</｜DSML｜parameter>',
         '</｜DSML｜invoke>',
         '</｜DSML｜tool_calls>',
@@ -505,7 +505,7 @@ describe('createTurnEventCollector', () => {
         id: 'call_dsml_1',
         type: 'function',
         function: {
-          name: 'vcm_script',
+          name: 'model_script',
           arguments: JSON.stringify({
             script: 'return { ok: true }',
           }),
@@ -576,9 +576,9 @@ describe('createTurnEventCollector', () => {
         // malformed: missing id → should be discarded
         { type: 'function', function: { name: 'setProps', arguments: '{}' } },
         // malformed: empty id string → should be discarded
-        { id: '', type: 'function', function: { name: 'vcm_query', arguments: '{}' } },
+        { id: '', type: 'function', function: { name: 'model_query', arguments: '{}' } },
         // valid
-        { id: 'call-2', type: 'function', function: { name: 'vcm_model_guide', arguments: '{"kind":"x"}' } },
+        { id: 'call-2', type: 'function', function: { name: 'model_class_guide', arguments: '{"kind":"x"}' } },
       ],
     }))
 
@@ -586,7 +586,7 @@ describe('createTurnEventCollector', () => {
       text: 'ok',
       toolCalls: [
         { id: 'call-1', type: 'function', function: { name: 'getNode', arguments: '{}' } },
-        { id: 'call-2', type: 'function', function: { name: 'vcm_model_guide', arguments: '{"kind":"x"}' } },
+        { id: 'call-2', type: 'function', function: { name: 'model_class_guide', arguments: '{"kind":"x"}' } },
       ],
     })
     expect(hub.listenerCount()).toBe(0)

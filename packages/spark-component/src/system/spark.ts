@@ -7,7 +7,6 @@
  * - `Spark.createRegistry()` — 创建隔离注册表
  * - `Spark.createSystem()` — 创建测试用隔离系统
  *
- * @module spark
  */
 
 import { createSparkCapabilityContext } from '@spark-appworks/spark-utils'
@@ -114,3 +113,4 @@ export const Spark = {
     return nodeId(node)
   },
 }
+

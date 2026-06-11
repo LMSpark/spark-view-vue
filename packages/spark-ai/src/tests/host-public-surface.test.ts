@@ -19,7 +19,7 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
       'AiAgentToolLoopRunner',
       'AiAgentToolResult',
       'DefaultAiAgentSessionStore',
-      'VcmNativeAgentAdapter',
+      'ClassModelAgentAdapter',
       'createAiApiScriptContext',
       'createAiAgentHost',
       'createAiAgentRunTrace',

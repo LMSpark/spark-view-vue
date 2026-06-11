@@ -1,6 +1,6 @@
 # native-runtime
 
-VCM metadata → 可执行脚本 API 的运行时层。
+DTS ClassModel / 兼容 metadata → 可执行脚本 API 的运行时层。
 
 ## 职责
 
@@ -11,9 +11,9 @@ VCM metadata → 可执行脚本 API 的运行时层。
 
 | API | 调用方 |
 |-----|--------|
-| `createAiApiScriptContext` | `VcmNativeAgentAdapter`（`vcm_script` 的 `this`）、单测 |
+| `createAiApiScriptContext` | `ClassModelAgentAdapter`（`model_script` 的 `this`）、单测 |
 | `executeAiNativeScript` | metadata-first 直跑、单测 |
-| `executeModuleScript` | 已移除；`vcm_script` 直接走 `native-script-sandbox.ts` |
+| `executeModuleScript` | 已移除；`model_script` 直接走 `native-script-sandbox.ts` |
 
 ## 文档
 

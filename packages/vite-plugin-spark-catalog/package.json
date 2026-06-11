@@ -3,7 +3,7 @@
     "version": "0.3.7",
     "type": "module",
     "private": true,
-  "description": "VCM native metadata 生成 — 产出 VcmNativeAgentAdapter 消费的 generated JSON",
+    "description": "Shared SPARK component scan configuration",
     "main": "./src/index.ts",
     "types": "./src/index.ts",
     "exports": {
@@ -14,11 +14,6 @@
     },
     "scripts": {
         "typecheck": "tsc --noEmit -p tsconfig.json"
-    },
-    "dependencies": {
-        "@spark-appworks/spark-json-document": "workspace:*",
-        "glob": "^13.0.6",
-        "vue-component-meta": "3.3.3"
     },
     "peerDependencies": {
         "typescript": ">=5.0.0",

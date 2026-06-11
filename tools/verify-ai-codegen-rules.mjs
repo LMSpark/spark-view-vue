@@ -37,7 +37,7 @@ const allowedSparkAiSpecifiers = new Set([
   '@spark-appworks/spark-ai',
   '@spark-appworks/spark-ai/json',
   '@spark-appworks/spark-ai/agent',
-  '@spark-appworks/spark-ai/vcm-native',
+  '@spark-appworks/spark-ai/class-model',
 ])
 
 const forbiddenAiModuleMembers = new Set([
@@ -80,22 +80,22 @@ const publicSurfaceAllowlist = new Set([
   // Schema 构造器会成对暴露值构造器与 Options 类型：
   // Options 名称能让公共函数签名保持简短，同时不隐藏契约。
   'packages/spark-ai/src/index.ts:./json',
-  // Agent 与 VCM-native 协议聚合出口是允许 @spark-appworks/spark-ai subpath 背后的显式公共门面。
+  // Agent 与 ClassModel 协议聚合出口是允许 @spark-appworks/spark-ai subpath 背后的显式公共门面。
   'packages/spark-ai/src/agent/index.ts:./business/ai-host',
   'packages/spark-ai/src/agent/index.ts:./business/business-kit',
   'packages/spark-ai/src/agent/index.ts:./tool-runtime',
   'packages/spark-ai/src/agent/index.ts:./native-runtime',
   'packages/spark-ai/src/agent/tool-runtime/index.ts:./tool-runtime-types',
-  'packages/spark-ai/src/vcm-native/index.ts:./class-model',
-  'packages/spark-ai/src/vcm-native/index.ts:./metadata',
-  'packages/spark-ai/src/vcm-native/index.ts:./knowledge',
-  'packages/spark-ai/src/vcm-native/index.ts:./projection',
-  'packages/spark-ai/src/vcm-native/index.ts:./runtime',
-  'packages/spark-ai/src/vcm-native/class-model/index.ts:./types',
-  'packages/spark-ai/src/vcm-native/knowledge/index.ts:../projection',
-  'packages/spark-ai/src/vcm-native/metadata/index.ts:./ai-api-object-metadata-schema',
-  'packages/spark-ai/src/vcm-native/projection/index.ts:./dts-renderer',
-  'packages/spark-ai/src/vcm-native/runtime/index.ts:./vcm-native-runtime',
+  'packages/spark-ai/src/class-model/index.ts:./class-model',
+  'packages/spark-ai/src/class-model/index.ts:./metadata',
+  'packages/spark-ai/src/class-model/index.ts:./knowledge',
+  'packages/spark-ai/src/class-model/index.ts:./projection',
+  'packages/spark-ai/src/class-model/index.ts:./runtime',
+  'packages/spark-ai/src/class-model/class-model/index.ts:./types',
+  'packages/spark-ai/src/class-model/knowledge/index.ts:../projection',
+  'packages/spark-ai/src/class-model/metadata/index.ts:./ai-api-object-metadata-schema',
+  'packages/spark-ai/src/class-model/projection/index.ts:./dts-renderer',
+  'packages/spark-ai/src/class-model/runtime/index.ts:./class-model-runtime',
   'packages/spark-ai/src/json/index.ts:./helpers',
   'packages/spark-project-model/src/index.ts:./project/project-types',
   'packages/spark-project-model/src/index.ts:./navigation/project-node',
@@ -109,7 +109,7 @@ const publicSurfaceAllowlist = new Set([
 ])
 
 const publicClassMethodSurfaces = new Map([
-  ['packages/spark-ai/src/vcm-native/runtime/vcm-native-runtime.ts:VcmNativeRuntime', new Set([
+  ['packages/spark-ai/src/class-model/runtime/class-model-runtime.ts:ClassModelRuntime', new Set([
     'getTools',
     'executeTool',
   ])],
@@ -299,7 +299,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
     violations.push({
       file,
       line: 1,
-      message: 'createAiBusinessKit is removed; register business AI through VcmNativeAgentAdapter only',
+      message: 'createAiBusinessKit is removed; register business AI through ClassModelAgentAdapter only',
     })
   }
 
@@ -307,7 +307,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
     violations.push({
       file,
       line: 1,
-      message: 'createAiAgentRegistration is forbidden in src/services; use VcmNativeAgentAdapter.createRegistration only',
+      message: 'createAiAgentRegistration is forbidden in src/services; use ClassModelAgentAdapter.createRegistration only',
     })
   }
 
@@ -315,7 +315,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
     violations.push({
       file,
       line: 1,
-      message: 'manual new AiModule() is forbidden in src/services; use VcmNativeAgentAdapter + VCM metadata',
+      message: 'manual new AiModule() is forbidden in src/services; use ClassModelAgentAdapter + DTS ClassModel',
     })
   }
 
@@ -332,7 +332,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
     violations.push({
       file,
       line: 1,
-      message: 'removed catalog-module injection option is forbidden; expose complex arguments through VCM metadata and JSON Schema',
+      message: 'removed catalog-module injection option is forbidden; expose complex arguments through DTS ClassModel and JSON Schema',
     })
   }
 
@@ -349,7 +349,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
       violations.push({
         file,
         line: 1,
-        message: `${removedIdentifier} is removed; use vcm_action_guide and vcm_script instead`,
+        message: `${removedIdentifier} is removed; use model_action_guide and model_script instead`,
       })
     }
   }
@@ -362,7 +362,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
         violations.push({
           file,
           line: lineFor(sourceFile, node, lineOffset),
-          message: 'manual AiModuleRuntime.register() is forbidden in src/services; use VcmNativeAgentAdapter',
+          message: 'manual AiModuleRuntime.register() is forbidden in src/services; use ClassModelAgentAdapter',
         })
       }
     }

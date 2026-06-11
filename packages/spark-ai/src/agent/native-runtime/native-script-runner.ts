@@ -9,7 +9,7 @@ import {
   resolveModuleMetadataJson,
   validateApiObjectMetadata,
   type AiModuleMetadataJson,
-} from '../../vcm-native'
+} from '../../class-model'
 import { executeModuleScript } from './native-script-sandbox'
 import { createAiApiScriptContext } from './native-script-context'
 

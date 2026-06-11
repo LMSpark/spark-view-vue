@@ -74,11 +74,11 @@ If the answer does not justify a contract, use a concrete class, named `type`, o
 
 - Comments should explain contracts, constraints, priorities, and risks.
 - Avoid comments that merely repeat code.
-- VCM/LLM-visible semantics must be stated at the first declaration site with natural-language comments and required structured tags when the repository convention requires them.
+- LLM-visible semantics must be stated at the first declaration site with natural-language comments, type signatures, and names. Do not add convention tags.
 
 ## Verification
 
-When touching architecture boundaries, AI generation rules, public exports, VCM/LLM-visible comments, or generated-code governance, `pnpm run verify:rules` must pass.
+When touching architecture boundaries, AI generation rules, public exports, LLM-visible comments, or generated-code governance, `pnpm run verify:rules` must pass.
 
 At minimum after implementation changes, prefer focused checks:
 

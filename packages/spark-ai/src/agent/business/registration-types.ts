@@ -31,7 +31,7 @@ import type { AiAgentRuntimeContext } from './scope-types'
 export type AiAgentToolLoopNudgeReason =
   | 'plan_without_tool'
   | 'execution_phase'
-  | 'vcm_script_retry'
+  | 'model_script_retry'
 
 export type AiAgentToolLoopNudgeContext = Readonly<{
   reason: AiAgentToolLoopNudgeReason
@@ -53,7 +53,7 @@ export type AiAgentRegistrationOptions<TInput extends AiJsonParams = AiJsonParam
   name: string
   /** 面向 LLM 的业务描述，说明该业务能做什么 */
   description: string
-  /** VCM-native 工具运行时——承载工具闭集、知识快照和脚本执行 */
+  /** ClassModel 工具运行时——承载工具闭集、知识快照和脚本执行 */
   runtime: AiAgentToolRuntime
   /** 注册化输入契约；新任务入口用它校验输入、定位实例并生成 LLM 编排规则 */
   inputContract?: AiAgentInputContract<TInput>
@@ -96,7 +96,7 @@ export type AiAgentRegistrationOptions<TInput extends AiJsonParams = AiJsonParam
   releaseModuleInstance?: (moduleInstanceId: string) => void
   /** tool-loop 回合纠偏：业务 SOP 由 app 层注入，内核只保留协议级 nudge。 */
   toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined
-  /** 视为“已进入执行阶段”的工具名；默认仅 vcm_script。 */
+  /** 视为“已进入执行阶段”的工具名；默认仅 model_script。 */
   executionToolNames?: ReadonlySet<string>
   /** 扩展 plan-without-tool 检测关键词（小写匹配）。 */
   planWithoutToolMarkers?: readonly string[]
@@ -121,7 +121,7 @@ export class AiAgentRegistration<TInput extends AiJsonParams = AiJsonParams> {
 
   /* ── 能力运行时 ───────────────────────────────────────── */
 
-  /** 工具运行时——工具调用时从中读取知识并执行 vcm_script */
+  /** 工具运行时——工具调用时从中读取知识并执行 model_script */
   public readonly runtime: AiAgentToolRuntime
   /** kindID 的注册化输入契约；由 host.run[alias]() 的内部 task 创建使用 */
   public readonly inputContract?: AiAgentInputContract<TInput>

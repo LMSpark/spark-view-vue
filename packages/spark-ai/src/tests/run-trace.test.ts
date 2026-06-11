@@ -31,7 +31,7 @@ function makeStreamEvent(options: StreamEventOptions = {}): AiAgentStreamEvent {
 function makeToolCallRecord(): AiAgentToolCallRecord {
   const result: AiAgentFunctionCallResult<unknown> = { ok: true, data: 'done' }
   return {
-    toolName: 'vcm_script',
+    toolName: 'model_script',
     args: { script: 'return this.readRule()' },
     turnId: 'turn-1',
     round: 1,
@@ -74,7 +74,7 @@ describe('AiAgentRunTrace', () => {
 
     const snapshot = trace.snapshot()
     expect(snapshot.toolCalls).toHaveLength(1)
-    expect(snapshot.toolCalls[0]?.toolName).toBe('vcm_script')
+    expect(snapshot.toolCalls[0]?.toolName).toBe('model_script')
     expect(snapshot.toolCalls[0]?.argsPreview.length).toBeGreaterThan(0)
     expect(snapshot.entries[0]?.kind).toBe('tool-call')
   })

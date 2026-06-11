@@ -3,33 +3,11 @@ import type { PageContentLoader } from '../../io/page-content-loader'
 import type { PageFileApi } from '../../io/page-file-api'
 import type { PageContentLoadResult, PageNodeFileName } from '../../page/page-file'
 
-/** PageConfigModel 构造参数。 */
-export type PageConfigModelInitOptions = {
-  /** 配置页 id，与导航节点 id 一致。 */
-  pageId: string
-  /** `rule.json` 原文；默认 `'[]'`。 */
-  ruleJson?: string
-  /** `pagedata.json` 原文；默认 `'{}'`。 */
-  pageDataJson?: string
-  /** `script.js` 原文。 */
-  script?: string
-  /** `style.css` 原文。 */
-  style?: string
-}
-
-/** PageConfigModel.save 参数。 */
-export type PageConfigModelSaveOptions = {
-  /** Workspace 提供的页面文件写 API。 */
-  api: PageFileApi
-}
-
 /**
  * 配置页四文件内存模型（项目域叶子层）。
  *
  * 公开字段对应磁盘四文件原文；编辑直接写字段，持久化走 `save` / `load`。
- * LLM 可见：字段 / 方法 / 本 JSDoc 由 VCM 直接投影，不另建 read 投影层。
- *
- * @vcmSession 四文件会话模型；恢复走 static load，持久化走 save({ api })。
+ * LLM 知识：本 class 的 public 字段 / 方法 / JSDoc 即可见面；静态索引走 dts-class-model 按 className 按需解析。
  *
  * ## 字段 ↔ 文件
  *
@@ -46,7 +24,7 @@ export type PageConfigModelSaveOptions = {
  *
  * 1. 读：`model.ruleJson` / `model.script` 等公开字段。
  * 2. 写：直接赋值，例如 `model.script = '...'`。
- * 3. 不落盘前变更只改内存；**结束编辑**前调用 `validate()`；持久化前 `save` 会自动校验。
+ * 3. 不落盘前变更只改内存；需要持久化时由调用方触发 `save`。
  *
  * ## 保存流程 `save({ api })`
  *
@@ -67,23 +45,26 @@ export type PageConfigModelSaveOptions = {
  * - 新建页：先 `PageFileApi.createFiles` 建目录（Workspace 编排），再 `load` 或 `new PageConfigModel`。
  */
 export class PageConfigModel extends SparkAIModel {
-  /** 配置页 id，与导航节点 id 一致。 */
   pageId: string
-  /** `rule.json` 原文。 */
   ruleJson: string
-  /** `pagedata.json` 原文。 */
   pageDataJson: string
-  /** `script.js` 原文。 */
   script: string
-  /** `style.css` 原文。 */
   style: string
 
   /**
-   * 创建四文件内存模型。
-   *
-   * @param options 四文件初始化参数。
+   * @param options.pageId 配置页 id，与导航节点 id 一致。
+   * @param options.ruleJson `rule.json` 原文；默认 `'[]'`。
+   * @param options.pageDataJson `pagedata.json` 原文；默认 `'{}'`。
+   * @param options.script `script.js` 原文。
+   * @param options.style `style.css` 原文。
    */
-  constructor(options: PageConfigModelInitOptions) {
+  constructor(options: {
+    pageId: string
+    ruleJson?: string
+    pageDataJson?: string
+    script?: string
+    style?: string
+  }) {
     super(options)
     this.pageId = options.pageId
     this.ruleJson = options.ruleJson ?? '[]'
@@ -102,23 +83,15 @@ export class PageConfigModel extends SparkAIModel {
     }
   }
 
-  /** 结束编辑前校验：`pageId` 非空。 */
-  validate(): void {
-    if (this.pageId.trim().length === 0) {
-      throw new Error('PageConfigModel.validate: missing pageId')
-    }
-  }
-
   /**
    * 将当前四文件字段写入远端存储。
    *
    * 依次 PUT `rule.json`、`pagedata.json`、`script.js`、`style.css`；
    * 具体 HTTP 由 `PageFileApi.saveFileContent` 完成。
    *
-   * @param options 四文件写盘参数。
+   * @param options.api Workspace 提供的页面文件写 API。
    */
-  async save(options: PageConfigModelSaveOptions): Promise<void> {
-    this.validate()
+  async save(options: { api: PageFileApi }): Promise<void> {
     const { api } = options
     await api.saveFileContent(this.pageId, 'rule.json', this.ruleJson)
     await api.saveFileContent(this.pageId, 'pagedata.json', this.pageDataJson)

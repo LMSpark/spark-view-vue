@@ -1,64 +1,64 @@
 /**
- * FC 失败恢复提示：把 tool result 的 code/msg/fix 映射成 VCM-native
- * 查询、guide 和 vcm_script 重试步骤，回灌给 LLM 形成失败自修复闭环。
+ * FC 失败恢复提示：把 tool result 的 code/msg/fix 映射成 ClassModel
+ * 查询、guide 和 model_script 重试步骤，回灌给 LLM 形成失败自修复闭环。
  */
 import type { AiJsonParams } from '../../json'
-import { VCM_NATIVE_TOOL_NAMES, buildVcmNativeToolSchemaRecoveryHint, isVcmNativeToolName } from '../../vcm-native'
+import { CLASS_MODEL_TOOL_NAMES, buildClassModelToolSchemaRecoveryHint, isClassModelToolName } from '../../class-model'
 import type {
   AiAgentFunctionCallCheck,
   AiAgentFunctionCallFailure,
   AiAgentFunctionCallResult,
 } from '../session/session-types'
 
-const VCM_NATIVE_TOOL_NAME_SET = new Set<string>(Object.values(VCM_NATIVE_TOOL_NAMES))
+const CLASS_MODEL_TOOL_NAME_SET = new Set<string>(Object.values(CLASS_MODEL_TOOL_NAMES))
 
 const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
   FUNCTION_NOT_DECLARED: [
-    '目录恢复：vcm_query({ className: "<className>", includeMembers: true }) 选择真实 actionName。',
-    '契约恢复：vcm_action_guide({ className: "<className>", actionName: "<actionName>" }) 读取 paramsSchema / usageRules / failureModes。',
+    '目录恢复：model_query({ kind: "<kind>", includeMembers: true }) 选择真实 actionName。',
+    '契约恢复：model_action_guide({ kind: "<kind>", actionName: "<actionName>" }) 读取 paramsSchema / usageRules / failureModes。',
   ],
   ATTRIBUTE_NOT_DECLARED: [
-    '目录恢复：vcm_model_guide({ className: "<className>" }) 查看 attributeName 目录。',
-    '契约恢复：vcm_attribute_guide({ className: "<className>", attributeName: "<attributeName>" }) 读取 schema 与读写规则。',
+    '目录恢复：model_class_guide({ kind: "<kind>" }) 查看 attributeName 目录。',
+    '契约恢复：model_attribute_guide({ kind: "<kind>", attributeName: "<attributeName>" }) 读取 schema 与读写规则。',
   ],
   SCHEMA_VALIDATION_FAILED: [
-    '契约恢复：vcm_action_guide({ className: "<className>", actionName: "<actionName>" }) 对照 paramsSchema 与 requiredBeforeCall。',
-    '复杂参数恢复：先 vcm_action_guide/vcm_attribute_guide 对照 schema，再 vcm_script 重试。',
+    '契约恢复：model_action_guide({ kind: "<kind>", actionName: "<actionName>" }) 对照 paramsSchema 与 requiredBeforeCall。',
+    '复杂参数恢复：先 model_action_guide/model_attribute_guide 对照 schema，再 model_script 重试。',
   ],
   SCRIPT_EXECUTION_FAILED: [
-    '脚本恢复：vcm_action_guide({ className: "<className>", actionName: "<actionName>" }) 核对 usageRules 与 resultApis。',
-    'vcm_script 参数名必须是 script；this 绑定当前业务根实例。',
+    '脚本恢复：model_action_guide({ kind: "<kind>", actionName: "<actionName>" }) 核对 usageRules 与 resultApis。',
+    'model_script 参数名必须是 script；this 绑定当前业务根实例。',
   ],
   SCRIPT_ACTION_FAILED: [
-    '脚本链式调用返回业务失败：按 tool result 原始 code 修正；必要时 vcm_action_guide 对照 paramsSchema。',
+    '脚本链式调用返回业务失败：按 tool result 原始 code 修正；必要时 model_action_guide 对照 paramsSchema。',
   ],
   AI_TOOL_REJECTED_BEFORE_EXECUTION: [
     '策略恢复：检查 implGate / planningStatus / upstreamContractsSatisfied，必要时 human_question。',
   ],
   TOOL_ARGS_INVALID_JSON: [
-    '参数恢复：function.arguments 必须是 JSON object 字符串；先 vcm_action_guide 读取 paramsSchema 再构造 args。',
+    '参数恢复：function.arguments 必须是 JSON object 字符串；先 model_action_guide 读取 paramsSchema 再构造 args。',
   ],
   TOOL_ARGS_NOT_OBJECT: [
-    '参数恢复：function.arguments 根节点必须是 object；对照 vcm_action_guide.paramsSchema 重发 tool_calls。',
+    '参数恢复：function.arguments 根节点必须是 object；对照 model_action_guide.paramsSchema 重发 tool_calls。',
   ],
-  INVALID_VCM_NATIVE_TOOL_ARGS: [
-    '契约恢复：严格按当前工具 schema 重发；vcm_action_guide 使用 className + actionName，vcm_script 使用 script。',
+  INVALID_CLASS_MODEL_TOOL_ARGS: [
+    '契约恢复：严格按当前工具 schema 重发；model_action_guide 使用 actionName，model_script 使用 script。',
   ],
   INVALID_TOOL_ARGS: [
-    '契约恢复：vcm_action_guide({ className: "<className>", actionName: "<actionName>" }) 对照 paramsSchema 与 requiredBeforeCall。',
-    'vcm_script 形状：{ script: "<js body>" }；参数名必须是 script。',
+    '契约恢复：model_action_guide({ kind: "<kind>", actionName: "<actionName>" }) 对照 paramsSchema 与 requiredBeforeCall。',
+    'model_script 形状：{ script: "<js body>" }；参数名必须是 script。',
   ],
   FUNCTION_NOT_FOUND: [
-    '目录恢复：vcm_query({ className: "<className>", includeMembers: true }) 列出真实 actionName。',
+    '目录恢复：model_query({ kind: "<kind>", includeMembers: true }) 列出真实 actionName。',
   ],
   INVALID_GUIDE_REQUEST: [
-    'vcm_action_guide 需要 { className, actionName }；actionName 必须是业务 action 名。',
+    'model_action_guide 需要 { kind, actionName }；actionName 必须是业务 action 名。',
   ],
   KIND_NOT_REGISTERED: [
-    '目录恢复：vcm_query({}) 列出已注册 className；勿猜 className。',
+    '目录恢复：model_query({}) 列出已注册 kind；勿猜 kind 名。',
   ],
-  UNKNOWN_VCM_NATIVE_TOOL: [
-    '工具恢复：只允许 vcm_query / vcm_model_guide / vcm_attribute_guide / vcm_action_guide / vcm_script / human_question / agent_complete。',
+  UNKNOWN_CLASS_MODEL_TOOL: [
+    '工具恢复：只允许 model_query / model_class_guide / model_attribute_guide / model_action_guide / model_script / human_question / agent_complete。',
   ],
 }
 
@@ -119,23 +119,23 @@ function appendProtocolRecoveryHints(
   const toolName = command.protocolToolName
   const code = command.callResult.code
 
-  if (toolName === VCM_NATIVE_TOOL_NAMES.actionGuide) {
+  if (toolName === CLASS_MODEL_TOOL_NAMES.actionGuide) {
     const actionName = readStringArg(command.args, 'actionName')
-    if (actionName !== undefined && VCM_NATIVE_TOOL_NAME_SET.has(actionName)) {
-      hints.push(`"${actionName}" 是协议工具名，不是 actionName；请 vcm_query({ includeMembers: true }) 选择业务 action。`)
+    if (actionName !== undefined && CLASS_MODEL_TOOL_NAME_SET.has(actionName)) {
+      hints.push(`"${actionName}" 是协议工具名，不是 actionName；请 model_query({ includeMembers: true }) 选择业务 action。`)
     }
     if (code === 'FUNCTION_NOT_FOUND') {
-      hints.push('actionName 必须是业务 action（如 "<actionName>"），不能是 vcm_script 等协议工具。')
+      hints.push('actionName 必须是业务 action（如 "<actionName>"），不能是 model_script 等协议工具。')
     }
     return
   }
 
-  if (code === 'INVALID_VCM_NATIVE_TOOL_ARGS' && isVcmNativeToolName(toolName)) {
-    const schemaHint = buildVcmNativeToolSchemaRecoveryHint(toolName)
+  if (code === 'INVALID_CLASS_MODEL_TOOL_ARGS' && isClassModelToolName(toolName)) {
+    const schemaHint = buildClassModelToolSchemaRecoveryHint(toolName)
     if (schemaHint !== undefined) hints.push(schemaHint)
   }
-  if (code === 'INVALID_VCM_NATIVE_TOOL_ARGS' && toolName === VCM_NATIVE_TOOL_NAMES.script) {
-    hints.push('vcm_script 不再接受 code/javascript/path 等旧字段。')
+  if (code === 'INVALID_CLASS_MODEL_TOOL_ARGS' && toolName === CLASS_MODEL_TOOL_NAMES.script) {
+    hints.push('model_script 不再接受 code/javascript/path 等旧字段。')
   }
 }
 
@@ -154,11 +154,11 @@ function appendGlobalRecoveryHints(
 function resolveFailedFunctionContext(
   command: EnrichFunctionCallFailureCommand,
 ): FailedFunctionContext {
-  if (command.protocolToolName === VCM_NATIVE_TOOL_NAMES.actionGuide) {
-    const className = readStringArg(command.args, 'className') ?? readStringArg(command.args, 'kind')
+  if (command.protocolToolName === CLASS_MODEL_TOOL_NAMES.actionGuide) {
+    const kind = readStringArg(command.args, 'kind')
     const actionName = readStringArg(command.args, 'actionName')
     return buildFailedFunctionContext({
-      ...(className === undefined ? {} : { className }),
+      ...(kind === undefined ? {} : { kind }),
       ...(actionName === undefined ? {} : { actionName }),
     })
   }
@@ -167,20 +167,20 @@ function resolveFailedFunctionContext(
 
 function buildFailedFunctionContext(
   input: Readonly<{
-    className?: string
+    kind?: string
     actionName?: string
     attributeName?: string
   }>,
 ): FailedFunctionContext {
   return {
-    ...(input.className === undefined ? {} : { className: input.className }),
+    ...(input.kind === undefined ? {} : { kind: input.kind }),
     ...(input.actionName === undefined ? {} : { actionName: input.actionName }),
     ...(input.attributeName === undefined ? {} : { attributeName: input.attributeName }),
   }
 }
 
 type FailedFunctionContext = Readonly<{
-  className?: string
+  kind?: string
   actionName?: string
   attributeName?: string
 }>
@@ -192,7 +192,7 @@ function readStringArg(args: AiJsonParams, key: string): string | undefined {
 
 function substituteRecoveryTemplate(template: string, context: FailedFunctionContext): string {
   return template
-    .replaceAll('<className>', context.className ?? '<className>')
+    .replaceAll('<kind>', context.kind ?? '<kind>')
     .replaceAll('<actionName>', context.actionName ?? '<actionName>')
     .replaceAll('<attributeName>', context.attributeName ?? '<attributeName>')
 }
@@ -202,9 +202,9 @@ function appendGuideLookupToFix(
   command: EnrichFunctionCallFailureCommand,
 ): string {
   const context = resolveFailedFunctionContext(command)
-  if (context.className === undefined || context.actionName === undefined) return fix
-  const lookup = `vcm_action_guide({ className: "${context.className}", actionName: "${context.actionName}" })`
-  if (fix.includes('vcm_action_guide')) return fix
+  if (context.kind === undefined || context.actionName === undefined) return fix
+  const lookup = `model_action_guide({ kind: "${context.kind}", actionName: "${context.actionName}" })`
+  if (fix.includes('model_action_guide')) return fix
   return `${fix} 反查指南：${lookup}。`
 }
 

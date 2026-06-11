@@ -1,6 +1,5 @@
 /**
  * 插件管理系统
- * @module @spark-appworks/spark-app/plugins
  *
  * 提供统一的插件注册、配置和加载机制
  */
@@ -262,3 +261,4 @@ export function createPluginRegister(registry: PluginRegistry = getGlobalPluginR
     }
   }
 }
+

@@ -23,7 +23,7 @@
  *   7. contract.toOrchestration → 生成编排计划
  *   8. new AiAgentTask → 返回可执行任务
  *
- * 【消费方】ai-host.ts（createAiAgentTask）；注册对象由 VcmNativeAgentAdapter.createRegistration 构造
+ * 【消费方】ai-host.ts（createAiAgentTask）；注册对象由 ClassModelAgentAdapter.createRegistration 构造
  * ═══════════════════════════════════════════════════════════════
  */
 

@@ -6,7 +6,7 @@
  */
 import {
   createSimpleInputContract,
-  VcmNativeAgentAdapter,
+  ClassModelAgentAdapter,
   type AiAgentBeforeFunctionCallDirective,
   type AiAgentBeforeFunctionCallOptions,
   type AiAgentHost,
@@ -14,19 +14,18 @@ import {
   type AiAgentToolLoopNudgeContext,
 } from '@/services/spark-ai-agent-bindings'
 import { buildPageDesignToolLoopNudge } from './page-design/page-design-sop'
-import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
-import { resolveModuleMetadataJson, VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'
+import { CLASS_MODEL_TOOL_NAMES } from '@spark-appworks/spark-ai/class-model'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
 import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
   evaluatePageDesignMutationToolGate,
 } from '@/services/page-design-gates'
-import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime'
-import { createPageDesignVcmKnowledgeProvider } from './page-design/page-design-vcm-knowledge-provider'
+import { createPageDesignClassModelKnowledgeProvider } from './page-design/page-design-class-model-knowledge-provider'
+import { dtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
-const pageDesignRuntimeMetadataDocument = projectPageSurfaceRuntimeMetadataDocument
+const PAGE_DESIGN_ROOT_CLASS_NAME = 'ProjectModel'
 
 export type PageDesignRunMode = 'create' | 'update' | 'fix'
 
@@ -96,12 +95,13 @@ export function resolvePageDesignPlanningContext(
 export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOptions): AiAgentHost {
   return options.host.ensure(PAGE_DESIGN_MODULE_ID, {
     moduleId: PAGE_DESIGN_MODULE_ID,
-    create: () => VcmNativeAgentAdapter.createRegistration({
+    create: () => ClassModelAgentAdapter.createRegistration({
       moduleClass: ProjectModel,
-      metadata: readPageDesignProjectMetadata(),
       options: {
         moduleId: PAGE_DESIGN_MODULE_ID,
-        knowledge: createPageDesignVcmKnowledgeProvider(),
+        rootClassName: PAGE_DESIGN_ROOT_CLASS_NAME,
+        dtsClassModelManifestUrl,
+        knowledge: createPageDesignClassModelKnowledgeProvider(),
         inputContract: createSimpleInputContract<PageDesignRunInput>({
           businessId: PAGE_DESIGN_MODULE_ID,
           identityField: 'pageId',
@@ -137,7 +137,7 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
           title: input => `pageDesign:${input.pageId}`,
           readonlySteps: [
             '策划约束已注入 effectiveDescription（来自 readPlanningProjection）。',
-            '业务契约见 VCM ClassModel 知识索引（vcm_query / vcm_model_guide / vcm_action_guide）。',
+            '业务契约见 ClassModel 知识索引（model_query / model_class_guide / model_action_guide）。',
           ],
         }),
         resolveInstance: ctx => resolvePageDesignProject(options, ctx),
@@ -148,22 +148,19 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
         executionToolNames: PAGE_DESIGN_EXECUTION_TOOL_NAMES,
         planWithoutToolMarkers: PAGE_DESIGN_PLAN_WITHOUT_TOOL_MARKERS,
         toolLoopNudge: createPageDesignToolLoopNudge,
-        ...(pageDesignRuntimeMetadataDocument.$defs === undefined
-          ? {}
-          : { jsonSchemaDefs: pageDesignRuntimeMetadataDocument.$defs }),
       },
     }),
   })
 }
 
 const PAGE_DESIGN_EXECUTION_TOOL_NAMES = new Set<string>([
-  VCM_NATIVE_TOOL_NAMES.script,
+  CLASS_MODEL_TOOL_NAMES.script,
 ])
 
 const PAGE_DESIGN_PLAN_WITHOUT_TOOL_MARKERS = [
-  'navigationnodes',
-  'pageconfig',
-  'rulejson',
+  'openpagedesign',
+  'editnodetree',
+  'editdataset',
 ] as const
 
 function createPageDesignToolLoopNudge(context: AiAgentToolLoopNudgeContext): string | undefined {
@@ -186,8 +183,8 @@ function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
     '策划约束（readPlanningProjection.effectiveDescription）:',
     effectiveDescription,
     `用户本轮目标: ${input.description}`,
-    '知识索引: VCM ClassModel（ProjectRootModel → NavigationRowModel → PageConfigModel）；用 vcm_query / vcm_action_guide 读取契约后 vcm_script 执行。',
-    '元数据来源: generated pageDesign module metadata。',
+    '知识索引: DTS ClassModel（ProjectModel → ConfigPageNode）；用 model_query / model_action_guide 读取契约后 model_script 执行。',
+    '模型来源: generated/dts-class-model。',
   ].join('\n')
 }
 
@@ -246,24 +243,4 @@ function evaluatePageDesignBeforeFunctionCall(
     reason: gate.reason ?? 'pageDesign gate rejected mutation tool.',
     ...(gate.fix === undefined ? {} : { fix: gate.fix }),
   }
-}
-
-function readPageDesignProjectModule() {
-  return pageDesignRuntimeMetadataDocument.modules.find(
-    module => module.rootApi.className === 'ProjectRootModel'
-      || module.rootApi.kind === 'ProjectRootModel',
-  )
-}
-
-function readPageDesignProjectMetadata(): AiModuleMetadataJson {
-  const projectModule = readPageDesignProjectModule()
-  if (projectModule === undefined) {
-    throw new Error('pageDesign runtime metadata missing ProjectRootModel rootApi.')
-  }
-  return resolveModuleMetadataJson(projectModule, {
-    inlineSchemaRefs: false,
-    ...(pageDesignRuntimeMetadataDocument.$defs === undefined
-      ? {}
-      : { schemaDefs: pageDesignRuntimeMetadataDocument.$defs }),
-  })
 }

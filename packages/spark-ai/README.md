@@ -1,6 +1,6 @@
 # @spark-appworks/spark-ai
 
-Spark AI agent runtime：JSON Schema 校验、VCM-native 工具闭集、Host 编排、ToolLoop、传输契约与 native-runtime 脚本执行。
+Spark AI agent runtime：JSON Schema 校验、ClassModel 工具闭集、Host 编排、ToolLoop、传输契约与 native-runtime 脚本执行。
 
 ## 公共入口
 
@@ -9,7 +9,7 @@ Spark AI agent runtime：JSON Schema 校验、VCM-native 工具闭集、Host 编
 | `@spark-appworks/spark-ai` | 薄门面（常用符号快捷导出） |
 | `@spark-appworks/spark-ai/json` | Schema 校验与 JSON 规整 |
 | `@spark-appworks/spark-ai/agent` | Host、会话、ToolLoop、传输、native-runtime |
-| `@spark-appworks/spark-ai/vcm-native` | ClassModel 反射图、metadata 解析与 VCM-native 工具 |
+| `@spark-appworks/spark-ai/class-model` | ClassModel 反射图、metadata 解析与 ClassModel 工具 |
 
 ## 文档
 
@@ -19,8 +19,8 @@ Spark AI agent runtime：JSON Schema 校验、VCM-native 工具闭集、Host 编
 | [`docs/README.md`](docs/README.md) | 文档索引与阅读顺序 |
 | [`docs/native-runtime-and-agent-flow-zh-cn.md`](docs/native-runtime-and-agent-flow-zh-cn.md) | native-runtime、Adapter、ToolLoop、pageDesign 全链路 |
 | [`docs/transport-and-session-zh-cn.md`](docs/transport-and-session-zh-cn.md) | V4 传输、session-turn / app-sse、`ai-turn-bridge` |
-| [`docs/vcm-generator-and-callbackapis-zh-cn.md`](docs/vcm-generator-and-callbackapis-zh-cn.md) | Generator 规则与 callbackApis 迁移设计 |
-| [`src/vcm-native/metadata`](src/vcm-native/metadata) | VCM metadata 协议与解析实现 |
+| [`src/class-model`](src/class-model) | DTS ClassModel、guide 投影、Worker 知识索引 |
+| [`src/agent/native-runtime`](src/agent/native-runtime) | model_script 脚本上下文与执行 |
 
 ## APP 消费示例
 

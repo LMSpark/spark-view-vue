@@ -6,22 +6,6 @@ export type RButtonProps = SparkNodeProps & {
    * CRUD 或页面动作名，由宿主内置 action runner 接管执行。
    * 新建申请、提交新单据等“创建一条新记录”的按钮优先使用 append-row，并用 dataViewKey 指向目标列表/待处理视图。
    * append-row/prompt-append 会读取按钮当前作用域行、appendPayload、inheritFields 和 inheritFieldMap。
-   * @enumValue append-row 新增/提交一条新记录：向目标数据视图追加一行。表单内“提交申请/提交新单据”应优先使用它，并通过 dataViewKey 指向目标列表视图、appendPayload 写固定字段、inheritFields 从表单 currentRow 复制字段。
-   * @enumValue prompt-append 弹窗新增：先弹出输入框，再追加新行。适合只填写一个关键字段的快速新增。
-   * @enumValue prompt-edit 弹窗编辑：先弹出输入框，再更新目标行字段。适合行内或当前行的单字段快速编辑。
-   * @enumValue submit-current-form 保存已有表单行：只把当前表单数据写回同一个已有 currentRow/id，不会创建新行，也不会追加到待审批/列表视图；不适合“新建申请提交到列表”。
-   * @enumValue clear-rows 清空行：清空目标数据视图的全部本地行数据；这是危险操作，通常使用 danger 按钮样式。
-   * @enumValue move-row 移动当前作用域行：移动行内按钮所在的 scope row，常用于树表或可排序数据。
-   * @enumValue move-current 移动 currentRow：移动数据视图当前选中的 currentRow，常用于外部工具栏按钮。
-   * @enumValue refresh 刷新数据：重新加载目标数据视图的数据。适合工具栏刷新按钮。
-   * @enumValue delete-row 删除当前作用域行：删除行内按钮所在的 scope row。适合表格操作列里的删除按钮。
-   * @enumValue delete-current 删除 currentRow：删除数据视图当前选中的 currentRow。适合详情页或外部工具栏按钮。
-   * @enumValue delete-selected 批量删除选中行：删除 selectedRows 中的所有行。仅在表格启用 selection 多选列时使用。
-   * @enumValue patch-row 更新当前作用域行：更新行内按钮所在的 scope row，可配 patch 或 field/value。
-   * @enumValue patch-current 更新 currentRow：更新数据视图当前选中的 currentRow，适合详情页或工具栏按钮。
-   * @enumValue patch-selected 批量更新选中行：批量更新 selectedRows 中的所有行。仅在表格启用 selection 多选列时使用。
-   * @enumValue message-row 查看当前作用域行：展示行内按钮所在 scope row 的字段信息，不修改数据。
-   * @enumValue message-current 查看 currentRow：展示数据视图当前选中 currentRow 的字段信息，不修改数据。
    */
   action?: BuiltinActionName
 
@@ -174,9 +158,6 @@ export type RButtonProps = SparkNodeProps & {
    * 按钮尺寸。
    * Element Plus 按钮尺寸只允许 default、small、large。
    * @default "default"
-   * @enumValue default 默认尺寸: 使用底层按钮组件的默认尺寸。
-   * @enumValue small 小尺寸: 用于紧凑工具栏或表格操作列。
-   * @enumValue large 大尺寸: 用于强调型主操作按钮。
    */
   buttonSize?: string
 
@@ -246,3 +227,4 @@ export type RButtonProps = SparkNodeProps & {
    */
   dark?: boolean
 }
+

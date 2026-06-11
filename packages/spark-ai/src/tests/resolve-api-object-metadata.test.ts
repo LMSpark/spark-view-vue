@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { resolveModuleMetadataJson, type AiModuleMetadataJson } from '../vcm-native'
+import { resolveModuleMetadataJson, type AiModuleMetadataJson } from '../class-model'
 
 describe('resolveModuleMetadataJson', () => {
   it('expands apiRegistry $ref into inline resultApis for adapter consumption', () => {
     const childApi: AiModuleMetadataJson['rootApi'] = {
-      className: 'child-api',
       kind: 'child-api',
       name: 'Child',
       description: 'Child API',
@@ -22,7 +21,6 @@ describe('resolveModuleMetadataJson', () => {
     const resolved = resolveModuleMetadataJson({
       schemaVersion: 2,
       rootApi: {
-        className: 'root-api',
         kind: 'root-api',
         name: 'Root',
         description: 'Root API',

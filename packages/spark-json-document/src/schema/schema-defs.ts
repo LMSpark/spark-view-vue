@@ -4,7 +4,7 @@
  * 协议边界说明：
  * - 反射/生成阶段允许 schema 片段临时携带本地 $defs。
  * - 运行时文档应把这些定义集中到 document.$defs，再用 #/$defs/* 引用。
- * - 本模块只处理标准 JSON Schema 引用关系，不理解 VCM 或 LLM 业务语义。
+ * - 本模块只处理标准 JSON Schema 引用关系，不理解 ClassModel 或 LLM 业务语义。
  */
 
 import { isRecord } from '@spark-appworks/spark-utils'

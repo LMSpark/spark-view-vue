@@ -289,7 +289,6 @@ function cloneProjectNodeData(node: ProjectNodeData): ProjectNodeData {
 
 /**
  * 导航节点基类。
- * @vcmSession 运行时导航会话节点；序列化走 ProjectNodeData + NavigationClient，无整包 toJson。
  */
 export class ProjectNode {
   #node: ProjectNodeData
@@ -422,3 +421,4 @@ export class ProjectNode {
     this.#descriptionContext = [...descriptionContext]
   }
 }
+

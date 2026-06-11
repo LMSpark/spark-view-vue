@@ -11,7 +11,7 @@ export default defineConfig({
     alias: [
       { find: /^@spark-appworks\/spark-ai\/json$/, replacement: resolve(__dirname, '../spark-ai/src/json/index.ts') },
       { find: /^@spark-appworks\/spark-ai\/agent$/, replacement: resolve(__dirname, '../spark-ai/src/agent/index.ts') },
-      { find: /^@spark-appworks\/spark-ai\/vcm-native$/, replacement: resolve(__dirname, '../spark-ai/src/vcm-native/index.ts') },
+      { find: /^@spark-appworks\/spark-ai\/class-model$/, replacement: resolve(__dirname, '../spark-ai/src/class-model/index.ts') },
       { find: /^@spark-appworks\/spark-ai$/, replacement: resolve(__dirname, '../spark-ai/src/index.ts') },
       { find: /^@spark-appworks\/spark-utils$/, replacement: resolve(__dirname, '../spark-utils/src/index.ts') },
       { find: /^@spark-appworks\/spark-data$/, replacement: resolve(__dirname, '../spark-data/src/index.ts') },

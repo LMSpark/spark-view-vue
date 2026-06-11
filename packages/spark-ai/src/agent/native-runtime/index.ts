@@ -10,6 +10,11 @@ export {
   executeAiNativeScript,
 } from './native-script-runner'
 
+export {
+  createDtsNativeModuleMetadata,
+  executeDtsNativeScript,
+} from './dts-native-script-runner'
+
 export type {
   AiApiScriptContextCommand,
   ExecuteAiApiActionCommand,
@@ -20,3 +25,7 @@ export type {
   AiNativeScriptContextCommand,
   AiNativeScriptRunCommand,
 } from './native-script-runner'
+
+export type {
+  DtsNativeScriptRunCommand,
+} from './dts-native-script-runner'

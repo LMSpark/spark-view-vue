@@ -52,7 +52,7 @@ export function createAiAgentTurnCallbacks(options: AiAgentTurnBridgeOptions = {
   return {
     prepareSession: async (input) => {
       // The backend owns session lifecycle and persistence; APP only ensures it before a turn.
-      recordAiTurnDiagnostic('prepare-session-request', input.sessionId)
+      recordAiTurnDiagnostic({ type: 'prepare-session-request', sessionId: input.sessionId })
       const body = await http.post(AI_SESSION_API_BASE, {
         protocolVersion: AI_TURN_PROTOCOL_VERSION,
         sessionId: input.sessionId,
@@ -65,7 +65,7 @@ export function createAiAgentTurnCallbacks(options: AiAgentTurnBridgeOptions = {
         ...(windowSize === undefined ? {} : { windowSize }),
       }, signalConfig(input.signal))
       assertPreparedSession(body, input)
-      recordAiTurnDiagnostic('prepare-session-ok', input.sessionId)
+      recordAiTurnDiagnostic({ type: 'prepare-session-ok', sessionId: input.sessionId })
     },
     executeTurn: async (input) => {
       if (transport === 'session-turn') {
@@ -80,8 +80,11 @@ export function createAiAgentTurnCallbacks(options: AiAgentTurnBridgeOptions = {
         idleTimeoutMs,
       })
       try {
-        recordAiTurnDiagnostic('turn-start-request', input.sessionId, input.turn.turnId, undefined, {
-          messageCount: input.messages.length,
+        recordAiTurnDiagnostic({
+          type: 'turn-start-request',
+          sessionId: input.sessionId,
+          turnId: input.turn.turnId,
+          details: { messageCount: input.messages.length },
         })
         const body = await http.post(AI_TURN_API, {
           sessionId: input.sessionId,
@@ -91,12 +94,20 @@ export function createAiAgentTurnCallbacks(options: AiAgentTurnBridgeOptions = {
           ...(windowSize === undefined ? {} : { windowSize }),
         }, signalConfig(input.signal))
         assertTurnStart(body, input)
-        recordAiTurnDiagnostic('turn-start-accepted', input.sessionId, input.turn.turnId, undefined, {
-          started: isRecord(body) ? body['started'] : undefined,
+        recordAiTurnDiagnostic({
+          type: 'turn-start-accepted',
+          sessionId: input.sessionId,
+          turnId: input.turn.turnId,
+          details: { started: isRecord(body) ? body['started'] : undefined },
         })
         return await collector.result
       } catch (error) {
-        recordAiTurnDiagnostic('turn-error', input.sessionId, input.turn.turnId, errorMessage(error))
+        recordAiTurnDiagnostic({
+          type: 'turn-error',
+          sessionId: input.sessionId,
+          turnId: input.turn.turnId,
+          message: errorMessage(error),
+        })
         collector.close()
         throw error
       }
@@ -127,28 +138,33 @@ function withTurnDiagnostics(
   return {
     ...input,
     onStreamEvent: (event) => {
-      recordAiTurnDiagnostic('turn-frame', input.sessionId, input.turn.turnId, undefined, {
-        frameType: event.type,
+      recordAiTurnDiagnostic({
+        type: 'turn-frame',
+        sessionId: input.sessionId,
+        turnId: input.turn.turnId,
+        details: { frameType: event.type },
       })
       input.onStreamEvent?.(event)
     },
   }
 }
 
-function recordAiTurnDiagnostic(
-  type: string,
-  sessionId?: string,
-  turnId?: string,
-  message?: string,
-  details?: Record<string, unknown>,
-): void {
+type RecordAiTurnDiagnosticCommand = Readonly<{
+  type: string
+  sessionId?: string
+  turnId?: string
+  message?: string
+  details?: Record<string, unknown>
+}>
+
+function recordAiTurnDiagnostic(command: RecordAiTurnDiagnosticCommand): void {
   aiTurnDiagnostics.push({
     at: Date.now(),
-    type,
-    ...(sessionId === undefined ? {} : { sessionId }),
-    ...(turnId === undefined ? {} : { turnId }),
-    ...(message === undefined ? {} : { message }),
-    ...(details === undefined ? {} : { details }),
+    type: command.type,
+    ...(command.sessionId === undefined ? {} : { sessionId: command.sessionId }),
+    ...(command.turnId === undefined ? {} : { turnId: command.turnId }),
+    ...(command.message === undefined ? {} : { message: command.message }),
+    ...(command.details === undefined ? {} : { details: command.details }),
   })
   while (aiTurnDiagnostics.length > MAX_AI_TURN_DIAGNOSTICS) {
     aiTurnDiagnostics.shift()

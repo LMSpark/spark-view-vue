@@ -88,7 +88,7 @@ function consumeAiHostRunSmokeLoginReset(): void {
 
 function readAiHostRunSmokePayloadHasLogin(encoded: string): boolean {
   try {
-    const decoded = JSON.parse(decodeBase64UrlForSmoke(encoded)) as unknown
+    const decoded: unknown = JSON.parse(decodeBase64UrlForSmoke(encoded))
     return isRecord(decoded) && isRecord(decoded['login'])
   } catch {
     return false

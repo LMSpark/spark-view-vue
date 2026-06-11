@@ -22,7 +22,7 @@ After code changes, prefer focused checks first:
 - `pnpm run typecheck`
 - `pnpm run lint`
 - `pnpm run test`
-- `pnpm run verify:rules` when touching architecture boundaries, AI codegen rules, docs governance, or VCM/LLM-visible comments.
+- `pnpm run verify:rules` when touching architecture boundaries, AI codegen rules, docs governance, or LLM-visible comments.
 
 ## Package Boundaries
 
@@ -73,18 +73,18 @@ Core rules:
 
 When constructing Spark UI nodes through pageDesign AI tools:
 
-1. Read `vcm_action_guide` for the target model className (e.g. `SparkNodeTree` / `addNode`) and use its `paramsSchema` / `examples`.
-2. Build or mutate page structure via `vcm_script` on the native object chain (property path + `[i]` indexing), not path/direct-call shortcuts.
-3. Construct SparkNode `type` / `props` only from VCM-declared contracts and existing renderer patterns; do not invent props.
+1. Read `model_action_guide` for the target action (e.g. `node-tree` / `addNode`) and use its `paramsSchema` / `examples`.
+2. Build or mutate page structure via `model_script` on the native object chain (`openPageDesign` → `editNodeTree` / `editDataSet`), not `/kind[id]` path direct calls.
+3. Construct SparkNode `type` / `props` only from ClassModel contracts and existing renderer patterns; do not invent props.
 4. Persist four files through the script return value; outer `ProjectWorkspace` handles save.
 
-Never skip VCM function guides before writing node-tree or dataset mutations.
+Never skip model guides before writing node-tree or dataset mutations.
 
 ## Large Files
 
 Do not directly edit generated or large metadata files:
 
-- `generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json`
+- `generated/dts-class-model/manifest.json` and its `files/**` JSON shards
 
 ## Commit Format
 

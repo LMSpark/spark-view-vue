@@ -38,7 +38,6 @@
  * }
  * ```
  *
- * @module vite-plugin-spark-components
  * @author SPARK Team
  * @since 1.1.0
  */
@@ -225,7 +224,7 @@ function generateImportStatement(
 
 
 /* REMOVED: Props 提取（extractInterfaceBody, parseInterfaceProperties, applyDefaultsFromWithDefaults, parseComponentProps）
- * Props 结构化提取由 vite-plugin-spark-catalog/module-metadata-generator 负责（VCM → VcmNativeAgentAdapter）。
+ * Props 结构化提取由 vite-plugin-spark-catalog 负责，并由 ClassModelAgentAdapter 按需合并。
  */
 
 /**
@@ -562,3 +561,4 @@ export function sparkComponentsPlugin(
  * 默认导出
  */
 export default sparkComponentsPlugin
+

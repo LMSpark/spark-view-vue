@@ -192,8 +192,8 @@ function assertHostRunResult(result) {
   const toolNames = toolCalls
     .map(call => isRecord(call) && typeof call.toolName === 'string' ? call.toolName : '')
     .filter(Boolean)
-  if (!toolNames.includes('vcm_script')) {
-    throw new Error(`projectPlanning smoke completed without vcm_script; saw: ${toolNames.join(', ') || '(none)'}`)
+  if (!toolNames.includes('model_script')) {
+    throw new Error(`projectPlanning smoke completed without model_script; saw: ${toolNames.join(', ') || '(none)'}`)
   }
   const events = readStringArray(result, 'sseEvents')
   if (!events.includes('llm-frame')) {

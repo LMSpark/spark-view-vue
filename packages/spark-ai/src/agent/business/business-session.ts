@@ -321,7 +321,7 @@ export async function runAiAgent<TInput extends AiJsonParams = AiJsonParams>(
  * 执行步骤：
  * 1. 调用 registration.onStartSession() 生命周期回调
  * 2. 调用 sessionStore.startSession() 创建会话记录
- * 3. 直接使用 VCM-native 固定协议工具规约
+ * 3. 直接使用 ClassModel 固定协议工具规约
  * 4. 返回 AiAgentStartSessionResult（含 session + tools）
  */
 // AI_AGENT_TRACE[agent-session-start]: startAiAgentRegistrationSession 负责调用业务 onStartSession，并投影固定 module 工具。

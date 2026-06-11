@@ -22,7 +22,7 @@
  */
 
 import { createAiAgentStreamKey, createAiAgentTurnKey } from '../business/business-scope'
-import { VCM_NATIVE_TOOL_NAMES } from '../../vcm-native'
+import { CLASS_MODEL_TOOL_NAMES } from '../../class-model'
 import type { AiAgentScope } from '../business/scope-types'
 import type { AiAgentChatRequest, AiAgentStreamEvent, AiAgentTurnMeta } from '../chat/chat-types'
 import { stringifyAiAgentPayload } from './payload-codec'
@@ -94,23 +94,23 @@ export function emitToolResultEvent(input: ToolResultEventInput): void {
  * 根据 LLM 发起的工具调用名称和参数，推断该调用归属于哪个能力模块（kind）。
  *
  * 规则：
- *   · vcm_model_guide / vcm_attribute_guide / vcm_action_guide / vcm_query → 优先取 args.kind
+ *   · model_class_guide / model_attribute_guide / model_action_guide / model_query → 优先取 args.kind
  *   · 回退         → 使用 toolName 本身
  *
  * 典型示例：
- *   vcm_model_guide({ kind: "Table" })                                      → "Table"
- *   vcm_attribute_guide({ kind: "Table", attributeName: "title" })          → "Table"
- *   vcm_action_guide({ kind: "Table", actionName: "listRows" })             → "Table"
+ *   model_class_guide({ kind: "Table" })                                      → "Table"
+ *   model_attribute_guide({ kind: "Table", attributeName: "title" })          → "Table"
+ *   model_action_guide({ kind: "Table", actionName: "listRows" })             → "Table"
  * ----------------------------------------------------------------------------- */
 
 export function eventModuleIdFromProtocolCall(
   toolName: string,
   args: Readonly<Record<string, unknown>>,
 ): string {
-  if ((toolName === VCM_NATIVE_TOOL_NAMES.modelGuide
-    || toolName === VCM_NATIVE_TOOL_NAMES.attributeGuide
-    || toolName === VCM_NATIVE_TOOL_NAMES.actionGuide
-    || toolName === VCM_NATIVE_TOOL_NAMES.query)
+  if ((toolName === CLASS_MODEL_TOOL_NAMES.modelGuide
+    || toolName === CLASS_MODEL_TOOL_NAMES.attributeGuide
+    || toolName === CLASS_MODEL_TOOL_NAMES.actionGuide
+    || toolName === CLASS_MODEL_TOOL_NAMES.query)
     && typeof args['kind'] === 'string'
     && args['kind'].trim().length > 0) {
     return args['kind']

@@ -7,7 +7,6 @@
  *   3. 所有 attrs 透传到目标渲染节点
  *   4. `children` 递归渲染
  *
- * @module create-passthrough
  */
 import { h, computed, defineComponent, resolveComponent, type Component } from 'vue'
 import SparkComponentRenderer from './SparkComponentRenderer.vue'
@@ -88,3 +87,4 @@ export function createPassthrough(
     },
   })
 }
+

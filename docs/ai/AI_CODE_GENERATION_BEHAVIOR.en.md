@@ -131,7 +131,7 @@ Before adding or keeping an interface, answer three questions:
 
 - Classes carry state, lifecycle, caching, invariants, and default behavior.
 - Subclasses express genuine "is-a" relationships only — do not inherit just to reuse a few methods.
-- AI-editable model shape: `docs/ai/AI_MODEL_SPEC.md` (single `SparkAIModel` stack only; no parallel snapshot models such as DataSet/SparkNodeTree for LLM editing; page files are `PageConfigModel` string fields; LLM projection reads fields/methods/JSDoc directly).
+- AI-editable model shape: `docs/ai/AI_MODEL_SPEC.md` (`SparkAIModel` + public fields + JSDoc; **model class is the LLM knowledge source**, no ClassModel pipeline).
 
 ### Class Naming & Organization Hierarchy
 
@@ -562,7 +562,7 @@ export function objectSchema(
 ## 5. Comment Conventions
 
 - Comments explain contracts, constraints, priorities, and risks only — do not narrate obvious code line by line.
-- VCM/LLM-visible semantics MUST be annotated with natural-language comments and structured tags at the first declaration site.
+- LLM-visible semantics MUST be expressed with natural-language comments, type signatures, and names at the first declaration site; do not add convention tags.
 - Do not use comments to justify silent fallbacks.
 
 ## 6. Hard Gates
@@ -583,4 +583,4 @@ export function objectSchema(
 
 ## 7. References
 
-For the VCM metadata generation chain, see `packages/vite-plugin-spark-catalog/README.md`; for repository verification commands, see the root `package.json`.
+For the DTS ClassModel generation chain, see `scripts/generate-dts-class-model.mjs`; for repository verification commands, see the root `package.json`.

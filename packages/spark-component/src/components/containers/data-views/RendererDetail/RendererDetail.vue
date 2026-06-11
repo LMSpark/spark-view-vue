@@ -51,9 +51,6 @@
  * @description 数据详情容器，与 r-form 结构一致但不可编辑。
  * @category container
  * @binding dataViewKey-driven
- * @provides DATA_SOURCE
- * @provides CONTEXT_DATA
- * @consumes PAGE_DATASET
  * @notes children 内放 r-* 字段组件（只读模式展示）
  * @notes 工具栏通过结构化 `toolbar` 区域声明
  */
@@ -178,3 +175,4 @@ registerApi(detailApi)
   min-width: 0;
 }
 </style>
+

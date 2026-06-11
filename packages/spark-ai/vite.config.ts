@@ -8,7 +8,7 @@ export default defineConfig({
         index: resolve(__dirname, 'src/index.ts'),
         'json/index': resolve(__dirname, 'src/json/index.ts'),
         'agent/index': resolve(__dirname, 'src/agent/index.ts'),
-        'vcm-native/index': resolve(__dirname, 'src/vcm-native/index.ts'),
+        'class-model/index': resolve(__dirname, 'src/class-model/index.ts'),
       },
       formats: ['es'],
     },

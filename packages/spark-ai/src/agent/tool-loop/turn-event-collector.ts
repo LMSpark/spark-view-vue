@@ -515,7 +515,7 @@ function recoverDsmlToolCallsFromText(text: string): readonly AiAgentTransportTo
   return calls
 }
 
-/** 部分 OpenAI 兼容网关常见：<tool_call>vcm_script({"script":"..."})（可无闭合标签）。 */
+/** 部分 OpenAI 兼容网关常见：<tool_call>model_script({"script":"..."})（可无闭合标签）。 */
 function recoverInlineJsonToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
   const calls: AiAgentTransportToolCall[] = []
   const openerPattern = /<tool_call>\s*([A-Za-z_][\w.-]*)\s*\(/gi
@@ -538,11 +538,11 @@ function recoverInlineJsonToolCallsFromText(text: string): readonly AiAgentTrans
 }
 
 const RECOVERABLE_BARE_TOOL_NAMES = [
-  'vcm_query',
-  'vcm_model_guide',
-  'vcm_attribute_guide',
-  'vcm_action_guide',
-  'vcm_script',
+  'model_query',
+  'model_class_guide',
+  'model_attribute_guide',
+  'model_action_guide',
+  'model_script',
   'human_question',
   'agent_complete',
 ] as const

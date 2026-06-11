@@ -1,7 +1,6 @@
 /**
  * 插件管理系统导出
  * 
- * @module @spark-appworks/spark-app/plugins
  */
 
 export {
@@ -22,3 +21,4 @@ export type {
   PluginLoader,
   PluginInstance
 } from './registry'
+

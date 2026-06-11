@@ -29,7 +29,7 @@ export type PageDesignGateValidationResult = Readonly<{
 }>
 
 const MUTATION_TOOL_NAMES = new Set([
-  'vcm_script',
+  'model_script',
   'writepagefile',
   'openpagedesign',
 ])

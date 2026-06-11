@@ -6,7 +6,7 @@ const LEGACY_PROTOCOL_TOOL_PATTERN = /\b(?:module_query|module_guide|module_attr
 
 /** 禁令句等刻意保留旧名引用的生产文件 */
 const ALLOWLIST = new Set([
-  'packages/spark-ai/src/agent/business/vcm-native-agent-adapter.ts',
+  'packages/spark-ai/src/agent/business/class-model-agent-adapter.ts',
   'packages/spark-ai/ARCHITECTURE.md',
 ])
 

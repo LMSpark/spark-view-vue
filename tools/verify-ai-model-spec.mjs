@@ -9,10 +9,7 @@
  * 3. fromJson 签名是否接受 Record<string, unknown> | string
  * 4. 继承链父类 fromJson 判别分发（info）
  *
- * SparkAIModel 子类：协议强制 toJson + validate；save/load 按需。
- * 禁止第二套「快照 fromJson」AI 模型；见 docs/ai/AI_MODEL_SPEC.md。
- *
- * 豁免：标有 @vcmSession 的 class（遗留，待移除）。
+ * SparkAIModel 子类：协议只强制 toJson；save/load/fromJson 按需，不强制 fromJson。
  *
  * 用法：
  *   node tools/verify-ai-model-spec.mjs [--strict] [--root DIR]
@@ -39,7 +36,7 @@ const EXCLUDED_SUBDIRS = new Set([
   '/crud-service',
 ])
 
-/** 与 vcm-native-class-lifecycle-audit.ts 的 STATIC_FACTORY_NAMES 对齐 */
+/** 与 class-model-class-lifecycle-audit.ts 的 STATIC_FACTORY_NAMES 对齐 */
 const STATIC_FACTORY_NAMES = new Set([
   'fromJson',
   'fromDataSet',
@@ -71,36 +68,6 @@ function extractClassMethods(decl) {
   }
 
   return { instanceMethods, staticMethods }
-}
-
-/**
- * 检查 class 是否有私有字段（#private / private / readonly 非参数属性）。
- */
-function hasPrivateOrStateFields(decl) {
-  for (const member of decl.members) {
-    // # 私有字段（ECMAScriptPrivateField）— member.name 是 PrivateIdentifier
-    if (member.name && member.name.kind === ts.SyntaxKind.PrivateIdentifier) return true
-
-    // private / protected 字段
-    if (ts.isPropertyDeclaration(member)) {
-      const flags = ts.getCombinedModifierFlags(member)
-      if (flags & (ts.ModifierFlags.Private | ts.ModifierFlags.Protected)) return true
-    }
-  }
-  return false
-}
-
-/**
- * 从 class JSDoc 中检测 @vcmSession 或 @vcmFilePersisted tag。
- * @vcmSession 豁免 toJson + fromJson
- * @vcmFilePersisted 豁免 toJson（可选），fromJson 走 fromRuleJson 等特殊工厂
- */
-function hasLifecycleExemptTag(decl, sourceFile) {
-  const text = sourceFile.getFullText()
-  const classStart = decl.getStart(sourceFile)
-  // 向前搜索 JSDoc 注释
-  const beforeClass = text.slice(Math.max(0, classStart - 500), classStart)
-  return /@(?:vcmSession|vcmFilePersisted)\b/u.test(beforeClass)
 }
 
 /**
@@ -170,52 +137,38 @@ function scanModelClass(parsed, violations, strict) {
 
     const className = node.name.text
 
-    // 识别业务模型 class：
-    // 1. export class + 有私有/状态字段
-    // 2. 或已有 toJson / fromJson 方法（已知模型）
+    // 识别业务模型 class：只靠结构，不靠自定义 JSDoc 标签。
     const isExported = ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Export
-    const hasState = hasPrivateOrStateFields(node)
     const { instanceMethods, staticMethods } = extractClassMethods(node)
 
     const hasToJson = instanceMethods.has('toJson') || instanceMethods.has('toJSON')
-    const hasValidate = instanceMethods.has('validate')
     const hasStaticFactory = [...staticMethods].some(m => STATIC_FACTORY_NAMES.has(m))
     const isSparkAIModel = extendsSparkAIModel(node)
 
-    // 只扫描：导出的 + (SparkAIModel 子类 或 有状态 或 已有序列化方法)
+    // 只扫描：导出的 + (SparkAIModel 子类 或 已有序列化方法)
     if (!isExported) { ts.forEachChild(node, visit); return }
-    if (!isSparkAIModel && !hasState && !hasToJson && !hasStaticFactory) {
+    if (!isSparkAIModel && !hasToJson && !hasStaticFactory) {
       ts.forEachChild(node, visit)
       return
     }
 
-    const isSession = hasLifecycleExemptTag(node, sourceFile)
     const level = strict ? 'error' : 'warn'
 
-    // Check 1: toJson
-    if (!isSession && !hasToJson) {
+    // Check 1: 快照/树模型缺少 toJson()
+    if (!hasToJson) {
       violations.push({
         file,
         line: lineFor(sourceFile, node, lineOffset),
-        message: `[${level}] ${className} has no toJson() instance method; if it is a session model, mark @vcmSession in JSDoc`,
-      })
-    }
-
-    // Check 1b: SparkAIModel 子类须有 validate()
-    if (!isSession && isSparkAIModel && !hasValidate) {
-      violations.push({
-        file,
-        line: lineFor(sourceFile, node, lineOffset),
-        message: `[${level}] ${className} extends SparkAIModel but has no validate() instance method`,
+        message: `[${level}] ${className} has no toJson() instance method`,
       })
     }
 
     // Check 2: 快照类缺少 static fromJson（SparkAIModel 持久化子类豁免）
-    if (!isSession && !hasStaticFactory && !isSparkAIModel) {
+    if (!hasStaticFactory && !isSparkAIModel) {
       violations.push({
         file,
         line: lineFor(sourceFile, node, lineOffset),
-        message: `[${level}] ${className} has no static fromJson() factory; add static fromJson(json: ...) or extends SparkAIModel / mark @vcmSession`,
+        message: `[${level}] ${className} has no static fromJson() factory; add static fromJson(json: ...) or extends SparkAIModel`,
       })
     }
 

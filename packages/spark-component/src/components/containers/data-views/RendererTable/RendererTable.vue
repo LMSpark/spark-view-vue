@@ -120,9 +120,6 @@
  * @description 数据表格容器，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。
  * @category container
  * @binding dataViewKey-driven
- * @provides DATA_SOURCE
- * @consumes PAGE_DATASET
- * @consumes PAGE_SERVICE
  * @notes children 仅放 r-* 字段组件做列，禁止直接声明底层列节点
  * @notes 结构化区域使用 props.toolbar / props.filter / props.actions，不再使用 dock 分流
  * @notes highlightCurrentRow 必须显式声明才生效
@@ -618,3 +615,4 @@ async function handleSortChange({ prop, order }: { prop: string | null, order: '
 }
 
 </style>
+

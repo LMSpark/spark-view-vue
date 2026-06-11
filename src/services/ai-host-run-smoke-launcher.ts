@@ -190,7 +190,7 @@ function createResultWaiter(requestId: string, timeoutMs: number): ResultWaiter 
 }
 
 function readPayload(encoded: string): AiHostRunSmokePayload {
-  const decoded = JSON.parse(decodeBase64Url(encoded)) as unknown
+  const decoded: unknown = JSON.parse(decodeBase64Url(encoded))
   if (!isRecord(decoded)) {
     throw new Error('AI Host Run smoke payload must be a JSON object.')
   }
@@ -337,14 +337,23 @@ function logSmokeStage(requestId: string, stage: string): void {
 }
 
 function readSparkDevRouter(): SparkDevRouter | undefined {
-  const sparkDev = (window as Window & { __sparkDev?: { router?: SparkDevRouter } }).__sparkDev
-  const router = sparkDev?.router
-  return typeof router?.replace === 'function' ? router : undefined
+  const router = window.__sparkDev?.router
+  return isSparkDevRouter(router) ? router : undefined
+}
+
+function isSparkDevRouter(value: unknown): value is SparkDevRouter {
+  return isRecord(value) && typeof value['replace'] === 'function'
 }
 
 type SparkDevRouter = Readonly<{
   replace(to: { path: string; query?: Record<string, string> }): Promise<unknown>
 }>
+
+declare global {
+  interface Window {
+    __sparkDev?: Readonly<{ router?: unknown }>
+  }
+}
 
 function isAppSseNotConnected(error: unknown): boolean {
   if (!isRecord(error)) return false

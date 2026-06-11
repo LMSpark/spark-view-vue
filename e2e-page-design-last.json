@@ -84,7 +84,7 @@
     "toolCallCount": 0,
     "failedToolCallCount": 0,
     "functionNames": [],
-    "lastAssistantText": "```tool_call\nvcm_query({\n  kind: \"project\",\n  member: \"config-page\"\n})\n```",
+    "lastAssistantText": "```tool_call\nmodel_query({\n  kind: \"project\",\n  member: \"config-page\"\n})\n```",
     "roleCounts": {
       "user": 1,
       "assistant": 1
@@ -167,12 +167,12 @@
         }
       },
       {
-        "name": "vcmGuides",
+        "name": "classModelGuides",
         "ok": false,
         "detail": {
           "ok": false,
           "matchedToolNames": [],
-          "issue": "session did not record VCM guide or query tool usage"
+          "issue": "session did not record ClassModel guide or query tool usage"
         }
       }
     ],
@@ -203,7 +203,7 @@
       "submit button does not close the application flow",
       "closure check failed: submitClosure",
       "closure check failed: leaveTypeOptions",
-      "VCM guide validation failed"
+      "ClassModel guide validation failed"
     ],
     "tableNames": [],
     "leaveTable": null,
@@ -242,10 +242,10 @@
       "hasStaticOptions": false,
       "bindings": []
     },
-    "vcmGuideValidation": {
+    "classModelGuideValidation": {
       "ok": false,
       "matchedToolNames": [],
-      "issue": "session did not record VCM guide or query tool usage"
+      "issue": "session did not record ClassModel guide or query tool usage"
     }
   },
   "persistenceAssertions": {
@@ -261,7 +261,7 @@
     "artifact: semantic check failed: hasLeaveTypeOptions",
     "artifact: semantic check failed: hasPendingOrListView"
   ],
-  "assistantText": "```tool_call\nvcm_query({\n  kind: \"project\",\n  member: \"config-page\"\n})\n```",
+  "assistantText": "```tool_call\nmodel_query({\n  kind: \"project\",\n  member: \"config-page\"\n})\n```",
   "reasoningText": "",
   "usages": [],
   "streamEventCount": 25,

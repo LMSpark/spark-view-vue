@@ -27,7 +27,6 @@ export function createDefaultExcluder(root) {
       || rel.includes('/dist/')
       || rel.includes('/node_modules/')
       || rel.includes('/.git/')
-      || rel.endsWith('/page-design-module-metadata.runtime.generated.json')
   }
 }
 

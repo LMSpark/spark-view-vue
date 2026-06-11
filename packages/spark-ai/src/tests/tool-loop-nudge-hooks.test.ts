@@ -44,13 +44,13 @@ describe('tool-loop nudge hooks', () => {
 
     expect(resolvePlanWithoutToolNudge(registration, runtimeContext)).toBeUndefined()
     expect(resolveToolLoopNudge(registration, runtimeContext, 'execution_phase')).toBeUndefined()
-    expect(resolveToolLoopNudge(registration, runtimeContext, 'vcm_script_retry')).toBeUndefined()
+    expect(resolveToolLoopNudge(registration, runtimeContext, 'model_script_retry')).toBeUndefined()
   })
 
   it('merges generic and business plan-without-tool nudges when hook is provided', () => {
     const registration = new AiAgentRegistration({
       ...createBareRegistrationOptions(),
-      toolLoopNudge: () => '立即 vcm_script 沿 ProjectRootModel 字段链执行。',
+      toolLoopNudge: () => '立即 model_script 沿 ProjectRootModel 字段链执行。',
     })
 
     const nudge = resolvePlanWithoutToolNudge(registration, runtimeContext)
@@ -69,6 +69,6 @@ describe('tool-loop nudge hooks', () => {
     })
 
     expect(resolveToolLoopNudge(registration, runtimeContext, 'execution_phase')).toBe('执行阶段 pageId=leave-page')
-    expect(resolveToolLoopNudge(registration, runtimeContext, 'vcm_script_retry')).toBeUndefined()
+    expect(resolveToolLoopNudge(registration, runtimeContext, 'model_script_retry')).toBeUndefined()
   })
 })

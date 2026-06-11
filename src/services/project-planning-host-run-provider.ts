@@ -96,7 +96,7 @@ function createScopedProjectPlanningHost(
             navigationRoot: editor.project.navigationRoot,
           },
         },
-      } as AiAgentHostRunResult
+      }
     },
   }
 }
@@ -106,10 +106,10 @@ function normalizeProjectPlanningHostRunInput(
   scope: ProjectPlanningHostRunScope,
   editor: ProjectWorkspace,
 ): AiJsonParams {
-  if (args === null || typeof args !== 'object' || Array.isArray(args)) {
+  if (!isJsonObjectRecord(args)) {
     throw new Error('projectPlanning Host Run args must be a JSON object.')
   }
-  const record = args as Record<string, unknown>
+  const record = args
   const requirementOverride = readOptionalString(record, 'requirement')
   const planningAttachmentText = readOptionalString(record, 'planningAttachmentText')
   const navigationAttachmentTextByNodeId = readOptionalStringRecord(record, 'navigationAttachmentTextByNodeId')
@@ -127,6 +127,10 @@ function normalizeProjectPlanningHostRunInput(
     projectScopeKey: scope.agentScopeKey,
     projectId: scope.projectId,
   }
+}
+
+function isJsonObjectRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function readProjectPlanningHostRunScope(

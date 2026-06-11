@@ -368,8 +368,8 @@ async function postAiHostRunResult(payload: AiHostRunResultPayload): Promise<voi
 }
 
 function readHostRunResultExtras(result: AiAgentHostRunResult): Record<string, unknown> {
-  const value = (result as { resultExtras?: unknown }).resultExtras
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return {}
+  const value = result.resultExtras
+  if (value === undefined) return {}
   return { ...value }
 }
 

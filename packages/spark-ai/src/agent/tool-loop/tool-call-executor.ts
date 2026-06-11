@@ -5,7 +5,7 @@
  *
  * 【架构定位】Agent 层的单次工具调用执行单元。将 LLM 返回的
  *   OpenAI-style tool_call（function.name + function.arguments）
- *   路由到 VCM-native runtime 执行，收集结果并写回 sessionStore。
+ *   路由到 ClassModel runtime 执行，收集结果并写回 sessionStore。
  *
  * 【核心类】
  *   AiAgentToolCallExecutor — 工具调用执行器
@@ -29,7 +29,7 @@
  */
 
 import type { AiJsonParams } from '../../json'
-import { VCM_NATIVE_TOOL_NAMES } from '../../vcm-native'
+import { CLASS_MODEL_TOOL_NAMES } from '../../class-model'
 import { toAiAgentRuntimeScope } from '../business/business-scope'
 import type {
   AiAgentBeforeFunctionCallDirective,
@@ -424,7 +424,7 @@ function completeDirectiveFromToolResult(
   toolName: string,
   result: AiAgentFunctionCallResult<unknown>,
 ): AiAgentLifecycleDirective | null {
-  if (toolName !== VCM_NATIVE_TOOL_NAMES.agentComplete || !result.ok) return null
+  if (toolName !== CLASS_MODEL_TOOL_NAMES.agentComplete || !result.ok) return null
   const data = result.data
   const summary = isRecord(data) && typeof data['summary'] === 'string'
     ? data['summary'].trim()

@@ -130,7 +130,7 @@ export class MongoUserRepository implements UserRepository {
 
 - class 用于承载状态、生命周期、缓存、不变量和默认行为。
 - 子类只表达明确的"是一种"关系，不为复用几个方法而继承。
-- AI 可编辑模型形态见 `docs/ai/AI_MODEL_SPEC.md`（**唯一一套** `SparkAIModel` 栈；禁止 DataSet/SparkNodeTree 等快照第二模型；四文件以 `PageConfigModel` string 字段为真源；LLM 投影直接取字段/方法/JSDoc）。
+- AI 可编辑模型形态见 `docs/ai/AI_MODEL_SPEC.md`（`SparkAIModel` + 公开字段 + JSDoc；**模型 class 即 LLM 知识真源**，无 ClassModel 管线）。
 
 ### class 命名与组织层次
 
@@ -561,7 +561,7 @@ export function objectSchema(
 ## 5. 注释规范
 
 - 注释只解释契约、约束、优先级和风险，不逐行解释显而易见的代码。
-- VCM/LLM 可见语义必须优先在首次声明处用自然语言注释表达；只有机器无法从类型、签名、命名或 summary 稳定推断的语义才补结构化 tag。
+- LLM 可见语义必须在首次声明处用自然语言注释、类型签名和命名表达；不要新增约定标签。
 - 不用注释合理化静默兜底。
 
 ## 6. 硬门禁
@@ -582,4 +582,4 @@ export function objectSchema(
 
 ## 7. 参考
 
-VCM metadata 生成链路见 `packages/vite-plugin-spark-catalog/README.md`；仓库验证命令见根目录 `package.json`。
+DTS ClassModel 生成链路见 `scripts/generate-dts-class-model.mjs`；仓库验证命令见根目录 `package.json`。

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import { enrichFunctionCallResult } from '../agent/tool-loop/function-call-recovery-enricher'
-import { VCM_NATIVE_TOOL_NAMES } from '../vcm-native'
+import { CLASS_MODEL_TOOL_NAMES } from '../class-model'
 
 describe('enrichFunctionCallResult', () => {
-  it('adds VCM-native schema recovery checks for invalid tool args', () => {
+  it('adds ClassModel schema recovery checks for invalid tool args', () => {
     const invalidArgs = enrichFunctionCallResult({
-      protocolToolName: VCM_NATIVE_TOOL_NAMES.actionGuide,
+      protocolToolName: CLASS_MODEL_TOOL_NAMES.actionGuide,
       args: { kind: 'task', actionName: 'doWork' },
       callResult: {
         ok: false,
@@ -18,15 +18,15 @@ describe('enrichFunctionCallResult', () => {
 
     expect(invalidArgs.ok).toBe(false)
     if (invalidArgs.ok) return
-    expect(invalidArgs.fix).toContain('vcm_action_guide')
+    expect(invalidArgs.fix).toContain('model_action_guide')
     expect(invalidArgs.checks?.some(check => check.message.includes('actionName'))).toBe(true)
-    expect(invalidArgs.checks?.some(check => check.message.includes('vcm_script 形状'))).toBe(true)
+    expect(invalidArgs.checks?.some(check => check.message.includes('model_script 形状'))).toBe(true)
     expect(invalidArgs.checks?.some(check => check.message.includes('module_'))).toBe(false)
   })
 
-  it('adds VCM-native script recovery hints without business method names', () => {
+  it('adds ClassModel script recovery hints without business method names', () => {
     const scriptFailed = enrichFunctionCallResult({
-      protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
+      protocolToolName: CLASS_MODEL_TOOL_NAMES.script,
       args: { script: 'page.editDataSet({})' },
       callResult: {
         ok: false,
@@ -38,7 +38,7 @@ describe('enrichFunctionCallResult', () => {
 
     expect(scriptFailed.ok).toBe(false)
     if (scriptFailed.ok) return
-    expect(scriptFailed.checks?.some(check => check.message.includes('vcm_script'))).toBe(true)
+    expect(scriptFailed.checks?.some(check => check.message.includes('model_script'))).toBe(true)
     expect(scriptFailed.checks?.some(check => check.message.includes('openPageDesign'))).toBe(false)
     expect(scriptFailed.checks?.some(check => check.message.includes('module_find'))).toBe(false)
   })
@@ -46,7 +46,7 @@ describe('enrichFunctionCallResult', () => {
   it('merges business recovery hints when enrichRecoveryHints is provided', () => {
     const scriptFailed = enrichFunctionCallResult(
       {
-        protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
+        protocolToolName: CLASS_MODEL_TOOL_NAMES.script,
         args: { script: 'page.editDataSet({})' },
         callResult: {
           ok: false,
@@ -69,7 +69,7 @@ describe('enrichFunctionCallResult', () => {
 
   it('does not add mutator callback hints without enrichRecoveryHints', () => {
     const schemaFailed = enrichFunctionCallResult({
-      protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
+      protocolToolName: CLASS_MODEL_TOOL_NAMES.script,
       args: { script: 'await page.editDataSet({ tableName: "x" })' },
       callResult: {
         ok: false,
@@ -84,14 +84,14 @@ describe('enrichFunctionCallResult', () => {
     expect(schemaFailed.checks?.some(check => check.message.includes('createTable'))).toBe(false)
   })
 
-  it('adds native tool schema recovery hint for invalid vcm_query args', () => {
+  it('adds native tool schema recovery hint for invalid model_query args', () => {
     const invalidQuery = enrichFunctionCallResult({
-      protocolToolName: VCM_NATIVE_TOOL_NAMES.query,
+      protocolToolName: CLASS_MODEL_TOOL_NAMES.query,
       args: { member: 'rows' },
       callResult: {
         ok: false,
-        code: 'INVALID_VCM_NATIVE_TOOL_ARGS',
-        msg: '工具 "vcm_query" 不接受参数: member。允许参数: kind, keyword, includeMembers。',
+        code: 'INVALID_CLASS_MODEL_TOOL_ARGS',
+        msg: '工具 "model_query" 不接受参数: member。允许参数: kind, keyword, includeMembers。',
         fix: 'use schema',
       },
     })
@@ -105,11 +105,11 @@ describe('enrichFunctionCallResult', () => {
 
   it('rejects old script argument aliases in recovery guidance', () => {
     const invalidScript = enrichFunctionCallResult({
-      protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
+      protocolToolName: CLASS_MODEL_TOOL_NAMES.script,
       args: { code: 'return 1' },
       callResult: {
         ok: false,
-        code: 'INVALID_VCM_NATIVE_TOOL_ARGS',
+        code: 'INVALID_CLASS_MODEL_TOOL_ARGS',
         msg: 'script required',
         fix: 'use schema',
       },

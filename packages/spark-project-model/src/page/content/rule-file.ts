@@ -1,6 +1,5 @@
 /**
  * PageRuleFile——rule.json 的内存模型，负责节点树的读写与撤销重做。
- * @vcmFilePersisted 持久化走 getFileText('rule.json') / setText；反序列化走 SparkNodeTree.fromJson。
  */
 import { getSparkNodeChildren, SparkNodeTree } from '@spark-appworks/spark-data'
 import type { SparkNodeTree as SparkNodeTreeModel, SparkNode } from '@spark-appworks/spark-data'
@@ -65,3 +64,4 @@ export class PageRuleFile {
     return ok
   }
 }
+

@@ -5,7 +5,7 @@
     "requestId": "fixture-hr-pass",
     "alias": "projectPlanning",
     "status": "completed",
-    "toolCalls": [{ "toolName": "vcm_script", "status": "success" }],
+    "toolCalls": [{ "toolName": "model_script", "status": "success" }],
     "sseEvents": ["llm-frame"],
     "projectPlanning": {
       "navigationRoot": {

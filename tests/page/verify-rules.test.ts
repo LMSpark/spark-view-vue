@@ -142,7 +142,7 @@ describe('verification rules', () => {
     expect(output).toContain('manual new AiModule() is forbidden in src/services')
     expect(output).toContain('createAiBusinessKit is removed')
     expect(output).toContain('manual AiModuleRuntime.register() is forbidden in src/services')
-    expect(output).toContain('VcmNativeAgentAdapter')
+    expect(output).toContain('ClassModelAgentAdapter')
   })
 
   it('rejects createAiAgentRegistration in src/services', () => {
@@ -157,7 +157,7 @@ describe('verification rules', () => {
 
     expect(result.status).toBe(1)
     expect(output).toContain('createAiAgentRegistration is forbidden in src/services')
-    expect(output).toContain('VcmNativeAgentAdapter.createRegistration')
+    expect(output).toContain('ClassModelAgentAdapter.createRegistration')
   })
 
   it('rejects removed parameter-surface hooks in src/services', () => {
@@ -182,10 +182,10 @@ describe('verification rules', () => {
     expect(output).toContain(`${oldProvider} is removed`)
   })
 
-  it('rejects public method drift on critical VCM-native classes', () => {
+  it('rejects public method drift on critical ClassModel classes', () => {
     const root = createTempRoot()
-    writeFile(root, 'packages/spark-ai/src/vcm-native/runtime/vcm-native-runtime.ts', [
-      'export class VcmNativeRuntime {',
+    writeFile(root, 'packages/spark-ai/src/class-model/runtime/class-model-runtime.ts', [
+      'export class ClassModelRuntime {',
       '  public getTools(): void {}',
       '  public executeTool(): void {}',
       '  public legacyPathCall(): void {}',
@@ -196,7 +196,7 @@ describe('verification rules', () => {
     const output = `${result.stdout}\n${result.stderr}`
 
     expect(result.status).toBe(1)
-    expect(output).toContain('public method surface drift for VcmNativeRuntime')
+    expect(output).toContain('public method surface drift for ClassModelRuntime')
     expect(output).toContain('extra=[legacyPathCall]')
   })
 
@@ -225,7 +225,7 @@ describe('verification rules', () => {
         './json': './dist/json/index.js',
         './agent': './dist/agent/index.js',
         './modules': './dist/modules/index.js',
-        './vcm-native': './dist/vcm-native/index.js',
+        './class-model': './dist/class-model/index.js',
         './core': './dist/core/index.js',
       },
     })
@@ -237,7 +237,7 @@ describe('verification rules', () => {
       '      "@spark-appworks/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],',
       '      "@spark-appworks/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],',
       '      "@spark-appworks/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"],',
-      '      "@spark-appworks/spark-ai/vcm-native": ["./packages/spark-ai/src/vcm-native/index.ts"],',
+      '      "@spark-appworks/spark-ai/class-model": ["./packages/spark-ai/src/class-model/index.ts"],',
       '      "@spark-appworks/spark-ai/core": ["./packages/spark-ai/src/core/index.ts"]',
       '    }',
       '  }',
@@ -260,7 +260,7 @@ describe('verification rules', () => {
         '.': './dist/index.js',
         './json': './dist/json/index.js',
         './agent': './dist/agent/index.js',
-        './vcm-native': './dist/vcm-native/index.js',
+        './class-model': './dist/class-model/index.js',
       },
     })
     writeFile(root, 'tsconfig.json', [
@@ -270,7 +270,7 @@ describe('verification rules', () => {
       '      "@spark-appworks/spark-ai": ["./packages/spark-ai/src/index.ts"],',
       '      "@spark-appworks/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],',
       '      "@spark-appworks/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],',
-      '      "@spark-appworks/spark-ai/vcm-native": ["./packages/spark-ai/src/vcm-native/index.ts"]',
+      '      "@spark-appworks/spark-ai/class-model": ["./packages/spark-ai/src/class-model/index.ts"]',
       '    }',
       '  }',
       '}',
@@ -281,7 +281,7 @@ describe('verification rules', () => {
     writeFile(root, 'packages/spark-ai/src/agent/native-runtime/native-script-sandbox.ts', [
       "export const hint = 'await this.openPageDesign({ pageId })'",
     ].join('\n'))
-    writeFile(root, 'packages/spark-ai/src/vcm-native/tests/class-model.test.ts', [
+    writeFile(root, 'packages/spark-ai/src/class-model/tests/class-model.test.ts', [
       "export const fixtureUrl = 'metadata://page-design-runtime'",
     ].join('\n'))
 

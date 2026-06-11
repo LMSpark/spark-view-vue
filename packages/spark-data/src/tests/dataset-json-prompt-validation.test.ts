@@ -1,7 +1,7 @@
 /**
  * 根测试层 DataSet JSON 提示词验证测试
  *
- * 将 VCM/LLM 可见的数据案例语义
+ * 将 LLM 可见的数据案例语义
  * 用 DataSet.fromJson() 实例化，自动验证：
  *  1. 能成功实例化（不抛出错误）
  *  2. 视图（DataView）行数据正确

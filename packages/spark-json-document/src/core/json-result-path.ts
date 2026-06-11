@@ -6,7 +6,7 @@ import jmespath from 'jmespath'
 
 const SIMPLE_KEY_PATTERN = /^[A-Za-z_$][\w$]*$/u
 
-/** VCM resultPath（属性名段）→ jmespath 表达式；空路径表示 result 根本身。 */
+/** ClassModel resultPath（属性名段）→ jmespath 表达式；空路径表示 result 根本身。 */
 export function resultPathToJmespath(segments: readonly string[]): string | null {
   if (segments.length === 0) return null
   return segments

@@ -159,9 +159,6 @@ importers:
       vitest:
         specifier: ^4.1.8
         version: 4.1.8(@types/node@25.9.1)(jsdom@29.1.1)(vite@8.0.16(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
-      vue-component-meta:
-        specifier: 3.3.3
-        version: 3.3.3(typescript@6.0.3)
       vue-eslint-parser:
         specifier: ^10.4.1
         version: 10.4.1(eslint@10.4.1(jiti@2.6.1))
@@ -487,21 +484,12 @@ importers:
 
   packages/vite-plugin-spark-catalog:
     dependencies:
-      '@spark-appworks/spark-json-document':
-        specifier: workspace:*
-        version: link:../spark-json-document
-      glob:
-        specifier: ^13.0.6
-        version: 13.0.6
       typescript:
         specifier: '>=5.0.0'
         version: 6.0.2
       vite:
         specifier: '>=5.0.0'
         version: 7.3.1(@types/node@25.9.1)(jiti@2.6.1)(lightningcss@1.32.0)(sass@1.99.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)
-      vue-component-meta:
-        specifier: 3.3.3
-        version: 3.3.3(typescript@6.0.2)
 
 packages:
 
@@ -5077,14 +5065,6 @@ packages:
 
   vue-component-meta@2.2.12:
     resolution: {integrity: sha512-dQU6/obNSNbennJ1xd+rhDid4g3vQro+9qUBBIg8HMZH2Zs1jTpkFNxuQ3z77bOlU+ew08Qck9sbYkdSePr0Pw==}
-    peerDependencies:
-      typescript: '*'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
-  vue-component-meta@3.3.3:
-    resolution: {integrity: sha512-epBsM7BuE4lzM7ujAW6MTre3QFc/Qpazwu5bV598ikCAKo30A+z7+wGen6hzIrjGwkaYv3Q7xs5aCdUMOY5OUQ==}
     peerDependencies:
       typescript: '*'
     peerDependenciesMeta:
@@ -9840,22 +9820,6 @@ snapshots:
       vue-component-type-helpers: 2.2.12
     optionalDependencies:
       typescript: 5.9.3
-
-  vue-component-meta@3.3.3(typescript@6.0.2):
-    dependencies:
-      '@volar/typescript': 2.4.28
-      '@vue/language-core': 3.3.3
-      path-browserify: 1.0.1
-    optionalDependencies:
-      typescript: 6.0.2
-
-  vue-component-meta@3.3.3(typescript@6.0.3):
-    dependencies:
-      '@volar/typescript': 2.4.28
-      '@vue/language-core': 3.3.3
-      path-browserify: 1.0.1
-    optionalDependencies:
-      typescript: 6.0.3
 
   vue-component-type-helpers@2.2.12: {}
 

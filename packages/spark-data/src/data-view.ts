@@ -193,9 +193,6 @@ function getArrayFilterValue(value: unknown): unknown[] | null {
 /**
  * DataView - 单个表视图的数据操作子模块。
  *
- * @moduleKind data-view
- * @vcmSerializable 视图元数据快照；须 toJson + static fromJson。
- * @moduleName Data View
  */
 export class DataView implements DataSource {
 
@@ -1879,7 +1876,7 @@ export class DataView implements DataSource {
     })
   }
 
-  // 内部树缓存写入入口；当前 VCM action 面不暴露该方法，避免和 SparkNodeTree.moveNode 混淆。
+  // 内部树缓存写入入口；当前 ClassModel action 面不暴露该方法，避免和 SparkNodeTree.moveNode 混淆。
   moveTreeNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<DataRow | null> {
     return this._ensureTreeManager().moveNode(nodeId, newParentId, index).then(() => {
       this.syncRowsFromTreeManager()
@@ -2261,3 +2258,4 @@ export class DataView implements DataSource {
     return v
   }
 }
+

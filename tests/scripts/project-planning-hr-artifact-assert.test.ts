@@ -34,16 +34,16 @@ describe('projectPlanning HR artifact assert (L4)', () => {
     expect(report.summary.fail).toBe(0)
   })
 
-  it('ignores pageDesign markers that only appear in VCM guide result summaries', async () => {
+  it('ignores pageDesign markers that only appear in ClassModel guide result summaries', async () => {
     const artifact = JSON.parse(await readFile(FIXTURE_PASS, 'utf8'))
     artifact.result.toolCalls = [
       {
-        toolName: 'vcm_action_guide',
-        argsPreview: JSON.stringify({ className: 'ProjectRootModel', actionName: 'readProjectPlanningInput' }),
-        resultSummary: 'ProjectRootModel docs list navigationNodes field chain.',
+        toolName: 'model_action_guide',
+        argsPreview: JSON.stringify({ kind: 'project', actionName: 'readProjectPlanningInput' }),
+        resultSummary: 'ProjectModel docs mention openPageDesign as unrelated model knowledge.',
       },
       {
-        toolName: 'vcm_script',
+        toolName: 'model_script',
         argsPreview: JSON.stringify({ script: 'return await this.replaceNavigationChildren({ children: [] })' }),
       },
     ]
@@ -57,8 +57,8 @@ describe('projectPlanning HR artifact assert (L4)', () => {
     const artifact = JSON.parse(await readFile(FIXTURE_PASS, 'utf8'))
     artifact.result.toolCalls = [
       {
-        toolName: 'vcm_script',
-        argsPreview: JSON.stringify({ script: 'await this.navigationNodes[0].pageConfig.validate()' }),
+        toolName: 'model_script',
+        argsPreview: JSON.stringify({ script: 'await this.openPageDesign("demo")' }),
       },
     ]
 

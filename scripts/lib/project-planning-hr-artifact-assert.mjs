@@ -15,7 +15,7 @@ export const FORBIDDEN_PAGE_DESIGN_MARKERS = [
   'getDataSetTool',
 ]
 
-/** HR 域覆盖主题；只在 scripts 配置，不进 spark-ai / VCM。 */
+/** HR 域覆盖主题；只在 scripts 配置，不进 spark-ai。 */
 export const HR_COVERAGE_MATRIX = [
   { label: '组织架构', pattern: /组织|架构|org-structure|organization/iu },
   { label: '员工档案', pattern: /员工|档案|employee|personnel/iu },
@@ -115,10 +115,10 @@ function assertSmokePipelineChecks(result, findings) {
   const toolNames = toolCalls
     .map(call => isRecord(call) && typeof call.toolName === 'string' ? call.toolName : '')
     .filter(Boolean)
-  if (!toolNames.includes('vcm_script')) {
-    addFinding(findings, 'fail', 'pipeline.vcm_script', `missing vcm_script tool call; saw: ${toolNames.join(', ') || '(none)'}`)
+  if (!toolNames.includes('model_script')) {
+    addFinding(findings, 'fail', 'pipeline.model_script', `missing model_script tool call; saw: ${toolNames.join(', ') || '(none)'}`)
   } else {
-    addFinding(findings, 'pass', 'pipeline.vcm_script', 'observed')
+    addFinding(findings, 'pass', 'pipeline.model_script', 'observed')
   }
 
   const sseEvents = readStringArray(result, 'sseEvents')
