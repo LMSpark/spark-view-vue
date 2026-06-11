@@ -282,6 +282,9 @@
             "type": {
               "type": "intrinsic",
               "name": "string"
+            },
+            "flags": {
+              "isOptional": true
             }
           }
         ]
@@ -594,10 +597,9 @@
         {
           "name": "resetPrimaryKey",
           "jsdoc": "清除显式覆盖，恢复从 DataTable 列定义自动推导主键",
-          "signatureText": "resetPrimaryKey(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -605,7 +607,6 @@
         {
           "name": "setCurrentRow",
           "jsdoc": "设置当前行（自动提取主键存储，null 清除）。\n@param row 要设为当前行的行对象；null 表示清除当前行。\n@param originatorId 可选变更来源标识，用于级联订阅方避免回环。",
-          "signatureText": "setCurrentRow(row: DataRow | null, originatorId?: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -630,10 +631,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -641,7 +645,6 @@
         {
           "name": "setCurrentRowById",
           "jsdoc": "通过主键设置当前行（行不存在时返回 false）。\n@param id 目标行主键值；null 表示清除当前行。\n@param originatorId 可选变更来源标识，用于级联订阅方避免回环。",
-          "signatureText": "setCurrentRowById(id: string | number | null, originatorId?: string): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -669,10 +672,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -680,7 +686,6 @@
         {
           "name": "setSelectedRows",
           "jsdoc": "设置多选行（覆盖式）。\n@param rows 新的选中行列表。\n@param originatorId 可选变更来源标识，用于级联订阅方避免回环。",
-          "signatureText": "setSelectedRows(rows: DataRow[], originatorId?: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -699,10 +704,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -710,7 +718,6 @@
         {
           "name": "addSelectedRows",
           "jsdoc": "追加多选行（返回实际新增数量）。\n@param rows 要追加到选中集的行列表。",
-          "signatureText": "addSelectedRows(rows: DataRow[]): number",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -725,7 +732,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -733,7 +740,6 @@
         {
           "name": "removeSelectedRows",
           "jsdoc": "移除多选行（返回实际移除数量）。\n@param rows 要从选中集中移除的行列表。",
-          "signatureText": "removeSelectedRows(rows: DataRow[]): number",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -748,7 +754,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -756,7 +762,6 @@
         {
           "name": "removeSelectedRowsById",
           "jsdoc": "通过主键批量移除多选行（返回实际移除数量）。\n@param ids 要从选中集中移除的行主键值列表。",
-          "signatureText": "removeSelectedRowsById(ids: Array<string | number>): number",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -779,7 +784,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -787,10 +792,9 @@
         {
           "name": "clearSelectedRows",
           "jsdoc": "清空多选行",
-          "signatureText": "clearSelectedRows(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -798,7 +802,6 @@
         {
           "name": "setComputedContext",
           "jsdoc": "设置计算列共享上下文（表达式中通过 ctx 引用），重新编译并对现有 rows 求值。\n@param ctx 计算列表达式可通过 ctx 读取的共享上下文。",
-          "signatureText": "setComputedContext(ctx: Record<string, unknown>): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -819,7 +822,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -827,7 +830,6 @@
         {
           "name": "recomputeColumns",
           "jsdoc": "手动触发全量计算列重新求值 + 聚合重算。常规行操作已自动触发，仅用于特殊场景。\n@param options 重算通知选项。",
-          "signatureText": "recomputeColumns(options?: DataViewRecomputeColumnsOptions): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -836,10 +838,13 @@
                 "type": "reference",
                 "name": "DataViewRecomputeColumnsOptions",
                 "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -847,7 +852,6 @@
         {
           "name": "stripComputedColumns",
           "jsdoc": "@internal 从数据对象中移除计算列字段，返回浅拷贝；无计算列时返回原对象。",
-          "signatureText": "stripComputedColumns(data: Partial<DataRow>): Partial<DataRow>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -865,7 +869,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Partial",
             "typeArguments": [
@@ -880,10 +884,9 @@
         {
           "name": "onDataSetRelationsReady",
           "jsdoc": "@internal DataSet 关系规范化完成后由 DataTable 调用——重挂级联订阅并重编译计算列（含聚合 resolver）",
-          "signatureText": "onDataSetRelationsReady(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -891,7 +894,6 @@
         {
           "name": "getColumn",
           "jsdoc": "按名称获取单个列定义\n@param name 列名（精确匹配）\n@returns 对应的列定义，不存在时返回 undefined\n@example ```ts\nconst col = view.getColumn('price')\nif (col) {\n  console.log(col.label)   // '单价'\n  console.log(col.type)    // 'number'\n}\n```",
-          "signatureText": "getColumn(name: string): DataColumn | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -902,38 +904,32 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataColumn",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "DataColumn",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
           }
         },
         {
           "name": "getDataSet",
           "jsdoc": "@internal 返回 DataSet 实例",
-          "signatureText": "getDataSet(): DataSet | undefined",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataSet",
-                "sourcePath": "declarations/packages/spark-data/src/dataset.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "DataSet",
+              "sourcePath": "declarations/packages/spark-data/src/dataset.d.ts"
+            }
           }
         },
         {
           "name": "getPkKey",
           "jsdoc": "获取行的主键值（标量）。\n@param row 目标行。",
-          "signatureText": "getPkKey(row: DataRow): string | number | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -945,7 +941,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -955,6 +951,10 @@
               {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              {
+                "type": "intrinsic",
+                "name": "undefined"
               }
             ]
           }
@@ -962,7 +962,6 @@
         {
           "name": "buildServerPk",
           "jsdoc": "从行数据构建服务端 PK payload。\n@param row 目标行。",
-          "signatureText": "buildServerPk(row: DataRow): Record<string, unknown>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -974,7 +973,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Record",
             "typeArguments": [
@@ -992,10 +991,9 @@
         {
           "name": "requestData",
           "jsdoc": "视图级加载编排器（幂等：requestState≠Idle 时直接返回）。外部应使用 refresh() 或 loadFromServer()。",
-          "signatureText": "requestData(): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1009,7 +1007,6 @@
         {
           "name": "loadFromServer",
           "jsdoc": "从服务器拉取列表（带防重入 + 请求 ID 竞态保护）。\n@param params 查询参数；省略时由当前视图配置生成。",
-          "signatureText": "loadFromServer(params?: QueryParams): Promise<CrudResult>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1018,10 +1015,13 @@
                 "type": "reference",
                 "name": "QueryParams",
                 "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1036,7 +1036,6 @@
         {
           "name": "retrieveRecord",
           "jsdoc": "按服务端 PK 拉取单条记录。\n默认会将结果同步回本地 rows；可选设为当前行。\n@param pk 服务端主键 payload。\n@param options 单条记录拉取后的同步选项。",
-          "signatureText": "retrieveRecord(pk: Record<string, unknown>, options?: RetrieveRecordOptions): Promise<CrudResult<DataRow>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1062,10 +1061,13 @@
                 "type": "reference",
                 "name": "RetrieveRecordOptions",
                 "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1087,7 +1089,6 @@
         {
           "name": "retrieveRecordById",
           "jsdoc": "按本地主键值拉取单条记录。\n若本地已存在该行，会优先构造真实服务端 PK；否则回退到 `{ [primaryKey]: id }`。\n@param id 本地主键值。\n@param options 单条记录拉取后的同步选项。",
-          "signatureText": "retrieveRecordById(id: string | number, options?: RetrieveRecordOptions): Promise<CrudResult<DataRow>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1112,10 +1113,13 @@
                 "type": "reference",
                 "name": "RetrieveRecordOptions",
                 "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1137,7 +1141,6 @@
         {
           "name": "loadTreeNested",
           "jsdoc": "加载 Tree Nested。",
-          "signatureText": "loadTreeNested(rootId?: string | number | null, limit?: number, depthLimit?: number): Promise<CrudResult<NestedTreeNode[]>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1158,6 +1161,9 @@
                     "value": null
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             },
             {
@@ -1165,6 +1171,9 @@
               "type": {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              "flags": {
+                "isOptional": true
               }
             },
             {
@@ -1172,10 +1181,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1200,10 +1212,9 @@
         {
           "name": "refresh",
           "jsdoc": "强制刷新：先置 Idle 再 requestData()；远程表重拉，静态/无 API 表走本地同步。清除 staged 模式的脏追踪状态。",
-          "signatureText": "refresh(): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1217,7 +1228,6 @@
         {
           "name": "applyInMemoryCascade",
           "jsdoc": "无 API 时的内存级联过滤（从 DataTable.rows 按依赖过滤条件写入视图）。\n@param rel 父子视图依赖关系。\n@param parentRows 父视图当前参与级联的行列表。",
-          "signatureText": "applyInMemoryCascade(rel: DataRelation, parentRows: readonly DataRow[]): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1236,7 +1246,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1244,7 +1254,6 @@
         {
           "name": "updateFromServer",
           "jsdoc": "将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定。\n@param data 服务端返回的行数组或行数据响应载荷。",
-          "signatureText": "updateFromServer(data: DataViewServerRowsPayload | DataRow[]): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1269,7 +1278,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1277,7 +1286,6 @@
         {
           "name": "appendRow",
           "jsdoc": "本地追加一行，触发计算列求值 + 聚合重算 + rowsChanged。\n@param row 要追加的行。",
-          "signatureText": "appendRow(row: DataRow): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1289,7 +1297,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1297,7 +1305,6 @@
         {
           "name": "updateRowById",
           "jsdoc": "本地按主键部分更新一行；返回是否成功（行不存在时 false）。\n@param id 目标行主键值。\n@param data 要合并到目标行上的字段更新。",
-          "signatureText": "updateRowById(id: string | number, data: Partial<DataRow>): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1331,7 +1338,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -1339,7 +1346,6 @@
         {
           "name": "deleteRowById",
           "jsdoc": "本地按主键删除一行，清理选中引用；返回是否成功（行不存在时 false）。\n@param id 目标行主键值。",
-          "signatureText": "deleteRowById(id: string | number): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1359,7 +1365,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -1367,7 +1373,6 @@
         {
           "name": "replaceRows",
           "jsdoc": "本地整批替换所有行，清理无效选中引用，清除 staged 模式的脏追踪状态。\n@param rows 新的完整行列表。",
-          "signatureText": "replaceRows(rows: DataRow[]): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1382,7 +1387,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1390,7 +1395,6 @@
         {
           "name": "hasEditingChanges",
           "jsdoc": "是否存在编辑态变更。\n@param id 可选行主键值；省略时检查是否存在任意编辑态变更。",
-          "signatureText": "hasEditingChanges(id?: string | number): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1407,10 +1411,13 @@
                     "name": "number"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -1418,7 +1425,6 @@
         {
           "name": "getEditingPatch",
           "jsdoc": "获取指定行当前编辑态 patch。\n@param id 目标行主键值。",
-          "signatureText": "getEditingPatch(id: string | number): Partial<DataRow> | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1438,27 +1444,24 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "Partial",
-                "typeArguments": [
-                  {
-                    "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-                  }
-                ]
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "Partial",
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "name": "DataRow",
+                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                }
+              ]
+            }
           }
         },
         {
           "name": "getEditingRow",
           "jsdoc": "获取指定行的编辑态 overlay；未编辑时返回当前 DataView 行。\n@param id 目标行主键值。",
-          "signatureText": "getEditingRow(id: string | number): DataRow | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1478,7 +1481,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -1496,7 +1499,6 @@
         {
           "name": "updateEditingValue",
           "jsdoc": "将 UI 字段值写入编辑态，不直接污染 rows。\n@param id 目标行主键值。\n@param field 要编辑的字段名。\n@param value 新字段值。",
-          "signatureText": "updateEditingValue(id: string | number, field: string, value: unknown): DataRow",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1530,7 +1532,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataRow",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -1539,7 +1541,6 @@
         {
           "name": "discardEditingRows",
           "jsdoc": "丢弃指定行或全部编辑态变更。\n@param ids 可选行主键值列表；省略时丢弃全部编辑态变更。",
-          "signatureText": "discardEditingRows(ids?: Array<string | number>): number",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1559,10 +1560,13 @@
                     }
                   ]
                 }
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -1570,7 +1574,6 @@
         {
           "name": "applyEditingRows",
           "jsdoc": "将编辑态 patch 应用到现有 editRowById 管线。\n@param ids 可选行主键值列表；省略时应用全部编辑态变更。",
-          "signatureText": "applyEditingRows(ids?: Array<string | number>): Promise<CrudResult<DataViewApplyEditingRowsResult>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1590,10 +1593,13 @@
                     }
                   ]
                 }
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1615,7 +1621,6 @@
         {
           "name": "addRow",
           "jsdoc": "本地新增行。commitMode='staged' 时标记为 pending-create（saveChanges 统一提交）；\ncommitMode='immediate' 且已配置 API 时立即调用 crud.createRecord。\n@param data 新行数据。",
-          "signatureText": "addRow(data: Partial<DataRow>): Promise<DataRow | CrudResult<DataRow>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1633,7 +1638,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1665,7 +1670,6 @@
         {
           "name": "removeRow",
           "jsdoc": "本地删除行。commitMode='staged' 时标记为 pending-delete（saveChanges 统一提交）；\ncommitMode='immediate' 且已配置 API 时立即调用 crud.deleteRecord。\n@param id 目标行主键值。",
-          "signatureText": "removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1685,7 +1689,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1715,7 +1719,6 @@
         {
           "name": "editRowById",
           "jsdoc": "手工编辑指定行（标脏）。commitMode='staged' 时仅更新内存并标脏；\ncommitMode='immediate' 且已配置 API 时立即调用 crud.updateRecord。\n连续编辑同一行只保留首次编辑前的快照。\n@param id 目标行主键值。\n@param data 要合并到目标行上的字段更新。",
-          "signatureText": "editRowById(id: string | number, data: Partial<DataRow>): Promise<boolean | CrudResult<DataRow>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1749,7 +1752,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1780,7 +1783,6 @@
         {
           "name": "getDirtyChanges",
           "jsdoc": "获取指定行的字段级变更明细（行不脏时返回 {}）。\n@param id 目标行主键值。",
-          "signatureText": "getDirtyChanges(id: string | number): RowDiff",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1800,7 +1802,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "RowDiff",
             "sourcePath": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts"
@@ -1809,7 +1811,6 @@
         {
           "name": "saveChanges",
           "jsdoc": "将待提交变更（新增→更新→删除）逐条保存到服务端。单行失败不中断后续行。\n@param ids 可选行主键值列表；省略时保存全部脏行。",
-          "signatureText": "saveChanges(ids?: Array<string | number>): Promise<CrudResult<SaveChangesData>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1829,10 +1830,13 @@
                     }
                   ]
                 }
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1854,10 +1858,9 @@
         {
           "name": "clearAll",
           "jsdoc": "清空所有状态并发射 cleared 事件（通知 UI 和子视图）",
-          "signatureText": "clearAll(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1865,10 +1868,9 @@
         {
           "name": "resetState",
           "jsdoc": "重置行数据和选中状态，并将 requestState 重置为 Idle。\n同时清除脏追踪状态（staged 模式下的未提交变更）。\n通过领域事件通知订阅者刷新 rows / selection / request / aggregate / editing。",
-          "signatureText": "resetState(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1876,10 +1878,9 @@
         {
           "name": "cleanupInvalidSelections",
           "jsdoc": "清理已不在 rows 中的选中状态，返回是否发生了清理（委托给 SelectionDelegate）",
-          "signatureText": "cleanupInvalidSelections(): boolean",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -1887,7 +1888,6 @@
         {
           "name": "loadTreeChildren",
           "jsdoc": "拉取直接子节点并写入缓存（对应 /tree/children）。\n@param parentId 父节点 ID；null 表示根级节点。\n@param limit 最大返回子节点数。",
-          "signatureText": "loadTreeChildren(parentId: string | number | null, limit?: number): Promise<FlatTreeNode[]>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1915,10 +1915,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1936,7 +1939,6 @@
         {
           "name": "loadTreePath",
           "jsdoc": "获取节点祖先链 ID（对应 /tree/path）。\n@param id 目标节点 ID。",
-          "signatureText": "loadTreePath(id: string | number): Promise<TreePath>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1956,7 +1958,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1971,7 +1973,6 @@
         {
           "name": "expandTreeToNode",
           "jsdoc": "展开到目标节点，差量补齐缓存（对应 /tree/path + /tree/subtree）。\n@param targetId 目标节点 ID。",
-          "signatureText": "expandTreeToNode(targetId: string | number): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1991,7 +1992,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2005,7 +2006,6 @@
         {
           "name": "moveTreeNode",
           "jsdoc": "执行 move Tree Node 操作。",
-          "signatureText": "moveTreeNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<DataRow | null>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2049,10 +2049,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2076,7 +2079,6 @@
         {
           "name": "searchTreeNested",
           "jsdoc": "嵌套模式远端搜索（对应 /tree/nested/search）。\n@param keyword 搜索关键字。\n@param limit 最大返回匹配节点数。",
-          "signatureText": "searchTreeNested(keyword: string, limit?: number): Promise<NestedTreeSearchResult[]>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2091,10 +2093,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2112,7 +2117,6 @@
         {
           "name": "setPage",
           "jsdoc": "设置当前页；远端视图自动重新查询。\n@param page 新页码。",
-          "signatureText": "setPage(page: number): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2123,7 +2127,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2137,7 +2141,6 @@
         {
           "name": "setPageSize",
           "jsdoc": "设置每页条数并重置页码为 1；远端视图自动重新查询。\n@param pageSize 新每页行数。",
-          "signatureText": "setPageSize(pageSize: number): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2148,7 +2151,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2162,24 +2165,21 @@
         {
           "name": "setSort",
           "jsdoc": "设置排序表达式；远端视图自动重新查询。\n@param sort 新排序表达式；undefined 表示清除排序。",
-          "signatureText": "setSort(sort: SortExpression | undefined): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
               "name": "sort",
               "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "reference",
-                    "name": "SortExpression",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-                  }
-                ]
+                "type": "optional",
+                "elementType": {
+                  "type": "reference",
+                  "name": "SortExpression",
+                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                }
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2193,24 +2193,21 @@
         {
           "name": "setFilter",
           "jsdoc": "设置过滤表达式并重置页码为 1；表达式变更后由数据层自动处理数据。\n@param filter 新过滤表达式；undefined 表示清除过滤。",
-          "signatureText": "setFilter(filter: FilterExpression | undefined): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
               "name": "filter",
               "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "reference",
-                    "name": "FilterExpression",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-                  }
-                ]
+                "type": "optional",
+                "elementType": {
+                  "type": "reference",
+                  "name": "FilterExpression",
+                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                }
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2224,24 +2221,21 @@
         {
           "name": "executeFilter",
           "jsdoc": "显式执行过滤：即使表达式未变化也会处理数据（用于“查询”按钮语义）。\n@param filter 要执行的过滤表达式；undefined 表示清除过滤。",
-          "signatureText": "executeFilter(filter: FilterExpression | undefined): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
               "name": "filter",
               "type": {
-                "type": "union",
-                "types": [
-                  {
-                    "type": "reference",
-                    "name": "FilterExpression",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-                  }
-                ]
+                "type": "optional",
+                "elementType": {
+                  "type": "reference",
+                  "name": "FilterExpression",
+                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                }
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2255,10 +2249,9 @@
         {
           "name": "destroy",
           "jsdoc": "销毁视图，释放所有订阅、委托和外部引用\n应在资源释放时调用，防止内存泄漏。\n销毁顺序：级联委托 → CRUD 委托 → 防抖定时器 → 事件总线 → 行数据 → TreeManager → DataTable 引用",
-          "signatureText": "destroy(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2266,10 +2259,9 @@
         {
           "name": "isDestroyed",
           "jsdoc": "检查视图是否已销毁",
-          "signatureText": "isDestroyed(): boolean",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -2277,7 +2269,6 @@
         {
           "name": "applyViewConfig",
           "jsdoc": "将 ViewMetadata 配置字段应用到当前视图实例（不创建新实例，不处理 rows）。\n@param vc 要应用的视图配置片段。",
-          "signatureText": "applyViewConfig(vc: Partial<ViewMetadata>): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2295,7 +2286,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2303,7 +2294,6 @@
         {
           "name": "configure",
           "jsdoc": "执行 configure 操作。",
-          "signatureText": "configure(config: Partial<ViewMetadata>): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2321,7 +2311,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2329,7 +2319,6 @@
         {
           "name": "setAggregates",
           "jsdoc": "设置 Aggregates。",
-          "signatureText": "setAggregates(aggregates: Record<string, AggregateColumnConfig>): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2351,7 +2340,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2359,7 +2348,6 @@
         {
           "name": "setTreeConfig",
           "jsdoc": "set Tree Config 配置。",
-          "signatureText": "setTreeConfig(treeConfig: TreeConfig): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2371,7 +2359,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2379,10 +2367,9 @@
         {
           "name": "initAutoSelection",
           "jsdoc": "对已有 rows 应用 autoCurrentFirst / autoSelectFirst 初始化选中状态（静态数据路径用）",
-          "signatureText": "initAutoSelection(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2390,10 +2377,9 @@
         {
           "name": "toJson",
           "jsdoc": "执行 to Json 操作。",
-          "signatureText": "toJson(): ViewMetadata",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ViewMetadata",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -2402,7 +2388,6 @@
         {
           "name": "fromJson",
           "jsdoc": "执行 from Json 操作。",
-          "signatureText": "static fromJson(data: ViewMetadata | Record<string, unknown> | string, tableName: string, viewId: string): DataView",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2451,7 +2436,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataView",
             "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
@@ -2460,7 +2445,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.951Z",
+  "generatedAt": "2026-06-11T21:36:01.746Z",
   "$defs": {
     "DataViewEventMap": {
       "type": "object",

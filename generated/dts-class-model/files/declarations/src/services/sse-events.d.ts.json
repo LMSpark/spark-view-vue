@@ -575,7 +575,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.120Z",
+  "generatedAt": "2026-06-11T21:36:01.970Z",
   "$defs": {
     "FileChangeEvent": {
       "type": "object",

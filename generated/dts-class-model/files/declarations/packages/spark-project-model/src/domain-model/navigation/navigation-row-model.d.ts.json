@@ -161,10 +161,9 @@
         {
           "name": "toJson",
           "jsdoc": "执行 to Json 操作。",
-          "signatureText": "toJson(): Record<string, unknown>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Record",
             "typeArguments": [
@@ -182,7 +181,6 @@
         {
           "name": "save",
           "jsdoc": "将当前行导航属性写入远端（不含 pageConfig 四文件）。\n@param options.client Workspace 提供的 NavigationClient。",
-          "signatureText": "save(options: {\n        client: NavigationClient;\n    }): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -193,7 +191,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -207,7 +205,6 @@
         {
           "name": "load",
           "jsdoc": "从项目导航树中按 id 定位并恢复单行。\n@param options.id 导航节点 id。\n@param options.projectId 项目 id（用于扁平行字段）。\n@param options.tenantId 租户 id。\n@param options.client NavigationClient。",
-          "signatureText": "static load(options: {\n        id: string;\n        projectId: string;\n        tenantId: string;\n        client: NavigationClient;\n    }): Promise<NavigationRowModel>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -218,7 +215,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -233,7 +230,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.026Z",
+  "generatedAt": "2026-06-11T21:36:01.872Z",
   "$defs": {
     "NavigationRowModel": {
       "type": "object",

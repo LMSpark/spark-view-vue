@@ -43,7 +43,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.739Z",
+  "generatedAt": "2026-06-11T21:36:01.614Z",
   "$defs": {
     "RendererTabsApi": {
       "type": "object",

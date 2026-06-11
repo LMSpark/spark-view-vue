@@ -33,7 +33,6 @@
         {
           "name": "register",
           "jsdoc": "注册一份业务定义到 moduleId 索引，供 Host.run 和 session 解析时使用。\n@param registration 包含输入契约、工具运行时、会话存储和生命周期钩子的业务注册项。\n@throws moduleId 已存在或 registration 未显式提供 sessionStore 时抛错，避免运行期出现半注册业务。",
-          "signatureText": "register(registration: AiAgentRegistration<TInput>): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -52,7 +51,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -60,7 +59,6 @@
         {
           "name": "get",
           "jsdoc": "按 moduleId 查询已注册业务；未命中时返回 undefined，由调用方决定是否 fail-fast。",
-          "signatureText": "get(moduleId: string): AiAgentRegistration<TInput> | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -71,31 +69,28 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "AiAgentRegistration",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
-                "typeArguments": [
-                  {
-                    "type": "reference",
-                    "name": "TInput",
-                    "refersToTypeParameter": true
-                  }
-                ]
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "AiAgentRegistration",
+              "sourcePath": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "name": "TInput",
+                  "refersToTypeParameter": true
+                }
+              ]
+            }
           }
         },
         {
           "name": "list",
           "jsdoc": "列出当前所有业务注册项，供 Host 诊断、dry-run 和对外摘要使用。",
-          "signatureText": "list(): ReadonlyArray<AiAgentRegistration<TInput>>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -114,7 +109,6 @@
         {
           "name": "delete",
           "jsdoc": "删除一个业务注册项，供 Host.unregister 同步维护 alias 映射和注册表状态。",
-          "signatureText": "delete(moduleId: string): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -125,7 +119,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -133,7 +127,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.509Z",
+  "generatedAt": "2026-06-11T21:36:01.450Z",
   "$defs": {
     "AiAgentRegistry": {
       "type": "object",

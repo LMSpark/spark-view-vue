@@ -108,21 +108,23 @@ describe('readDtsClassModelBundleJson', () => {
       const removeMethod = projection.models['SparkAIModel']?.methods.find(method => method.name === 'remove')
       const rawRemoveMethod = rawRecord.models?.['SparkAIModel']?.methods
         ?.find(method => method['name'] === 'remove')
-      expect(Object.keys(rawRemoveMethod ?? {}).slice(0, 6)).toEqual([
+      expect(Object.keys(rawRemoveMethod ?? {})).toEqual([
         'name',
         'jsdoc',
-        'signatureText',
         'parameterStyle',
         'parameters',
-        'returnType',
+        'type',
       ])
+      expect(rawRemoveMethod).not.toHaveProperty('returnType')
+      expect(rawRemoveMethod).not.toHaveProperty('signatureText')
       expect(removeMethod?.signatureText).toContain('remove(moduleId: string): boolean')
       expect(removeMethod?.parameterStyle).toBe('positional')
       expect(removeMethod?.parameters).toEqual([{
         name: 'moduleId',
         type: { type: 'intrinsic', name: 'string' },
       }])
-      expect(removeMethod?.returnType).toEqual({ type: 'intrinsic', name: 'boolean' })
+      expect(removeMethod?.type).toEqual({ type: 'intrinsic', name: 'boolean' })
+      expect(removeMethod).not.toHaveProperty('returnType')
       expect(removeMethod).not.toHaveProperty('returnTypeRefs')
       expect(removeMethod).not.toHaveProperty('returnTypeText')
       expect(removeMethod).not.toHaveProperty('paramsSchema')
@@ -141,11 +143,12 @@ describe('readDtsClassModelBundleJson', () => {
         },
       }])
       expect(attachMethod).not.toHaveProperty('returnTypeText')
-      expect(attachMethod?.returnType).toEqual({
+      expect(attachMethod?.type).toEqual({
         type: 'reference',
         name: 'SparkAIModel',
         sourcePath,
       })
+      expect(attachMethod).not.toHaveProperty('returnType')
       expect(attachMethod).not.toHaveProperty('returnTypeRefs')
       expect(attachMethod).not.toHaveProperty('paramsSchema')
       expect(attachMethod).not.toHaveProperty('returnSchema')
@@ -402,7 +405,8 @@ describe('readDtsClassModelBundleJson', () => {
         },
       }])
       expect(registerMethod).not.toHaveProperty('returnTypeText')
-      expect(registerMethod?.returnType).toEqual({ type: 'intrinsic', name: 'void' })
+      expect(registerMethod?.type).toEqual({ type: 'intrinsic', name: 'void' })
+      expect(registerMethod).not.toHaveProperty('returnType')
       expect(registerMethod).not.toHaveProperty('returnTypeRefs')
       expect(registerMethod).not.toHaveProperty('paramsSchema')
       expect(registerMethod).not.toHaveProperty('returnSchema')
@@ -595,5 +599,131 @@ describe('readDtsClassModelBundleJson', () => {
         },
       },
     })).toThrow(/className/)
+  })
+
+  it('projects optional return types and reflection callback parameters (PR-2)', () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-pr2-${String(process.pid)}-${String(Date.now())}`)
+    const registrationSourcePath = 'declarations/packages/spark-ai/src/agent/business/registration-types.d.ts'
+    const registrySourcePath = 'declarations/packages/spark-ai/src/agent/business/business-registry.d.ts'
+    const toolSourcePath = 'declarations/packages/spark-ai/src/tools/data-set-crud-tool.d.ts'
+    const configPageSourcePath = 'declarations/packages/spark-project-model/src/page/config-page.d.ts'
+    const registrationPath = resolve(tempRoot, registrationSourcePath)
+    const registryPath = resolve(tempRoot, registrySourcePath)
+    const toolPath = resolve(tempRoot, toolSourcePath)
+    const configPagePath = resolve(tempRoot, configPageSourcePath)
+    try {
+      mkdirSync(dirname(registrationPath), { recursive: true })
+      mkdirSync(dirname(toolPath), { recursive: true })
+      mkdirSync(dirname(configPagePath), { recursive: true })
+      writeFileSync(registrationPath, [
+        'export type AiAgentRegistration<TInput = unknown> = {',
+        '  moduleId: string',
+        '  input?: TInput',
+        '}',
+      ].join('\n'), 'utf8')
+      writeFileSync(registryPath, [
+        "import type { AiAgentRegistration } from './registration-types'",
+        'export class AiAgentRegistry<TInput = unknown> {',
+        '  get(moduleId: string): AiAgentRegistration<TInput> | undefined',
+        '}',
+      ].join('\n'), 'utf8')
+      writeFileSync(toolPath, [
+        'export class DataSetCrudTool {}',
+      ].join('\n'), 'utf8')
+      writeFileSync(configPagePath, [
+        "import type { DataSetCrudTool } from '../../../spark-ai/src/tools/data-set-crud-tool'",
+        'export class ConfigPage {',
+        '  editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): void',
+        '}',
+      ].join('\n'), 'utf8')
+
+      const registryProjection = projectDtsFileProjection({ repoRoot: tempRoot, absolutePath: registryPath })
+      const configPageProjection = projectDtsFileProjection({ repoRoot: tempRoot, absolutePath: configPagePath })
+
+      const getMethod = registryProjection.models['AiAgentRegistry']?.methods.find(method => method.name === 'get')
+      expect(getMethod?.type).toEqual({
+        type: 'optional',
+        elementType: {
+          type: 'reference',
+          name: 'AiAgentRegistration',
+          sourcePath: registrationSourcePath,
+          typeArguments: [{
+            type: 'reference',
+            name: 'TInput',
+            refersToTypeParameter: true,
+          }],
+        },
+      })
+      expect(getMethod).not.toHaveProperty('returnType')
+
+      const editMethod = configPageProjection.models['ConfigPage']?.methods.find(method => method.name === 'editDataSet')
+      expect(editMethod?.parameters?.[0]?.type).toEqual({
+        type: 'reflection',
+        declaration: {
+          signatures: [{
+            parameters: [{
+              name: 'tool',
+              type: {
+                type: 'reference',
+                name: 'DataSetCrudTool',
+                sourcePath: toolSourcePath,
+              },
+            }],
+            type: {
+              type: 'union',
+              types: [
+                { type: 'intrinsic', name: 'void' },
+                {
+                  type: 'reference',
+                  name: 'Promise',
+                  typeArguments: [{ type: 'intrinsic', name: 'void' }],
+                },
+              ],
+            },
+          }],
+        },
+      })
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('follows reflection callback refs in bundle loader closure (PR-3)', async () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-pr3-${String(process.pid)}-${String(Date.now())}`)
+    const toolSourcePath = 'declarations/packages/spark-ai/src/tools/data-set-crud-tool.d.ts'
+    const configPageSourcePath = 'declarations/packages/spark-project-model/src/page/config-page.d.ts'
+    const toolPath = resolve(tempRoot, toolSourcePath)
+    const configPagePath = resolve(tempRoot, configPageSourcePath)
+    const outputDir = resolve(tempRoot, 'generated/dts-class-model')
+    try {
+      mkdirSync(dirname(toolPath), { recursive: true })
+      mkdirSync(dirname(configPagePath), { recursive: true })
+      writeFileSync(toolPath, [
+        '/** Dataset CRUD tool passed into page mutators. */',
+        'export class DataSetCrudTool {}',
+      ].join('\n'), 'utf8')
+      writeFileSync(configPagePath, [
+        "import type { DataSetCrudTool } from '../../../spark-ai/src/tools/data-set-crud-tool'",
+        'export class ConfigPage {',
+        '  editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void>',
+        '}',
+      ].join('\n'), 'utf8')
+
+      const result = buildDtsClassModelBundle({
+        repoRoot: tempRoot,
+        rootFiles: [toolPath, configPagePath],
+        outputDir,
+      })
+      const loader = new DtsClassModelBundleLoader({
+        manifestUrl: pathToFileURL(result.manifestPath).href,
+        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+      })
+      const reachable = await loader.ensureReachableClosure('ConfigPage')
+
+      expect(reachable).toContain('ConfigPage')
+      expect(reachable).toContain('DataSetCrudTool')
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true })
+    }
   })
 })

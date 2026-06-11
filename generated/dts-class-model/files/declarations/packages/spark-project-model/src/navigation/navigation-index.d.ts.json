@@ -103,10 +103,9 @@
         {
           "name": "rebuild",
           "jsdoc": "执行 rebuild 操作。",
-          "signatureText": "rebuild(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -114,10 +113,9 @@
         {
           "name": "invalidateTree",
           "jsdoc": "执行 invalidate Tree 操作。",
-          "signatureText": "invalidateTree(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -125,7 +123,6 @@
         {
           "name": "getChildren",
           "jsdoc": "读取 Children。",
-          "signatureText": "getChildren(pid: string): readonly TNode[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -136,7 +133,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "readonly TNode[]"
           }
@@ -144,7 +141,6 @@
         {
           "name": "collectDescendants",
           "jsdoc": "执行 collect Descendants 操作。",
-          "signatureText": "collectDescendants(nodeId: string): TNode[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -155,7 +151,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -167,7 +163,6 @@
         {
           "name": "nextChildOrder",
           "jsdoc": "执行 next Child Order 操作。",
-          "signatureText": "nextChildOrder(pid: string): number",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -178,7 +173,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -186,10 +181,9 @@
         {
           "name": "buildTree",
           "jsdoc": "执行 build Tree 操作。",
-          "signatureText": "buildTree(): ProjectNodeData[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -201,7 +195,6 @@
         {
           "name": "findNodeLocation",
           "jsdoc": "执行 find Node Location 操作。",
-          "signatureText": "findNodeLocation(targetId: string): ProjectNodeLocation | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -212,7 +205,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -230,7 +223,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.045Z",
+  "generatedAt": "2026-06-11T21:36:01.901Z",
   "$defs": {
     "NavigationTreeNodeLike": {
       "type": "object",

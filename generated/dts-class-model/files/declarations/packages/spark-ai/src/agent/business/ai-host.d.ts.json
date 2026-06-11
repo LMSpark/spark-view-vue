@@ -271,7 +271,6 @@
         {
           "name": "create",
           "jsdoc": "静态工厂：创建 Host 实例",
-          "signatureText": "static create(options: CreateAiAgentHostOptions): AiAgentHost",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -283,7 +282,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentHost",
             "sourcePath": "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts"
@@ -292,7 +291,6 @@
         {
           "name": "register",
           "jsdoc": "注册一个业务。\n流程：规范化别名 → 查重（重复抛错）→ 写入 registry + 双向映射 → 返回新实例。\n返回类型窄化后的新 Host 实例，旧实例不受影响。",
-          "signatureText": "register<K extends string, TInput extends AiJsonParams>(alias: K, registration: AiAgentRegistration<TInput>): AiAgentHost<TEntries & Record<K, AiAgentRegistration<TInput>>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -319,7 +317,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentHost",
             "sourcePath": "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts",
@@ -363,7 +361,6 @@
         {
           "name": "ensure",
           "jsdoc": "幂等注册（确保存在）。\n三种情况：\n1. alias 已绑定到相同 moduleId → 跳过（幂等）\n2. alias 已绑定到不同 moduleId → 抛错\n3. alias 不存在 → 调用 command.create() 创建并注册",
-          "signatureText": "ensure<K extends string, TInput extends AiJsonParams>(alias: K, command: AiAgentHostEnsureCommand<TInput>): AiAgentHost<TEntries & Record<K, AiAgentRegistration<TInput>>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -390,7 +387,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentHost",
             "sourcePath": "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts",
@@ -434,7 +431,6 @@
         {
           "name": "has",
           "jsdoc": "检查别名是否已注册",
-          "signatureText": "has(alias: string): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -445,7 +441,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -453,10 +449,9 @@
         {
           "name": "listRegistrations",
           "jsdoc": "列出 Host 当前暴露的业务入口，用于启动日志、控制台和接入自检。",
-          "signatureText": "listRegistrations(): readonly AiAgentHostRegistrationSummary[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "readonly AiAgentHostRegistrationSummary[]"
           }
@@ -464,7 +459,6 @@
         {
           "name": "describe",
           "jsdoc": "查看单个 alias 的注册详情和 runtime.inspect() 结果。",
-          "signatureText": "describe(alias: string): AiAgentHostRegistrationDescription | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -475,21 +469,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "AiAgentHostRegistrationDescription",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "AiAgentHostRegistrationDescription",
+              "sourcePath": "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts"
+            }
           }
         },
         {
           "name": "listSessions",
           "jsdoc": "列出已注册业务的会话记录。传 alias 时只返回该业务，不传则聚合当前 Host 所有业务。",
-          "signatureText": "listSessions(alias?: string): readonly AiAgentSessionRecord[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -497,10 +488,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "readonly AiAgentSessionRecord[]"
           }
@@ -508,7 +502,6 @@
         {
           "name": "unregister",
           "jsdoc": "删除一个 alias 及其绑定的业务注册项，主要用于测试、热更新和调试面板。",
-          "signatureText": "unregister(alias: string): AiAgentHost",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -519,7 +512,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentHost",
             "sourcePath": "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts"
@@ -528,7 +521,6 @@
         {
           "name": "dryRun",
           "jsdoc": "只验证注册、输入契约、scope、orchestration 和工具清单，不调用 LLM。",
-          "signatureText": "dryRun(alias: string, args: unknown): AiAgentHostDryRunResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -546,7 +538,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentHostDryRunResult",
             "sourcePath": "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts"
@@ -555,7 +547,6 @@
         {
           "name": "run",
           "jsdoc": "按已知 alias 运行注册业务，并使用该 alias 推断输入类型。\n按动态 alias 运行注册业务。",
-          "signatureText": "run<K extends keyof TEntries & string>(alias: K, args: AiAgentHostRegistrationInput<TEntries[K]>, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -586,10 +577,13 @@
                 "type": "reference",
                 "name": "AiAgentTaskChatOptions",
                 "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-task.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -604,7 +598,6 @@
         {
           "name": "run",
           "jsdoc": "按已知 alias 运行注册业务，并使用该 alias 推断输入类型。\n按动态 alias 运行注册业务。",
-          "signatureText": "run<TInput extends AiJsonParams = AiJsonParams>(alias: string, args: TInput, chat?: AiAgentTaskChatOptions): Promise<AiAgentHostRunResult>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -628,10 +621,13 @@
                 "type": "reference",
                 "name": "AiAgentTaskChatOptions",
                 "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-task.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -646,7 +642,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.504Z",
+  "generatedAt": "2026-06-11T21:36:01.446Z",
   "$defs": {
     "CreateAiAgentHostOptions": {
       "type": "object",

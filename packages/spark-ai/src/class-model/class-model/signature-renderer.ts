@@ -16,7 +16,9 @@ import type {
   ConstructorMeta,
   DtsTypeMeta,
   MethodMeta,
+  MethodParameterMeta,
 } from './types'
+import { canRenderMethodSignatureFromTypeTree, resolveMethodReturnType } from './dts-type-meta-ops'
 
 export { classNameForKind } from './model-projection'
 
@@ -74,41 +76,55 @@ export function renderConstructorSignature(constructor: ConstructorMeta): string
     return constructor.signatureText
   }
   if (constructor.parameters !== undefined) {
-    return `constructor(${constructor.parameters.map(parameter => `${parameter.name}: ${renderDtsTypeMeta(parameter.type)}`).join(', ')})`
+    return `constructor(${constructor.parameters.map(renderMethodParameter).join(', ')})`
   }
   if (constructor.paramsSchema === undefined) return 'constructor()'
   return `constructor(${paramsTextFromSchema(constructor.paramsSchema)})`
 }
 
-export function renderMethodReturnTypeText(
-  _document: ClassModelDocument,
-  method: MethodMeta,
-): string {
+export function renderMethodReturnTypeText(method: MethodMeta): string {
+  const returnType = resolveMethodReturnType(method)
+  if (returnType !== undefined) return renderDtsTypeMeta(returnType)
   if (method.returnTypeText !== undefined && method.returnTypeText.trim().length > 0) {
     return method.returnTypeText
   }
-  if (method.returnType !== undefined) return renderDtsTypeMeta(method.returnType)
   if (method.returnSchema === undefined) return 'unknown'
   return jsonSchemaToTypeText(method.returnSchema)
 }
 
-export function renderMethodParamsText(
-  _document: ClassModelDocument,
-  method: MethodMeta,
-): string {
+export function renderMethodParamsText(method: MethodMeta): string {
+  if (method.parameters !== undefined) {
+    return method.parameters.map(renderMethodParameter).join(', ')
+  }
   if (method.paramsTypeText !== undefined && method.paramsTypeText.trim().length > 0) {
     return method.paramsTypeText
-  }
-  if (method.parameters !== undefined) {
-    return method.parameters.map(parameter => `${parameter.name}: ${renderDtsTypeMeta(parameter.type)}`).join(', ')
   }
   if (method.paramsSchema === undefined) return ''
   return paramsTextFromSchema(method.paramsSchema)
 }
 
+export function renderMethodSignatureFromMeta(method: MethodMeta): string {
+  if (canRenderMethodSignatureFromTypeTree(method)) {
+    return `${method.name}(${renderMethodParamsText(method)}): ${renderMethodReturnTypeText(method)}`
+  }
+  if (method.signatureText !== undefined && method.signatureText.trim().length > 0) {
+    return method.signatureText
+  }
+  return `${method.name}(${renderMethodParamsText(method)}): ${renderMethodReturnTypeText(method)}`
+}
+
 export function renderDtsTypeMeta(typeMeta: DtsTypeMeta): string {
   if (typeMeta.type === 'intrinsic' || typeMeta.type === 'unknown') return typeMeta.name
   if (typeMeta.type === 'literal') return typeof typeMeta.value === 'string' ? JSON.stringify(typeMeta.value) : String(typeMeta.value)
+  if (typeMeta.type === 'optional') {
+    const elementText = renderDtsTypeMeta(typeMeta.elementType)
+    return typeMeta.elementType.type === 'union' || typeMeta.elementType.type === 'intersection'
+      ? `(${elementText}) | undefined`
+      : `${elementText} | undefined`
+  }
+  if (typeMeta.type === 'rest') return `...${renderDtsTypeMeta(typeMeta.elementType)}`
+  if (typeMeta.type === 'tuple') return `[${typeMeta.elements.map(renderDtsTypeMeta).join(', ')}]`
+  if (typeMeta.type === 'reflection') return renderReflectionTypeMeta(typeMeta)
   if (typeMeta.type === 'reference') {
     const typeArguments = typeMeta.typeArguments?.map(renderDtsTypeMeta).join(', ')
     return typeArguments === undefined || typeArguments.length === 0
@@ -117,7 +133,7 @@ export function renderDtsTypeMeta(typeMeta: DtsTypeMeta): string {
   }
   if (typeMeta.type === 'array') {
     const elementText = renderDtsTypeMeta(typeMeta.elementType)
-    return typeMeta.elementType.type === 'union' || typeMeta.elementType.type === 'intersection'
+    return needsTypeParentheses(typeMeta.elementType)
       ? `(${elementText})[]`
       : `${elementText}[]`
   }
@@ -125,15 +141,28 @@ export function renderDtsTypeMeta(typeMeta: DtsTypeMeta): string {
   return typeMeta.types.map(renderDtsTypeMeta).join(' & ')
 }
 
+export function renderMethodParameter(parameter: MethodParameterMeta): string {
+  const optionalMark = parameter.flags?.isOptional === true ? '?' : ''
+  return `${parameter.name}${optionalMark}: ${renderDtsTypeMeta(parameter.type)}`
+}
+
+function renderReflectionTypeMeta(typeMeta: Extract<DtsTypeMeta, { type: 'reflection' }>): string {
+  const signature = typeMeta.declaration.signatures[0]
+  if (signature === undefined) return 'Function'
+  const paramsText = signature.parameters.map(renderMethodParameter).join(', ')
+  return `(${paramsText}) => ${renderDtsTypeMeta(signature.type)}`
+}
+
+function needsTypeParentheses(typeMeta: DtsTypeMeta): boolean {
+  return typeMeta.type === 'union' || typeMeta.type === 'intersection' || typeMeta.type === 'optional'
+}
+
 export function renderMethodSignature(
-  document: ClassModelDocument,
+  _document: ClassModelDocument,
   _ownerKind: string,
   method: MethodMeta,
 ): string {
-  if (method.signatureText !== undefined && method.signatureText.trim().length > 0) {
-    return method.signatureText
-  }
-  return `${method.name}(${renderMethodParamsText(document, method)}): ${renderMethodReturnTypeText(document, method)}`
+  return renderMethodSignatureFromMeta(method)
 }
 
 export function renderMethodDeclarationLine(

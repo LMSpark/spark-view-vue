@@ -123,7 +123,6 @@
         {
           "name": "recompute",
           "jsdoc": "全量重算（行数据变更时调用，必须在 `_applyComputedColumns` 之后）。\n@param rows 全部行（已含计算列求值结果）\n@param selectedRows 当前选中行（无选中时传空数组）",
-          "signatureText": "recompute(rows: DataRow[], selectedRows: DataRow[], options?: AggregateRecomputeOptions): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -154,10 +153,13 @@
                 "type": "reference",
                 "name": "AggregateRecomputeOptions",
                 "sourcePath": "declarations/packages/spark-data/src/strategies/aggregate-delegate.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -165,7 +167,6 @@
         {
           "name": "recomputeSelection",
           "jsdoc": "仅重算选中行聚合（选中行变更时调用，行数据本身未变）。\n@param selectedRows 当前选中行",
-          "signatureText": "recomputeSelection(selectedRows: DataRow[], options?: AggregateRecomputeOptions): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -185,10 +186,13 @@
                 "type": "reference",
                 "name": "AggregateRecomputeOptions",
                 "sourcePath": "declarations/packages/spark-data/src/strategies/aggregate-delegate.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -196,7 +200,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.985Z",
+  "generatedAt": "2026-06-11T21:36:01.809Z",
   "$defs": {
     "AggregateDelegateOptions": {
       "type": "object",

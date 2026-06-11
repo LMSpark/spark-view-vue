@@ -100,10 +100,9 @@
         {
           "name": "toJson",
           "jsdoc": "执行 to Json 操作。",
-          "signatureText": "toJson(): Record<string, unknown>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Record",
             "typeArguments": [
@@ -121,7 +120,6 @@
         {
           "name": "save",
           "jsdoc": "将当前四文件字段写入远端存储。\n依次 PUT `rule.json`、`pagedata.json`、`script.js`、`style.css`；\n具体 HTTP 由 `PageFileApi.saveFileContent` 完成。\n@param options.api Workspace 提供的页面文件写 API。",
-          "signatureText": "save(options: {\n        api: PageFileApi;\n    }): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -132,7 +130,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -146,7 +144,6 @@
         {
           "name": "load",
           "jsdoc": "从远端加载四文件并构造实例。\n并行读取四文件原文；失败时 throw，不返回部分填充实例。\n@param options.pageId 配置页 id。\n@param options.loader Workspace 提供的页面文件读加载器。",
-          "signatureText": "static load(options: {\n        pageId: string;\n        loader: PageContentLoader;\n    }): Promise<PageConfigModel>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -157,7 +154,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -172,7 +169,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.028Z",
+  "generatedAt": "2026-06-11T21:36:01.873Z",
   "$defs": {
     "PageConfigModel": {
       "type": "object",

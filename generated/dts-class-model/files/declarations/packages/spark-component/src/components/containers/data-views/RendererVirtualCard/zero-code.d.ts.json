@@ -174,7 +174,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.703Z",
+  "generatedAt": "2026-06-11T21:36:01.583Z",
   "$defs": {
     "RendererVirtualCardZeroCodeOptions": {
       "type": "object",

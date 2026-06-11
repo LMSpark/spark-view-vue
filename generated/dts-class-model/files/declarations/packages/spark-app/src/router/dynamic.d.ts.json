@@ -174,10 +174,9 @@
         {
           "name": "registerRoutes",
           "jsdoc": "注册所有路由（从导航树派生）",
-          "signatureText": "registerRoutes(): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -191,7 +190,6 @@
         {
           "name": "removeRoute",
           "jsdoc": "移除路由",
-          "signatureText": "removeRoute(name: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -202,7 +200,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -210,10 +208,9 @@
         {
           "name": "refreshRoutes",
           "jsdoc": "刷新路由（重新加载导航树，保留静态组件映射），返回加载后的导航树",
-          "signatureText": "refreshRoutes(): Promise<ProjectModelData | null>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -236,10 +233,9 @@
         {
           "name": "getNavTree",
           "jsdoc": "获取已加载的导航树（导航模式下可用）",
-          "signatureText": "getNavTree(): ProjectModelData | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -256,10 +252,9 @@
         {
           "name": "getRegisteredRoutes",
           "jsdoc": "获取已注册路由列表",
-          "signatureText": "getRegisteredRoutes(): string[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "intrinsic",
@@ -270,7 +265,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.655Z",
+  "generatedAt": "2026-06-11T21:36:01.552Z",
   "$defs": {
     "DynamicRouterOptions": {
       "type": "object",

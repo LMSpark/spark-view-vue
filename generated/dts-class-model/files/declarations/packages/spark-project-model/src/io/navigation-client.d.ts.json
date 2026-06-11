@@ -122,10 +122,9 @@
         {
           "name": "loadRoot",
           "jsdoc": "加载 Root。",
-          "signatureText": "loadRoot(): Promise<ProjectModelData>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -140,7 +139,6 @@
         {
           "name": "addNode",
           "jsdoc": "执行 add Node 操作。",
-          "signatureText": "addNode(params: {\n        parentId?: string | null;\n        node: ProjectNodeData;\n        index?: number;\n    }): Promise<ProjectNodeData>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -151,7 +149,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -166,7 +164,6 @@
         {
           "name": "updateNode",
           "jsdoc": "执行 update Node 操作。",
-          "signatureText": "updateNode(id: string, patch: NavigationNodePatch): Promise<ProjectNodeData>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -185,7 +182,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -200,7 +197,6 @@
         {
           "name": "deleteNode",
           "jsdoc": "删除 Node。",
-          "signatureText": "deleteNode(id: string): Promise<ProjectNodeData | null>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -211,7 +207,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -235,7 +231,6 @@
         {
           "name": "moveNode",
           "jsdoc": "执行 move Node 操作。",
-          "signatureText": "moveNode(id: string, newParentId: string | null, index: number): Promise<ProjectNodeData>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -269,7 +264,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -284,7 +279,6 @@
         {
           "name": "probeLink",
           "jsdoc": "执行 probe Link 操作。",
-          "signatureText": "probeLink(url: string): Promise<LinkProbeResult>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -295,7 +289,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -310,7 +304,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.035Z",
+  "generatedAt": "2026-06-11T21:36:01.885Z",
   "$defs": {
     "NavigationClientOptions": {
       "type": "object",

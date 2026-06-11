@@ -285,8 +285,43 @@
           {
             "name": "transform",
             "type": {
-              "type": "unknown",
-              "name": "(rawContent: string) => T | Promise<T>"
+              "type": "reflection",
+              "declaration": {
+                "signatures": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "rawContent",
+                        "type": {
+                          "type": "intrinsic",
+                          "name": "string"
+                        }
+                      }
+                    ],
+                    "type": {
+                      "type": "union",
+                      "types": [
+                        {
+                          "type": "reference",
+                          "name": "T",
+                          "refersToTypeParameter": true
+                        },
+                        {
+                          "type": "reference",
+                          "name": "Promise",
+                          "typeArguments": [
+                            {
+                              "type": "reference",
+                              "name": "T",
+                              "refersToTypeParameter": true
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
             }
           }
         ]
@@ -296,7 +331,6 @@
         {
           "name": "load",
           "jsdoc": "加载单个文件并返回变换后的结果。",
-          "signatureText": "load(fileName: string, opts?: TransformedFileLoadOptions): Promise<FileLoadResult<T>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -312,10 +346,13 @@
                 "type": "reference",
                 "name": "TransformedFileLoadOptions",
                 "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -337,7 +374,6 @@
         {
           "name": "loadBatch",
           "jsdoc": "批量加载文件并返回每个文件的变换结果。",
-          "signatureText": "loadBatch(fileNames: string[], opts?: TransformedFileLoadOptions): Promise<Map<string, FileLoadResult<T>>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -356,10 +392,13 @@
                 "type": "reference",
                 "name": "TransformedFileLoadOptions",
                 "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -421,7 +460,6 @@
         {
           "name": "on",
           "jsdoc": "订阅 FileLoader 事件（file-loaded / file-missing / file-error）",
-          "signatureText": "on<K extends keyof FileLoaderEventMap>(event: K, listener: (payload: FileLoaderEventMap[K]) => void): () => void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -435,20 +473,47 @@
             {
               "name": "listener",
               "type": {
-                "type": "unknown",
-                "name": "(payload: FileLoaderEventMap[K]) => void"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "payload",
+                          "type": {
+                            "type": "unknown",
+                            "name": "FileLoaderEventMap[K]"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
               }
             }
           ],
-          "returnType": {
-            "type": "unknown",
-            "name": "() => void"
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "signatures": [
+                {
+                  "parameters": [],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                }
+              ]
+            }
           }
         },
         {
           "name": "loadText",
           "jsdoc": "以纯文本形式加载文件。",
-          "signatureText": "loadText(fileName: string, options?: TransformedFileLoadOptions): Promise<FileLoadResult<string>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -464,10 +529,13 @@
                 "type": "reference",
                 "name": "TransformedFileLoadOptions",
                 "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -488,7 +556,6 @@
         {
           "name": "load",
           "jsdoc": "加载文件并使用 transform 返回变换结果。\n以纯文本形式加载文件。\n加载文件并按 JSON 解析返回。",
-          "signatureText": "load<T>(fileName: string, options: TransformLoadOptions<T>): Promise<FileLoadResult<T>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -514,7 +581,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -536,7 +603,6 @@
         {
           "name": "load",
           "jsdoc": "加载文件并使用 transform 返回变换结果。\n以纯文本形式加载文件。\n加载文件并按 JSON 解析返回。",
-          "signatureText": "load(fileName: string, options: TextLoadOptions): Promise<FileLoadResult<string>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -555,7 +621,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -576,7 +642,6 @@
         {
           "name": "load",
           "jsdoc": "加载文件并使用 transform 返回变换结果。\n以纯文本形式加载文件。\n加载文件并按 JSON 解析返回。",
-          "signatureText": "load(fileName: string, options?: JsonLoadOptions): Promise<FileLoadResult<unknown>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -592,10 +657,13 @@
                 "type": "reference",
                 "name": "JsonLoadOptions",
                 "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -616,7 +684,6 @@
         {
           "name": "loadBatch",
           "jsdoc": "批量加载文件并使用 transform 返回变换结果。\n批量以纯文本形式加载文件。\n批量加载文件并按 JSON 解析返回。",
-          "signatureText": "loadBatch<T>(fileNames: string[], options: TransformLoadOptions<T>): Promise<Map<string, FileLoadResult<T>>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -645,7 +712,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -677,7 +744,6 @@
         {
           "name": "loadBatch",
           "jsdoc": "批量加载文件并使用 transform 返回变换结果。\n批量以纯文本形式加载文件。\n批量加载文件并按 JSON 解析返回。",
-          "signatureText": "loadBatch(fileNames: string[], options: TextLoadOptions): Promise<Map<string, FileLoadResult<string>>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -699,7 +765,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -730,7 +796,6 @@
         {
           "name": "loadBatch",
           "jsdoc": "批量加载文件并使用 transform 返回变换结果。\n批量以纯文本形式加载文件。\n批量加载文件并按 JSON 解析返回。",
-          "signatureText": "loadBatch(fileNames: string[], options?: JsonLoadOptions): Promise<Map<string, FileLoadResult<unknown>>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -749,10 +814,13 @@
                 "type": "reference",
                 "name": "JsonLoadOptions",
                 "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -783,18 +851,52 @@
         {
           "name": "withTransform",
           "jsdoc": "预绑定变换函数，返回业务代码直接使用的子加载器。\n```ts\n// 基础设施层（一次）：\nconst dataSetLoader = fileLoader.withTransform(buildDataSet)\n// 业务代码（任意多处）：\nconst ds = await dataSetLoader.load('/order-page/pagedata.json')\n```",
-          "signatureText": "withTransform<T>(transform: (rawContent: string) => T | Promise<T>): TransformedFileLoader<T>",
           "parameterStyle": "positional",
           "parameters": [
             {
               "name": "transform",
               "type": {
-                "type": "unknown",
-                "name": "(rawContent: string) => T | Promise<T>"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "rawContent",
+                          "type": {
+                            "type": "intrinsic",
+                            "name": "string"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "union",
+                        "types": [
+                          {
+                            "type": "reference",
+                            "name": "T",
+                            "refersToTypeParameter": true
+                          },
+                          {
+                            "type": "reference",
+                            "name": "Promise",
+                            "typeArguments": [
+                              {
+                                "type": "reference",
+                                "name": "T",
+                                "refersToTypeParameter": true
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "TransformedFileLoader",
             "sourcePath": "declarations/packages/spark-utils/src/http/FileLoader.d.ts",
@@ -810,7 +912,6 @@
         {
           "name": "store",
           "jsdoc": "手动缓存任意计算结果。\n通常不需要在业务代码中调用；优先使用 withTransform() 或 load({ transform })。",
-          "signatureText": "store(input: FileLoaderStoreInput): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -822,7 +923,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -830,7 +931,6 @@
         {
           "name": "retrieve",
           "jsdoc": "取回计算结果缓存，时间戳不匹配返回 null。\n通常不需要在业务代码中调用；优先使用 withTransform() 或 load({ transform })。",
-          "signatureText": "retrieve(key: string, sourceTimestamp: string): unknown",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -848,7 +948,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "unknown"
           }
@@ -856,7 +956,6 @@
         {
           "name": "clearCache",
           "jsdoc": "清除缓存（不传 key 则清全部）",
-          "signatureText": "clearCache(key?: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -864,10 +963,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -875,7 +977,6 @@
         {
           "name": "hasCache",
           "jsdoc": "检查是否有缓存",
-          "signatureText": "hasCache(key: string): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -886,7 +987,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -894,10 +995,9 @@
         {
           "name": "getCacheStats",
           "jsdoc": "获取内存缓存统计信息",
-          "signatureText": "getCacheStats(): {\n        size: number;\n        keys: string[];\n    }",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "{\n        size: number;\n        keys: string[];\n    }"
           }
@@ -905,7 +1005,6 @@
         {
           "name": "getTimestamp",
           "jsdoc": "获取缓存的 sourceTimestamp（不存在则返回 null）",
-          "signatureText": "getTimestamp(key: string): string | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -916,7 +1015,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -933,7 +1032,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.080Z",
+  "generatedAt": "2026-06-11T21:36:01.945Z",
   "$defs": {
     "LoadOptionBase": {
       "type": "object",

@@ -98,10 +98,9 @@
         {
           "name": "ensureCrudService",
           "jsdoc": "确保 CrudService 已初始化，否则抛出",
-          "signatureText": "ensureCrudService(): CrudService",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "CrudService",
             "sourcePath": "declarations/packages/spark-data/src/crud-service.d.ts"
@@ -110,24 +109,20 @@
         {
           "name": "getCrudConfig",
           "jsdoc": "获取 CRUD 操作配置（超时、重试等）",
-          "signatureText": "getCrudConfig(): CrudOperationConfig | undefined",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "CrudOperationConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "CrudOperationConfig",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
           }
         },
         {
           "name": "list",
           "jsdoc": "执行列表查询",
-          "signatureText": "list(params?: QueryParams): Promise<CrudResult>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -136,10 +131,13 @@
                 "type": "reference",
                 "name": "QueryParams",
                 "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -154,7 +152,6 @@
         {
           "name": "retrieveRecord",
           "jsdoc": "查询单条记录，不修改本地 rows。",
-          "signatureText": "retrieveRecord(pk: Record<string, unknown>): Promise<CrudResult<DataRow>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -175,7 +172,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -197,7 +194,6 @@
         {
           "name": "createRecord",
           "jsdoc": "新增记录，成功后追加至 rows",
-          "signatureText": "createRecord(data: Partial<DataRow>): Promise<CrudResult<DataRow>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -215,7 +211,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -237,7 +233,6 @@
         {
           "name": "updateRecord",
           "jsdoc": "更新记录，成功后刷新对应行\n@param id 本地主键值（用于本地 rows 更新）\n@param data 更新数据\n@param serverPk 服务端 PK payload（用于 HTTP 请求，可选，默认从 id 构建）",
-          "signatureText": "updateRecord(id: string | number, data: Partial<DataRow>, serverPk?: Record<string, unknown>): Promise<CrudResult<DataRow>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -285,10 +280,13 @@
                     "name": "unknown"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -310,7 +308,6 @@
         {
           "name": "deleteRecord",
           "jsdoc": "删除记录，成功后从 rows 移除\n@param id 本地主键值\n@param serverPk 服务端 PK payload（用于 HTTP 请求，可选，默认从 id 构建）",
-          "signatureText": "deleteRecord(id: string | number, serverPk?: Record<string, unknown>): Promise<CrudResult<boolean>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -344,10 +341,13 @@
                     "name": "unknown"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -368,7 +368,6 @@
         {
           "name": "batchCreateRecords",
           "jsdoc": "批量新增",
-          "signatureText": "batchCreateRecords(items: Array<Partial<DataRow>>): Promise<CrudResult<BatchResult>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -389,7 +388,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -411,7 +410,6 @@
         {
           "name": "batchUpdateRecords",
           "jsdoc": "批量更新（items 中必须包含主键字段，主键名由 host.primaryKey 决定）",
-          "signatureText": "batchUpdateRecords(items: Array<Partial<DataRow>>): Promise<CrudResult<BatchResult>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -432,7 +430,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -454,7 +452,6 @@
         {
           "name": "batchDeleteRecords",
           "jsdoc": "批量删除",
-          "signatureText": "batchDeleteRecords(ids: Array<string | number>): Promise<CrudResult<BatchResult>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -477,7 +474,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -499,7 +496,6 @@
         {
           "name": "importData",
           "jsdoc": "导入文件，成功后重置状态并重新走完整编排",
-          "signatureText": "importData(file: File): Promise<CrudResult<{\n        imported: number;\n        failed: number;\n    }>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -510,7 +506,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -531,7 +527,6 @@
         {
           "name": "exportData",
           "jsdoc": "导出数据",
-          "signatureText": "exportData(params?: QueryParams): Promise<CrudResult<Blob>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -540,10 +535,13 @@
                 "type": "reference",
                 "name": "QueryParams",
                 "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -564,10 +562,9 @@
         {
           "name": "destroy",
           "jsdoc": "销毁 — CrudService 由 DataTable 管理，此处无需释放",
-          "signatureText": "destroy(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -575,7 +572,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.989Z",
+  "generatedAt": "2026-06-11T21:36:01.820Z",
   "$defs": {
     "EmitCrudLifecycleFn": {
       "type": "object",

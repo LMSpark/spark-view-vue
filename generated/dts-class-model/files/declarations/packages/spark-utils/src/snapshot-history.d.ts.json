@@ -38,6 +38,9 @@
             "type": {
               "type": "intrinsic",
               "name": "number"
+            },
+            "flags": {
+              "isOptional": true
             }
           }
         ]
@@ -47,7 +50,6 @@
         {
           "name": "push",
           "jsdoc": "追加快照。截断 cursor 之后的前进条目（标准分支语义），超出限额时移除最旧条目。",
-          "signatureText": "push(snapshot: T): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -59,7 +61,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -67,10 +69,9 @@
         {
           "name": "undo",
           "jsdoc": "撤销：cursor 后退一步，返回前一个快照；不可撤销时返回 null。",
-          "signatureText": "undo(): T | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -88,10 +89,9 @@
         {
           "name": "redo",
           "jsdoc": "重做：cursor 前进一步，返回下一个快照；不可重做时返回 null。",
-          "signatureText": "redo(): T | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -109,10 +109,9 @@
         {
           "name": "clear",
           "jsdoc": "清空全部历史。",
-          "signatureText": "clear(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -120,7 +119,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.092Z",
+  "generatedAt": "2026-06-11T21:36:01.954Z",
   "$defs": {
     "SnapshotHistory": {
       "type": "object",

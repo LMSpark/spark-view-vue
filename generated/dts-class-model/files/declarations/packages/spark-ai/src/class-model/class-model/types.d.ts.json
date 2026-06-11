@@ -22,6 +22,8 @@
       "AttributeMeta",
       "MethodParameterStyle",
       "DtsTypeMeta",
+      "DtsReflectionSignature",
+      "DtsReflectionTypeMeta",
       "MethodParameterMeta",
       "MethodMeta"
     ]
@@ -39,6 +41,8 @@
     "AttributeMeta",
     "MethodParameterStyle",
     "DtsTypeMeta",
+    "DtsReflectionSignature",
+    "DtsReflectionTypeMeta",
     "MethodParameterMeta",
     "MethodMeta"
   ],
@@ -345,9 +349,9 @@
     "DtsTypeMeta": {
       "kind": "DtsTypeMeta",
       "className": "DtsTypeMeta",
-      "jsdoc": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。",
+      "jsdoc": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。\n改造清单（optional / reflection / tuple / rest）：[`docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md`](../../docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md)",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    type: 'intrinsic';\n    name: string;\n}> | Readonly<{\n    type: 'reference';\n    name: string;\n    sourcePath?: string;\n    refersToTypeParameter?: boolean;\n    typeArguments?: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'array';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'union';\n    types: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'intersection';\n    types: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'literal';\n    value: string | number | boolean | null;\n}> | Readonly<{\n    type: 'unknown';\n    name: string;\n}>",
+      "declarationTypeText": "Readonly<{\n    type: 'intrinsic';\n    name: string;\n}> | Readonly<{\n    type: 'reference';\n    name: string;\n    sourcePath?: string;\n    refersToTypeParameter?: boolean;\n    typeArguments?: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'array';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'union';\n    types: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'intersection';\n    types: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'literal';\n    value: string | number | boolean | null;\n}> | Readonly<{\n    type: 'optional';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'rest';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'tuple';\n    elements: readonly DtsTypeMeta[];\n}> | DtsReflectionTypeMeta | Readonly<{\n    type: 'unknown';\n    name: string;\n}>",
       "declarationRelations": [
         {
           "kind": "union",
@@ -381,14 +385,78 @@
         },
         {
           "kind": "union",
+          "typeText": "Readonly<{\n    type: 'optional';\n    elementType: DtsTypeMeta;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    type: 'rest';\n    elementType: DtsTypeMeta;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    type: 'tuple';\n    elements: readonly DtsTypeMeta[];\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "DtsReflectionTypeMeta",
+          "targetName": "DtsReflectionTypeMeta"
+        },
+        {
+          "kind": "union",
           "typeText": "Readonly<{\n    type: 'unknown';\n    name: string;\n}>",
           "targetName": "Readonly"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 92,
+        "line": 94,
         "className": "DtsTypeMeta",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsReflectionSignature": {
+      "kind": "DtsReflectionSignature",
+      "className": "DtsReflectionSignature",
+      "jsdoc": "TypeDoc `ReflectionType` 精简：函数/构造签名。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    parameters: readonly MethodParameterMeta[];\n    type: DtsTypeMeta;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    parameters: readonly MethodParameterMeta[];\n    type: DtsTypeMeta;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 129,
+        "className": "DtsReflectionSignature",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsReflectionTypeMeta": {
+      "kind": "DtsReflectionTypeMeta",
+      "className": "DtsReflectionTypeMeta",
+      "jsdoc": "",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    type: 'reflection';\n    declaration: Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    type: 'reflection';\n    declaration: Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+        "line": 133,
+        "className": "DtsReflectionTypeMeta",
         "declarationKind": "type"
       },
       "attributes": [],
@@ -397,19 +465,19 @@
     "MethodParameterMeta": {
       "kind": "MethodParameterMeta",
       "className": "MethodParameterMeta",
-      "jsdoc": "Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 的 name + type 形态记录 DTS 参数。",
+      "jsdoc": "Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 记录 DTS 参数。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    name: string;\n    type: DtsTypeMeta;\n}>",
+      "declarationTypeText": "Readonly<{\n    name: string;\n    type: DtsTypeMeta;\n    flags?: Readonly<{\n        isOptional?: boolean;\n    }>;\n    defaultValue?: string | number | boolean | null;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    name: string;\n    type: DtsTypeMeta;\n}>",
+          "typeText": "Readonly<{\n    name: string;\n    type: DtsTypeMeta;\n    flags?: Readonly<{\n        isOptional?: boolean;\n    }>;\n    defaultValue?: string | number | boolean | null;\n}>",
           "targetName": "Readonly"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 118,
+        "line": 140,
         "className": "MethodParameterMeta",
         "declarationKind": "type"
       },
@@ -421,17 +489,17 @@
       "className": "MethodMeta",
       "jsdoc": "Method Meta 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    returnType?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    returnTypeText?: string;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    paramsTypeText?: string;\n    provenance?: SourceProvenanceMeta;\n}>",
+      "declarationTypeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */\n    type?: DtsTypeMeta;\n    /** @deprecated 旧 bundle 读侧兼容 alias；新 bundle 只写 `type`。 */\n    returnType?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    returnTypeText?: string;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    paramsTypeText?: string;\n    provenance?: SourceProvenanceMeta;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    returnType?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    returnTypeText?: string;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    paramsTypeText?: string;\n    provenance?: SourceProvenanceMeta;\n}>",
+          "typeText": "Readonly<{\n    name: string;\n    signatureText?: string;\n    parameterStyle?: MethodParameterStyle;\n    parameters?: readonly MethodParameterMeta[];\n    /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */\n    type?: DtsTypeMeta;\n    /** @deprecated 旧 bundle 读侧兼容 alias；新 bundle 只写 `type`。 */\n    returnType?: DtsTypeMeta;\n    paramsSchema?: AiJsonSchemaObject;\n    returnSchema?: AiJsonSchema;\n    returnTypeText?: string;\n    takesContext?: boolean;\n    jsdoc: JsDocMeta;\n    paramsTypeText?: string;\n    provenance?: SourceProvenanceMeta;\n}>",
           "targetName": "Readonly"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
-        "line": 123,
+        "line": 149,
         "className": "MethodMeta",
         "declarationKind": "type"
       },
@@ -439,7 +507,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.598Z",
+  "generatedAt": "2026-06-11T21:36:01.509Z",
   "$defs": {
     "ClassModelDocument": {
       "type": "object",
@@ -499,12 +567,21 @@
     "DtsTypeMeta": {
       "type": "object",
       "title": "DtsTypeMeta",
-      "description": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。"
+      "description": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。\n改造清单（optional / reflection / tuple / rest）：[`docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md`](../../docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md)"
+    },
+    "DtsReflectionSignature": {
+      "type": "object",
+      "title": "DtsReflectionSignature",
+      "description": "TypeDoc `ReflectionType` 精简：函数/构造签名。"
+    },
+    "DtsReflectionTypeMeta": {
+      "type": "object",
+      "title": "DtsReflectionTypeMeta"
     },
     "MethodParameterMeta": {
       "type": "object",
       "title": "MethodParameterMeta",
-      "description": "Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 的 name + type 形态记录 DTS 参数。"
+      "description": "Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 记录 DTS 参数。"
     },
     "MethodMeta": {
       "type": "object",

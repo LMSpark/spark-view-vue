@@ -105,13 +105,14 @@
           {
             "name": "hint",
             "type": {
-              "type": "union",
-              "types": [
-                {
-                  "type": "intrinsic",
-                  "name": "string"
-                }
-              ]
+              "type": "optional",
+              "elementType": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            "flags": {
+              "isOptional": true
             }
           }
         ]
@@ -158,7 +159,6 @@
         {
           "name": "error",
           "jsdoc": "错误对象或错误信息。",
-          "signatureText": "static error(code: string, message: string, hint?: string): AiAgentToolCheck",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -180,10 +180,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentToolCheck",
             "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
@@ -192,7 +195,6 @@
         {
           "name": "warn",
           "jsdoc": "执行 warn 操作。",
-          "signatureText": "static warn(code: string, message: string, hint?: string): AiAgentToolCheck",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -214,10 +216,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentToolCheck",
             "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
@@ -226,7 +231,6 @@
         {
           "name": "info",
           "jsdoc": "执行 info 操作。",
-          "signatureText": "static info(code: string, message: string, hint?: string): AiAgentToolCheck",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -248,10 +252,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentToolCheck",
             "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
@@ -355,7 +362,6 @@
         {
           "name": "ok",
           "jsdoc": "构造成功的工具执行结果。",
-          "signatureText": "static ok<TData>(data?: TData, checks?: readonly AiAgentToolCheck[], state?: Record<string, unknown>): AiAgentToolResult<TData>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -364,6 +370,9 @@
                 "type": "reference",
                 "name": "TData",
                 "refersToTypeParameter": true
+              },
+              "flags": {
+                "isOptional": true
               }
             },
             {
@@ -371,6 +380,9 @@
               "type": {
                 "type": "unknown",
                 "name": "readonly AiAgentToolCheck[]"
+              },
+              "flags": {
+                "isOptional": true
               }
             },
             {
@@ -388,10 +400,13 @@
                     "name": "unknown"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentToolResult",
             "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
@@ -407,7 +422,6 @@
         {
           "name": "fail",
           "jsdoc": "执行 fail 操作。",
-          "signatureText": "static fail(checks: readonly AiAgentToolCheck[], state?: Record<string, unknown>): AiAgentToolResult<never>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -432,10 +446,13 @@
                     "name": "unknown"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentToolResult",
             "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
@@ -450,7 +467,6 @@
         {
           "name": "failCode",
           "jsdoc": "执行 fail Code 操作。",
-          "signatureText": "static failCode(code: string, message: string, hint?: string): AiAgentToolResult<never>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -472,10 +488,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentToolResult",
             "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
@@ -490,7 +509,6 @@
         {
           "name": "passthroughFailure",
           "jsdoc": "执行 passthrough Failure 操作。",
-          "signatureText": "static passthroughFailure(result: AiAgentToolResult<unknown>): AiAgentToolResult<never>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -508,7 +526,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentToolResult",
             "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
@@ -655,7 +673,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.585Z",
+  "generatedAt": "2026-06-11T21:36:01.500Z",
   "$defs": {
     "AiAgentToolCheckLevel": {
       "type": "object",

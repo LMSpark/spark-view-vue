@@ -197,10 +197,9 @@
         {
           "name": "toJson",
           "jsdoc": "序列化项目根领域模型的当前内存态。",
-          "signatureText": "toJson(): Record<string, unknown>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Record",
             "typeArguments": [
@@ -218,7 +217,6 @@
         {
           "name": "save",
           "jsdoc": "将待提交的导航变更刷写到远端。\n@param options.client Workspace 提供的 NavigationClient。",
-          "signatureText": "save(options: {\n        client: NavigationClient;\n    }): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -229,7 +227,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -243,7 +241,6 @@
         {
           "name": "load",
           "jsdoc": "从远端加载项目导航并构造根模型。\n@param options.projectId 项目 id。\n@param options.tenantId 租户 id。\n@param options.client NavigationClient。\n@param options.name 可选项目名称；缺省时用导航 root.title。",
-          "signatureText": "static load(options: {\n        projectId: string;\n        tenantId: string;\n        client: NavigationClient;\n        name?: string;\n    }): Promise<ProjectRootModel>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -254,7 +251,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -269,10 +266,9 @@
         {
           "name": "toTree",
           "jsdoc": "将扁平导航行恢复为可写回 ProjectModel 的 children 树。",
-          "signatureText": "toTree(): ProjectNodeData[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -284,10 +280,9 @@
         {
           "name": "readProjectPlanningInput",
           "jsdoc": "读取项目级策划输入，根节点 description 是短需求来源。",
-          "signatureText": "readProjectPlanningInput(): ProjectPlanningInput",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectPlanningInput",
             "sourcePath": "declarations/packages/spark-project-model/src/project/project-types.d.ts"
@@ -296,7 +291,6 @@
         {
           "name": "readNavigationNodePlanningInput",
           "jsdoc": "读取单个导航节点的策划输入。",
-          "signatureText": "readNavigationNodePlanningInput(nodeId: string): NavigationPlanningInput",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -307,7 +301,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "NavigationPlanningInput",
             "sourcePath": "declarations/packages/spark-project-model/src/project/project-types.d.ts"
@@ -316,10 +310,9 @@
         {
           "name": "readNavigationPlanningInputs",
           "jsdoc": "读取所有导航节点的策划输入列表。",
-          "signatureText": "readNavigationPlanningInputs(): readonly NavigationPlanningInput[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "readonly NavigationPlanningInput[]"
           }
@@ -327,7 +320,6 @@
         {
           "name": "replaceNavigationChildren",
           "jsdoc": "整体替换导航 children 树，并记录一次 replace-children 待提交操作。",
-          "signatureText": "replaceNavigationChildren(input: ProjectNodeData[] | {\n        children: ProjectNodeData[];\n    }): ProjectModelData",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -351,7 +343,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectModelData",
             "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
@@ -360,26 +352,53 @@
         {
           "name": "subscribe",
           "jsdoc": "订阅项目根模型事件，返回取消订阅函数。",
-          "signatureText": "subscribe(listener: (event: ProjectRootModelEvent) => void): () => void",
           "parameterStyle": "positional",
           "parameters": [
             {
               "name": "listener",
               "type": {
-                "type": "unknown",
-                "name": "(event: ProjectRootModelEvent) => void"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "event",
+                          "type": {
+                            "type": "reference",
+                            "name": "ProjectRootModelEvent",
+                            "sourcePath": "declarations/packages/spark-project-model/src/domain-model/project/project-root-model.d.ts"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
               }
             }
           ],
-          "returnType": {
-            "type": "unknown",
-            "name": "() => void"
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "signatures": [
+                {
+                  "parameters": [],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                }
+              ]
+            }
           }
         },
         {
           "name": "selectNavigationNode",
           "jsdoc": "设置当前选中的导航节点。",
-          "signatureText": "selectNavigationNode(id: string | null): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -399,7 +418,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -407,7 +426,6 @@
         {
           "name": "findNavigationNode",
           "jsdoc": "按节点 id 查找导航行。",
-          "signatureText": "findNavigationNode(id: string): NavigationRowModel | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -418,7 +436,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -436,7 +454,6 @@
         {
           "name": "addNavigationNode",
           "jsdoc": "添加导航行，并将新增操作加入待保存队列。",
-          "signatureText": "addNavigationNode(node: NavigationRowModel): NavigationRowModel",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -448,7 +465,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "NavigationRowModel",
             "sourcePath": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts"
@@ -457,7 +474,6 @@
         {
           "name": "updateNavigationNode",
           "jsdoc": "更新导航行字段，并将更新操作加入待保存队列。",
-          "signatureText": "updateNavigationNode(id: string, patch: {\n        parentId?: string;\n        title?: string;\n        description?: string;\n        nodeKind?: string;\n        pageConfig?: PageConfigModel | null;\n    }): NavigationRowModel",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -475,7 +491,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "NavigationRowModel",
             "sourcePath": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts"
@@ -484,7 +500,6 @@
         {
           "name": "removeNavigationNode",
           "jsdoc": "删除导航行，并将删除操作加入待保存队列。",
-          "signatureText": "removeNavigationNode(id: string): NavigationRowModel",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -495,7 +510,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "NavigationRowModel",
             "sourcePath": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts"
@@ -504,7 +519,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.033Z",
+  "generatedAt": "2026-06-11T21:36:01.881Z",
   "$defs": {
     "ProjectRootModelEvent": {
       "type": "object",

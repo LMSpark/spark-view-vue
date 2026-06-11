@@ -120,6 +120,8 @@ export type MethodParameterStyle = 'positional' | 'named'
  * DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。
  * intrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；
  * array/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。
+ *
+ * 改造清单（optional / reflection / tuple / rest）：[`docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md`](../../docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md)
  */
 export type DtsTypeMeta =
   | Readonly<{ type: 'intrinsic'; name: string }>
@@ -128,12 +130,31 @@ export type DtsTypeMeta =
   | Readonly<{ type: 'union'; types: readonly DtsTypeMeta[] }>
   | Readonly<{ type: 'intersection'; types: readonly DtsTypeMeta[] }>
   | Readonly<{ type: 'literal'; value: string | number | boolean | null }>
+  | Readonly<{ type: 'optional'; elementType: DtsTypeMeta }>
+  | Readonly<{ type: 'rest'; elementType: DtsTypeMeta }>
+  | Readonly<{ type: 'tuple'; elements: readonly DtsTypeMeta[] }>
+  | DtsReflectionTypeMeta
   | Readonly<{ type: 'unknown'; name: string }>
 
-/** Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 的 name + type 形态记录 DTS 参数。 */
+/** TypeDoc `ReflectionType` 精简：函数/构造签名。 */
+export type DtsReflectionSignature = Readonly<{
+  parameters: readonly MethodParameterMeta[]
+  type: DtsTypeMeta
+}>
+
+export type DtsReflectionTypeMeta = Readonly<{
+  type: 'reflection'
+  declaration: Readonly<{
+    signatures: readonly DtsReflectionSignature[]
+  }>
+}>
+
+/** Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 记录 DTS 参数。 */
 export type MethodParameterMeta = Readonly<{
   name: string
   type: DtsTypeMeta
+  flags?: Readonly<{ isOptional?: boolean }>
+  defaultValue?: string | number | boolean | null
 }>
 
 /** Method Meta 的语义模型。 */
@@ -142,6 +163,9 @@ export type MethodMeta = Readonly<{
   signatureText?: string
   parameterStyle?: MethodParameterStyle
   parameters?: readonly MethodParameterMeta[]
+  /** TypeDoc SignatureReflection.type（返回类型 SSOT）。 */
+  type?: DtsTypeMeta
+  /** @deprecated 旧 bundle 读侧兼容 alias；新 bundle 只写 `type`。 */
   returnType?: DtsTypeMeta
   paramsSchema?: AiJsonSchemaObject
   returnSchema?: AiJsonSchema

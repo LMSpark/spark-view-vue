@@ -68,7 +68,6 @@
         {
           "name": "subscribe",
           "jsdoc": "执行 subscribe 操作。",
-          "signatureText": "subscribe(listener: ProjectModelEventListener): () => void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -80,15 +79,24 @@
               }
             }
           ],
-          "returnType": {
-            "type": "unknown",
-            "name": "() => void"
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "signatures": [
+                {
+                  "parameters": [],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                }
+              ]
+            }
           }
         },
         {
           "name": "getChildNodes",
           "jsdoc": "读取 Child Nodes。",
-          "signatureText": "getChildNodes(nodeId?: string): TNode[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -96,10 +104,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -111,18 +122,36 @@
         {
           "name": "forEachNode",
           "jsdoc": "执行 for Each Node 操作。",
-          "signatureText": "forEachNode(callback: (node: TNode) => void): void",
           "parameterStyle": "positional",
           "parameters": [
             {
               "name": "callback",
               "type": {
-                "type": "unknown",
-                "name": "(node: TNode) => void"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "node",
+                          "type": {
+                            "type": "reference",
+                            "name": "TNode",
+                            "refersToTypeParameter": true
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -130,7 +159,6 @@
         {
           "name": "replaceProjectInfo",
           "jsdoc": "执行 replace Project Info 操作。",
-          "signatureText": "replaceProjectInfo(project: ProjectInfoInput): ProjectInfo",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -142,7 +170,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectInfo",
             "sourcePath": "declarations/packages/spark-project-model/src/project/project-types.d.ts"
@@ -151,7 +179,6 @@
         {
           "name": "replaceNavigationChildren",
           "jsdoc": "替换导航根节点的 children，返回更新后的导航根数据。\n@param children 新的导航 children 树；每个节点必须包含稳定 id、title、nodeKind。",
-          "signatureText": "replaceNavigationChildren(children: ProjectNodeData[]): ProjectModelData",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -166,7 +193,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectModelData",
             "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
@@ -175,7 +202,6 @@
         {
           "name": "findNodeById",
           "jsdoc": "find Node By Id 标识。",
-          "signatureText": "findNodeById(nodeId: string): TNode | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -186,7 +212,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -204,7 +230,6 @@
         {
           "name": "findNodeLocation",
           "jsdoc": "执行 find Node Location 操作。",
-          "signatureText": "findNodeLocation(nodeId: string): ProjectNodeLocation | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -215,7 +240,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -233,7 +258,6 @@
         {
           "name": "findConfigPageByPageId",
           "jsdoc": "find Config Page By Page Id 标识。",
-          "signatureText": "findConfigPageByPageId(pageId: string): ConfigPageNode | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -244,7 +268,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -262,7 +286,6 @@
         {
           "name": "openPageDesign",
           "jsdoc": "按 pageId 打开配置页设计上下文，返回 ConfigPageNode 四文件子模型。\n@param pageId 目标配置页 pageId，必须来自输入。",
-          "signatureText": "openPageDesign(pageId: string): ConfigPageNode",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -273,7 +296,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ConfigPageNode",
             "sourcePath": "declarations/packages/spark-project-model/src/page/config-page.d.ts"
@@ -282,7 +305,6 @@
         {
           "name": "closePageDesign",
           "jsdoc": "执行 close Page Design 操作。",
-          "signatureText": "closePageDesign(pageId: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -293,7 +315,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -301,10 +323,9 @@
         {
           "name": "readPageSummaries",
           "jsdoc": "读取策划轴投影：各 page/sub-page 的 description 与 descriptionContext。",
-          "signatureText": "readPageSummaries(): ProjectPageNodeSummary[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -316,10 +337,9 @@
         {
           "name": "readPlanningProjection",
           "jsdoc": "策划轴投影别名；与 readPageSummaries 同源。",
-          "signatureText": "readPlanningProjection(): ProjectPageNodeSummary[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -331,10 +351,9 @@
         {
           "name": "readProjectPlanningInput",
           "jsdoc": "读取项目级策划输入：navigation 根 description（短需求）+ 可选策划附件引用。",
-          "signatureText": "readProjectPlanningInput(): ProjectPlanningInput",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectPlanningInput",
             "sourcePath": "declarations/packages/spark-project-model/src/project/project-types.d.ts"
@@ -343,7 +362,6 @@
         {
           "name": "readNavigationNodePlanningInput",
           "jsdoc": "读取单个导航节点策划输入。\n@param nodeId 目标导航节点 id。",
-          "signatureText": "readNavigationNodePlanningInput(nodeId: string): NavigationPlanningInput",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -354,7 +372,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "NavigationPlanningInput",
             "sourcePath": "declarations/packages/spark-project-model/src/project/project-types.d.ts"
@@ -363,10 +381,9 @@
         {
           "name": "readNavigationPlanningInputs",
           "jsdoc": "读取全部导航节点策划输入（扁平遍历顺序）。",
-          "signatureText": "readNavigationPlanningInputs(): readonly NavigationPlanningInput[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "readonly NavigationPlanningInput[]"
           }
@@ -374,7 +391,6 @@
         {
           "name": "applyProjectLayoutEdit",
           "jsdoc": "更新根模块 childPlacement（项目级 header / sidebar 布局）。",
-          "signatureText": "applyProjectLayoutEdit(childPlacement: 'header' | 'sidebar'): NavigationNodeDraftApplyResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -394,7 +410,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "NavigationNodeDraftApplyResult",
             "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-edit.d.ts"
@@ -403,18 +419,27 @@
         {
           "name": "addRootModule",
           "jsdoc": "执行 add Root Module 操作。",
-          "signatureText": "addRootModule(createId: () => string): ProjectNodeData",
           "parameterStyle": "positional",
           "parameters": [
             {
               "name": "createId",
               "type": {
-                "type": "unknown",
-                "name": "() => string"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "string"
+                      }
+                    }
+                  ]
+                }
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectNodeData",
             "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
@@ -423,14 +448,23 @@
         {
           "name": "addChildPage",
           "jsdoc": "执行 add Child Page 操作。",
-          "signatureText": "addChildPage(createId: () => string, parent?: ProjectNodeData | null): ProjectNodeData",
           "parameterStyle": "positional",
           "parameters": [
             {
               "name": "createId",
               "type": {
-                "type": "unknown",
-                "name": "() => string"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "string"
+                      }
+                    }
+                  ]
+                }
               }
             },
             {
@@ -448,10 +482,13 @@
                     "value": null
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectNodeData",
             "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
@@ -460,7 +497,6 @@
         {
           "name": "removeNode",
           "jsdoc": "删除 Node。",
-          "signatureText": "removeNode(nodeId: string): ProjectNodeData | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -471,7 +507,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -489,10 +525,9 @@
         {
           "name": "refreshNavRefs",
           "jsdoc": "执行 refresh Nav Refs 操作。",
-          "signatureText": "refreshNavRefs(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -500,10 +535,9 @@
         {
           "name": "toTree",
           "jsdoc": "执行 to Tree 操作。",
-          "signatureText": "toTree(): ProjectNodeData[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -515,7 +549,6 @@
         {
           "name": "replaceNavigationRoot",
           "jsdoc": "执行 replace Navigation Root 操作。",
-          "signatureText": "replaceNavigationRoot(root: ProjectModelData, options?: {\n        selectedNodeId?: string | null;\n        dirty?: boolean;\n    }): ProjectModelData",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -531,10 +564,13 @@
               "type": {
                 "type": "unknown",
                 "name": "{\n        selectedNodeId?: string | null;\n        dirty?: boolean;\n    }"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectModelData",
             "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
@@ -543,7 +579,6 @@
         {
           "name": "selectNode",
           "jsdoc": "执行 select Node 操作。",
-          "signatureText": "selectNode(nodeId: string | null): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -563,7 +598,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -571,7 +606,6 @@
         {
           "name": "setActivePage",
           "jsdoc": "设置 Active Page。",
-          "signatureText": "setActivePage(pageId: string, options?: {\n        forceReset?: boolean;\n    }): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -586,10 +620,13 @@
               "type": {
                 "type": "unknown",
                 "name": "{\n        forceReset?: boolean;\n    }"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -597,10 +634,9 @@
         {
           "name": "clearActivePage",
           "jsdoc": "清空 Active Page。",
-          "signatureText": "clearActivePage(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -608,10 +644,9 @@
         {
           "name": "getActivePage",
           "jsdoc": "读取 Active Page。",
-          "signatureText": "getActivePage(): ConfigPageNode | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -629,10 +664,9 @@
         {
           "name": "beginNavigationDraft",
           "jsdoc": "执行 begin Navigation Draft 操作。",
-          "signatureText": "beginNavigationDraft(): NavigationNodeDraft",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "NavigationNodeDraft",
             "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-edit.d.ts"
@@ -641,10 +675,9 @@
         {
           "name": "discardNavigationDraft",
           "jsdoc": "执行 discard Navigation Draft 操作。",
-          "signatureText": "discardNavigationDraft(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -652,7 +685,6 @@
         {
           "name": "markNavigationClean",
           "jsdoc": "执行 mark Navigation Clean 操作。",
-          "signatureText": "markNavigationClean(scope?: 'root' | 'node'): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -669,10 +701,13 @@
                     "value": "node"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -680,7 +715,6 @@
         {
           "name": "applyNavigationNodeEdit",
           "jsdoc": "执行 apply Navigation Node Edit 操作。",
-          "signatureText": "applyNavigationNodeEdit(draft: NavigationNodeDraft): NavigationNodeDraftApplyResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -692,7 +726,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "NavigationNodeDraftApplyResult",
             "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-edit.d.ts"
@@ -701,7 +735,6 @@
         {
           "name": "applyNodeKindPreset",
           "jsdoc": "执行 apply Node Kind Preset 操作。",
-          "signatureText": "applyNodeKindPreset(kind: NavNodeKind): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -713,7 +746,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -721,7 +754,6 @@
         {
           "name": "writePageFile",
           "jsdoc": "写入指定配置页四文件文本到内存模型。\n@param command 页面文件写入命令，包含目标 pageId、文件名和新文本。",
-          "signatureText": "writePageFile(command: ProjectPageFileWriteCommand): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -733,7 +765,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -741,7 +773,6 @@
         {
           "name": "readPageFileText",
           "jsdoc": "读取指定配置页四文件文本。\n@param fileName 四文件名。\n@param pageId 可选 pageId；省略时使用当前 activePage。",
-          "signatureText": "readPageFileText(fileName: PageNodeFileName, pageId?: string): string",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -757,10 +788,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "string"
           }
@@ -768,10 +802,9 @@
         {
           "name": "isActivePageLoaded",
           "jsdoc": "是否 is Active Page Loaded。",
-          "signatureText": "isActivePageLoaded(): boolean",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -779,7 +812,6 @@
         {
           "name": "canUndoPageFile",
           "jsdoc": "是否 can Undo Page File。",
-          "signatureText": "canUndoPageFile(fileName: PageNodeFileName): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -791,7 +823,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -799,7 +831,6 @@
         {
           "name": "canRedoPageFile",
           "jsdoc": "是否 can Redo Page File。",
-          "signatureText": "canRedoPageFile(fileName: PageNodeFileName): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -811,7 +842,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -819,7 +850,6 @@
         {
           "name": "undoPageFile",
           "jsdoc": "执行 undo Page File 操作。",
-          "signatureText": "undoPageFile(fileName: PageNodeFileName): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -831,7 +861,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -839,7 +869,6 @@
         {
           "name": "redoPageFile",
           "jsdoc": "执行 redo Page File 操作。",
-          "signatureText": "redoPageFile(fileName: PageNodeFileName): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -851,7 +880,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -859,10 +888,9 @@
         {
           "name": "getDataSetTool",
           "jsdoc": "读取 Data Set Tool。",
-          "signatureText": "getDataSetTool(): DataSetCrudTool | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -879,18 +907,50 @@
         {
           "name": "editDataSet",
           "jsdoc": "通过 DataSetCrudTool 修改当前 active 页的 pagedata.json 内存模型。",
-          "signatureText": "editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
               "name": "run",
               "type": {
-                "type": "unknown",
-                "name": "(tool: DataSetCrudTool) => void | Promise<void>"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "tool",
+                          "type": {
+                            "type": "reference",
+                            "name": "DataSetCrudTool"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "union",
+                        "types": [
+                          {
+                            "type": "intrinsic",
+                            "name": "void"
+                          },
+                          {
+                            "type": "reference",
+                            "name": "Promise",
+                            "typeArguments": [
+                              {
+                                "type": "intrinsic",
+                                "name": "void"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -904,10 +964,9 @@
         {
           "name": "getNodeTree",
           "jsdoc": "读取 Node Tree。",
-          "signatureText": "getNodeTree(): SparkNodeTreeModel | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -924,18 +983,50 @@
         {
           "name": "editNodeTree",
           "jsdoc": "通过 SparkNodeTree 修改当前 active 页的 rule.json 节点树。",
-          "signatureText": "editNodeTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
               "name": "run",
               "type": {
-                "type": "unknown",
-                "name": "(tree: SparkNodeTreeModel) => void | Promise<void>"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "tree",
+                          "type": {
+                            "type": "reference",
+                            "name": "SparkNodeTree"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "union",
+                        "types": [
+                          {
+                            "type": "intrinsic",
+                            "name": "void"
+                          },
+                          {
+                            "type": "reference",
+                            "name": "Promise",
+                            "typeArguments": [
+                              {
+                                "type": "intrinsic",
+                                "name": "void"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -949,7 +1040,6 @@
         {
           "name": "markPageFileChanged",
           "jsdoc": "执行 mark Page File Changed 操作。",
-          "signatureText": "markPageFileChanged(pageId: string, fileName: PageNodeFileName): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -968,7 +1058,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -976,7 +1066,6 @@
         {
           "name": "markPageLoadedChanged",
           "jsdoc": "执行 mark Page Loaded Changed 操作。",
-          "signatureText": "markPageLoadedChanged(pageId: string, loaded: boolean): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -994,7 +1083,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1002,10 +1091,9 @@
         {
           "name": "readNavigationProjection",
           "jsdoc": "读取承载轴投影：导航树、选中节点与 pageFeatures。",
-          "signatureText": "readNavigationProjection(): ProjectNavigationProjection",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectNavigationProjection",
             "sourcePath": "declarations/packages/spark-project-model/src/project/project-types.d.ts"
@@ -1014,10 +1102,9 @@
         {
           "name": "readActivePageProjection",
           "jsdoc": "执行 read Active Page Projection 操作。",
-          "signatureText": "readActivePageProjection(): ProjectActivePageProjection",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectActivePageProjection",
             "sourcePath": "declarations/packages/spark-project-model/src/project/project-types.d.ts"
@@ -1026,10 +1113,9 @@
         {
           "name": "readDirtyProjection",
           "jsdoc": "执行 read Dirty Projection 操作。",
-          "signatureText": "readDirtyProjection(): ProjectDirtyProjection",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectDirtyProjection",
             "sourcePath": "declarations/packages/spark-project-model/src/project/project-types.d.ts"
@@ -1038,7 +1124,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.065Z",
+  "generatedAt": "2026-06-11T21:36:01.932Z",
   "$defs": {
     "ProjectModel": {
       "type": "object",

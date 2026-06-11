@@ -13,6 +13,7 @@ import type {
   ComponentClassModelLayer,
   ComponentClassModelLevel,
   ConstructorMeta,
+  DtsReflectionSignature,
   DtsTypeMeta,
   MethodMeta,
   MethodParameterMeta,
@@ -33,6 +34,8 @@ import {
   DTS_CLASS_MODEL_BUNDLE_VERSION,
   DTS_FILE_PROJECTION_VERSION,
 } from './dts-bundle-types'
+import { canRenderMethodSignatureFromTypeTree } from './dts-type-meta-ops'
+import { renderMethodSignatureFromMeta } from './signature-renderer'
 
 const DECLARATION_KINDS = new Set<NonNullable<SourceProvenanceMeta['declarationKind']>>([
   'class',
@@ -363,12 +366,12 @@ function parseMethodMeta(value: unknown, path: string): MethodMeta {
   const record = requireJsonRecord(value, path)
   const paramsSchema = readOptionalJsonSchemaObject(record, 'paramsSchema', `${path}.paramsSchema`)
   const returnSchema = readOptionalJsonSchema(record, 'returnSchema', `${path}.returnSchema`)
-  const returnType = readOptionalDtsTypeMeta(record, 'returnType', `${path}.returnType`)
+  const returnTypeMeta = readOptionalDtsTypeMeta(record, 'type', `${path}.type`)
+    ?? readOptionalDtsTypeMeta(record, 'returnType', `${path}.returnType`)
   const takesContext = readOptionalBoolean(record, 'takesContext', `${path}.takesContext`)
   const provenance = readOptionalSourceProvenance(record, 'provenance', `${path}.provenance`)
-  return {
+  const core: MethodMeta = {
     name: readRequiredString(record, 'name', `${path}.name`),
-    signatureText: readRequiredString(record, 'signatureText', `${path}.signatureText`),
     parameterStyle: readRequiredDeclarationKind({
       record,
       field: 'parameterStyle',
@@ -381,21 +384,42 @@ function parseMethodMeta(value: unknown, path: string): MethodMeta {
       path: `${path}.parameters`,
       parseEntry: parseMethodParameterMeta,
     }),
-    ...(returnType === undefined ? {} : { returnType }),
+    ...(returnTypeMeta === undefined ? {} : { type: returnTypeMeta }),
     ...(paramsSchema === undefined ? {} : { paramsSchema }),
     ...(returnSchema === undefined ? {} : { returnSchema }),
     ...(takesContext === undefined ? {} : { takesContext }),
     jsdoc: readRequiredString(record, 'jsdoc', `${path}.jsdoc`),
     ...(provenance === undefined ? {} : { provenance }),
   }
+  const signatureText = readOptionalString(record, 'signatureText', `${path}.signatureText`)
+    ?? (canRenderMethodSignatureFromTypeTree(core) ? renderMethodSignatureFromMeta(core) : undefined)
+  if (signatureText === undefined) {
+    throw new Error(`Missing required field signatureText at ${path}`)
+  }
+  return { ...core, signatureText }
 }
 
 function parseMethodParameterMeta(value: unknown, path: string): MethodParameterMeta {
   const record = requireJsonRecord(value, path)
+  const flags = readOptionalParameterFlags(record, `${path}.flags`)
+  const defaultValue = readOptionalDtsLiteralField(record, 'defaultValue', `${path}.defaultValue`)
   return {
     name: readRequiredString(record, 'name', `${path}.name`),
     type: readRequiredDtsTypeMeta(record, 'type', `${path}.type`),
+    ...(flags === undefined ? {} : { flags }),
+    ...(defaultValue === undefined ? {} : { defaultValue }),
   }
+}
+
+function readOptionalParameterFlags(
+  record: Record<string, unknown>,
+  path: string,
+): MethodParameterMeta['flags'] | undefined {
+  if (!Object.hasOwn(record, 'flags')) return undefined
+  const flagsRecord = requireJsonRecord(record['flags'], path)
+  const isOptional = readOptionalBoolean(flagsRecord, 'isOptional', `${path}.isOptional`)
+  if (isOptional === undefined) return undefined
+  return { isOptional }
 }
 
 function readOptionalDtsTypeMeta(
@@ -458,10 +482,63 @@ function parseDtsTypeMeta(value: unknown, path: string): DtsTypeMeta {
   if (type === 'literal') {
     return { type, value: readRequiredDtsLiteralValue(record, 'value', `${path}.value`) }
   }
+  if (type === 'optional') {
+    return { type, elementType: readRequiredDtsTypeMeta(record, 'elementType', `${path}.elementType`) }
+  }
+  if (type === 'rest') {
+    return { type, elementType: readRequiredDtsTypeMeta(record, 'elementType', `${path}.elementType`) }
+  }
+  if (type === 'tuple') {
+    return {
+      type,
+      elements: readRequiredArray({
+        record,
+        field: 'elements',
+        path: `${path}.elements`,
+        parseEntry: parseDtsTypeMeta,
+      }),
+    }
+  }
+  if (type === 'reflection') {
+    const declarationRecord = requireJsonRecord(record['declaration'], `${path}.declaration`)
+    return {
+      type,
+      declaration: {
+        signatures: readRequiredArray({
+          record: declarationRecord,
+          field: 'signatures',
+          path: `${path}.declaration.signatures`,
+          parseEntry: parseDtsReflectionSignature,
+        }),
+      },
+    }
+  }
   if (type === 'unknown') {
     return { type, name: readRequiredString(record, 'name', `${path}.name`) }
   }
   throw new Error(`Invalid DTS type discriminator at ${path}.type: ${type}`)
+}
+
+function parseDtsReflectionSignature(value: unknown, path: string): DtsReflectionSignature {
+  const record = requireJsonRecord(value, path)
+  return {
+    parameters: readRequiredArray({
+      record,
+      field: 'parameters',
+      path: `${path}.parameters`,
+      parseEntry: parseMethodParameterMeta,
+    }),
+    type: readRequiredDtsTypeMeta(record, 'type', `${path}.type`),
+  }
+}
+
+function readOptionalDtsLiteralField(
+  record: Record<string, unknown>,
+  field: string,
+  path: string,
+): string | number | boolean | null | undefined {
+  if (!Object.hasOwn(record, field)) return undefined
+  return readRequiredDtsLiteralValue(record, field, path)
 }
 
 function readRequiredDtsLiteralValue(

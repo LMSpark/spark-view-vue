@@ -418,7 +418,6 @@
         {
           "name": "startSession",
           "jsdoc": "启动会话：创建新的会话记录",
-          "signatureText": "abstract startSession(context: AiAgentRuntimeContext): AiAgentSessionRecord",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -430,7 +429,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentSessionRecord",
             "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
@@ -439,7 +438,6 @@
         {
           "name": "stopSession",
           "jsdoc": "停止会话：标记为 Stopped，记录原因",
-          "signatureText": "abstract stopSession(context: AiAgentRuntimeContext, reason?: string): AiAgentSessionRecord | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -455,10 +453,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -476,7 +477,6 @@
         {
           "name": "getSession",
           "jsdoc": "获取会话记录",
-          "signatureText": "abstract getSession(context: AiAgentRuntimeContext): AiAgentSessionRecord | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -488,7 +488,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -506,10 +506,9 @@
         {
           "name": "listSessions",
           "jsdoc": "列出所有会话",
-          "signatureText": "abstract listSessions(): readonly AiAgentSessionRecord[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "readonly AiAgentSessionRecord[]"
           }
@@ -517,7 +516,6 @@
         {
           "name": "getSessionHistory",
           "jsdoc": "获取会话历史（所有条目）",
-          "signatureText": "abstract getSessionHistory(context: AiAgentRuntimeContext): readonly AiAgentHistoryEntry[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -529,7 +527,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "readonly AiAgentHistoryEntry[]"
           }
@@ -537,7 +535,6 @@
         {
           "name": "appendMessage",
           "jsdoc": "追加消息条目",
-          "signatureText": "abstract appendMessage(options: AiAgentAppendMessageOptions): AiAgentMessageHistoryEntry",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -549,7 +546,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentMessageHistoryEntry",
             "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
@@ -558,7 +555,6 @@
         {
           "name": "appendFunctionCall",
           "jsdoc": "追加工具调用条目",
-          "signatureText": "abstract appendFunctionCall(options: AiAgentAppendFunctionCallOptions): AiAgentFunctionCallHistoryEntry",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -570,7 +566,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentFunctionCallHistoryEntry",
             "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
@@ -579,7 +575,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.575Z",
+  "generatedAt": "2026-06-11T21:36:01.493Z",
   "$defs": {
     "AiAgentFunctionCallCheck": {
       "type": "object",

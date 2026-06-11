@@ -124,7 +124,6 @@
         {
           "name": "saveFileContent",
           "jsdoc": "保存 File Content。",
-          "signatureText": "saveFileContent(pageId: string, filename: PageNodeFileName, content: string): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -150,7 +149,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -164,7 +163,6 @@
         {
           "name": "createFiles",
           "jsdoc": "创建 Files。",
-          "signatureText": "createFiles(params: PageFileCreateParams): Promise<Record<string, unknown>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -176,7 +174,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -200,7 +198,6 @@
         {
           "name": "deleteFiles",
           "jsdoc": "删除 Files。",
-          "signatureText": "deleteFiles(pageId: string): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -211,7 +208,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -225,7 +222,6 @@
         {
           "name": "listVersions",
           "jsdoc": "执行 list Versions 操作。",
-          "signatureText": "listVersions(pageId: string, filename: PageNodeFileName): Promise<PageNodeFileVersionSummary[]>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -244,7 +240,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -262,7 +258,6 @@
         {
           "name": "restoreVersion",
           "jsdoc": "执行 restore Version 操作。",
-          "signatureText": "restoreVersion(pageId: string, filename: PageNodeFileName, version: number): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -288,7 +283,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -302,7 +297,6 @@
         {
           "name": "createVersion",
           "jsdoc": "创建 Version。",
-          "signatureText": "createVersion(pageId: string, filename: PageNodeFileName): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -321,7 +315,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -335,7 +329,6 @@
         {
           "name": "deleteVersion",
           "jsdoc": "删除 Version。",
-          "signatureText": "deleteVersion(pageId: string, filename: PageNodeFileName, version: number): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -361,7 +354,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -375,7 +368,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.039Z",
+  "generatedAt": "2026-06-11T21:36:01.889Z",
   "$defs": {
     "PageFileCreateParams": {
       "type": "object",

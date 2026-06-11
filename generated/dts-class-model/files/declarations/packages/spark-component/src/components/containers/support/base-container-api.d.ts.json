@@ -78,7 +78,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.763Z",
+  "generatedAt": "2026-06-11T21:36:01.626Z",
   "$defs": {
     "BaseCrudContainerApi": {
       "type": "object",

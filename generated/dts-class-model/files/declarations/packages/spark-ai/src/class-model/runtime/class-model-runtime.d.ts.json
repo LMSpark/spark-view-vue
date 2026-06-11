@@ -214,10 +214,9 @@
         {
           "name": "getTools",
           "jsdoc": "读取 Tools。",
-          "signatureText": "getTools(): readonly ClassModelToolSpec[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "readonly ClassModelToolSpec[]"
           }
@@ -225,7 +224,6 @@
         {
           "name": "executeTool",
           "jsdoc": "执行 execute Tool 操作。",
-          "signatureText": "executeTool(toolName: string, rawArgs: ClassModelToolArgs, host?: unknown): Promise<ClassModelToolResult>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -248,10 +246,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "unknown"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -266,7 +267,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.610Z",
+  "generatedAt": "2026-06-11T21:36:01.518Z",
   "$defs": {
     "ClassModelScriptCommand": {
       "type": "object",

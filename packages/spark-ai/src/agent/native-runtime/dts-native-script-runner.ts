@@ -13,6 +13,7 @@ import type { AiAgentRuntimeHostContext } from '../tool-runtime'
 import { AiAgentToolResult } from '../tool-runtime'
 import {
   DtsClassModelBundleLoader,
+  resolveMethodReturnType,
   type ClassModel,
   type DtsClassModelSurfaceDocument,
 } from '../../class-model/class-model'
@@ -226,7 +227,7 @@ function resolveMethodReturnClassName(
   surface: DtsClassModelSurfaceDocument,
   method: ClassModel['methods'][number],
 ): string | undefined {
-  return resolveClassNameFromDtsType(surface, method.returnType)
+  return resolveClassNameFromDtsType(surface, resolveMethodReturnType(method))
     ?? resolveClassNameFromTypeText(surface, method.returnTypeText)
     ?? resolveSchemaClassName(surface, method.returnSchema)
 }
@@ -241,7 +242,9 @@ function resolveClassNameFromDtsType(
       ? firstDefined(typeMeta.typeArguments?.map(typeArgument => resolveClassNameFromDtsType(surface, typeArgument)) ?? [])
       : typeMeta.name
   }
-  if (typeMeta.type === 'array') return resolveClassNameFromDtsType(surface, typeMeta.elementType)
+  if (typeMeta.type === 'array' || typeMeta.type === 'optional' || typeMeta.type === 'rest') {
+    return resolveClassNameFromDtsType(surface, typeMeta.elementType)
+  }
   if (typeMeta.type === 'union' || typeMeta.type === 'intersection') {
     return firstDefined(typeMeta.types.map(item => resolveClassNameFromDtsType(surface, item)))
   }

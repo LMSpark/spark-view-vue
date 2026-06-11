@@ -259,6 +259,9 @@
               "type": "reference",
               "name": "AppLoggerConfig",
               "sourcePath": "declarations/packages/spark-app/src/logger/index.d.ts"
+            },
+            "flags": {
+              "isOptional": true
             }
           }
         ]
@@ -268,7 +271,6 @@
         {
           "name": "addTransport",
           "jsdoc": "添加实例级传输器",
-          "signatureText": "addTransport(transport: LogTransport): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -280,7 +282,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -288,7 +290,6 @@
         {
           "name": "debug",
           "jsdoc": "Debug 日志",
-          "signatureText": "debug(message: string, meta?: Record<string, unknown>): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -313,10 +314,13 @@
                     "name": "unknown"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -324,7 +328,6 @@
         {
           "name": "info",
           "jsdoc": "Info 日志",
-          "signatureText": "info(message: string, meta?: Record<string, unknown>): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -349,10 +352,13 @@
                     "name": "unknown"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -360,7 +366,6 @@
         {
           "name": "warn",
           "jsdoc": "Warning 日志",
-          "signatureText": "warn(message: string, meta?: Record<string, unknown>): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -385,10 +390,13 @@
                     "name": "unknown"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -396,7 +404,6 @@
         {
           "name": "error",
           "jsdoc": "Error 日志",
-          "signatureText": "error(message: string, error?: Error | Record<string, unknown>): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -430,10 +437,13 @@
                     ]
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -441,7 +451,6 @@
         {
           "name": "success",
           "jsdoc": "Success 日志（扩展）",
-          "signatureText": "success(message: string, meta?: Record<string, unknown>): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -466,10 +475,13 @@
                     "name": "unknown"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -477,7 +489,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.631Z",
+  "generatedAt": "2026-06-11T21:36:01.534Z",
   "$defs": {
     "AppLoggerApi": {
       "type": "object",

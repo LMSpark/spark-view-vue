@@ -36,29 +36,125 @@
           {
             "name": "_getColumns",
             "type": {
-              "type": "unknown",
-              "name": "() => DataColumn[]"
+              "type": "reflection",
+              "declaration": {
+                "signatures": [
+                  {
+                    "parameters": [],
+                    "type": {
+                      "type": "array",
+                      "elementType": {
+                        "type": "reference",
+                        "name": "DataColumn",
+                        "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                      }
+                    }
+                  }
+                ]
+              }
             }
           },
           {
             "name": "_getColumnMap",
             "type": {
-              "type": "unknown",
-              "name": "() => Map<string, DataColumn> | undefined"
+              "type": "reflection",
+              "declaration": {
+                "signatures": [
+                  {
+                    "parameters": [],
+                    "type": {
+                      "type": "optional",
+                      "elementType": {
+                        "type": "reference",
+                        "name": "Map",
+                        "typeArguments": [
+                          {
+                            "type": "intrinsic",
+                            "name": "string"
+                          },
+                          {
+                            "type": "reference",
+                            "name": "DataColumn",
+                            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
             }
           },
           {
             "name": "_getRows",
             "type": {
-              "type": "unknown",
-              "name": "() => DataRow[]"
+              "type": "reflection",
+              "declaration": {
+                "signatures": [
+                  {
+                    "parameters": [],
+                    "type": {
+                      "type": "array",
+                      "elementType": {
+                        "type": "reference",
+                        "name": "DataRow",
+                        "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                      }
+                    }
+                  }
+                ]
+              }
             }
           },
           {
             "name": "_registerComputed",
             "type": {
-              "type": "unknown",
-              "name": "(name: string, fn: (row: DataRow) => unknown) => void"
+              "type": "reflection",
+              "declaration": {
+                "signatures": [
+                  {
+                    "parameters": [
+                      {
+                        "name": "name",
+                        "type": {
+                          "type": "intrinsic",
+                          "name": "string"
+                        }
+                      },
+                      {
+                        "name": "fn",
+                        "type": {
+                          "type": "reflection",
+                          "declaration": {
+                            "signatures": [
+                              {
+                                "parameters": [
+                                  {
+                                    "name": "row",
+                                    "type": {
+                                      "type": "reference",
+                                      "name": "DataRow",
+                                      "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                                    }
+                                  }
+                                ],
+                                "type": {
+                                  "type": "intrinsic",
+                                  "name": "unknown"
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ],
+                    "type": {
+                      "type": "intrinsic",
+                      "name": "void"
+                    }
+                  }
+                ]
+              }
             }
           }
         ]
@@ -68,10 +164,9 @@
         {
           "name": "ensurePkColumn",
           "jsdoc": "统一注册 `_pk` 计算列——无论单列还是多列主键。\n调用时机：\n- `dataTable` setter（列定义变更时）\n- `primaryKey` setter（显式覆盖时）\n幺等：字段列表不变时跳过重新注册。\n补计算（`_computedDelegate.apply(rows)`）由调用方负责。",
-          "signatureText": "ensurePkColumn(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -79,10 +174,9 @@
         {
           "name": "getPkColumnMeta",
           "jsdoc": "返回 `_pk` 列的元数据（DataColumn）。\n类型推导规则：\n- 单列 PK 且有列定义 → 继承源列 type\n- 多列 PK / 无列定义 → `'string'`",
-          "signatureText": "getPkColumnMeta(): DataColumn",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataColumn",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -91,10 +185,9 @@
         {
           "name": "resetPrimaryKey",
           "jsdoc": "清除显式覆盖，恢复从 DataTable 列定义自动推导主键。\n同时清除 `_pk` 计算列注册状态，下次 `ensurePkColumn()` 时重新注册。\n@example view.primaryKey = 'uuid'  // 显式覆盖\nview.resetPrimaryKey()    // 恢复列推导",
-          "signatureText": "resetPrimaryKey(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -102,7 +195,6 @@
         {
           "name": "getPkKey",
           "jsdoc": "获取行的主键值（标量）。\n**快速路径**：若 `_pk` 计算列已注册（`ensurePkColumn()` 已调用），\n直接读取预计算的 `row._pk`——O(1) 字段读取，无类型强转。\n**未注册路径**：若 `_pk` 尚未注册（非托管行 / 初始化前调用），\n回退到 `row[primaryKey]` + `coercePkValue` 运行时强转。\n所有内部 Map/Set/`===` 比较均使用此方法。",
-          "signatureText": "getPkKey(row: DataRow): string | number | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -114,7 +206,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -124,6 +216,10 @@
               {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              {
+                "type": "intrinsic",
+                "name": "undefined"
               }
             ]
           }
@@ -131,7 +227,6 @@
         {
           "name": "buildServerPk",
           "jsdoc": "从行数据构建服务端 PK payload（用于 CRUD HTTP 请求）。\n对于自动合成 _pk 的多列主键，返回原始字段的 Record：\n`{ orderId: 1, productId: 10 }`\n对于单列主键，返回单字段 Record：\n`{ id: 42 }`\n@internal 供 saveChanges / CrudDelegate 等构建服务端请求使用",
-          "signatureText": "buildServerPk(row: DataRow): Record<string, unknown>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -143,7 +238,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Record",
             "typeArguments": [
@@ -161,7 +256,6 @@
         {
           "name": "isSamePrimaryKey",
           "jsdoc": "检查两行是否有相同的主键。\n优先使用 `_pk`（预计算）进行比较，否则回退到 `isSameRow`。",
-          "signatureText": "isSamePrimaryKey(row1: DataRow, row2: DataRow): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -181,7 +275,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -189,7 +283,6 @@
         {
           "name": "setPrimaryKeyGenerator",
           "jsdoc": "配置主键生成器\n@param config 主键生成器配置\n@example ```ts\n// UUID生成器\nview.setPrimaryKeyGenerator({ strategy: 'uuid', fields: 'id' })\n// 自增ID\nview.setPrimaryKeyGenerator({ strategy: 'auto-increment', fields: 'id', startValue: 1000 })\n```",
-          "signatureText": "setPrimaryKeyGenerator(config: PrimaryKeyGeneratorConfig): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -201,7 +294,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -209,10 +302,9 @@
         {
           "name": "removePrimaryKeyGenerator",
           "jsdoc": "移除主键生成器",
-          "signatureText": "removePrimaryKeyGenerator(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -220,7 +312,6 @@
         {
           "name": "generatePrimaryKey",
           "jsdoc": "为新记录生成主键值\n@throws 如果未配置主键生成器",
-          "signatureText": "generatePrimaryKey(row: Partial<DataRow>): DataRow",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -238,7 +329,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataRow",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -247,7 +338,6 @@
         {
           "name": "ensurePrimaryKey",
           "jsdoc": "为新记录生成主键值（如果配置了生成器且行中缺少主键）\n@param row 部分数据行\n@returns 包含主键的数据行（如果需要生成）或原始数据（如果已有主键）",
-          "signatureText": "ensurePrimaryKey(row: Partial<DataRow>): DataRow",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -265,7 +355,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataRow",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -274,30 +364,27 @@
         {
           "name": "getPrimaryKeyGeneratorConfig",
           "jsdoc": "获取主键生成器配置",
-          "signatureText": "getPrimaryKeyGeneratorConfig(): Readonly<PrimaryKeyGeneratorConfig> | undefined",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "Readonly",
-                "typeArguments": [
-                  {
-                    "type": "reference",
-                    "name": "PrimaryKeyGeneratorConfig",
-                    "sourcePath": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts"
-                  }
-                ]
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "Readonly",
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "name": "PrimaryKeyGeneratorConfig",
+                  "sourcePath": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts"
+                }
+              ]
+            }
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.995Z",
+  "generatedAt": "2026-06-11T21:36:01.832Z",
   "$defs": {
     "PrimaryKeyDelegate": {
       "type": "object",

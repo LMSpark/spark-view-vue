@@ -72,10 +72,9 @@
         {
           "name": "init",
           "jsdoc": "执行 init 操作。",
-          "signatureText": "init(): Promise<DtsClassModelBundleManifest>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -90,7 +89,6 @@
         {
           "name": "ensureClassName",
           "jsdoc": "ensure Class Name 名称。",
-          "signatureText": "ensureClassName(className: string): Promise<ClassModel>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -101,7 +99,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -116,7 +114,6 @@
         {
           "name": "ensureSourcePath",
           "jsdoc": "ensure Source Path 路径。",
-          "signatureText": "ensureSourcePath(sourcePath: string): Promise<DtsFileProjectionDocument>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -127,7 +124,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -142,7 +139,6 @@
         {
           "name": "ensureReachableClosure",
           "jsdoc": "执行 ensure Reachable Closure 操作。",
-          "signatureText": "ensureReachableClosure(rootClassName: string): Promise<readonly string[]>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -153,7 +149,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -167,7 +163,6 @@
         {
           "name": "buildLoadedSurface",
           "jsdoc": "执行 build Loaded Surface 操作。",
-          "signatureText": "buildLoadedSurface(configPath?: string): DtsClassModelSurfaceDocument",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -175,10 +170,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DtsClassModelSurfaceDocument",
             "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-surface-types.d.ts"
@@ -187,7 +185,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.591Z",
+  "generatedAt": "2026-06-11T21:36:01.504Z",
   "$defs": {
     "DtsClassModelBundleLoaderOptions": {
       "type": "object",

@@ -35,10 +35,9 @@
         {
           "name": "getInstance",
           "jsdoc": "获取单例实例",
-          "signatureText": "static getInstance(): ConfigLoader",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ConfigLoader",
             "sourcePath": "declarations/packages/spark-app/src/config/loader.d.ts"
@@ -47,10 +46,9 @@
         {
           "name": "loadDefaultConfig",
           "jsdoc": "加载默认配置",
-          "signatureText": "loadDefaultConfig(): Promise<AppFullConfig>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -65,7 +63,6 @@
         {
           "name": "loadTenantConfig",
           "jsdoc": "加载租户配置",
-          "signatureText": "loadTenantConfig(tenantId: string): Promise<TenantConfig | null>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -76,7 +73,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -100,7 +97,6 @@
         {
           "name": "loadConfig",
           "jsdoc": "加载完整配置（默认 + 租户）",
-          "signatureText": "loadConfig(tenantId?: string): Promise<AppFullConfig>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -108,10 +104,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -126,10 +125,9 @@
         {
           "name": "clearCache",
           "jsdoc": "清除缓存",
-          "signatureText": "clearCache(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -152,10 +150,9 @@
         {
           "name": "fromQuery",
           "jsdoc": "从 URL 参数获取租户 ID",
-          "signatureText": "static fromQuery(): string | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -172,10 +169,9 @@
         {
           "name": "fromSubdomain",
           "jsdoc": "从子域名获取租户 ID\n例如：demo.example.com -> demo",
-          "signatureText": "static fromSubdomain(): string | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -192,10 +188,9 @@
         {
           "name": "fromLocalStorage",
           "jsdoc": "从 localStorage 获取租户 ID",
-          "signatureText": "static fromLocalStorage(): string | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -212,10 +207,9 @@
         {
           "name": "fromCookie",
           "jsdoc": "从 cookie 获取租户 ID",
-          "signatureText": "static fromCookie(): string | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -232,10 +226,9 @@
         {
           "name": "resolve",
           "jsdoc": "综合识别租户 ID（按优先级）\n优先级：URL 参数 > 子域名 > localStorage > cookie",
-          "signatureText": "static resolve(): string | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -252,7 +245,6 @@
         {
           "name": "save",
           "jsdoc": "保存租户 ID 到 localStorage",
-          "signatureText": "static save(tenantId: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -263,7 +255,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -271,7 +263,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.623Z",
+  "generatedAt": "2026-06-11T21:36:01.531Z",
   "$defs": {
     "ConfigLoader": {
       "type": "object",

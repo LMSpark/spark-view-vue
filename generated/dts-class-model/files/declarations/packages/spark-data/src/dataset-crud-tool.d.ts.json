@@ -1464,7 +1464,6 @@
         {
           "name": "fromDataSet",
           "jsdoc": "从已有 DataSet 实例或 JSON 快照创建工具类。",
-          "signatureText": "static fromDataSet(source: DataSet | Record<string, unknown> | string): DataSetCrudTool",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1499,7 +1498,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataSetCrudTool",
             "sourcePath": "declarations/packages/spark-data/src/dataset-crud-tool.d.ts"
@@ -1508,7 +1507,6 @@
         {
           "name": "fromJson",
           "jsdoc": "从 JSON 元数据创建工具类。",
-          "signatureText": "static fromJson(json: DataSetMetadata | Record<string, unknown> | string): DataSetCrudTool",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1543,7 +1541,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataSetCrudTool",
             "sourcePath": "declarations/packages/spark-data/src/dataset-crud-tool.d.ts"
@@ -1552,7 +1550,6 @@
         {
           "name": "reconcileFromJson",
           "jsdoc": "以模型层方式合并外部快照。\n- 无当前工具时：创建新工具（历史从快照初始化）。\n- preserveHistory=false：重建工具并重置历史。\n- preserveHistory=true：在当前历史链中提交快照，支持 undo/redo。",
-          "signatureText": "static reconcileFromJson(snapshot: DataSetMetadata | Record<string, unknown> | string, current?: DataSetCrudTool, options?: {\n        preserveHistory?: boolean;\n    }): DataSetCrudTool",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1592,6 +1589,9 @@
                 "type": "reference",
                 "name": "DataSetCrudTool",
                 "sourcePath": "declarations/packages/spark-data/src/dataset-crud-tool.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             },
             {
@@ -1599,10 +1599,13 @@
               "type": {
                 "type": "unknown",
                 "name": "{\n        preserveHistory?: boolean;\n    }"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataSetCrudTool",
             "sourcePath": "declarations/packages/spark-data/src/dataset-crud-tool.d.ts"
@@ -1611,10 +1614,9 @@
         {
           "name": "toJson",
           "jsdoc": "将当前 DataSet 序列化为元数据对象。\n@returns 可用于持久化或传输的 DataSet 元数据。",
-          "signatureText": "toJson(): DataSetMetadata",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataSetMetadata",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -1623,10 +1625,9 @@
         {
           "name": "getCanUndo",
           "jsdoc": "查询当前数据集历史是否可撤销。",
-          "signatureText": "getCanUndo(): boolean",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -1634,10 +1635,9 @@
         {
           "name": "getCanRedo",
           "jsdoc": "查询当前数据集历史是否可重做。",
-          "signatureText": "getCanRedo(): boolean",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -1645,10 +1645,9 @@
         {
           "name": "getHistoryCursor",
           "jsdoc": "查询当前数据集历史栈游标位置。",
-          "signatureText": "getHistoryCursor(): number",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -1656,10 +1655,9 @@
         {
           "name": "undo",
           "jsdoc": "撤销最近一次结构写操作。\n成功时替换内部 DataSet 并返回 true；无可撤销时返回 false。",
-          "signatureText": "undo(): boolean",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -1667,10 +1665,9 @@
         {
           "name": "redo",
           "jsdoc": "重做最近一次被撤销的操作。\n成功时替换内部 DataSet 并返回 true；无可重做时返回 false。",
-          "signatureText": "redo(): boolean",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -1678,10 +1675,9 @@
         {
           "name": "clearHistory",
           "jsdoc": "清空当前数据集的 undo/redo 历史，只保留当前快照作为新的历史起点。",
-          "signatureText": "clearHistory(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1689,7 +1685,6 @@
         {
           "name": "replaceFromJson",
           "jsdoc": "用外部快照替换当前 DataSet。\n默认会把替换结果压入历史栈，确保该替换可被撤销/重做。\n@param snapshot 外部 DataSet 元数据快照。\n@param options 替换写入选项。",
-          "signatureText": "replaceFromJson(snapshot: DataSetMetadata | Record<string, unknown> | string, options?: DataSetCrudToolReplaceFromJsonOptions): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1729,10 +1724,13 @@
                 "type": "reference",
                 "name": "DataSetCrudToolReplaceFromJsonOptions",
                 "sourcePath": "declarations/packages/spark-data/src/dataset-crud-tool.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1740,10 +1738,9 @@
         {
           "name": "listTables",
           "jsdoc": "列出当前 DataSet 中的全部数据表。\n@returns 数据表实例列表。",
-          "signatureText": "listTables(): DataTable[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -1755,7 +1752,6 @@
         {
           "name": "getTable",
           "jsdoc": "获取指定数据表。\n@param tableNameOrParams 表名字符串或表名参数对象。\n@param tableName 表名。\n@returns 命中的 DataTable；不存在时返回 undefined。",
-          "signatureText": "getTable(tableNameOrParams: string | DataSetCrudToolTableNameParams): DataTable | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1776,21 +1772,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataTable",
-                "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "DataTable",
+              "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
+            }
           }
         },
         {
           "name": "listColumns",
           "jsdoc": "列出指定数据表的全部列定义。\n@param tableNameOrParams 表名字符串或表名参数对象。\n@param tableName 表名。\n@returns 列定义副本列表。\n@throws 当表不存在时抛错。",
-          "signatureText": "listColumns(tableNameOrParams: string | DataSetCrudToolTableNameParams): DataColumn[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1811,7 +1804,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -1823,7 +1816,6 @@
         {
           "name": "getColumn",
           "jsdoc": "获取指定数据表中的单个列定义。\n@param params 字段定位参数。\n@param tableName 表名。\n@param columnName 列名。\n@returns 命中的列定义；不存在时返回 undefined。\n@throws 当表不存在时抛错。",
-          "signatureText": "getColumn(params: DataSetCrudToolColumnSelectorParams): DataColumn | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1835,21 +1827,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataColumn",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "DataColumn",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
           }
         },
         {
           "name": "createColumn",
           "jsdoc": "向指定数据表追加一列。\n@param params 字段新增参数。\n@param tableName 表名。\n@param column 新列定义。\n@returns 更新后的 DataTable。\n@throws 当表不存在或列定义非法时抛错。",
-          "signatureText": "createColumn(params: DataSetCrudToolCreateColumnParams): DataTable",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1861,7 +1850,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataTable",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
@@ -1870,7 +1859,6 @@
         {
           "name": "updateColumn",
           "jsdoc": "更新指定列定义。\n@param params 字段更新参数。\n@param tableName 表名。\n@param columnName 列名。\n@param updates 需要合并到现有列定义中的更新内容。\n@returns 更新后的 DataTable。\n@throws 当表或列不存在时抛错。",
-          "signatureText": "updateColumn(params: DataSetCrudToolUpdateColumnParams): DataTable",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1882,7 +1870,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataTable",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
@@ -1891,7 +1879,6 @@
         {
           "name": "renameColumn",
           "jsdoc": "重命名指定字段，并迁移行数据、视图字段引用和表关系字段引用。\n@param params 字段重命名参数。\n@returns 重命名后的 DataTable。",
-          "signatureText": "renameColumn(params: DataSetCrudToolRenameColumnParams): DataTable",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1903,7 +1890,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataTable",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
@@ -1912,7 +1899,6 @@
         {
           "name": "deleteColumn",
           "jsdoc": "删除指定列。\n@param params 字段定位参数。\n@param tableName 表名。\n@param columnName 列名。\n@throws 当表或列不存在时抛错。",
-          "signatureText": "deleteColumn(params: DataSetCrudToolColumnSelectorParams): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1924,7 +1910,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1932,7 +1918,6 @@
         {
           "name": "createTable",
           "jsdoc": "创建数据表并按需初始化资源语义、API、CRUD 配置和视图。\n@param options 建表参数。\n@returns 新创建的数据表实例。\n@throws 当表已存在或配置非法时抛错。",
-          "signatureText": "createTable(options: DataSetCrudToolCreateTableOptions): DataTable",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1944,7 +1929,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataTable",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
@@ -1953,7 +1938,6 @@
         {
           "name": "updateTable",
           "jsdoc": "更新数据表结构、资源语义及运行配置。\n@param params 表更新参数。\n@param tableName 表名。\n@param updates 更新内容。\n@returns 更新后的 DataTable。\n@throws 当表不存在或某项结构更新非法时抛错。",
-          "signatureText": "updateTable(params: DataSetCrudToolUpdateTableParams): DataTable",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1965,7 +1949,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataTable",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
@@ -1974,7 +1958,6 @@
         {
           "name": "renameTable",
           "jsdoc": "重命名数据表，并迁移视图 tableName、关系、依赖和布局位置引用。\n@param params 表重命名参数。\n@returns 重命名后的 DataTable。",
-          "signatureText": "renameTable(params: DataSetCrudToolRenameTableParams): DataTable",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1986,7 +1969,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataTable",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
@@ -1995,7 +1978,6 @@
         {
           "name": "deleteTable",
           "jsdoc": "删除指定数据表。\n@param tableNameOrParams 表名字符串或表名参数对象。\n@param tableName 表名。\n@throws 当表不存在，或仍被 relation / dependency 引用时抛错。",
-          "signatureText": "deleteTable(tableNameOrParams: string | DataSetCrudToolTableNameParams): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2016,7 +1998,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2024,7 +2006,6 @@
         {
           "name": "listViews",
           "jsdoc": "列出某个数据表下的全部视图。\n@param tableNameOrParams 表名字符串或表名参数对象。\n@param tableName 表名。\n@returns 视图实例列表。\n@throws 当表不存在时抛错。",
-          "signatureText": "listViews(tableNameOrParams: string | DataSetCrudToolTableNameParams): DataView[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2045,7 +2026,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -2057,7 +2038,6 @@
         {
           "name": "getView",
           "jsdoc": "获取指定视图。\n@param params 视图定位参数。\n@param tableName 表名。\n@param viewId 视图 ID，默认 default。\n@returns 视图实例；不存在时返回 undefined。",
-          "signatureText": "getView(params: DataSetCrudToolViewSelectorParams): DataView | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2069,21 +2049,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataView",
-                "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "DataView",
+              "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+            }
           }
         },
         {
           "name": "createView",
           "jsdoc": "创建一个非 default 视图。\n@param params 视图创建参数。\n@param tableName 表名。\n@param viewId 视图 ID。\n@param config 视图初始配置。\n@returns 新创建的视图实例。\n@throws 当表不存在，或试图创建 default 视图时抛错。",
-          "signatureText": "createView(params: DataSetCrudToolCreateViewParams): DataView",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2095,7 +2072,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataView",
             "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
@@ -2104,7 +2081,6 @@
         {
           "name": "updateView",
           "jsdoc": "更新指定视图的元数据配置。\n@param params 视图更新参数。\n@param tableName 表名。\n@param viewId 视图 ID。\n@param updates 要应用的视图配置。\n@returns 更新后的视图实例。\n@throws 当表或视图不存在时抛错。",
-          "signatureText": "updateView(params: DataSetCrudToolUpdateViewParams): DataView",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2116,7 +2092,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataView",
             "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
@@ -2125,7 +2101,6 @@
         {
           "name": "deleteView",
           "jsdoc": "删除指定视图。\n@param params 视图删除参数。\n@param tableName 表名。\n@param viewId 视图 ID。\n@throws 当表不存在，或试图删除 default 视图时抛错。",
-          "signatureText": "deleteView(params: DataSetCrudToolDeleteViewParams): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2137,7 +2112,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2145,7 +2120,6 @@
         {
           "name": "listAggregates",
           "jsdoc": "列出指定视图的全部聚合配置。\n@param params 聚合查询参数。\n@returns 聚合 key 到聚合配置的映射。",
-          "signatureText": "listAggregates(params: DataSetCrudToolViewSelectorParams): Record<string, AggregateColumnConfig>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2157,7 +2131,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Record",
             "typeArguments": [
@@ -2176,7 +2150,6 @@
         {
           "name": "getAggregate",
           "jsdoc": "读取指定视图中的单个聚合配置。\n@param params 聚合定位参数。\n@returns 命中的聚合配置；不存在时返回 undefined。",
-          "signatureText": "getAggregate(params: DataSetCrudToolAggregateSelectorParams): AggregateColumnConfig | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2188,21 +2161,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "AggregateColumnConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "AggregateColumnConfig",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
           }
         },
         {
           "name": "addAggregate",
           "jsdoc": "向指定视图新增一个聚合配置。\n@param params 聚合创建参数。",
-          "signatureText": "addAggregate(params: DataSetCrudToolAddAggregateParams): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2214,7 +2184,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2222,7 +2192,6 @@
         {
           "name": "updateAggregate",
           "jsdoc": "更新指定视图中的聚合配置。\n@param params 聚合更新参数。",
-          "signatureText": "updateAggregate(params: DataSetCrudToolUpdateAggregateParams): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2234,7 +2203,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2242,7 +2211,6 @@
         {
           "name": "removeAggregate",
           "jsdoc": "删除指定视图中的聚合配置。\n@param params 聚合删除参数。",
-          "signatureText": "removeAggregate(params: DataSetCrudToolAggregateSelectorParams): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2254,7 +2222,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2262,7 +2230,6 @@
         {
           "name": "getComputeExpression",
           "jsdoc": "读取指定字段的计算表达式。\n@param params 字段定位参数。\n@returns 字段计算表达式；未设置时返回 undefined。",
-          "signatureText": "getComputeExpression(params: DataSetCrudToolColumnSelectorParams): string | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2274,20 +2241,17 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "intrinsic",
-                "name": "string"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "intrinsic",
+              "name": "string"
+            }
           }
         },
         {
           "name": "setComputeExpression",
           "jsdoc": "设置指定字段的计算表达式。\n@param params 计算表达式设置参数。\n@returns 更新后的 DataTable。",
-          "signatureText": "setComputeExpression(params: DataSetCrudToolSetComputeExpressionParams): DataTable",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2299,7 +2263,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataTable",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
@@ -2308,7 +2272,6 @@
         {
           "name": "clearComputeExpression",
           "jsdoc": "清除指定字段的计算表达式。\n@param params 字段定位参数。\n@returns 更新后的 DataTable。",
-          "signatureText": "clearComputeExpression(params: DataSetCrudToolColumnSelectorParams): DataTable",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2320,7 +2283,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataTable",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
@@ -2329,7 +2292,6 @@
         {
           "name": "listRows",
           "jsdoc": "列出指定视图当前持有的全部行。\n@param params 视图定位参数。\n@param tableName 表名。\n@param viewId 视图 ID，默认 default。\n@returns 行数组副本。\n@throws 当表或视图不存在时抛错。",
-          "signatureText": "listRows(params: DataSetCrudToolViewSelectorParams): DataRow[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2341,7 +2303,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -2353,7 +2315,6 @@
         {
           "name": "getRow",
           "jsdoc": "通过主键查找一条行数据。\n@param params 行定位参数。\n@param tableName 表名。\n@param id 主键值。\n@param viewId 视图 ID，默认 default。\n@returns 命中的行；不存在时返回 undefined。\n@throws 当表或视图不存在时抛错。",
-          "signatureText": "getRow(params: DataSetCrudToolRowSelectorParams): DataRow | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2365,21 +2326,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "DataRow",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
           }
         },
         {
           "name": "createRow",
           "jsdoc": "在指定视图中创建一条新行。\n@param params 新增行参数。\n@param tableName 表名。\n@param data 新行数据。\n@param viewId 视图 ID，默认 default。\n@returns 本地模式下通常返回 DataRow；远端 CRUD 模式下可能返回 CrudResult。\n@throws 当表或视图不存在，或创建失败时抛错。",
-          "signatureText": "createRow(params: DataSetCrudToolCreateRowParams): Promise<DataRow | CrudResult<DataRow>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2391,7 +2349,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2423,7 +2381,6 @@
         {
           "name": "createRows",
           "jsdoc": "在指定视图中批量创建多条新行。\n- immediate + API 模式：优先走 view.crud.batchCreateRecords\n- 其余模式：逐条复用 view.addRow，并统一收口为 BatchResult\n@param params 批量新增行参数。",
-          "signatureText": "createRows(params: DataSetCrudToolCreateRowsParams): Promise<CrudResult<BatchResult>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2435,7 +2392,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2457,7 +2414,6 @@
         {
           "name": "updateRow",
           "jsdoc": "更新指定主键的行数据。\n@param params 更新行参数。\n@param tableName 表名。\n@param id 主键值。\n@param data 要合并的字段更新。\n@param viewId 视图 ID，默认 default。\n@returns 本地模式下通常返回 boolean；远端 CRUD 模式下可能返回 CrudResult。\n@throws 当表或视图不存在，或更新失败时抛错。",
-          "signatureText": "updateRow(params: DataSetCrudToolUpdateRowParams): Promise<boolean | CrudResult<DataRow>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2469,7 +2425,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2500,7 +2456,6 @@
         {
           "name": "updateRows",
           "jsdoc": "批量更新多条行数据。\n对话侧统一传 id + data，底层再按视图主键字段拼装 batchUpdate payload。\n@param params 批量更新行参数。",
-          "signatureText": "updateRows(params: DataSetCrudToolUpdateRowsParams): Promise<CrudResult<BatchResult>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2512,7 +2467,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2534,7 +2489,6 @@
         {
           "name": "deleteRow",
           "jsdoc": "删除指定主键的行数据。\n@param params 删除行参数。\n@param tableName 表名。\n@param id 主键值。\n@param viewId 视图 ID，默认 default。\n@returns 本地模式下通常返回 boolean；远端 CRUD 模式下可能返回 CrudResult。\n@throws 当表或视图不存在，或删除失败时抛错。",
-          "signatureText": "deleteRow(params: DataSetCrudToolRowSelectorParams): Promise<boolean | CrudResult<boolean>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2546,7 +2500,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2576,7 +2530,6 @@
         {
           "name": "deleteRows",
           "jsdoc": "批量删除多条行数据。\n@param params 批量删除行参数。",
-          "signatureText": "deleteRows(params: DataSetCrudToolDeleteRowsParams): Promise<CrudResult<BatchResult>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2588,7 +2541,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -2610,7 +2563,6 @@
         {
           "name": "listRelations",
           "jsdoc": "列出 DataSet 中的表关系。\n@param filter 可选过滤条件，仅支持按 parentTable / childTable 过滤。\n@returns 关系列表。",
-          "signatureText": "listRelations(filter?: Partial<Pick<TableRelation, 'parentTable' | 'childTable'>>): TableRelation[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2644,10 +2596,13 @@
                     ]
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -2659,7 +2614,6 @@
         {
           "name": "getRelation",
           "jsdoc": "获取单条表关系。\n@param selector 关系选择器。\n@returns 命中的表关系；不存在时返回 undefined。\n@throws 当 selector 命中多条关系且未完成字段级消歧时抛错。",
-          "signatureText": "getRelation(selector: RelationSelector): TableRelation | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2671,21 +2625,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "TableRelation",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "TableRelation",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
           }
         },
         {
           "name": "createRelation",
           "jsdoc": "创建一条表关系。\n@param params 关系参数。\n@returns 新创建的表关系。\n@throws 当父表、子表、字段不存在或关系重复时抛错。",
-          "signatureText": "createRelation(params: DataSetCrudToolCreateRelationParams): TableRelation",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2697,7 +2648,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "TableRelation",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -2706,7 +2657,6 @@
         {
           "name": "updateRelation",
           "jsdoc": "更新一条表关系。\n@param params 关系更新参数。\n@param selector 用于定位原关系的选择器。\n@param updates 关系更新内容。\n@returns 更新后的表关系。\n@throws 当关系不存在、选择器不唯一或更新后关系非法时抛错。",
-          "signatureText": "updateRelation(params: DataSetCrudToolUpdateRelationParams): TableRelation",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2718,7 +2668,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "TableRelation",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -2727,7 +2677,6 @@
         {
           "name": "deleteRelation",
           "jsdoc": "删除一条表关系。\n@param selector 关系选择器。\n@throws 当关系不存在，或定位到多条关系时抛错。",
-          "signatureText": "deleteRelation(selector: RelationSelector): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2739,7 +2688,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2747,7 +2696,6 @@
         {
           "name": "listDependencies",
           "jsdoc": "列出 DataSet 中的视图依赖。\n@param filter 可选过滤条件，支持按 parentTable / childTable 过滤。\n@returns 依赖列表。",
-          "signatureText": "listDependencies(filter?: Partial<Pick<ViewDependency, 'parentTable' | 'childTable'>>): ViewDependency[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2781,10 +2729,13 @@
                     ]
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -2796,7 +2747,6 @@
         {
           "name": "getDependency",
           "jsdoc": "获取一条视图依赖。\n@param params 依赖定位参数。\n@param parentTable 父表名。\n@param childTable 子表名。\n@returns 命中的依赖；不存在时返回 undefined。",
-          "signatureText": "getDependency(params: DataSetCrudToolDependencySelectorParams): ViewDependency | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2808,21 +2758,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "ViewDependency",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "ViewDependency",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
           }
         },
         {
           "name": "createDependency",
           "jsdoc": "创建一条视图依赖。\n@param params 依赖参数。\n@returns 新创建的依赖。\n@throws 当依赖引用非法时抛错。",
-          "signatureText": "createDependency(params: DataSetCrudToolCreateDependencyParams): ViewDependency",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2834,7 +2781,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ViewDependency",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -2843,7 +2790,6 @@
         {
           "name": "updateDependency",
           "jsdoc": "更新一条视图依赖。\n@param params 依赖更新参数。\n@param parentTable 原父表名。\n@param childTable 原子表名。\n@param updates 依赖更新内容。\n@returns 更新后的依赖。\n@throws 当依赖不存在或更新目标非法时抛错。",
-          "signatureText": "updateDependency(params: DataSetCrudToolUpdateDependencyParams): ViewDependency",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2855,7 +2801,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ViewDependency",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -2864,7 +2810,6 @@
         {
           "name": "deleteDependency",
           "jsdoc": "删除一条视图依赖。\n@param params 依赖定位参数。\n@param parentTable 父表名。\n@param childTable 子表名。\n@throws 当依赖不存在时抛错。",
-          "signatureText": "deleteDependency(params: DataSetCrudToolDependencySelectorParams): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2876,7 +2821,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -2884,7 +2829,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.961Z",
+  "generatedAt": "2026-06-11T21:36:01.754Z",
   "$defs": {
     "DataSetCrudToolCreateTableOptions": {
       "type": "object",

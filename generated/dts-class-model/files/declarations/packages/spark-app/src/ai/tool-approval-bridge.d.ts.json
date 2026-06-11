@@ -152,6 +152,9 @@
               "type": "reference",
               "name": "AiToolApprovalBridgeOptions",
               "sourcePath": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts"
+            },
+            "flags": {
+              "isOptional": true
             }
           }
         ]
@@ -182,10 +185,9 @@
         {
           "name": "listPending",
           "jsdoc": "执行 list Pending 操作。",
-          "signatureText": "listPending(): readonly AiToolApprovalRequest[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "readonly AiToolApprovalRequest[]"
           }
@@ -193,7 +195,6 @@
         {
           "name": "decide",
           "jsdoc": "执行 decide 操作。",
-          "signatureText": "decide(requestId: string, directive: AiAgentBeforeFunctionCallDirective): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -211,7 +212,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -219,7 +220,6 @@
         {
           "name": "subscribe",
           "jsdoc": "执行 subscribe 操作。",
-          "signatureText": "subscribe(listener: AiToolApprovalBridgeListener): () => void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -231,15 +231,25 @@
               }
             }
           ],
-          "returnType": {
-            "type": "unknown",
-            "name": "() => void"
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "signatures": [
+                {
+                  "parameters": [],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                }
+              ]
+            }
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.616Z",
+  "generatedAt": "2026-06-11T21:36:01.522Z",
   "$defs": {
     "AiToolApprovalRequest": {
       "type": "object",

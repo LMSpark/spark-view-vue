@@ -195,7 +195,6 @@
         {
           "name": "validate",
           "jsdoc": "校验单行数据\n@param row - 行数据\n@returns 校验结果",
-          "signatureText": "validate(row: DataRow): ValidationResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -207,7 +206,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ValidationResult",
             "sourcePath": "declarations/packages/spark-data/src/validation.d.ts"
@@ -216,7 +215,6 @@
         {
           "name": "validateBatch",
           "jsdoc": "批量校验多行数据\n@param rows - 行数据数组\n@returns 每行的校验结果",
-          "signatureText": "validateBatch(rows: DataRow[]): ValidationResult[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -231,7 +229,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -243,7 +241,6 @@
         {
           "name": "isValid",
           "jsdoc": "快速校验（只返回是否有效）\n@param row - 行数据\n@returns 是否有效",
-          "signatureText": "isValid(row: DataRow): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -255,7 +252,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -263,7 +260,6 @@
         {
           "name": "getFirstError",
           "jsdoc": "获取第一个错误\n@param row - 行数据\n@returns 第一个错误或 null",
-          "signatureText": "getFirstError(row: DataRow): ValidationError | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -275,7 +271,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -293,7 +289,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.015Z",
+  "generatedAt": "2026-06-11T21:36:01.861Z",
   "$defs": {
     "ValidationError": {
       "type": "object",

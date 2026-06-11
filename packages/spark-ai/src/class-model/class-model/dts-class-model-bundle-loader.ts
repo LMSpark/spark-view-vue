@@ -5,6 +5,7 @@
  * AI用途：当需要判断 ClassModel 在 class-model/class-model/dts-class-model-bundle-loader 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { ClassModel, DtsTypeMeta } from './types'
+import { resolveMethodReturnType, visitDtsTypeMeta } from './dts-type-meta-ops'
 import type {
   DtsClassModelBundleManifest,
   DtsFileProjectionDocument,
@@ -130,7 +131,7 @@ function listLinkedClassNames(manifest: DtsClassModelBundleManifest, model: Clas
     for (const parameter of method.parameters ?? []) {
       collectFromDtsType(manifest, linked, parameter.type)
     }
-    collectFromDtsType(manifest, linked, method.returnType)
+    collectFromDtsType(manifest, linked, resolveMethodReturnType(method))
     collectFromTypeText(manifest, linked, method.paramsTypeText)
     collectFromTypeText(manifest, linked, method.returnTypeText)
     collectFromSchema(manifest, linked, method.returnSchema)
@@ -148,19 +149,14 @@ function collectFromDtsType(
   linked: Set<string>,
   typeMeta: DtsTypeMeta | undefined,
 ): void {
-  if (typeMeta === undefined) return
-  if (typeMeta.type === 'reference') {
-    collectFromTypeText(manifest, linked, typeMeta.name)
-    for (const typeArgument of typeMeta.typeArguments ?? []) collectFromDtsType(manifest, linked, typeArgument)
-    return
-  }
-  if (typeMeta.type === 'array') {
-    collectFromDtsType(manifest, linked, typeMeta.elementType)
-    return
-  }
-  if (typeMeta.type === 'union' || typeMeta.type === 'intersection') {
-    for (const item of typeMeta.types) collectFromDtsType(manifest, linked, item)
-  }
+  visitDtsTypeMeta(typeMeta, (node) => {
+    if (node.type !== 'reference' || node.refersToTypeParameter === true) return
+    if (manifest.classIndex[node.name] !== undefined) {
+      linked.add(node.name)
+      return
+    }
+    collectFromTypeText(manifest, linked, node.name)
+  })
 }
 
 function collectFromTypeText(

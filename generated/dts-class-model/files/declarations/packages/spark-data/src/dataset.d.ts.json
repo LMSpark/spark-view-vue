@@ -319,10 +319,9 @@
         {
           "name": "initAutoSelection",
           "jsdoc": "对所有表的 default 视图触发 autoCurrentFirst / autoSelectFirst 初始选中逻辑。\n必须在页面脚本（__init__）完成事件订阅**之后**调用，确保订阅者能收到\n`currentRowChanged` 事件。渲染层在组件 mounted 钩子中、\n`__init__` 执行完毕后调用此方法。",
-          "signatureText": "initAutoSelection(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -330,7 +329,6 @@
         {
           "name": "setSharedHttpClient",
           "jsdoc": "注入共享 HTTP 客户端（M5）——所有 DataTable 的 CrudService 将复用该实例。\n调用时机：DataSet 构建完成后、首次数据请求之前。\n已创建的 CrudService 实例不受影响（它们保留初始化时的 HttpClientBase）。\n@param client HttpClientBase 实例（通常由应用层 auth 模块创建，带统一拦截器）",
-          "signatureText": "setSharedHttpClient(client: HttpClientBase): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -341,7 +339,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -349,7 +347,6 @@
         {
           "name": "setAppServices",
           "jsdoc": "设置 App Services。",
-          "signatureText": "setAppServices(appServices: DataSetAppServices): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -361,7 +358,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -369,7 +366,6 @@
         {
           "name": "setPageRoute",
           "jsdoc": "设置 Page Route。",
-          "signatureText": "setPageRoute(route: unknown): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -380,7 +376,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -388,10 +384,9 @@
         {
           "name": "getRequestTemplateParams",
           "jsdoc": "读取 Request Template Params。",
-          "signatureText": "getRequestTemplateParams(): Record<string, unknown>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Record",
             "typeArguments": [
@@ -409,7 +404,6 @@
         {
           "name": "on",
           "jsdoc": "订阅数据集级别的加载事件（覆盖所有已注册表的所有视图）\n- `'loadSuccess'`：任一视图从服务器成功加载数据后触发\n- `'loadError'`：任一视图加载失败后触发（payload.error 含错误对象）\n@returns 取消订阅函数（页面卸载时调用以防内存泄漏）\n@example ```js\nconst off = dataSet.on('loadSuccess', ({ tableName }) => {\n  ElMessage.success(`${tableName} 加载完成`)\n})\n// 资源释放时: off()\n```",
-          "signatureText": "on(event: 'loadSuccess' | 'loadError', handler: (payload: {\n        tableName: string;\n        viewId: string;\n        error?: Error;\n    }) => void): () => void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -431,20 +425,47 @@
             {
               "name": "handler",
               "type": {
-                "type": "unknown",
-                "name": "(payload: {\n        tableName: string;\n        viewId: string;\n        error?: Error;\n    }) => void"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "payload",
+                          "type": {
+                            "type": "unknown",
+                            "name": "{\n        tableName: string;\n        viewId: string;\n        error?: Error;\n    }"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
               }
             }
           ],
-          "returnType": {
-            "type": "unknown",
-            "name": "() => void"
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "signatures": [
+                {
+                  "parameters": [],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                }
+              ]
+            }
           }
         },
         {
           "name": "onAnyViewChange",
           "jsdoc": "订阅此 DataSet 内任意视图的状态变化（替代全局 event-bus）。\n接收 ViewChangeHandlers 映射，按需注册感兴趣的事件类型。\n自动追踪：后续通过 getOrCreateView() 动态创建的视图也会被订阅。\n作用域严格限定于本实例，不同页面的 DataSet 相互隔离。\n@example ```ts\nconst off = dataSet.onAnyViewChange({\n  currentRowChanged(tableName, viewId, currentRow) { ... },\n  selectedRowsChanged(tableName, viewId, selectedRows) { ... },\n  cleared(tableName, viewId) { ... },\n})\n```",
-          "signatureText": "onAnyViewChange(handlers: ViewChangeHandlers): () => void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -456,15 +477,24 @@
               }
             }
           ],
-          "returnType": {
-            "type": "unknown",
-            "name": "() => void"
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "signatures": [
+                {
+                  "parameters": [],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                }
+              ]
+            }
           }
         },
         {
           "name": "_subscribeNewView",
           "jsdoc": "将动态创建的视图注册到所有活跃订阅中。\n由 DataTable.getOrCreateView() 在创建新视图时调用。\n@internal",
-          "signatureText": "_subscribeNewView(view: DataView): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -476,7 +506,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -484,10 +514,9 @@
         {
           "name": "triggerAutoLoad",
           "jsdoc": "触发所有标记了 `autoLoad: true` 的 default 视图自动加载。\n渲染层（如 usePageDataSet）在构建 DataSet 后调用此方法；\n业务脚本不再需要在 `__init__` 中手动写 `view.loadFromServer()`。\n仅处理 default 视图——命名视图和从表通常由级联机制驱动。",
-          "signatureText": "triggerAutoLoad(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -495,7 +524,6 @@
         {
           "name": "getChildRelations",
           "jsdoc": "查询以指定视图为父的子关系（视图级索引）\n@param parentTable 父表名\n@param parentViewId 父视图ID",
-          "signatureText": "getChildRelations(parentTable: string, parentViewId: string): DataRelation[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -513,7 +541,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -525,7 +553,6 @@
         {
           "name": "getParentRelations",
           "jsdoc": "查询以指定视图为子的父关系（视图级索引）\n@param childTable 子表名\n@param childViewId 子视图ID",
-          "signatureText": "getParentRelations(childTable: string, childViewId: string): DataRelation[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -543,7 +570,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -555,7 +582,6 @@
         {
           "name": "resolveDependencyFilter",
           "jsdoc": "解析 Dependency Filter。",
-          "signatureText": "resolveDependencyFilter(rel: DataRelation): FilterExpression | undefined | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -567,13 +593,17 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
                 "type": "reference",
                 "name": "FilterExpression",
                 "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              },
+              {
+                "type": "intrinsic",
+                "name": "undefined"
               },
               {
                 "type": "literal",
@@ -585,7 +615,6 @@
         {
           "name": "getTableChildRelations",
           "jsdoc": "查询以指定表为父的所有表关系（表级索引，聚合函数消费）",
-          "signatureText": "getTableChildRelations(parentTable: string): TableRelation[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -596,7 +625,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -608,7 +637,6 @@
         {
           "name": "getTableParentRelations",
           "jsdoc": "查询以指定表为子的所有表关系（表级索引）",
-          "signatureText": "getTableParentRelations(childTable: string): TableRelation[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -619,7 +647,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -631,7 +659,6 @@
         {
           "name": "replaceFromJson",
           "jsdoc": "执行 replace From Json 操作。",
-          "signatureText": "replaceFromJson(json: DataSetMetadata | Record<string, unknown> | string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -666,7 +693,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -674,7 +701,6 @@
         {
           "name": "listSnapshots",
           "jsdoc": "执行 list Snapshots 操作。",
-          "signatureText": "listSnapshots(options?: DataSetHistoryListOptions): DataSetHistorySnapshot[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -683,10 +709,13 @@
                 "type": "reference",
                 "name": "DataSetHistoryListOptions",
                 "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -698,7 +727,6 @@
         {
           "name": "getSnapshot",
           "jsdoc": "读取 Snapshot。",
-          "signatureText": "getSnapshot(selector: DataSetSnapshotSelector, options?: DataSetHistoryListOptions): DataSetHistorySnapshot | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -715,10 +743,13 @@
                 "type": "reference",
                 "name": "DataSetHistoryListOptions",
                 "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -736,7 +767,6 @@
         {
           "name": "commitSnapshot",
           "jsdoc": "执行 commit Snapshot 操作。",
-          "signatureText": "commitSnapshot(options?: DataSetCommitSnapshotOptions): DataSetHistorySnapshot",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -745,10 +775,13 @@
                 "type": "reference",
                 "name": "DataSetCommitSnapshotOptions",
                 "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataSetHistorySnapshot",
             "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
@@ -757,7 +790,6 @@
         {
           "name": "restoreSnapshot",
           "jsdoc": "执行 restore Snapshot 操作。",
-          "signatureText": "restoreSnapshot(selector: DataSetSnapshotSelector, options?: DataSetHistoryListOptions): DataSetHistorySnapshot | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -774,10 +806,13 @@
                 "type": "reference",
                 "name": "DataSetHistoryListOptions",
                 "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -795,7 +830,6 @@
         {
           "name": "addTable",
           "jsdoc": "动态添加一张表（含 default 视图）。\n@returns 新建的 DataTable 实例\n@throws 表名已存在时抛 Error",
-          "signatureText": "addTable(tableName: string, columns: DataColumn[]): DataTable",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -817,7 +851,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataTable",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
@@ -826,7 +860,6 @@
         {
           "name": "removeTable",
           "jsdoc": "删除未被关系或依赖引用的数据表。\nfail-fast：若仍被 tableRelation / viewDependency 引用，则拒绝删除。",
-          "signatureText": "removeTable(tableName: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -837,7 +870,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -845,7 +878,6 @@
         {
           "name": "addRelation",
           "jsdoc": "添加 TableRelation（父子表关系）。\n@throws 引用的表/字段不存在或关系已重复时抛 Error",
-          "signatureText": "addRelation(params: {\n        parentTable: string;\n        childTable: string;\n        parentField: string;\n        childField: string;\n        relationName?: string;\n    }): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -856,7 +888,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -864,7 +896,6 @@
         {
           "name": "updateRelation",
           "jsdoc": "更新 TableRelation。\n若存在多个同 parentTable→childTable 的关系，必须显式指定 parentField/childField 消歧。",
-          "signatureText": "updateRelation(selector: {\n        parentTable: string;\n        childTable: string;\n        parentField?: string;\n        childField?: string;\n    }, updates: Partial<TableRelation>): TableRelation",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -889,7 +920,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "TableRelation",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -898,7 +929,6 @@
         {
           "name": "removeRelation",
           "jsdoc": "删除 TableRelation。\n@throws 关系不存在或被 viewDependency 引用时抛 Error",
-          "signatureText": "removeRelation(selector: {\n        parentTable: string;\n        childTable: string;\n        parentField?: string;\n        childField?: string;\n    }): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -909,7 +939,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -917,7 +947,6 @@
         {
           "name": "addDependency",
           "jsdoc": "添加 ViewDependency（视图联动依赖）。\n@throws 依赖引用非法或重复时抛 Error",
-          "signatureText": "addDependency(dependency: ViewDependency): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -929,7 +958,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -937,7 +966,6 @@
         {
           "name": "updateDependency",
           "jsdoc": "更新 ViewDependency。\nfail-fast：目标 parentTable→childTable 必须已有底层 tableRelation。",
-          "signatureText": "updateDependency(parentTable: string, childTable: string, updates: Partial<ViewDependency>): ViewDependency",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -969,7 +997,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ViewDependency",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -978,7 +1006,6 @@
         {
           "name": "removeDependency",
           "jsdoc": "删除 ViewDependency。\n@throws 依赖不存在时抛 Error",
-          "signatureText": "removeDependency(parentTable: string, childTable: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -996,7 +1023,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1004,10 +1031,9 @@
         {
           "name": "destroy",
           "jsdoc": "销毁 DataSet 及其所有 DataTable/DataView 的资源。\n调用后：\n- 所有 `onAnyViewChange` / `on('loadSuccess'|'loadError')` 订阅被清理\n- 所有 DataView 的 destroy() 被调用（清理级联、CRUD、计算列、脏追踪等委托）\n- 共享 HTTP 客户端引用被释放\n- 标记为已销毁，后续操作静默忽略\n使用场景：页面卸载时由 `usePageDataSet.clearDataSet()` 调用。",
-          "signatureText": "destroy(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1015,7 +1041,6 @@
         {
           "name": "getTable",
           "jsdoc": "获取数据表\n@param name 表名\n@returns 数据表实例",
-          "signatureText": "getTable(name: string): DataTable | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1026,21 +1051,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataTable",
-                "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "DataTable",
+              "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
+            }
           }
         },
         {
           "name": "getView",
           "jsdoc": "获取已存在的数据视图（不会创建新视图）",
-          "signatureText": "getView(tableName: string, viewId?: string): DataView | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1055,24 +1077,24 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataView",
-                "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "DataView",
+              "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+            }
           }
         },
         {
           "name": "saveChanges",
           "jsdoc": "保存 DataSet 范围内的编辑态和 staged 变更。\n默认保存所有有变更视图；如果传入 views，则只保存指定视图/行。\n提交顺序按 tableRelations 做父表 → 子表排序，保证主从页面一次提交时主表先落库。",
-          "signatureText": "saveChanges(options?: DataSetSaveChangesOptions): Promise<CrudResult<DataSetSaveChangesResult>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1081,10 +1103,13 @@
                 "type": "reference",
                 "name": "DataSetSaveChangesOptions",
                 "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1106,10 +1131,9 @@
         {
           "name": "toJson",
           "jsdoc": "序列化为 JSON 友好的元数据对象\n@returns 数据集元数据",
-          "signatureText": "toJson(): DataSetMetadata",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataSetMetadata",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -1118,7 +1142,6 @@
         {
           "name": "fromJson",
           "jsdoc": "从 JSON 对象或 JSON 字符串创建数据集实例。\n支持：\n1. canonical DataSet 元数据对象\n2. pagedata.json 原始对象（任意 key-value）\n3. 上述两种结构的 JSON 字符串\n明确拒绝历史 `{ dataset: ... }` 包裹结构，避免模型层同时维护两套顶层事实源。\n@param json 数据集元数据对象、pagedata 原始对象或 JSON 字符串\n@returns 数据集实例",
-          "signatureText": "static fromJson(json: DataSetMetadata | Record<string, unknown> | string): DataSet",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1153,7 +1176,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataSet",
             "sourcePath": "declarations/packages/spark-data/src/dataset.d.ts"
@@ -1162,7 +1185,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.970Z",
+  "generatedAt": "2026-06-11T21:36:01.791Z",
   "$defs": {
     "DataSetConfig": {
       "type": "object",

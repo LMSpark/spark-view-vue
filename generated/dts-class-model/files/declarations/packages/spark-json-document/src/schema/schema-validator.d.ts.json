@@ -117,7 +117,6 @@
         {
           "name": "validateDeserializedParams",
           "jsdoc": "校验反序列化后的 LLM 参数。\n调用时序：\n1. LLM 返回 function call arguments（JSON 字符串）\n2. Host 层 JSON.parse → params\n3. FunctionInvoker 调用本方法校验 params 是否符合 function.paramsSchema",
-          "signatureText": "static validateDeserializedParams(params: unknown, schema: unknown, options?: JsonSchemaValidateOptions): JsonValidationResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -140,10 +139,13 @@
                 "type": "reference",
                 "name": "JsonSchemaValidateOptions",
                 "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-validator.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "JsonValidationResult",
             "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-validator.d.ts"
@@ -152,7 +154,6 @@
         {
           "name": "validateJsonValue",
           "jsdoc": "校验任意 JSON 值是否符合 JSON Schema。用于属性值与直调 function 参数兜底校验。",
-          "signatureText": "static validateJsonValue(value: unknown, schema: JsonSchema, options?: JsonSchemaValidateOptions): JsonValidationResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -176,10 +177,13 @@
                 "type": "reference",
                 "name": "JsonSchemaValidateOptions",
                 "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-validator.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "JsonValidationResult",
             "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-validator.d.ts"
@@ -188,7 +192,6 @@
         {
           "name": "formatJsonValidationIssues",
           "jsdoc": "将校验问题格式化为中文诊断字符串。\n默认最多显示 5 条，超出时追加 \"另有 N 个问题\"。",
-          "signatureText": "static formatJsonValidationIssues(issues: readonly JsonValidationIssue[], maxCount?: number): string",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -203,10 +206,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "string"
           }
@@ -214,7 +220,6 @@
         {
           "name": "formatAiJsonValidationIssues",
           "jsdoc": "@deprecated 使用 formatJsonValidationIssues",
-          "signatureText": "static formatAiJsonValidationIssues(issues: readonly JsonValidationIssue[], maxCount?: number): string",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -229,10 +234,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "string"
           }
@@ -240,7 +248,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.021Z",
+  "generatedAt": "2026-06-11T21:36:01.867Z",
   "$defs": {
     "JsonValidationIssue": {
       "type": "object",

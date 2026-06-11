@@ -122,7 +122,6 @@
         {
           "name": "register",
           "jsdoc": "执行 register 操作。",
-          "signatureText": "static register<T>(command: ClassModelAgentAdapterRegisterCommand<T>): AiAgentHost",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -141,7 +140,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentHost",
             "sourcePath": "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts"
@@ -150,7 +149,6 @@
         {
           "name": "createRegistration",
           "jsdoc": "创建 Registration。",
-          "signatureText": "static createRegistration<T>(command: ClassModelAgentAdapterRegistrationCommand<T>): AiAgentRegistration",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -169,7 +167,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentRegistration",
             "sourcePath": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts"
@@ -178,7 +176,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.547Z",
+  "generatedAt": "2026-06-11T21:36:01.473Z",
   "$defs": {
     "ClassModelAgentAdapterConstructor": {
       "type": "object",

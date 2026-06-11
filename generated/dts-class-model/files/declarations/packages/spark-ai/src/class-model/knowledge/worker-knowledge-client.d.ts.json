@@ -62,7 +62,6 @@
         {
           "name": "query",
           "jsdoc": "查询参数。",
-          "signatureText": "query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -74,7 +73,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -88,7 +87,6 @@
         {
           "name": "modelGuide",
           "jsdoc": "执行 model Guide 操作。",
-          "signatureText": "modelGuide(input: ClassModelModelGuideInput): Promise<string>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -100,7 +98,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -114,7 +112,6 @@
         {
           "name": "attributeGuide",
           "jsdoc": "执行 attribute Guide 操作。",
-          "signatureText": "attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -126,7 +123,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -140,7 +137,6 @@
         {
           "name": "methodGuide",
           "jsdoc": "执行 method Guide 操作。",
-          "signatureText": "methodGuide(input: ClassModelMethodGuideInput): Promise<string>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -152,7 +148,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -166,7 +162,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.603Z",
+  "generatedAt": "2026-06-11T21:36:01.514Z",
   "$defs": {
     "WorkerClassModelKnowledgeProvider": {
       "type": "object",

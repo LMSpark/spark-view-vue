@@ -68,13 +68,11 @@
           {
             "name": "maxToolRounds",
             "type": {
-              "type": "union",
-              "types": [
-                {
-                  "type": "intrinsic",
-                  "name": "number"
-                }
-              ]
+              "type": "optional",
+              "elementType": {
+                "type": "intrinsic",
+                "name": "number"
+              }
             }
           }
         ]
@@ -84,7 +82,6 @@
         {
           "name": "runToolLoop",
           "jsdoc": "执行工具循环主流程。\n每轮（round）：\n1. 读取 ClassModel 固定协议工具规约\n2. 发送 LLM 诊断事件（llm-request）\n3. 调用 turnCallbacks.executeTurn 获取 AI 响应\n4. 将 AI 文本回复写入 sessionStore\n5. 若无工具调用 → 自然结束\n6. 依次执行每个工具调用，收集 toolMessage 和 lifecycleDirective\n7. 若 lifecycleDirective ≠ 'continue' → 进入生命周期终止流程\n8. 否则把本轮消息 append 到 V4 后端会话，下一轮用空 messages 续写 session 历史",
-          "signatureText": "runToolLoop<TInput extends AiJsonParams>(input: AiAgentToolLoopInput<TInput>): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -103,7 +100,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -117,7 +114,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.582Z",
+  "generatedAt": "2026-06-11T21:36:01.497Z",
   "$defs": {
     "AiAgentToolLoopInput": {
       "type": "object",

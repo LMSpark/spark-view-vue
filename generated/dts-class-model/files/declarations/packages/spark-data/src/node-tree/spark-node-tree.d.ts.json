@@ -1388,7 +1388,6 @@
         {
           "name": "fromJson",
           "jsdoc": "从 JSON 输入创建 SparkNodeTree。\n- 支持对象或 JSON 字符串输入\n- 默认会在反序列化过程中补齐缺失组件 id",
-          "signatureText": "static fromJson(json: SparkNode | Record<string, unknown> | string, options?: SparkNodeTreeFromJsonOptions): SparkNodeTree",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1428,10 +1427,13 @@
                 "type": "reference",
                 "name": "SparkNodeTreeFromJsonOptions",
                 "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeTree",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -1440,7 +1442,6 @@
         {
           "name": "fromRuleJson",
           "jsdoc": "从 rule.json 输入创建页面树。\nrule.json 可以是：\n- 单个 SparkNode：作为页面唯一顶层组件\n- SparkNode[]：作为页面 children\n- spark-page 根节点：作为完整页面树\n进入 SparkNodeTree 后统一为单根 `spark-page`。",
-          "signatureText": "static fromRuleJson(json: SparkNodeTreeRuleJsonInput, options?: SparkNodeTreeFromJsonOptions): SparkNodeTree",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1457,10 +1458,13 @@
                 "type": "reference",
                 "name": "SparkNodeTreeFromJsonOptions",
                 "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeTree",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -1469,7 +1473,6 @@
         {
           "name": "fromPageChildren",
           "jsdoc": "从页面 children 创建单根页面树。",
-          "signatureText": "static fromPageChildren(children: readonly SparkNode[], options?: SparkNodeTreeFromJsonOptions): SparkNodeTree",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1485,10 +1488,13 @@
                 "type": "reference",
                 "name": "SparkNodeTreeFromJsonOptions",
                 "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeTree",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -1497,10 +1503,9 @@
         {
           "name": "toJSON",
           "jsdoc": "导出当前组件实例子树快照。",
-          "signatureText": "toJSON(): SparkNode",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNode",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node.d.ts"
@@ -1509,10 +1514,9 @@
         {
           "name": "getAllData",
           "jsdoc": "获取当前绑定子树的完整数据快照。\n语义上等价于 toJSON()。",
-          "signatureText": "getAllData(): SparkNode",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNode",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node.d.ts"
@@ -1521,10 +1525,9 @@
         {
           "name": "undo",
           "jsdoc": "撤销最近一次写操作，还原到上一个快照。\n返回撤销后的 root；无可撤销时返回 null 不修改状态。",
-          "signatureText": "undo(): SparkNode | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -1542,10 +1545,9 @@
         {
           "name": "redo",
           "jsdoc": "重做最近一次被撤销的写操作。\n返回重做后的 root；无可重做时返回 null 不修改状态。",
-          "signatureText": "redo(): SparkNode | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -1563,10 +1565,9 @@
         {
           "name": "clearHistory",
           "jsdoc": "清空全部历史，仅保留当前快照。",
-          "signatureText": "clearHistory(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1574,10 +1575,9 @@
         {
           "name": "estimateHistorySize",
           "jsdoc": "估算单个快照的节点数量，用于评估历史栈的相对内存占用。\n由于不可变树的结构共享特性，实际内存开销小于该值 × 历史长度。",
-          "signatureText": "estimateHistorySize(): number",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -1585,10 +1585,9 @@
         {
           "name": "getHistoryStats",
           "jsdoc": "返回历史栈的统计信息。",
-          "signatureText": "getHistoryStats(): SparkNodeTreeHistoryStats",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeTreeHistoryStats",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -1597,7 +1596,6 @@
         {
           "name": "loadRoot",
           "jsdoc": "加载新的根节点，替换当前根并以新根作为历史基线重新开始。\n清空既有历史栈，等价于 DataSetCrudTool.replaceFromJson。\n@param newRoot 新的根节点。",
-          "signatureText": "loadRoot(newRoot: SparkNode): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1609,7 +1607,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1617,7 +1615,6 @@
         {
           "name": "replaceRoot",
           "jsdoc": "替换当前根节点并将变更提交到历史（可 undo/redo）。\n用于“文本整体替换”等粗粒度写操作，保留既有历史栈。\n@param newRoot 新的根节点。",
-          "signatureText": "replaceRoot(newRoot: SparkNode): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1629,7 +1626,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1637,7 +1634,6 @@
         {
           "name": "getNode",
           "jsdoc": "按 componentId 查找节点；未命中时返回 null。\n@param params 节点查找参数。",
-          "signatureText": "getNode(params: SparkNodeTreeLookupParams): SparkNode | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1649,7 +1645,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -1667,7 +1663,6 @@
         {
           "name": "getLocation",
           "jsdoc": "获取节点在树中的完整位置信息；未命中时返回 null。\n@param params 节点查找参数。",
-          "signatureText": "getLocation(params: SparkNodeTreeLookupParams): SparkNodeLocation | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1679,7 +1674,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -1697,7 +1692,6 @@
         {
           "name": "hasNode",
           "jsdoc": "判断指定 componentId 是否存在。\n@param params 节点查找参数。",
-          "signatureText": "hasNode(params: SparkNodeTreeLookupParams): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1709,7 +1703,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -1717,7 +1711,6 @@
         {
           "name": "getParent",
           "jsdoc": "获取目标节点的直接父节点；当前绑定 root 或未命中时返回 null。\n@param params 节点查找参数。",
-          "signatureText": "getParent(params: SparkNodeTreeLookupParams): SparkNode | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1729,7 +1722,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -1747,7 +1740,6 @@
         {
           "name": "listChildren",
           "jsdoc": "读取当前组件实例或指定子组件的直接 children。\n返回的是 children 的浅拷贝，避免调用方直接改写实例内部数组引用。\n@param params 子节点读取参数；省略时读取当前根节点 children。",
-          "signatureText": "listChildren(params?: SparkNodeTreeChildrenParams): SparkNodeChildren",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1756,10 +1748,13 @@
                 "type": "reference",
                 "name": "SparkNodeTreeChildrenParams",
                 "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeChildren",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node.d.ts"
@@ -1768,10 +1763,9 @@
         {
           "name": "countNodes",
           "jsdoc": "统计当前组件实例子树中的结构节点数量。",
-          "signatureText": "countNodes(): number",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -1779,10 +1773,9 @@
         {
           "name": "collectDataViewKeys",
           "jsdoc": "收集当前组件实例子树中出现过的全部唯一 DataView 定位键。\n包括容器、展示、动作、选项等 props.dataViewKey / props.optionDataViewKey。",
-          "signatureText": "collectDataViewKeys(): Set<string>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Set",
             "typeArguments": [
@@ -1796,10 +1789,9 @@
         {
           "name": "collectHandlerNames",
           "jsdoc": "收集当前组件实例子树中 props.on 里声明过的全部唯一处理器名。",
-          "signatureText": "collectHandlerNames(): Set<string>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Set",
             "typeArguments": [
@@ -1813,7 +1805,6 @@
         {
           "name": "findByType",
           "jsdoc": "按组件类型名递归搜索子树，返回所有匹配节点的真实 id、深度和父 id。\n典型用法：当调用方知道目标组件类型（如 'r-tabs'）但不知道其节点 id 时，\n调用此方法可一步获取可直接用于 getNode / setProps / removeNode 的真实 id。\n@param params 组件类型查询参数。",
-          "signatureText": "findByType(params: SparkNodeFindByTypeParams): SparkNodeFindByTypeResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1825,7 +1816,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeFindByTypeResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -1834,7 +1825,6 @@
         {
           "name": "addNode",
           "jsdoc": "向当前组件实例或指定子组件的 children 中添加一个新节点。\n这是“先构造 SparkNode，再放入 SparkNodeTree”这条链路的最直接入口。\n@param params 单节点添加参数。",
-          "signatureText": "addNode(params: SparkNodeTreeAddParams): SparkNodeAddResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1846,7 +1836,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeAddResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -1855,7 +1845,6 @@
         {
           "name": "addNodes",
           "jsdoc": "向同一个子组件容器批量插入多个新节点。\n- nodes 按传入顺序依次插入\n- index 省略时整体追加到末尾\n- index 提供时，从该位置开始连续插入\n@param params 批量节点添加参数。",
-          "signatureText": "addNodes(params: SparkNodeTreeAddNodesParams): SparkNodeAddNodesResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1867,7 +1856,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeAddNodesResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -1876,7 +1865,6 @@
         {
           "name": "moveNode",
           "jsdoc": "把已有节点移动到当前组件实例或指定子组件的 children 中。\n返回值只包含移动摘要，不回传完整节点子树，避免结果膨胀。\n@param params 节点移动参数。",
-          "signatureText": "moveNode(params: SparkNodeTreeMoveParams): SparkNodeMoveResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1888,7 +1876,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeMoveResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -1897,7 +1885,6 @@
         {
           "name": "setProps",
           "jsdoc": "设置目标节点的 props。\n- merge !== false 时，采用浅合并语义\n- merge === false 时，直接替换整个 props 对象\n这类方法承载的是“修改属性值”能力，而不是组件选择能力。\n@param params props 设置参数。",
-          "signatureText": "setProps(params: SparkNodeTreeSetPropsParams): SparkNodeSetPropsResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1909,7 +1896,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeSetPropsResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -1918,7 +1905,6 @@
         {
           "name": "setPropsBatch",
           "jsdoc": "批量设置多个节点的 props。\n@param params 批量 props 设置参数。",
-          "signatureText": "setPropsBatch(params: SparkNodeTreeSetPropsBatchParams): SparkNodeSetPropsBatchResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1930,7 +1916,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeSetPropsBatchResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -1939,7 +1925,6 @@
         {
           "name": "replaceNode",
           "jsdoc": "用一个新的 SparkNode 完整替换目标节点。\n这类方法承载的是“修改节点结构”能力：节点 type、props、children 都可以整体替换。\n@param params 节点替换参数。",
-          "signatureText": "replaceNode(params: SparkNodeTreeReplaceParams): SparkNodeReplaceResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1951,7 +1936,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeReplaceResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -1960,7 +1945,6 @@
         {
           "name": "replaceNodes",
           "jsdoc": "批量替换多个节点。\n@param params 批量节点替换参数。",
-          "signatureText": "replaceNodes(params: SparkNodeTreeReplaceNodesParams): SparkNodeReplaceNodesResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1972,7 +1956,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeReplaceNodesResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -1981,7 +1965,6 @@
         {
           "name": "removeNode",
           "jsdoc": "删除当前组件实例子树内的指定节点。\n当前绑定的 root 自身不允许删除；调用方如果要整体替换当前组件实例，应直接创建新的实例或重建 root。\n@param params 节点删除参数。",
-          "signatureText": "removeNode(params: SparkNodeTreeRemoveParams): SparkNodeRemoveResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1993,7 +1976,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeRemoveResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -2002,7 +1985,6 @@
         {
           "name": "removeNodes",
           "jsdoc": "批量删除多个节点。\n@param params 批量节点删除参数。",
-          "signatureText": "removeNodes(params: SparkNodeTreeRemoveNodesParams): SparkNodeRemoveNodesResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -2014,7 +1996,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "SparkNodeRemoveNodesResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
@@ -2023,7 +2005,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.983Z",
+  "generatedAt": "2026-06-11T21:36:01.805Z",
   "$defs": {
     "SparkNodeTreeJsonInput": {
       "type": "object",

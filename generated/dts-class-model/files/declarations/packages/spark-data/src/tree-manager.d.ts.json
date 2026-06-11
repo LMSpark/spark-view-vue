@@ -140,10 +140,9 @@
         {
           "name": "getConfig",
           "jsdoc": "获取树配置\n@returns 树配置副本",
-          "signatureText": "getConfig(): TreeConfig",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "TreeConfig",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -152,7 +151,6 @@
         {
           "name": "addNodesToCache",
           "jsdoc": "添加节点到缓存\n@param nodes 要添加的节点数组",
-          "signatureText": "addNodesToCache(nodes: FlatTreeNode[]): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -167,7 +165,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -175,10 +173,9 @@
         {
           "name": "clear",
           "jsdoc": "清空缓存",
-          "signatureText": "clear(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -186,10 +183,9 @@
         {
           "name": "getAllNodes",
           "jsdoc": "返回缓存中所有扁平节点的数组",
-          "signatureText": "getAllNodes(): FlatTreeNode[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -201,7 +197,6 @@
         {
           "name": "fromJson",
           "jsdoc": "从 JSON 恢复树缓存（与 toJson 输出格式对应：FlatTreeNode[]）。\n@param json 节点数组、松散对象或 JSON 字符串\n@param options TreeManager 构造选项（config 必填）",
-          "signatureText": "static fromJson(json: FlatTreeNode[] | Record<string, unknown> | string, options: TreeManagerOptions): TreeManager",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -247,7 +242,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "TreeManager",
             "sourcePath": "declarations/packages/spark-data/src/tree-manager.d.ts"
@@ -256,10 +251,9 @@
         {
           "name": "toJson",
           "jsdoc": "将所有扁平节点序列化为 JSON 字符串（用于导出）",
-          "signatureText": "toJson(): string",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "string"
           }
@@ -267,7 +261,6 @@
         {
           "name": "getNode",
           "jsdoc": "获取指定节点\n@param id 节点ID\n@returns 节点对象",
-          "signatureText": "getNode(id: string | number): FlatTreeNode | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -287,21 +280,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "FlatTreeNode",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "FlatTreeNode",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
           }
         },
         {
           "name": "getChildren",
           "jsdoc": "获取子节点\n@param parentId 父节点ID\n@returns 子节点数组",
-          "signatureText": "getChildren(parentId: string | number | null): FlatTreeNode[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -325,7 +315,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -337,10 +327,9 @@
         {
           "name": "getRoots",
           "jsdoc": "获取根节点\n@returns 根节点数组",
-          "signatureText": "getRoots(): FlatTreeNode[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -352,7 +341,6 @@
         {
           "name": "fetchChildren",
           "jsdoc": "拉取直接子节点并写入缓存（对应 /tree/children）",
-          "signatureText": "fetchChildren(parentId: string | number | null, limit?: number): Promise<FlatTreeNode[]>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -380,10 +368,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -401,7 +392,6 @@
         {
           "name": "fetchPath",
           "jsdoc": "获取节点祖先链 ID（对应 /tree/path）",
-          "signatureText": "fetchPath(id: string | number): Promise<TreePath>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -421,7 +411,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -436,7 +426,6 @@
         {
           "name": "expandToNode",
           "jsdoc": "展开到目标节点（差量补齐缓存，对应 /tree/path + /tree/subtree）",
-          "signatureText": "expandToNode(targetId: string | number): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -456,7 +445,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -470,7 +459,6 @@
         {
           "name": "moveNode",
           "jsdoc": "执行 move Node 操作。",
-          "signatureText": "moveNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<FlatTreeNode>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -514,10 +502,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -532,7 +523,6 @@
         {
           "name": "fetchNestedSearch",
           "jsdoc": "嵌套模式远端搜索，返回匹配节点 + 祖先链（对应 /tree/nested/search）",
-          "signatureText": "fetchNestedSearch(keyword: string, limit?: number): Promise<NestedTreeSearchResult[]>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -547,10 +537,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -568,7 +561,6 @@
         {
           "name": "fetchNested",
           "jsdoc": "拉取完整嵌套树（对应 /tree/nested）",
-          "signatureText": "fetchNested(input?: FetchNestedInput): Promise<NestedTreeNode[]>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -577,10 +569,13 @@
                 "type": "reference",
                 "name": "FetchNestedInput",
                 "sourcePath": "declarations/packages/spark-data/src/tree-manager.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -598,7 +593,6 @@
         {
           "name": "searchNodes",
           "jsdoc": "搜索节点\n@param keyword 搜索关键词\n@param matchFn 匹配函数\n@returns 匹配的节点数组",
-          "signatureText": "searchNodes(keyword: string, matchFn?: (node: FlatTreeNode, keyword: string) => boolean): FlatTreeNode[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -611,12 +605,41 @@
             {
               "name": "matchFn",
               "type": {
-                "type": "unknown",
-                "name": "(node: FlatTreeNode, keyword: string) => boolean"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "node",
+                          "type": {
+                            "type": "reference",
+                            "name": "FlatTreeNode",
+                            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                          }
+                        },
+                        {
+                          "name": "keyword",
+                          "type": {
+                            "type": "intrinsic",
+                            "name": "string"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "boolean"
+                      }
+                    }
+                  ]
+                }
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -628,7 +651,6 @@
         {
           "name": "searchNested",
           "jsdoc": "嵌套树搜索（层次模式）\n对应 /tree/nested/search 接口\n返回匹配节点及其祖先链，前端可直接展开定位\n@param keyword 搜索关键词\n@param matchFn 自定义匹配函数（默认匹配 textField）\n@param limit 最大返回结果数（默认不限制）\n@returns 匹配节点 + 从根到该节点的祖先链数组",
-          "signatureText": "searchNested(keyword: string, matchFn?: (node: FlatTreeNode, keyword: string) => boolean, limit?: number): NestedTreeSearchResult[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -641,8 +663,37 @@
             {
               "name": "matchFn",
               "type": {
-                "type": "unknown",
-                "name": "(node: FlatTreeNode, keyword: string) => boolean"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "node",
+                          "type": {
+                            "type": "reference",
+                            "name": "FlatTreeNode",
+                            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                          }
+                        },
+                        {
+                          "name": "keyword",
+                          "type": {
+                            "type": "intrinsic",
+                            "name": "string"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "boolean"
+                      }
+                    }
+                  ]
+                }
+              },
+              "flags": {
+                "isOptional": true
               }
             },
             {
@@ -650,10 +701,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "number"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -665,7 +719,6 @@
         {
           "name": "getNodePath",
           "jsdoc": "获取节点路径\n@param nodeId 节点ID\n@returns 节点路径",
-          "signatureText": "getNodePath(nodeId: string | number): TreePath",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -685,7 +738,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "TreePath",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -694,7 +747,6 @@
         {
           "name": "buildNestedTree",
           "jsdoc": "全量构建嵌套树\n@param rootId 根节点ID\n@returns 嵌套树数组",
-          "signatureText": "buildNestedTree(rootId?: string | number | null): NestedTreeNode[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -715,10 +767,13 @@
                     "value": null
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -730,7 +785,6 @@
         {
           "name": "buildSubTree",
           "jsdoc": "局部构建子树（递归）\n@param rootId 根节点ID\n@returns 嵌套子树",
-          "signatureText": "buildSubTree(rootId: string | number): NestedTreeNode | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -750,7 +804,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -768,7 +822,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.002Z",
+  "generatedAt": "2026-06-11T21:36:01.840Z",
   "$defs": {
     "TreeManagerOptions": {
       "type": "object",

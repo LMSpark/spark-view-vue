@@ -98,10 +98,9 @@
         {
           "name": "applyAutoFirst",
           "jsdoc": "数据加载完成后应用 autoCurrentFirst / autoSelectFirst 逻辑。\nupdateFromServer() 替换了全部行引用，旧的 currentRow/selectedRows 指针已失效。\n先强制清零（无事件），再通过正式 setter 写入新值；setter 发射领域事件，\nDataSet.onAnyViewChange 订阅者（如 SparkPageRenderer）因此能正确收到事件。\nautoCurrentFirst / autoSelectFirst 彼此独立，各自触发自己的事件。\n单选模式下 setCurrentRow 内部会自动同步 selectedRows，这里用\n_suppressSelectionSync 抑制，让 autoSelectFirst 独立决定。",
-          "signatureText": "applyAutoFirst(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -109,7 +108,6 @@
         {
           "name": "setCurrentRow",
           "jsdoc": "设置当前行（通过行对象）\n内部提取 PK 后委托给 {@link _setCurrentId}。\n外部 UI 层推荐使用 {@link setCurrentRowById}。",
-          "signatureText": "setCurrentRow(row: DataRow | null, originatorId?: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -134,10 +132,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -145,7 +146,6 @@
         {
           "name": "setSelectedRows",
           "jsdoc": "设置多选行（通过行对象数组）\n内部提取 PK 后委托给 {@link _setSelectedIds}。\n外部 UI 层推荐使用 {@link setSelectedRowsById}。",
-          "signatureText": "setSelectedRows(rows: DataRow[], originatorId?: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -164,10 +164,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -175,7 +178,6 @@
         {
           "name": "setCurrentRowById",
           "jsdoc": "根据主键设置当前行\n@param id - 主键值，null 表示清空\n@param originatorId - UI 操作来源实例 ID（可选）\n@returns 是否成功（行不存在时返回 false；null 始终返回 true）",
-          "signatureText": "setCurrentRowById(id: string | number | null, originatorId?: string): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -203,10 +205,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -214,7 +219,6 @@
         {
           "name": "setSelectedRowsById",
           "jsdoc": "根据主键数组设置多选行\n@param ids - 主键值数组\n@param originatorId - UI 操作来源实例 ID（可选）\n@param options.strict - 严格模式：任何 ID 找不到则抛错（默认 false）\n@returns 成功找到的行数",
-          "signatureText": "setSelectedRowsById(ids: Array<string | number>, originatorId?: string, options?: {\n        strict?: boolean;\n    }): number",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -241,6 +245,9 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             },
             {
@@ -248,10 +255,13 @@
               "type": {
                 "type": "unknown",
                 "name": "{\n        strict?: boolean;\n    }"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -259,10 +269,9 @@
         {
           "name": "clearSelectedRows",
           "jsdoc": "清空选中行",
-          "signatureText": "clearSelectedRows(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -270,7 +279,6 @@
         {
           "name": "addSelectedRows",
           "jsdoc": "添加行到选中集（去重）\n@returns 实际添加的行数",
-          "signatureText": "addSelectedRows(rows: DataRow[]): number",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -285,7 +293,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -293,7 +301,6 @@
         {
           "name": "removeSelectedRows",
           "jsdoc": "从选中集移除行\n@returns 实际移除的行数",
-          "signatureText": "removeSelectedRows(rows: DataRow[]): number",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -308,7 +315,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -316,7 +323,6 @@
         {
           "name": "addSelectedRowsById",
           "jsdoc": "根据主键数组添加选中行\n@param options.strict - 严格模式：任何 ID 找不到则抛错\n@returns 实际添加的行数",
-          "signatureText": "addSelectedRowsById(ids: Array<string | number>, options?: {\n        strict?: boolean;\n    }): number",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -343,10 +349,13 @@
               "type": {
                 "type": "unknown",
                 "name": "{\n        strict?: boolean;\n    }"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -354,7 +363,6 @@
         {
           "name": "removeSelectedRowsById",
           "jsdoc": "根据主键数组移除选中行\n@returns 实际移除的行数",
-          "signatureText": "removeSelectedRowsById(ids: Array<string | number>): number",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -377,7 +385,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -385,10 +393,9 @@
         {
           "name": "cleanupInvalidSelections",
           "jsdoc": "清理已不在 rows 中的选中状态\n在 rows 被部分刷新（非整体替换）时调用，同步清理失效的指针。\n@returns 是否发生了清理",
-          "signatureText": "cleanupInvalidSelections(): boolean",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -396,7 +403,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.998Z",
+  "generatedAt": "2026-06-11T21:36:01.836Z",
   "$defs": {
     "EmitCurrentRowChangedFn": {
       "type": "object",

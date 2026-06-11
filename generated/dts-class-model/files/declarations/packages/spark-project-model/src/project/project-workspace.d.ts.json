@@ -478,10 +478,9 @@
         {
           "name": "getActivePageRenderNode",
           "jsdoc": "读取 Active Page Render Node。",
-          "signatureText": "getActivePageRenderNode(): PageNodeLike | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -499,10 +498,9 @@
         {
           "name": "loadNavigation",
           "jsdoc": "加载 Navigation。",
-          "signatureText": "loadNavigation(): Promise<ProjectModelData>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -517,7 +515,6 @@
         {
           "name": "ingestNavigationRoot",
           "jsdoc": "执行 ingest Navigation Root 操作。",
-          "signatureText": "ingestNavigationRoot(root: ProjectModelData, options?: {\n        selectedNodeId?: string | null;\n    }): ProjectModelData",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -533,10 +530,13 @@
               "type": {
                 "type": "unknown",
                 "name": "{\n        selectedNodeId?: string | null;\n    }"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectModelData",
             "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
@@ -545,7 +545,6 @@
         {
           "name": "selectPage",
           "jsdoc": "按指定 pageId 选择并加载页面文件。\n按当前导航选中节点选择并加载页面文件。",
-          "signatureText": "selectPage(pageId: string, options?: ProjectPageLoadOptions): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -561,10 +560,13 @@
                 "type": "reference",
                 "name": "ProjectPageLoadOptions",
                 "sourcePath": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -578,7 +580,6 @@
         {
           "name": "selectPage",
           "jsdoc": "按指定 pageId 选择并加载页面文件。\n按当前导航选中节点选择并加载页面文件。",
-          "signatureText": "selectPage(options?: ProjectPageLoadOptions): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -587,10 +588,13 @@
                 "type": "reference",
                 "name": "ProjectPageLoadOptions",
                 "sourcePath": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -604,7 +608,6 @@
         {
           "name": "saveProjectLayout",
           "jsdoc": "保存 Project Layout。",
-          "signatureText": "saveProjectLayout(options?: {\n        skipReload?: boolean;\n    }): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -612,10 +615,13 @@
               "type": {
                 "type": "unknown",
                 "name": "{\n        skipReload?: boolean;\n    }"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -629,7 +635,6 @@
         {
           "name": "saveSelectedNavigationNode",
           "jsdoc": "保存 Selected Navigation Node。",
-          "signatureText": "saveSelectedNavigationNode(options?: {\n        skipReload?: boolean;\n    }): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -637,10 +642,13 @@
               "type": {
                 "type": "unknown",
                 "name": "{\n        skipReload?: boolean;\n    }"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -654,7 +662,6 @@
         {
           "name": "ensureActivePageFilesLoaded",
           "jsdoc": "执行 ensure Active Page Files Loaded 操作。",
-          "signatureText": "ensureActivePageFilesLoaded(options?: ProjectPageLoadOptions): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -663,10 +670,13 @@
                 "type": "reference",
                 "name": "ProjectPageLoadOptions",
                 "sourcePath": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -680,7 +690,6 @@
         {
           "name": "loadPageFile",
           "jsdoc": "加载 Page File。",
-          "signatureText": "loadPageFile(name: PageNodeFileName, options?: ProjectPageLoadOptions): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -697,10 +706,13 @@
                 "type": "reference",
                 "name": "ProjectPageLoadOptions",
                 "sourcePath": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -714,7 +726,6 @@
         {
           "name": "savePageFile",
           "jsdoc": "保存 Page File。",
-          "signatureText": "savePageFile(name: PageNodeFileName): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -726,7 +737,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -740,10 +751,9 @@
         {
           "name": "saveDirtyPageFiles",
           "jsdoc": "保存 Dirty Page Files。",
-          "signatureText": "saveDirtyPageFiles(): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -757,10 +767,9 @@
         {
           "name": "saveAll",
           "jsdoc": "保存 All。",
-          "signatureText": "saveAll(): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -774,7 +783,6 @@
         {
           "name": "addNavigationNode",
           "jsdoc": "执行 add Navigation Node 操作。",
-          "signatureText": "addNavigationNode(params: {\n        parentId?: string | null;\n        node: ProjectNodeData;\n        index?: number;\n    }): Promise<ProjectNodeData>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -785,7 +793,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -800,7 +808,6 @@
         {
           "name": "deleteNode",
           "jsdoc": "删除 Node。",
-          "signatureText": "deleteNode(nodeId: string): Promise<ProjectNodeData | null>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -811,7 +818,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -835,7 +842,6 @@
         {
           "name": "createPageForSelectedNode",
           "jsdoc": "创建 Page For Selected Node。",
-          "signatureText": "createPageForSelectedNode(params: CreatePageForSelectedNodeParams): Promise<PageNodeCreateMountedResult>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -847,7 +853,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -862,7 +868,6 @@
         {
           "name": "createMountedPage",
           "jsdoc": "创建 Mounted Page。",
-          "signatureText": "createMountedPage(params: CreateMountedPageParams): Promise<PageNodeCreateMountedResult>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -874,7 +879,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -889,7 +894,6 @@
         {
           "name": "createPageFiles",
           "jsdoc": "创建 Page Files。",
-          "signatureText": "createPageFiles(params: CreatePageFilesParams): Promise<Record<string, unknown>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -901,7 +905,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -925,7 +929,6 @@
         {
           "name": "deletePageFiles",
           "jsdoc": "删除 Page Files。",
-          "signatureText": "deletePageFiles(pageId: string): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -936,7 +939,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -950,7 +953,6 @@
         {
           "name": "removeMountedPage",
           "jsdoc": "删除 Mounted Page。",
-          "signatureText": "removeMountedPage(params: RemoveMountedPageParams): Promise<PageNodeRemoveMountedResult>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -962,7 +964,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -977,7 +979,6 @@
         {
           "name": "moveMountedPage",
           "jsdoc": "执行 move Mounted Page 操作。",
-          "signatureText": "moveMountedPage(nodeId: string, newParentId: string | null, index: number): Promise<ProjectNodeData>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1011,7 +1012,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1026,7 +1027,6 @@
         {
           "name": "listRemotePageVersions",
           "jsdoc": "执行 list Remote Page Versions 操作。",
-          "signatureText": "listRemotePageVersions(filename: PageNodeFileName): Promise<PageNodeFileVersionSummary[]>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1038,7 +1038,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1056,7 +1056,6 @@
         {
           "name": "restoreRemotePageVersion",
           "jsdoc": "执行 restore Remote Page Version 操作。",
-          "signatureText": "restoreRemotePageVersion(version: number, filename: PageNodeFileName): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1075,7 +1074,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1089,7 +1088,6 @@
         {
           "name": "createRemotePageVersion",
           "jsdoc": "创建 Remote Page Version。",
-          "signatureText": "createRemotePageVersion(filename: PageNodeFileName): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1101,7 +1099,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1115,7 +1113,6 @@
         {
           "name": "deleteRemotePageVersion",
           "jsdoc": "删除 Remote Page Version。",
-          "signatureText": "deleteRemotePageVersion(version: number, filename: PageNodeFileName): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1134,7 +1131,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1148,7 +1145,6 @@
         {
           "name": "notifyPageFileChanged",
           "jsdoc": "执行 notify Page File Changed 操作。",
-          "signatureText": "notifyPageFileChanged(pageId: string, filename: PageNodeFileName | '__created' | '__deleted' | '__bulk'): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1184,7 +1180,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1192,7 +1188,6 @@
         {
           "name": "probeLink",
           "jsdoc": "执行 probe Link 操作。",
-          "signatureText": "probeLink(url: string): Promise<{\n        embeddable: boolean;\n        reason: string;\n    }>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1203,7 +1198,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1217,10 +1212,9 @@
         {
           "name": "listReferenceProjects",
           "jsdoc": "执行 list Reference Projects 操作。",
-          "signatureText": "listReferenceProjects(): Promise<ProjectSummary[]>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1238,7 +1232,6 @@
         {
           "name": "listReferenceProjectPages",
           "jsdoc": "执行 list Reference Project Pages 操作。",
-          "signatureText": "listReferenceProjectPages(projectId: string): Promise<ProjectPageReference[]>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1249,7 +1242,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -1267,7 +1260,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.072Z",
+  "generatedAt": "2026-06-11T21:36:01.938Z",
   "$defs": {
     "ProjectPageLoadOptions": {
       "type": "object",

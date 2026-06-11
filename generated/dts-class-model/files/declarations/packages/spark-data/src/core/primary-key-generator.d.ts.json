@@ -138,7 +138,6 @@
         {
           "name": "generate",
           "jsdoc": "为新记录生成主键值\n@param row - 部分数据行（可能已包含部分字段值）\n@param existingRows - 已存在的行数据（用于自增计算）\n@returns 主键值",
-          "signatureText": "generate(row: Partial<DataRow>, existingRows?: DataRow[]): string | number",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -164,10 +163,13 @@
                   "name": "DataRow",
                   "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
                 }
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -184,7 +186,6 @@
         {
           "name": "resetAutoIncrement",
           "jsdoc": "重置自增计数器",
-          "signatureText": "resetAutoIncrement(value: number): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -195,7 +196,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -203,10 +204,9 @@
         {
           "name": "getConfig",
           "jsdoc": "获取当前配置",
-          "signatureText": "getConfig(): Readonly<PrimaryKeyGeneratorConfig>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Readonly",
             "typeArguments": [
@@ -221,7 +221,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.927Z",
+  "generatedAt": "2026-06-11T21:36:01.731Z",
   "$defs": {
     "PrimaryKeyStrategy": {
       "type": "object",

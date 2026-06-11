@@ -67,10 +67,9 @@
         {
           "name": "getText",
           "jsdoc": "get Text 文本。",
-          "signatureText": "getText(): string",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "string"
           }
@@ -78,7 +77,6 @@
         {
           "name": "setText",
           "jsdoc": "set Text 文本。",
-          "signatureText": "setText(text: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -89,7 +87,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -97,7 +95,6 @@
         {
           "name": "loadText",
           "jsdoc": "load Text 文本。",
-          "signatureText": "loadText(text: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -108,7 +105,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -116,10 +113,9 @@
         {
           "name": "markSaved",
           "jsdoc": "执行 mark Saved 操作。",
-          "signatureText": "markSaved(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -127,10 +123,9 @@
         {
           "name": "getTool",
           "jsdoc": "读取 Tool。",
-          "signatureText": "getTool(): DataSetCrudTool",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataSetCrudTool"
           }
@@ -138,7 +133,6 @@
         {
           "name": "replaceTool",
           "jsdoc": "执行 replace Tool 操作。",
-          "signatureText": "replaceTool(tool: DataSetCrudTool): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -149,7 +143,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -157,18 +151,50 @@
         {
           "name": "editTool",
           "jsdoc": "执行 edit Tool 操作。",
-          "signatureText": "editTool(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
               "name": "run",
               "type": {
-                "type": "unknown",
-                "name": "(tool: DataSetCrudTool) => void | Promise<void>"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "tool",
+                          "type": {
+                            "type": "reference",
+                            "name": "DataSetCrudTool"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "union",
+                        "types": [
+                          {
+                            "type": "intrinsic",
+                            "name": "void"
+                          },
+                          {
+                            "type": "reference",
+                            "name": "Promise",
+                            "typeArguments": [
+                              {
+                                "type": "intrinsic",
+                                "name": "void"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -182,10 +208,9 @@
         {
           "name": "undo",
           "jsdoc": "执行 undo 操作。",
-          "signatureText": "undo(): boolean",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -193,10 +218,9 @@
         {
           "name": "redo",
           "jsdoc": "执行 redo 操作。",
-          "signatureText": "redo(): boolean",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -204,7 +228,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.056Z",
+  "generatedAt": "2026-06-11T21:36:01.917Z",
   "$defs": {
     "PageDataSetFile": {
       "type": "object",

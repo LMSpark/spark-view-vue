@@ -52,6 +52,9 @@
                   "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
                 }
               ]
+            },
+            "flags": {
+              "isOptional": true
             }
           }
         ]
@@ -61,7 +64,6 @@
         {
           "name": "executeRequest",
           "jsdoc": "执行 execute Request 操作。",
-          "signatureText": "protected executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -73,7 +75,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -94,7 +96,6 @@
         {
           "name": "normalizeTransportError",
           "jsdoc": "normalize Transport Error 错误信息。",
-          "signatureText": "protected normalizeTransportError(err: unknown, config?: RequestConfig): RequestError",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -110,10 +111,13 @@
                 "type": "reference",
                 "name": "RequestConfig",
                 "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "RequestError",
             "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
@@ -122,7 +126,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.087Z",
+  "generatedAt": "2026-06-11T21:36:01.951Z",
   "$defs": {
     "Request": {
       "type": "object",

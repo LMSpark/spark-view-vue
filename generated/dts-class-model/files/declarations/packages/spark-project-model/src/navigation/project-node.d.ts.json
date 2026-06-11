@@ -1567,10 +1567,9 @@
         {
           "name": "toNodeData",
           "jsdoc": "执行 to Node Data 操作。",
-          "signatureText": "toNodeData(): ProjectNodeData",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "ProjectNodeData",
             "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
@@ -1579,7 +1578,6 @@
         {
           "name": "applyNavigationPatch",
           "jsdoc": "导航编辑只能通过 class API 提交；DTO 快照不可作为包内可变真源。",
-          "signatureText": "applyNavigationPatch(patch: ProjectNodeNavigationPatch): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1591,7 +1589,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1599,7 +1597,6 @@
         {
           "name": "rebindNavigationNode",
           "jsdoc": "执行 rebind Navigation Node 操作。",
-          "signatureText": "rebindNavigationNode(node: ProjectNodeData, pid: string, descriptionContext: readonly ProjectDescriptionContext[]): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -1625,7 +1622,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -1633,7 +1630,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.051Z",
+  "generatedAt": "2026-06-11T21:36:01.909Z",
   "$defs": {
     "ChildPlacement": {
       "type": "object",

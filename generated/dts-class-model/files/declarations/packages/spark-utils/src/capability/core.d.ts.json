@@ -104,7 +104,6 @@
         {
           "name": "read",
           "jsdoc": "执行 read 操作。",
-          "signatureText": "read(value: unknown): T | null",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -115,7 +114,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -133,10 +132,9 @@
         {
           "name": "toString",
           "jsdoc": "执行 to String 操作。",
-          "signatureText": "toString(): string",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "string"
           }
@@ -248,7 +246,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.073Z",
+  "generatedAt": "2026-06-11T21:36:01.939Z",
   "$defs": {
     "CapabilityReader": {
       "type": "object",

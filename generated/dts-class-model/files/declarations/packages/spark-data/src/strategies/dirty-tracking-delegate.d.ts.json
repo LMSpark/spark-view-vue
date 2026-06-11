@@ -168,22 +168,64 @@
           {
             "name": "getColumns",
             "type": {
-              "type": "unknown",
-              "name": "() => readonly DataColumn[] | undefined"
+              "type": "reflection",
+              "declaration": {
+                "signatures": [
+                  {
+                    "parameters": [],
+                    "type": {
+                      "type": "optional",
+                      "elementType": {
+                        "type": "unknown",
+                        "name": "readonly DataColumn[]"
+                      }
+                    }
+                  }
+                ]
+              }
             }
           },
           {
             "name": "getComputedColumnNames",
             "type": {
-              "type": "unknown",
-              "name": "() => ReadonlySet<string>"
+              "type": "reflection",
+              "declaration": {
+                "signatures": [
+                  {
+                    "parameters": [],
+                    "type": {
+                      "type": "reference",
+                      "name": "ReadonlySet",
+                      "typeArguments": [
+                        {
+                          "type": "intrinsic",
+                          "name": "string"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
             }
           },
           {
             "name": "getPrimaryKeyFields",
             "type": {
-              "type": "unknown",
-              "name": "() => string[]"
+              "type": "reflection",
+              "declaration": {
+                "signatures": [
+                  {
+                    "parameters": [],
+                    "type": {
+                      "type": "array",
+                      "elementType": {
+                        "type": "intrinsic",
+                        "name": "string"
+                      }
+                    }
+                  }
+                ]
+              }
             }
           }
         ]
@@ -193,7 +235,6 @@
         {
           "name": "trackCreate",
           "jsdoc": "将行登记为\"待新增\"。\n特殊情况：若该 id 曾被登记为待删除（先删后撤销），则改为撤销删除，\n新行直接进入 clean 状态（仅还原，不重复追踪新增）。",
-          "signatureText": "trackCreate(id: string | number, row: DataRow): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -221,7 +262,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -229,7 +270,6 @@
         {
           "name": "cancelCreate",
           "jsdoc": "取消指定行的\"待新增\"登记。\n场景：pending create 行在未保存前被用户删除——无需 server delete，直接遗忘。\n@returns 该行是否确实是 pending create（false = 不是，无操作）",
-          "signatureText": "cancelCreate(id: string | number): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -249,7 +289,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -257,7 +297,6 @@
         {
           "name": "markDirty",
           "jsdoc": "标注指定行为手工编辑（dirty update）。\n- pending create 行：**忽略**（新行本身就是最终数据，无需记录\"编辑前\"快照）\n- 连续编辑同一行：**不覆盖快照**（diff 始终相对于服务端原始值）\n@param id 行主键\n@param original 编辑**前**的行对象（浅拷贝后以 WeakRef 包装）",
-          "signatureText": "markDirty(id: string | number, original: DataRow): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -285,7 +324,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -293,7 +332,6 @@
         {
           "name": "clearDirty",
           "jsdoc": "清除指定行（或全部）的 dirty-update 状态。\n@param id 不传则清除全部",
-          "signatureText": "clearDirty(id?: string | number): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -310,10 +348,13 @@
                     "name": "number"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -321,7 +362,6 @@
         {
           "name": "trackDelete",
           "jsdoc": "将行登记为\"待删除\"。\n特殊情况：若该行是 pending create（从未在服务端存在），\n直接取消新增，**不产生** server delete。\n@param id 行主键\n@param snapshot 被删除行的完整快照（强引用，提交失败时用于还原 UI）",
-          "signatureText": "trackDelete(id: string | number, snapshot: DataRow): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -349,7 +389,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -357,7 +397,6 @@
         {
           "name": "cancelDelete",
           "jsdoc": "撤销指定行（或全部）的 pending-delete 状态。\n注意：撤销仅清除追踪记录，**不**自动将行还原回 rows——\n由调用方（DataView）负责将快照 appendRow 回去。",
-          "signatureText": "cancelDelete(id?: string | number): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -374,10 +413,13 @@
                     "name": "number"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -385,10 +427,9 @@
         {
           "name": "clearAll",
           "jsdoc": "清除全部三态追踪状态（视图全量刷新 / 销毁时调用）。",
-          "signatureText": "clearAll(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -396,7 +437,6 @@
         {
           "name": "hasPendingChanges",
           "jsdoc": "是否存在任意未提交的本地变更（新增 / 编辑 / 待删除）。\n@param id 不传 → 整个视图；传入 id → 指定行（任意态）",
-          "signatureText": "hasPendingChanges(id?: string | number): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -413,10 +453,13 @@
                     "name": "number"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -424,7 +467,6 @@
         {
           "name": "isDirty",
           "jsdoc": "是否有 dirty-update 未提交。\n@param id 不传 → 整体；传入 id → 指定行",
-          "signatureText": "isDirty(id?: string | number): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -441,10 +483,13 @@
                     "name": "number"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -452,7 +497,6 @@
         {
           "name": "isPendingCreate",
           "jsdoc": "指定行是否是待新增状态",
-          "signatureText": "isPendingCreate(id: string | number): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -472,7 +516,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -480,7 +524,6 @@
         {
           "name": "isPendingDelete",
           "jsdoc": "指定行是否是待删除状态",
-          "signatureText": "isPendingDelete(id: string | number): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -500,7 +543,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -508,7 +551,6 @@
         {
           "name": "getPendingDeleteSnapshot",
           "jsdoc": "获取 pending-delete 行的快照（提交失败时用于还原 UI）。",
-          "signatureText": "getPendingDeleteSnapshot(id: string | number): DataRow | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -528,21 +570,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "DataRow",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
           }
         },
         {
           "name": "getOriginal",
           "jsdoc": "获取指定行在首次手工编辑**前**的快照（dirty update 专用）。\n@returns 快照；行不脏或弱引用已被 GC 回收时返回 undefined",
-          "signatureText": "getOriginal(id: string | number): DataRow | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -562,21 +601,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "DataRow",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
           }
         },
         {
           "name": "getDiff",
           "jsdoc": "计算指定行的字段级变更明细（dirty update 专用）。\n@param id 行主键\n@param current 当前行对象\n@returns 字段名 → `{ from, to }`；行不脏或快照已被 GC 回收时返回 `{}`",
-          "signatureText": "getDiff(id: string | number, current: DataRow): RowDiff",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -604,7 +640,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "RowDiff",
             "sourcePath": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts"
@@ -613,7 +649,6 @@
         {
           "name": "executeChanges",
           "jsdoc": "将所有待提交变更（新增 / 手工编辑 / 删除）逐条保存到服务端。\n提交顺序：**新增 → 更新 → 删除**（依赖关系最少）。\n任意单行失败**不中断**后续行；失败行保留对应追踪状态。\n@param host 提供行数据读写的宿主（DataView 实现此接口）\n@param crud CRUD 网络操作接口（通常为 CrudDelegate）\n@param ids 指定要保存的行主键列表；不传则保存全部待提交变更",
-          "signatureText": "executeChanges(host: DataView, crud: CrudDelegate, ids?: Array<string | number>): Promise<CrudResult<SaveChangesData>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -649,10 +684,13 @@
                     }
                   ]
                 }
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -674,10 +712,9 @@
         {
           "name": "destroy",
           "jsdoc": "销毁——清理所有内存状态",
-          "signatureText": "destroy(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -685,7 +722,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.992Z",
+  "generatedAt": "2026-06-11T21:36:01.825Z",
   "$defs": {
     "FieldChange": {
       "type": "object",

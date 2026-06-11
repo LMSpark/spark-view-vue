@@ -146,6 +146,9 @@
                   "sourcePath": "declarations/packages/spark-project-model/src/io/page-content-loader.d.ts"
                 }
               ]
+            },
+            "flags": {
+              "isOptional": true
             }
           }
         ]
@@ -155,7 +158,6 @@
         {
           "name": "loadPageFileContent",
           "jsdoc": "加载 Page File Content。",
-          "signatureText": "loadPageFileContent(pageId: string, filename: PageNodeFileName, options?: PageNodeLoadOptions): Promise<PageContentLoadResult<string>>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -179,10 +181,13 @@
                 "type": "reference",
                 "name": "PageNodeLoadOptions",
                 "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -203,7 +208,6 @@
         {
           "name": "clearCache",
           "jsdoc": "清空 Cache。",
-          "signatureText": "clearCache(key?: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -211,10 +215,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -222,10 +229,9 @@
         {
           "name": "clearAllCache",
           "jsdoc": "清空 All Cache。",
-          "signatureText": "clearAllCache(): {\n        size: number;\n        keys: string[];\n    }",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "{\n        size: number;\n        keys: string[];\n    }"
           }
@@ -233,10 +239,9 @@
         {
           "name": "getCacheStats",
           "jsdoc": "读取 Cache Stats。",
-          "signatureText": "getCacheStats(): {\n        size: number;\n        keys: string[];\n    }",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "{\n        size: number;\n        keys: string[];\n    }"
           }
@@ -244,10 +249,9 @@
         {
           "name": "getHttpClient",
           "jsdoc": "读取 Http Client。",
-          "signatureText": "getHttpClient(): HttpClientBase",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "unknown"
           }
@@ -255,7 +259,6 @@
         {
           "name": "clearPageCache",
           "jsdoc": "清空 Page Cache。",
-          "signatureText": "clearPageCache(pageId: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -266,7 +269,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -274,7 +277,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.037Z",
+  "generatedAt": "2026-06-11T21:36:01.887Z",
   "$defs": {
     "PageContentLoaderOptions": {
       "type": "object",

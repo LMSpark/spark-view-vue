@@ -216,7 +216,6 @@
         {
           "name": "toChatRequest",
           "jsdoc": "生成标准 LLM 对话请求，自动拼接多层 systemPrompt",
-          "signatureText": "toChatRequest(options?: AiAgentTaskChatOptions): AiAgentChatRequest",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -225,10 +224,13 @@
                 "type": "reference",
                 "name": "AiAgentTaskChatOptions",
                 "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-task.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "AiAgentChatRequest",
             "sourcePath": "declarations/packages/spark-ai/src/agent/chat/chat-types.d.ts"
@@ -237,7 +239,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.520Z",
+  "generatedAt": "2026-06-11T21:36:01.457Z",
   "$defs": {
     "AiAgentOrchestrationPlan": {
       "type": "object",

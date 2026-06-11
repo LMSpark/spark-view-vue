@@ -220,7 +220,6 @@
         {
           "name": "register",
           "jsdoc": "执行 register 操作。",
-          "signatureText": "register(id: string, loader: Omit<PluginLoader, 'id'>): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -249,7 +248,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -257,7 +256,6 @@
         {
           "name": "registerAll",
           "jsdoc": "执行 register All 操作。",
-          "signatureText": "registerAll(entries: Record<string, Omit<PluginLoader, 'id'>> | null | undefined): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -293,12 +291,16 @@
                   {
                     "type": "literal",
                     "value": null
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "undefined"
                   }
                 ]
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -306,7 +308,6 @@
         {
           "name": "get",
           "jsdoc": "执行 get 操作。",
-          "signatureText": "get(id: string): PluginLoader | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -317,21 +318,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "PluginLoader",
-                "sourcePath": "declarations/packages/spark-app/src/plugins/registry.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "PluginLoader",
+              "sourcePath": "declarations/packages/spark-app/src/plugins/registry.d.ts"
+            }
           }
         },
         {
           "name": "has",
           "jsdoc": "执行 has 操作。",
-          "signatureText": "has(id: string): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -342,7 +340,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -350,10 +348,9 @@
         {
           "name": "getAll",
           "jsdoc": "读取 All。",
-          "signatureText": "getAll(): PluginLoader[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "reference",
@@ -365,10 +362,9 @@
         {
           "name": "getAllIds",
           "jsdoc": "读取 All Ids。",
-          "signatureText": "getAllIds(): string[]",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "intrinsic",
@@ -379,7 +375,6 @@
         {
           "name": "unregister",
           "jsdoc": "执行 unregister 操作。",
-          "signatureText": "unregister(id: string): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -390,7 +385,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -398,10 +393,9 @@
         {
           "name": "clear",
           "jsdoc": "执行 clear 操作。",
-          "signatureText": "clear(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -409,10 +403,9 @@
         {
           "name": "getStats",
           "jsdoc": "读取 Stats。",
-          "signatureText": "getStats(): {\n        total: number;\n        plugins: string[];\n    }",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "unknown",
             "name": "{\n        total: number;\n        plugins: string[];\n    }"
           }
@@ -435,7 +428,6 @@
         {
           "name": "loadPlugins",
           "jsdoc": "根据配置加载插件\n@param pluginConfigs - 插件配置对象\n@param registry - 可选的插件注册表实例（默认使用全局注册表）\n@returns 插件实例数组（按优先级排序）",
-          "signatureText": "static loadPlugins(pluginConfigs: Record<string, boolean | PluginConfigItem> | null | undefined, registry?: PluginRegistry): Promise<PluginInstance[]>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -470,6 +462,10 @@
                   {
                     "type": "literal",
                     "value": null
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "undefined"
                   }
                 ]
               }
@@ -480,10 +476,13 @@
                 "type": "reference",
                 "name": "PluginRegistry",
                 "sourcePath": "declarations/packages/spark-app/src/plugins/registry.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -501,7 +500,6 @@
         {
           "name": "loadPlugin",
           "jsdoc": "加载单个插件\n@param id - 插件 ID\n@param config - 插件配置\n@param registry - 可选的插件注册表实例（默认使用全局注册表）",
-          "signatureText": "static loadPlugin(id: string, config?: boolean | PluginConfigItem, registry?: PluginRegistry): Promise<PluginInstance | null>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -526,6 +524,9 @@
                     "sourcePath": "declarations/packages/spark-app/src/plugins/registry.d.ts"
                   }
                 ]
+              },
+              "flags": {
+                "isOptional": true
               }
             },
             {
@@ -534,10 +535,13 @@
                 "type": "reference",
                 "name": "PluginRegistry",
                 "sourcePath": "declarations/packages/spark-app/src/plugins/registry.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -561,7 +565,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.648Z",
+  "generatedAt": "2026-06-11T21:36:01.549Z",
   "$defs": {
     "PluginConfigItem": {
       "type": "object",

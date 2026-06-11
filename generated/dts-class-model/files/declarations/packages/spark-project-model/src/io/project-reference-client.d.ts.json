@@ -215,7 +215,6 @@
         {
           "name": "listProjects",
           "jsdoc": "执行 list Projects 操作。",
-          "signatureText": "listProjects(options?: ListProjectReferencesOptions): Promise<ProjectSummary[]>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -224,10 +223,13 @@
                 "type": "reference",
                 "name": "ListProjectReferencesOptions",
                 "sourcePath": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -245,7 +247,6 @@
         {
           "name": "listProjectPages",
           "jsdoc": "执行 list Project Pages 操作。",
-          "signatureText": "listProjectPages(projectId: string): Promise<ProjectPageReference[]>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -256,7 +257,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -274,7 +275,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.039Z",
+  "generatedAt": "2026-06-11T21:36:01.891Z",
   "$defs": {
     "ProjectReferenceClientOptions": {
       "type": "object",

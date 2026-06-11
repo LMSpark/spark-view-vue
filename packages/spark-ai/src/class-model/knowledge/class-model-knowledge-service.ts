@@ -8,6 +8,7 @@ import type { AiJsonValue } from '../../json'
 import type { ClassModel, ClassModelDocument, SourceProvenanceMeta } from '../class-model'
 import type { DtsClassModelSurfaceDocument } from '../class-model/dts-surface-types'
 import type { DtsTypeMeta } from '../class-model/types'
+import { resolveMethodReturnType, visitDtsTypeMeta } from '../class-model/dts-type-meta-ops'
 import { jsonSchemaToTypeText } from '../class-model/json-schema-to-type'
 import {
   listAttributeReachableKinds,
@@ -15,8 +16,8 @@ import {
 } from '../class-model/model-projection'
 import {
   renderAttributeTypeText,
-  renderDtsTypeMeta,
   renderMethodSignature,
+  renderMethodSignatureFromMeta,
 } from '../class-model/signature-renderer'
 import {
   renderAttributeGuide,
@@ -101,7 +102,7 @@ public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
                 methods: model.methods.map(method => ({
                   name: method.name,
                   summary: summarizeJsDoc(method.jsdoc),
-                  signature: method.signatureText ?? `${method.name}(${method.paramsTypeText ?? ''})`,
+                  signature: renderMethodSignatureFromMeta(method),
                 })),
               }
             : {}),
@@ -247,7 +248,7 @@ function listSurfaceLinkedClassNames(surface: DtsClassModelSurfaceDocument, mode
     for (const parameter of method.parameters ?? []) {
       collectDtsTypeRefs(surface, linked, parameter.type)
     }
-    collectDtsTypeRefs(surface, linked, method.returnType)
+    collectDtsTypeRefs(surface, linked, resolveMethodReturnType(method))
     collectTypeRefs(surface, linked, method.paramsTypeText)
     collectTypeRefs(surface, linked, method.returnTypeText)
     collectSchemaTypeRefs(surface, linked, method.returnSchema)
@@ -265,19 +266,14 @@ function collectDtsTypeRefs(
   linked: Set<string>,
   typeMeta: DtsTypeMeta | undefined,
 ): void {
-  if (typeMeta === undefined) return
-  if (typeMeta.type === 'reference') {
-    collectTypeRefs(surface, linked, typeMeta.name)
-    for (const typeArgument of typeMeta.typeArguments ?? []) collectDtsTypeRefs(surface, linked, typeArgument)
-    return
-  }
-  if (typeMeta.type === 'array') {
-    collectDtsTypeRefs(surface, linked, typeMeta.elementType)
-    return
-  }
-  if (typeMeta.type === 'union' || typeMeta.type === 'intersection') {
-    for (const item of typeMeta.types) collectDtsTypeRefs(surface, linked, item)
-  }
+  visitDtsTypeMeta(typeMeta, (node) => {
+    if (node.type !== 'reference' || node.refersToTypeParameter === true) return
+    if (surface.models[node.name] !== undefined) {
+      linked.add(node.name)
+      return
+    }
+    collectTypeRefs(surface, linked, node.name)
+  })
 }
 
 function collectTypeRefs(surface: DtsClassModelSurfaceDocument, linked: Set<string>, text: string | undefined): void {
@@ -394,38 +390,10 @@ function renderComponentProfile(provenance: SourceProvenanceMeta | undefined): s
 }
 
 function renderSurfaceMethod(method: ClassModel['methods'][number]): string {
-  if (method.signatureText !== undefined && method.signatureText.trim().length > 0) {
-    return [
-      method.jsdoc.trim(),
-      method.signatureText,
-    ].filter(part => part.length > 0).join('\n')
-  }
-  const returnText = method.returnTypeText
-    ?? (method.returnType === undefined ? undefined : renderDtsTypeMeta(method.returnType))
-    ?? (method.returnSchema === undefined ? 'unknown' : jsonSchemaToTypeText(method.returnSchema))
   return [
     method.jsdoc.trim(),
-    `${method.name}(${surfaceMethodParamsText(method)}): ${returnText}`,
+    renderMethodSignatureFromMeta(method),
   ].filter(part => part.length > 0).join('\n')
-}
-
-function surfaceMethodParamsText(method: ClassModel['methods'][number]): string {
-  if (method.paramsTypeText !== undefined && method.paramsTypeText.trim().length > 0) {
-    return method.paramsTypeText
-  }
-  if (method.parameters !== undefined) {
-    return method.parameters.map(parameter => `${parameter.name}: ${renderDtsTypeMeta(parameter.type)}`).join(', ')
-  }
-  if (method.paramsSchema === undefined) return ''
-  const properties = method.paramsSchema.properties
-  if (properties === undefined) return ''
-  const required = new Set(method.paramsSchema.required ?? [])
-  return Object.entries(properties)
-    .map(([name, schema]) => {
-      const optional = required.has(name) ? '' : '?'
-      return `${name}${optional}: ${jsonSchemaToTypeText(schema)}`
-    })
-    .join(', ')
 }
 
 type ProjectedModel = ReturnType<typeof projectClassModelForGuide>

@@ -39,6 +39,9 @@
               "type": "reference",
               "name": "TokenStorage",
               "sourcePath": "declarations/packages/spark-app/src/auth/types.d.ts"
+            },
+            "flags": {
+              "isOptional": true
             }
           },
           {
@@ -46,6 +49,9 @@
             "type": {
               "type": "intrinsic",
               "name": "string"
+            },
+            "flags": {
+              "isOptional": true
             }
           }
         ]
@@ -55,10 +61,9 @@
         {
           "name": "getToken",
           "jsdoc": "获取当前存储的令牌\n根据配置的存储类型和当前运行环境，检索存储的令牌。\n在服务端或测试环境中自动使用内存存储。\n@returns 令牌字符串或 null（如果不存在）\n@example ```typescript\nconst token = tokenManager.getToken()\nif (token) {\n  console.log('Token found:', token)\n} else {\n  console.log('No token stored')\n}\n```",
-          "signatureText": "getToken(): string | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -75,7 +80,6 @@
         {
           "name": "setToken",
           "jsdoc": "设置令牌到存储中\n将令牌存储到配置的存储后端。在服务端或测试环境中\n自动使用内存存储。\n@param token - 要存储的令牌字符串\n@example ```typescript\ntokenManager.setToken('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...')\nconsole.log('Token stored successfully')\n```",
-          "signatureText": "setToken(token: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -86,7 +90,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -94,10 +98,9 @@
         {
           "name": "clearToken",
           "jsdoc": "清除存储的令牌\n从当前存储后端中移除令牌。在服务端或测试环境中\n清除内存存储。\n@example ```typescript\ntokenManager.clearToken()\nconsole.log('Token cleared')\n```",
-          "signatureText": "clearToken(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -105,7 +108,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.618Z",
+  "generatedAt": "2026-06-11T21:36:01.524Z",
   "$defs": {
     "TokenManager": {
       "type": "object",

@@ -57,10 +57,9 @@
         {
           "name": "toJson",
           "jsdoc": "执行 to Json 操作。",
-          "signatureText": "abstract toJson(): Record<string, unknown>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Record",
             "typeArguments": [
@@ -78,7 +77,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.072Z",
+  "generatedAt": "2026-06-11T21:36:01.938Z",
   "$defs": {
     "SparkAIModel": {
       "type": "object",

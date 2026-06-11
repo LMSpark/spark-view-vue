@@ -32,6 +32,7 @@ import type {
   ComponentClassModelLayer,
   ComponentClassModelLevel,
   ConstructorMeta,
+  DtsReflectionSignature,
   DtsTypeMeta,
   MethodMeta,
   MethodParameterMeta,
@@ -706,12 +707,18 @@ function projectMethodMember(command: MethodMemberCommand): MethodMeta {
   }
   const returnType = context.checker.getReturnTypeOfSignature(signature)
   const returnTypeText = methodReturnTypeTextFromDeclaration(context.checker, signature, member, sourceFile)
+  const returnTypeMeta = methodReturnTypeMetaFromDeclaration(
+    context.checker,
+    context.repoRoot,
+    member,
+    sourceFile,
+  )
   return {
     name: memberName,
     signatureText: methodSignatureTextFromDeclaration(member, sourceFile),
     parameterStyle: parameterStyleFromDeclaration(member),
     parameters: methodParametersFromDeclaration(context.checker, context.repoRoot, member, sourceFile),
-    returnType: dtsTypeMetaFromTypeNode(context.checker, context.repoRoot, member.type, sourceFile),
+    type: returnTypeMeta,
     paramsSchema: paramsSchemaFromSignature(context.checker, signature),
     returnSchema: typeToAiJsonSchema(context.checker, returnType, member.type),
     returnTypeText,
@@ -737,12 +744,18 @@ function projectMethodSignature(command: MethodSignatureCommand): MethodMeta {
   }
   const returnType = context.checker.getReturnTypeOfSignature(signature)
   const returnTypeText = methodReturnTypeTextFromDeclaration(context.checker, signature, member, sourceFile)
+  const returnTypeMeta = methodReturnTypeMetaFromDeclaration(
+    context.checker,
+    context.repoRoot,
+    member,
+    sourceFile,
+  )
   return {
     name: memberName,
     signatureText: methodSignatureTextFromDeclaration(member, sourceFile),
     parameterStyle: parameterStyleFromDeclaration(member),
     parameters: methodParametersFromDeclaration(context.checker, context.repoRoot, member, sourceFile),
-    returnType: dtsTypeMetaFromTypeNode(context.checker, context.repoRoot, member.type, sourceFile),
+    type: returnTypeMeta,
     paramsSchema: paramsSchemaFromSignature(context.checker, signature),
     returnSchema: typeToAiJsonSchema(context.checker, returnType, member.type),
     returnTypeText,
@@ -771,12 +784,47 @@ function methodParametersFromDeclaration(
   member: ts.MethodDeclaration | ts.MethodSignature | ts.ConstructorDeclaration,
   sourceFile: ts.SourceFile,
 ): readonly MethodParameterMeta[] {
-  return member.parameters.map((parameter) => {
-    return {
-      name: parameter.name.getText(sourceFile),
-      type: dtsTypeMetaFromParameter(checker, repoRoot, parameter, sourceFile),
-    }
-  })
+  return member.parameters.map(parameter => parameterMetaFromDeclaration(checker, repoRoot, parameter, sourceFile))
+}
+
+function parameterMetaFromDeclaration(
+  checker: ts.TypeChecker,
+  repoRoot: string,
+  parameter: ts.ParameterDeclaration,
+  sourceFile: ts.SourceFile,
+): MethodParameterMeta {
+  const flags = parameterFlagsFromDeclaration(parameter)
+  const defaultValue = defaultValueFromParameter(parameter, sourceFile)
+  return {
+    name: parameter.name.getText(sourceFile),
+    type: dtsTypeMetaFromParameter(checker, repoRoot, parameter, sourceFile),
+    ...(flags === undefined ? {} : { flags }),
+    ...(defaultValue === undefined ? {} : { defaultValue }),
+  }
+}
+
+function parameterFlagsFromDeclaration(
+  parameter: ts.ParameterDeclaration,
+): MethodParameterMeta['flags'] | undefined {
+  if (parameter.questionToken === undefined && parameter.initializer === undefined) return undefined
+  return { isOptional: true }
+}
+
+function defaultValueFromParameter(
+  parameter: ts.ParameterDeclaration,
+  sourceFile: ts.SourceFile,
+): MethodParameterMeta['defaultValue'] | undefined {
+  if (parameter.initializer === undefined) return undefined
+  const initializer = parameter.initializer
+  if (ts.isStringLiteral(initializer) || ts.isNoSubstitutionTemplateLiteral(initializer)) return initializer.text
+  if (ts.isNumericLiteral(initializer)) return Number(initializer.text)
+  if (initializer.kind === ts.SyntaxKind.TrueKeyword) return true
+  if (initializer.kind === ts.SyntaxKind.FalseKeyword) return false
+  if (initializer.kind === ts.SyntaxKind.NullKeyword) return null
+  if (ts.isPrefixUnaryExpression(initializer) && initializer.operator === ts.SyntaxKind.MinusToken && ts.isNumericLiteral(initializer.operand)) {
+    return Number(`-${initializer.operand.text}`)
+  }
+  return initializer.getText(sourceFile)
 }
 
 function parameterStyleFromDeclaration(
@@ -788,19 +836,34 @@ function parameterStyleFromDeclaration(
     : 'positional'
 }
 
+function methodReturnTypeMetaFromDeclaration(
+  checker: ts.TypeChecker,
+  repoRoot: string,
+  member: ts.MethodDeclaration | ts.MethodSignature,
+  sourceFile: ts.SourceFile,
+): DtsTypeMeta {
+  return dtsTypeMetaFromTypeNode(checker, repoRoot, member.type, sourceFile)
+}
+
 function dtsTypeMetaFromParameter(
   checker: ts.TypeChecker,
   repoRoot: string,
   parameter: ts.ParameterDeclaration,
   sourceFile: ts.SourceFile,
 ): DtsTypeMeta {
+  if (ts.isRestParameter(parameter)) {
+    const elementType: DtsTypeMeta = parameter.type === undefined
+      ? { type: 'unknown', name: checker.typeToString(checker.getTypeAtLocation(parameter.name), undefined, ts.TypeFormatFlags.NoTruncation) }
+      : dtsTypeMetaFromTypeNode(checker, repoRoot, parameter.type, sourceFile)
+    return normalizeDtsTypeMeta({ type: 'rest', elementType })
+  }
   if (parameter.type !== undefined) {
     return dtsTypeMetaFromTypeNode(checker, repoRoot, parameter.type, sourceFile)
   }
-  return {
+  return normalizeDtsTypeMeta({
     type: 'unknown',
     name: checker.typeToString(checker.getTypeAtLocation(parameter.name), undefined, ts.TypeFormatFlags.NoTruncation),
-  }
+  })
 }
 
 function dtsTypeMetaFromTypeNode(
@@ -811,45 +874,103 @@ function dtsTypeMetaFromTypeNode(
 ): DtsTypeMeta {
   if (typeNode === undefined) return { type: 'unknown', name: 'unknown' }
   if (ts.isParenthesizedTypeNode(typeNode)) return dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.type, sourceFile)
+  if (ts.isRestTypeNode(typeNode)) {
+    return normalizeDtsTypeMeta({
+      type: 'rest',
+      elementType: dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.type, sourceFile),
+    })
+  }
   if (ts.isArrayTypeNode(typeNode)) {
-    return {
+    return normalizeDtsTypeMeta({
       type: 'array',
       elementType: dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.elementType, sourceFile),
-    }
+    })
   }
-  if (ts.isTupleTypeNode(typeNode)) return { type: 'unknown', name: typeNode.getText(sourceFile) }
+  if (ts.isTupleTypeNode(typeNode)) {
+    return normalizeDtsTypeMeta({
+      type: 'tuple',
+      elements: typeNode.elements.map(element => dtsTypeMetaFromTypeNode(checker, repoRoot, element, sourceFile)),
+    })
+  }
   if (ts.isTypeLiteralNode(typeNode)) return { type: 'unknown', name: typeNode.getText(sourceFile) }
   if (ts.isFunctionTypeNode(typeNode) || ts.isConstructorTypeNode(typeNode)) {
-    return { type: 'unknown', name: typeNode.getText(sourceFile) }
+    return dtsTypeMetaFromFunctionLikeTypeNode(checker, repoRoot, typeNode, sourceFile)
   }
   if (ts.isLiteralTypeNode(typeNode)) return literalDtsTypeMeta(typeNode, sourceFile)
-  if (ts.isUnionTypeNode(typeNode)) {
-    return {
-      type: 'union',
-      types: typeNode.types
-        .filter(item => !isUndefinedLikeTypeNode(item))
-        .map(item => dtsTypeMetaFromTypeNode(checker, repoRoot, item, sourceFile)),
-    }
-  }
+  if (ts.isUnionTypeNode(typeNode)) return dtsTypeMetaFromUnionTypeNode(checker, repoRoot, typeNode, sourceFile)
   if (ts.isIntersectionTypeNode(typeNode)) {
-    return {
+    return normalizeDtsTypeMeta({
       type: 'intersection',
       types: typeNode.types.map(item => dtsTypeMetaFromTypeNode(checker, repoRoot, item, sourceFile)),
-    }
+    })
   }
   if (ts.isTypeReferenceNode(typeNode)) {
     const typeName = typeNode.typeName.getText()
     if ((typeName === 'Array' || typeName === 'ReadonlyArray') && typeNode.typeArguments?.[0] !== undefined) {
-      return {
+      return normalizeDtsTypeMeta({
         type: 'array',
         elementType: dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.typeArguments[0], sourceFile),
-      }
+      })
     }
     return dtsReferenceTypeMetaFromTypeReferenceNode(checker, repoRoot, typeNode, sourceFile)
   }
   const intrinsicName = intrinsicNameFromKeywordTypeNode(typeNode)
   if (intrinsicName !== undefined) return { type: 'intrinsic', name: intrinsicName }
   return { type: 'unknown', name: typeNode.getText(sourceFile) }
+}
+
+function dtsTypeMetaFromUnionTypeNode(
+  checker: ts.TypeChecker,
+  repoRoot: string,
+  typeNode: ts.UnionTypeNode,
+  sourceFile: ts.SourceFile,
+): DtsTypeMeta {
+  const members = typeNode.types.map(item => dtsTypeMetaFromTypeNode(checker, repoRoot, item, sourceFile))
+  const undefinedMembers = typeNode.types.filter(item => isUndefinedOnlyTypeNode(item))
+  const nonUndefinedMembers = typeNode.types
+    .filter(item => !isUndefinedOnlyTypeNode(item))
+    .map(item => dtsTypeMetaFromTypeNode(checker, repoRoot, item, sourceFile))
+
+  if (undefinedMembers.length > 0 && nonUndefinedMembers.length === 1) {
+    const onlyMember = nonUndefinedMembers[0]
+    if (onlyMember !== undefined) {
+      return normalizeDtsTypeMeta({ type: 'optional', elementType: onlyMember })
+    }
+  }
+
+  if (undefinedMembers.length === 0) {
+    return normalizeDtsTypeMeta({ type: 'union', types: members })
+  }
+
+  return normalizeDtsTypeMeta({ type: 'union', types: members })
+}
+
+function dtsTypeMetaFromFunctionLikeTypeNode(
+  checker: ts.TypeChecker,
+  repoRoot: string,
+  typeNode: ts.FunctionTypeNode | ts.ConstructorTypeNode,
+  sourceFile: ts.SourceFile,
+): DtsTypeMeta {
+  const signature: DtsReflectionSignature = {
+    parameters: typeNode.parameters.map(parameter => parameterMetaFromDeclaration(checker, repoRoot, parameter, sourceFile)),
+    type: dtsTypeMetaFromTypeNode(checker, repoRoot, typeNode.type, sourceFile),
+  }
+  return {
+    type: 'reflection',
+    declaration: { signatures: [signature] },
+  }
+}
+
+function normalizeDtsTypeMeta(typeMeta: DtsTypeMeta): DtsTypeMeta {
+  if (typeMeta.type === 'union' && typeMeta.types.length === 1) {
+    const only = typeMeta.types[0]
+    return only === undefined ? typeMeta : normalizeDtsTypeMeta(only)
+  }
+  if (typeMeta.type === 'intersection' && typeMeta.types.length === 1) {
+    const only = typeMeta.types[0]
+    return only === undefined ? typeMeta : normalizeDtsTypeMeta(only)
+  }
+  return typeMeta
 }
 
 function dtsReferenceTypeMetaFromTypeReferenceNode(
@@ -881,8 +1002,8 @@ function dtsReferenceTypeMetaFromTypeReferenceNode(
   }
 }
 
-function isUndefinedLikeTypeNode(typeNode: ts.TypeNode): boolean {
-  return typeNode.kind === ts.SyntaxKind.UndefinedKeyword || typeNode.kind === ts.SyntaxKind.VoidKeyword
+function isUndefinedOnlyTypeNode(typeNode: ts.TypeNode): boolean {
+  return typeNode.kind === ts.SyntaxKind.UndefinedKeyword
 }
 
 function intrinsicNameFromKeywordTypeNode(typeNode: ts.TypeNode): string | undefined {

@@ -21,6 +21,7 @@ import {
 } from './dts-bundle-types'
 import type { AttributeMeta, ClassModel, ConstructorMeta, MethodMeta, SourceProvenanceMeta } from './types'
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
+import { canRenderMethodSignatureFromTypeTree, resolveMethodReturnType } from './dts-type-meta-ops'
 import { projectDtsSourceFileProjection } from './project-from-declarations'
 
 /** Build Dts Class Model Bundle Progress Phase 的语义模型。 */
@@ -396,19 +397,27 @@ function compactAttributeMetaForBundle(
 }
 
 function compactMethodMetaForBundle(method: MethodMeta): MethodMeta {
+  const parameters = method.parameters ?? []
+  const typeMeta = resolveMethodReturnType(method)
+  if (typeMeta === undefined) {
+    throw new Error(`DTS method is missing type: ${method.name}`)
+  }
+  const compact: MethodMeta = {
+    name: method.name,
+    jsdoc: method.jsdoc,
+    parameterStyle: method.parameterStyle ?? 'positional',
+    parameters,
+    type: typeMeta,
+    ...(method.takesContext === undefined ? {} : { takesContext: method.takesContext }),
+  }
+  if (canRenderMethodSignatureFromTypeTree(compact)) {
+    return compact
+  }
   const signatureText = method.signatureText?.trim()
   if (signatureText === undefined || signatureText.length === 0) {
     throw new Error(`DTS method is missing signatureText: ${method.name}`)
   }
-  return {
-    name: method.name,
-    jsdoc: method.jsdoc,
-    signatureText,
-    parameterStyle: method.parameterStyle ?? 'positional',
-    parameters: method.parameters ?? [],
-    ...(method.returnType === undefined ? {} : { returnType: method.returnType }),
-    ...(method.takesContext === undefined ? {} : { takesContext: method.takesContext }),
-  }
+  return { ...compact, signatureText }
 }
 
 function createSchemaDefsForBundle(

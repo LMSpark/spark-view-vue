@@ -19,7 +19,10 @@ export type {
   ConstructorMeta,
   DtsTypeMeta,
   JsDocMeta,
+  DtsReflectionSignature,
+  DtsReflectionTypeMeta,
   MethodMeta,
+  MethodParameterMeta,
   MethodParameterStyle,
   SourceProvenanceMeta,
 } from './types'
@@ -113,11 +116,21 @@ export type {
 } from './dts-surface-types'
 
 export {
+  canRenderMethodSignatureFromTypeTree,
+  collectDtsTypeReferenceNames,
+  resolveMethodReturnType,
+  visitDtsTypeMeta,
+} from './dts-type-meta-ops'
+
+export {
   renderAttributeDeclarationLine,
   renderAttributeTypeText,
   renderConstructorSignature,
+  renderDtsTypeMeta,
   renderMethodDeclarationLine,
+  renderMethodParameter,
   renderMethodParamsText,
   renderMethodReturnTypeText,
   renderMethodSignature,
+  renderMethodSignatureFromMeta,
 } from './signature-renderer'

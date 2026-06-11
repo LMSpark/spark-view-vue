@@ -132,10 +132,9 @@
         {
           "name": "start",
           "jsdoc": "启动会话：创建/接入 sessionStore 记录 + 生成工具规约",
-          "signatureText": "start(): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -149,10 +148,9 @@
         {
           "name": "getSessionRecord",
           "jsdoc": "获取当前会话记录：Agent 能力诊断和再次接入会话的读取起点",
-          "signatureText": "getSessionRecord(): AiAgentSessionRecord | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -170,7 +168,6 @@
         {
           "name": "stop",
           "jsdoc": "停止当前业务会话：标记 sessionStore，并触发业务结束回调。",
-          "signatureText": "stop(reason?: string): Promise<AiAgentSessionRecord | null>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -178,10 +175,13 @@
               "type": {
                 "type": "intrinsic",
                 "name": "string"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -205,7 +205,6 @@
         {
           "name": "send",
           "jsdoc": "发送消息：提取用户输入 → AI 推理 → 工具调用",
-          "signatureText": "send(request: AiAgentChatRequest): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -217,7 +216,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -231,7 +230,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.519Z",
+  "generatedAt": "2026-06-11T21:36:01.456Z",
   "$defs": {
     "AiAgentRunCommand": {
       "type": "object",

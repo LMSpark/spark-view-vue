@@ -98,7 +98,6 @@
         {
           "name": "execute",
           "jsdoc": "执行单次工具调用。\n返回 null 表示工具无法识别（resolveToolName 返回 null），\n此时错误信息已通过 onDelta 推送给前端，调用方应跳过该调用。",
-          "signatureText": "execute<TInput extends AiJsonParams>(input: AiAgentToolCallExecutionInput<TInput>): Promise<AiAgentToolCallExecutionOutput | null>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -117,7 +116,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -141,7 +140,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.580Z",
+  "generatedAt": "2026-06-11T21:36:01.496Z",
   "$defs": {
     "AiAgentToolNameResolver": {
       "type": "object",

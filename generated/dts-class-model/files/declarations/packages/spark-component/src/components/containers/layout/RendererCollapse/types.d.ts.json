@@ -43,7 +43,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.722Z",
+  "generatedAt": "2026-06-11T21:36:01.598Z",
   "$defs": {
     "RendererCollapseApi": {
       "type": "object",

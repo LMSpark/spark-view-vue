@@ -39,6 +39,9 @@
               "type": "reference",
               "name": "AuthConfig",
               "sourcePath": "declarations/packages/spark-app/src/auth/types.d.ts"
+            },
+            "flags": {
+              "isOptional": true
             }
           }
         ]
@@ -48,7 +51,6 @@
         {
           "name": "initialize",
           "jsdoc": "初始化认证服务\n@param config 认证配置\n@throws {Error} 如果已初始化\n@example ```typescript\nauthService.initialize({\n  apiBaseUrl: '/api',\n  enableMock: import.meta.env.DEV,\n  onLoginSuccess: (user) => console.log('登录成功:', user.username)\n})\n```",
-          "signatureText": "initialize(config: AuthConfig): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -60,7 +62,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -68,7 +70,6 @@
         {
           "name": "login",
           "jsdoc": "用户登录\n@param credentials 登录凭据\n@returns 认证结果（包含用户信息、租户信息、环境信息）\n@throws {Error} 登录失败时抛出异常\n@example ```typescript\ntry {\n  const result = await authService.login({\n    username: 'admin',\n    password: '123456'\n  })\n  console.log('登录成功:', result.user.username)\n} catch (error) {\n  console.error('登录失败:', error.message)\n}\n```",
-          "signatureText": "login(credentials: LoginCredentials): Promise<AuthResult>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -80,7 +81,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -95,10 +96,9 @@
         {
           "name": "logout",
           "jsdoc": "用户登出\n@throws {Error} 登出 API 调用失败时抛出异常（但仍会清除本地 Token）\n@example ```typescript\ntry {\n  await authService.logout()\n  console.log('登出成功')\n} catch (error) {\n  console.error('登出失败:', error.message)\n}\n```",
-          "signatureText": "logout(): Promise<void>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -112,10 +112,9 @@
         {
           "name": "checkAuth",
           "jsdoc": "检查认证状态\n@returns 认证结果或 null（未认证）\n@example ```typescript\nconst authResult = await authService.checkAuth()\nif (authResult) {\n  console.log('用户已认证:', authResult.user.username)\n} else {\n  console.log('用户未认证')\n}\n```",
-          "signatureText": "checkAuth(): Promise<AuthResult | null>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -139,10 +138,9 @@
         {
           "name": "isAuthenticated",
           "jsdoc": "检查是否已认证\n@returns 是否已认证\n@note 这是一个同步方法，不会发起网络请求",
-          "signatureText": "isAuthenticated(): boolean",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -150,10 +148,9 @@
         {
           "name": "getToken",
           "jsdoc": "获取当前 Token\n@returns Token 字符串或 null",
-          "signatureText": "getToken(): string | null",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "union",
             "types": [
               {
@@ -170,7 +167,6 @@
         {
           "name": "setToken",
           "jsdoc": "设置 Token\n@param token Token 字符串",
-          "signatureText": "setToken(token: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -181,7 +177,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -189,10 +185,9 @@
         {
           "name": "clearToken",
           "jsdoc": "清除 Token",
-          "signatureText": "clearToken(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -200,10 +195,9 @@
         {
           "name": "destroy",
           "jsdoc": "销毁认证服务，释放所有资源\n- 清除 Token\n- 清除并发刷新锁\n- 移除所有生命周期钩子引用\n- 标记为未初始化（后续调用将静默返回或抛出）",
-          "signatureText": "destroy(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -211,10 +205,9 @@
         {
           "name": "refreshToken",
           "jsdoc": "刷新 Token\n内置并发锁：多个并发调用会共享同一个刷新请求，\n避免多个 refresh 请求同时发出导致 refresh token 被消耗。\n@returns 新的 Token\n@throws {Error} 刷新失败时抛出异常",
-          "signatureText": "refreshToken(): Promise<string>",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Promise",
             "typeArguments": [
@@ -228,7 +221,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.617Z",
+  "generatedAt": "2026-06-11T21:36:01.523Z",
   "$defs": {
     "AuthService": {
       "type": "object",

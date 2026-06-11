@@ -140,7 +140,6 @@
         {
           "name": "setNavigationDraft",
           "jsdoc": "设置 Navigation Draft。",
-          "signatureText": "setNavigationDraft(draft: NavigationNodeDraft | null): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -161,7 +160,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -169,7 +168,6 @@
         {
           "name": "beginNavigationDraft",
           "jsdoc": "执行 begin Navigation Draft 操作。",
-          "signatureText": "beginNavigationDraft(draft: NavigationNodeDraft): NavigationNodeDraft",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -181,7 +179,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "NavigationNodeDraft",
             "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-edit.d.ts"
@@ -190,10 +188,9 @@
         {
           "name": "discardNavigationDraft",
           "jsdoc": "执行 discard Navigation Draft 操作。",
-          "signatureText": "discardNavigationDraft(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -201,7 +198,6 @@
         {
           "name": "markNavigationDirty",
           "jsdoc": "执行 mark Navigation Dirty 操作。",
-          "signatureText": "markNavigationDirty(scope: ProjectNavigationDirtyScope): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -213,7 +209,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -221,10 +217,9 @@
         {
           "name": "markNavigationClean",
           "jsdoc": "执行 mark Navigation Clean 操作。",
-          "signatureText": "markNavigationClean(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -232,7 +227,6 @@
         {
           "name": "setSelectedNodeId",
           "jsdoc": "set Selected Node Id 标识。",
-          "signatureText": "setSelectedNodeId(nodeId: string | null | undefined, options?: {\n        silentIfMissing?: boolean;\n    }): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -247,6 +241,10 @@
                   {
                     "type": "literal",
                     "value": null
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "undefined"
                   }
                 ]
               }
@@ -256,10 +254,13 @@
               "type": {
                 "type": "unknown",
                 "name": "{\n        silentIfMissing?: boolean;\n    }"
+              },
+              "flags": {
+                "isOptional": true
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -267,7 +268,6 @@
         {
           "name": "setActivePageId",
           "jsdoc": "set Active Page Id 标识。",
-          "signatureText": "setActivePageId(pageId: string | null | undefined): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -282,12 +282,16 @@
                   {
                     "type": "literal",
                     "value": null
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "undefined"
                   }
                 ]
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -295,10 +299,9 @@
         {
           "name": "syncWithModel",
           "jsdoc": "执行 sync With Model 操作。",
-          "signatureText": "syncWithModel(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -306,7 +309,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.066Z",
+  "generatedAt": "2026-06-11T21:36:01.933Z",
   "$defs": {
     "ProjectSessionState": {
       "type": "object",

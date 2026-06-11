@@ -109,7 +109,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.692Z",
+  "generatedAt": "2026-06-11T21:36:01.573Z",
   "$defs": {
     "RendererTreePath": {
       "type": "object",

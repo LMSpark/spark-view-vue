@@ -86,14 +86,15 @@
           {
             "name": "postMutation",
             "type": {
-              "type": "union",
-              "types": [
-                {
-                  "type": "reference",
-                  "name": "PostMutationFn",
-                  "sourcePath": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts"
-                }
-              ]
+              "type": "optional",
+              "elementType": {
+                "type": "reference",
+                "name": "PostMutationFn",
+                "sourcePath": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts"
+              }
+            },
+            "flags": {
+              "isOptional": true
             }
           }
         ]
@@ -103,7 +104,6 @@
         {
           "name": "buildRowIndexMap",
           "jsdoc": "构建 row → index 映射（O(n)），供 updateRowById 原地更新 rowIndexMap 复用",
-          "signatureText": "buildRowIndexMap(rows: DataRow[]): Map<DataRow, number>",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -118,7 +118,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "Map",
             "typeArguments": [
@@ -137,7 +137,6 @@
         {
           "name": "updateFromServer",
           "jsdoc": "将服务端响应同步到本地字段（rows / total / page / pageSize）",
-          "signatureText": "updateFromServer(data: {\n        rows?: DataRow[];\n        total?: number;\n        page?: number;\n        pageSize?: number;\n    } | DataRow[]): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -161,7 +160,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -169,7 +168,6 @@
         {
           "name": "appendRow",
           "jsdoc": "本地追加一行，发射 rowsChanged",
-          "signatureText": "appendRow(row: DataRow): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -181,7 +179,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -189,7 +187,6 @@
         {
           "name": "updateRowById",
           "jsdoc": "本地按主键部分更新一行，发射 rowsChanged\n同步 currentRow / selectedRows 引用（引用已变，UI 需感知）\n@returns 是否成功（行不存在时 false）",
-          "signatureText": "updateRowById(id: string | number, data: Partial<DataRow>): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -223,7 +220,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -231,7 +228,6 @@
         {
           "name": "deleteRowById",
           "jsdoc": "本地按主键删除一行，清理选中引用，发射 rowsChanged\n@returns 是否成功（行不存在时 false）",
-          "signatureText": "deleteRowById(id: string | number): boolean",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -251,7 +247,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "boolean"
           }
@@ -259,7 +255,6 @@
         {
           "name": "replaceRows",
           "jsdoc": "本地整批替换所有行，清理无效选中引用，发射 rowsChanged",
-          "signatureText": "replaceRows(rows: DataRow[]): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -274,7 +269,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -282,7 +277,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.994Z",
+  "generatedAt": "2026-06-11T21:36:01.830Z",
   "$defs": {
     "EmitRowsChangedFn": {
       "type": "object",

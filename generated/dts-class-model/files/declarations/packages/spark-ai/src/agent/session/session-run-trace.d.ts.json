@@ -207,7 +207,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.567Z",
+  "generatedAt": "2026-06-11T21:36:01.491Z",
   "$defs": {
     "AiAgentRunTraceToolCall": {
       "type": "object",

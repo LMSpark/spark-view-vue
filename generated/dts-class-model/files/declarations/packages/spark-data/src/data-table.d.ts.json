@@ -91,6 +91,9 @@
                 "name": "DataColumn",
                 "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
               }
+            },
+            "flags": {
+              "isOptional": true
             }
           }
         ]
@@ -207,7 +210,6 @@
         {
           "name": "setDataSet",
           "jsdoc": "将 DataTable 绑定到 DataSet\n- 设置 `this.dataSet = ds`\n- 为已存在的所有视图建立级联订阅\n注意：`view.dataTable` 在视图创建时（构造函数 / getOrCreateView / fromJson）\n已确保赋值，此处不重复赋值，避免触发冗余的 syncFromConfig()。\n@param ds 所属 DataSet 实例。",
-          "signatureText": "setDataSet(ds: DataSet): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -219,7 +221,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -227,10 +229,9 @@
         {
           "name": "onDataSetRelationsReady",
           "jsdoc": "DataSet 关系规范化完成后调用——通知所有视图重编译含聚合的计算列并重算聚合行。\n封装后置重算职责：DataSet 只需调用此方法，不直接触碰 view 内部。\n遍历各视图委托给 view.onDataSetRelationsReady()，DataSet 不需要了解视图内部细节。",
-          "signatureText": "onDataSetRelationsReady(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -238,7 +239,6 @@
         {
           "name": "getView",
           "jsdoc": "获取已存在的视图（不会创建新视图）。\n@param viewId 视图 ID。",
-          "signatureText": "getView(viewId: string): DataView | undefined",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -249,21 +249,18 @@
               }
             }
           ],
-          "returnType": {
-            "type": "union",
-            "types": [
-              {
-                "type": "reference",
-                "name": "DataView",
-                "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
-              }
-            ]
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "DataView",
+              "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+            }
           }
         },
         {
           "name": "getOrCreateView",
           "jsdoc": "获取或创建视图\n@param viewId - 视图 ID（'default' 为主视图）\n@returns 对应的 DataView 实例\n@behavior 若表已关联 DataSet，会为新视图设置 dataTable 引用并触发 setupCascade",
-          "signatureText": "getOrCreateView(viewId: string): DataView",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -274,7 +271,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataView",
             "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
@@ -283,18 +280,36 @@
         {
           "name": "forEachView",
           "jsdoc": "遍历所有视图（包含 default 和命名视图）——DataSet 的内部实现可选择此入口，\n避免直接访问 `views` 属性（封装内部集合）。\n@param cb 每个视图都会调用一次的回调函数。",
-          "signatureText": "forEachView(cb: (view: DataView) => void): void",
           "parameterStyle": "positional",
           "parameters": [
             {
               "name": "cb",
               "type": {
-                "type": "unknown",
-                "name": "(view: DataView) => void"
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "view",
+                          "type": {
+                            "type": "reference",
+                            "name": "DataView",
+                            "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -302,7 +317,6 @@
         {
           "name": "setApi",
           "jsdoc": "设置 CRUD 端点映射配置（支持字符串简写和 `true` 约定模式）\n@param api - CRUD 端点配置（完整对象 / 字符串基础路径 / `true` 约定）\n@remarks 配置变更时自动清除 CrudService 缓存，下次访问时重建",
-          "signatureText": "setApi(api: CrudApi | string | boolean): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -327,7 +341,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -335,7 +349,6 @@
         {
           "name": "setCrudConfig",
           "jsdoc": "设置 CRUD 通用运行策略（权限、超时、重试、转换等）\n@param config - CRUD 通用运行策略配置",
-          "signatureText": "setCrudConfig(config: CrudOperationConfig): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -347,7 +360,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -355,10 +368,9 @@
         {
           "name": "toJson",
           "jsdoc": "将 DataTable 序列化为 canonical TableMetadata（表核 + views 壳）。",
-          "signatureText": "toJson(): TableMetadata",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "TableMetadata",
             "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
@@ -367,7 +379,6 @@
         {
           "name": "addColumns",
           "jsdoc": "向表追加列（同名列跳过不覆盖）。\n@param columns 待追加的列定义列表。\n@returns `{ added, skipped }` — 分别列出实际追加和因同名跳过的列名",
-          "signatureText": "addColumns(columns: DataColumn[]): DataTableAddColumnsResult",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -382,7 +393,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataTableAddColumnsResult",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
@@ -391,7 +402,6 @@
         {
           "name": "updateColumn",
           "jsdoc": "修改单列属性（不允许改 name）。\n@param columnName 要更新的列名。\n@param updates 要合并到列定义上的字段更新；name 会被忽略。\n@returns 被变更的字段名列表\n@throws 列不存在时抛 Error",
-          "signatureText": "updateColumn(columnName: string, updates: Partial<DataColumn>): string[]",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -416,7 +426,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "array",
             "elementType": {
               "type": "intrinsic",
@@ -427,7 +437,6 @@
         {
           "name": "removeColumn",
           "jsdoc": "删除列。\n@param columnName 要删除的列名。\n@throws 列不存在时抛 Error",
-          "signatureText": "removeColumn(columnName: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -438,7 +447,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -446,7 +455,6 @@
         {
           "name": "addRows",
           "jsdoc": "写入内联静态行到 DataTable.rows 并同步到 default 视图。\n追加模式：新行 append 到 table.rows 尾部，default 视图用完整 rows 替换。\n@param rows 要追加的行数据列表。\n@returns 追加后的总行数",
-          "signatureText": "addRows(rows: DataRow[]): number",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -461,7 +469,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "number"
           }
@@ -469,7 +477,6 @@
         {
           "name": "addView",
           "jsdoc": "创建命名视图。\n@param viewId - 视图 ID\n@returns 新创建的 DataView\n@throws 当视图已存在时抛 Error",
-          "signatureText": "addView(viewId: string): DataView",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -480,7 +487,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataView",
             "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
@@ -489,7 +496,6 @@
         {
           "name": "destroyView",
           "jsdoc": "销毁指定视图\n@param viewId - 视图ID\n@remarks 调用视图的 destroy() 方法并从视图集合中移除",
-          "signatureText": "destroyView(viewId: string): void",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -500,7 +506,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -508,10 +514,9 @@
         {
           "name": "destroy",
           "jsdoc": "销毁所有视图（包括 default 视图）\n@remarks 应在 DataTable 不再使用时调用，防止内存泄漏",
-          "signatureText": "destroy(): void",
           "parameterStyle": "positional",
           "parameters": [],
-          "returnType": {
+          "type": {
             "type": "intrinsic",
             "name": "void"
           }
@@ -519,7 +524,6 @@
         {
           "name": "fromJson",
           "jsdoc": "从表元数据恢复 DataTable。",
-          "signatureText": "static fromJson(data: TableMetadata | Record<string, unknown> | string): DataTable",
           "parameterStyle": "positional",
           "parameters": [
             {
@@ -554,7 +558,7 @@
               }
             }
           ],
-          "returnType": {
+          "type": {
             "type": "reference",
             "name": "DataTable",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
@@ -563,7 +567,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T16:38:12.934Z",
+  "generatedAt": "2026-06-11T21:36:01.736Z",
   "$defs": {
     "DataTableAddColumnsResult": {
       "type": "object",

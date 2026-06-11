@@ -4735,7 +4735,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T16:38:13.013Z",
+  "generatedAt": "2026-06-11T21:36:01.859Z",
   "$defs": {
     "SparkEventEmitter": {
       "type": "object",
