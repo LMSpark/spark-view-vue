@@ -4,10 +4,16 @@
  * 边界：只读取声明结构和 JSDoc，不生成业务代码、不执行脚本，也不引入额外知识链路。
  * AI用途：排查 .d.ts 到 JSON 的字段丢失、关系断链或组件分层识别时，用本模块定位投影逻辑。
  */
-import { relative, resolve } from 'node:path'
+import { resolve } from 'node:path'
 
 import ts from 'typescript'
 
+import {
+  normalizeRepoPath,
+  resolveAliasedSymbol,
+  declarationNameText,
+  sourceFileFromDeclarationFile,
+} from './dts-ast-utils'
 import {
   DTS_CLASS_MODEL_SURFACE_VERSION,
   type DtsClassModelSurfaceDocument,
@@ -1025,16 +1031,6 @@ function literalDtsTypeMeta(typeNode: ts.LiteralTypeNode, sourceFile: ts.SourceF
   return { type: 'unknown', name: typeNode.getText(sourceFile) }
 }
 
-function resolveAliasedSymbol(checker: ts.TypeChecker, symbol: ts.Symbol | undefined): ts.Symbol | undefined {
-  if (symbol === undefined) return undefined
-  return (symbol.flags & ts.SymbolFlags.Alias) === 0 ? symbol : checker.getAliasedSymbol(symbol)
-}
-
-function declarationNameText(declaration: ts.Declaration): string | undefined {
-  const name = (declaration as ts.Declaration & { name?: ts.Node }).name
-  return name !== undefined && ts.isIdentifier(name) ? name.text : undefined
-}
-
 function projectConstructor(command: ConstructorProjectionCommand): ConstructorMeta {
   const { site, member } = command
   const { context, sourceFile, className } = site
@@ -1117,15 +1113,6 @@ function createDtsFileModuleSemanticMeta(command: DtsFileModuleSemanticCommand):
     ...(component?.componentLayer === undefined ? {} : { componentLayer: component.componentLayer }),
     ...(component?.componentDirectory === undefined ? {} : { componentDirectory: component.componentDirectory }),
   }
-}
-
-function sourceFileFromDeclarationFile(declarationFile: string): string {
-  const sourcePath = declarationFile.startsWith('declarations/')
-    ? declarationFile.slice('declarations/'.length)
-    : declarationFile
-  if (sourcePath.endsWith('.vue.d.ts')) return sourcePath.slice(0, -'.d.ts'.length)
-  if (sourcePath.endsWith('.d.ts')) return `${sourcePath.slice(0, -'.d.ts'.length)}.ts`
-  return sourcePath
 }
 
 function inferPackageName(sourceFile: string): string | undefined {
@@ -1254,10 +1241,6 @@ function summarizeModuleSymbols(symbols: readonly string[]): string {
 function createProvenance(input: SourceProvenanceMeta): SourceProvenanceMeta {
   const component = createComponentProvenance(input.file, input.className, input.componentName)
   return component === undefined ? input : { ...input, ...component }
-}
-
-function normalizeRepoPath(absolutePath: string, repoRoot: string): string {
-  return relative(repoRoot, absolutePath).replace(/\\/g, '/')
 }
 
 function createComponentProvenance(

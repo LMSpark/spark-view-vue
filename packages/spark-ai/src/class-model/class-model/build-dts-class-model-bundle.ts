@@ -5,7 +5,7 @@
  * AI用途：需要重建知识索引、定位 JSDoc 断链或验证模块/成员语义闭环时，用本模块作为编译入口。
  */
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
-import { dirname, posix, relative, resolve } from 'node:path'
+import { dirname, posix, resolve } from 'node:path'
 
 import ts from 'typescript'
 
@@ -22,6 +22,7 @@ import {
 import type { AttributeMeta, ClassModel, ConstructorMeta, MethodMeta, SourceProvenanceMeta } from './types'
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
 import { canRenderMethodSignatureFromTypeTree, resolveMethodReturnType } from './dts-type-meta-ops'
+import { normalizeRepoPath, resolveAliasedSymbol, declarationNameText, sourceFileFromDeclarationFile } from './dts-ast-utils'
 import { projectDtsSourceFileProjection } from './project-from-declarations'
 
 /** Build Dts Class Model Bundle Progress Phase 的语义模型。 */
@@ -225,10 +226,6 @@ export function buildDtsClassModelBundle(
 
 export { dtsSourcePathToBundleRelativeJson, resolveDtsBundleRelativeUrl } from './dts-bundle-url'
 
-function normalizeRepoPath(absolutePath: string, repoRoot: string): string {
-  return relative(resolve(repoRoot), resolve(absolutePath)).replace(/\\/g, '/')
-}
-
 function createBundleProjectionProgram(rootFiles: readonly string[]): ts.Program {
   return ts.createProgram({
     rootNames: rootFiles.map(file => resolve(file)),
@@ -291,16 +288,6 @@ function resolveDtsTypeReferenceTarget(
     targetName,
     targetSourcePath,
   }
-}
-
-function resolveAliasedSymbol(checker: ts.TypeChecker, symbol: ts.Symbol | undefined): ts.Symbol | undefined {
-  if (symbol === undefined) return undefined
-  return (symbol.flags & ts.SymbolFlags.Alias) === 0 ? symbol : checker.getAliasedSymbol(symbol)
-}
-
-function declarationNameText(declaration: ts.Declaration): string | undefined {
-  const name = (declaration as ts.Declaration & { name?: ts.Node }).name
-  return name !== undefined && ts.isIdentifier(name) ? name.text : undefined
 }
 
 function normalizeSourceFileKey(fileName: string): string {
@@ -687,15 +674,6 @@ function describeSemanticGapChainBreak(
     return `${model.className}.constructor 的构造语义链断开：构造签名没有 JSDoc。`
   }
   return `${model.className}.${memberName ?? '<unknown>'} 的成员语义链断开：${kind} 声明没有 JSDoc。`
-}
-
-function sourceFileFromDeclarationFile(declarationFile: string): string {
-  const sourcePath = declarationFile.startsWith('declarations/')
-    ? declarationFile.slice('declarations/'.length)
-    : declarationFile
-  if (sourcePath.endsWith('.vue.d.ts')) return sourcePath.slice(0, -'.d.ts'.length)
-  if (sourcePath.endsWith('.d.ts')) return `${sourcePath.slice(0, -'.d.ts'.length)}.ts`
-  return sourcePath
 }
 
 function createSemanticGapReport(

@@ -14,6 +14,13 @@ export {
   resolveDtsClassModel,
 } from './project-from-declarations'
 
+export {
+  normalizeRepoPath,
+  resolveAliasedSymbol,
+  declarationNameText,
+  sourceFileFromDeclarationFile,
+} from './dts-ast-utils'
+
 export type {
   BuildDtsClassModelBundleOptions,
   BuildDtsClassModelBundleProgress,
