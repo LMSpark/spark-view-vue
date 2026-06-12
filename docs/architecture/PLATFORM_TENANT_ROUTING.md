@@ -108,7 +108,7 @@ DevSystem 把这些函数注入 `createProjectEditor()`，之后所有项目模�
 
 ```text
 项目节点树
-  -> page / sub-page 节点
+  -> page 节点（含嵌套子页：page + hidden）
   -> pageId
   -> DynamicRouter
   -> SparkPageRenderer

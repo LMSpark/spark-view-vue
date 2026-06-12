@@ -66,7 +66,7 @@ export class 某模型 extends SparkAIModel {
 | `static fromJson()` | 快照容器 | DataSet、节点树等；可代替 load |
 
 - 快照类可以**只有** `toJson` + `fromJson`，不要 `save`。
-- 操作流程写在 **class / 方法 JSDoc**（如 `PageConfigModel`），不在规范或 SOP 里再抄一份。
+- 操作流程写在 **class / 方法 JSDoc**（如 `ConfigPageNode` / `ProjectModel`），不在规范或 SOP 里再抄一份。
 
 ---
 
@@ -104,19 +104,18 @@ UI          →  subscribe，读字段 / 调 API
 ## 5. 参考例子（项目域）
 
 ```text
-项目根
-  projectId, name, tenantId, navigationNodes[], selectedNodeId, dirty, revision
-  + find/add/update/remove 导航, subscribe
+ProjectModel（项目根）
+  projectId, design, session
+  + readProjectPlanningInput / replaceNavigationChildren
+  + openPageDesign(pageId) → ConfigPageNode
 
-行（扁平行）
-  id, parentId, …, pageConfig | null
-
-页配置
-  pageId, ruleJson, pageDataJson, script, style
-  save({ api }) / load({ pageId, loader })   ← 流程见 PageConfigModel JSDoc
+ConfigPageNode（配置页）
+  rule, dataSet, script, style 子模型
+  + editNodeTree / editDataSet / writePageFile（内存）
+  落盘由 ProjectWorkspace.save* 编排
 ```
 
-实现：`packages/spark-project-model/src/domain-model/`
+实现：`packages/spark-project-model/src/project/` + `packages/spark-project-model/src/page/`
 
 ---
 

@@ -7,7 +7,7 @@
 ```text
 项目需求
   -> ProjectModel.design (ProjectDesign)
-  -> ConfigPageNode (page / sub-page)
+  -> ConfigPageNode（page；嵌套子页 = hidden + 无 path）
   -> PageNodeRenderConfig
   -> SparkPageRenderer
   -> DataSet / SparkNodeTree / script / style
@@ -35,7 +35,7 @@ flat node
 ```text
 项目 => 子模块 || 页面
 子模块 => 子模块 || 页面
-页面 => 子页面 => 子页面
+页面 => 嵌套子页（page + hidden，无 path）
 ```
 
 ## 页面节点
@@ -44,12 +44,12 @@ flat node
 
 ```text
 ConfigPageNode
-  nodeKind = page | sub-page
+  nodeKind = page（嵌套：hidden + 无 path；legacy sub-page 读写时迁移）
   design: PageDesign (rule / dataSet / script / style)
   runtime: PageRuntime
 ```
 
-导航元数据属于 `ProjectNode` 基类；`ConfigPageNode` 只扩展页面内容与运行投影。`sub-page` 不是第二套模型。系统页面走 `SystemPageNode`，只保存节点事实和组件路径，不承载四文件。
+导航元数据属于 `ProjectNode` 基类；`ConfigPageNode` 只扩展页面内容与运行投影。嵌套子页不是第二套 class。系统页面走 `system-page` nodeKind，只保存节点事实和组件路径，不承载四文件。
 
 ## 功能约束
 
@@ -139,7 +139,7 @@ Users@grid
 
 1. `spark-project-model` 保持纯模型。
 2. 存储真源是 DB + 四文件；领域模型可用树与索引，树是投影。
-3. `page` 和 `sub-page` 同属 `ConfigPageNode`。
-4. 系统页面是 `SystemPageNode` 子类，不反向决定数据结构。
+3. 嵌套子页与顶层配置页同属 `ConfigPageNode`（`page` + `hidden` + 无 path）。
+4. 系统页面是 `system-page` nodeKind，不反向决定数据结构。
 5. 四文件是页面内容投影，落盘锚点明确即可。
 6. DataSet 管线单向：`pagedata.json -> DataSet -> DataViewKey -> DataView -> UI`。

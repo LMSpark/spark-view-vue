@@ -36,39 +36,34 @@ const renderConfig = pageNode.toRenderConfig()
 ## 设计态编辑项目
 
 ```ts
-import { createProjectEditor } from '@spark-appworks/spark-project-model/project'
+import { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 
-const editor = createProjectEditor({
+const workspace = new ProjectWorkspace({
   projectId: 'homepage',
   http,
-  getPageFilesApi,
-  getNavigationApi,
-  getProjectsApi,
-  getProjectNavigationApi,
-  getHeaders,
+  getPageFilesApi: () => '/api/pages-config',
+  getNavigationApi: () => '/api/navigation',
 })
 
-await editor.loadNavigation()
-const snapshot = editor.readSnapshot()
+await workspace.loadNavigation()
+const planning = workspace.project.readPlanningProjection()
 ```
 
-DevSystem 只能通过 `ProjectEditor` 进入项目节点、页面文件、版本和跨项目引用。
+DevSystem 与 AI runner 共用同一 `ProjectWorkspace.project`（`ProjectModel`），手动编辑与 AI mutation 落在同一内存实例。
 
 ## 模型速记
 
 ```text
-ProjectModel
-  ├── design: ProjectDesign
-  │   ├── nodesById + NavigationIndex
-  │   └── pages → ConfigPageNode*
-  └── runtime: ProjectRuntime
+ProjectWorkspace（IO 编排，非领域根）
+  └── project: ProjectModel
+        ├── design: ProjectDesign（nodesById + configPagesByPageId）
+        └── session: ProjectSession（选中 / dirty，不落盘）
 
-ProjectNode 子类
-  ├── ModuleNode / SystemPageNode / SystemActionNode
-  ├── LinkNode / RefNode
-  └── ConfigPageNode (page / sub-page)
+节点 class（按 nodeKind 实例化，非一 kind 一子类文件）：
+  ├── ProjectNode（module / link / ref / system-page / …）
+  └── ConfigPageNode（page；嵌套子页 = hidden + 无 path → 四文件）
 ```
 
-策划与 `pageFeatures` 经 `ProjectEditor.readSnapshot()` 读取，不再使用独立的 `ProjectPlanningModel`。
+策划投影经 `project.readPlanningProjection()` 读取；`domain-model/`（`ProjectRootModel` 等）已删除，勿再引入第二套领域根。
 
-`description` 是节点功能描述，也是用户需求。父级和本级描述共同约束当前页面生成。
+`description` 是节点功能描述，也是 AI 策划与 pageDesign 的共同输入约束。
