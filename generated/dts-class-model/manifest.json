@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "protocol": "spark-appworks.dts-class-model.bundle",
-  "generatedAt": "2026-06-11T22:53:14.946Z",
-  "scannedFileCount": 667,
+  "generatedAt": "2026-06-12T04:27:42.375Z",
+  "scannedFileCount": 654,
   "files": {
     "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts": {
       "file": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
@@ -9251,78 +9251,6 @@
         "symbols": []
       }
     },
-    "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-bridge.d.ts": {
-      "file": "files/declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-bridge.d.ts.json",
-      "module": {
-        "name": "@spark-appworks/spark-project-model:domain-model/navigation/navigation-row-bridge",
-        "sourcePath": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-bridge.d.ts",
-        "sourceFile": "packages/spark-project-model/src/domain-model/navigation/navigation-row-bridge.ts",
-        "packageName": "@spark-appworks/spark-project-model",
-        "modulePath": "domain-model/navigation/navigation-row-bridge",
-        "jsdoc": "@module @spark-appworks/spark-project-model:domain-model/navigation/navigation-row-bridge\n职责：提供项目模型层 navigation-row-bridge 能力，围绕 模块入口、副作用注册或内部组合逻辑 处理导航、页面文件、配置内容、工作区或远端 IO 契约。\n边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。\nAI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 domain-model/navigation/navigation-row-bridge。",
-        "jsdocSource": "source-file-jsdoc",
-        "symbols": []
-      }
-    },
-    "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts": {
-      "file": "files/declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts.json",
-      "module": {
-        "name": "@spark-appworks/spark-project-model:domain-model/navigation/navigation-row-model",
-        "sourcePath": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-        "sourceFile": "packages/spark-project-model/src/domain-model/navigation/navigation-row-model.ts",
-        "packageName": "@spark-appworks/spark-project-model",
-        "modulePath": "domain-model/navigation/navigation-row-model",
-        "jsdoc": "@module @spark-appworks/spark-project-model:domain-model/navigation/navigation-row-model\n职责：提供项目模型层 navigation-row-model 能力，围绕 NavigationRowModel 处理导航、页面文件、配置内容、工作区或远端 IO 契约。\n边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。\nAI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 domain-model/navigation/navigation-row-model。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": [
-          "NavigationRowModel"
-        ]
-      }
-    },
-    "declarations/packages/spark-project-model/src/domain-model/page/page-config-model.d.ts": {
-      "file": "files/declarations/packages/spark-project-model/src/domain-model/page/page-config-model.d.ts.json",
-      "module": {
-        "name": "@spark-appworks/spark-project-model:domain-model/page/page-config-model",
-        "sourcePath": "declarations/packages/spark-project-model/src/domain-model/page/page-config-model.d.ts",
-        "sourceFile": "packages/spark-project-model/src/domain-model/page/page-config-model.ts",
-        "packageName": "@spark-appworks/spark-project-model",
-        "modulePath": "domain-model/page/page-config-model",
-        "jsdoc": "@module @spark-appworks/spark-project-model:domain-model/page/page-config-model\n职责：提供项目模型层 page-config-model 能力，围绕 PageConfigModel 处理导航、页面文件、配置内容、工作区或远端 IO 契约。\n边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。\nAI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 domain-model/page/page-config-model。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": [
-          "PageConfigModel"
-        ]
-      }
-    },
-    "declarations/packages/spark-project-model/src/domain-model/project/project-root-bridge.d.ts": {
-      "file": "files/declarations/packages/spark-project-model/src/domain-model/project/project-root-bridge.d.ts.json",
-      "module": {
-        "name": "@spark-appworks/spark-project-model:domain-model/project/project-root-bridge",
-        "sourcePath": "declarations/packages/spark-project-model/src/domain-model/project/project-root-bridge.d.ts",
-        "sourceFile": "packages/spark-project-model/src/domain-model/project/project-root-bridge.ts",
-        "packageName": "@spark-appworks/spark-project-model",
-        "modulePath": "domain-model/project/project-root-bridge",
-        "jsdoc": "@module @spark-appworks/spark-project-model:domain-model/project/project-root-bridge\n职责：提供项目模型层 project-root-bridge 能力，围绕 模块入口、副作用注册或内部组合逻辑 处理导航、页面文件、配置内容、工作区或远端 IO 契约。\n边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。\nAI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 domain-model/project/project-root-bridge。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": []
-      }
-    },
-    "declarations/packages/spark-project-model/src/domain-model/project/project-root-model.d.ts": {
-      "file": "files/declarations/packages/spark-project-model/src/domain-model/project/project-root-model.d.ts.json",
-      "module": {
-        "name": "@spark-appworks/spark-project-model:domain-model/project/project-root-model",
-        "sourcePath": "declarations/packages/spark-project-model/src/domain-model/project/project-root-model.d.ts",
-        "sourceFile": "packages/spark-project-model/src/domain-model/project/project-root-model.ts",
-        "packageName": "@spark-appworks/spark-project-model",
-        "modulePath": "domain-model/project/project-root-model",
-        "jsdoc": "@module @spark-appworks/spark-project-model:domain-model/project/project-root-model\n职责：提供项目模型层 project-root-model 能力，围绕 ProjectRootModelEvent、ProjectRootModel 处理导航、页面文件、配置内容、工作区或远端 IO 契约。\n边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。\nAI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 domain-model/project/project-root-model。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": [
-          "ProjectRootModelEvent",
-          "ProjectRootModel"
-        ]
-      }
-    },
     "declarations/packages/spark-project-model/src/index.d.ts": {
       "file": "files/declarations/packages/spark-project-model/src/index.d.ts.json",
       "module": {
@@ -9476,17 +9404,9 @@
         "sourceFile": "packages/spark-project-model/src/navigation/navigation-kinds.ts",
         "packageName": "@spark-appworks/spark-project-model",
         "modulePath": "navigation/navigation-kinds",
-        "jsdoc": "@module @spark-appworks/spark-project-model:navigation/navigation-kinds\n职责：提供项目模型和页面配置域中的 navigation kinds 能力，支撑 navigation、page content、project session 或远程 IO。\n边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。\nAI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。\n\n按 nodeKind 特化的导航节点 class（仅非配置页 kind；不含 page/sub-page）。",
+        "jsdoc": "@module @spark-appworks/spark-project-model:navigation/navigation-kinds\n职责：按 nodeKind 实例化非配置页导航节点（统一 `ProjectNode`，family 由 nodeKind 派生）。",
         "jsdocSource": "leading-jsdoc",
-        "symbols": [
-          "ModuleNode",
-          "SystemDirectoryNode",
-          "LinkNode",
-          "RefNode",
-          "SystemPageNode",
-          "SystemActionNode",
-          "AnyProjectNode"
-        ]
+        "symbols": []
       }
     },
     "declarations/packages/spark-project-model/src/navigation/navigation-tree.d.ts": {
@@ -9578,8 +9498,7 @@
           "PageNodeRenderConfig",
           "PageNodeLike",
           "ProjectConfigPageNodeModelOptions",
-          "ConfigPageNode",
-          "ConfigSubPageNode"
+          "ConfigPageNode"
         ]
       }
     },
@@ -9636,7 +9555,7 @@
         "sourceFile": "packages/spark-project-model/src/page/instantiate-project-node.ts",
         "packageName": "@spark-appworks/spark-project-model",
         "modulePath": "page/instantiate-project-node",
-        "jsdoc": "@module @spark-appworks/spark-project-model:page/instantiate-project-node\n职责：提供项目模型和页面配置域中的 instantiate project node 能力，支撑 navigation、page content、project session 或远程 IO。\n边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。\nAI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。\n\n配置页节点实例化——放在 page 层，避免 navigation 反向依赖 ConfigPageNode。",
+        "jsdoc": "@module @spark-appworks/spark-project-model:page/instantiate-project-node\n职责：配置页节点实例化（page / sub-page 统一 ConfigPageNode）。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -10378,14 +10297,33 @@
         ]
       }
     },
-    "declarations/src/services/ai-host-run-bridge.d.ts": {
-      "file": "files/declarations/src/services/ai-host-run-bridge.d.ts.json",
+    "declarations/src/services/ai/ai-delivery-port.d.ts": {
+      "file": "files/declarations/src/services/ai/ai-delivery-port.d.ts.json",
       "module": {
-        "name": "app:services/ai-host-run-bridge",
-        "sourcePath": "declarations/src/services/ai-host-run-bridge.d.ts",
-        "sourceFile": "src/services/ai-host-run-bridge.ts",
+        "name": "app:services/ai/ai-delivery-port",
+        "sourcePath": "declarations/src/services/ai/ai-delivery-port.d.ts",
+        "sourceFile": "src/services/ai/ai-delivery-port.ts",
         "packageName": "app",
-        "modulePath": "services/ai-host-run-bridge",
+        "modulePath": "services/ai/ai-delivery-port",
+        "jsdoc": "@module app:services/ai-delivery-port\n职责：定义 APP 层 AI 交付端口，把 Working Copy 的 save、trace 和 rollback 统一成可回执的结果。\n边界：只表达应用交付策略，不进入 spark-ai 内核，也不直接理解 pageDesign/projectPlanning 领域细节。\nAI用途：排查 Host Run 结束后如何落盘、如何回执或失败时如何记录交付状态时，用本模块定位统一协议。",
+        "jsdocSource": "leading-jsdoc",
+        "symbols": [
+          "AiDeliveryMode",
+          "AiDeliveryArtifact",
+          "AiDeliveryResult",
+          "AiDeliveryPort",
+          "AiDeliveryResultExtras"
+        ]
+      }
+    },
+    "declarations/src/services/ai/ai-host-run-bridge.d.ts": {
+      "file": "files/declarations/src/services/ai/ai-host-run-bridge.d.ts.json",
+      "module": {
+        "name": "app:services/ai/ai-host-run-bridge",
+        "sourcePath": "declarations/src/services/ai/ai-host-run-bridge.d.ts",
+        "sourceFile": "src/services/ai/ai-host-run-bridge.ts",
+        "packageName": "app",
+        "modulePath": "services/ai/ai-host-run-bridge",
         "jsdoc": "@module app:services/ai-host-run-bridge\n职责：提供应用运行时 service 层的 ai host run bridge 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nAPP 层 Host Run 分布式桥接器。\n后端通过 APP 公共 SSE 定向下发 ai-host-run-request，本桥接器只负责\n校验平台载荷、调用本地 AiAgentHost.run(alias,args)、收集 trace 并提交回执。\n业务状态和业务流程编排仍由注册方与 LLM 协作完成，APP bridge 不理解具体能力。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
@@ -10396,59 +10334,46 @@
         ]
       }
     },
-    "declarations/src/services/ai-host-run-prepare.d.ts": {
-      "file": "files/declarations/src/services/ai-host-run-prepare.d.ts.json",
+    "declarations/src/services/ai/ai-host-run-smoke-launcher.d.ts": {
+      "file": "files/declarations/src/services/ai/ai-host-run-smoke-launcher.d.ts.json",
       "module": {
-        "name": "app:services/ai-host-run-prepare",
-        "sourcePath": "declarations/src/services/ai-host-run-prepare.d.ts",
-        "sourceFile": "src/services/ai-host-run-prepare.ts",
+        "name": "app:services/ai/ai-host-run-smoke-launcher",
+        "sourcePath": "declarations/src/services/ai/ai-host-run-smoke-launcher.d.ts",
+        "sourceFile": "src/services/ai/ai-host-run-smoke-launcher.ts",
         "packageName": "app",
-        "modulePath": "services/ai-host-run-prepare",
-        "jsdoc": "@module app:services/ai-host-run-prepare\n职责：提供主应用 ai-host-run-prepare 能力，围绕 模块入口、副作用注册或内部组合逻辑 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/ai-host-run-prepare。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": []
-      }
-    },
-    "declarations/src/services/ai-host-run-smoke-launcher.d.ts": {
-      "file": "files/declarations/src/services/ai-host-run-smoke-launcher.d.ts.json",
-      "module": {
-        "name": "app:services/ai-host-run-smoke-launcher",
-        "sourcePath": "declarations/src/services/ai-host-run-smoke-launcher.d.ts",
-        "sourceFile": "src/services/ai-host-run-smoke-launcher.ts",
-        "packageName": "app",
-        "modulePath": "services/ai-host-run-smoke-launcher",
+        "modulePath": "services/ai/ai-host-run-smoke-launcher",
         "jsdoc": "@module app:services/ai-host-run-smoke-launcher\n职责：提供主应用 ai-host-run-smoke-launcher 能力，围绕 模块入口、副作用注册或内部组合逻辑 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/ai-host-run-smoke-launcher。",
         "jsdocSource": "source-file-jsdoc",
         "symbols": []
       }
     },
-    "declarations/src/services/ai-host.d.ts": {
-      "file": "files/declarations/src/services/ai-host.d.ts.json",
+    "declarations/src/services/ai/ai-turn-bridge.d.ts": {
+      "file": "files/declarations/src/services/ai/ai-turn-bridge.d.ts.json",
       "module": {
-        "name": "app:services/ai-host",
-        "sourcePath": "declarations/src/services/ai-host.d.ts",
-        "sourceFile": "src/services/ai-host.ts",
+        "name": "app:services/ai/ai-turn-bridge",
+        "sourcePath": "declarations/src/services/ai/ai-turn-bridge.d.ts",
+        "sourceFile": "src/services/ai/ai-turn-bridge.ts",
         "packageName": "app",
-        "modulePath": "services/ai-host",
-        "jsdoc": "@module app:services/ai-host\n职责：提供主应用 ai-host 能力，围绕 模块入口、副作用注册或内部组合逻辑 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/ai-host。",
-        "jsdocSource": "source-file-jsdoc",
-        "symbols": []
-      }
-    },
-    "declarations/src/services/ai-turn-bridge.d.ts": {
-      "file": "files/declarations/src/services/ai-turn-bridge.d.ts.json",
-      "module": {
-        "name": "app:services/ai-turn-bridge",
-        "sourcePath": "declarations/src/services/ai-turn-bridge.d.ts",
-        "sourceFile": "src/services/ai-turn-bridge.ts",
-        "packageName": "app",
-        "modulePath": "services/ai-turn-bridge",
+        "modulePath": "services/ai/ai-turn-bridge",
         "jsdoc": "@module app:services/ai-turn-bridge\n职责：提供应用运行时 service 层的 ai turn bridge 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nAPP-owned AI turn bridge.\nHTTP commands and APP SSE subscription stay in src/services; spark-ai only\nreceives callbacks and aggregates events.",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "AiTurnBridgeDiagnostic",
           "AiAgentTurnBridgeOptions"
         ]
+      }
+    },
+    "declarations/src/services/ai/spark-ai-agent-bindings.d.ts": {
+      "file": "files/declarations/src/services/ai/spark-ai-agent-bindings.d.ts.json",
+      "module": {
+        "name": "app:services/ai/spark-ai-agent-bindings",
+        "sourcePath": "declarations/src/services/ai/spark-ai-agent-bindings.d.ts",
+        "sourceFile": "src/services/ai/spark-ai-agent-bindings.ts",
+        "packageName": "app",
+        "modulePath": "services/ai/spark-ai-agent-bindings",
+        "jsdoc": "@module app:services/ai/spark-ai-agent-bindings\n职责：spark-ai agent 类型与 ClassModel 适配器的 app 层统一 import 入口。\n边界：只做 re-export，不包含业务编排。",
+        "jsdocSource": "leading-jsdoc",
+        "symbols": []
       }
     },
     "declarations/src/services/api-paths.d.ts": {
@@ -10464,19 +10389,6 @@
         "symbols": [
           "ProjectApiScope"
         ]
-      }
-    },
-    "declarations/src/services/app-project-model.d.ts": {
-      "file": "files/declarations/src/services/app-project-model.d.ts.json",
-      "module": {
-        "name": "app:services/app-project-model",
-        "sourcePath": "declarations/src/services/app-project-model.d.ts",
-        "sourceFile": "src/services/app-project-model.ts",
-        "packageName": "app",
-        "modulePath": "services/app-project-model",
-        "jsdoc": "@module app:services/app-project-model\n职责：提供主应用 app-project-model 能力，围绕 模块入口、副作用注册或内部组合逻辑 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/app-project-model。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": []
       }
     },
     "declarations/src/services/auth.d.ts": {
@@ -10524,29 +10436,29 @@
         "symbols": []
       }
     },
-    "declarations/src/services/navigation-sync.d.ts": {
-      "file": "files/declarations/src/services/navigation-sync.d.ts.json",
+    "declarations/src/services/page-data-design/page-data-design-host-run-provider.d.ts": {
+      "file": "files/declarations/src/services/page-data-design/page-data-design-host-run-provider.d.ts.json",
       "module": {
-        "name": "app:services/navigation-sync",
-        "sourcePath": "declarations/src/services/navigation-sync.d.ts",
-        "sourceFile": "src/services/navigation-sync.ts",
+        "name": "app:services/page-data-design/page-data-design-host-run-provider",
+        "sourcePath": "declarations/src/services/page-data-design/page-data-design-host-run-provider.d.ts",
+        "sourceFile": "src/services/page-data-design/page-data-design-host-run-provider.ts",
         "packageName": "app",
-        "modulePath": "services/navigation-sync",
-        "jsdoc": "@module app:services/navigation-sync\n职责：提供应用运行时 service 层的 navigation sync 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\n已提交导航的统一同步 — 单次 DTO 灌入 committed ProjectModel，再投影到壳层 UI 与编辑宿主。\n运行时侧栏读 committed ProjectModel 的 snapshot 投影；DevSystem 读 editable ProjectModel。",
+        "modulePath": "services/page-data-design/page-data-design-host-run-provider",
+        "jsdoc": "@module app:services/page-data-design-host-run-provider\n职责：pageDataDesign Host Run preset，归一化为 pageDesign 并绑定 selective save 上下文。\n边界：不单独注册业务能力；alias 仅用于调度路由。\nAI用途：排查 SSE pageDataDesign 如何落到 pageDesign run 与 pagedata.json 落盘时，用本模块。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
-          "ShellNavRootListener"
+          "PageDataDesignHostInput"
         ]
       }
     },
-    "declarations/src/services/page-design-ai-runner.d.ts": {
-      "file": "files/declarations/src/services/page-design-ai-runner.d.ts.json",
+    "declarations/src/services/page-design/page-design-ai-runner.d.ts": {
+      "file": "files/declarations/src/services/page-design/page-design-ai-runner.d.ts.json",
       "module": {
-        "name": "app:services/page-design-ai-runner",
-        "sourcePath": "declarations/src/services/page-design-ai-runner.d.ts",
-        "sourceFile": "src/services/page-design-ai-runner.ts",
+        "name": "app:services/page-design/page-design-ai-runner",
+        "sourcePath": "declarations/src/services/page-design/page-design-ai-runner.d.ts",
+        "sourceFile": "src/services/page-design/page-design-ai-runner.ts",
         "packageName": "app",
-        "modulePath": "services/page-design-ai-runner",
+        "modulePath": "services/page-design/page-design-ai-runner",
         "jsdoc": "@module app:services/page-design-ai-runner\n职责：提供应用层 pageDesign 的 page-design-ai-runner 能力，围绕 PageDesignAiRunOptions、PageDesignAiRunEvents、PageDesignAiRunCommand 等 4 个公开契约 接线 AI runner、业务门禁、知识服务或编辑器状态。\n边界：只编排 app 层页面设计流程，不替代 spark-ai Host，也不直接实现底层组件渲染器。\nAI用途：排查 pageDesign 会话、工具门禁或页面四文件生成链路时，用本模块定位 services/page-design-ai-runner。",
         "jsdocSource": "source-file-jsdoc",
         "symbols": [
@@ -10557,98 +10469,75 @@
         ]
       }
     },
-    "declarations/src/services/page-design-business.d.ts": {
-      "file": "files/declarations/src/services/page-design-business.d.ts.json",
+    "declarations/src/services/page-design/page-design-business.d.ts": {
+      "file": "files/declarations/src/services/page-design/page-design-business.d.ts.json",
       "module": {
-        "name": "app:services/page-design-business",
-        "sourcePath": "declarations/src/services/page-design-business.d.ts",
-        "sourceFile": "src/services/page-design-business.ts",
+        "name": "app:services/page-design/page-design-business",
+        "sourcePath": "declarations/src/services/page-design/page-design-business.d.ts",
+        "sourceFile": "src/services/page-design/page-design-business.ts",
         "packageName": "app",
-        "modulePath": "services/page-design-business",
+        "modulePath": "services/page-design/page-design-business",
         "jsdoc": "@module app:services/page-design-business\n职责：提供应用运行时 service 层的 page design business 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\npageDesign AI business registration.\nThis app-layer service exposes the current ProjectModel to spark-ai without\nmaking spark-project-model depend on AI runtime or generated metadata files.",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
-          "PageDesignRunMode",
-          "PageDesignAllowedOperations",
           "PageDesignRunInput",
           "ResolvePageDesignPlanningContextOptions",
           "EnsurePageDesignBusinessOptions"
         ]
       }
     },
-    "declarations/src/services/page-design-editor-provider.d.ts": {
-      "file": "files/declarations/src/services/page-design-editor-provider.d.ts.json",
+    "declarations/src/services/page-design/page-design-gates.d.ts": {
+      "file": "files/declarations/src/services/page-design/page-design-gates.d.ts.json",
       "module": {
-        "name": "app:services/page-design-editor-provider",
-        "sourcePath": "declarations/src/services/page-design-editor-provider.d.ts",
-        "sourceFile": "src/services/page-design-editor-provider.ts",
+        "name": "app:services/page-design/page-design-gates",
+        "sourcePath": "declarations/src/services/page-design/page-design-gates.d.ts",
+        "sourceFile": "src/services/page-design/page-design-gates.ts",
         "packageName": "app",
-        "modulePath": "services/page-design-editor-provider",
-        "jsdoc": "@module app:services/page-design-editor-provider\n职责：提供应用运行时 service 层的 page design editor provider 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\npageDesign 门面实例选用策略。\n- DevSystem 面板内：与手动编辑同一 `editor.project`\n- 隔离运行：headless `ProjectWorkspace`，按 pageId 注册、运行后丢弃",
+        "modulePath": "services/page-design/page-design-gates",
+        "jsdoc": "@module app:services/page-design-gates\n职责：提供应用运行时 service 层的 page design gates 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\npageDesign 人工闸门：从 readPlanningProjection 读取 effectiveDescription / implGate，fail-fast 拒绝未放行页面。\nallowedOperations 非空时，对 model_script 做操作域 marker 硬拦截。",
+        "jsdocSource": "leading-jsdoc",
+        "symbols": [
+          "PageDesignAllowedOperations",
+          "PageDesignRunContext",
+          "PageDesignRunMode",
+          "PageDesignImplGate",
+          "PageDesignGateState",
+          "ReadPageDesignGateStateOptions",
+          "PageDesignGateValidationResult",
+          "EvaluatePageDesignMutationToolGateOptions",
+          "EvaluatePageDesignScriptOperationGateOptions"
+        ]
+      }
+    },
+    "declarations/src/services/page-design/page-design-headless.d.ts": {
+      "file": "files/declarations/src/services/page-design/page-design-headless.d.ts.json",
+      "module": {
+        "name": "app:services/page-design/page-design-headless",
+        "sourcePath": "declarations/src/services/page-design/page-design-headless.d.ts",
+        "sourceFile": "src/services/page-design/page-design-headless.ts",
+        "packageName": "app",
+        "modulePath": "services/page-design/page-design-headless",
+        "jsdoc": "@module app:services/page-design/page-design-headless\n职责：pageDesign 隔离式 headless ProjectWorkspace 工厂与 registry getter。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "PageDesignEditorResolveContext"
         ]
       }
     },
-    "declarations/src/services/page-design-gates.d.ts": {
-      "file": "files/declarations/src/services/page-design-gates.d.ts.json",
+    "declarations/src/services/page-design/page-design-host-run-provider.d.ts": {
+      "file": "files/declarations/src/services/page-design/page-design-host-run-provider.d.ts.json",
       "module": {
-        "name": "app:services/page-design-gates",
-        "sourcePath": "declarations/src/services/page-design-gates.d.ts",
-        "sourceFile": "src/services/page-design-gates.ts",
+        "name": "app:services/page-design/page-design-host-run-provider",
+        "sourcePath": "declarations/src/services/page-design/page-design-host-run-provider.d.ts",
+        "sourceFile": "src/services/page-design/page-design-host-run-provider.ts",
         "packageName": "app",
-        "modulePath": "services/page-design-gates",
-        "jsdoc": "@module app:services/page-design-gates\n职责：提供应用运行时 service 层的 page design gates 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\npageDesign 人工闸门：从 readPlanningProjection 读取 planningStatus / implGate，fail-fast 拒绝未放行页面。",
+        "modulePath": "services/page-design/page-design-host-run-provider",
+        "jsdoc": "@module app:services/page-design/page-design-host-run-provider\n职责：pageDesign 隔离式 Host Run——headless editor 注册、四文件 delivery、SSE prepare。\n边界：DevSystem 内联 runner 共用 editor 语义见 page-design-ai-runner。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
-          "PageDesignRunMode",
-          "PageDesignPlanningStatus",
-          "PageDesignImplGate",
-          "PageDesignGateState",
-          "ReadPageDesignGateStateOptions",
-          "PageDesignGateValidationResult",
-          "EvaluatePageDesignMutationToolGateOptions"
+          "PageDesignDeliveryContext",
+          "CreatePageDesignDeliveryPortOptions"
         ]
-      }
-    },
-    "declarations/src/services/page-design-host-run-provider.d.ts": {
-      "file": "files/declarations/src/services/page-design-host-run-provider.d.ts.json",
-      "module": {
-        "name": "app:services/page-design-host-run-provider",
-        "sourcePath": "declarations/src/services/page-design-host-run-provider.d.ts",
-        "sourceFile": "src/services/page-design-host-run-provider.ts",
-        "packageName": "app",
-        "modulePath": "services/page-design-host-run-provider",
-        "jsdoc": "@module app:services/page-design-host-run-provider\n职责：提供应用运行时 service 层的 page design host run provider 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nAPP 壳层 pageDesign Host Run provider（隔离式门面实例）。\n与 DevSystem 面板内 AI（共用当前编辑 scope 的 `editor.project`）不同：\nHost Run / SSE 为无 UI 会话、可并发多 pageId，故每次 run 创建 headless\n独立 `ProjectWorkspace`，运行结束保存 dirty 四文件后丢弃，不污染 DevSystem 编辑 session。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": []
-      }
-    },
-    "declarations/src/services/page-design/page-design-class-model-knowledge-provider.d.ts": {
-      "file": "files/declarations/src/services/page-design/page-design-class-model-knowledge-provider.d.ts.json",
-      "module": {
-        "name": "app:services/page-design/page-design-class-model-knowledge-provider",
-        "sourcePath": "declarations/src/services/page-design/page-design-class-model-knowledge-provider.d.ts",
-        "sourceFile": "src/services/page-design/page-design-class-model-knowledge-provider.ts",
-        "packageName": "app",
-        "modulePath": "services/page-design/page-design-class-model-knowledge-provider",
-        "jsdoc": "@module app:services/page-design/page-design-class-model-knowledge-provider\n职责：提供应用层 pageDesign 的 page-design-class-model-knowledge-provider 能力，围绕 模块入口、副作用注册或内部组合逻辑 接线 AI runner、业务门禁、知识服务或编辑器状态。\n边界：只编排 app 层页面设计流程，不替代 spark-ai Host，也不直接实现底层组件渲染器。\nAI用途：排查 pageDesign 会话、工具门禁或页面四文件生成链路时，用本模块定位 services/page-design/page-design-class-model-knowledge-provider。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": []
-      }
-    },
-    "declarations/src/services/page-design/page-design-sop.d.ts": {
-      "file": "files/declarations/src/services/page-design/page-design-sop.d.ts.json",
-      "module": {
-        "name": "app:services/page-design/page-design-sop",
-        "sourcePath": "declarations/src/services/page-design/page-design-sop.d.ts",
-        "sourceFile": "src/services/page-design/page-design-sop.ts",
-        "packageName": "app",
-        "modulePath": "services/page-design/page-design-sop",
-        "jsdoc": "@module app:services/page-design/page-design-sop\n职责：提供应用运行时 service 层的 page design sop 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\npageDesign SOP 编排：仅决定 toolLoopNudge 何时触发与 pageId 上下文。\n业务契约 SSOT：spark-project-model JSDoc → DTS ClassModel → model_*_guide / recovery hints。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": []
       }
     },
     "declarations/src/services/project-model-artifacts/index.d.ts": {
@@ -10698,14 +10587,14 @@
         "symbols": []
       }
     },
-    "declarations/src/services/project-planning-ai-runner.d.ts": {
-      "file": "files/declarations/src/services/project-planning-ai-runner.d.ts.json",
+    "declarations/src/services/project-planning/project-planning-ai-runner.d.ts": {
+      "file": "files/declarations/src/services/project-planning/project-planning-ai-runner.d.ts.json",
       "module": {
-        "name": "app:services/project-planning-ai-runner",
-        "sourcePath": "declarations/src/services/project-planning-ai-runner.d.ts",
-        "sourceFile": "src/services/project-planning-ai-runner.ts",
+        "name": "app:services/project-planning/project-planning-ai-runner",
+        "sourcePath": "declarations/src/services/project-planning/project-planning-ai-runner.d.ts",
+        "sourceFile": "src/services/project-planning/project-planning-ai-runner.ts",
         "packageName": "app",
-        "modulePath": "services/project-planning-ai-runner",
+        "modulePath": "services/project-planning/project-planning-ai-runner",
         "jsdoc": "@module app:services/project-planning-ai-runner\n职责：提供应用层 projectPlanning 的 project-planning-ai-runner 能力，围绕 ProjectPlanningAiRunOptions、ProjectPlanningAiRunEvents、ProjectPlanningAiRunCommand 等 4 个公开契约 编排项目需求、导航规划和 AI 业务注册。\n边界：只停留在项目规划阶段，不生成页面 rule/pagedata/script/template，也不越界进入 pageDesign。\nAI用途：规划模块/页面概要或排查项目策划 Agent 时，用本模块理解 services/project-planning-ai-runner。",
         "jsdocSource": "source-file-jsdoc",
         "symbols": [
@@ -10716,14 +10605,14 @@
         ]
       }
     },
-    "declarations/src/services/project-planning-business.d.ts": {
-      "file": "files/declarations/src/services/project-planning-business.d.ts.json",
+    "declarations/src/services/project-planning/project-planning-business.d.ts": {
+      "file": "files/declarations/src/services/project-planning/project-planning-business.d.ts.json",
       "module": {
-        "name": "app:services/project-planning-business",
-        "sourcePath": "declarations/src/services/project-planning-business.d.ts",
-        "sourceFile": "src/services/project-planning-business.ts",
+        "name": "app:services/project-planning/project-planning-business",
+        "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
+        "sourceFile": "src/services/project-planning/project-planning-business.ts",
         "packageName": "app",
-        "modulePath": "services/project-planning-business",
+        "modulePath": "services/project-planning/project-planning-business",
         "jsdoc": "@module app:services/project-planning-business\n职责：提供应用运行时 service 层的 project planning business 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\n项目策划 AI 输入契约与 Host 业务注册。\n策划阶段只消费 navigation description + 附件详细说明，产出子模块/页面概要；\n不绑定 pageDesign 四文件或 config-page metadata。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
@@ -10734,32 +10623,20 @@
           "ResolveProjectPlanningRunInputOptions",
           "FilterNavigationPlanningNodesOptions",
           "ResolveScopedProjectPlanningRunInputOptions",
-          "EnsureProjectPlanningBusinessOptions"
+          "EnsureProjectPlanningBusinessOptions",
+          "ProjectPlanningGateValidationResult"
         ]
       }
     },
-    "declarations/src/services/project-planning-class-model-knowledge-provider.d.ts": {
-      "file": "files/declarations/src/services/project-planning-class-model-knowledge-provider.d.ts.json",
+    "declarations/src/services/project-planning/project-planning-headless.d.ts": {
+      "file": "files/declarations/src/services/project-planning/project-planning-headless.d.ts.json",
       "module": {
-        "name": "app:services/project-planning-class-model-knowledge-provider",
-        "sourcePath": "declarations/src/services/project-planning-class-model-knowledge-provider.d.ts",
-        "sourceFile": "src/services/project-planning-class-model-knowledge-provider.ts",
+        "name": "app:services/project-planning/project-planning-headless",
+        "sourcePath": "declarations/src/services/project-planning/project-planning-headless.d.ts",
+        "sourceFile": "src/services/project-planning/project-planning-headless.ts",
         "packageName": "app",
-        "modulePath": "services/project-planning-class-model-knowledge-provider",
-        "jsdoc": "@module app:services/project-planning-class-model-knowledge-provider\n职责：提供应用层 projectPlanning 的 project-planning-class-model-knowledge-provider 能力，围绕 模块入口、副作用注册或内部组合逻辑 编排项目需求、导航规划和 AI 业务注册。\n边界：只停留在项目规划阶段，不生成页面 rule/pagedata/script/template，也不越界进入 pageDesign。\nAI用途：规划模块/页面概要或排查项目策划 Agent 时，用本模块理解 services/project-planning-class-model-knowledge-provider。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": []
-      }
-    },
-    "declarations/src/services/project-planning-editor-provider.d.ts": {
-      "file": "files/declarations/src/services/project-planning-editor-provider.d.ts.json",
-      "module": {
-        "name": "app:services/project-planning-editor-provider",
-        "sourcePath": "declarations/src/services/project-planning-editor-provider.d.ts",
-        "sourceFile": "src/services/project-planning-editor-provider.ts",
-        "packageName": "app",
-        "modulePath": "services/project-planning-editor-provider",
-        "jsdoc": "@module app:services/project-planning-editor-provider\n职责：提供应用运行时 service 层的 project planning editor provider 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nprojectPlanning 门面实例选用策略（无 UI）。\n- headless run / Host Run：按 projectId 注册临时 ProjectWorkspace，运行后丢弃\n- 调用方也可直接注入已加载 navigation 的 editor（测试 / 编排层）",
+        "modulePath": "services/project-planning/project-planning-headless",
+        "jsdoc": "@module app:services/project-planning/project-planning-headless\n职责：projectPlanning 隔离式 headless ProjectWorkspace 工厂与 registry getter。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ProjectPlanningEditorResolveContext",
@@ -10767,110 +10644,57 @@
         ]
       }
     },
-    "declarations/src/services/project-planning-gates.d.ts": {
-      "file": "files/declarations/src/services/project-planning-gates.d.ts.json",
+    "declarations/src/services/project-planning/project-planning-host-run-provider.d.ts": {
+      "file": "files/declarations/src/services/project-planning/project-planning-host-run-provider.d.ts.json",
       "module": {
-        "name": "app:services/project-planning-gates",
-        "sourcePath": "declarations/src/services/project-planning-gates.d.ts",
-        "sourceFile": "src/services/project-planning-gates.ts",
+        "name": "app:services/project-planning/project-planning-host-run-provider",
+        "sourcePath": "declarations/src/services/project-planning/project-planning-host-run-provider.d.ts",
+        "sourceFile": "src/services/project-planning/project-planning-host-run-provider.ts",
         "packageName": "app",
-        "modulePath": "services/project-planning-gates",
-        "jsdoc": "@module app:services/project-planning-gates\n职责：提供应用运行时 service 层的 project planning gates 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nprojectPlanning 工具闸门：策划阶段禁止进入 pageDesign 四文件链。",
+        "modulePath": "services/project-planning/project-planning-host-run-provider",
+        "jsdoc": "@module app:services/project-planning-host-run-provider\n职责：提供应用运行时 service 层的 project planning host run provider 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nAPP 壳层 projectPlanning Host Run provider（隔离式门面实例）。\n无 UI：SSE / 后端下发 ai-host-run-request 时，按 projectId 准备 headless\nProjectWorkspace，运行结束可选保存 navigation 后丢弃，不污染 DevSystem session。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
-          "ProjectPlanningGateValidationResult"
+          "ProjectPlanningDeliveryContext"
         ]
       }
     },
-    "declarations/src/services/project-planning-host-run-provider.d.ts": {
-      "file": "files/declarations/src/services/project-planning-host-run-provider.d.ts.json",
+    "declarations/src/services/project/project-settings.d.ts": {
+      "file": "files/declarations/src/services/project/project-settings.d.ts.json",
       "module": {
-        "name": "app:services/project-planning-host-run-provider",
-        "sourcePath": "declarations/src/services/project-planning-host-run-provider.d.ts",
-        "sourceFile": "src/services/project-planning-host-run-provider.ts",
+        "name": "app:services/project/project-settings",
+        "sourcePath": "declarations/src/services/project/project-settings.d.ts",
+        "sourceFile": "src/services/project/project-settings.ts",
         "packageName": "app",
-        "modulePath": "services/project-planning-host-run-provider",
-        "jsdoc": "@module app:services/project-planning-host-run-provider\n职责：提供应用运行时 service 层的 project planning host run provider 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nAPP 壳层 projectPlanning Host Run provider（隔离式门面实例）。\n无 UI：SSE / 后端下发 ai-host-run-request 时，按 projectId 准备 headless\nProjectWorkspace，运行结束可选保存 navigation 后丢弃，不污染 DevSystem session。",
+        "modulePath": "services/project/project-settings",
+        "jsdoc": "@module app:services/project/project-settings\n职责：项目运行时设置（HTTP）与壳层 UI 偏好（localStorage）。\n边界：只处理 app 层配置读写，不修改 spark-project-model 协议。",
         "jsdocSource": "leading-jsdoc",
-        "symbols": []
-      }
-    },
-    "declarations/src/services/project-settings.d.ts": {
-      "file": "files/declarations/src/services/project-settings.d.ts.json",
-      "module": {
-        "name": "app:services/project-settings",
-        "sourcePath": "declarations/src/services/project-settings.d.ts",
-        "sourceFile": "src/services/project-settings.ts",
-        "packageName": "app",
-        "modulePath": "services/project-settings",
-        "jsdoc": "@module app:services/project-settings\n职责：提供主应用 project-settings 能力，围绕 ProjectLayoutPlacement、ProjectDetail、ProjectHomeNodeOption 等 6 个公开契约 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/project-settings。",
-        "jsdocSource": "source-file-jsdoc",
         "symbols": [
           "ProjectLayoutPlacement",
           "ProjectDetail",
           "ProjectHomeNodeOption",
           "ProjectRuntimeSettings",
           "ProjectRuntimeSettingsInput",
-          "SaveProjectRuntimeSettingsCommand"
-        ]
-      }
-    },
-    "declarations/src/services/project-switch.d.ts": {
-      "file": "files/declarations/src/services/project-switch.d.ts.json",
-      "module": {
-        "name": "app:services/project-switch",
-        "sourcePath": "declarations/src/services/project-switch.d.ts",
-        "sourceFile": "src/services/project-switch.ts",
-        "packageName": "app",
-        "modulePath": "services/project-switch",
-        "jsdoc": "@module app:services/project-switch\n职责：提供应用运行时 service 层的 project switch 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\n项目切换服务 — provide/inject 键 + 类型定义。\nApp.vue provide → 子组件 inject，用于切换当前项目后联动刷新导航 + 路由。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": [
-          "ProjectSwitchService"
-        ]
-      }
-    },
-    "declarations/src/services/project-ui-settings.d.ts": {
-      "file": "files/declarations/src/services/project-ui-settings.d.ts.json",
-      "module": {
-        "name": "app:services/project-ui-settings",
-        "sourcePath": "declarations/src/services/project-ui-settings.d.ts",
-        "sourceFile": "src/services/project-ui-settings.ts",
-        "packageName": "app",
-        "modulePath": "services/project-ui-settings",
-        "jsdoc": "@module app:services/project-ui-settings\n职责：提供主应用 project-ui-settings 能力，围绕 ProjectUiSettings 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/project-ui-settings。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": [
+          "SaveProjectRuntimeSettingsCommand",
           "ProjectUiSettings"
         ]
       }
     },
-    "declarations/src/services/project-workspace.d.ts": {
-      "file": "files/declarations/src/services/project-workspace.d.ts.json",
+    "declarations/src/services/project/project-shell.d.ts": {
+      "file": "files/declarations/src/services/project/project-shell.d.ts.json",
       "module": {
-        "name": "app:services/project-workspace",
-        "sourcePath": "declarations/src/services/project-workspace.d.ts",
-        "sourceFile": "src/services/project-workspace.ts",
+        "name": "app:services/project/project-shell",
+        "sourcePath": "declarations/src/services/project/project-shell.d.ts",
+        "sourceFile": "src/services/project/project-shell.ts",
         "packageName": "app",
-        "modulePath": "services/project-workspace",
-        "jsdoc": "@module app:services/project-workspace\n职责：提供应用运行时 service 层的 project workspace 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nAPP 层 ProjectWorkspace 缓存。",
+        "modulePath": "services/project/project-shell",
+        "jsdoc": "@module app:services/project/project-shell\n职责：App 层项目壳——committed ProjectModel 缓存、ProjectWorkspace 单例、导航同步、项目切换 inject。\n边界：不进入 spark-project-model 内核；DevSystem 编辑宿主与 committed 投影分离。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
-          "ProjectWorkspaceScope"
+          "ProjectSwitchService",
+          "ProjectWorkspaceScope",
+          "ShellNavRootListener"
         ]
-      }
-    },
-    "declarations/src/services/spark-ai-agent-bindings.d.ts": {
-      "file": "files/declarations/src/services/spark-ai-agent-bindings.d.ts.json",
-      "module": {
-        "name": "app:services/spark-ai-agent-bindings",
-        "sourcePath": "declarations/src/services/spark-ai-agent-bindings.d.ts",
-        "sourceFile": "src/services/spark-ai-agent-bindings.ts",
-        "packageName": "app",
-        "modulePath": "services/spark-ai-agent-bindings",
-        "jsdoc": "@module app:services/spark-ai-agent-bindings\n职责：提供主应用 spark-ai-agent-bindings 能力，围绕 模块入口、副作用注册或内部组合逻辑 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/spark-ai-agent-bindings。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": []
       }
     },
     "declarations/src/services/sse-events.d.ts": {
@@ -15147,22 +14971,6 @@
       "sourcePath": "declarations/packages/spark-json-document/src/tree/tree-types.d.ts",
       "file": "files/declarations/packages/spark-json-document/src/tree/tree-types.d.ts.json"
     },
-    "NavigationRowModel": {
-      "sourcePath": "declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts",
-      "file": "files/declarations/packages/spark-project-model/src/domain-model/navigation/navigation-row-model.d.ts.json"
-    },
-    "PageConfigModel": {
-      "sourcePath": "declarations/packages/spark-project-model/src/domain-model/page/page-config-model.d.ts",
-      "file": "files/declarations/packages/spark-project-model/src/domain-model/page/page-config-model.d.ts.json"
-    },
-    "ProjectRootModelEvent": {
-      "sourcePath": "declarations/packages/spark-project-model/src/domain-model/project/project-root-model.d.ts",
-      "file": "files/declarations/packages/spark-project-model/src/domain-model/project/project-root-model.d.ts.json"
-    },
-    "ProjectRootModel": {
-      "sourcePath": "declarations/packages/spark-project-model/src/domain-model/project/project-root-model.d.ts",
-      "file": "files/declarations/packages/spark-project-model/src/domain-model/project/project-root-model.d.ts.json"
-    },
     "NavigationClientOptions": {
       "sourcePath": "declarations/packages/spark-project-model/src/io/navigation-client.d.ts",
       "file": "files/declarations/packages/spark-project-model/src/io/navigation-client.d.ts.json"
@@ -15250,34 +15058,6 @@
     "NavigationIndex": {
       "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts",
       "file": "files/declarations/packages/spark-project-model/src/navigation/navigation-index.d.ts.json"
-    },
-    "ModuleNode": {
-      "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
-      "file": "files/declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts.json"
-    },
-    "SystemDirectoryNode": {
-      "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
-      "file": "files/declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts.json"
-    },
-    "LinkNode": {
-      "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
-      "file": "files/declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts.json"
-    },
-    "RefNode": {
-      "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
-      "file": "files/declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts.json"
-    },
-    "SystemPageNode": {
-      "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
-      "file": "files/declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts.json"
-    },
-    "SystemActionNode": {
-      "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
-      "file": "files/declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts.json"
-    },
-    "AnyProjectNode": {
-      "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts",
-      "file": "files/declarations/packages/spark-project-model/src/navigation/navigation-kinds.d.ts.json"
     },
     "NormalizeNavRootInput": {
       "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-tree.d.ts",
@@ -15376,10 +15156,6 @@
       "file": "files/declarations/packages/spark-project-model/src/page/config-page.d.ts.json"
     },
     "ConfigPageNode": {
-      "sourcePath": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
-      "file": "files/declarations/packages/spark-project-model/src/page/config-page.d.ts.json"
-    },
-    "ConfigSubPageNode": {
       "sourcePath": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
       "file": "files/declarations/packages/spark-project-model/src/page/config-page.d.ts.json"
     },
@@ -15691,29 +15467,49 @@
       "sourcePath": "declarations/src/registries/vue-page-registry.d.ts",
       "file": "files/declarations/src/registries/vue-page-registry.d.ts.json"
     },
+    "AiDeliveryMode": {
+      "sourcePath": "declarations/src/services/ai/ai-delivery-port.d.ts",
+      "file": "files/declarations/src/services/ai/ai-delivery-port.d.ts.json"
+    },
+    "AiDeliveryArtifact": {
+      "sourcePath": "declarations/src/services/ai/ai-delivery-port.d.ts",
+      "file": "files/declarations/src/services/ai/ai-delivery-port.d.ts.json"
+    },
+    "AiDeliveryResult": {
+      "sourcePath": "declarations/src/services/ai/ai-delivery-port.d.ts",
+      "file": "files/declarations/src/services/ai/ai-delivery-port.d.ts.json"
+    },
+    "AiDeliveryPort": {
+      "sourcePath": "declarations/src/services/ai/ai-delivery-port.d.ts",
+      "file": "files/declarations/src/services/ai/ai-delivery-port.d.ts.json"
+    },
+    "AiDeliveryResultExtras": {
+      "sourcePath": "declarations/src/services/ai/ai-delivery-port.d.ts",
+      "file": "files/declarations/src/services/ai/ai-delivery-port.d.ts.json"
+    },
     "AiHostRunTarget": {
-      "sourcePath": "declarations/src/services/ai-host-run-bridge.d.ts",
-      "file": "files/declarations/src/services/ai-host-run-bridge.d.ts.json"
+      "sourcePath": "declarations/src/services/ai/ai-host-run-bridge.d.ts",
+      "file": "files/declarations/src/services/ai/ai-host-run-bridge.d.ts.json"
     },
     "AiHostRunPrepare": {
-      "sourcePath": "declarations/src/services/ai-host-run-bridge.d.ts",
-      "file": "files/declarations/src/services/ai-host-run-bridge.d.ts.json"
+      "sourcePath": "declarations/src/services/ai/ai-host-run-bridge.d.ts",
+      "file": "files/declarations/src/services/ai/ai-host-run-bridge.d.ts.json"
     },
     "AiHostRunBridgeOptions": {
-      "sourcePath": "declarations/src/services/ai-host-run-bridge.d.ts",
-      "file": "files/declarations/src/services/ai-host-run-bridge.d.ts.json"
+      "sourcePath": "declarations/src/services/ai/ai-host-run-bridge.d.ts",
+      "file": "files/declarations/src/services/ai/ai-host-run-bridge.d.ts.json"
     },
     "AiHostRunBridge": {
-      "sourcePath": "declarations/src/services/ai-host-run-bridge.d.ts",
-      "file": "files/declarations/src/services/ai-host-run-bridge.d.ts.json"
+      "sourcePath": "declarations/src/services/ai/ai-host-run-bridge.d.ts",
+      "file": "files/declarations/src/services/ai/ai-host-run-bridge.d.ts.json"
     },
     "AiTurnBridgeDiagnostic": {
-      "sourcePath": "declarations/src/services/ai-turn-bridge.d.ts",
-      "file": "files/declarations/src/services/ai-turn-bridge.d.ts.json"
+      "sourcePath": "declarations/src/services/ai/ai-turn-bridge.d.ts",
+      "file": "files/declarations/src/services/ai/ai-turn-bridge.d.ts.json"
     },
     "AiAgentTurnBridgeOptions": {
-      "sourcePath": "declarations/src/services/ai-turn-bridge.d.ts",
-      "file": "files/declarations/src/services/ai-turn-bridge.d.ts.json"
+      "sourcePath": "declarations/src/services/ai/ai-turn-bridge.d.ts",
+      "file": "files/declarations/src/services/ai/ai-turn-bridge.d.ts.json"
     },
     "ProjectApiScope": {
       "sourcePath": "declarations/src/services/api-paths.d.ts",
@@ -15739,73 +15535,85 @@
       "sourcePath": "declarations/src/services/auth.d.ts",
       "file": "files/declarations/src/services/auth.d.ts.json"
     },
-    "ShellNavRootListener": {
-      "sourcePath": "declarations/src/services/navigation-sync.d.ts",
-      "file": "files/declarations/src/services/navigation-sync.d.ts.json"
+    "PageDataDesignHostInput": {
+      "sourcePath": "declarations/src/services/page-data-design/page-data-design-host-run-provider.d.ts",
+      "file": "files/declarations/src/services/page-data-design/page-data-design-host-run-provider.d.ts.json"
     },
     "PageDesignAiRunOptions": {
-      "sourcePath": "declarations/src/services/page-design-ai-runner.d.ts",
-      "file": "files/declarations/src/services/page-design-ai-runner.d.ts.json"
+      "sourcePath": "declarations/src/services/page-design/page-design-ai-runner.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-ai-runner.d.ts.json"
     },
     "PageDesignAiRunEvents": {
-      "sourcePath": "declarations/src/services/page-design-ai-runner.d.ts",
-      "file": "files/declarations/src/services/page-design-ai-runner.d.ts.json"
+      "sourcePath": "declarations/src/services/page-design/page-design-ai-runner.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-ai-runner.d.ts.json"
     },
     "PageDesignAiRunCommand": {
-      "sourcePath": "declarations/src/services/page-design-ai-runner.d.ts",
-      "file": "files/declarations/src/services/page-design-ai-runner.d.ts.json"
+      "sourcePath": "declarations/src/services/page-design/page-design-ai-runner.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-ai-runner.d.ts.json"
     },
     "PageDesignAiRunResult": {
-      "sourcePath": "declarations/src/services/page-design-ai-runner.d.ts",
-      "file": "files/declarations/src/services/page-design-ai-runner.d.ts.json"
-    },
-    "PageDesignRunMode": {
-      "sourcePath": "declarations/src/services/page-design-business.d.ts",
-      "file": "files/declarations/src/services/page-design-business.d.ts.json"
-    },
-    "PageDesignAllowedOperations": {
-      "sourcePath": "declarations/src/services/page-design-business.d.ts",
-      "file": "files/declarations/src/services/page-design-business.d.ts.json"
+      "sourcePath": "declarations/src/services/page-design/page-design-ai-runner.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-ai-runner.d.ts.json"
     },
     "PageDesignRunInput": {
-      "sourcePath": "declarations/src/services/page-design-business.d.ts",
-      "file": "files/declarations/src/services/page-design-business.d.ts.json"
+      "sourcePath": "declarations/src/services/page-design/page-design-business.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-business.d.ts.json"
     },
     "ResolvePageDesignPlanningContextOptions": {
-      "sourcePath": "declarations/src/services/page-design-business.d.ts",
-      "file": "files/declarations/src/services/page-design-business.d.ts.json"
+      "sourcePath": "declarations/src/services/page-design/page-design-business.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-business.d.ts.json"
     },
     "EnsurePageDesignBusinessOptions": {
-      "sourcePath": "declarations/src/services/page-design-business.d.ts",
-      "file": "files/declarations/src/services/page-design-business.d.ts.json"
+      "sourcePath": "declarations/src/services/page-design/page-design-business.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-business.d.ts.json"
     },
-    "PageDesignEditorResolveContext": {
-      "sourcePath": "declarations/src/services/page-design-editor-provider.d.ts",
-      "file": "files/declarations/src/services/page-design-editor-provider.d.ts.json"
+    "PageDesignAllowedOperations": {
+      "sourcePath": "declarations/src/services/page-design/page-design-gates.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-gates.d.ts.json"
     },
-    "PageDesignPlanningStatus": {
-      "sourcePath": "declarations/src/services/page-design-gates.d.ts",
-      "file": "files/declarations/src/services/page-design-gates.d.ts.json"
+    "PageDesignRunContext": {
+      "sourcePath": "declarations/src/services/page-design/page-design-gates.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-gates.d.ts.json"
+    },
+    "PageDesignRunMode": {
+      "sourcePath": "declarations/src/services/page-design/page-design-gates.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-gates.d.ts.json"
     },
     "PageDesignImplGate": {
-      "sourcePath": "declarations/src/services/page-design-gates.d.ts",
-      "file": "files/declarations/src/services/page-design-gates.d.ts.json"
+      "sourcePath": "declarations/src/services/page-design/page-design-gates.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-gates.d.ts.json"
     },
     "PageDesignGateState": {
-      "sourcePath": "declarations/src/services/page-design-gates.d.ts",
-      "file": "files/declarations/src/services/page-design-gates.d.ts.json"
+      "sourcePath": "declarations/src/services/page-design/page-design-gates.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-gates.d.ts.json"
     },
     "ReadPageDesignGateStateOptions": {
-      "sourcePath": "declarations/src/services/page-design-gates.d.ts",
-      "file": "files/declarations/src/services/page-design-gates.d.ts.json"
+      "sourcePath": "declarations/src/services/page-design/page-design-gates.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-gates.d.ts.json"
     },
     "PageDesignGateValidationResult": {
-      "sourcePath": "declarations/src/services/page-design-gates.d.ts",
-      "file": "files/declarations/src/services/page-design-gates.d.ts.json"
+      "sourcePath": "declarations/src/services/page-design/page-design-gates.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-gates.d.ts.json"
     },
     "EvaluatePageDesignMutationToolGateOptions": {
-      "sourcePath": "declarations/src/services/page-design-gates.d.ts",
-      "file": "files/declarations/src/services/page-design-gates.d.ts.json"
+      "sourcePath": "declarations/src/services/page-design/page-design-gates.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-gates.d.ts.json"
+    },
+    "EvaluatePageDesignScriptOperationGateOptions": {
+      "sourcePath": "declarations/src/services/page-design/page-design-gates.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-gates.d.ts.json"
+    },
+    "PageDesignEditorResolveContext": {
+      "sourcePath": "declarations/src/services/page-design/page-design-headless.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-headless.d.ts.json"
+    },
+    "PageDesignDeliveryContext": {
+      "sourcePath": "declarations/src/services/page-design/page-design-host-run-provider.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-host-run-provider.d.ts.json"
+    },
+    "CreatePageDesignDeliveryPortOptions": {
+      "sourcePath": "declarations/src/services/page-design/page-design-host-run-provider.d.ts",
+      "file": "files/declarations/src/services/page-design/page-design-host-run-provider.d.ts.json"
     },
     "PageDataEditorMode": {
       "sourcePath": "declarations/src/services/project-model-artifacts/page-data-designer.d.ts",
@@ -15836,100 +15644,108 @@
       "file": "files/declarations/src/services/project-model-artifacts/page-data-designer.d.ts.json"
     },
     "ProjectPlanningAiRunOptions": {
-      "sourcePath": "declarations/src/services/project-planning-ai-runner.d.ts",
-      "file": "files/declarations/src/services/project-planning-ai-runner.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-ai-runner.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-ai-runner.d.ts.json"
     },
     "ProjectPlanningAiRunEvents": {
-      "sourcePath": "declarations/src/services/project-planning-ai-runner.d.ts",
-      "file": "files/declarations/src/services/project-planning-ai-runner.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-ai-runner.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-ai-runner.d.ts.json"
     },
     "ProjectPlanningAiRunCommand": {
-      "sourcePath": "declarations/src/services/project-planning-ai-runner.d.ts",
-      "file": "files/declarations/src/services/project-planning-ai-runner.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-ai-runner.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-ai-runner.d.ts.json"
     },
     "ProjectPlanningAiRunResult": {
-      "sourcePath": "declarations/src/services/project-planning-ai-runner.d.ts",
-      "file": "files/declarations/src/services/project-planning-ai-runner.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-ai-runner.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-ai-runner.d.ts.json"
     },
     "ProjectPlanningRunInput": {
-      "sourcePath": "declarations/src/services/project-planning-business.d.ts",
-      "file": "files/declarations/src/services/project-planning-business.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-business.d.ts.json"
     },
     "ProjectPlanningAgentInput": {
-      "sourcePath": "declarations/src/services/project-planning-business.d.ts",
-      "file": "files/declarations/src/services/project-planning-business.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-business.d.ts.json"
     },
     "NavigationPlanningAgentInput": {
-      "sourcePath": "declarations/src/services/project-planning-business.d.ts",
-      "file": "files/declarations/src/services/project-planning-business.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-business.d.ts.json"
     },
     "NavigationPlanningRunInput": {
-      "sourcePath": "declarations/src/services/project-planning-business.d.ts",
-      "file": "files/declarations/src/services/project-planning-business.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-business.d.ts.json"
     },
     "ResolveProjectPlanningRunInputOptions": {
-      "sourcePath": "declarations/src/services/project-planning-business.d.ts",
-      "file": "files/declarations/src/services/project-planning-business.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-business.d.ts.json"
     },
     "FilterNavigationPlanningNodesOptions": {
-      "sourcePath": "declarations/src/services/project-planning-business.d.ts",
-      "file": "files/declarations/src/services/project-planning-business.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-business.d.ts.json"
     },
     "ResolveScopedProjectPlanningRunInputOptions": {
-      "sourcePath": "declarations/src/services/project-planning-business.d.ts",
-      "file": "files/declarations/src/services/project-planning-business.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-business.d.ts.json"
     },
     "EnsureProjectPlanningBusinessOptions": {
-      "sourcePath": "declarations/src/services/project-planning-business.d.ts",
-      "file": "files/declarations/src/services/project-planning-business.d.ts.json"
-    },
-    "ProjectPlanningEditorResolveContext": {
-      "sourcePath": "declarations/src/services/project-planning-editor-provider.d.ts",
-      "file": "files/declarations/src/services/project-planning-editor-provider.d.ts.json"
-    },
-    "HeadlessProjectPlanningEditorScope": {
-      "sourcePath": "declarations/src/services/project-planning-editor-provider.d.ts",
-      "file": "files/declarations/src/services/project-planning-editor-provider.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-business.d.ts.json"
     },
     "ProjectPlanningGateValidationResult": {
-      "sourcePath": "declarations/src/services/project-planning-gates.d.ts",
-      "file": "files/declarations/src/services/project-planning-gates.d.ts.json"
+      "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-business.d.ts.json"
+    },
+    "ProjectPlanningEditorResolveContext": {
+      "sourcePath": "declarations/src/services/project-planning/project-planning-headless.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-headless.d.ts.json"
+    },
+    "HeadlessProjectPlanningEditorScope": {
+      "sourcePath": "declarations/src/services/project-planning/project-planning-headless.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-headless.d.ts.json"
+    },
+    "ProjectPlanningDeliveryContext": {
+      "sourcePath": "declarations/src/services/project-planning/project-planning-host-run-provider.d.ts",
+      "file": "files/declarations/src/services/project-planning/project-planning-host-run-provider.d.ts.json"
     },
     "ProjectLayoutPlacement": {
-      "sourcePath": "declarations/src/services/project-settings.d.ts",
-      "file": "files/declarations/src/services/project-settings.d.ts.json"
+      "sourcePath": "declarations/src/services/project/project-settings.d.ts",
+      "file": "files/declarations/src/services/project/project-settings.d.ts.json"
     },
     "ProjectDetail": {
-      "sourcePath": "declarations/src/services/project-settings.d.ts",
-      "file": "files/declarations/src/services/project-settings.d.ts.json"
+      "sourcePath": "declarations/src/services/project/project-settings.d.ts",
+      "file": "files/declarations/src/services/project/project-settings.d.ts.json"
     },
     "ProjectHomeNodeOption": {
-      "sourcePath": "declarations/src/services/project-settings.d.ts",
-      "file": "files/declarations/src/services/project-settings.d.ts.json"
+      "sourcePath": "declarations/src/services/project/project-settings.d.ts",
+      "file": "files/declarations/src/services/project/project-settings.d.ts.json"
     },
     "ProjectRuntimeSettings": {
-      "sourcePath": "declarations/src/services/project-settings.d.ts",
-      "file": "files/declarations/src/services/project-settings.d.ts.json"
+      "sourcePath": "declarations/src/services/project/project-settings.d.ts",
+      "file": "files/declarations/src/services/project/project-settings.d.ts.json"
     },
     "ProjectRuntimeSettingsInput": {
-      "sourcePath": "declarations/src/services/project-settings.d.ts",
-      "file": "files/declarations/src/services/project-settings.d.ts.json"
+      "sourcePath": "declarations/src/services/project/project-settings.d.ts",
+      "file": "files/declarations/src/services/project/project-settings.d.ts.json"
     },
     "SaveProjectRuntimeSettingsCommand": {
-      "sourcePath": "declarations/src/services/project-settings.d.ts",
-      "file": "files/declarations/src/services/project-settings.d.ts.json"
-    },
-    "ProjectSwitchService": {
-      "sourcePath": "declarations/src/services/project-switch.d.ts",
-      "file": "files/declarations/src/services/project-switch.d.ts.json"
+      "sourcePath": "declarations/src/services/project/project-settings.d.ts",
+      "file": "files/declarations/src/services/project/project-settings.d.ts.json"
     },
     "ProjectUiSettings": {
-      "sourcePath": "declarations/src/services/project-ui-settings.d.ts",
-      "file": "files/declarations/src/services/project-ui-settings.d.ts.json"
+      "sourcePath": "declarations/src/services/project/project-settings.d.ts",
+      "file": "files/declarations/src/services/project/project-settings.d.ts.json"
+    },
+    "ProjectSwitchService": {
+      "sourcePath": "declarations/src/services/project/project-shell.d.ts",
+      "file": "files/declarations/src/services/project/project-shell.d.ts.json"
     },
     "ProjectWorkspaceScope": {
-      "sourcePath": "declarations/src/services/project-workspace.d.ts",
-      "file": "files/declarations/src/services/project-workspace.d.ts.json"
+      "sourcePath": "declarations/src/services/project/project-shell.d.ts",
+      "file": "files/declarations/src/services/project/project-shell.d.ts.json"
+    },
+    "ShellNavRootListener": {
+      "sourcePath": "declarations/src/services/project/project-shell.d.ts",
+      "file": "files/declarations/src/services/project/project-shell.d.ts.json"
     },
     "FileChangeEvent": {
       "sourcePath": "declarations/src/services/sse-events.d.ts",
@@ -16119,11 +15935,6 @@
       "className": "Props",
       "keptFile": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
       "skippedFile": "declarations/src/components/ModuleContextBadge.vue.d.ts"
-    },
-    {
-      "className": "PageDesignRunMode",
-      "keptFile": "declarations/src/services/page-design-business.d.ts",
-      "skippedFile": "declarations/src/services/page-design-gates.d.ts"
     },
     {
       "className": "NavigationNodeDraftNode",

@@ -265,7 +265,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.025Z",
+  "generatedAt": "2026-06-12T04:27:41.529Z",
   "$defs": {
     "DynamicRouterOptions": {
       "type": "object",

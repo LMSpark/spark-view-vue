@@ -91,7 +91,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:13.965Z",
+  "generatedAt": "2026-06-12T04:27:41.441Z",
   "$defs": {
     "AiAgentAppSseEventName": {
       "type": "object",

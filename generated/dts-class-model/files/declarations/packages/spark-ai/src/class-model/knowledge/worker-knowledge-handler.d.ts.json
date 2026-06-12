@@ -40,7 +40,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:13.986Z",
+  "generatedAt": "2026-06-12T04:27:41.469Z",
   "$defs": {
     "CreateClassModelKnowledgeWorkerApiOptions": {
       "type": "object",

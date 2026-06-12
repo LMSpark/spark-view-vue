@@ -1,120 +1,26 @@
 {
   "schemaVersion": 1,
-  "sourcePath": "declarations/src/services/page-design-business.d.ts",
+  "sourcePath": "declarations/src/services/page-design/page-design-business.d.ts",
   "module": {
-    "name": "app:services/page-design-business",
-    "sourcePath": "declarations/src/services/page-design-business.d.ts",
-    "sourceFile": "src/services/page-design-business.ts",
+    "name": "app:services/page-design/page-design-business",
+    "sourcePath": "declarations/src/services/page-design/page-design-business.d.ts",
+    "sourceFile": "src/services/page-design/page-design-business.ts",
     "packageName": "app",
-    "modulePath": "services/page-design-business",
+    "modulePath": "services/page-design/page-design-business",
     "jsdoc": "@module app:services/page-design-business\n职责：提供应用运行时 service 层的 page design business 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\npageDesign AI business registration.\nThis app-layer service exposes the current ProjectModel to spark-ai without\nmaking spark-project-model depend on AI runtime or generated metadata files.",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
-      "PageDesignRunMode",
-      "PageDesignAllowedOperations",
       "PageDesignRunInput",
       "ResolvePageDesignPlanningContextOptions",
       "EnsurePageDesignBusinessOptions"
     ]
   },
   "symbols": [
-    "PageDesignRunMode",
-    "PageDesignAllowedOperations",
     "PageDesignRunInput",
     "ResolvePageDesignPlanningContextOptions",
     "EnsurePageDesignBusinessOptions"
   ],
   "models": {
-    "PageDesignRunMode": {
-      "kind": "PageDesignRunMode",
-      "className": "PageDesignRunMode",
-      "jsdoc": "Page Design Run Mode 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "'create' | 'update' | 'fix'",
-      "declarationRelations": [
-        {
-          "kind": "union",
-          "typeText": "'create'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'update'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'fix'"
-        }
-      ],
-      "provenance": {
-        "file": "declarations/src/services/page-design-business.d.ts",
-        "line": 18,
-        "className": "PageDesignRunMode",
-        "declarationKind": "type"
-      },
-      "attributes": [],
-      "methods": []
-    },
-    "PageDesignAllowedOperations": {
-      "kind": "PageDesignAllowedOperations",
-      "className": "PageDesignAllowedOperations",
-      "jsdoc": "Page Design Allowed Operations 的语义模型。",
-      "shapeKind": "type",
-      "declarationTypeText": "{\n    /** node Tree 字段。 */\n    nodeTree?: boolean;\n    /** data Set 字段。 */\n    dataSet?: boolean;\n    /** script 字段。 */\n    script?: boolean;\n    /** style 字段。 */\n    style?: boolean;\n    /** navigation 字段。 */\n    navigation?: boolean;\n}",
-      "provenance": {
-        "file": "declarations/src/services/page-design-business.d.ts",
-        "line": 20,
-        "className": "PageDesignAllowedOperations",
-        "declarationKind": "type"
-      },
-      "attributes": [
-        {
-          "name": "nodeTree",
-          "jsdoc": "node Tree 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "dataSet",
-          "jsdoc": "data Set 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "script",
-          "jsdoc": "script 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "style",
-          "jsdoc": "style 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "navigation",
-          "jsdoc": "navigation 字段。",
-          "schema": {
-            "type": "boolean"
-          },
-          "readable": true,
-          "writable": false
-        }
-      ],
-      "methods": []
-    },
     "PageDesignRunInput": {
       "kind": "PageDesignRunInput",
       "className": "PageDesignRunInput",
@@ -122,8 +28,8 @@
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** page Id 标识。 */\n    pageId: string;\n    /** description 字段。 */\n    description: string;\n    /** readPlanningProjection 的 effectiveDescription；runner 必填。 */\n    effectiveDescription: string;\n    /** 项目根 path 段 id；用于 systemPrompt 给出 concrete /project[id] 示例。 */\n    projectId?: string;\n    /** planning Title 字段。 */\n    planningTitle?: string;\n    /** planning Path 路径。 */\n    planningPath?: string;\n    /** mode 字段。 */\n    mode?: PageDesignRunMode;\n    /** allowed Operations 字段。 */\n    allowedOperations?: PageDesignAllowedOperations;\n    /** preserve Existing Interactions 字段。 */\n    preserveExistingInteractions?: boolean;\n    /** 未声明 implGate 时 fail-fast；生产 runner 建议 true。 */\n    strictImplGate?: boolean;\n}",
       "provenance": {
-        "file": "declarations/src/services/page-design-business.d.ts",
-        "line": 33,
+        "file": "declarations/src/services/page-design/page-design-business.d.ts",
+        "line": 22,
         "className": "PageDesignRunInput",
         "declarationKind": "type"
       },
@@ -186,7 +92,8 @@
           "name": "mode",
           "jsdoc": "mode 字段。",
           "schema": {
-            "$ref": "#/$defs/PageDesignRunMode"
+            "type": "object",
+            "title": "PageDesignRunMode"
           },
           "readable": true,
           "writable": false
@@ -195,7 +102,8 @@
           "name": "allowedOperations",
           "jsdoc": "allowed Operations 字段。",
           "schema": {
-            "$ref": "#/$defs/PageDesignAllowedOperations"
+            "type": "object",
+            "title": "PageDesignAllowedOperations"
           },
           "readable": true,
           "writable": false
@@ -228,8 +136,8 @@
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 仅 e2e/脚手架：投影为空时用本轮 description 兜底。生产 runner 勿传。 */\n    fallbackDescription?: string;\n}",
       "provenance": {
-        "file": "declarations/src/services/page-design-business.d.ts",
-        "line": 56,
+        "file": "declarations/src/services/page-design/page-design-business.d.ts",
+        "line": 45,
         "className": "ResolvePageDesignPlanningContextOptions",
         "declarationKind": "type"
       },
@@ -253,8 +161,8 @@
       "shapeKind": "type",
       "declarationTypeText": "{\n    /** 宿主运行时信息。 */\n    host: AiAgentHost;\n    /** get Page Design Editor 回调。 */\n    getPageDesignEditor: (context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace;\n}",
       "provenance": {
-        "file": "declarations/src/services/page-design-business.d.ts",
-        "line": 61,
+        "file": "declarations/src/services/page-design/page-design-business.d.ts",
+        "line": 50,
         "className": "EnsurePageDesignBusinessOptions",
         "declarationKind": "type"
       },
@@ -283,35 +191,8 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.465Z",
+  "generatedAt": "2026-06-12T04:27:41.873Z",
   "$defs": {
-    "PageDesignRunMode": {
-      "type": "object",
-      "title": "PageDesignRunMode",
-      "description": "Page Design Run Mode 的语义模型。"
-    },
-    "PageDesignAllowedOperations": {
-      "type": "object",
-      "title": "PageDesignAllowedOperations",
-      "description": "Page Design Allowed Operations 的语义模型。",
-      "properties": {
-        "nodeTree": {
-          "type": "boolean"
-        },
-        "dataSet": {
-          "type": "boolean"
-        },
-        "script": {
-          "type": "boolean"
-        },
-        "style": {
-          "type": "boolean"
-        },
-        "navigation": {
-          "type": "boolean"
-        }
-      }
-    },
     "PageDesignRunInput": {
       "type": "object",
       "title": "PageDesignRunInput",
@@ -336,10 +217,12 @@
           "type": "string"
         },
         "mode": {
-          "$ref": "#/$defs/PageDesignRunMode"
+          "type": "object",
+          "title": "PageDesignRunMode"
         },
         "allowedOperations": {
-          "$ref": "#/$defs/PageDesignAllowedOperations"
+          "type": "object",
+          "title": "PageDesignAllowedOperations"
         },
         "preserveExistingInteractions": {
           "type": "boolean"

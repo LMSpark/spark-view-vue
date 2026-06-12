@@ -32,7 +32,7 @@
       ],
       "provenance": {
         "file": "declarations/src/views/app/dev-system/useDevSystem.d.ts",
-        "line": 167,
+        "line": 166,
         "className": "DevSystemCtx",
         "declarationKind": "type"
       },
@@ -40,7 +40,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.477Z",
+  "generatedAt": "2026-06-12T04:27:41.892Z",
   "$defs": {
     "DevSystemCtx": {
       "type": "object",

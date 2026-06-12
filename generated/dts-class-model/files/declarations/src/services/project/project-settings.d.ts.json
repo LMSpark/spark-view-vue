@@ -1,21 +1,22 @@
 {
   "schemaVersion": 1,
-  "sourcePath": "declarations/src/services/project-settings.d.ts",
+  "sourcePath": "declarations/src/services/project/project-settings.d.ts",
   "module": {
-    "name": "app:services/project-settings",
-    "sourcePath": "declarations/src/services/project-settings.d.ts",
-    "sourceFile": "src/services/project-settings.ts",
+    "name": "app:services/project/project-settings",
+    "sourcePath": "declarations/src/services/project/project-settings.d.ts",
+    "sourceFile": "src/services/project/project-settings.ts",
     "packageName": "app",
-    "modulePath": "services/project-settings",
-    "jsdoc": "@module app:services/project-settings\n职责：提供主应用 project-settings 能力，围绕 ProjectLayoutPlacement、ProjectDetail、ProjectHomeNodeOption 等 6 个公开契约 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/project-settings。",
-    "jsdocSource": "source-file-jsdoc",
+    "modulePath": "services/project/project-settings",
+    "jsdoc": "@module app:services/project/project-settings\n职责：项目运行时设置（HTTP）与壳层 UI 偏好（localStorage）。\n边界：只处理 app 层配置读写，不修改 spark-project-model 协议。",
+    "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ProjectLayoutPlacement",
       "ProjectDetail",
       "ProjectHomeNodeOption",
       "ProjectRuntimeSettings",
       "ProjectRuntimeSettingsInput",
-      "SaveProjectRuntimeSettingsCommand"
+      "SaveProjectRuntimeSettingsCommand",
+      "ProjectUiSettings"
     ]
   },
   "symbols": [
@@ -24,7 +25,8 @@
     "ProjectHomeNodeOption",
     "ProjectRuntimeSettings",
     "ProjectRuntimeSettingsInput",
-    "SaveProjectRuntimeSettingsCommand"
+    "SaveProjectRuntimeSettingsCommand",
+    "ProjectUiSettings"
   ],
   "models": {
     "ProjectLayoutPlacement": {
@@ -44,8 +46,8 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/project-settings.d.ts",
-        "line": 2,
+        "file": "declarations/src/services/project/project-settings.d.ts",
+        "line": 8,
         "className": "ProjectLayoutPlacement",
         "declarationKind": "type"
       },
@@ -57,17 +59,17 @@
       "className": "ProjectDetail",
       "jsdoc": "Project Detail 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "{\n    /** tenant Id 标识。 */\n    tenantId: string;\n    /** project Id 标识。 */\n    projectId: string;\n    /** 显示或业务名称。 */\n    name: string;\n    /** project Type 字段。 */\n    projectType: string;\n    /** icon 字段。 */\n    icon: string;\n    /** description 字段。 */\n    description: string;\n    /** home Node Id 标识。 */\n    homeNodeId: string | null;\n    /** order 字段。 */\n    order: number;\n}",
+      "declarationTypeText": "{\n    tenantId: string;\n    projectId: string;\n    name: string;\n    projectType: string;\n    icon: string;\n    description: string;\n    homeNodeId: string | null;\n    order: number;\n}",
       "provenance": {
-        "file": "declarations/src/services/project-settings.d.ts",
-        "line": 4,
+        "file": "declarations/src/services/project/project-settings.d.ts",
+        "line": 10,
         "className": "ProjectDetail",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "tenantId",
-          "jsdoc": "tenant Id 标识。",
+          "jsdoc": "",
           "schema": {
             "type": "string"
           },
@@ -76,7 +78,7 @@
         },
         {
           "name": "projectId",
-          "jsdoc": "project Id 标识。",
+          "jsdoc": "",
           "schema": {
             "type": "string"
           },
@@ -85,7 +87,7 @@
         },
         {
           "name": "name",
-          "jsdoc": "显示或业务名称。",
+          "jsdoc": "",
           "schema": {
             "type": "string"
           },
@@ -94,7 +96,7 @@
         },
         {
           "name": "projectType",
-          "jsdoc": "project Type 字段。",
+          "jsdoc": "",
           "schema": {
             "type": "string"
           },
@@ -103,7 +105,7 @@
         },
         {
           "name": "icon",
-          "jsdoc": "icon 字段。",
+          "jsdoc": "",
           "schema": {
             "type": "string"
           },
@@ -112,7 +114,7 @@
         },
         {
           "name": "description",
-          "jsdoc": "description 字段。",
+          "jsdoc": "",
           "schema": {
             "type": "string"
           },
@@ -121,7 +123,7 @@
         },
         {
           "name": "homeNodeId",
-          "jsdoc": "home Node Id 标识。",
+          "jsdoc": "",
           "schema": {
             "anyOf": [
               {
@@ -137,7 +139,7 @@
         },
         {
           "name": "order",
-          "jsdoc": "order 字段。",
+          "jsdoc": "",
           "schema": {
             "type": "number"
           },
@@ -152,17 +154,17 @@
       "className": "ProjectHomeNodeOption",
       "jsdoc": "Project Home Node Option 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** 显示标题。 */\n    title: string;\n    /** 资源路径。 */\n    path: string;\n    /** 展示标签。 */\n    label: string;\n}",
+      "declarationTypeText": "{\n    id: string;\n    title: string;\n    path: string;\n    label: string;\n}",
       "provenance": {
-        "file": "declarations/src/services/project-settings.d.ts",
-        "line": 23,
+        "file": "declarations/src/services/project/project-settings.d.ts",
+        "line": 21,
         "className": "ProjectHomeNodeOption",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "id",
-          "jsdoc": "唯一标识。",
+          "jsdoc": "",
           "schema": {
             "type": "string"
           },
@@ -171,7 +173,7 @@
         },
         {
           "name": "title",
-          "jsdoc": "显示标题。",
+          "jsdoc": "",
           "schema": {
             "type": "string"
           },
@@ -180,7 +182,7 @@
         },
         {
           "name": "path",
-          "jsdoc": "资源路径。",
+          "jsdoc": "",
           "schema": {
             "type": "string"
           },
@@ -189,7 +191,7 @@
         },
         {
           "name": "label",
-          "jsdoc": "展示标签。",
+          "jsdoc": "",
           "schema": {
             "type": "string"
           },
@@ -204,17 +206,17 @@
       "className": "ProjectRuntimeSettings",
       "jsdoc": "Project Runtime Settings 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "{\n    /** project 字段。 */\n    project: ProjectDetail;\n    /** child Placement 字段。 */\n    childPlacement: ProjectLayoutPlacement;\n    /** root Module Id 标识。 */\n    rootModuleId: string | null;\n    /** home Node Options 配置项。 */\n    homeNodeOptions: ProjectHomeNodeOption[];\n}",
+      "declarationTypeText": "{\n    project: ProjectDetail;\n    childPlacement: ProjectLayoutPlacement;\n    rootModuleId: string | null;\n    homeNodeOptions: ProjectHomeNodeOption[];\n}",
       "provenance": {
-        "file": "declarations/src/services/project-settings.d.ts",
-        "line": 34,
+        "file": "declarations/src/services/project/project-settings.d.ts",
+        "line": 28,
         "className": "ProjectRuntimeSettings",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "project",
-          "jsdoc": "project 字段。",
+          "jsdoc": "",
           "schema": {
             "$ref": "#/$defs/ProjectDetail"
           },
@@ -223,7 +225,7 @@
         },
         {
           "name": "childPlacement",
-          "jsdoc": "child Placement 字段。",
+          "jsdoc": "",
           "schema": {
             "$ref": "#/$defs/ProjectLayoutPlacement"
           },
@@ -232,7 +234,7 @@
         },
         {
           "name": "rootModuleId",
-          "jsdoc": "root Module Id 标识。",
+          "jsdoc": "",
           "schema": {
             "anyOf": [
               {
@@ -248,7 +250,7 @@
         },
         {
           "name": "homeNodeOptions",
-          "jsdoc": "home Node Options 配置项。",
+          "jsdoc": "",
           "schema": {
             "type": "array",
             "items": {
@@ -266,17 +268,17 @@
       "className": "ProjectRuntimeSettingsInput",
       "jsdoc": "Project Runtime Settings Input 的输入数据。",
       "shapeKind": "type",
-      "declarationTypeText": "{\n    /** child Placement 字段。 */\n    childPlacement: ProjectLayoutPlacement;\n    /** home Node Id 标识。 */\n    homeNodeId: string | null;\n}",
+      "declarationTypeText": "{\n    childPlacement: ProjectLayoutPlacement;\n    homeNodeId: string | null;\n}",
       "provenance": {
-        "file": "declarations/src/services/project-settings.d.ts",
-        "line": 45,
+        "file": "declarations/src/services/project/project-settings.d.ts",
+        "line": 35,
         "className": "ProjectRuntimeSettingsInput",
         "declarationKind": "type"
       },
       "attributes": [
         {
           "name": "childPlacement",
-          "jsdoc": "child Placement 字段。",
+          "jsdoc": "",
           "schema": {
             "$ref": "#/$defs/ProjectLayoutPlacement"
           },
@@ -285,7 +287,7 @@
         },
         {
           "name": "homeNodeId",
-          "jsdoc": "home Node Id 标识。",
+          "jsdoc": "",
           "schema": {
             "anyOf": [
               {
@@ -316,16 +318,69 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/project-settings.d.ts",
-        "line": 53,
+        "file": "declarations/src/services/project/project-settings.d.ts",
+        "line": 41,
         "className": "SaveProjectRuntimeSettingsCommand",
         "declarationKind": "type"
       },
       "attributes": [],
       "methods": []
+    },
+    "ProjectUiSettings": {
+      "kind": "ProjectUiSettings",
+      "className": "ProjectUiSettings",
+      "jsdoc": "Project Ui Settings 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    headerFirst: boolean;\n    sidebarCollapsed: boolean;\n    showFooter: boolean;\n    pageMode: PageMode;\n}",
+      "provenance": {
+        "file": "declarations/src/services/project/project-settings.d.ts",
+        "line": 49,
+        "className": "ProjectUiSettings",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "headerFirst",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "sidebarCollapsed",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "showFooter",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "pageMode",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "PageMode"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.469Z",
+  "generatedAt": "2026-06-12T04:27:41.881Z",
   "$defs": {
     "ProjectLayoutPlacement": {
       "type": "object",
@@ -442,6 +497,26 @@
       "type": "object",
       "title": "SaveProjectRuntimeSettingsCommand",
       "description": "Save Project Runtime Settings Command 的命令参数。"
+    },
+    "ProjectUiSettings": {
+      "type": "object",
+      "title": "ProjectUiSettings",
+      "description": "Project Ui Settings 的语义模型。",
+      "properties": {
+        "headerFirst": {
+          "type": "boolean"
+        },
+        "sidebarCollapsed": {
+          "type": "boolean"
+        },
+        "showFooter": {
+          "type": "boolean"
+        },
+        "pageMode": {
+          "type": "object",
+          "title": "PageMode"
+        }
+      }
     }
   }
 }

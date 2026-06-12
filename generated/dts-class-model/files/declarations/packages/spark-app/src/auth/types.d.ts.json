@@ -298,7 +298,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.000Z",
+  "generatedAt": "2026-06-12T04:27:41.491Z",
   "$defs": {
     "LoginCredentials": {
       "type": "object",

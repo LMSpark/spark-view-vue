@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/page-design/page-design-headless.d.ts",
+  "module": {
+    "name": "app:services/page-design/page-design-headless",
+    "sourcePath": "declarations/src/services/page-design/page-design-headless.d.ts",
+    "sourceFile": "src/services/page-design/page-design-headless.ts",
+    "packageName": "app",
+    "modulePath": "services/page-design/page-design-headless",
+    "jsdoc": "@module app:services/page-design/page-design-headless\n职责：pageDesign 隔离式 headless ProjectWorkspace 工厂与 registry getter。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageDesignEditorResolveContext"
+    ]
+  },
+  "symbols": [
+    "PageDesignEditorResolveContext"
+  ],
+  "models": {
+    "PageDesignEditorResolveContext": {
+      "kind": "PageDesignEditorResolveContext",
+      "className": "PageDesignEditorResolveContext",
+      "jsdoc": "Page Design Editor Resolve Context 的运行上下文。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    moduleInstanceId: string;\n}",
+      "provenance": {
+        "file": "declarations/src/services/page-design/page-design-headless.d.ts",
+        "line": 7,
+        "className": "PageDesignEditorResolveContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "moduleInstanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-12T04:27:41.874Z",
+  "$defs": {
+    "PageDesignEditorResolveContext": {
+      "type": "object",
+      "title": "PageDesignEditorResolveContext",
+      "description": "Page Design Editor Resolve Context 的运行上下文。",
+      "properties": {
+        "moduleInstanceId": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

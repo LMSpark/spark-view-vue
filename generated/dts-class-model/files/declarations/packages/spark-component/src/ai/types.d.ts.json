@@ -190,7 +190,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.054Z",
+  "generatedAt": "2026-06-12T04:27:41.539Z",
   "$defs": {
     "ToolCallDisplayItem": {
       "type": "object",

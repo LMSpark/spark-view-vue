@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/page-design/page-design-host-run-provider.d.ts",
+  "module": {
+    "name": "app:services/page-design/page-design-host-run-provider",
+    "sourcePath": "declarations/src/services/page-design/page-design-host-run-provider.d.ts",
+    "sourceFile": "src/services/page-design/page-design-host-run-provider.ts",
+    "packageName": "app",
+    "modulePath": "services/page-design/page-design-host-run-provider",
+    "jsdoc": "@module app:services/page-design/page-design-host-run-provider\n职责：pageDesign 隔离式 Host Run——headless editor 注册、四文件 delivery、SSE prepare。\n边界：DevSystem 内联 runner 共用 editor 语义见 page-design-ai-runner。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageDesignDeliveryContext",
+      "CreatePageDesignDeliveryPortOptions"
+    ]
+  },
+  "symbols": [
+    "PageDesignDeliveryContext",
+    "CreatePageDesignDeliveryPortOptions"
+  ],
+  "models": {
+    "PageDesignDeliveryContext": {
+      "kind": "PageDesignDeliveryContext",
+      "className": "PageDesignDeliveryContext",
+      "jsdoc": "",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    editor: ProjectWorkspace;\n    pageId: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    editor: ProjectWorkspace;\n    pageId: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/page-design/page-design-host-run-provider.d.ts",
+        "line": 10,
+        "className": "PageDesignDeliveryContext",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "CreatePageDesignDeliveryPortOptions": {
+      "kind": "CreatePageDesignDeliveryPortOptions",
+      "className": "CreatePageDesignDeliveryPortOptions",
+      "jsdoc": "Create Page Design Delivery Port Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    mode: AiDeliveryMode;\n    shouldSave: boolean;\n    rollbackStatus: 'skipped' | 'rolledBack';\n    saveFileNames?: readonly PageNodeFileName[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    mode: AiDeliveryMode;\n    shouldSave: boolean;\n    rollbackStatus: 'skipped' | 'rolledBack';\n    saveFileNames?: readonly PageNodeFileName[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/page-design/page-design-host-run-provider.d.ts",
+        "line": 15,
+        "className": "CreatePageDesignDeliveryPortOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-12T04:27:41.875Z",
+  "$defs": {
+    "PageDesignDeliveryContext": {
+      "type": "object",
+      "title": "PageDesignDeliveryContext"
+    },
+    "CreatePageDesignDeliveryPortOptions": {
+      "type": "object",
+      "title": "CreatePageDesignDeliveryPortOptions",
+      "description": "Create Page Design Delivery Port Options 的调用配置。"
+    }
+  }
+}

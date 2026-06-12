@@ -642,7 +642,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T22:53:13.926Z",
+  "generatedAt": "2026-06-12T04:27:41.396Z",
   "$defs": {
     "CreateAiAgentHostOptions": {
       "type": "object",

@@ -178,18 +178,33 @@
         },
         {
           "name": "replaceNavigationChildren",
-          "jsdoc": "替换导航根节点的 children，返回更新后的导航根数据。\n@param children 新的导航 children 树；每个节点必须包含稳定 id、title、nodeKind。",
+          "jsdoc": "替换导航根节点的 children，返回更新后的导航根数据。\n@param input 新的导航 children 树，或 `{ children }` 命令对象（与 ClassModel script 对齐）。",
           "parameterStyle": "positional",
           "parameters": [
             {
-              "name": "children",
+              "name": "input",
               "type": {
-                "type": "array",
-                "elementType": {
-                  "type": "reference",
-                  "name": "ProjectNodeData",
-                  "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
-                }
+                "type": "union",
+                "types": [
+                  {
+                    "type": "array",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "ProjectNodeData",
+                      "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                    }
+                  },
+                  {
+                    "type": "reference",
+                    "name": "Readonly",
+                    "typeArguments": [
+                      {
+                        "type": "unknown",
+                        "name": "{\n        children: ProjectNodeData[];\n    }"
+                      }
+                    ]
+                  }
+                ]
               }
             }
           ],
@@ -321,22 +336,8 @@
           }
         },
         {
-          "name": "readPageSummaries",
-          "jsdoc": "读取策划轴投影：各 page/sub-page 的 description 与 descriptionContext。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "array",
-            "elementType": {
-              "type": "reference",
-              "name": "ProjectPageNodeSummary",
-              "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
-            }
-          }
-        },
-        {
           "name": "readPlanningProjection",
-          "jsdoc": "策划轴投影别名；与 readPageSummaries 同源。",
+          "jsdoc": "读取策划轴投影：各 page/sub-page 的 description 与 descriptionContext。",
           "parameterStyle": "positional",
           "parameters": [],
           "type": {
@@ -752,6 +753,16 @@
           }
         },
         {
+          "name": "applyNestedConfigPagePreset",
+          "jsdoc": "嵌套配置页 preset：page + hidden + 无 path。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          }
+        },
+        {
           "name": "writePageFile",
           "jsdoc": "写入指定配置页四文件文本到内存模型。\n@param command 页面文件写入命令，包含目标 pageId、文件名和新文本。",
           "parameterStyle": "positional",
@@ -1124,7 +1135,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.438Z",
+  "generatedAt": "2026-06-12T04:27:41.843Z",
   "$defs": {
     "ProjectModel": {
       "type": "object",

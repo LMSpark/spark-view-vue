@@ -97,7 +97,7 @@
       "className": "NavNodeKind",
       "jsdoc": "项目节点类型。",
       "shapeKind": "type",
-      "declarationTypeText": "'system-directory' | 'module' | 'system-page' | 'system-action' | 'page' | 'link' | 'sub-page' | 'ref'",
+      "declarationTypeText": "'system-directory' | 'module' | 'system-page' | 'system-action' | 'page' | 'link' | 'ref'",
       "declarationRelations": [
         {
           "kind": "union",
@@ -122,10 +122,6 @@
         {
           "kind": "union",
           "typeText": "'link'"
-        },
-        {
-          "kind": "union",
-          "typeText": "'sub-page'"
         },
         {
           "kind": "union",
@@ -378,7 +374,7 @@
       "className": "ProjectNodeData",
       "jsdoc": "项目树节点的可序列化数据形状。",
       "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 导航节点唯一 ID。 */\n    id: string;\n    /** 导航节点标题。 */\n    title: string;\n    /** 节点业务描述，供 AI 策划和页面设计理解用途。 */\n    description?: string | undefined;\n    /** 节点策划详细说明附件引用；正文由工作区解析后传给 LLM。 */\n    planningAttachmentRef?: string | undefined;\n    /** 节点版本号或版本标签。 */\n    version?: string | undefined;\n    /** 节点图标名。 */\n    icon?: string | undefined;\n    /** 导航节点类型，决定页面、模块、链接、引用等行为。 */\n    nodeKind?: NavNodeKind | undefined;\n    /** 子节点在应用壳中的布局区域。 */\n    childPlacement?: ChildPlacement | undefined;\n    /** 导航上下文配置或静态上下文选项。 */\n    context?: string | NavContextItem[] | NavContextConfig | undefined;\n    /** 同级排序值，数值越小越靠前。 */\n    order?: number | undefined;\n    /** 是否在导航中隐藏。 */\n    hidden?: boolean | undefined;\n    /** 是否禁用该导航节点。 */\n    disabled?: boolean | undefined;\n    /** 是否在该节点后显示分隔线。 */\n    dividerAfter?: boolean | undefined;\n    /** 权限不匹配时的展示策略。 */\n    permissionMode?: NavPermissionMode | undefined;\n    /** 子导航节点。 */\n    children?: ProjectNodeData[] | undefined;\n    /** 页面路由路径。 */\n    path?: string | undefined;\n    /** link 节点的打开目标。 */\n    linkTarget?: 'iframe' | 'new-tab' | 'self' | undefined;\n    /** 重定向目标路径。 */\n    redirect?: string | undefined;\n    /** ref 节点引用的目标节点 ID。 */\n    refId?: string | undefined;\n    /** ref 节点解析后的目标路径。 */\n    refPath?: string | undefined;\n    /** ref 节点引用的目标项目 ID。 */\n    refProjectId?: string | undefined;\n    /** ref 引用是否已失效。 */\n    refBroken?: boolean | undefined;\n    /** Agent 策划闸门；缺省时由 effectiveDescription 推断。 */\n    planningStatus?: 'planning_draft' | 'planning_confirmed' | undefined;\n    /** pageDesign 实现放行闸门；缺省过渡期为 open。 */\n    implGate?: 'closed' | 'open' | undefined;\n    /** 上游 iPaaS / 契约就绪；缺省 true。 */\n    upstreamContractsSatisfied?: boolean | undefined;\n}",
+      "declarationTypeText": "{\n    /** 导航节点唯一 ID。 */\n    id: string;\n    /** 导航节点标题。 */\n    title: string;\n    /** 节点业务描述，供 AI 策划和页面设计理解用途。 */\n    description?: string | undefined;\n    /** 节点策划详细说明附件引用；正文由工作区解析后传给 LLM。 */\n    planningAttachmentRef?: string | undefined;\n    /** 节点版本号或版本标签。 */\n    version?: string | undefined;\n    /** 节点图标名。 */\n    icon?: string | undefined;\n    /** 导航节点类型，决定页面、模块、链接、引用等行为。 */\n    nodeKind?: NavNodeKind | undefined;\n    /** 子节点在应用壳中的布局区域。 */\n    childPlacement?: ChildPlacement | undefined;\n    /** 导航上下文配置或静态上下文选项。 */\n    context?: string | NavContextItem[] | NavContextConfig | undefined;\n    /** 同级排序值，数值越小越靠前。 */\n    order?: number | undefined;\n    /** 是否在导航中隐藏。 */\n    hidden?: boolean | undefined;\n    /** 是否禁用该导航节点。 */\n    disabled?: boolean | undefined;\n    /** 是否在该节点后显示分隔线。 */\n    dividerAfter?: boolean | undefined;\n    /** 权限不匹配时的展示策略。 */\n    permissionMode?: NavPermissionMode | undefined;\n    /** 子导航节点。 */\n    children?: ProjectNodeData[] | undefined;\n    /** 页面路由路径。 */\n    path?: string | undefined;\n    /** link 节点的打开目标。 */\n    linkTarget?: 'iframe' | 'new-tab' | 'self' | undefined;\n    /** 重定向目标路径。 */\n    redirect?: string | undefined;\n    /** ref 节点引用的目标节点 ID。 */\n    refId?: string | undefined;\n    /** ref 节点解析后的目标路径。 */\n    refPath?: string | undefined;\n    /** ref 节点引用的目标项目 ID。 */\n    refProjectId?: string | undefined;\n    /** ref 引用是否已失效。 */\n    refBroken?: boolean | undefined;\n    /** pageDesign 实现放行闸门；缺省过渡期为 open。 */\n    implGate?: 'closed' | 'open' | undefined;\n    /** 上游 iPaaS / 契约就绪；缺省 true。 */\n    upstreamContractsSatisfied?: boolean | undefined;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
         "line": 42,
@@ -620,28 +616,6 @@
           "writable": false
         },
         {
-          "name": "planningStatus",
-          "jsdoc": "Agent 策划闸门；缺省时由 effectiveDescription 推断。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "planning_draft"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "planning_confirmed"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "implGate",
           "jsdoc": "pageDesign 实现放行闸门；缺省过渡期为 open。",
           "schema": {
@@ -680,10 +654,10 @@
       "className": "ProjectNodeNavigationPatch",
       "jsdoc": "Project Node Navigation Patch 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "{\n    /** 新标题。 */\n    title: string;\n    /** 新节点类型。 */\n    nodeKind?: NavNodeKind | undefined;\n    /** 新图标名。 */\n    icon?: string | undefined;\n    /** 是否在节点后显示分隔线。 */\n    dividerAfter?: boolean | undefined;\n    /** 新节点描述。 */\n    description?: string | undefined;\n    /** 新策划详细说明附件引用。 */\n    planningAttachmentRef?: string | undefined;\n    /** 新路由路径。 */\n    path?: string | undefined;\n    /** link 节点新打开目标。 */\n    linkTarget?: string | undefined;\n    /** 新子节点布局区域。 */\n    childPlacement?: string | undefined;\n    /** 新同级排序值。 */\n    order?: number | undefined;\n    /** 是否隐藏节点。 */\n    hidden?: boolean | undefined;\n    /** 是否禁用节点。 */\n    disabled?: boolean | undefined;\n    /** 新 ref 目标节点 ID。 */\n    refId?: string | undefined;\n    /** 新权限展示策略。 */\n    permissionMode?: NavPermissionMode | undefined;\n    /** 新导航上下文配置。 */\n    context?: string | NavContextItem[] | NavContextConfig | undefined;\n    /** 新 Agent 策划闸门。 */\n    planningStatus?: 'planning_draft' | 'planning_confirmed' | undefined;\n    /** 新 pageDesign 实现放行闸门。 */\n    implGate?: 'closed' | 'open' | undefined;\n    /** 新上游契约就绪状态。 */\n    upstreamContractsSatisfied?: boolean | undefined;\n}",
+      "declarationTypeText": "{\n    /** 新标题。 */\n    title: string;\n    /** 新节点类型。 */\n    nodeKind?: NavNodeKind | undefined;\n    /** 新图标名。 */\n    icon?: string | undefined;\n    /** 是否在节点后显示分隔线。 */\n    dividerAfter?: boolean | undefined;\n    /** 新节点描述。 */\n    description?: string | undefined;\n    /** 新策划详细说明附件引用。 */\n    planningAttachmentRef?: string | undefined;\n    /** 新路由路径。 */\n    path?: string | undefined;\n    /** link 节点新打开目标。 */\n    linkTarget?: string | undefined;\n    /** 新子节点布局区域。 */\n    childPlacement?: string | undefined;\n    /** 新同级排序值。 */\n    order?: number | undefined;\n    /** 是否隐藏节点。 */\n    hidden?: boolean | undefined;\n    /** 是否禁用节点。 */\n    disabled?: boolean | undefined;\n    /** 新 ref 目标节点 ID。 */\n    refId?: string | undefined;\n    /** 新权限展示策略。 */\n    permissionMode?: NavPermissionMode | undefined;\n    /** 新导航上下文配置。 */\n    context?: string | NavContextItem[] | NavContextConfig | undefined;\n    /** 新 pageDesign 实现放行闸门。 */\n    implGate?: 'closed' | 'open' | undefined;\n    /** 新上游契约就绪状态。 */\n    upstreamContractsSatisfied?: boolean | undefined;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
-        "line": 95,
+        "line": 93,
         "className": "ProjectNodeNavigationPatch",
         "declarationKind": "type"
       },
@@ -837,28 +811,6 @@
           "writable": false
         },
         {
-          "name": "planningStatus",
-          "jsdoc": "新 Agent 策划闸门。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "planning_draft"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "planning_confirmed"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "implGate",
           "jsdoc": "新 pageDesign 实现放行闸门。",
           "schema": {
@@ -900,7 +852,7 @@
       "declarationTypeText": "{\n    /** 命中的节点数据。 */\n    node: ProjectNodeData;\n    /** 父节点数据；根节点无父级时为 null。 */\n    parent: ProjectNodeData | null;\n    /** 父节点 ID；根节点无父级时为 null。 */\n    parentId: string | null;\n    /** 节点在父级 children 中的索引。 */\n    index: number;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
-        "line": 134,
+        "line": 130,
         "className": "ProjectNodeLocation",
         "declarationKind": "type"
       },
@@ -977,7 +929,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
-        "line": 146,
+        "line": 142,
         "className": "ProjectModelData",
         "declarationKind": "type"
       },
@@ -1076,7 +1028,7 @@
       "declarationTypeText": "{\n    /** 顶部导航区域节点。 */\n    header: ProjectNodeData[];\n    /** 侧边栏区域节点。 */\n    sidebar: ProjectNodeData[];\n    /** 工具栏区域节点。 */\n    toolbar: ProjectNodeData[];\n    /** 用户菜单区域节点。 */\n    userMenu: ProjectNodeData[];\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
-        "line": 161,
+        "line": 157,
         "className": "RegionItems",
         "declarationKind": "type"
       },
@@ -1140,7 +1092,7 @@
       "declarationTypeText": "{\n    /** 顶部导航是否可见。 */\n    header: boolean;\n    /** 侧边栏是否可见。 */\n    sidebar: boolean;\n    /** 工具栏是否可见。 */\n    toolbar: boolean;\n    /** 用户菜单是否可见。 */\n    userMenu: boolean;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
-        "line": 172,
+        "line": 168,
         "className": "RegionVisibility",
         "declarationKind": "type"
       },
@@ -1192,7 +1144,7 @@
       "declarationTypeText": "{\n    /** 当前上下文配置。 */\n    config: NavContextConfig;\n    /** 绑定该上下文的导航节点 ID。 */\n    nodeId: string;\n    /** 当前选中上下文值。 */\n    selected: string | number | null;\n    /** 当前可选上下文项。 */\n    items: NavContextItem[];\n    /** 上下文选项是否正在加载。 */\n    loading: boolean;\n    /** 上下文加载错误消息。 */\n    error: string | null;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
-        "line": 183,
+        "line": 179,
         "className": "NavContextState",
         "declarationKind": "type"
       },
@@ -1304,7 +1256,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
-        "line": 198,
+        "line": 194,
         "className": "ProjectPageSurface",
         "declarationKind": "type"
       },
@@ -1316,7 +1268,7 @@
       "className": "ProjectPageNodeSummary",
       "jsdoc": "Project Page Node Summary 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "Record<string, unknown> & {\n    /** 配置页 pageId。 */\n    pageId: string;\n    /** 页面路由路径。 */\n    path: string;\n    /** 页面标题。 */\n    title: string;\n    /** 导航节点 ID。 */\n    nodeId: string;\n    /** 导航节点类型。 */\n    nodeKind: NavNodeKind;\n    /** 模型侧编辑表面：config-files=四文件；system-page=系统页；none=不可编辑页面文件 */\n    designSurface: ProjectPageSurface;\n    /** 页面节点自身描述。 */\n    description: string;\n    /** 页面节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 从祖先或上下文节点继承的描述列表。 */\n    descriptionContext: ProjectDescriptionContext[];\n    /** 聚合后的有效描述文本，供 AI 理解页面意图。 */\n    effectiveDescription: string;\n    /** Agent 可见策划闸门；缺省时由 effectiveDescription 推断 planning_confirmed。 */\n    planningStatus?: 'planning_draft' | 'planning_confirmed';\n    /** 实现放行闸门；缺省过渡期为 open（runner 可 strictImplGate）。 */\n    implGate?: 'closed' | 'open';\n    /** 上游 iPaaS / 契约就绪；缺省 true。 */\n    upstreamContractsSatisfied?: boolean;\n    /** 页面图标名。 */\n    icon?: string;\n}",
+      "declarationTypeText": "Record<string, unknown> & {\n    /** 配置页 pageId。 */\n    pageId: string;\n    /** 页面路由路径。 */\n    path: string;\n    /** 页面标题。 */\n    title: string;\n    /** 导航节点 ID。 */\n    nodeId: string;\n    /** 导航节点类型。 */\n    nodeKind: NavNodeKind;\n    /** 模型侧编辑表面：config-files=四文件；system-page=系统页；none=不可编辑页面文件 */\n    designSurface: ProjectPageSurface;\n    /** 页面节点自身描述。 */\n    description: string;\n    /** 页面节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 从祖先或上下文节点继承的描述列表。 */\n    descriptionContext: ProjectDescriptionContext[];\n    /** 聚合后的有效描述文本，供 AI 理解页面意图。 */\n    effectiveDescription: string;\n    /** 实现放行闸门；缺省过渡期为 open（runner 可 strictImplGate）。 */\n    implGate?: 'closed' | 'open';\n    /** 上游 iPaaS / 契约就绪；缺省 true。 */\n    upstreamContractsSatisfied?: boolean;\n    /** 页面图标名。 */\n    icon?: string;\n}",
       "declarationRelations": [
         {
           "kind": "intersection",
@@ -1325,12 +1277,12 @@
         },
         {
           "kind": "intersection",
-          "typeText": "{\n    /** 配置页 pageId。 */\n    pageId: string;\n    /** 页面路由路径。 */\n    path: string;\n    /** 页面标题。 */\n    title: string;\n    /** 导航节点 ID。 */\n    nodeId: string;\n    /** 导航节点类型。 */\n    nodeKind: NavNodeKind;\n    /** 模型侧编辑表面：config-files=四文件；system-page=系统页；none=不可编辑页面文件 */\n    designSurface: ProjectPageSurface;\n    /** 页面节点自身描述。 */\n    description: string;\n    /** 页面节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 从祖先或上下文节点继承的描述列表。 */\n    descriptionContext: ProjectDescriptionContext[];\n    /** 聚合后的有效描述文本，供 AI 理解页面意图。 */\n    effectiveDescription: string;\n    /** Agent 可见策划闸门；缺省时由 effectiveDescription 推断 planning_confirmed。 */\n    planningStatus?: 'planning_draft' | 'planning_confirmed';\n    /** 实现放行闸门；缺省过渡期为 open（runner 可 strictImplGate）。 */\n    implGate?: 'closed' | 'open';\n    /** 上游 iPaaS / 契约就绪；缺省 true。 */\n    upstreamContractsSatisfied?: boolean;\n    /** 页面图标名。 */\n    icon?: string;\n}"
+          "typeText": "{\n    /** 配置页 pageId。 */\n    pageId: string;\n    /** 页面路由路径。 */\n    path: string;\n    /** 页面标题。 */\n    title: string;\n    /** 导航节点 ID。 */\n    nodeId: string;\n    /** 导航节点类型。 */\n    nodeKind: NavNodeKind;\n    /** 模型侧编辑表面：config-files=四文件；system-page=系统页；none=不可编辑页面文件 */\n    designSurface: ProjectPageSurface;\n    /** 页面节点自身描述。 */\n    description: string;\n    /** 页面节点策划详细说明附件引用。 */\n    planningAttachmentRef?: string;\n    /** 从祖先或上下文节点继承的描述列表。 */\n    descriptionContext: ProjectDescriptionContext[];\n    /** 聚合后的有效描述文本，供 AI 理解页面意图。 */\n    effectiveDescription: string;\n    /** 实现放行闸门；缺省过渡期为 open（runner 可 strictImplGate）。 */\n    implGate?: 'closed' | 'open';\n    /** 上游 iPaaS / 契约就绪；缺省 true。 */\n    upstreamContractsSatisfied?: boolean;\n    /** 页面图标名。 */\n    icon?: string;\n}"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
-        "line": 200,
+        "line": 196,
         "className": "ProjectPageNodeSummary",
         "declarationKind": "type"
       },
@@ -1429,28 +1381,6 @@
           "writable": true
         },
         {
-          "name": "planningStatus",
-          "jsdoc": "Agent 可见策划闸门；缺省时由 effectiveDescription 推断 planning_confirmed。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "planning_draft"
-                ]
-              },
-              {
-                "type": "string",
-                "enum": [
-                  "planning_confirmed"
-                ]
-              }
-            ]
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "implGate",
           "jsdoc": "实现放行闸门；缺省过渡期为 open（runner 可 strictImplGate）。",
           "schema": {
@@ -1501,7 +1431,7 @@
       "declarationTypeText": "{\n    /** 当前导航节点数据快照。 */\n    node: ProjectNodeData;\n    /** 父节点 ID；根级节点传空字符串。 */\n    pid: string;\n    /** 祖先或上下文描述链。 */\n    descriptionContext?: readonly ProjectDescriptionContext[];\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
-        "line": 231,
+        "line": 225,
         "className": "ProjectNodeModelOptions",
         "declarationKind": "type"
       },
@@ -1543,7 +1473,7 @@
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts",
-        "line": 242,
+        "line": 236,
         "className": "ProjectNode",
         "declarationKind": "class"
       },
@@ -1630,7 +1560,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.425Z",
+  "generatedAt": "2026-06-12T04:27:41.834Z",
   "$defs": {
     "ChildPlacement": {
       "type": "object",
@@ -1833,22 +1763,6 @@
         "refBroken": {
           "type": "boolean"
         },
-        "planningStatus": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "planning_draft"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "planning_confirmed"
-              ]
-            }
-          ]
-        },
         "implGate": {
           "anyOf": [
             {
@@ -1930,22 +1844,6 @@
             },
             {
               "$ref": "#/$defs/NavContextConfig"
-            }
-          ]
-        },
-        "planningStatus": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "planning_draft"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "planning_confirmed"
-              ]
             }
           ]
         },
@@ -2194,22 +2092,6 @@
         },
         "effectiveDescription": {
           "type": "string"
-        },
-        "planningStatus": {
-          "anyOf": [
-            {
-              "type": "string",
-              "enum": [
-                "planning_draft"
-              ]
-            },
-            {
-              "type": "string",
-              "enum": [
-                "planning_confirmed"
-              ]
-            }
-          ]
         },
         "implGate": {
           "anyOf": [

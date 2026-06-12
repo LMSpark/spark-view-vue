@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/src/services/ai/spark-ai-agent-bindings.d.ts",
+  "module": {
+    "name": "app:services/ai/spark-ai-agent-bindings",
+    "sourcePath": "declarations/src/services/ai/spark-ai-agent-bindings.d.ts",
+    "sourceFile": "src/services/ai/spark-ai-agent-bindings.ts",
+    "packageName": "app",
+    "modulePath": "services/ai/spark-ai-agent-bindings",
+    "jsdoc": "@module app:services/ai/spark-ai-agent-bindings\n职责：spark-ai agent 类型与 ClassModel 适配器的 app 层统一 import 入口。\n边界：只做 re-export，不包含业务编排。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-12T04:27:41.869Z"
+}

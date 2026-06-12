@@ -29,7 +29,7 @@
       "declarationTypeText": "{\n    /** 唯一标识。 */\n    id?: string | undefined;\n    /** 显示标题。 */\n    title?: string | undefined;\n    /** child Placement 字段。 */\n    childPlacement?: string | undefined;\n    /** 子节点集合。 */\n    children?: ProjectNodeData[] | undefined;\n    /** icon 字段。 */\n    icon?: string | undefined;\n    /** description 字段。 */\n    description?: string | undefined;\n    /** planning Attachment Ref 字段。 */\n    planningAttachmentRef?: string | undefined;\n    /** version 字段。 */\n    version?: string | undefined;\n    /** node Kind 字段。 */\n    nodeKind?: 'module' | 'system-directory' | undefined;\n    /** home Path 路径。 */\n    homePath?: string | undefined;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/navigation-tree.d.ts",
-        "line": 9,
+        "line": 11,
         "className": "NormalizeNavRootInput",
         "declarationKind": "type"
       },
@@ -151,7 +151,7 @@
       "declarationTypeText": "{\n    /** description Context 字段。 */\n    descriptionContext?: readonly ProjectDescriptionContext[];\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/navigation-tree.d.ts",
-        "line": 45,
+        "line": 47,
         "className": "BuildProjectPageSummariesOptions",
         "declarationKind": "type"
       },
@@ -176,7 +176,7 @@
       "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    /** pid 字段。 */\n    readonly pid: string;\n    toNodeData(): ProjectNodeData;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/navigation/navigation-tree.d.ts",
-        "line": 55,
+        "line": 57,
         "className": "TreeNodeLike",
         "declarationKind": "type"
       },
@@ -203,7 +203,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.422Z",
+  "generatedAt": "2026-06-12T04:27:41.832Z",
   "$defs": {
     "NormalizeNavRootInput": {
       "type": "object",

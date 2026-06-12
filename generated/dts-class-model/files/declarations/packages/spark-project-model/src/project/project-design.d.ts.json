@@ -353,8 +353,8 @@
           }
         },
         {
-          "name": "readPageSummaries",
-          "jsdoc": "执行 read Page Summaries 操作。",
+          "name": "readPlanningProjection",
+          "jsdoc": "读取策划轴投影：各 page/sub-page 的 description 与 descriptionContext。",
           "parameterStyle": "positional",
           "parameters": [],
           "type": {
@@ -499,7 +499,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.435Z",
+  "generatedAt": "2026-06-12T04:27:41.840Z",
   "$defs": {
     "ProjectDesignNodeEditResult": {
       "type": "object",

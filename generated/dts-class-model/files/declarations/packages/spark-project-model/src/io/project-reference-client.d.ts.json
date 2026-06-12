@@ -275,7 +275,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.417Z",
+  "generatedAt": "2026-06-12T04:27:41.828Z",
   "$defs": {
     "ProjectReferenceClientOptions": {
       "type": "object",

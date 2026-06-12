@@ -146,7 +146,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.028Z",
+  "generatedAt": "2026-06-12T04:27:41.532Z",
   "$defs": {
     "ThemeCapability": {
       "type": "object",

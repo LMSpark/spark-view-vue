@@ -165,7 +165,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.078Z",
+  "generatedAt": "2026-06-12T04:27:41.557Z",
   "$defs": {
     "NativeTableLike": {
       "type": "object",

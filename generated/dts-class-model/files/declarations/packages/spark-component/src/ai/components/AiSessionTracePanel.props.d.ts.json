@@ -41,7 +41,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.032Z",
+  "generatedAt": "2026-06-12T04:27:41.535Z",
   "$defs": {
     "AiSessionTracePanelProps": {
       "type": "object",

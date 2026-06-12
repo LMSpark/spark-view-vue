@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "sourcePath": "declarations/src/services/ai-host-run-bridge.d.ts",
+  "sourcePath": "declarations/src/services/ai/ai-host-run-bridge.d.ts",
   "module": {
-    "name": "app:services/ai-host-run-bridge",
-    "sourcePath": "declarations/src/services/ai-host-run-bridge.d.ts",
-    "sourceFile": "src/services/ai-host-run-bridge.ts",
+    "name": "app:services/ai/ai-host-run-bridge",
+    "sourcePath": "declarations/src/services/ai/ai-host-run-bridge.d.ts",
+    "sourceFile": "src/services/ai/ai-host-run-bridge.ts",
     "packageName": "app",
-    "modulePath": "services/ai-host-run-bridge",
+    "modulePath": "services/ai/ai-host-run-bridge",
     "jsdoc": "@module app:services/ai-host-run-bridge\n职责：提供应用运行时 service 层的 ai host run bridge 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nAPP 层 Host Run 分布式桥接器。\n后端通过 APP 公共 SSE 定向下发 ai-host-run-request，本桥接器只负责\n校验平台载荷、调用本地 AiAgentHost.run(alias,args)、收集 trace 并提交回执。\n业务状态和业务流程编排仍由注册方与 LLM 协作完成，APP bridge 不理解具体能力。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
@@ -37,7 +37,7 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/ai-host-run-bridge.d.ts",
+        "file": "declarations/src/services/ai/ai-host-run-bridge.d.ts",
         "line": 18,
         "className": "AiHostRunTarget",
         "declarationKind": "type"
@@ -52,7 +52,7 @@
       "shapeKind": "type",
       "declarationTypeText": "(event: AiHostRunRequestEvent, host: THost) => AiHostRunTarget | Promise<AiHostRunTarget>",
       "provenance": {
-        "file": "declarations/src/services/ai-host-run-bridge.d.ts",
+        "file": "declarations/src/services/ai/ai-host-run-bridge.d.ts",
         "line": 24,
         "className": "AiHostRunPrepare",
         "declarationKind": "type"
@@ -74,7 +74,7 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/ai-host-run-bridge.d.ts",
+        "file": "declarations/src/services/ai/ai-host-run-bridge.d.ts",
         "line": 26,
         "className": "AiHostRunBridgeOptions",
         "declarationKind": "type"
@@ -96,7 +96,7 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/ai-host-run-bridge.d.ts",
+        "file": "declarations/src/services/ai/ai-host-run-bridge.d.ts",
         "line": 33,
         "className": "AiHostRunBridge",
         "declarationKind": "type"
@@ -105,7 +105,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.462Z",
+  "generatedAt": "2026-06-12T04:27:41.868Z",
   "$defs": {
     "AiHostRunTarget": {
       "type": "object",

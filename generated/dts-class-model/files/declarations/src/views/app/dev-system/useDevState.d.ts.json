@@ -292,7 +292,7 @@
       ],
       "provenance": {
         "file": "declarations/src/views/app/dev-system/useDevState.d.ts",
-        "line": 193,
+        "line": 192,
         "className": "DevState",
         "declarationKind": "type"
       },
@@ -300,7 +300,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.476Z",
+  "generatedAt": "2026-06-12T04:27:41.890Z",
   "$defs": {
     "DevPageFileName": {
       "type": "object",

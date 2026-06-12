@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "sourcePath": "declarations/src/services/ai-turn-bridge.d.ts",
+  "sourcePath": "declarations/src/services/ai/ai-turn-bridge.d.ts",
   "module": {
-    "name": "app:services/ai-turn-bridge",
-    "sourcePath": "declarations/src/services/ai-turn-bridge.d.ts",
-    "sourceFile": "src/services/ai-turn-bridge.ts",
+    "name": "app:services/ai/ai-turn-bridge",
+    "sourcePath": "declarations/src/services/ai/ai-turn-bridge.d.ts",
+    "sourceFile": "src/services/ai/ai-turn-bridge.ts",
     "packageName": "app",
-    "modulePath": "services/ai-turn-bridge",
+    "modulePath": "services/ai/ai-turn-bridge",
     "jsdoc": "@module app:services/ai-turn-bridge\n职责：提供应用运行时 service 层的 ai turn bridge 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\nAPP-owned AI turn bridge.\nHTTP commands and APP SSE subscription stay in src/services; spark-ai only\nreceives callbacks and aggregates events.",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
@@ -33,8 +33,8 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/ai-turn-bridge.d.ts",
-        "line": 15,
+        "file": "declarations/src/services/ai/ai-turn-bridge.d.ts",
+        "line": 16,
         "className": "AiTurnBridgeDiagnostic",
         "declarationKind": "type"
       },
@@ -55,8 +55,8 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/ai-turn-bridge.d.ts",
-        "line": 24,
+        "file": "declarations/src/services/ai/ai-turn-bridge.d.ts",
+        "line": 25,
         "className": "AiAgentTurnBridgeOptions",
         "declarationKind": "type"
       },
@@ -64,7 +64,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.462Z",
+  "generatedAt": "2026-06-12T04:27:41.869Z",
   "$defs": {
     "AiTurnBridgeDiagnostic": {
       "type": "object",

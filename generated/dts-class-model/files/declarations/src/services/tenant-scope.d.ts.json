@@ -52,7 +52,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.470Z",
+  "generatedAt": "2026-06-12T04:27:41.882Z",
   "$defs": {
     "TenantProjectScope": {
       "type": "object",

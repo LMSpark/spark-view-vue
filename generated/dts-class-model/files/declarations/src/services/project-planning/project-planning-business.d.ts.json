@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "sourcePath": "declarations/src/services/project-planning-business.d.ts",
+  "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
   "module": {
-    "name": "app:services/project-planning-business",
-    "sourcePath": "declarations/src/services/project-planning-business.d.ts",
-    "sourceFile": "src/services/project-planning-business.ts",
+    "name": "app:services/project-planning/project-planning-business",
+    "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
+    "sourceFile": "src/services/project-planning/project-planning-business.ts",
     "packageName": "app",
-    "modulePath": "services/project-planning-business",
+    "modulePath": "services/project-planning/project-planning-business",
     "jsdoc": "@module app:services/project-planning-business\n职责：提供应用运行时 service 层的 project planning business 能力，连接项目模型、AI Host、租户上下文或页面设计流程。\n边界：负责 src 应用侧编排，不修改底层包协议，也不绕过已注册的 capability/data 管线。\nAI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。\n\n项目策划 AI 输入契约与 Host 业务注册。\n策划阶段只消费 navigation description + 附件详细说明，产出子模块/页面概要；\n不绑定 pageDesign 四文件或 config-page metadata。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
@@ -17,7 +17,8 @@
       "ResolveProjectPlanningRunInputOptions",
       "FilterNavigationPlanningNodesOptions",
       "ResolveScopedProjectPlanningRunInputOptions",
-      "EnsureProjectPlanningBusinessOptions"
+      "EnsureProjectPlanningBusinessOptions",
+      "ProjectPlanningGateValidationResult"
     ]
   },
   "symbols": [
@@ -28,7 +29,8 @@
     "ResolveProjectPlanningRunInputOptions",
     "FilterNavigationPlanningNodesOptions",
     "ResolveScopedProjectPlanningRunInputOptions",
-    "EnsureProjectPlanningBusinessOptions"
+    "EnsureProjectPlanningBusinessOptions",
+    "ProjectPlanningGateValidationResult"
   ],
   "models": {
     "ProjectPlanningRunInput": {
@@ -45,7 +47,7 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/project-planning-business.d.ts",
+        "file": "declarations/src/services/project-planning/project-planning-business.d.ts",
         "line": 17,
         "className": "ProjectPlanningRunInput",
         "declarationKind": "type"
@@ -67,7 +69,7 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/project-planning-business.d.ts",
+        "file": "declarations/src/services/project-planning/project-planning-business.d.ts",
         "line": 29,
         "className": "ProjectPlanningAgentInput",
         "declarationKind": "type"
@@ -89,7 +91,7 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/project-planning-business.d.ts",
+        "file": "declarations/src/services/project-planning/project-planning-business.d.ts",
         "line": 38,
         "className": "NavigationPlanningAgentInput",
         "declarationKind": "type"
@@ -111,7 +113,7 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/project-planning-business.d.ts",
+        "file": "declarations/src/services/project-planning/project-planning-business.d.ts",
         "line": 47,
         "className": "NavigationPlanningRunInput",
         "declarationKind": "type"
@@ -133,7 +135,7 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/project-planning-business.d.ts",
+        "file": "declarations/src/services/project-planning/project-planning-business.d.ts",
         "line": 58,
         "className": "ResolveProjectPlanningRunInputOptions",
         "declarationKind": "type"
@@ -155,7 +157,7 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/project-planning-business.d.ts",
+        "file": "declarations/src/services/project-planning/project-planning-business.d.ts",
         "line": 67,
         "className": "FilterNavigationPlanningNodesOptions",
         "declarationKind": "type"
@@ -182,7 +184,7 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/project-planning-business.d.ts",
+        "file": "declarations/src/services/project-planning/project-planning-business.d.ts",
         "line": 74,
         "className": "ResolveScopedProjectPlanningRunInputOptions",
         "declarationKind": "type"
@@ -204,16 +206,38 @@
         }
       ],
       "provenance": {
-        "file": "declarations/src/services/project-planning-business.d.ts",
+        "file": "declarations/src/services/project-planning/project-planning-business.d.ts",
         "line": 76,
         "className": "EnsureProjectPlanningBusinessOptions",
         "declarationKind": "type"
       },
       "attributes": [],
       "methods": []
+    },
+    "ProjectPlanningGateValidationResult": {
+      "kind": "ProjectPlanningGateValidationResult",
+      "className": "ProjectPlanningGateValidationResult",
+      "jsdoc": "Project Planning Gate Validation Result 的返回结果。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ok: boolean;\n    reason?: string;\n    fix?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    ok: boolean;\n    reason?: string;\n    fix?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/src/services/project-planning/project-planning-business.d.ts",
+        "line": 92,
+        "className": "ProjectPlanningGateValidationResult",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.468Z",
+  "generatedAt": "2026-06-12T04:27:41.880Z",
   "$defs": {
     "ProjectPlanningRunInput": {
       "type": "object",
@@ -254,6 +278,11 @@
       "type": "object",
       "title": "EnsureProjectPlanningBusinessOptions",
       "description": "Ensure Project Planning Business Options 的调用配置。"
+    },
+    "ProjectPlanningGateValidationResult": {
+      "type": "object",
+      "title": "ProjectPlanningGateValidationResult",
+      "description": "Project Planning Gate Validation Result 的返回结果。"
     }
   }
 }

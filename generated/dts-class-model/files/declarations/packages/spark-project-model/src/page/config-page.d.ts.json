@@ -13,16 +13,14 @@
       "PageNodeRenderConfig",
       "PageNodeLike",
       "ProjectConfigPageNodeModelOptions",
-      "ConfigPageNode",
-      "ConfigSubPageNode"
+      "ConfigPageNode"
     ]
   },
   "symbols": [
     "PageNodeRenderConfig",
     "PageNodeLike",
     "ProjectConfigPageNodeModelOptions",
-    "ConfigPageNode",
-    "ConfigSubPageNode"
+    "ConfigPageNode"
   ],
   "models": {
     "PageNodeRenderConfig": {
@@ -625,42 +623,9 @@
           }
         }
       ]
-    },
-    "ConfigSubPageNode": {
-      "kind": "ConfigSubPageNode",
-      "className": "ConfigSubPageNode",
-      "jsdoc": "sub-page 配置页：四文件模型，nodeKind=sub-page，无独立 path。",
-      "shapeKind": "class",
-      "declarationRelations": [
-        {
-          "kind": "extends",
-          "typeText": "ConfigPageNode",
-          "targetName": "ConfigPageNode"
-        }
-      ],
-      "provenance": {
-        "file": "declarations/packages/spark-project-model/src/page/config-page.d.ts",
-        "line": 143,
-        "className": "ConfigSubPageNode",
-        "declarationKind": "class"
-      },
-      "attributes": [],
-      "methods": [
-        {
-          "name": "toSummary",
-          "jsdoc": "执行 to Summary 操作。",
-          "parameterStyle": "positional",
-          "parameters": [],
-          "type": {
-            "type": "reference",
-            "name": "ProjectPageNodeSummary",
-            "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
-          }
-        }
-      ]
     }
   },
-  "generatedAt": "2026-06-11T22:53:14.429Z",
+  "generatedAt": "2026-06-12T04:27:41.836Z",
   "$defs": {
     "PageNodeRenderConfig": {
       "type": "object",
@@ -743,11 +708,6 @@
           "type": "string"
         }
       }
-    },
-    "ConfigSubPageNode": {
-      "type": "object",
-      "title": "ConfigSubPageNode",
-      "description": "sub-page 配置页：四文件模型，nodeKind=sub-page，无独立 path。"
     }
   }
 }

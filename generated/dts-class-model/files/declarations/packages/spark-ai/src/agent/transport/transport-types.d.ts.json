@@ -232,7 +232,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-11T22:53:13.966Z",
+  "generatedAt": "2026-06-12T04:27:41.443Z",
   "$defs": {
     "AiAgentTransportToolSpec": {
       "type": "object",
