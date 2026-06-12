@@ -12,19 +12,8 @@ AI用途：需要理解开发系统如何编辑节点和文件时，用本模块
       :closable="false"
       show-icon
       class="gate-hint"
-      title="pageDesign Agent 读取 planningStatus / implGate；未放行时 runner fail-fast。"
+      title="pageDesign Agent 读取 implGate / effectiveDescription；未放行时 runner fail-fast。"
     />
-    <el-form-item label="策划状态" class="fi fi--wide">
-      <el-select
-        v-model="planningStatusModel"
-        clearable
-        placeholder="自动（按功能描述推断）"
-        @change="state.markNavDirty"
-      >
-        <el-option label="策划初稿 planning_draft" value="planning_draft" />
-        <el-option label="策划定稿 planning_confirmed" value="planning_confirmed" />
-      </el-select>
-    </el-form-item>
     <el-form-item label="实现闸门" class="fi fi--wide">
       <el-select
         v-model="implGateModel"
@@ -58,13 +47,6 @@ const props = defineProps<{
 
 const flags = useNodeKindFlags(props.state)
 const showGateFields = computed(() => flags.isPageNode.value || flags.isSubPageNode.value)
-
-const planningStatusModel = computed({
-  get: () => props.state.navEditDto.planningStatus ?? '',
-  set: (value: '' | 'planning_draft' | 'planning_confirmed') => {
-    props.state.navEditDto.planningStatus = value === '' ? undefined : value
-  },
-})
 
 const implGateModel = computed({
   get: () => props.state.navEditDto.implGate ?? '',

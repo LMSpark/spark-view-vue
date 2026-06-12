@@ -24,14 +24,14 @@ AI用途：需要理解开发系统如何编辑节点和文件时，用本模块
         />
       </el-form-item>
       <el-form-item label="节点类别" class="fi fi--medium fi-inline-row__type">
-        <el-radio-group v-model="state.navEditDto.nodeKind" class="type-radio-group" @change="state.handleNodeKindChange">
+        <el-radio-group :model-value="nodeKindUiValue" class="type-radio-group" @change="onNodeKindUiChange">
           <el-radio-button value="system-directory">系统模块</el-radio-button>
           <el-radio-button value="module" :disabled="moduleKindDisabled">模块</el-radio-button>
           <el-radio-button value="system-page">系统页面</el-radio-button>
           <el-radio-button value="system-action">系统动作</el-radio-button>
           <el-radio-button value="page">普通页面</el-radio-button>
           <el-radio-button value="link">超链接</el-radio-button>
-          <el-radio-button value="sub-page">子页面</el-radio-button>
+          <el-radio-button value="nested-page">子页面</el-radio-button>
           <el-radio-button value="ref">跨工程引用</el-radio-button>
         </el-radio-group>
       </el-form-item>
@@ -49,13 +49,28 @@ AI用途：需要理解开发系统如何编辑节点和文件时，用本模块
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import type { NavNodeKind } from '@spark-appworks/spark-project-model'
+import { isNestedConfigPageNode } from '@spark-appworks/spark-project-model'
 import type { DevState } from '../useDevState'
 import IconPicker from '@/components/IconPicker.vue'
 
-defineProps<{
+const props = defineProps<{
   state: DevState
   moduleKindDisabled: boolean
 }>()
+
+const nodeKindUiValue = computed(() =>
+  isNestedConfigPageNode(props.state.navEditDto) ? 'nested-page' : props.state.navEditDto.nodeKind,
+)
+
+function onNodeKindUiChange(value: string): void {
+  if (value === 'nested-page') {
+    props.state.applyNestedConfigPagePreset()
+    return
+  }
+  props.state.handleNodeKindChange(value as NavNodeKind)
+}
 </script>
 
 <style scoped>

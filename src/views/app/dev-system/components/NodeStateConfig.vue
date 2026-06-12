@@ -35,11 +35,12 @@ AI用途：需要理解开发系统如何编辑节点和文件时，用本模块
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { isNestedConfigPageNode } from '@spark-appworks/spark-project-model'
 import type { DevState } from '../useDevState'
 
 const props = defineProps<{ state: DevState }>()
 
-const isSubPage = computed(() => props.state.navEditDto.nodeKind === 'sub-page')
+const isSubPage = computed(() => isNestedConfigPageNode(props.state.navEditDto))
 </script>
 
 <style scoped>

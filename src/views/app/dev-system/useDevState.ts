@@ -152,17 +152,6 @@ export function useDevState() {
     ? null
     : useSparkComponent({ type: 'dev-system-ai-runner' }).sparkConsume
 
-  const DEMO_CONTEXT_ITEMS: Array<{ id: string; title: string }> = [
-    { id: 'sales', title: '销售中心' },
-    { id: 'ops', title: '运营中心' },
-    { id: 'finance', title: '财务中心' },
-  ]
-  const DEMO_CONTEXT_CONFIG: DevContextConfig = {
-    placeholder: '请选择模块上下文',
-    defaultValue: 'sales',
-    paramName: 'ctx',
-  }
-
   // ── 导航树（ProjectModel 投影，非独立真源）──
   const navLoading = ref(false)
   const navSaving = ref(false)
@@ -349,16 +338,6 @@ export function useDevState() {
     set refId(v: string) { const dto = project.navigationDraft; if (dto) { dto.node.refId = v; project.applyNavigationNodeEdit(dto); markNavDirty() } },
     get permissionMode(): 'none' | 'masked' | 'invisible' { return readNavEditDto()?.node.permissionMode ?? 'masked' },
     set permissionMode(v: 'none' | 'masked' | 'invisible') { const dto = project.navigationDraft; if (dto) { dto.node.permissionMode = v; project.applyNavigationNodeEdit(dto); markNavDirty() } },
-    get planningStatus(): 'planning_draft' | 'planning_confirmed' | undefined {
-      return readNavEditDto()?.node.planningStatus
-    },
-    set planningStatus(v: 'planning_draft' | 'planning_confirmed' | undefined) {
-      const dto = project.navigationDraft
-      if (!dto) return
-      dto.node.planningStatus = v
-      project.applyNavigationNodeEdit(dto)
-      markNavDirty()
-    },
     get implGate(): 'closed' | 'open' | undefined {
       return readNavEditDto()?.node.implGate
     },
@@ -446,7 +425,7 @@ export function useDevState() {
   let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
   const AUTO_SAVE_DELAY = 800
 
-  // ── SPARK AI tool approval bridge + current pageDesign entry ──
+  // ── SPARK AI tool approval bridge + pageDesign entry ──
   const pageDesignAiAdapter = createAiRunAdapter()
   const pageDesignAiRunRevision = ref(0)
   const aiToolApprovals = createAiToolApprovalBridge()
@@ -567,6 +546,12 @@ export function useDevState() {
 
   function applyNodeKindPreset(kind: NavNodeKind): void {
     project.applyNodeKindPreset(kind)
+  }
+
+  function applyNestedConfigPagePreset(): void {
+    project.applyNestedConfigPagePreset()
+    markNavDirty()
+    syncActivePageContextByPath(navEditDto.path)
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -1162,16 +1147,6 @@ export function useDevState() {
     project.applyNavigationNodeEdit(dto)
     markNavDirty()
   }
-  function fillDemoContext(): void {
-    navEditDto.hasContext = true
-    const dto = project.navigationDraft
-    if (!dto) return
-    dto.context.items = DEMO_CONTEXT_ITEMS.map(item => ({ ...item }))
-    Object.assign(dto.context.config, DEMO_CONTEXT_CONFIG)
-    project.applyNavigationNodeEdit(dto)
-    markNavDirty()
-    addStatus('已填充模块上下文演示数据', 'info')
-  }
 
   /** 选项 id/title 就地编辑后提交到 DTO。 */
   function commitContextEdit(): void {
@@ -1259,6 +1234,7 @@ export function useDevState() {
     selectNode,
     handlePathChange,
     handleNodeKindChange,
+    applyNestedConfigPagePreset,
     addRootNode,
     hasReservedRootGroup,
     isSystemRootDirectory: isSystemRootDirectoryInTree,
@@ -1272,7 +1248,6 @@ export function useDevState() {
     toggleContext,
     addContextItem,
     removeContextItem,
-    fillDemoContext,
     commitContextEdit,
     initialize,
   }

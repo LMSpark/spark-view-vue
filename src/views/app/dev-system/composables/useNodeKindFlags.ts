@@ -8,6 +8,7 @@
  * 节点类型（nodeKind）条件标志 — 跨属性编辑子组件共享
  */
 import { computed } from 'vue'
+import { isNestedConfigPageNode } from '@spark-appworks/spark-project-model'
 import type { DevState } from '../useDevState'
 
 export function useNodeKindFlags(state: DevState) {
@@ -19,7 +20,7 @@ export function useNodeKindFlags(state: DevState) {
   const isSystemActionNode = computed(() => state.navEditDto.nodeKind === 'system-action')
   const isPageNode = computed(() => state.navEditDto.nodeKind === 'page')
   const isLinkNode = computed(() => state.navEditDto.nodeKind === 'link')
-  const isSubPageNode = computed(() => state.navEditDto.nodeKind === 'sub-page')
+  const isSubPageNode = computed(() => isNestedConfigPageNode(state.navEditDto))
   const isRefNode = computed(() => state.navEditDto.nodeKind === 'ref')
 
   const showTargetSelector = computed(() =>

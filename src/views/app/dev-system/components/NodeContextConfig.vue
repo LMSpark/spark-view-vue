@@ -10,10 +10,6 @@ AI用途：需要理解开发系统如何编辑节点和文件时，用本模块
     <el-form-item label="启用上下文" class="switch-item">
       <el-switch v-model="state.navEditDto.hasContext" @change="state.toggleContext" />
       <span class="switch-item__hint">启用后可配置下拉上下文选项</span>
-      <el-button size="small" type="primary" plain class="context-demo-btn" @click="state.fillDemoContext">
-        <NavIcon name="MagicStick" :size="14" /> 一键填充演示数据
-      </el-button>
-      <span class="context-demo-tip">用于快速预览上下文下拉效果</span>
     </el-form-item>
     <template v-if="state.navEditDto.hasContext">
       <el-form-item label="选项列表" class="fi fi--wide">
@@ -61,13 +57,6 @@ const isDirectoryNode = flags.isDirectoryNode
 }
 .switch-item__hint {
   color: var(--el-text-color-placeholder);
-  font-size: 12px;
-}
-.context-demo-btn {
-  font-weight: 600;
-}
-.context-demo-tip {
-  color: var(--el-text-color-secondary);
   font-size: 12px;
 }
 .context-items {
