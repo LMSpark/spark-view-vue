@@ -31,7 +31,11 @@
       "Bash(code --install-extension Catppuccin.catppuccin-vsc)",
       "Bash(git restore *)",
       "Bash(git clean *)",
-      "Bash(node tools/verify-ai-model-spec.mjs)"
+      "Bash(node tools/verify-ai-model-spec.mjs)",
+      "Skill(deep-research)",
+      "Skill(deep-research:*)",
+      "Bash(Get-ChildItem -Recurse -Name docs/research/)",
+      "PowerShell(pnpm run typecheck 2>&1)"
     ],
     "additionalDirectories": [
       "D:\\SPARK_AppWorks\\.claude"

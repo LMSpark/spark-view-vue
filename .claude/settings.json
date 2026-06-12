@@ -2,12 +2,31 @@
   "permissions": {
     "allow": [
       "Bash(pnpm --dir packages/spark-project-model run typecheck)",
-      "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\src\\\\services\\\\page-design\\\\page-design-module-metadata.runtime.generated.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
-      "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\src\\\\services\\\\page-design\\\\page-design-module-metadata.api.generated.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
-      "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\src\\\\services\\\\page-design\\\\page-design-module-metadata.generated.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
       "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\src\\\\services\\\\page-design\\\\payload\\\\component-catalog.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
       "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\data\\\\stills-metadata.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
-      "Bash(exist \"d:\\\\SPARK_AppWorks\\\\generated\\\\declarations\" rmdir /s /q \"d:\\\\SPARK_AppWorks\\\\generated\\\\declarations\")"
+      "Bash(exist \"d:\\\\SPARK_AppWorks\\\\generated\\\\declarations\" rmdir /s /q \"d:\\\\SPARK_AppWorks\\\\generated\\\\declarations\")",
+      "Read(//Users/dev/**)",
+      "Bash(Get-ChildItem -Recurse -File -Path \"D:\\\\SPARK_AppWorks\\\\packages\\\\spark-ai\\\\src\\\\class-model\")",
+      "Bash(Select-Object FullName)",
+      "Bash(Get-ChildItem -Recurse -File -Path \"D:\\\\SPARK_AppWorks\\\\packages\\\\spark-ai\\\\src\\\\json\")",
+      "PowerShell(Get-ChildItem -Recurse -File -Path \"D:\\\\SPARK_AppWorks\\\\packages\\\\spark-ai\\\\src\\\\class-model\" | ForEach-Object { $_.FullName })",
+      "PowerShell(Get-ChildItem -Recurse -File -Path \"D:\\\\SPARK_AppWorks\\\\packages\\\\spark-ai\\\\src\\\\json\" | ForEach-Object { $_.FullName })",
+      "Read(//Users/a001/.claude/projects/-Users-a001/**)",
+      "Read(//Users/a001/.claude/projects/-Users-a001/memory/**)",
+      "Bash(mkdir -p /Users/a001/.claude/projects/-Users-a001/memory/ && echo \"created\" && ls -la /Users/a001/.claude/projects/-Users-a001/memory/ 2>/dev/null)",
+      "Bash([ -f \"$f\" ])",
+      "Bash(git show *)",
+      "Read(//tmp/**)",
+      "Bash(cp /tmp/protocol_restored.md docs/ai/AI_CODE_CHANGE_PROTOCOL.md && echo \"已还原, 行数:\" && wc -l docs/ai/AI_CODE_CHANGE_PROTOCOL.md && echo \"\" && echo \"=== 头20行确认 ===\" && head -20 docs/ai/AI_CODE_CHANGE_PROTOCOL.md)",
+      "Bash(node tools/verify-docs.mjs)",
+      "Bash(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\src\\\\services\" -Name)",
+      "Bash(Sort-Object)",
+      "Bash(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\tests\\\\services\" -Name)",
+      "Bash(Select-Object -Last 20)"
+    ],
+    "additionalDirectories": [
+      "\\Users\\a001\\.claude\\projects\\-Users-a001",
+      "\\tmp"
     ]
   }
 }

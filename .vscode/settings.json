@@ -16,8 +16,7 @@
     "**/target": true,
     "**/.codex-tmp": true,
     "**/tmp": true,
-    "**/*.log": true,
-    "src/services/page-design/page-design-module-metadata.runtime.generated.json": true
+    "**/*.log": true
   },
 
   // 排除 Markdown 文件的某些检查
