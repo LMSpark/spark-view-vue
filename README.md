@@ -224,7 +224,7 @@ SPARK 不直接把原始 JSON 丢给组件，而是通过 DataSet、DataTable、
 2. 添加相应的测试用例
 3. 更新相关文档
 4. 提交前运行 `pnpm run typecheck && pnpm run lint && pnpm run test`
-5. 提交信息遵循 Conventional Commits（由 Husky + commitlint 强制校验），格式示例：`feat(spark-data): add X`。
+5. 提交信息遵循 Conventional Commits，格式示例：`feat(spark-data): add X`。
    - 允许的 scope：`deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-project-model`。
    - 详情与示例见 `CONTRIBUTING.md`（新增）。
 

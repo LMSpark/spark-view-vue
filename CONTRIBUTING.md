@@ -22,11 +22,9 @@
 - 静态检查（ESLint）：`pnpm run lint`
 - 单元测试：`pnpm run test`
 
-仓库使用 Husky 钩子在本地阻止不合格的提交（pre-commit 会运行 lint + typecheck）。
-
 ## 提交信息规范（Conventional Commits）
 
-本仓库强制使用 Conventional Commits 格式（由 Husky + commitlint 校验）。
+本仓库约定使用 Conventional Commits 格式。
 
 格式：
 ```
@@ -48,16 +46,6 @@ feat(spark-data): add createDataView factory
 - add factory wrapper for DataView
 - update API docs and tests
 ```
-
-本地校验（手动运行）：
-```bash
-# 检查最近一次提交信息（或指定提交消息文件）
-pnpm run commitlint --edit .git/COMMIT_EDITMSG
-# 或检查最近提交范围
-pnpm exec -- commitlint --from HEAD~1 --to HEAD
-```
-
-> 注意：如果需要临时跳过本地钩子，可使用 `git commit --no-verify`，但 PR 合并前请确保提交信息已修正。
 
 ## Pull Request 指南
 

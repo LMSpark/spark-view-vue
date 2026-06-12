@@ -14,7 +14,6 @@
   - `pnpm run lint`
   - `pnpm run test` or `pnpm run test -- -t "name"`
   - `cd spark-ai-server && mvn test` — 后端测试
-- Husky pre-commit 会运行 `lint` + `typecheck`。
 - Commit scope 仅允许： `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-project-model`.
 
 ## 仓库地图

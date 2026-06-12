@@ -61,7 +61,6 @@
         "migrate:navigation:sub-page": "node scripts/migrate-navigation-sub-page.mjs",
         "migrate:nav:nodekind": "node scripts/migrate-navigation-sub-page.mjs",
         "verify": "pnpm run build:packages && pnpm run typecheck && pnpm run lint && pnpm run verify:rules",
-        "commitlint": "commitlint --edit",
         "build:packages": "pnpm --filter 'packages/*' run build",
         "publish:packages": "node scripts/publish-packages.mjs",
         "publish:dry": "node scripts/publish-packages.mjs --dry-run",
@@ -73,12 +72,7 @@
         "changeset": "changeset",
         "version:packages": "changeset version",
         "release": "changeset publish",
-        "generate": "plop",
-        "prepare": "husky"
-    },
-    "lint-staged": {
-        "*.{ts,tsx}": "eslint --cache --no-warn-ignored",
-        "*.vue": "eslint --cache --no-warn-ignored"
+        "generate": "plop"
     },
     "dependencies": {
         "@element-plus/icons-vue": "^2.3.2",
@@ -97,8 +91,6 @@
     },
     "devDependencies": {
         "@changesets/cli": "^2.31.0",
-        "@commitlint/cli": "^21.0.2",
-        "@commitlint/config-conventional": "^21.0.2",
         "@eslint/js": "^10.0.1",
         "@rollup/rollup-win32-x64-msvc": "^4.61.1",
         "@spark-appworks/vite-plugin-spark-catalog": "workspace:*",
@@ -114,10 +106,8 @@
         "eslint-plugin-vue": "^10.9.2",
         "express": "^5.2.1",
         "glob": "^13.0.6",
-        "husky": "^9.1.7",
         "jmespath": "0.16.0",
         "jsdom": "^29.1.1",
-        "lint-staged": "^17.0.7",
         "plop": "^4.0.5",
         "terser": "^5.48.0",
         "tsx": "^4.22.4",
