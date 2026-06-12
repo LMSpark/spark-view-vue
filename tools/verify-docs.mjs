@@ -44,9 +44,6 @@ const legacyMarkdownAllowlist = new Set([
   'packages/spark-project-model/src/MODEL-HIERARCHY.md',
   'packages/spark-project-model/src/STRUCTURE.md',
   'packages/spark-utils/REQUEST_GUIDE.md',
-  'packages/vxe-table/.gitee/ISSUE_TEMPLATE.en.md',
-  'packages/vxe-table/.gitee/ISSUE_TEMPLATE.md',
-  'packages/vxe-table/.gitee/ISSUE_TEMPLATE.zh-TW.md',
 ])
 
 const kebabMarkdownPattern = /^(?:[0-9]{2}-)?[a-z0-9]+(?:-[a-z0-9]+)*\.md$/u

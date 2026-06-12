@@ -345,15 +345,6 @@ section DirectoryRegistry {
     new_file_rule: "只放宿主需要按固定后缀寻址的文件；平台治理规则放 docs/。"
   }
 
-  entry gitee_templates {
-    path: "packages/vxe-table/.gitee/"
-    owner: "third-party"
-    purpose: "vxe-table 历史 issue 模板。"
-    index: null
-    allowed_files: ["legacy allowlist"]
-    new_file_rule: "主仓不在该目录新增文档；历史模板通过 allowlist 兼容。"
-  }
-
   entry docs {
     path: "docs/"
     owner: "docs"
@@ -523,7 +514,7 @@ section NamingExamples {
     "docs/guides/testing-best-practices.md",
     "packages/spark-ai/ARCHITECTURE.md",
     "packages/spark-data/API.md",
-    "packages/vxe-table/README.zh-TW.md",
+    "packages/spark-component/API.md",
     "packages/spark-ai/src/module-semantic/MODULE-KIND-REGISTRATION.md"
   ]
 

@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
 import { fileURLToPath } from 'node:url'
 import { sparkComponentsPlugin } from './tools/vite-plugin-spark-components'
@@ -95,13 +94,6 @@ export default defineConfig({
       exclude: [...COMPONENT_EXCLUDE_PATTERNS],
       verbose: false
     } satisfies Parameters<typeof sparkComponentsPlugin>[0]),
-
-    ...(process.env['ANALYZE'] ? [visualizer({
-      open: true,
-      filename: 'dist/stats.html',
-      gzipSize: true,
-      brotliSize: true
-    })] : [])
   ],
   build: {
     rollupOptions: {

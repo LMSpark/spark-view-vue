@@ -1,6 +1,6 @@
 # SPARK AppWorks 项目深度解析
 
-> **注意**：下文部分类名（如 `ProjectNodeCollection`、`ProjectPlanningModel`）为历史表述。当前权威模型见 [`packages/spark-project-model/src/MODEL-HIERARCHY.md`](../packages/spark-project-model/src/MODEL-HIERARCHY.md) 与 [`guides/MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md`](guides/MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md)。
+> **注意**：下文部分类名（如 `ProjectNodeCollection`、`ProjectPlanningModel`）为历史表述。当前权威模型见 [`packages/spark-project-model/src/MODEL-HIERARCHY.md`](../packages/spark-project-model/src/MODEL-HIERARCHY.md) 与 [`guides/model-convergence-acceptance.md`](guides/model-convergence-acceptance.md)。
 >
 > 更新基准：2026-06。当前口径：唯一领域根 `ProjectModel`；嵌套子页 = `page` + `hidden` + 无 `path`（legacy `sub-page` 读写时迁移）。
 

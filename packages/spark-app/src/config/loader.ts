@@ -376,8 +376,8 @@ export class ConfigLoader {
       router: { mode: 'history' },
       mountTarget: '#app',
       plugins: {
-        elementPlus: true,
-        vxeTable: true
+        'element-plus': true,
+        'vxe-table': true
       },
       spark: { enabled: true },
       pageNode: {

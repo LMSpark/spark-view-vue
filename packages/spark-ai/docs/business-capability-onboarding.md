@@ -1,6 +1,6 @@
 # 新业务能力接入清单
 
-> 抽象步骤，不绑定 pageDesign。完整上下文见 [`END-TO-END-PLATFORM.zh-CN.md`](END-TO-END-PLATFORM.zh-CN.md) §2、§15。
+> **速查附录**：可打印 checklist。全仓主文档见 [`spark-ai-platform.md`](spark-ai-platform.md) §12；业务抽象见该文 §1，完整上下文亦见 [`end-to-end-platform.md`](end-to-end-platform.md)。
 
 ## 五层必答题
 
@@ -52,11 +52,11 @@
 - [ ] dryRun + guide/script 手工链路
 - [ ] loader 闭包测试
 - [ ] DevSystem 或 staging Host Run
-- [ ] 模型收敛回归：`pnpm run verify:model-convergence`（见 [`MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md`](../../../docs/guides/MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md)）
+- [ ] 模型收敛回归：`pnpm run verify:model-convergence`（见 [`model-convergence-acceptance.md`](../../../docs/guides/model-convergence-acceptance.md)）
 
 ## 代码模板
 
-见 [`END-TO-END-PLATFORM.zh-CN.md` §15.3](END-TO-END-PLATFORM.zh-CN.md#153-阶段-c--业务能力包app-ensure)。
+见 [`end-to-end-platform.md` §15.3](end-to-end-platform.md#153-阶段-c--业务能力包app-ensure)。
 
 ## 参考实现
 

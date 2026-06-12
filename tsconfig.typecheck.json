@@ -65,7 +65,6 @@
     "node_modules",
     "**/dist",
     "tools/**/*",
-    "packages/vxe-table/**/*",
     "node_modules/.pnpm/@vitejs+plugin-vue*/**",
     "**/*.config.js",
     "**/*.config.ts"

@@ -22,6 +22,6 @@
     "types": ["vite/client", "vitest/globals", "node"],
     "noEmit": true
   },
-  "include": ["src/**/*", "*.stories.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

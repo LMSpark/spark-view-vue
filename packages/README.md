@@ -15,10 +15,6 @@
 - [vite-plugin-spark-catalog/README.md](vite-plugin-spark-catalog/README.md)：组件扫描配置与命名工具。
 - `scripts/generate-dts-class-model.mjs`：`.d.ts` → `generated/dts-class-model`。
 
-## 插件与集成
-
-- [vxe-table/README.md](vxe-table/README.md)：VXE Table 集成工作区。
-
 ## 维护约束
 
 - 新增工作区包时，必须同步更新这里和根 [../README.md](../README.md)。

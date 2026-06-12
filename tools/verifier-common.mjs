@@ -17,9 +17,7 @@ export function relativePath(root, filePath) {
 export function createDefaultExcluder(root) {
   return (filePath) => {
     const rel = relativePath(root, filePath)
-    return rel.startsWith('packages/vxe-table/')
-      || rel === 'packages/vxe-table'
-      || rel.startsWith('spark-ai-server/')
+    return rel.startsWith('spark-ai-server/')
       || rel === 'spark-ai-server'
       || rel.startsWith('vue-virtual-card-scroll-demo/')
       || rel === 'vue-virtual-card-scroll-demo'

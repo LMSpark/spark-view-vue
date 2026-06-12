@@ -10,7 +10,6 @@ export default [
       'src/**/*.d.ts',
       'packages/**/*.d.ts',
       'packages/**/dist/**',  // 排除所有dist目录
-      'packages/vxe-table/**', // 第三方源码，不受项目 ESLint 规则约束
       'tools/**',
       'scripts/**',            // 独立脚本，不纳入 tsconfig project
       '**/*.example.ts',
@@ -22,8 +21,7 @@ export default [
       'vitest.config.ts',
       'vitest.spark-ai.config.ts',
       'packages/**/vite.config.ts',
-      'packages/**/vitest.config.ts',
-      '.storybook/**'
+      'packages/**/vitest.config.ts'
     ]
   },
   // Vue SFC files
@@ -138,14 +136,6 @@ export default [
       'no-restricted-imports': 'off'
     }
   },
-  // Allow stories to import Vue components / SPARK packages
-  {
-    files: ['packages/**/*.stories.ts', 'packages/**/*.stories.tsx', 'packages/spark-component/stories/**'],
-    rules: {
-      'no-restricted-imports': 'off',
-      '@typescript-eslint/no-explicit-any': 'off'
-    }
-  },
   // 严禁挎包路径导入：packages 内任何文件不得用相对路径引入其他包的源码
   // 必须通过 @spark-appworks/xxx 包名导入
   {
@@ -167,13 +157,6 @@ export default [
       }]
     }
   },
-  // Storybook config files - skip TypeScript parsing
-  {
-    files: ['.storybook/**/*'],
-    rules: {
-      '@typescript-eslint/no-unsafe-member-access': 'off'
-    }
-  },
   // TypeScript files
   {
     files: ['**/*.ts', '**/*.tsx'],
@@ -182,7 +165,6 @@ export default [
       parserOptions: {
         project: [
           './tsconfig.typecheck.json',
-          './.storybook/tsconfig.json',
           './packages/spark-ai/tsconfig.json',
           './packages/spark-utils/tsconfig.json',
           './packages/spark-data/tsconfig.json',

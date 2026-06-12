@@ -1,5 +1,7 @@
 # Native Runtime 与全新 AI 流程
 
+> **速查附录**：执行链与排错表。全仓主文档见 [`spark-ai-platform.md`](spark-ai-platform.md) §7（L4 Script）；业务分层与交付见该文 §1–§2、§8。
+>
 > 状态：有效（2026-06）。本文从 `packages/spark-ai/src/agent/native-runtime` 出发，说明 DTS ClassModel 驱动的执行流程。
 
 ## 一句话

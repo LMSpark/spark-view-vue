@@ -54,6 +54,6 @@ pageDesign / projectPlanning 在 app 层选择 root className 和业务实例：
 - pageDesign：`ProjectModel`
 - projectPlanning：按业务注册选择 root model
 
-**新能力接入：** [`docs/BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md`](docs/BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md) · 端到端 [`docs/END-TO-END-PLATFORM.zh-CN.md`](docs/END-TO-END-PLATFORM.zh-CN.md)
+**全仓 AI 主文档：** [`docs/spark-ai-platform.md`](docs/spark-ai-platform.md) · 接入 checklist 附录 [`docs/business-capability-onboarding.md`](docs/business-capability-onboarding.md)
 
 AI 通过公开字段和公开方法工作。class 之间只能通过公开属性暴露子 class 或子 class 数组；序列化使用 `toJson()`，恢复入口按模型需要提供 `fromJson()` 或 `fromJsonString()`。

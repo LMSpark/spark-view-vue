@@ -29,12 +29,6 @@ export default function (plop) {
       },
       {
         type: 'confirm',
-        name: 'hasStories',
-        message: '是否创建Storybook stories?',
-        default: true
-      },
-      {
-        type: 'confirm',
         name: 'hasTests',
         message: '是否创建单元测试?',
         default: true
@@ -101,15 +95,6 @@ export default function (plop) {
           data: templateData
         }
       ];
-
-      if (data.hasStories) {
-        actions.push({
-          type: 'add',
-          path: `packages/${data.package}/stories/${pascalName}.stories.ts`,
-          templateFile: 'plop-templates/component.stories.ts.hbs',
-          data: templateData
-        });
-      }
 
       if (data.hasTests) {
         actions.push({

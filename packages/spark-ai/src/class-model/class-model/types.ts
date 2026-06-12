@@ -121,7 +121,7 @@ export type MethodParameterStyle = 'positional' | 'named'
  * intrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；
  * array/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。
  *
- * 改造清单（optional / reflection / tuple / rest）：[`docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md`](../../docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md)
+ * 改造清单（optional / reflection / tuple / rest）：[`docs/typedoc-signature-alignment.md`](../../docs/typedoc-signature-alignment.md)
  */
 export type DtsTypeMeta =
   | Readonly<{ type: 'intrinsic'; name: string }>

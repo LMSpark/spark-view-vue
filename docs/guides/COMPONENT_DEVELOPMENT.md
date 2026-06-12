@@ -692,7 +692,6 @@ pnpm run plop
 # 自动生成：
 #   src/components/MyComponent/MyComponent.vue
 #   src/components/MyComponent/MyComponent.test.ts
-#   src/components/MyComponent/MyComponent.stories.ts
 ```
 
 生成的文件已包含：

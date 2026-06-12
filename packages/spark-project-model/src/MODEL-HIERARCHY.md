@@ -93,7 +93,7 @@ AI 只消费这里暴露的项目模型入口，不在本包维护独立运行�
 
 `domain-model/`（`ProjectRootModel` / 扁平行 / `PageConfigModel`）**已删除**。策划脚本：`this.replaceNavigationChildren({ children })`。
 
-验收清单：[`docs/guides/MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md`](../../../docs/guides/MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md)
+验收清单：[`docs/guides/model-convergence-acceptance.md`](../../../docs/guides/model-convergence-acceptance.md)
 
 ---
 

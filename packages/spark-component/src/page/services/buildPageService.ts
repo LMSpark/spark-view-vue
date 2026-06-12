@@ -8,7 +8,7 @@
  * PAGE_SERVICE 能力构建工厂
  *
  * 构建 PageServiceCapability 实现，
- * 优先使用 props 注入的 UI 服务（测试/Storybook），回退到 Element Plus。
+ * 优先使用 props 注入的 UI 服务（测试或宿主覆盖），回退到 Element Plus。
  */
 
 import type { Router } from 'vue-router'
@@ -33,7 +33,7 @@ function isElCancelAction(e: unknown): boolean {
   return isRecord(e) && e['action'] === 'cancel'
 }
 
-/** 可选的外部 UI 服务注入（测试 / Storybook 用） */
+/** 可选的外部 UI 服务注入（测试或宿主覆盖用） */
 export type PageServiceOverrides = {
     /** message Service 回调。 */
 messageService?: {
@@ -207,7 +207,7 @@ async function showFallbackDialog(options: PageDialogOptions): Promise<PageDialo
  * 构建 PAGE_SERVICE 能力实现
  *
  * @param router    Vue Router 实例（navigate 需要）
- * @param overrides 可选的外部 UI 服务（测试 / Storybook 注入）
+ * @param overrides 可选的外部 UI 服务（测试或宿主注入）
  */
 export function buildPageService(
   router: Router,

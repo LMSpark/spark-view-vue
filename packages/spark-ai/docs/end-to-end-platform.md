@@ -1,5 +1,7 @@
 # SPARK AI 端到端平台方案
 
+> **历史方案稿（保留路线图与 Phase 审核细节）**。全仓 AI 主文档已整合为 [`spark-ai-platform.md`](spark-ai-platform.md)（含五概念、L0–L5、native-runtime 代码真值、接入 checklist）。日常优先读主文档。
+>
 > 从 `.d.ts` 声明 → ClassModel JSON → LLM 知识体系 → **业务工厂（能力包）** → **工单 + 聊天** → **Script 变更执行** → **交付**。  
 > 状态：2026-06，以 **main** 已落地代码为准；执行入口收敛为 ClassModel 7 工具闭集。
 
@@ -223,7 +225,7 @@ pnpm run generate:class-model-surface     # AST 投影 → generated/dts-class-m
 
 ### 4.2 JSON shard 契约（MethodMeta SSOT）
 
-改造后（见 `[TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md](../src/class-model/docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md)`）：
+改造后（见 `[typedoc-signature-alignment.md](../src/class-model/docs/typedoc-signature-alignment.md)`）：
 
 ```json
 {
@@ -335,7 +337,7 @@ host.ensure('pageDesign', {
 
 ### 6.3 扩展新业务
 
-完整分阶段清单见 **[§15 新业务能力接入清单](#15-新业务能力接入清单抽象)**，速查版 `[BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md](BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md)`。
+完整分阶段清单见 **[§15 新业务能力接入清单](#15-新业务能力接入清单抽象)**，速查版 `[business-capability-onboarding.md](business-capability-onboarding.md)`。
 
 ---
 
@@ -580,7 +582,7 @@ createAiHostRunBridge()
 | rollback 语义                  | Host Run 失败会写入 delivery rollback；DevSystem 保留 dirty | 后续可加 UI 侧手动恢复                           |
 | trace 语义                     | save / rollback 已进入 `resultExtras.delivery`         | Host Run 回执固定读取 delivery                |
 | projectPlanning DevSystem UI | ❌ 无顶栏入口 | headless runner + Host Run provider 为唯一运行入口 |
-| 项目模型收敛                     | ✅ domain-model 删除；planningStatus 删除；sub-page → nested page | 见 `MODEL-HIERARCHY.md` §0.1；[`MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md`](../../../docs/guides/MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md) |
+| 项目模型收敛                     | ✅ domain-model 删除；planningStatus 删除；sub-page → nested page | 见 `MODEL-HIERARCHY.md` §0.1；[`model-convergence-acceptance.md`](../../../docs/guides/model-convergence-acceptance.md) |
 | 第三业务                         | ✅ preset `pageDataDesign` → `pageDesign`            | `page-data-design-host-run-provider.ts` |
 | semantic-gaps                | `gapCount = 0`                                      | 保持生成门禁，不允许回退                            |
 | orders 独立业务                  | 无；仅为 pageId 示例                                      | 若需独立 SOP，新 alias + Model                |
@@ -701,12 +703,12 @@ Phase 2 落地状态：
 
 | 主题                        | 路径                                                                                                                                                             |
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **端到端 + 接入清单**            | 本文 §2、§15 · `[BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md](BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md)`                                                               |
+| **端到端 + 接入清单**            | 本文 §2、§15 · `[business-capability-onboarding.md](business-capability-onboarding.md)`                                                               |
 | 包架构 SSOT                  | `[../ARCHITECTURE.md](../ARCHITECTURE.md)`                                                                                                                     |
 | Agent / native-runtime 深潜 | `[native-runtime-and-agent-flow-zh-cn.md](native-runtime-and-agent-flow-zh-cn.md)`                                                                             |
 | 传输 / Session              | `[transport-and-session-zh-cn.md](transport-and-session-zh-cn.md)`                                                                                             |
 | pageDesign × DevSystem    | `[pagedesign-devsystem-zh-cn.md](pagedesign-devsystem-zh-cn.md)`                                                                                               |
-| TypeDoc 签名对齐              | `[../src/class-model/docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md](../src/class-model/docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md)`                                 |
+| TypeDoc 签名对齐              | `[../src/class-model/docs/typedoc-signature-alignment.md](../src/class-model/docs/typedoc-signature-alignment.md)`                                 |
 | 业务注册                      | `[../src/agent/business/README.md](../src/agent/business/README.md)`                                                                                           |
 | APP pageDesign            | `[../../../src/services/page-design/page-design-business.ts](../../../src/services/page-design/page-design-business.ts)`                                       |
 | APP pageDataDesign preset | `[../../../src/services/page-data-design/page-data-design-host-run-provider.ts](../../../src/services/page-data-design/page-data-design-host-run-provider.ts)` |
@@ -733,7 +735,7 @@ Phase 5 🔲  多租户 Host Run 规模化 + session 诊断面板
 ## 15. 新业务能力接入清单（抽象）
 
 接入一个新的 **业务能力**（新 alias），需要五层各答一道题；**换实例 ID 或换工单描述不算新业务**。  
-可打印版 checklist：`[BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md](BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md)`。
+可打印版 checklist：`[business-capability-onboarding.md](business-capability-onboarding.md)`。
 
 
 | 层       | 必答题                                   | 产出物                                  |
@@ -801,7 +803,7 @@ export function ensureXxxBusiness(options: {
 
 ### 15.4–15.6 运行 / 交付 / 验收
 
-见 `[BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md](BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md)` 阶段 D–F。
+见 `[business-capability-onboarding.md](business-capability-onboarding.md)` 阶段 D–F。
 
 ### 15.7 与现有能力对照
 

@@ -13,7 +13,7 @@ import {
   printViolations,
 } from './verifier-common.mjs'
 
-const includeRoots = ['packages', 'src', 'tests', '.storybook', 'tools']
+const includeRoots = ['packages', 'src', 'tests', 'tools']
 const includeFiles = [
   'vite.config.ts',
   'vitest.config.ts',
