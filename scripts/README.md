@@ -7,7 +7,6 @@
 - `start-dev.mjs`：一键启动项目 Docker MySQL、Java 后端和前端开发环境。
 - `build-all.mjs`：完整构建流水线（Java JAR + Vite 前端）。
 - `publish-packages.mjs`：工作区包发布脚本。
-- `claude-model.ps1`：Claude Code 后端模型环境切换、备份和冒烟验证脚本；默认只影响当前进程，显式传入 `-Persist` 才写入用户环境变量。
 - `migrate-navigation-sub-page.mjs`：legacy `sub-page` 行审计/迁移（Flyway V8；自动 fallback docker compose exec mysql）。
 - `verify-model-convergence-offline.mjs`：模型收敛离线验收测试集。
 - ClassModel 编译期入口：`packages/spark-ai/src/class-model/class-model/build-index.ts`（禁止浏览器 import）。
@@ -17,4 +16,4 @@
 - 需要被仓库维护者显式执行的脚本放这里。
 - 脚本以“可重复执行”和“命名可识别”为优先，避免出现语义不清的临时文件名。
 - 一次性试验脚本如果要长期保留，应转成可维护的验证脚本；否则应删除。
-- 本地调试、恢复包、缓存、一次性视频/演示生成脚本不要提交到仓库。
+- 本地调试、个人环境切换、恢复包、缓存、一次性视频/演示生成脚本不要提交到仓库。
