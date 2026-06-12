@@ -1,5 +1,8 @@
 node_modules
 .codex/
+.cursor/debug-*.log
+.cursor/inspection/
+.cursor/plans/
 
 # Build artifacts
 **/bin/
