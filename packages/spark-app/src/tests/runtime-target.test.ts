@@ -54,7 +54,8 @@ describe('resolveNavNodeRuntimeTarget', () => {
     expect(resolveNavNodeRuntimeTarget({
       id: 'sub',
       title: 'Sub',
-      nodeKind: 'sub-page',
+      nodeKind: 'page',
+      hidden: true,
     })).toEqual({ kind: 'hidden', reason: 'sub-page' })
   })
 })

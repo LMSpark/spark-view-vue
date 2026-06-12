@@ -5,6 +5,7 @@
  * AI用途：需要理解应用层如何把路由、服务和组件系统组装起来时，用本模块定位 navigation/runtime-target。
  */
 import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
+import { isNestedConfigPageNode } from '@spark-appworks/spark-project-model'
 
 /** Nav Node Route Target Kind 的语义模型。 */
 export type NavNodeRouteTargetKind = 'page' | 'external-link' | 'cross-project-ref'
@@ -77,7 +78,7 @@ function resolveRefHostPath(node: ProjectNodeData): string {
 export function resolveNavNodeRuntimeTarget(node: ProjectNodeData): NavNodeRuntimeTarget {
   const nodeKind = node.nodeKind ?? 'page'
 
-  if (nodeKind === 'sub-page') {
+  if (isNestedConfigPageNode(node)) {
     return { kind: 'hidden', reason: 'sub-page' }
   }
 

@@ -8,14 +8,15 @@ import { computed, inject, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createRequest } from '@spark-appworks/spark-utils'
 import { readPrototypeProperty } from '@spark-appworks/spark-utils/internal'
-import type {
-  ChildPlacement,
-  NavContextItem,
-  NavContextState,
-  ProjectModelData,
-  ProjectNodeData,
-  RegionItems,
-  RegionVisibility,
+import {
+  isNestedConfigPageNode,
+  type ChildPlacement,
+  type NavContextItem,
+  type NavContextState,
+  type ProjectModelData,
+  type ProjectNodeData,
+  type RegionItems,
+  type RegionVisibility,
 } from '@spark-appworks/spark-project-model'
 import type { NavigationContext } from './nav-types'
 import { NAV_KEY } from './nav-types'
@@ -193,7 +194,7 @@ export function useNavigation(navRoot: ProjectModelData, _options?: UseNavigatio
   }
 
   function isSubPageNode(node: ProjectNodeData): boolean {
-    return node.nodeKind === 'sub-page'
+    return isNestedConfigPageNode(node)
   }
 
   function filterVisible(nodes: ProjectNodeData[]): ProjectNodeData[] {
