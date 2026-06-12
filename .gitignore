@@ -1,4 +1,5 @@
 node_modules
+.codex/
 
 # Build artifacts
 **/bin/
@@ -26,6 +27,8 @@ spark-ai-server/data/sparkdb*.db
 
 # Temporary files
 *.cache
+__pycache__/
+*.py[cod]
 tsc-output.txt
 tmpclaude-*
 temp-*.mjs
@@ -36,6 +39,13 @@ probe-*.mjs
 /sp[0-9]*.mjs
 /sp[0-9]*.js
 /prune_script.ps1
+/ffmpeg-smoke-test.mp4
+/virtual-scroll-page-loader-demo.html
+/scripts/claude-restore/
+/scripts/setup-claude-deepseek.ps1
+/scripts/cleanup-cursor-empty-agents.ps1
+/scripts/render-appworks-*.py
+/scripts/synthesize-video-narration.ps1
 
 # Local env overrides（不提交 API Key）
 .env.local
