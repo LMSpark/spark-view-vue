@@ -251,7 +251,7 @@ function checkSparkAiPublicSurface(root, violations) {
     assertExactSet(exportKeys, allowedSparkAiExportKeys, 'packages/spark-ai/package.json', 1, 'spark-ai package exports', violations)
   }
 
-  for (const file of ['tsconfig.json', 'tsconfig.typecheck.json', 'vite.config.ts', 'vite.codex-dev.mjs', 'vitest.config.ts', 'vitest.spark-ai.config.ts']) {
+  for (const file of ['tsconfig.json', 'tsconfig.typecheck.json', 'vite.config.ts', 'vitest.config.ts', 'vitest.spark-ai.config.ts']) {
     const filePath = path.join(root, file)
     if (!fs.existsSync(filePath)) continue
     const content = fs.readFileSync(filePath, 'utf8')

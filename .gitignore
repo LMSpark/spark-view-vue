@@ -1,10 +1,18 @@
 node_modules
+
+# Local IDE/workspace state
 .codex/
 .cursor/
 .vscode/
+.idea/
+.fleet/
 *.code-workspace
+*.sublime-project
+*.sublime-workspace
 .cursorignore
 .cursorindexingignore
+/%SystemDrive%/
+/vite.codex-dev.mjs
 
 # Build artifacts
 **/bin/
