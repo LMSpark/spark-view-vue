@@ -13,6 +13,7 @@ import {
 
 const PAGES_CONFIG_ROOT = 'spark-ai-server/data/pages-config'
 const MANIFEST_REL = `${PAGES_CONFIG_ROOT}/manifest.json`
+const DELETED_PAGES_REL = `${PAGES_CONFIG_ROOT}/deleted-pages.json`
 const REQUIRED_FILES = ['rule.json', 'pagedata.json']
 
 const KEBAB_CASE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/
@@ -88,12 +89,31 @@ function listPageDirectories(root) {
   return entries
 }
 
+function loadDeletedPages(root) {
+  const deletedPath = path.join(root, DELETED_PAGES_REL)
+  if (!fs.existsSync(deletedPath)) return []
+  const raw = readJsonFile(deletedPath)
+  return Array.isArray(raw.entries) ? raw.entries : []
+}
+
 export function scanPagesConfigRules(options = {}) {
   const root = options.root ?? process.cwd()
   const violations = []
   const { manifestPath, allowlistByProject } = loadManifest(root)
   const relManifest = relativePath(root, manifestPath)
   const seenByProject = new Map()
+
+  for (const entry of loadDeletedPages(root)) {
+    const projectKey = `${entry.tenantId}/${entry.projectId}`
+    const allowlist = allowlistByProject.get(projectKey)
+    if (allowlist?.has(entry.pageId)) {
+      violations.push({
+        file: relativePath(root, path.join(root, DELETED_PAGES_REL)),
+        line: 1,
+        message: `deleted-pages entry ${projectKey}/${entry.pageId} must not appear in manifest allowlist`,
+      })
+    }
+  }
 
   for (const page of listPageDirectories(root)) {
     const relPageDir = relativePath(root, page.pageDir)

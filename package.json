@@ -61,6 +61,7 @@
         "verify:ai-model:schema": "node tools/verify-ai-model-schema.mjs",
         "verify:rules": "pnpm run verify:arch && pnpm run verify:deps && pnpm run verify:pages-config && pnpm run verify:ai-codegen && pnpm run verify:docs && pnpm run verify:class-model && pnpm run verify:ai-model",
         "migrate:navigation:sub-page": "node scripts/migrate-navigation-sub-page.mjs",
+        "migrate:pages-config:cleanup": "node scripts/migrate-pages-config-cleanup.mjs",
         "migrate:nav:nodekind": "node scripts/migrate-navigation-sub-page.mjs",
         "verify": "pnpm run build:packages && pnpm run typecheck && pnpm run lint && pnpm run verify:rules",
         "build:packages": "pnpm --filter 'packages/*' run build",

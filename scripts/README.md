@@ -8,6 +8,7 @@
 - `build-all.mjs`：完整构建流水线（Java JAR + Vite 前端）。
 - `publish-packages.mjs`：工作区包发布脚本。
 - `migrate-navigation-sub-page.mjs`：legacy `sub-page` 行审计/迁移（Flyway V8；自动 fallback docker compose exec mysql）。
+- `migrate-pages-config-cleanup.mjs`：已删 Git 页面对应的 MySQL 清理（`page_config_file` / `file_version` / `NAVIGATION_NODE_FLAT`；Flyway V9）。
 - `verify-model-convergence-offline.mjs`：模型收敛离线验收测试集。
 - ClassModel 编译期入口：`packages/spark-ai/src/class-model/class-model/build-index.ts`（禁止浏览器 import）。
 
