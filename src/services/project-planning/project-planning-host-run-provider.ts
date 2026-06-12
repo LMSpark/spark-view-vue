@@ -36,6 +36,7 @@ import {
   createAiDeliveryResultExtras,
   toError,
   type AiDeliveryArtifact,
+  type AiDeliveryMode,
   type AiDeliveryPort,
 } from '@/services/ai/ai-delivery-port'
 
@@ -54,14 +55,35 @@ export type ProjectPlanningDeliveryContext = Readonly<{
   saveNavigationAfterRun: boolean
 }>
 
+type CreateProjectPlanningDeliveryPortOptions = Readonly<{
+  mode: AiDeliveryMode
+  rollbackStatus: 'skipped' | 'rolledBack'
+}>
+
+export function createProjectPlanningInlineDeliveryPort(): AiDeliveryPort<ProjectPlanningDeliveryContext> {
+  return createProjectPlanningDeliveryPort({
+    mode: 'manual',
+    rollbackStatus: 'skipped',
+  })
+}
+
 export function createProjectPlanningHostRunDeliveryPort(): AiDeliveryPort<ProjectPlanningDeliveryContext> {
-  return {
+  return createProjectPlanningDeliveryPort({
     mode: 'auto',
+    rollbackStatus: 'rolledBack',
+  })
+}
+
+function createProjectPlanningDeliveryPort(
+  options: CreateProjectPlanningDeliveryPortOptions,
+): AiDeliveryPort<ProjectPlanningDeliveryContext> {
+  return {
+    mode: options.mode,
     async save(context) {
       const navigationDirty = context.editor.project.navigationDirty
       if (!context.saveNavigationAfterRun || !navigationDirty) {
         return {
-          mode: 'auto',
+          mode: options.mode,
           status: 'skipped',
           artifacts: navigationDirty ? [createNavigationArtifact('skipped')] : [],
         }
@@ -69,13 +91,13 @@ export function createProjectPlanningHostRunDeliveryPort(): AiDeliveryPort<Proje
       try {
         await context.editor.saveAll()
         return {
-          mode: 'auto',
+          mode: options.mode,
           status: 'saved',
           artifacts: [createNavigationArtifact('saved')],
         }
       } catch (error: unknown) {
         return {
-          mode: 'auto',
+          mode: options.mode,
           status: 'failed',
           artifacts: [createNavigationArtifact('dirty')],
           message: error instanceof Error ? error.message : String(error),
@@ -88,9 +110,9 @@ export function createProjectPlanningHostRunDeliveryPort(): AiDeliveryPort<Proje
     rollback(context, error) {
       const navigationDirty = context.editor.project.navigationDirty
       return Promise.resolve({
-        mode: 'auto',
-        status: navigationDirty ? 'rolledBack' : 'skipped',
-        artifacts: navigationDirty ? [createNavigationArtifact('rolledBack')] : [],
+        mode: options.mode,
+        status: navigationDirty ? options.rollbackStatus : 'skipped',
+        artifacts: navigationDirty ? [createNavigationArtifact(options.rollbackStatus)] : [],
         message: error.message,
       })
     },

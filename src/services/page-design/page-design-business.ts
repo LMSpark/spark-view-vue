@@ -299,7 +299,6 @@ export type {
   PageDesignGateState,
   PageDesignGateValidationResult,
   PageDesignImplGate,
-  PageDesignPlanningStatus,
 } from '@/services/page-design/page-design-gates'
 
 function evaluatePageDesignBeforeFunctionCall(

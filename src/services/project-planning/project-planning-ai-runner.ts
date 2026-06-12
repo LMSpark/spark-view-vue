@@ -5,10 +5,10 @@
  * AI用途：规划模块/页面概要或排查项目策划 Agent 时，用本模块理解 services/project-planning-ai-runner。
  */
 /**
- * projectPlanning headless AI runner（无 DevSystem / 无 UI 依赖）。
+ * projectPlanning AI runner — headless 与 Host Run 共用。
  *
  * 统一入口：`runProjectPlanningAiSession` → `AiAgentHost.run('projectPlanning', input)`。
- * DevSystem 或其它壳层只需注入 `ProjectWorkspace` 与可选 `consumeCapability(AI_AGENT_HOST)`。
+ * 调用方注入 `ProjectWorkspace`（DevSystem 无顶栏入口）；隔离式 SSE Host Run 见 `project-planning-host-run-provider.ts`。
  */
 import { createAiRunAdapter, noopTraceSink } from '@spark-appworks/spark-app'
 import type {
@@ -29,7 +29,7 @@ import {
   type ResolveScopedProjectPlanningRunInputOptions,
 } from '@/services/project-planning/project-planning-business'
 import { createAiDeliveryFailureError } from '@/services/ai/ai-delivery-port'
-import { createProjectPlanningHostRunDeliveryPort } from '@/services/project-planning/project-planning-host-run-provider'
+import { createProjectPlanningInlineDeliveryPort } from '@/services/project-planning/project-planning-host-run-provider'
 
 /** Project Planning Ai Run Options 的调用配置。 */
 export type ProjectPlanningAiRunOptions = ResolveScopedProjectPlanningRunInputOptions & Readonly<{
@@ -114,7 +114,7 @@ export async function runProjectPlanningAiSession(
   })
 
   const navigationDirty = editor.project.navigationDirty
-  const delivery = createProjectPlanningHostRunDeliveryPort()
+  const delivery = createProjectPlanningInlineDeliveryPort()
   const deliveryContext = {
     editor,
     saveNavigationAfterRun: command.saveNavigationAfterRun === true,

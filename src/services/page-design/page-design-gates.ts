@@ -5,7 +5,7 @@
  * AI用途：排查应用侧服务如何调用 spark-ai 或项目模型时，用本模块确认运行时接线。
  */
 /**
- * pageDesign 人工闸门：从 readPlanningProjection 读取 planningStatus / implGate，fail-fast 拒绝未放行页面。
+ * pageDesign 人工闸门：从 readPlanningProjection 读取 effectiveDescription / implGate，fail-fast 拒绝未放行页面。
  * allowedOperations 非空时，对 model_script 做操作域 marker 硬拦截。
  */
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
@@ -111,16 +111,14 @@ function readDeliverySaveFileNamesFromHostArgs(
 /** Page Design Run Mode 的语义模型。 */
 export type PageDesignRunMode = 'create' | 'update' | 'fix'
 
-/** Page Design Planning Status 的语义模型。 */
-export type PageDesignPlanningStatus = 'planning_draft' | 'planning_confirmed'
-
 /** Page Design Impl Gate 的语义模型。 */
 export type PageDesignImplGate = 'closed' | 'open'
 
 /** Page Design Gate State 的运行状态。 */
 export type PageDesignGateState = Readonly<{
   pageId: string
-  planningStatus: PageDesignPlanningStatus
+  /** effectiveDescription 非空即视为策划就绪。 */
+  planningReady: boolean
   implGate: PageDesignImplGate
   upstreamContractsSatisfied: boolean
 }>
@@ -149,17 +147,13 @@ export function readPageDesignGateState(
   summary: ProjectPageNodeSummary,
   options: ReadPageDesignGateStateOptions = {},
 ): PageDesignGateState {
-  const explicitPlanningStatus = readPlanningStatus(summary)
-  const effectiveDescription = summary.effectiveDescription.trim()
-  const planningStatus = explicitPlanningStatus ?? (
-    effectiveDescription.length > 0 ? 'planning_confirmed' : 'planning_draft'
-  )
+  const planningReady = summary.effectiveDescription.trim().length > 0
   const implGate = readImplGate(summary, options.strictImplGate === true)
   const upstreamContractsSatisfied = readUpstreamContractsSatisfied(summary)
 
   return {
     pageId: summary.pageId,
-    planningStatus,
+    planningReady,
     implGate,
     upstreamContractsSatisfied,
   }
@@ -169,12 +163,12 @@ export function validatePageDesignRunGate(
   state: PageDesignGateState,
   _mode: PageDesignRunMode = 'update',
 ): PageDesignGateValidationResult {
-  if (state.planningStatus === 'planning_draft') {
+  if (!state.planningReady) {
     return {
       ok: false,
       code: 'PLANNING_DRAFT',
-      reason: `page "${state.pageId}" planningStatus=planning_draft，策划尚未定稿。`,
-      fix: '补全 navigation description / descriptionContext，使 effectiveDescription 非空，并将 planningStatus 设为 planning_confirmed。',
+      reason: `page "${state.pageId}" effectiveDescription 为空，策划尚未定稿。`,
+      fix: '补全 navigation description / descriptionContext，使 effectiveDescription 非空后再运行 pageDesign。',
     }
   }
 
@@ -281,14 +275,6 @@ export function evaluatePageDesignScriptOperationGate(
 
 export function isPageDesignMutationTool(toolName: string): boolean {
   return MUTATION_TOOL_NAMES.has(normalizeToolName(toolName))
-}
-
-function readPlanningStatus(summary: ProjectPageNodeSummary): PageDesignPlanningStatus | undefined {
-  const value = summary.planningStatus
-  if (value === 'planning_draft' || value === 'planning_confirmed') {
-    return value
-  }
-  return undefined
 }
 
 function readImplGate(summary: ProjectPageNodeSummary, strictImplGate: boolean): PageDesignImplGate {
