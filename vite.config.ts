@@ -214,17 +214,6 @@ export default defineConfig({
             return 'vendor-editor'
           }
 
-          // Markdown 渲染链
-          if (
-            normalizedId.includes('/node_modules/vue-markdown-render/')
-            || normalizedId.includes('/node_modules/markdown-it/')
-            || normalizedId.includes('/node_modules/linkify-it/')
-            || normalizedId.includes('/node_modules/mdurl/')
-            || normalizedId.includes('/node_modules/uc.micro/')
-          ) {
-            return 'vendor-markdown'
-          }
-
           // JSON 编辑器
           if (
             normalizedId.includes('/node_modules/vanilla-jsoneditor/')
@@ -232,10 +221,6 @@ export default defineConfig({
             || normalizedId.includes('/node_modules/jsonrepair/')
           ) {
             return 'vendor-jsoneditor'
-          }
-
-          if (normalizedId.includes('/node_modules/html2canvas/')) {
-            return 'vendor-canvas'
           }
 
           // Node modules通用处理

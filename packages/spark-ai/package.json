@@ -45,7 +45,6 @@
   "dependencies": {
     "@spark-appworks/spark-json-document": "workspace:*",
     "@spark-appworks/spark-utils": "workspace:*",
-    "ajv": "^8.20.0",
     "comlink": "^4.4.2"
   },
   "scripts": {
