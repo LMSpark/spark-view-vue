@@ -364,6 +364,41 @@ describe('createTurnEventCollector', () => {
     })
   })
 
+  it('recovers fenced tool_call object literals with stale args intact', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    hub.emit(createTurnAppEvent('result', {
+      text: [
+        '```tool_call',
+        'model_query({',
+        '  kind: "project",',
+        '  member: "config-page"',
+        '})',
+        '```',
+      ].join('\n'),
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: '',
+      toolCalls: [{
+        id: 'call_bare_1',
+        type: 'function',
+        function: {
+          name: 'model_query',
+          arguments: JSON.stringify({
+            kind: 'project',
+            member: 'config-page',
+          }),
+        },
+      }],
+    })
+  })
+
   it('recovers bare model_script pseudo calls without renaming arguments', async () => {
     const hub = createTestEventHub()
     const collector = createTurnEventCollector({
@@ -445,6 +480,38 @@ describe('createTurnEventCollector', () => {
         function: {
           name: 'model_query',
           arguments: JSON.stringify({ kind: 'demoModule', keyword: 'orders' }),
+        },
+      }],
+    })
+  })
+
+  it('recovers malformed arg_key fragments emitted without closing arg_key tags', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    hub.emit(createTurnAppEvent('result', {
+      text: [
+        '<tool_call>model_action_guide',
+        '<arg_key>actionName":"openPageDesign","kind":"ProjectModel"}</arg_value>',
+        '</tool_call>',
+      ].join(''),
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: '',
+      toolCalls: [{
+        id: 'call_argtag_1',
+        type: 'function',
+        function: {
+          name: 'model_action_guide',
+          arguments: JSON.stringify({
+            actionName: 'openPageDesign',
+            kind: 'ProjectModel',
+          }),
         },
       }],
     })

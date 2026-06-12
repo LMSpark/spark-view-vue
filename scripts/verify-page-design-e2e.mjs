@@ -21,6 +21,10 @@ import {
   toAiAgentRuntimeScope,
 } from '@spark-appworks/spark-ai/agent'
 import {
+  DtsBundleClassModelKnowledgeService,
+  DtsClassModelBundleLoader,
+} from '@spark-appworks/spark-ai/class-model'
+import {
   createAppSseEventHub,
   subscribeAppSseEvents,
 } from './app-sse-client.mjs'
@@ -28,6 +32,7 @@ import {
   ensurePageDesignBusiness,
   resolvePageDesignPlanningContext,
 } from '../src/services/page-design/page-design-business.ts'
+import { dtsClassModelManifestUrl } from '../src/class-model-artifacts/artifact-urls.ts'
 import { createRequest } from '@spark-appworks/spark-utils'
 import { PAGE_NODE_FILE_NAMES } from '@spark-appworks/spark-project-model'
 import { ProjectWorkspace } from '@spark-appworks/spark-project-model'
@@ -39,6 +44,7 @@ import {
 } from '@spark-appworks/spark-data'
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // ============================================================================
 // 第 1 层：默认常量
@@ -711,8 +717,32 @@ function createPageDesignAiAgent(options, auth, workspace) {
   ensurePageDesignBusiness({
     host: aiHost,
     getPageDesignEditor: () => workspace,
+    knowledge: createNodePageDesignKnowledgeProvider(),
   })
   return aiHost
+}
+
+function createNodePageDesignKnowledgeProvider() {
+  return new DtsBundleClassModelKnowledgeService({
+    loader: new DtsClassModelBundleLoader({
+      manifestUrl: dtsClassModelManifestUrl,
+      fetchJson: readDtsBundleJson,
+    }),
+    rootClassName: 'ProjectModel',
+  })
+}
+
+async function readDtsBundleJson(url) {
+  const parsedUrl = new URL(url)
+  if (parsedUrl.protocol === 'file:') {
+    const text = await fs.promises.readFile(fileURLToPath(parsedUrl), 'utf8')
+    return JSON.parse(text)
+  }
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Failed to load DTS class-model JSON: ${url} ${String(response.status)}`)
+  }
+  return await response.json()
 }
 
 // PAGE_DESIGN_AI_TRACE[e2e-turn]: 发送 LLM 需求；连续 2 分钟无 LLM 活动则 abort，仍保留 session 供评估。

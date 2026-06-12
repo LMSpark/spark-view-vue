@@ -363,7 +363,9 @@ function createClassModelPromptSnapshot(document: ClassModelDocument): string {
     'ClassModel 工具闭集：model_query, model_class_guide, model_attribute_guide, model_action_guide, model_script, human_question, agent_complete。',
     `根模型 kind="${document.rootKind}"；属性链可达模型（与 model_query 一致）: ${kinds.join(', ')}。`,
     'model_query 只列 attribute.api 属性链可达 kind；动作入口与 callback 契约用 model_action_guide（含 resultApis）。',
-    '执行前先用 model_query 定位 kind/member；读写或调用前用 model_attribute_guide/model_action_guide 查看 schema、usageRules、failureModes。',
+    '工具参数必须按当前 schema：model_query 只接受 kind / keyword / includeMembers；model_attribute_guide 只接受 kind / attributeName；model_action_guide 只接受 kind / actionName。',
+    '执行前先用 model_query({ keyword, includeMembers: true }) 或 model_query({ kind, includeMembers: true }) 定位真实 kind 和成员名；不要使用旧参数 member / select / query / code。',
+    '读写或调用前用 model_attribute_guide/model_action_guide 查看 schema、usageRules、failureModes。',
     '唯一执行入口是 model_script({ script })；script 是 async function body，this 绑定当前业务根实例，沿原生对象链调用。',
     '任务完成必须调用 agent_complete({ summary })；所有执行都通过 model_script，不要绕过 ClassModel 工具闭集。',
   ].join('\n')
@@ -392,7 +394,9 @@ function createDtsNativePromptSnapshot(rootClassName: string): string {
   return [
     'ClassModel 工具闭集：model_query, model_class_guide, model_attribute_guide, model_action_guide, model_script, human_question, agent_complete。',
     `根模型 className="${rootClassName}"；知识来源为 generated/dts-class-model。`,
-    '执行前先用 model_query 定位 kind/member；读写或调用前用 model_attribute_guide/model_action_guide 查看 schema。',
+    '工具参数必须按当前 schema：model_query 只接受 kind / keyword / includeMembers；model_attribute_guide 只接受 kind / attributeName；model_action_guide 只接受 kind / actionName。',
+    '执行前先用 model_query({ keyword, includeMembers: true }) 或 model_query({ kind, includeMembers: true }) 定位真实 kind 和成员名；不要使用旧参数 member / select / query / code。',
+    '读写或调用前用 model_attribute_guide/model_action_guide 查看 schema。',
     '唯一执行入口是 model_script({ script })；script 是 async function body，this 绑定当前业务根实例，沿原生对象链调用。',
     '任务完成必须调用 agent_complete({ summary })；所有执行都通过 model_script，不要绕过 ClassModel 工具闭集。',
   ].join('\n')

@@ -17,12 +17,13 @@ const baseInput = {
 } as const
 
 describe('buildPageDesignToolLoopNudge', () => {
-  it('interpolates pageId without hardcoded business script shape', () => {
+  it('interpolates pageId with current script contract', () => {
     const nudge = buildPageDesignToolLoopNudge('model_script_retry', FIXTURE_PAGE_ID)
     expect(nudge).toContain(FIXTURE_PAGE_ID)
     expect(nudge).toContain('RECOVERY_HINT')
     expect(nudge).not.toContain('createTable')
-    expect(nudge).not.toContain('openPageDesign')
+    expect(nudge).toContain('openPageDesign')
+    expect(nudge).toContain('字符串 pageId')
   })
 
   it('nudges execution phase with pageId context only', () => {
@@ -30,6 +31,7 @@ describe('buildPageDesignToolLoopNudge', () => {
     expect(nudge).toContain(FIXTURE_PAGE_ID)
     expect(nudge).toContain('model_script')
     expect(nudge).toContain('目录/指南阶段已完成')
+    expect(nudge).toContain('setFileText')
   })
 
   it('uses data-only nudges when allowedOperations is pageDataDesign preset', () => {
@@ -53,12 +55,18 @@ describe('formatPageDesignSystemPrompt', () => {
     expect(prompt).toContain('pageDataDesign preset')
     expect(prompt).toContain('pagedata.json')
     expect(prompt).toContain('禁止 editNodeTree')
+    expect(prompt).toContain('model_action_guide 只用 kind / actionName')
+    expect(prompt).toContain('禁止 member / select / query')
     expect(prompt).not.toContain('ConfigPageNode')
   })
 
   it('uses full pageDesign knowledge index without data-only boundary by default', () => {
     const prompt = formatPageDesignSystemPrompt({ ...baseInput })
     expect(prompt).toContain('ConfigPageNode')
+    expect(prompt).toContain('model_query 只用 kind / keyword / includeMembers')
+    expect(prompt).toContain('禁止 member / select / query')
+    expect(prompt).toContain('script 是 async function body')
+    expect(prompt).toContain('style.css')
     expect(prompt).not.toContain('pageDataDesign preset')
   })
 })

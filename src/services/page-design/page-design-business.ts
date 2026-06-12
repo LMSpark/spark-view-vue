@@ -53,20 +53,20 @@ export function buildPageDesignToolLoopNudge(
       case 'plan_without_tool':
         return `pageId="${pageId}"；pageDataDesign preset：禁止只输出计划，下一回合必须 model_script 调用 editDataSet。`
       case 'execution_phase':
-        return `pageId="${pageId}"；只改 pagedata.json：await this.openPageDesign({ pageId: "${pageId}" }).editDataSet(tool => …)；禁止 nodeTree / setFileText 变更。`
+        return `pageId="${pageId}"；只改 pagedata.json：const page = this.openPageDesign("${pageId}"); await page.editDataSet(async tool => …)；禁止 nodeTree / setFileText 变更。script 只写函数体，不要包 async function/function。`
       case 'model_script_retry':
-        return `pageId="${pageId}"；按 RECOVERY_HINT 修正后重试 model_script，仍只通过 editDataSet 变更 DataSet。`
+        return `pageId="${pageId}"；按 RECOVERY_HINT 修正后重试 model_script，仍只通过 const page = this.openPageDesign("${pageId}"); await page.editDataSet(async tool => …) 变更 DataSet。`
       default:
         return undefined
     }
   }
   switch (reason) {
     case 'plan_without_tool':
-      return `pageId="${pageId}"；禁止只输出计划，下一回合必须发起 tool_call（见 model_action_guide / RECOVERY_HINT）。`
+      return `pageId="${pageId}"；禁止只输出计划，下一回合必须发起真实 tool_call。优先查询 model_action_guide({ kind: "ProjectModel", actionName: "openPageDesign" })，然后进入 model_script。`
     case 'execution_phase':
-      return `pageId="${pageId}"；目录/指南阶段已完成，直接 model_script。`
+      return `pageId="${pageId}"；目录/指南阶段已完成，直接 model_script：script 只写函数体，不要包 async function/function；const page = this.openPageDesign("${pageId}"); 通过 page.setFileText("pagedata.json"|"rule.json"|"script.js"|"style.css", text) 写入四文件。`
     case 'model_script_retry':
-      return `pageId="${pageId}"；按 RECOVERY_HINT 修正后重试 model_script。`
+      return `pageId="${pageId}"；按 RECOVERY_HINT 修正后重试 model_script；script 只写函数体，不要包 async function/function；openPageDesign 接收字符串 pageId，不是对象。`
     default:
       return undefined
   }
@@ -124,6 +124,8 @@ export type EnsurePageDesignBusinessOptions = {
 host: AiAgentHost
     /** get Page Design Editor 回调。 */
 getPageDesignEditor: (context: { moduleInstanceId: string }) => ProjectWorkspace
+  /** Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。 */
+  knowledge?: ClassModelKnowledgeProvider
 }
 
 
@@ -164,7 +166,7 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
         moduleId: PAGE_DESIGN_MODULE_ID,
         rootClassName: PAGE_DESIGN_ROOT_CLASS_NAME,
         dtsClassModelManifestUrl,
-        knowledge: createPageDesignClassModelKnowledgeProvider(),
+        knowledge: options.knowledge ?? createPageDesignClassModelKnowledgeProvider(),
         inputContract: createSimpleInputContract<PageDesignRunInput>({
           businessId: PAGE_DESIGN_MODULE_ID,
           identityField: 'pageId',
@@ -258,7 +260,9 @@ export function formatPageDesignSystemPrompt(input: PageDesignRunInput): string 
       ...sharedHeader,
       '能力边界: 只修改 pagedata.json（DataSet）；禁止 editNodeTree、rule.json、script.js、style.css。',
       '知识索引: DTS ClassModel（ProjectModel → openPageDesign → editDataSet / DataSetCrudTool）。',
+      '工具参数: model_query 只用 kind / keyword / includeMembers；model_action_guide 只用 kind / actionName；禁止 member / select / query 旧参数。',
       '执行规则: 先 model_action_guide 查 editDataSet 与 DataSetCrudTool，再 model_script 通过 editDataSet 回调变更表/视图/绑定。',
+      '脚本规则: model_script.script 只写 async function body；不要写 async function(){} / function(){} 包裹。',
       '交付: 仅 commit pagedata.json；nodeTree / rule / script / style 即使 dirty 也不落盘。',
       '模型来源: generated/dts-class-model。',
     ].join('\n')
@@ -267,12 +271,35 @@ export function formatPageDesignSystemPrompt(input: PageDesignRunInput): string 
     `当前 pageDesign 页面: ${input.pageId}（${planningTitle}，path=${planningPath}）`,
     ...sharedHeader,
     '知识索引: DTS ClassModel（ProjectModel → ConfigPageNode）；用 model_query / model_action_guide 读取契约后 model_script 执行。',
+    '工具参数: model_query 只用 kind / keyword / includeMembers；model_action_guide 只用 kind / actionName；禁止 member / select / query 旧参数。',
+    ...pageDesignScriptSopLines(input),
     '模型来源: generated/dts-class-model。',
   ].join('\n')
 }
 
 function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
   return formatPageDesignSystemPrompt(input)
+}
+
+function pageDesignScriptSopLines(input: PageDesignRunInput): readonly string[] {
+  return [
+    'model_script 标准写法: script 是 async function body；不要写 async function(){} / function(){} / return (async function...) 包裹。',
+    `四文件写入闭环: const page = this.openPageDesign("${input.pageId}"); page.setFileText("pagedata.json", JSON.stringify(data, null, 2)); page.setFileText("rule.json", JSON.stringify(rule, null, 2)); page.setFileText("script.js", scriptText); page.setFileText("style.css", cssText); return { pageId: page.pageId }。`,
+    '四文件名只允许 rule.json / pagedata.json / script.js / style.css；不要使用 style.json 或 script.json。',
+    '表单页交付底线: pagedata.json 必须建业务表与 default view；rule.json 必须有 r-form、字段 prop 绑定、列表区域、提交按钮；枚举字段必须提供可用 options。',
+    '绑定格式: dataViewKey 使用 TableName@default；字段绑定使用 dataMember + dataField/prop，不使用旧点号路径。',
+    ...leaveRequestPageDesignHintLines(input),
+  ]
+}
+
+function leaveRequestPageDesignHintLines(input: PageDesignRunInput): readonly string[] {
+  const text = `${input.description}\n${input.effectiveDescription}\n${input.planningTitle ?? ''}`.toLowerCase()
+  if (!text.includes('请假') && !text.includes('leave')) return []
+  return [
+    '本轮请假申请页验收字段: LeaveRequest 表至少包含 applicantName、leaveType、startDate、endDate、reason、status，以及 days/duration/dayCount 之一。',
+    '请假类型必须给静态 options，例如 年假、事假、病假、婚假、产假、丧假、其他。',
+    'rule.json 至少包含绑定 LeaveRequest@default 的 r-form、这些字段的 r-form-item、提交申请按钮和请假记录 r-table。',
+  ]
 }
 
 function resolvePageDesignProject(

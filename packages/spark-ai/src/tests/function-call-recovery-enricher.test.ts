@@ -103,6 +103,7 @@ describe('enrichFunctionCallResult', () => {
     if (invalidQuery.ok) return
     expect(invalidQuery.checks?.some(check => check.message.includes('includeMembers'))).toBe(true)
     expect(invalidQuery.checks?.some(check => check.message.includes('kind'))).toBe(true)
+    expect(invalidQuery.checks?.some(check => check.message.includes('旧字段 member'))).toBe(true)
     expect(invalidQuery.checks?.some(check => check.message.includes('openPageDesign'))).toBe(false)
   })
 
@@ -121,5 +122,6 @@ describe('enrichFunctionCallResult', () => {
     expect(invalidScript.ok).toBe(false)
     if (invalidScript.ok) return
     expect(invalidScript.checks?.some(check => check.message.includes('只接受 script 字段'))).toBe(true)
+    expect(invalidScript.checks?.some(check => check.message.includes('旧字段 code'))).toBe(true)
   })
 })

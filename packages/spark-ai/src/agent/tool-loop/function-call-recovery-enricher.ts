@@ -18,6 +18,33 @@ import type {
 
 const CLASS_MODEL_TOOL_NAME_SET = new Set<string>(Object.values(CLASS_MODEL_TOOL_NAMES))
 
+const LEGACY_CLASS_MODEL_TOOL_ARG_HINTS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  [CLASS_MODEL_TOOL_NAMES.query]: {
+    member: '旧字段 member 不可用于 model_query；用 keyword 搜索成员名，或 includeMembers: true 展开成员摘要。',
+    select: '旧字段 select 不可用于 model_query；用 includeMembers: true 展开目录。',
+    query: '旧字段 query 不可用于 model_query；用 keyword 表达搜索词。',
+  },
+  [CLASS_MODEL_TOOL_NAMES.attributeGuide]: {
+    member: '旧字段 member 不可用于 model_attribute_guide；必须使用 attributeName。',
+    name: '旧字段 name 不可用于 model_attribute_guide；必须使用 attributeName。',
+    propertyName: '旧字段 propertyName 不可用于 model_attribute_guide；必须使用 attributeName。',
+    className: '旧字段 className 不可用于 model_attribute_guide；必须使用 kind。',
+    modelName: '旧字段 modelName 不可用于 model_attribute_guide；必须使用 kind。',
+  },
+  [CLASS_MODEL_TOOL_NAMES.actionGuide]: {
+    member: '旧字段 member 不可用于 model_action_guide；必须使用 actionName。',
+    name: '旧字段 name 不可用于 model_action_guide；必须使用 actionName。',
+    methodName: '旧字段 methodName 不可用于 model_action_guide；必须使用 actionName。',
+    action: '旧字段 action 不可用于 model_action_guide；必须使用 actionName。',
+    className: '旧字段 className 不可用于 model_action_guide；必须使用 kind。',
+    modelName: '旧字段 modelName 不可用于 model_action_guide；必须使用 kind。',
+  },
+  [CLASS_MODEL_TOOL_NAMES.script]: {
+    code: '旧字段 code 不可用于 model_script；必须使用 script。',
+    body: '旧字段 body 不可用于 model_script；必须使用 script。',
+  },
+}
+
 const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
   FUNCTION_NOT_DECLARED: [
     '目录恢复：model_query({ kind: "<kind>", includeMembers: true }) 选择真实 actionName。',
@@ -141,9 +168,23 @@ function appendProtocolRecoveryHints(
   if (code === 'INVALID_CLASS_MODEL_TOOL_ARGS' && isClassModelToolName(toolName)) {
     const schemaHint = buildClassModelToolSchemaRecoveryHint(toolName)
     if (schemaHint !== undefined) hints.push(schemaHint)
+    appendLegacyClassModelToolArgHints(hints, toolName, command.args)
   }
   if (code === 'INVALID_CLASS_MODEL_TOOL_ARGS' && toolName === CLASS_MODEL_TOOL_NAMES.script) {
     hints.push('model_script 只接受 script 字段；请按工具 schema 重写参数。')
+  }
+}
+
+function appendLegacyClassModelToolArgHints(
+  hints: string[],
+  toolName: string,
+  args: AiJsonParams,
+): void {
+  const toolHints = LEGACY_CLASS_MODEL_TOOL_ARG_HINTS[toolName]
+  if (toolHints === undefined) return
+  for (const key of Object.keys(args).sort()) {
+    const hint = toolHints[key]
+    if (hint !== undefined) hints.push(hint)
   }
 }
 

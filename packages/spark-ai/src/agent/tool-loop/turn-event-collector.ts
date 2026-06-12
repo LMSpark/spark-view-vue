@@ -353,8 +353,8 @@ function recoverToolCallsFromText(text: string): readonly AiAgentTransportToolCa
   const calls = [
     ...recoverJsonToolCallsFromText(text),
     ...recoverDsmlToolCallsFromText(text),
-    ...recoverInlineJsonToolCallsFromText(text),
-    ...recoverBareJsonToolCallsFromText(text),
+    ...recoverInlineObjectToolCallsFromText(text),
+    ...recoverBareObjectToolCallsFromText(text),
     ...recoverArgKeyTagToolCallsFromText(text),
   ]
   const normalizedCalls = dedupeRecoveredToolCalls(calls)
@@ -498,7 +498,7 @@ function recoverDsmlToolCallsFromText(text: string): readonly AiAgentTransportTo
 }
 
 /** 部分 OpenAI 兼容网关常见：<tool_call>model_script({"script":"..."})（可无闭合标签）。 */
-function recoverInlineJsonToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
+function recoverInlineObjectToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
   const calls: AiAgentTransportToolCall[] = []
   const openerPattern = /<tool_call>\s*([A-Za-z_][\w.-]*)\s*\(/gi
   for (const match of text.matchAll(openerPattern)) {
@@ -508,13 +508,9 @@ function recoverInlineJsonToolCallsFromText(text: string): readonly AiAgentTrans
     const jsonCandidates = extractBalancedJsonCandidates(remainder)
     const jsonText = jsonCandidates[0]
     if (name.length === 0 || jsonText === undefined) continue
-    try {
-      const parsed: unknown = JSON.parse(jsonText)
-      if (!isRecord(parsed)) continue
-      calls.push(createRecoveredToolCall({ name, args: parsed, index: calls.length, idPrefix: 'call_inline' }))
-    } catch {
-      // Ignore malformed inline JSON tool calls.
-    }
+    const parsed = parseRecoveredObjectArgs(jsonText)
+    if (parsed === null) continue
+    calls.push(createRecoveredToolCall({ name, args: parsed, index: calls.length, idPrefix: 'call_inline' }))
   }
   return calls
 }
@@ -539,7 +535,7 @@ function containsBareJsonToolCallText(text: string): boolean {
   return BARE_JSON_TOOL_CALL_PATTERN.test(text)
 }
 
-function recoverBareJsonToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
+function recoverBareObjectToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
   const calls: AiAgentTransportToolCall[] = []
   BARE_JSON_TOOL_CALL_PATTERN.lastIndex = 0
   for (const match of text.matchAll(BARE_JSON_TOOL_CALL_PATTERN)) {
@@ -548,15 +544,180 @@ function recoverBareJsonToolCallsFromText(text: string): readonly AiAgentTranspo
     const remainder = text.slice(argsStart).trimStart()
     const jsonText = extractBalancedJsonCandidates(remainder)[0]
     if (name.length === 0 || jsonText === undefined) continue
-    try {
-      const parsed: unknown = JSON.parse(jsonText)
-      if (!isRecord(parsed)) continue
-      calls.push(createRecoveredToolCall({ name, args: parsed, index: calls.length, idPrefix: 'call_bare' }))
-    } catch {
-      // Ignore malformed bare function-style pseudo tool calls.
-    }
+    const parsed = parseRecoveredObjectArgs(jsonText)
+    if (parsed === null) continue
+    calls.push(createRecoveredToolCall({ name, args: parsed, index: calls.length, idPrefix: 'call_bare' }))
   }
   return calls
+}
+
+function parseRecoveredObjectArgs(text: string): Record<string, unknown> | null {
+  const strict = parseJsonObjectArgs(text)
+  if (strict !== null) return strict
+  const normalized = normalizeLenientObjectLiteral(text)
+  if (normalized === null) return null
+  return parseJsonObjectArgs(normalized)
+}
+
+function parseJsonObjectArgs(text: string): Record<string, unknown> | null {
+  try {
+    const parsed: unknown = JSON.parse(text)
+    return isRecord(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+function normalizeLenientObjectLiteral(text: string): string | null {
+  let normalized = ''
+  let index = 0
+  while (index < text.length) {
+    const char = text.charAt(index)
+    if (char === '"') {
+      const segment = readDoubleQuotedSegment(text, index)
+      if (segment === null) return null
+      normalized += segment.text
+      index = segment.nextIndex
+      continue
+    }
+    if (char === "'") {
+      const segment = readSingleQuotedSegment(text, index)
+      if (segment === null) return null
+      normalized += segment.text
+      index = segment.nextIndex
+      continue
+    }
+    if (char === '`') return null
+    if (isIdentifierStart(char)) {
+      const segment = readIdentifierSegment(text, index)
+      const nextIndex = skipWhitespace(text, segment.nextIndex)
+      normalized += text.charAt(nextIndex) === ':' ? JSON.stringify(segment.text) : segment.text
+      index = segment.nextIndex
+      continue
+    }
+    normalized += char
+    index += 1
+  }
+  return removeTrailingCommas(normalized)
+}
+
+type TextSegment = Readonly<{
+  text: string
+  nextIndex: number
+}>
+
+function readDoubleQuotedSegment(source: string, startIndex: number): TextSegment | null {
+  let index = startIndex + 1
+  let escaping = false
+  while (index < source.length) {
+    const char = source.charAt(index)
+    if (escaping) {
+      escaping = false
+    } else if (char === '\\') {
+      escaping = true
+    } else if (char === '"') {
+      return {
+        text: source.slice(startIndex, index + 1),
+        nextIndex: index + 1,
+      }
+    }
+    index += 1
+  }
+  return null
+}
+
+function readSingleQuotedSegment(source: string, startIndex: number): TextSegment | null {
+  let index = startIndex + 1
+  let escaping = false
+  let value = ''
+  while (index < source.length) {
+    const char = source.charAt(index)
+    if (escaping) {
+      value += unescapeSingleQuotedChar(char)
+      escaping = false
+    } else if (char === '\\') {
+      escaping = true
+    } else if (char === "'") {
+      return {
+        text: JSON.stringify(value),
+        nextIndex: index + 1,
+      }
+    } else {
+      value += char
+    }
+    index += 1
+  }
+  return null
+}
+
+function unescapeSingleQuotedChar(char: string): string {
+  switch (char) {
+    case 'b':
+      return '\b'
+    case 'f':
+      return '\f'
+    case 'n':
+      return '\n'
+    case 'r':
+      return '\r'
+    case 't':
+      return '\t'
+    default:
+      return char
+  }
+}
+
+function readIdentifierSegment(source: string, startIndex: number): TextSegment {
+  let index = startIndex + 1
+  while (index < source.length && isIdentifierPart(source.charAt(index))) {
+    index += 1
+  }
+  return {
+    text: source.slice(startIndex, index),
+    nextIndex: index,
+  }
+}
+
+function skipWhitespace(source: string, startIndex: number): number {
+  let index = startIndex
+  while (index < source.length && /\s/u.test(source.charAt(index))) {
+    index += 1
+  }
+  return index
+}
+
+function removeTrailingCommas(text: string): string {
+  let normalized = ''
+  let index = 0
+  while (index < text.length) {
+    const char = text.charAt(index)
+    if (char === '"') {
+      const segment = readDoubleQuotedSegment(text, index)
+      if (segment === null) return text
+      normalized += segment.text
+      index = segment.nextIndex
+      continue
+    }
+    if (char === ',') {
+      const nextIndex = skipWhitespace(text, index + 1)
+      const nextChar = text.charAt(nextIndex)
+      if (nextChar === '}' || nextChar === ']') {
+        index += 1
+        continue
+      }
+    }
+    normalized += char
+    index += 1
+  }
+  return normalized
+}
+
+function isIdentifierStart(char: string): boolean {
+  return /[A-Za-z_$]/u.test(char)
+}
+
+function isIdentifierPart(char: string): boolean {
+  return /[A-Za-z0-9_$]/u.test(char)
 }
 
 /** glm / 部分 OpenAI 兼容网关会把 tool_call 写进 assistant 文本（arg_key / arg_value 标签）。 */
@@ -577,9 +738,36 @@ function recoverArgKeyTagToolCallsFromText(text: string): readonly AiAgentTransp
       if (key.length === 0) continue
       args[key] = pair[2]?.trim() ?? ''
     }
+    Object.assign(args, readMalformedArgKeyArguments(argsSection))
     calls.push(createRecoveredToolCall({ name: rawName, args, index: calls.length, idPrefix: 'call_argtag' }))
   }
   return calls
+}
+
+function readMalformedArgKeyArguments(argsSection: string): Record<string, unknown> {
+  const args: Record<string, unknown> = {}
+  const malformedPattern = /<arg_key>\s*([\s\S]*?)\s*<\/arg_value>/gi
+  for (const match of argsSection.matchAll(malformedPattern)) {
+    const fragment = match[1]?.trim() ?? ''
+    if (fragment.length === 0 || fragment.includes('</arg_key>')) continue
+    Object.assign(args, parseMalformedArgFragment(fragment))
+  }
+  return args
+}
+
+function parseMalformedArgFragment(fragment: string): Record<string, unknown> {
+  const repaired = repairMalformedArgFragment(fragment)
+  if (repaired.length === 0) return {}
+  return parseRecoveredObjectArgs(`{${repaired}}`) ?? {}
+}
+
+function repairMalformedArgFragment(fragment: string): string {
+  return fragment
+    .trim()
+    .replace(/^\{+/u, '')
+    .replace(/\}+$/u, '')
+    .replace(/\\/gu, '')
+    .replace(/(^|,)\s*([A-Za-z_$][A-Za-z0-9_$]*)"\s*:/gu, '$1$2:')
 }
 
 type CreateRecoveredToolCallCommand = Readonly<{
