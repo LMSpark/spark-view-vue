@@ -8,6 +8,7 @@ import type {
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 import { HttpClientBase, type HttpResponse, type RequestConfig } from '@spark-appworks/spark-utils'
 import { prepareProjectPlanningHostRun } from '@/services/project-planning-host-run-provider'
+import { readAiDeliveryErrorExtras } from '@/services/ai-delivery-port'
 
 const mocks = vi.hoisted(() => {
   const createHeadlessProjectPlanningEditor = vi.fn()
@@ -177,9 +178,14 @@ describe('prepareProjectPlanningHostRun', () => {
       timestamp: Date.now(),
     }, {} as AiAgentHost)
 
-    await host.run('projectPlanning', {} as AiJsonParams)
+    const result = await host.run('projectPlanning', {} as AiJsonParams)
 
     expect(editor.saveAll).not.toHaveBeenCalled()
+    expect(result.resultExtras?.['delivery']).toEqual({
+      mode: 'auto',
+      status: 'skipped',
+      artifacts: [{ kind: 'navigation', name: 'navigation', status: 'skipped' }],
+    })
   })
 
   it('saves navigation only when saveNavigationAfterRun is true', async () => {
@@ -207,9 +213,60 @@ describe('prepareProjectPlanningHostRun', () => {
       timestamp: Date.now(),
     }, {} as AiAgentHost)
 
-    await host.run('projectPlanning', {} as AiJsonParams)
+    const result = await host.run('projectPlanning', {} as AiJsonParams)
 
     expect(editor.saveAll).toHaveBeenCalledOnce()
+    expect(result.resultExtras?.['delivery']).toEqual({
+      mode: 'auto',
+      status: 'saved',
+      artifacts: [{ kind: 'navigation', name: 'navigation', status: 'saved' }],
+    })
+    expect(result.resultExtras?.['projectPlanning']).toEqual(expect.objectContaining({
+      savedNavigation: true,
+    }))
+  })
+
+  it('rolls back delivery metadata when run fails', async () => {
+    const editor = createEditor()
+    editor.project.replaceNavigationChildren([
+      {
+        id: 'people',
+        title: 'People',
+        nodeKind: 'page',
+        path: '/people',
+        description: 'People page',
+      },
+    ])
+    mocks.createHeadlessProjectPlanningEditor.mockReturnValue(editor)
+    mocks.delegateHost.run.mockRejectedValue(new Error('run failed'))
+
+    const host = await prepareProjectPlanningHostRun({
+      requestId: 'request-rollback',
+      alias: 'projectPlanning',
+      args: {
+        tenantId: 'lmspark',
+        projectId: 'hr-enterprise-planning-smoke',
+        requirement: '产品需求',
+        saveNavigationAfterRun: true,
+      },
+      timestamp: Date.now(),
+    }, {} as AiAgentHost)
+
+    let thrown: unknown
+    try {
+      await host.run('projectPlanning', {} as AiJsonParams)
+    } catch (error: unknown) {
+      thrown = error
+    }
+
+    expect(thrown).toBeInstanceOf(Error)
+    expect(editor.saveAll).not.toHaveBeenCalled()
+    expect(readAiDeliveryErrorExtras(thrown)?.delivery).toEqual({
+      mode: 'auto',
+      status: 'rolledBack',
+      artifacts: [{ kind: 'navigation', name: 'navigation', status: 'rolledBack' }],
+      message: 'run failed',
+    })
   })
 
   it('fails fast when tenantId is missing', async () => {

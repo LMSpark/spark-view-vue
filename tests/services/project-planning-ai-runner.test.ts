@@ -213,4 +213,29 @@ describe('runProjectPlanningAiSession', () => {
 
     expect(mocks.projectPlanningRun).toHaveBeenCalledOnce()
   })
+
+  it('saves navigation through delivery when saveNavigationAfterRun is true', async () => {
+    const editor = createEditor('demo')
+    const aiHost = createAiHost()
+    const saveAll = vi.spyOn(editor, 'saveAll').mockResolvedValue()
+    editor.project.replaceNavigationChildren([
+      {
+        id: 'orders',
+        title: '订单',
+        nodeKind: 'page',
+        path: '/orders',
+        description: '订单页',
+      },
+    ])
+
+    const result = await runProjectPlanningAiSession({
+      editor,
+      host: aiHost,
+      saveNavigationAfterRun: true,
+    })
+
+    expect(saveAll).toHaveBeenCalledOnce()
+    expect(result.navigationDirty).toBe(true)
+    expect(result.savedNavigation).toBe(true)
+  })
 })
