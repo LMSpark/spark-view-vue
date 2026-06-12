@@ -5,8 +5,7 @@
  * AI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-handler 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import { expose, type Endpoint } from 'comlink'
-import { DtsClassModelBundleLoader } from '../class-model/dts-class-model-bundle-loader'
-import { DtsBundleClassModelKnowledgeService } from './dts-bundle-class-model-knowledge-service'
+import { createDtsBundleClassModelKnowledgeProvider } from './dts-bundle-class-model-knowledge-service'
 import type {
   ClassModelKnowledgeProvider,
 } from './class-model-knowledge-service'
@@ -90,15 +89,12 @@ async function createWorkerStateFromInitInput(
   if (input.rootClassName.length === 0) {
     throw new Error('DTS class-model worker init requires rootClassName.')
   }
-  const loader = new DtsClassModelBundleLoader({
-    manifestUrl: input.dtsClassModelManifestUrl,
+  const provider = createDtsBundleClassModelKnowledgeProvider({
+    dtsClassModelManifestUrl: input.dtsClassModelManifestUrl,
+    rootClassName: input.rootClassName,
     fetchJson,
   })
-  await loader.init()
-  const provider = new DtsBundleClassModelKnowledgeService({
-    loader,
-    rootClassName: input.rootClassName,
-  })
+  await provider.init()
   return new ClassModelKnowledgeWorkerState({
     baseProvider: provider,
   })

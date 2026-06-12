@@ -115,7 +115,9 @@ export type {
 
 export {
   ClassModelKnowledgeService,
+  createDtsBundleClassModelKnowledgeProvider,
   createClassModelKnowledgeWorkerApi,
+  createWorkerDtsClassModelKnowledgeProvider,
   DtsBundleClassModelKnowledgeService,
   exposeClassModelKnowledgeWorker,
   WorkerClassModelKnowledgeProvider,
@@ -123,7 +125,9 @@ export {
 
 export type {
   ClassModelKnowledgeServiceOptions,
+  CreateDtsBundleClassModelKnowledgeProviderOptions,
   CreateClassModelKnowledgeWorkerApiOptions,
+  CreateWorkerDtsClassModelKnowledgeProviderOptions,
   DtsBundleClassModelKnowledgeServiceOptions,
   ClassModelAttributeGuideInput,
   ClassModelKnowledgeProvider,

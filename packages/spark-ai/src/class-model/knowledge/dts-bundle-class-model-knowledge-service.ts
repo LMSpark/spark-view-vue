@@ -5,7 +5,7 @@
  * AI用途：当需要判断 ClassModel 在 class-model/knowledge/dts-bundle-class-model-knowledge-service 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiJsonValue } from '../../json'
-import type { DtsClassModelBundleLoader } from '../class-model/dts-class-model-bundle-loader'
+import { DtsClassModelBundleLoader } from '../class-model/dts-class-model-bundle-loader'
 import {
   ClassModelKnowledgeService,
   type ClassModelAttributeGuideInput,
@@ -21,10 +21,40 @@ export type DtsBundleClassModelKnowledgeServiceOptions = Readonly<{
   rootClassName: string
 }>
 
+/** Create Dts Bundle Class Model Knowledge Provider Options 的调用配置。 */
+export type CreateDtsBundleClassModelKnowledgeProviderOptions = Readonly<{
+  dtsClassModelManifestUrl: string
+  rootClassName: string
+  fetchJson?: (url: string) => Promise<unknown>
+}>
+
+export function createDtsBundleClassModelKnowledgeProvider(
+  options: CreateDtsBundleClassModelKnowledgeProviderOptions,
+): DtsBundleClassModelKnowledgeService {
+  const dtsClassModelManifestUrl = normalizeRequiredText(
+    options.dtsClassModelManifestUrl,
+    'dtsClassModelManifestUrl',
+  )
+  const rootClassName = normalizeRequiredText(options.rootClassName, 'rootClassName')
+  const loader = new DtsClassModelBundleLoader({
+    manifestUrl: dtsClassModelManifestUrl,
+    ...(options.fetchJson === undefined ? {} : { fetchJson: options.fetchJson }),
+  })
+  return new DtsBundleClassModelKnowledgeService({
+    loader,
+    rootClassName,
+  })
+}
+
 /** Dts Bundle Class Model Knowledge Service 的语义模型。 */
 export class DtsBundleClassModelKnowledgeService implements ClassModelKnowledgeProvider {
     /** 创建 Dts Bundle Class Model Knowledge Service 实例。 */
 public constructor(private readonly options: DtsBundleClassModelKnowledgeServiceOptions) {}
+
+    /** 初始化 manifest，保持动态加载入口 fail-fast。 */
+public async init(): Promise<void> {
+    await this.options.loader.init()
+  }
 
     /** 查询参数。 */
 public async query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue> {
@@ -61,4 +91,15 @@ public async methodGuide(input: ClassModelMethodGuideInput): Promise<string> {
       rootClassName: this.options.rootClassName,
     })
   }
+}
+
+function normalizeRequiredText(value: unknown, field: string): string {
+  if (typeof value !== 'string') {
+    throw new Error(`DTS ClassModel knowledge requires ${field}.`)
+  }
+  const trimmed = value.trim()
+  if (trimmed.length === 0) {
+    throw new Error(`DTS ClassModel knowledge requires ${field}.`)
+  }
+  return trimmed
 }

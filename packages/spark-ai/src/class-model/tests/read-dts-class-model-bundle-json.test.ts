@@ -12,6 +12,7 @@ import {
 import { buildDtsClassModelBundle } from '../class-model/build-dts-class-model-bundle'
 import { DtsClassModelBundleLoader } from '../class-model/dts-class-model-bundle-loader'
 import { projectDtsFileProjection } from '../class-model/project-from-declarations'
+import { createDtsBundleClassModelKnowledgeProvider } from '../knowledge'
 import {
   readDtsClassModelBundleManifest,
   readDtsFileProjectionDocument,
@@ -429,6 +430,54 @@ describe('readDtsClassModelBundleJson', () => {
         'AiAgentRegistry',
         'AiAgentRegistration',
       ]))
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('creates a DTS bundle knowledge provider from manifest/root/fetchJson', async () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-knowledge-${String(process.pid)}-${String(Date.now())}`)
+    const sourcePath = 'declarations/packages/spark-ai/src/agent/business/business-registry.d.ts'
+    const absolutePath = resolve(tempRoot, sourcePath)
+    const outputDir = resolve(tempRoot, 'generated/dts-class-model')
+    try {
+      mkdirSync(dirname(absolutePath), { recursive: true })
+      writeFileSync(absolutePath, [
+        '/** Host registry for AI business registrations. */',
+        'export class AiAgentRegistry {',
+        '  /** Stable registry status. */',
+        '  status: string',
+        '  /** Stores a registration for later session resolution. */',
+        '  register(moduleId: string): boolean',
+        '}',
+      ].join('\n'), 'utf8')
+
+      const result = buildDtsClassModelBundle({
+        repoRoot: tempRoot,
+        rootFiles: [absolutePath],
+        outputDir,
+      })
+      const provider = createDtsBundleClassModelKnowledgeProvider({
+        dtsClassModelManifestUrl: pathToFileURL(result.manifestPath).href,
+        rootClassName: 'AiAgentRegistry',
+        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+      })
+      await provider.init()
+
+      const query = await provider.query({ keyword: 'registry', includeMembers: true })
+      const payload = query as {
+        rootKind?: string
+        models?: Array<{
+          kind?: string
+          attributes?: Array<{ name?: string }>
+          methods?: Array<{ name?: string }>
+        }>
+      }
+      const model = payload.models?.find(item => item.kind === 'AiAgentRegistry')
+
+      expect(payload.rootKind).toBe('AiAgentRegistry')
+      expect(model?.attributes?.map(attribute => attribute.name)).toContain('status')
+      expect(model?.methods?.map(method => method.name)).toContain('register')
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }

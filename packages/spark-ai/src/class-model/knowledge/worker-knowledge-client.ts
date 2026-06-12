@@ -18,6 +18,30 @@ import type {
   ClassModelKnowledgeWorkerInitInput,
 } from './worker-knowledge-api'
 
+/** Create Worker Dts Class Model Knowledge Provider Options 的调用配置。 */
+export type CreateWorkerDtsClassModelKnowledgeProviderOptions =
+  ClassModelKnowledgeWorkerInitInput & Readonly<{
+    workerUrl: string | URL
+    workerOptions?: WorkerOptions
+    createWorker?: (url: string | URL, options?: WorkerOptions) => Worker
+  }>
+
+export function createWorkerDtsClassModelKnowledgeProvider(
+  options: CreateWorkerDtsClassModelKnowledgeProviderOptions,
+): ClassModelKnowledgeProvider {
+  const worker = (options.createWorker ?? createBrowserWorker)(
+    options.workerUrl,
+    options.workerOptions ?? DEFAULT_WORKER_OPTIONS,
+  )
+  return new WorkerClassModelKnowledgeProvider(worker, {
+    dtsClassModelManifestUrl: normalizeRequiredText(
+      options.dtsClassModelManifestUrl,
+      'dtsClassModelManifestUrl',
+    ),
+    rootClassName: normalizeRequiredText(options.rootClassName, 'rootClassName'),
+  })
+}
+
 /**
  * 主线程 knowledge provider。
  *
@@ -57,4 +81,24 @@ public async methodGuide(input: ClassModelMethodGuideInput): Promise<string> {
     await this.initialized
     return this.api.methodGuide(input)
   }
+}
+
+const DEFAULT_WORKER_OPTIONS: WorkerOptions = { type: 'module' }
+
+function createBrowserWorker(url: string | URL, options?: WorkerOptions): Worker {
+  if (typeof Worker === 'undefined') {
+    throw new Error('DTS ClassModel knowledge requires Web Worker on-demand loading.')
+  }
+  return new Worker(url, options)
+}
+
+function normalizeRequiredText(value: unknown, field: string): string {
+  if (typeof value !== 'string') {
+    throw new Error(`DTS ClassModel worker knowledge requires ${field}.`)
+  }
+  const trimmed = value.trim()
+  if (trimmed.length === 0) {
+    throw new Error(`DTS ClassModel worker knowledge requires ${field}.`)
+  }
+  return trimmed
 }

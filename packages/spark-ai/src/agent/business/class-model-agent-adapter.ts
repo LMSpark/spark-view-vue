@@ -9,6 +9,7 @@ import type { AiJsonSchemaObject, AiJsonValue } from '../../json'
 import {
   auditClassModelReflectionConnectivity,
   collectClassModelFailureModeRecoveryHints,
+  createDtsBundleClassModelKnowledgeProvider,
   createClassModelDocumentFromRuntimeApiMetadata,
   listAttributeReachableKinds,
   resolveRuntimeApiMetadataJson,
@@ -81,6 +82,7 @@ export type ClassModelAgentAdapterRegisterOptions<T> = Readonly<{
   /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */
   jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>
   dtsClassModelManifestUrl?: string
+  dtsClassModelFetchJson?: (url: string) => Promise<unknown>
   rootClassName?: string
   knowledge?: ClassModelKnowledgeProvider
   inputContract?: AiAgentInputContract
@@ -219,22 +221,23 @@ class ClassModelAgentToolRuntime<T> implements AiAgentToolRuntime {
   private readonly runtime: ClassModelRuntime
 
   public constructor(private readonly adapterOptions: ClassModelAgentToolRuntimeOptions<T>) {
+    const knowledge = resolveClassModelRuntimeKnowledge(adapterOptions)
     this.runtime = new ClassModelRuntime({
       ...(adapterOptions.document === undefined ? {} : { document: adapterOptions.document }),
-      ...(adapterOptions.options.knowledge === undefined ? {} : { knowledge: adapterOptions.options.knowledge }),
+      ...(knowledge === undefined ? {} : { knowledge }),
       scriptExecutor: async command => {
         const host = readRuntimeHostContext(command.host)
         const instance = this.resolveInstance(toRuntimeContext(host))
         if (adapterOptions.metadata === undefined) {
-          const manifestUrl = adapterOptions.options.dtsClassModelManifestUrl
-          if (manifestUrl === undefined || manifestUrl.length === 0) {
-            throw new Error('DTS-native script executor requires dtsClassModelManifestUrl.')
-          }
+          const manifestUrl = requireDtsClassModelManifestUrl(adapterOptions)
           const result = await executeDtsNativeScript({
             instance,
             manifestUrl,
             rootClassName: adapterOptions.rootClassName,
             host,
+            ...(adapterOptions.options.dtsClassModelFetchJson === undefined
+              ? {}
+              : { fetchJson: adapterOptions.options.dtsClassModelFetchJson }),
             script: command.script,
           })
           return toClassModelToolResult(result)
@@ -308,6 +311,30 @@ class ClassModelAgentToolRuntime<T> implements AiAgentToolRuntime {
       this.adapterOptions.options.constructArgs ?? [],
     )
   }
+}
+
+function resolveClassModelRuntimeKnowledge<T>(
+  adapterOptions: ClassModelAgentToolRuntimeOptions<T>,
+): ClassModelKnowledgeProvider | undefined {
+  if (adapterOptions.options.knowledge !== undefined) return adapterOptions.options.knowledge
+  if (adapterOptions.document !== undefined) return undefined
+  return createDtsBundleClassModelKnowledgeProvider({
+    dtsClassModelManifestUrl: requireDtsClassModelManifestUrl(adapterOptions),
+    rootClassName: adapterOptions.rootClassName,
+    ...(adapterOptions.options.dtsClassModelFetchJson === undefined
+      ? {}
+      : { fetchJson: adapterOptions.options.dtsClassModelFetchJson }),
+  })
+}
+
+function requireDtsClassModelManifestUrl<T>(
+  adapterOptions: ClassModelAgentToolRuntimeOptions<T>,
+): string {
+  const manifestUrl = adapterOptions.options.dtsClassModelManifestUrl?.trim()
+  if (manifestUrl === undefined || manifestUrl.length === 0) {
+    throw new Error('DTS-native ClassModel runtime requires dtsClassModelManifestUrl.')
+  }
+  return manifestUrl
 }
 
 function toClassModelToolResult(result: AiAgentToolResult<AiJsonValue>): ClassModelToolResult {

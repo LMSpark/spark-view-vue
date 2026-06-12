@@ -10,10 +10,12 @@ export {
 
 export {
   DtsBundleClassModelKnowledgeService,
+  createDtsBundleClassModelKnowledgeProvider,
 } from './dts-bundle-class-model-knowledge-service'
 
 export {
   WorkerClassModelKnowledgeProvider,
+  createWorkerDtsClassModelKnowledgeProvider,
 } from './worker-knowledge-client'
 
 export {
@@ -31,8 +33,13 @@ export type {
 } from './class-model-knowledge-service'
 
 export type {
+  CreateDtsBundleClassModelKnowledgeProviderOptions,
   DtsBundleClassModelKnowledgeServiceOptions,
 } from './dts-bundle-class-model-knowledge-service'
+
+export type {
+  CreateWorkerDtsClassModelKnowledgeProviderOptions,
+} from './worker-knowledge-client'
 
 export type {
   CreateClassModelKnowledgeWorkerApiOptions,

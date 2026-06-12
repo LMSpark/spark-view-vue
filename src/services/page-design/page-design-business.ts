@@ -21,8 +21,8 @@ import {
   type AiAgentToolLoopNudgeReason,
 } from '@/services/ai/spark-ai-agent-bindings'
 import {
-  WorkerClassModelKnowledgeProvider,
   CLASS_MODEL_TOOL_NAMES,
+  createWorkerDtsClassModelKnowledgeProvider,
   type ClassModelKnowledgeProvider,
 } from '@spark-appworks/spark-ai/class-model'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
@@ -73,16 +73,8 @@ export function buildPageDesignToolLoopNudge(
 }
 
 function createPageDesignClassModelKnowledgeProvider(): ClassModelKnowledgeProvider {
-  if (typeof Worker === 'undefined') {
-    throw new Error('DTS ClassModel knowledge requires Web Worker on-demand loading.')
-  }
-
-  const worker = new Worker(
-    new URL('../class-model-knowledge.worker.ts', import.meta.url),
-    { type: 'module' },
-  )
-
-  return new WorkerClassModelKnowledgeProvider(worker, {
+  return createWorkerDtsClassModelKnowledgeProvider({
+    workerUrl: new URL('../class-model-knowledge.worker.ts', import.meta.url),
     dtsClassModelManifestUrl,
     rootClassName: PAGE_DESIGN_ROOT_CLASS_NAME,
   })

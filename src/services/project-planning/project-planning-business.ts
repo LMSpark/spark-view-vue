@@ -20,8 +20,8 @@ import {
   type AiAgentToolLoopNudgeContext,
 } from '@/services/ai/spark-ai-agent-bindings'
 import {
-  WorkerClassModelKnowledgeProvider,
   CLASS_MODEL_TOOL_NAMES,
+  createWorkerDtsClassModelKnowledgeProvider,
   type ClassModelKnowledgeProvider,
 } from '@spark-appworks/spark-ai/class-model'
 import {
@@ -36,16 +36,8 @@ export const PROJECT_PLANNING_MODULE_ID = 'projectPlanning'
 const PROJECT_PLANNING_ROOT_CLASS_NAME = 'ProjectModel'
 
 function createProjectPlanningClassModelKnowledgeProvider(): ClassModelKnowledgeProvider {
-  if (typeof Worker === 'undefined') {
-    throw new Error('DTS ClassModel knowledge requires Web Worker on-demand loading.')
-  }
-
-  const worker = new Worker(
-    new URL('../class-model-knowledge.worker.ts', import.meta.url),
-    { type: 'module' },
-  )
-
-  return new WorkerClassModelKnowledgeProvider(worker, {
+  return createWorkerDtsClassModelKnowledgeProvider({
+    workerUrl: new URL('../class-model-knowledge.worker.ts', import.meta.url),
     dtsClassModelManifestUrl,
     rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
   })
