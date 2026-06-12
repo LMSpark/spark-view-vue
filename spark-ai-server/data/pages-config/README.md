@@ -80,7 +80,7 @@ function handleClick() {
 }
 ```
 
-> 详见项目根目录 `copilot-instructions.md` 中的「页面脚本沙箱规范」章节。
+> 详见 `packages/spark-component/src/runtime/script-context-types.ts` 中的页面脚本沙箱上下文契约。
 
 ## 使用方式
 

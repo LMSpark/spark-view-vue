@@ -69,9 +69,6 @@
         "test:packages": "pnpm --filter 'packages/*' run test",
         "test:packages:run": "pnpm --filter './packages/**' run test:run",
         "typecheck:packages": "pnpm --filter 'packages/*' run typecheck",
-        "changeset": "changeset",
-        "version:packages": "changeset version",
-        "release": "changeset publish",
         "generate": "plop"
     },
     "dependencies": {
@@ -90,7 +87,6 @@
         "vxe-table": "^4.19.7"
     },
     "devDependencies": {
-        "@changesets/cli": "^2.31.0",
         "@eslint/js": "^10.0.1",
         "@rollup/rollup-win32-x64-msvc": "^4.61.1",
         "@spark-appworks/vite-plugin-spark-catalog": "workspace:*",

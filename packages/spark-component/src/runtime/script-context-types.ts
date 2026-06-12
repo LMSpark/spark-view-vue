@@ -22,7 +22,7 @@
  * - ✅ 可独立测试：不依赖任何渲染层或 DOM 框架
  * - ✅ 稳定边界：变更此文件需同步更新脚本文档
  *
- * ⚠️ **禁止将此文件改名为 `script-api.ts`**（见 copilot-instructions 规划节）
+ * ⚠️ **禁止将此文件改名为 `script-api.ts`**，脚本沙箱契约依赖当前模块边界。
  */
 
 import type { FieldVisibility, DataRow, ModelPermission } from '@spark-appworks/spark-data'

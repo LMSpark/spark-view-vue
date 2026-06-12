@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 ### docs
 
 - 新增 API-first 提示词模板，当前收口于 `docs/ai/prompts/platform/API_FIRST_PROMPT.md`（前端优先调用 API，禁止默认改后端）。
-- 更新 `.github/copilot-instructions.md` 的 AI Server 章节：补全后端完整 API 清单，并明确多租户优先与扁平兼容路径约束。
+- 更新 AI Server 文档：补全后端完整 API 清单，并明确多租户优先与扁平兼容路径约束。
 - 明确历史迁移策略：迁移由前端显式调用 API 触发，禁止后端启动期隐式迁移。
 
 ---
@@ -120,7 +120,7 @@ All notable changes to this project will be documented in this file.
 #### 文档同步
 - 更新 `packages/spark-data/API.md`：移除 `createContext` / `BindingContext` / 已删类型引用
 - 更新 `docs/guides/VIEW_STATE_ADVANCED.md`：`hostTable` → `tableName`
-- 更新 `.github/copilot-instructions.md`：同步类型和 API 变更
+- 同步类型和 API 变更说明
 
 **影响文件：**
 - `packages/spark-data/src/types.ts`
@@ -257,7 +257,7 @@ const users = await request.get<User[]>('/users')
 - 新增 79 tests 验证（16 test files）
 
 **文档更新：**
-- 统一 DI 架构说明到 `.github/copilot-instructions.md`
+- 统一 DI 架构说明
 - 更新 `packages/spark-app/README.md` - 移除废弃 API 说明
 - 更新 `docs/guides/USE_COMPOSABLES.md` - 简化为推荐用法指南
 - 修正 API 命名：`createVuePlugin` → `createPlugin` (11 处)

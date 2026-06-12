@@ -100,8 +100,6 @@ section DocumentKinds {
       "CONTRIBUTING.md",
       "API.md",
       "ARCHITECTURE.md",
-      "AGENTS.md",
-      "CLAUDE.md",
       "SKILL.md"
     ]
     locale_variant_rule:
@@ -173,7 +171,7 @@ section MarkdownFilenameRules {
   rule MD02_standard_singletons {
     applies_to: "目录入口和包公共文件"
     allow:
-      "README.md、CHANGELOG.md、CONTRIBUTING.md、API.md、ARCHITECTURE.md、AGENTS.md、CLAUDE.md"
+      "README.md、CHANGELOG.md、CONTRIBUTING.md、API.md、ARCHITECTURE.md"
   }
 
   rule MD03_locale_readme {
@@ -238,16 +236,16 @@ section DirectoryRules {
     ]
   }
 
-  tooling_docs {
+  local_tooling_docs {
     paths: [
-      ".changeset/",
-      ".claude/",
-      ".github/"
+      "本地助手状态目录",
+      "外部宿主配置目录",
+      "发布工具目录"
     ]
     owns:
-      "外部工具按固定路径和固定后缀读取的说明、agent、prompt、instruction、skill。"
+      "本地工具状态和外部宿主配置不属于仓库文档治理；需要时只在本机保留。"
     rule:
-      "宿主约定后缀如 .agent.md、.prompt.md、.instructions.md、SKILL.md 允许；普通专题文档不放这些目录。"
+      "不要提交外部工具按固定路径读取的 agent、prompt、instruction 或发布流程文档。"
   }
 
   package_docs {
@@ -300,16 +298,8 @@ section DirectoryRegistry {
     owner: "repo"
     purpose: "仓库入口和顶层约定。"
     index: "README.md"
-    allowed_files: ["README.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", "CHANGELOG.md"]
+    allowed_files: ["README.md", "CONTRIBUTING.md", "CHANGELOG.md"]
     new_file_rule: "不再新增普通专题文档到根目录。"
-  }
-
-  entry changeset {
-    path: ".changeset/"
-    owner: "release"
-    purpose: "Changesets 发布流程说明。"
-    index: ".changeset/README.md"
-    allowed_files: ["README.md"]
   }
 
   entry config {
@@ -319,30 +309,6 @@ section DirectoryRegistry {
     index: "config/README.md"
     allowed_files: ["README.md"]
     new_file_rule: "配置数据用 JSON；说明文档只放 README，专题治理文档迁移到 docs/。"
-  }
-
-  entry claude {
-    path: ".claude/"
-    owner: "ai-tooling"
-    purpose: "Claude 工具本地计划和工具说明。"
-    index: null
-    allowed_files: ["plans/kebab-case.md"]
-    new_file_rule: "只放工具消费的短期计划；长期规则迁移到 docs/。"
-  }
-
-  entry github {
-    path: ".github/"
-    owner: "ai-tooling"
-    purpose: "GitHub/Copilot/agent 宿主读取的说明、提示词和技能。"
-    index: null
-    allowed_files: [
-      "copilot-instructions.md",
-      "agents/<kebab-case>.agent.md",
-      "instructions/<kebab-case>.instructions.md",
-      "prompts/<kebab-case>.prompt.md",
-      "skills/<skill>/SKILL.md"
-    ]
-    new_file_rule: "只放宿主需要按固定后缀寻址的文件；平台治理规则放 docs/。"
   }
 
   entry docs {

@@ -14,11 +14,9 @@ import {
 const docExtensions = new Set(['.md', '.dm'])
 
 const standardMarkdownNames = new Set([
-  'AGENTS.md',
   'API.md',
   'ARCHITECTURE.md',
   'CHANGELOG.md',
-  'CLAUDE.md',
   'CONTRIBUTING.md',
   'README.md',
   'SKILL.md',
@@ -48,9 +46,6 @@ const legacyMarkdownAllowlist = new Set([
 
 const kebabMarkdownPattern = /^(?:[0-9]{2}-)?[a-z0-9]+(?:-[a-z0-9]+)*\.md$/u
 const localizedReadmePattern = /^README\.[a-z]{2}(?:-[A-Z]{2})?\.md$/u
-const githubAgentPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*\.agent\.md$/u
-const githubInstructionPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*\.instructions\.md$/u
-const githubPromptPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*\.prompt\.md$/u
 const domainModelPattern = /^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*\.dm$/u
 const semverPattern = /^\d+\.\d+\.\d+$/u
 const integerPattern = /^\d+$/u
@@ -90,9 +85,6 @@ const domainModelStatuses = new Set([
 ])
 
 const registeredDocPrefixes = [
-  '.changeset/',
-  '.claude/',
-  '.github/',
   'config/',
   'docs/',
   'packages/',
@@ -170,10 +162,6 @@ function checkMarkdownName(file, name, violations) {
   if (legacyMarkdownAllowlist.has(file)) return
   if (standardMarkdownNames.has(name)) return
   if (localizedReadmePattern.test(name)) return
-  if (isGithubToolMarkdown(file, name)) {
-    checkFilenameSignal(file, name, violations)
-    return
-  }
   if (kebabMarkdownPattern.test(name)) {
     checkFilenameSignal(file, name, violations)
     return
@@ -183,13 +171,6 @@ function checkMarkdownName(file, name, violations) {
     ? 'DM documents must use .dm; do not add new DM-*.md files'
     : 'markdown file names must be kebab-case.md, NN-kebab-case.md, README.md, API.md, ARCHITECTURE.md, CHANGELOG.md, or an explicit legacy allowlist entry'
   violations.push({ file, line: 1, message })
-}
-
-function isGithubToolMarkdown(file, name) {
-  if (file.startsWith('.github/agents/')) return githubAgentPattern.test(name)
-  if (file.startsWith('.github/instructions/')) return githubInstructionPattern.test(name)
-  if (file.startsWith('.github/prompts/')) return githubPromptPattern.test(name)
-  return false
 }
 
 function checkRegisteredDocLocation(file, violations) {
