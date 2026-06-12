@@ -29,7 +29,6 @@ const SCAN_ROOTS = [
   'packages/spark-ai/src',
   'packages/spark-project-model/src',
   'src/services',
-  '.cursor/rules',
   '.github',
 ]
 

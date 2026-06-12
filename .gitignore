@@ -1,8 +1,10 @@
 node_modules
 .codex/
-.cursor/debug-*.log
-.cursor/inspection/
-.cursor/plans/
+.cursor/
+.vscode/
+*.code-workspace
+.cursorignore
+.cursorindexingignore
 
 # Build artifacts
 **/bin/
