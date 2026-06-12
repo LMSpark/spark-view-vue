@@ -18,13 +18,15 @@
 
 平台里最容易混的是 **业务能力**、**业务实例**、**工单**、**聊天**。用抽象名对照代码：
 
-| 抽象 | 是什么 | 代码/类型 | 生命周期 |
-|------|--------|-----------|----------|
-| **业务能力** | 一类 AI 可操作的领域能力（「页面设计」「项目规划」） | `AiAgentRegistration`、`moduleId`、`Host.ensure(alias)` | 应用启动时注册，长期存在 |
-| **领域实例** | 内存里的业务根对象，Script 的 `this` | `registration.instance`（如 `ProjectModel`） | 跟编辑器/Workspace 同生共死 |
-| **业务实例 ID** | 在同能力下区分「正在改哪一份」 | `scope.businessInstanceId`（来自 `inputContract.identityField`） | 一次 run 内固定 |
-| **工单（作业请求）** | 用户这次要做什么（描述、模式、约束） | `normalizedInput` + `orchestration.userMessage` | 一次 `Host.run` 一份 |
-| **聊天会话** | 完成该工单的多轮 LLM 对话 | `AiAgentSession` + 后端 sessionId | run 开始到 `agent_complete` |
+
+| 抽象           | 是什么                          | 代码/类型                                                        | 生命周期                     |
+| ------------ | ---------------------------- | ------------------------------------------------------------ | ------------------------ |
+| **业务能力**     | 一类 AI 可操作的领域能力（「页面设计」「项目规划」） | `AiAgentRegistration`、`moduleId`、`Host.ensure(alias)`        | 应用启动时注册，长期存在             |
+| **领域实例**     | 内存里的业务根对象，Script 的 `this`    | `registration.instance`（如 `ProjectModel`）                    | 跟编辑器/Workspace 同生共死      |
+| **业务实例 ID**  | 在同能力下区分「正在改哪一份」              | `scope.businessInstanceId`（来自 `inputContract.identityField`） | 一次 run 内固定               |
+| **工单（作业请求）** | 用户这次要做什么（描述、模式、约束）           | `normalizedInput` + `orchestration.userMessage`              | 一次 `Host.run` 一份         |
+| **聊天会话**     | 完成该工单的多轮 LLM 对话              | `AiAgentSession` + 后端 sessionId                              | run 开始到 `agent_complete` |
+
 
 ```text
 业务能力 (pageDesign)          ← 业务工厂 ensure 注册，与具体 pageId 无关
@@ -55,13 +57,15 @@ AiAgentRegistration = {
 }
 ```
 
-| 工厂组装件 | 抽象职责 |
-|------------|----------|
-| `inputContract` | **工单入口**：paramsSchema、`identityField` → `businessInstanceId`、`messageField` → 首条聊天内容 |
-| `instance` | **工作副本根**：Script 执行时 `this` 指向谁 |
-| `knowledge` + manifest | **能力说明书**：LLM 如何查 API（与哪张 orders 无关） |
-| `beforeFunctionCall` | **变更门禁**：哪些 mutation 允许执行 |
-| `sessionStore` | **聊天持久化**：多轮 history 存哪 |
+
+| 工厂组装件                  | 抽象职责                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| `inputContract`        | **工单入口**：paramsSchema、`identityField` → `businessInstanceId`、`messageField` → 首条聊天内容 |
+| `instance`             | **工作副本根**：Script 执行时 `this` 指向谁                                                      |
+| `knowledge` + manifest | **能力说明书**：LLM 如何查 API（与哪张 orders 无关）                                                 |
+| `beforeFunctionCall`   | **变更门禁**：哪些 mutation 允许执行                                                            |
+| `sessionStore`         | **聊天持久化**：多轮 history 存哪                                                              |
+
 
 **pageDesign 与 orders 的关系：**
 
@@ -89,20 +93,24 @@ AiAgentRegistration = {
 └─────────────────────────────────────────────────────────────┘
 ```
 
-| 维度 | Script Runtime | Delivery |
-|------|----------------|----------|
-| **触发** | LLM `model_script` tool_call | APP 在 run 结束或用户点保存 |
-| **操作对象** | 领域实例 public API | 持久化层 / HTTP 回执 |
-| **是否 durable** | 否（内存） | 是 |
-| **spark-ai 边界** | sandbox + gates | 不内置；由 APP 接 Workspace |
+
+| 维度              | Script Runtime               | Delivery              |
+| --------------- | ---------------------------- | --------------------- |
+| **触发**          | LLM `model_script` tool_call | APP 在 run 结束或用户点保存    |
+| **操作对象**        | 领域实例 public API              | 持久化层 / HTTP 回执        |
+| **是否 durable**  | 否（内存）                        | 是                     |
+| **spark-ai 边界** | sandbox + gates              | 不内置；由 APP 接 Workspace |
+
 
 pageDesign 映射：
 
-| 抽象 | pageDesign 落地 |
-|------|-----------------|
+
+| 抽象           | pageDesign 落地                                                 |
+| ------------ | ------------------------------------------------------------- |
 | Working Copy | `ProjectModel` + 当前 `pageId` 下的 nodeTree/dataSet/script/style |
-| Script | `await this.openPageDesign({ pageId }).editDataSet(t => …)` |
-| Delivery | `editor.saveDirtyPageFiles()` 或 Host Run 结束后自动 save |
+| Script       | `await this.openPageDesign({ pageId }).editDataSet(t => …)`   |
+| Delivery     | `editor.saveDirtyPageFiles()` 或 Host Run 结束后自动 save           |
+
 
 ### 2.3 三轴坐标（任意业务都适用）
 
@@ -176,18 +184,22 @@ flowchart TB
   REG --> SESSION
 ```
 
+
+
 ---
 
 ### 3.1 分层职责表
 
-| 层 | 名称 | 输入 | 输出 | 核心模块 |
-|----|------|------|------|----------|
-| **L0** | 声明投影 | `.ts` 源码 | `manifest.json` + per-file JSON | `project-from-declarations.ts`, `build-dts-class-model-bundle.ts` |
-| **L1** | 知识索引 | manifest URL + rootClassName | query / guide 文本 | `DtsClassModelBundleLoader`, `ClassModelKnowledgeService`, Worker |
-| **L2** | 业务工厂 | APP 上下文（editor、manifest） | **业务能力包** Registration | `AiAgentHost.ensure`, `ClassModelAgentAdapter` |
-| **L3** | 工单 + 聊天 | 工单 Input | Task + Session | `createAiAgentTask`, `AiAgentSession` |
-| **L4** | Script 变更执行 | tool_call | **Working Copy 变更** | `ClassModelRuntime`, `native-runtime` |
-| **L5** | 交付 | Working Copy dirty 状态 | 持久化 + 回执 | APP `saveDirty*`, `ai-host-run-bridge` |
+
+| 层      | 名称          | 输入                           | 输出                              | 核心模块                                                              |
+| ------ | ----------- | ---------------------------- | ------------------------------- | ----------------------------------------------------------------- |
+| **L0** | 声明投影        | `.ts` 源码                     | `manifest.json` + per-file JSON | `project-from-declarations.ts`, `build-dts-class-model-bundle.ts` |
+| **L1** | 知识索引        | manifest URL + rootClassName | query / guide 文本                | `DtsClassModelBundleLoader`, `ClassModelKnowledgeService`, Worker |
+| **L2** | 业务工厂        | APP 上下文（editor、manifest）     | **业务能力包** Registration          | `AiAgentHost.ensure`, `ClassModelAgentAdapter`                    |
+| **L3** | 工单 + 聊天     | 工单 Input                     | Task + Session                  | `createAiAgentTask`, `AiAgentSession`                             |
+| **L4** | Script 变更执行 | tool_call                    | **Working Copy 变更**             | `ClassModelRuntime`, `native-runtime`                             |
+| **L5** | 交付          | Working Copy dirty 状态        | 持久化 + 回执                        | APP `saveDirty`*, `ai-host-run-bridge`                            |
+
 
 ---
 
@@ -200,16 +212,18 @@ pnpm run generate:declarations          # vue-tsc → declarations/**
 pnpm run generate:class-model-surface     # AST 投影 → generated/dts-class-model/
 ```
 
-| 步骤 | 说明 |
-|------|------|
-| **JSDoc 真源** | 模块级 `@module`（职责/边界/AI用途）、成员 JSDoc、`@param`/`@returns` |
-| **AST 投影** | `project-from-declarations.ts`：class/interface/enum、attributes、methods、**TypeDoc 式 type 树**（optional/reflection/tuple/rest） |
-| **Bundle 落盘** | 每 DTS 文件 → 一个 JSON shard；`classIndex[className]` → shard 路径 |
-| **语义审计** | `semantic-gaps.json`：弱 JSDoc、断链 relation（不阻断生成） |
+
+| 步骤            | 说明                                                                                                                          |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **JSDoc 真源**  | 模块级 `@module`（职责/边界/AI用途）、成员 JSDoc、`@param`/`@returns`                                                                      |
+| **AST 投影**    | `project-from-declarations.ts`：class/interface/enum、attributes、methods、**TypeDoc 式 type 树**（optional/reflection/tuple/rest） |
+| **Bundle 落盘** | 每 DTS 文件 → 一个 JSON shard；`classIndex[className]` → shard 路径                                                                 |
+| **语义审计**      | `semantic-gaps.json`：弱 JSDoc、断链 relation（不阻断生成）                                                                             |
+
 
 ### 4.2 JSON shard 契约（MethodMeta SSOT）
 
-改造后（见 [`TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md`](../src/class-model/docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md)）：
+改造后（见 `[TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md](../src/class-model/docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md)`）：
 
 ```json
 {
@@ -221,17 +235,19 @@ pnpm run generate:class-model-surface     # AST 投影 → generated/dts-class-m
 }
 ```
 
-- **`type`**：返回类型 SSOT（对齐 TypeDoc `SignatureReflection.type`）
-- **`signatureText`**：读侧从 type 树 **派生**，bundle 内可不持久化
-- **`reflection`**：mutator 回调 `(tool: DataSetCrudTool) => void` 的结构化签名，供 ref 闭包与 guide 渲染
+- `**type**`：返回类型 SSOT（对齐 TypeDoc `SignatureReflection.type`）
+- `**signatureText**`：读侧从 type 树 **派生**，bundle 内可不持久化
+- `**reflection`**：mutator 回调 `(tool: DataSetCrudTool) => void` 的结构化签名，供 ref 闭包与 guide 渲染
 
 ### 4.3 编译期命令速查
 
-| 命令 | 用途 |
-|------|------|
-| `generate:class-model-surface` | 日常重建 bundle |
-| `generate:class-model-surface:delete-dts` | 生成后删除临时 declarations |
-| `verify:class-model:full` | rebuild + lint + typecheck + 关键测试 |
+
+| 命令                                        | 用途                                |
+| ----------------------------------------- | --------------------------------- |
+| `generate:class-model-surface`            | 日常重建 bundle                       |
+| `generate:class-model-surface:delete-dts` | 生成后删除临时 declarations              |
+| `verify:class-model:full`                 | rebuild + lint + typecheck + 关键测试 |
+
 
 ---
 
@@ -247,22 +263,26 @@ pnpm run generate:class-model-surface     # AST 投影 → generated/dts-class-m
 
 `rootClassName` 由业务注册决定：
 
-| 业务 | rootClassName |
-|------|---------------|
-| pageDesign | `ProjectModel` |
-| projectPlanning | `ProjectRootModel`（按注册） |
+
+| 业务              | rootClassName           |
+| --------------- | ----------------------- |
+| pageDesign      | `ProjectModel`          |
+| projectPlanning | `ProjectModel`（按注册） |
+
 
 ### 5.2 七工具 → 知识投影
 
-| 工具 | 知识来源 | LLM 看到什么 |
-|------|----------|--------------|
-| `model_query` | `ClassModelKnowledgeService.query()` | kind 列表 + member 摘要 JSON |
-| `model_class_guide` | `modelGuide()` | 类级 guide（JSDoc + 成员签名） |
-| `model_attribute_guide` | `attributeGuide()` | 属性类型 + 嵌套 kind 提示 |
-| `model_action_guide` | `methodGuide()` | 方法 JSDoc + **从 type 树渲染的签名** |
-| `model_script` | — | 执行 sandbox script（见 L4） |
-| `human_question` | — | 结构化追问用户 |
-| `agent_complete` | — | 结束回合 |
+
+| 工具                      | 知识来源                                 | LLM 看到什么                     |
+| ----------------------- | ------------------------------------ | ---------------------------- |
+| `model_query`           | `ClassModelKnowledgeService.query()` | kind 列表 + member 摘要 JSON     |
+| `model_class_guide`     | `modelGuide()`                       | 类级 guide（JSDoc + 成员签名）       |
+| `model_attribute_guide` | `attributeGuide()`                   | 属性类型 + 嵌套 kind 提示            |
+| `model_action_guide`    | `methodGuide()`                      | 方法 JSDoc + **从 type 树渲染的签名** |
+| `model_script`          | —                                    | 执行 sandbox script（见 L4）      |
+| `human_question`        | —                                    | 结构化追问用户                      |
+| `agent_complete`        | —                                    | 结束回合                         |
+
 
 签名渲染 SSOT：`renderMethodSignatureFromMeta()` ← `parameters` + `type` 树（非 AST 文本缓存）。
 
@@ -294,24 +314,28 @@ host.ensure('pageDesign', {
 })
 ```
 
-| 组件 | 职责 |
-|------|------|
-| `AiAgentHost` | alias ↔ moduleId、`register` / `ensure` / `run` / `dryRun` |
-| `AiAgentRegistry` | moduleId → registration 索引 |
-| `ClassModelAgentAdapter` | 绑定 instance + knowledge + `ClassModelRuntime` + script executor |
-| `createSimpleInputContract` | 把业务 args 归一化为 `AiAgentInputContract` |
+
+| 组件                          | 职责                                                              |
+| --------------------------- | --------------------------------------------------------------- |
+| `AiAgentHost`               | alias ↔ moduleId、`register` / `ensure` / `run` / `dryRun`       |
+| `AiAgentRegistry`           | moduleId → registration 索引                                      |
+| `ClassModelAgentAdapter`    | 绑定 instance + knowledge + `ClassModelRuntime` + script executor |
+| `createSimpleInputContract` | 把业务 args 归一化为 `AiAgentInputContract`                            |
+
 
 ### 6.2 已注册生产业务
 
-| alias | moduleId | rootClass | APP 入口 |
-|-------|----------|-----------|----------|
-| `pageDesign` | `pageDesign` | `ProjectModel` | `ensurePageDesignBusiness()` |
-| `pageDataDesign` | 调度 preset → `pageDesign` | `ProjectModel` | `page-data-design-host-run-provider.ts` |
-| `projectPlanning` | `projectPlanning` | `ProjectRootModel` | `ensureProjectPlanningBusiness()` |
+
+| alias             | moduleId                 | rootClass          | APP 入口                                  |
+| ----------------- | ------------------------ | ------------------ | --------------------------------------- |
+| `pageDesign`      | `pageDesign`             | `ProjectModel`     | `ensurePageDesignBusiness()`            |
+| `pageDataDesign`  | 调度 preset → `pageDesign` | `ProjectModel`     | `page-data-design-host-run-provider.ts` |
+| `projectPlanning` | `projectPlanning`        | `ProjectModel`     | `ensureProjectPlanningBusiness()`       |
+
 
 ### 6.3 扩展新业务
 
-完整分阶段清单见 **[§15 新业务能力接入清单](#15-新业务能力接入清单抽象)**，速查版 [`BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md`](BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md)。
+完整分阶段清单见 **[§15 新业务能力接入清单](#15-新业务能力接入清单抽象)**，速查版 `[BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md](BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md)`。
 
 ---
 
@@ -319,11 +343,13 @@ host.ensure('pageDesign', {
 
 ### 7.1 工单 vs 聊天 vs 能力
 
-| 抽象 | 一次 run 里是什么 | 谁创建 |
-|------|-------------------|--------|
-| **工单** | `normalizedInput`：identity + 用户意图（description、mode…） | 用户 / 调度方调用 `Host.run(alias, input)` |
-| **scope** | `(businessRegistrationId, businessInstanceId)` 双坐标 | `inputContract.toScope(normalizedInput)` |
-| **聊天** | 围绕该 scope 的多轮 LLM + tool 历史 | `AiAgentSession` + 后端 session API |
+
+| 抽象        | 一次 run 里是什么                                          | 谁创建                                      |
+| --------- | ---------------------------------------------------- | ---------------------------------------- |
+| **工单**    | `normalizedInput`：identity + 用户意图（description、mode…） | 用户 / 调度方调用 `Host.run(alias, input)`      |
+| **scope** | `(businessRegistrationId, businessInstanceId)` 双坐标   | `inputContract.toScope(normalizedInput)` |
+| **聊天**    | 围绕该 scope 的多轮 LLM + tool 历史                          | `AiAgentSession` + 后端 session API        |
+
 
 **没有独立的「订单业务模块」。** 电商「订单页」只是 pageDesign 能力下 `pageId='orders'` 的一个实例 ID。
 
@@ -364,10 +390,12 @@ Host.run(alias, input, chat?)
 
 ### 7.4 传输层
 
-| 模式 | 实现 | 典型场景 |
-|------|------|----------|
-| **app-sse** | `ai-turn-bridge` + 后端 SSE | DevSystem 面板、当前生产默认 |
-| **session-turn** | 按 turn 请求/响应 | 文档中的备选形态 |
+
+| 模式               | 实现                        | 典型场景                |
+| ---------------- | ------------------------- | ------------------- |
+| **app-sse**      | `ai-turn-bridge` + 后端 SSE | DevSystem 面板、当前生产默认 |
+| **session-turn** | 按 turn 请求/响应              | 文档中的备选形态            |
+
 
 spark-ai **不发 HTTP**；传输由 APP `src/services/ai-turn-bridge.ts` 注入。
 
@@ -393,30 +421,36 @@ LLM tool_call
 
 ### 8.2 抽象边界
 
-| 概念 | Script 层 | 不在 Script 层 |
-|------|-----------|----------------|
-| 操作对象 | `registration.instance` 公开 API | 文件系统、HTTP、DB |
-| 状态 | 内存 dirty | 持久化 committed |
-| 失败 | tool 结果返回 LLM | 不回滚已写磁盘（因未写） |
+
+| 概念   | Script 层                       | 不在 Script 层   |
+| ---- | ------------------------------ | ------------- |
+| 操作对象 | `registration.instance` 公开 API | 文件系统、HTTP、DB  |
+| 状态   | 内存 dirty                       | 持久化 committed |
+| 失败   | tool 结果返回 LLM                  | 不回滚已写磁盘（因未写）  |
+
 
 **Gates** 在 Script 执行前拦截非法 mutation（pageDesign 按 nodeTree/dataSet 等维度）。
 
 ### 8.3 Script 执行边界
 
-| 允许 | 禁止 |
-|------|------|
-| `this.openPageDesign(...)` 等 **公开方法** | 私有字段、path 字符串直调 |
-| 链式 mutator + 回调 `(tool) => { … }` | 外部回调边表字段 |
-| DTS 签名约束参数形状 | 绕过 gates 的 silent mutation |
+
+| 允许                                    | 禁止                         |
+| ------------------------------------- | -------------------------- |
+| `this.openPageDesign(...)` 等 **公开方法** | 私有字段、path 字符串直调            |
+| 链式 mutator + 回调 `(tool) => { … }`     | 外部回调边表字段                   |
+| DTS 签名约束参数形状                          | 绕过 gates 的 silent mutation |
+
 
 **Gates**（pageDesign）：`beforeFunctionCall` 在 `model_script` 执行前校验 mutation 范围（nodeTree/dataSet/script/style/navigation）。
 
 ### 8.4 执行入口说明
 
-| 路径 | 条件 | 执行器 |
-|------|------|--------|
-| **DTS 主线（生产）** | 仅 `dtsClassModelManifestUrl` + Worker knowledge | `executeDtsNativeScript` |
-| **Runtime API 输入（内部）** | 已有 `AiRuntimeApiMetadataJson` | `executeAiNativeScript` |
+
+| 路径                     | 条件                                              | 执行器                      |
+| ---------------------- | ----------------------------------------------- | ------------------------ |
+| **DTS 主线（生产）**         | 仅 `dtsClassModelManifestUrl` + Worker knowledge | `executeDtsNativeScript` |
+| **Runtime API 输入（内部）** | 已有 `AiRuntimeApiMetadataJson`                   | `executeAiNativeScript`  |
+
 
 pageDesign / projectPlanning 均走 **DTS 主线**。
 
@@ -428,30 +462,37 @@ pageDesign / projectPlanning 均走 **DTS 主线**。
 
 ### 9.1 交付的两半
 
-| 一半 | 含义 | pageDesign 示例 |
-|------|------|-----------------|
-| **Commit** | 持久化领域变更 | `editor.saveDirtyPageFiles()` → 四文件写盘 |
+
+| 一半          | 含义           | pageDesign 示例                                                   |
+| ----------- | ------------ | --------------------------------------------------------------- |
+| **Commit**  | 持久化领域变更      | `editor.saveDirtyPageFiles()` → 四文件写盘                           |
 | **Receipt** | 告诉调用方 run 结果 | `POST /api/ai/host-run/result`（trace、status、businessInstanceId） |
+
 
 Script 跑完时 Working Copy 已变，但 **磁盘可能仍未变**（DevSystem 默认手动 save）。
 
 ### 9.2 两种 APP 交付策略
 
-| 通道 | 入口 | 行为 |
-|------|------|------|
-| **DevSystem 内联** | `runPageDesignAiSession()` | 复用当前 `editor.project`；默认 **不 auto-save**，用户手动保存 |
-| **Host Run 隔离** | `preparePageDesignHostRun()` | headless `ProjectWorkspace`；run 结束 `saveDirtyPageFiles()` + 丢弃 editor |
+
+| 通道               | 入口                              | 行为                                                                    |
+| ---------------- | ------------------------------- | --------------------------------------------------------------------- |
+| **DevSystem 内联** | `runPageDesignAiSession()`      | 复用当前 `editor.project`；默认 **不 auto-save**，用户手动保存四文件                   |
+| **Headless / Host Run** | `runProjectPlanningAiSession()` / `prepareProjectPlanningHostRun()` | headless 或隔离 `ProjectWorkspace`；run 结束按 delivery 自动 save navigation |
+| **Host Run 隔离**  | `prepare*HostRun()`             | headless `ProjectWorkspace`；run 结束按业务 delivery 自动 save + 丢弃 editor   |
+
 
 ### 9.3 四文件模型（pageDesign 示例）
 
 pageDesign mutation 落盘到 ProjectWorkspace 的 **四文件**：
 
-| 文件 | 内容 |
-|------|------|
-| `nodeTree` | 页面组件树 |
-| `dataSet` | 数据集 / CRUD 绑定 |
-| `script` | 页面脚本 |
-| `style` | 样式 |
+
+| 文件         | 内容            |
+| ---------- | ------------- |
+| `nodeTree` | 页面组件树         |
+| `dataSet`  | 数据集 / CRUD 绑定 |
+| `script`   | 页面脚本          |
+| `style`    | 样式            |
+
 
 `model_script` 改的是 **内存实例**；交付 = dirty 标记 → 持久化。
 
@@ -470,14 +511,16 @@ createAiHostRunBridge()
 
 ## 10. 端到端示例（用抽象名读 pageDesign）
 
-| 步骤 | 抽象 | pageDesign 实例 |
-|------|------|-----------------|
-| 0 | 应用启动注册 **能力** | `ensurePageDesignBusiness()` |
-| 1 | 用户提交 **工单** | `{ pageId:'orders', description:'做订单页' }` |
-| 2 | 绑定 **实例轴** | `scope.businessInstanceId = 'orders'` |
-| 3 | 开启 **聊天** | Session + 多轮 guide / script |
-| 4 | **Script** 改 Working Copy | `ProjectModel.openPageDesign({ pageId:'orders' }).edit…` |
-| 5 | **Delivery** | 用户保存 或 Host Run `saveDirtyPageFiles()` |
+
+| 步骤  | 抽象                        | pageDesign 实例                                            |
+| --- | ------------------------- | -------------------------------------------------------- |
+| 0   | 应用启动注册 **能力**             | `ensurePageDesignBusiness()`                             |
+| 1   | 用户提交 **工单**               | `{ pageId:'orders', description:'做订单页' }`                |
+| 2   | 绑定 **实例轴**                | `scope.businessInstanceId = 'orders'`                    |
+| 3   | 开启 **聊天**                 | Session + 多轮 guide / script                              |
+| 4   | **Script** 改 Working Copy | `ProjectModel.openPageDesign({ pageId:'orders' }).edit…` |
+| 5   | **Delivery**              | 用户保存 或 Host Run `saveDirtyPageFiles()`                   |
+
 
 ```text
 [能力] pageDesign 已注册（工厂 ensure，与 orders 无关）
@@ -495,16 +538,18 @@ createAiHostRunBridge()
 
 ## 11. 数据契约边界（集成检查清单）
 
-| 边界 | 上游 | 下游 | 必检字段 |
-|------|------|------|----------|
-| 源码 → DTS | `.ts` | `.d.ts` | `@module` 三行、公开 API 完整 |
-| DTS → JSON | AST | shard | `type` 树、parameters、jsdoc |
-| JSON → Surface | manifest | Worker | `rootClassName` ∈ classIndex |
-| Surface → Guide | ClassModel | LLM | 签名与 type 树一致 |
-| Input → Task | APP args | AiAgentTask | pageId / effectiveDescription |
-| Task → Session | contract | scope | businessInstanceId |
-| Script → Instance | model_script | ProjectModel | gates 通过 |
-| Instance → 磁盘 | workspace | 四文件 | dirty 标记正确 |
+
+| 边界                | 上游           | 下游           | 必检字段                          |
+| ----------------- | ------------ | ------------ | ----------------------------- |
+| 源码 → DTS          | `.ts`        | `.d.ts`      | `@module` 三行、公开 API 完整        |
+| DTS → JSON        | AST          | shard        | `type` 树、parameters、jsdoc     |
+| JSON → Surface    | manifest     | Worker       | `rootClassName` ∈ classIndex  |
+| Surface → Guide   | ClassModel   | LLM          | 签名与 type 树一致                  |
+| Input → Task      | APP args     | AiAgentTask  | pageId / effectiveDescription |
+| Task → Session    | contract     | scope        | businessInstanceId            |
+| Script → Instance | model_script | ProjectModel | gates 通过                      |
+| Instance → 磁盘     | workspace    | 四文件          | dirty 标记正确                    |
+
 
 ---
 
@@ -512,41 +557,48 @@ createAiHostRunBridge()
 
 ### 12.1 Phase 1 审核结论
 
-| 审核项 | 结论 | 代码证据 | 备注 |
-|--------|------|----------|------|
-| pageDesign 生产注册 | ✅ 通过 | `src/services/page-design/page-design-business.ts` | `ensurePageDesignBusiness()` 使用 `ProjectModel`、`dtsClassModelManifestUrl`、inputContract、gates、SOP nudge；data-only preset 分支 systemPrompt / nudge。 |
-| projectPlanning 生产注册 | ✅ 通过 | `src/services/project-planning/project-planning-business.ts` | `ensureProjectPlanningBusiness()` 使用 `ProjectRootModel`、DTS 主线、navigation-only gates、`afterFunctionCall` 回写 `ProjectModel`。 |
-| DevSystem 内联运行 | ✅ pageDesign 通过 | `src/views/app/dev-system/useDevState.ts` | 当前 UI 入口调用 `runPageDesignAiSession()`，复用同一个 `ProjectWorkspace`，默认不自动保存。 |
-| projectPlanning 运行入口 | ⚠️ headless/service 通过 | `src/services/project-planning/project-planning-ai-runner.ts` | 已有 runner 和 Host Run；未看到 DevSystem 按钮级入口。若要求可视调试入口，应作为后续 UI 补项。 |
-| Host Run 接入 | ✅ 通过 | `src/App.vue`, `src/services/page-design/page-design-host-run-provider.ts`, `src/services/page-data-design/page-data-design-host-run-provider.ts`, `src/services/project-planning/project-planning-host-run-provider.ts` | 壳层 `chainAiHostRunPrepare()` 串联 pageDesign / pageDataDesign preset / projectPlanning provider。 |
-| Host Run 回执 | ✅ 通过 | `src/services/ai/ai-host-run-bridge.ts` | bridge 收集 trace、diagnostics、session scope 后 `POST /api/ai/host-run/result`。 |
-| 交付策略 | ⚠️ 可运行但分散 | runner / provider / bridge | save、trace、rollback 不是一个抽象，Phase 2 必须收束。 |
 
-**Phase 1 判定：** 生产注册 + Host Run 主链路成立；DevSystem 已覆盖 pageDesign 内联链路。projectPlanning 以 headless runner / Host Run 为主，若把 DevSystem 理解为两个业务都有可视入口，则需要补 UI 入口，但不阻断生产 Host Run。
+| 审核项                  | 结论                     | 代码证据                                                                                                                                                                                                                     | 备注                                                                                                                                                |
+| -------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| pageDesign 生产注册      | ✅ 通过                   | `src/services/page-design/page-design-business.ts`                                                                                                                                                                       | `ensurePageDesignBusiness()` 使用 `ProjectModel`、`dtsClassModelManifestUrl`、inputContract、gates、SOP nudge；data-only preset 分支 systemPrompt / nudge。 |
+| projectPlanning 生产注册 | ✅ 通过                   | `src/services/project-planning/project-planning-business.ts`                                                                                                                                                             | `ensureProjectPlanningBusiness()` 直接绑定 `ProjectModel`；`domain-model` 栈已删除。                       |
+| DevSystem 内联运行       | ✅ pageDesign 通过        | `src/views/app/dev-system/useDevState.ts`                                                                                                                                                                                | 选中配置页时顶栏 `AI 编辑` → `runPageDesignAiSession()`，复用同一 `ProjectWorkspace`，默认不自动保存。                                                                  |
+| projectPlanning 运行入口 | ✅ headless / Host Run 通过 | `src/services/project-planning/project-planning-ai-runner.ts`, `src/services/project-planning/project-planning-host-run-provider.ts` | 无 DevSystem 顶栏入口；自动化走 Host Run / headless runner。 |
+| Host Run 接入          | ✅ 通过                   | `src/App.vue`, `src/services/page-design/page-design-host-run-provider.ts`, `src/services/page-data-design/page-data-design-host-run-provider.ts`, `src/services/project-planning/project-planning-host-run-provider.ts` | 壳层 `chainAiHostRunPrepare()` 串联 pageDesign / pageDataDesign preset / projectPlanning provider。                                                    |
+| Host Run 回执          | ✅ 通过                   | `src/services/ai/ai-host-run-bridge.ts`                                                                                                                                                                                  | bridge 收集 trace、diagnostics、session scope 后 `POST /api/ai/host-run/result`。                                                                       |
+| 交付策略                 | ⚠️ 可运行但分散              | runner / provider / bridge                                                                                                                                                                                               | save、trace、rollback 不是一个抽象，Phase 2 必须收束。                                                                                                          |
+
+
+**Phase 1 判定：** 生产注册 + Host Run 主链路成立；DevSystem 内联链路仅覆盖 pageDesign（配置页 `AI 编辑`）；projectPlanning 仅 headless / Host Run。
 
 ### 12.2 当前缺口
 
-| 项 | 现状 | 建议 |
-|----|------|------|
-| 统一 Delivery 抽象 | 已有 APP `DeliveryPort` | 后续新增业务复用同一端口 |
-| rollback 语义 | Host Run 失败会写入 delivery rollback；DevSystem 保留 dirty | 后续可加 UI 侧手动恢复 |
-| trace 语义 | save / rollback 已进入 `resultExtras.delivery` | Host Run 回执固定读取 delivery |
-| projectPlanning DevSystem UI | 只有 headless runner 与 Host Run provider | 如需人工调试，补 DevSystem 入口 |
-| 第三业务 | ✅ preset `pageDataDesign` → `pageDesign` | `page-data-design-host-run-provider.ts` | allowedOperations gate + selective save + data-only prompt |
-| semantic-gaps | `gapCount = 0` | 保持生成门禁，不允许回退 |
-| orders 独立业务 | 无；仅为 pageId 示例 | 若需独立 SOP，新 alias + Model |
-| Worker 依赖 | 浏览器 Worker 必须 | Node 侧可直载 loader（测试已覆盖） |
-| signatureText CI diff | 可选 warn | golden 对比派生签名 vs AST 文本 |
+
+| 项                            | 现状                                                  | 建议                                      |
+| ---------------------------- | --------------------------------------------------- | --------------------------------------- |
+| 统一 Delivery 抽象               | 已有 APP `DeliveryPort`                               | 后续新增业务复用同一端口                            |
+| rollback 语义                  | Host Run 失败会写入 delivery rollback；DevSystem 保留 dirty | 后续可加 UI 侧手动恢复                           |
+| trace 语义                     | save / rollback 已进入 `resultExtras.delivery`         | Host Run 回执固定读取 delivery                |
+| projectPlanning DevSystem UI | ❌ 无顶栏入口 | headless runner + Host Run provider 为唯一运行入口 |
+| 项目模型收敛                     | ✅ domain-model 删除；planningStatus 删除；sub-page → nested page | 见 `MODEL-HIERARCHY.md` §0.1；[`MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md`](../../../docs/guides/MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md) |
+| 第三业务                         | ✅ preset `pageDataDesign` → `pageDesign`            | `page-data-design-host-run-provider.ts` |
+| semantic-gaps                | `gapCount = 0`                                      | 保持生成门禁，不允许回退                            |
+| orders 独立业务                  | 无；仅为 pageId 示例                                      | 若需独立 SOP，新 alias + Model                |
+| Worker 依赖                    | 浏览器 Worker 必须                                       | Node 侧可直载 loader（测试已覆盖）                 |
+| signatureText CI diff        | 可选 warn                                             | golden 对比派生签名 vs AST 文本                 |
+
 
 ### 12.3 Phase 2：统一 DeliveryPort（已落地）
 
 DeliveryPort 是 **APP 层交付端口**，不进入 `spark-ai` 内核。它只回答三件事：
 
-| 能力 | 语义 | 现有散点 |
-|------|------|----------|
-| `save` | 把 Working Copy 持久化到外部世界 | `saveDirtyPageFiles()`, `saveAll()` |
-| `trace` | 把交付结果写入 Host Run 回执 / UI 状态 | `resultExtras`, `ai-host-run-bridge` payload |
-| `rollback` | run 失败、取消或保存失败时恢复/丢弃工作副本 | headless editor 丢弃、DevSystem 手动处理 |
+
+| 能力         | 语义                          | 现有散点                                         |
+| ---------- | --------------------------- | -------------------------------------------- |
+| `save`     | 把 Working Copy 持久化到外部世界     | `saveDirtyPageFiles()`, `saveAll()`          |
+| `trace`    | 把交付结果写入 Host Run 回执 / UI 状态 | `resultExtras`, `ai-host-run-bridge` payload |
+| `rollback` | run 失败、取消或保存失败时恢复/丢弃工作副本    | headless editor 丢弃、DevSystem 手动处理            |
+
 
 当前契约：
 
@@ -575,13 +627,16 @@ export interface AiDeliveryPort<TContext> {
 
 第一批 adapter：
 
-| Adapter | 场景 | `save` | `rollback` | `trace` |
-|---------|------|--------|------------|---------|
-| `PageDesignInlineDeliveryPort` | DevSystem | 默认 `skipped`，用户手动保存；自动化可开启 | 不自动回滚，保留 dirty 供人工检查 | DevSystem status / trace sink |
-| `PageDesignHostRunDeliveryPort` | pageDesign Host Run | `editor.saveDirtyPageFiles()` | 丢弃 headless editor，记录未保存 dirty 文件 | Host Run result extras |
-| `ProjectPlanningHostRunDeliveryPort` | projectPlanning Host Run | `editor.saveAll()` 保存 navigation | 丢弃 headless editor，记录 navigation dirty | Host Run result extras |
-| `PageDataDesignHostRunDeliveryPort` | pageDataDesign Host Run | `editor.savePageFile('pagedata.json')` | 丢弃 headless editor，记录 pagedata dirty | Host Run result extras |
-| `NoopDeliveryPort` | 测试 / dry-run | `skipped` | `skipped` | 仅记录调用顺序 |
+
+| Adapter                              | 场景                       | `save`                                 | `rollback`                             | `trace`                       |
+| ------------------------------------ | ------------------------ | -------------------------------------- | -------------------------------------- | ----------------------------- |
+| `PageDesignInlineDeliveryPort`       | DevSystem                | 默认 `skipped`，用户手动保存；自动化可开启             | 不自动回滚，保留 dirty 供人工检查                   | DevSystem status / trace sink |
+| `PageDesignHostRunDeliveryPort`      | pageDesign Host Run      | `editor.saveDirtyPageFiles()`          | 丢弃 headless editor，记录未保存 dirty 文件      | Host Run result extras        |
+| `ProjectPlanningInlineDeliveryPort`    | DevSystem                | 默认 `skipped`，用户手动保存 navigation        | 不自动回滚，保留 dirty 供人工检查                   | DevSystem status / trace sink |
+| `ProjectPlanningHostRunDeliveryPort` | projectPlanning Host Run | `editor.saveAll()` 保存 navigation       | 丢弃 headless editor，记录 navigation dirty | Host Run result extras        |
+| `PageDataDesignHostRunDeliveryPort`  | pageDataDesign Host Run  | `editor.savePageFile('pagedata.json')` | 丢弃 headless editor，记录 pagedata dirty   | Host Run result extras        |
+| `NoopDeliveryPort`                   | 测试 / dry-run             | `skipped`                              | `skipped`                              | 仅记录调用顺序                       |
+
 
 标准生命周期：
 
@@ -597,13 +652,15 @@ prepareRun()
 
 失败规则：
 
-| 场景 | 处理 |
-|------|------|
-| `host.run` 成功但 `save` 失败 | Host Run 不报 `completed`；转为 `failed`，错误写入 delivery trace。 |
-| `host.run` 失败 / timeout / cancelled | 不保存；执行 `rollback`；仍提交失败回执。 |
-| `rollback` 失败 | 原始错误保留，rollback 错误附加到 trace。 |
-| DevSystem 内联 run 成功 | 默认只留下 dirty 状态，由用户点击保存；不要偷偷落盘。 |
-| Host Run 隔离 run 成功 | 默认自动保存；保存结果必须进入 `resultExtras.delivery`。 |
+
+| 场景                                  | 处理                                                       |
+| ----------------------------------- | -------------------------------------------------------- |
+| `host.run` 成功但 `save` 失败            | Host Run 不报 `completed`；转为 `failed`，错误写入 delivery trace。 |
+| `host.run` 失败 / timeout / cancelled | 不保存；执行 `rollback`；仍提交失败回执。                               |
+| `rollback` 失败                       | 原始错误保留，rollback 错误附加到 trace。                             |
+| DevSystem 内联 run 成功                 | 默认只留下 dirty 状态，由用户点击保存；不要偷偷落盘。                           |
+| Host Run 隔离 run 成功                  | 默认自动保存；保存结果必须进入 `resultExtras.delivery`。                 |
+
 
 Phase 2 落地状态：
 
@@ -619,12 +676,14 @@ Phase 2 落地状态：
 
 第三业务能力验证 §15 接入清单；**产品口径合并进 pageDesign**，`pageDataDesign` 仅作调度 preset：
 
-| 组件 | 落地 |
-|------|------|
-| 运行时 alias | 调度仍可用 `pageDataDesign`；`host.run` 实际走 **`pageDesign`** |
-| 操作域 | `allowedOperations` 写入工单 + `bindPageDesignRunContext`；**gate 硬拦截** + **systemPrompt / toolLoopNudge data-only 分支** |
-| Delivery | `deliverySaveFileNames: ['pagedata.json']` → `savePageFile` selective save |
-| 实现 | `page-data-design-host-run-provider.ts`（无独立 Registration） |
+
+| 组件        | 落地                                                                                                                 |
+| --------- | ------------------------------------------------------------------------------------------------------------------ |
+| 运行时 alias | 调度仍可用 `pageDataDesign`；`host.run` 实际走 `**pageDesign`**                                                             |
+| 操作域       | `allowedOperations` 写入工单 + `bindPageDesignRunContext`；**gate 硬拦截** + **systemPrompt / toolLoopNudge data-only 分支** |
+| Delivery  | `deliverySaveFileNames: ['pagedata.json']` → `savePageFile` selective save                                         |
+| 实现        | `page-data-design-host-run-provider.ts`（无独立 Registration）                                                          |
+
 
 ```text
 ✅ page-design-gates 读取 allowedOperations 并拦截 model_script marker
@@ -639,20 +698,22 @@ Phase 2 落地状态：
 
 ## 13. 文档与代码索引
 
-| 主题 | 路径 |
-|------|------|
-| **端到端 + 接入清单** | 本文 §2、§15 · [`BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md`](BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md) |
-| 包架构 SSOT | [`../ARCHITECTURE.md`](../ARCHITECTURE.md) |
-| Agent / native-runtime 深潜 | [`native-runtime-and-agent-flow-zh-cn.md`](native-runtime-and-agent-flow-zh-cn.md) |
-| 传输 / Session | [`transport-and-session-zh-cn.md`](transport-and-session-zh-cn.md) |
-| pageDesign × DevSystem | [`pagedesign-devsystem-zh-cn.md`](pagedesign-devsystem-zh-cn.md) |
-| TypeDoc 签名对齐 | [`../src/class-model/docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md`](../src/class-model/docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md) |
-| 业务注册 | [`../src/agent/business/README.md`](../src/agent/business/README.md) |
-| APP pageDesign | [`../../../src/services/page-design/page-design-business.ts`](../../../src/services/page-design/page-design-business.ts) |
-| APP pageDataDesign preset | [`../../../src/services/page-data-design/page-data-design-host-run-provider.ts`](../../../src/services/page-data-design/page-data-design-host-run-provider.ts) |
-| APP projectPlanning | [`../../../src/services/project-planning/project-planning-business.ts`](../../../src/services/project-planning/project-planning-business.ts) |
-| DeliveryPort | [`../../../src/services/ai/ai-delivery-port.ts`](../../../src/services/ai/ai-delivery-port.ts) |
-| Host Run 桥 | [`../../../src/services/ai/ai-host-run-bridge.ts`](../../../src/services/ai/ai-host-run-bridge.ts) |
+
+| 主题                        | 路径                                                                                                                                                             |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **端到端 + 接入清单**            | 本文 §2、§15 · `[BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md](BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md)`                                                               |
+| 包架构 SSOT                  | `[../ARCHITECTURE.md](../ARCHITECTURE.md)`                                                                                                                     |
+| Agent / native-runtime 深潜 | `[native-runtime-and-agent-flow-zh-cn.md](native-runtime-and-agent-flow-zh-cn.md)`                                                                             |
+| 传输 / Session              | `[transport-and-session-zh-cn.md](transport-and-session-zh-cn.md)`                                                                                             |
+| pageDesign × DevSystem    | `[pagedesign-devsystem-zh-cn.md](pagedesign-devsystem-zh-cn.md)`                                                                                               |
+| TypeDoc 签名对齐              | `[../src/class-model/docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md](../src/class-model/docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md)`                                 |
+| 业务注册                      | `[../src/agent/business/README.md](../src/agent/business/README.md)`                                                                                           |
+| APP pageDesign            | `[../../../src/services/page-design/page-design-business.ts](../../../src/services/page-design/page-design-business.ts)`                                       |
+| APP pageDataDesign preset | `[../../../src/services/page-data-design/page-data-design-host-run-provider.ts](../../../src/services/page-data-design/page-data-design-host-run-provider.ts)` |
+| APP projectPlanning       | `[../../../src/services/project-planning/project-planning-business.ts](../../../src/services/project-planning/project-planning-business.ts)`                   |
+| DeliveryPort              | `[../../../src/services/ai/ai-delivery-port.ts](../../../src/services/ai/ai-delivery-port.ts)`                                                                 |
+| Host Run 桥                | `[../../../src/services/ai/ai-host-run-bridge.ts](../../../src/services/ai/ai-host-run-bridge.ts)`                                                             |
+
 
 ---
 
@@ -660,7 +721,7 @@ Phase 2 落地状态：
 
 ```text
 Phase 0 ✅  DTS ClassModel + TypeDoc type 树 + bundle regen
-Phase 1 ✅  pageDesign / projectPlanning 生产注册 + Host Run；DevSystem 已覆盖 pageDesign 内联链路
+Phase 1 ✅  pageDesign / projectPlanning 生产注册 + Host Run；DevSystem 内联仅 pageDesign
 Phase 2 ✅  统一 DeliveryPort（save / trace / rollback / resultExtras.delivery）
 Phase 3 ✅  pageDataDesign preset（方案 B）→ pageDesign + allowedOperations gate + selective save + data-only prompt
 Phase 4 🔲  CI：signature 派生 golden + semantic-gaps 归零门禁
@@ -672,17 +733,19 @@ Phase 5 🔲  多租户 Host Run 规模化 + session 诊断面板
 ## 15. 新业务能力接入清单（抽象）
 
 接入一个新的 **业务能力**（新 alias），需要五层各答一道题；**换实例 ID 或换工单描述不算新业务**。  
-可打印版 checklist：[`BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md`](BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md)。
+可打印版 checklist：`[BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md](BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md)`。
 
-| 层 | 必答题 | 产出物 |
-|----|--------|--------|
-| **领域** | 根 class 是谁？公开 mutator 有哪些？ | `spark-*/src` 源码 + JSDoc |
-| **知识** | LLM 从哪份 manifest 学 API？rootClassName？ | `generated/dts-class-model` shard 可达 |
-| **能力包** | Registration 怎么组装？工单字段是什么？ | `ensureXxxBusiness()` |
-| **运行** | 谁调用 `Host.run`？聊天从哪进？ | UI / Runner / Host Run prepare |
-| **交付** | Working Copy 何时 commit？要不要回执？ | save 策略 + optional Host Run result |
 
-### 15.1 阶段 A · 领域建模（`spark-*` 包）
+| 层       | 必答题                                   | 产出物                                  |
+| ------- | ------------------------------------- | ------------------------------------ |
+| **领域**  | 根 class 是谁？公开 mutator 有哪些？            | `spark-*/src` 源码 + JSDoc             |
+| **知识**  | LLM 从哪份 manifest 学 API？rootClassName？ | `generated/dts-class-model` shard 可达 |
+| **能力包** | Registration 怎么组装？工单字段是什么？            | `ensureXxxBusiness()`                |
+| **运行**  | 谁调用 `Host.run`？聊天从哪进？                 | UI / Runner / Host Run prepare       |
+| **交付**  | Working Copy 何时 commit？要不要回执？         | save 策略 + optional Host Run result   |
+
+
+### 15.1 阶段 A · 领域建模（`spark-`* 包）
 
 ```text
 □ 定义根领域 class（AI 的 this 类型）
@@ -738,25 +801,29 @@ export function ensureXxxBusiness(options: {
 
 ### 15.4–15.6 运行 / 交付 / 验收
 
-见 [`BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md`](BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md) 阶段 D–F。
+见 `[BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md](BUSINESS-CAPABILITY-ONBOARDING.zh-CN.md)` 阶段 D–F。
 
 ### 15.7 与现有能力对照
 
-| 抽象项 | pageDesign | pageDataDesign (preset) | projectPlanning |
-|--------|------------|-------------------------|-----------------|
-| alias | `pageDesign` | 调度 `pageDataDesign` → run `pageDesign` | `projectPlanning` |
-| rootClassName | `ProjectModel` | `ProjectModel` | `ProjectRootModel` |
-| identityField | `pageId` | `pageId` | `projectScopeKey` |
-| 操作域 | 默认四文件 | `allowedOperations.dataSet` only | navigation |
-| Delivery | 全部 dirty 四文件 | 仅 `pagedata.json` | navigation `saveAll()` |
+
+| 抽象项           | pageDesign     | pageDataDesign (preset)                | projectPlanning        |
+| ------------- | -------------- | -------------------------------------- | ---------------------- |
+| alias         | `pageDesign`   | 调度 `pageDataDesign` → run `pageDesign` | `projectPlanning`      |
+| rootClassName | `ProjectModel` | `ProjectModel`                         | `ProjectModel`         |
+| identityField | `pageId`       | `pageId`                               | `projectScopeKey`      |
+| 操作域           | 默认四文件          | `allowedOperations.dataSet` only       | navigation             |
+| Delivery      | 全部 dirty 四文件   | 仅 `pagedata.json`                      | navigation `saveAll()` |
+
 
 ### 15.8 常见误接
 
-| 误区 | 正确理解 |
-|------|----------|
-| 每个 pageId 一个工厂 | 一个 **能力** 一个 ensure |
-| Script 完 = 交付 | 内存变更 ≠ 落盘 |
+
+| 误区              | 正确理解                    |
+| --------------- | ----------------------- |
+| 每个 pageId 一个工厂  | 一个 **能力** 一个 ensure     |
+| Script 完 = 交付   | 内存变更 ≠ 落盘               |
 | orders 是新 alias | orders 是 **instanceId** |
+
 
 ---
 

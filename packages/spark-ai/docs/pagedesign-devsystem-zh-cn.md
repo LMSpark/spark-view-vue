@@ -55,7 +55,12 @@ ensurePageDesignBusiness({
 - `openPageDesign`（经 direct runner 或 script 内调用）
 - `writePageFile`
 
-检查项：`planningStatus`、`implGate`、`upstreamContractsSatisfied`。
+检查项（`readPlanningProjection()`）：
+
+- `effectiveDescription` 非空 → 策划就绪；为空 → pageDesign mutation 拒绝
+- `implGate`、`upstreamContractsSatisfied`
+
+DevSystem `NodeAgentGateConfig` 暴露 **implGate** 与 **upstreamContractsSatisfied**。
 
 **两层 beforeFunctionCall**（顺序）：
 

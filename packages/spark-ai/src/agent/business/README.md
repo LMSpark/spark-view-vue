@@ -45,6 +45,7 @@ ClassModelAgentAdapter.register({ host, alias, metadata, moduleClass, options })
 | `src/services/page-data-design/page-data-design-host-run-provider.ts` | pageDataDesign preset → pageDesign Host Run |
 | `src/services/project-planning/project-planning-business.ts` | `ensureProjectPlanningBusiness`、策划阶段 hooks |
 | `src/services/page-design/page-design-ai-runner.ts` | DevSystem `runPageDesignAiSession` |
+| `src/services/project-planning/project-planning-ai-runner.ts` | headless `runProjectPlanningAiSession`、Host Run 复用 |
 | `src/services/page-design/page-design-gates.ts` | mutation gate、`allowedOperations`、run context |
 | `src/services/ai/ai-host-run-bridge.ts` | Host Run 回执桥 |
 | `src/services/ai-host.ts` | `appAiAgent` 生产 Host |

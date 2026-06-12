@@ -39,7 +39,7 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
     '脚本链式调用返回业务失败：按 tool result 原始 code 修正；必要时 model_action_guide 对照 paramsSchema。',
   ],
   AI_TOOL_REJECTED_BEFORE_EXECUTION: [
-    '策略恢复：检查 implGate / planningStatus / upstreamContractsSatisfied，必要时 human_question。',
+    '策略恢复：检查 effectiveDescription / implGate / upstreamContractsSatisfied，必要时 human_question。',
   ],
   TOOL_ARGS_INVALID_JSON: [
     '参数恢复：function.arguments 必须是 JSON object 字符串；先 model_action_guide 读取 paramsSchema 再构造 args。',

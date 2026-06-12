@@ -141,7 +141,7 @@ DevSystem
 门禁：
 
 - `AiToolApprovalBridge`：UI 审批每次 tool call。
-- `page-design-gates.ts`：对 mutation tool 检查 planningStatus、implGate、upstreamContractsSatisfied。
+- `page-design-gates.ts`：对 mutation tool 检查 effectiveDescription / implGate / upstreamContractsSatisfied。
 
 ## 排错
 
@@ -151,7 +151,7 @@ DevSystem
 | LLM 传 `code` | 改用 `model_script({ script })` |
 | LLM 传 `path` | `model_script` 只接受 `{ script }`，重新查 `model_class_guide` |
 | action 参数不对 | 先读 `model_action_guide`，按签名重写脚本 |
-| pageDesign 被门禁拒绝 | 检查 planningStatus / implGate / upstreamContractsSatisfied |
+| pageDesign 被门禁拒绝 | 检查 effectiveDescription / implGate / upstreamContractsSatisfied |
 
 ## 验证命令
 
