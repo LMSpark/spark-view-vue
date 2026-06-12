@@ -39,7 +39,8 @@ public class ProjectNavigationTreeService {
     private static final Logger log = LoggerFactory.getLogger(ProjectNavigationTreeService.class);
     private static final String DEFAULT_HOME_PATH = "/dashboard";
     private static final Pattern FRAME_ANCESTORS_PATTERN = Pattern.compile("frame-ancestors\\s+([^;]+)", Pattern.CASE_INSENSITIVE);
-    private static final Set<String> VALID_NODE_KINDS = Set.of("system-directory", "module", "system-page", "system-action", "page", "link", "sub-page", "ref");
+    private static final Set<String> VALID_NODE_KINDS = Set.of(
+            "system-directory", "module", "system-page", "system-action", "page", "link", "sub-page", "ref");
     private static final Set<String> VALID_CHILD_PLACEMENTS = Set.of("header", "sidebar", "toolbar", "user-menu", "parent", "flat");
 
     private final ObjectMapper objectMapper;
@@ -67,6 +68,7 @@ public class ProjectNavigationTreeService {
         List<Map<String, Object>> rows = fetchFlatRows(tenantId, projectId);
         Map<String, Object> root = buildRootFromFlatRows(rows);
         if (root != null) {
+            migrateLegacySubPagesInTree(root);
             resolveRefNodes(root, tenantId, projectId);
         }
         return root;
@@ -787,6 +789,10 @@ public class ProjectNavigationTreeService {
         }
 
         String kind = normalizeNodeKind(raw, id);
+        boolean legacySubPage = isLegacySubPageKind(raw);
+        if (legacySubPage) {
+            kind = "page";
+        }
         String title = asTrimmedString(raw.get("title"));
         if (title.isBlank()) {
             title = id;
@@ -842,9 +848,6 @@ public class ProjectNavigationTreeService {
                     node.put("children", children);
                 }
             }
-            case "sub-page" -> {
-                node.put("hidden", true);
-            }
             case "ref" -> {
                 // 跨工程引用：仅存储 refId，运行时由 resolveRefNodes 填充目标信息
                 putIfNotBlank(node, "refId", asTrimmedString(raw.get("refId")));
@@ -875,15 +878,23 @@ public class ProjectNavigationTreeService {
                     // action 标识符不加 '/' 前缀，保持原样
                     String spPath = asTrimmedString(raw.get("path"));
                     putIfNotBlank(node, "path", spPath);
+                    if (Boolean.TRUE.equals(raw.get("hidden"))) {
+                        node.put("hidden", true);
+                    }
                 } else if ("system-action".equals(kind)) {
                     // system-action: path 是动作标识符（如 'ai-chat'），规范化为无 '/' 前缀
                     String actionPath = asTrimmedString(raw.get("path")).replaceAll("^/+", "");
                     putIfNotBlank(node, "path", actionPath);
+                    if (Boolean.TRUE.equals(raw.get("hidden"))) {
+                        node.put("hidden", true);
+                    }
+                } else if ("page".equals(kind) && legacySubPage) {
+                    node.put("hidden", true);
                 } else {
                     putIfNotBlank(node, "path", normalizePath(asTrimmedString(raw.get("path"))));
-                }
-                if (Boolean.TRUE.equals(raw.get("hidden"))) {
-                    node.put("hidden", true);
+                    if (Boolean.TRUE.equals(raw.get("hidden"))) {
+                        node.put("hidden", true);
+                    }
                 }
                 if (!children.isEmpty()) {
                     node.put("children", children);
@@ -892,6 +903,39 @@ public class ProjectNavigationTreeService {
         }
 
         return node;
+    }
+
+    private boolean isLegacySubPageKind(Map<String, Object> raw) {
+        return "sub-page".equals(asTrimmedString(raw.get("nodeKind")));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void migrateLegacySubPagesInTree(Map<String, Object> root) {
+        List<Map<String, Object>> children = root.get("children") instanceof List
+                ? (List<Map<String, Object>>) root.get("children")
+                : List.of();
+        root.put("children", migrateLegacySubPages(children));
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> migrateLegacySubPages(List<Map<String, Object>> nodes) {
+        List<Map<String, Object>> migrated = new ArrayList<>();
+        for (Map<String, Object> node : nodes) {
+            if (node == null) {
+                continue;
+            }
+            Map<String, Object> next = new LinkedHashMap<>(node);
+            if (isLegacySubPageKind(next)) {
+                next.put("nodeKind", "page");
+                next.put("hidden", true);
+                next.remove("path");
+            }
+            if (next.get("children") instanceof List<?> rawChildren) {
+                next.put("children", migrateLegacySubPages((List<Map<String, Object>>) rawChildren));
+            }
+            migrated.add(next);
+        }
+        return migrated;
     }
 
     private String normalizeNodeKind(Map<String, Object> raw, String id) {

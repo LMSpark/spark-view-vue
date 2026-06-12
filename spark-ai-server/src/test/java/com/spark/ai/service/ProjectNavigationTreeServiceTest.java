@@ -201,6 +201,24 @@ class ProjectNavigationTreeServiceTest {
         assertEquals(1, targetChildren.get(1).get("order"));
     }
 
+    @Test
+    void importNavConfig_migratesLegacySubPageToNestedPage() throws Exception {
+        Map<String, Object> subPage = createNode("order-detail", "订单详情", "sub-page", List.of());
+        service.importNavConfig("t1", "p1", createNavRoot(
+                createNode("orders", "订单", "page", "/orders", List.of(subPage))
+        ));
+
+        Map<String, Object> root = service.getNavConfig("t1", "p1");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> ordersChildren = (List<Map<String, Object>>) findNode(
+                (List<Map<String, Object>>) root.get("children"), "orders").get("children");
+        Map<String, Object> detail = ordersChildren.get(0);
+
+        assertEquals("page", detail.get("nodeKind"));
+        assertEquals(true, detail.get("hidden"));
+        assertFalse(detail.containsKey("path"));
+    }
+
         private Map<String, Object> createNavRoot(Map<String, Object>... children) {
                 Map<String, Object> root = new LinkedHashMap<>();
                 root.put("childPlacement", "header");
