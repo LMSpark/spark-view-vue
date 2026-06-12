@@ -1,8 +1,8 @@
 # SPARK AppWorks 项目深度解析
 
-> **注意**：下文部分类名（如 `ProjectNodeCollection`、`ProjectPlanningModel`）为历史表述。当前权威模型见 [`architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md`](architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md) 与 `packages/spark-project-model/src/MODEL-HIERARCHY.md`。
+> **注意**：下文部分类名（如 `ProjectNodeCollection`、`ProjectPlanningModel`）为历史表述。当前权威模型见 [`packages/spark-project-model/src/MODEL-HIERARCHY.md`](../packages/spark-project-model/src/MODEL-HIERARCHY.md) 与 [`guides/MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md`](guides/MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md)。
 >
-> 更新基准：2026-05-30。当前口径：项目先于页面，模型先于文件，PageNode 先于 Vue。
+> 更新基准：2026-06。唯一领域根 `ProjectModel`；嵌套子页 = `page` + `hidden` + 无 `path`。
 
 ## 定位
 
@@ -16,23 +16,21 @@ SPARK AppWorks 是企业后台的软件项目模型与页面运行平台。它�
 
 ```mermaid
 flowchart TB
-  Project["ProjectModel<br/>软件项目模型"]
-  Nodes["ProjectNodeCollection<br/>flat nodes / DB 同构"]
-  Planning["ProjectPlanningModel<br/>项目策划"]
-  ConfigPage["ProjectConfigPageNodeModel<br/>page/sub-page"]
-  VuePage["ProjectVuePageNodeModel<br/>Vue 页面"]
+  Workspace["ProjectWorkspace"]
+  Project["ProjectModel"]
+  Design["ProjectDesign"]
+  ConfigPage["ConfigPageNode"]
   Renderer["SparkPageRenderer"]
   Data["DataSet / DataView"]
 
-  Project --> Nodes
-  Project --> Planning
-  Nodes --> ConfigPage
-  Nodes --> VuePage
+  Workspace --> Project
+  Project --> Design
+  Design --> ConfigPage
   ConfigPage --> Renderer
   Renderer --> Data
 ```
 
-`ProjectNodeCollection` 是项目节点事实源。树形导航是投影，用于 UI、路由和策划遍历；模型层不再有独立模块树聚合。
+`ProjectDesign` 持有 flat `nodesById` 与配置页 Map；navigation 树为投影。`domain-model/` 与 `sub-page` nodeKind 已收敛删除。
 
 ## 节点设计
 
@@ -41,10 +39,10 @@ flowchart TB
 ```text
 项目 => 子模块 || 页面
 子模块 => 子模块 || 页面
-页面 => 子页面 => 子页面
+页面 => 嵌套子页（page + hidden，无 path）
 ```
 
-`page` 和 `sub-page` 合并为 `ProjectConfigPageNodeModel`。`sub-page` 只是节点类型，不再对应单独模型。Vue 页面走 `ProjectVuePageNodeModel`，不让 Vue 组件结构反向牵引数据结构。
+顶层页与嵌套子页均为 `ConfigPageNode`；策划输入经 `readPlanningProjection()` / `effectiveDescription` 消费。
 
 ## 功能策划
 
@@ -96,15 +94,13 @@ DevSystem 是消费层，不是模型层。
 
 ```text
 DevSystem
-  -> createProjectEditor()
-  -> ProjectEditor
-      -> ProjectModel.nodes
-      -> ProjectPlanningModel
-      -> ProjectConfigPageNodeModel
-      -> 后端 DB + file
+  -> ProjectWorkspace
+  -> ProjectModel
+  -> ConfigPageNode 四文件
+  -> 后端 DB + file
 ```
 
-它可以编辑、预览、诊断、管理版本和启动 AI，但不能直接绕过 `spark-project-model/project` 操作后端节点、页面文件或跨项目引用。
+pageDesign：`DevSystem` 顶栏「AI 编辑」。projectPlanning：仅 headless / Host Run（无 DevSystem 顶栏）。
 
 ## AI 生产线
 
@@ -112,11 +108,10 @@ DevSystem
 
 ```text
 AI Agent Host
-  -> ensurePageDesignBusiness()
-  -> ProjectEditor.project
+  -> ensurePageDesignBusiness() | ensureProjectPlanningBusiness()
+  -> ProjectWorkspace.project
   -> ProjectModel.openPageDesign(pageId)
-  -> ConfigPageNode
-  -> PageNode 子模型
+  -> ConfigPageNode 子模型
 ```
 
 AI 写入先进入内存并标 dirty。DevSystem 保持显式保存；自动化 runner 可在运行结束后保存 dirty 四文件。

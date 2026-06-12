@@ -14,8 +14,10 @@ pnpm run typecheck
 
 ## 2. DB 批量迁移（有 MySQL 时）
 
+脚本会依次尝试 **mysql CLI** → **docker compose exec mysql**（`spark-ai-server/docker-compose.yml`）。
+
 ```bash
-# 审计 legacy 行
+# 审计 legacy 行（需 MySQL 或 Docker 中 mysql 容器运行中）
 pnpm run migrate:navigation:sub-page -- audit
 
 # 本地 dev 库一次性迁移（prod 走 Flyway V8 启动迁移）
@@ -81,3 +83,14 @@ Flyway：`spark-ai-server/src/main/resources/db/migration/V8__migrate_navigation
 ---
 
 **签字：** 全部 1–7 通过后，模型收敛视为生产可接受。遗留 demo 页 `tree-demo/pagedata.json` 内 catalog 枚举可保留 `sub-page` 字样（演示节点类型表，非 navigation 真源）。
+
+## 验收记录（2026-06-12）
+
+| 章节 | 结果 | 说明 |
+|------|------|------|
+| §1 离线 | ✅ | `verify:model-convergence` 53/53 · `typecheck` · `verify:page-design` 32/32 · `verify:project-planning` 27/27 |
+| §2 DB | ✅ | `migrate:navigation:sub-page audit` → `legacy sub-page rows: 0`（docker mysql） |
+| §3–§4 DevSystem UI | ⚠️ | 代码已确认无 `AI 策划` / `planningStatus`；顶栏仅 `AI 编辑`。浏览器自动化需登录态，建议本地打开 `/dev` 点检 §3.1–3.4 |
+| §5 projectPlanning | ✅ | 离线 27/27；DevSystem 无顶栏入口（源码检索） |
+| §6 运行态 | ✅ | `runtime-target.test.ts` 纳入 `verify:model-convergence` |
+| §7 Legacy | ✅ | TS normalize 测试 + Java `importNavConfig_migratesLegacySubPageToNestedPage` |

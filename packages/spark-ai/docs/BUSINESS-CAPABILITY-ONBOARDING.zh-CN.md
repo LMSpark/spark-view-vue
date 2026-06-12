@@ -52,6 +52,7 @@
 - [ ] dryRun + guide/script 手工链路
 - [ ] loader 闭包测试
 - [ ] DevSystem 或 staging Host Run
+- [ ] 模型收敛回归：`pnpm run verify:model-convergence`（见 [`MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md`](../../../docs/guides/MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md)）
 
 ## 代码模板
 
