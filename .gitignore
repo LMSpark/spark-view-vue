@@ -59,7 +59,6 @@ probe-*.mjs
 /scripts/setup-claude-deepseek.ps1
 /scripts/claude-model.ps1
 /scripts/start-spark-ai-prod.ps1
-/scripts/cleanup-cursor-empty-agents.ps1
 /scripts/render-appworks-*.py
 /scripts/synthesize-video-narration.ps1
 
