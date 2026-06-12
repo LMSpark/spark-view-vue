@@ -171,6 +171,7 @@ import { appAiAgent } from '@/services/ai-host'
 import { createAuthHeaders } from '@/services/http'
 import { chainAiHostRunPrepare } from '@/services/ai-host-run-prepare'
 import { preparePageDesignHostRun } from '@/services/page-design-host-run-provider'
+import { preparePageDataDesignHostRun } from '@/services/page-data-design-host-run-provider'
 import { prepareProjectPlanningHostRun } from '@/services/project-planning-host-run-provider'
 import { runAiHostRunSmokeLauncherFromUrl } from '@/services/ai-host-run-smoke-launcher'
 import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
@@ -600,6 +601,7 @@ onMounted(() => {
       host: appAiAgent,
       prepareRun: chainAiHostRunPrepare(
         preparePageDesignHostRun,
+        preparePageDataDesignHostRun,
         prepareProjectPlanningHostRun,
       ),
     }).start()
