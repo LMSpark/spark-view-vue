@@ -16,7 +16,7 @@
         "typecheck": "tsc --noEmit -p tsconfig.json"
     },
     "peerDependencies": {
-        "typescript": ">=5.0.0",
-        "vite": ">=5.0.0"
+        "typescript": "catalog:",
+        "vite": "catalog:"
     }
 }

@@ -30,13 +30,13 @@
   },
   "dependencies": {
     "@spark-appworks/spark-utils": "workspace:*",
-    "ajv": "^8.20.0",
-    "jmespath": "0.16.0"
+    "ajv": "catalog:",
+    "jmespath": "catalog:"
   },
   "devDependencies": {
-    "@types/jmespath": "^0.15.2",
-    "rimraf": "^6.1.3",
-    "typescript": "~6.0.3",
-    "vite": "^8.0.16"
+    "@types/jmespath": "catalog:",
+    "rimraf": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
   }
 }

@@ -1,2 +1,35 @@
 packages:
   - 'packages/*'
+
+# 工作区基础依赖版本真源。子包用 "catalog:" 引用，禁止重复写死版本。
+catalog:
+  # ── 应用壳运行时（根 package.json dependencies 安装） ──
+  vue: 3.5.35
+  vue-router: ^5.1.0
+  element-plus: ^2.14.1
+  '@element-plus/icons-vue': ^2.3.2
+  vxe-table: ^4.19.7
+
+  # ── 框架无关包运行时（按包归属，单点声明） ──
+  axios: ^1.17.0
+  ajv: ^8.20.0
+  jmespath: 0.16.0
+  comlink: ^4.4.2
+
+  # ── 构建 / 测试 / Lint 工具链 ──
+  typescript: ~6.0.3
+  vite: ^8.0.16
+  vitest: ^4.1.8
+  eslint: ^10.4.1
+  '@eslint/js': ^10.0.1
+  '@typescript-eslint/eslint-plugin': ^8.60.1
+  '@typescript-eslint/parser': ^8.60.1
+  eslint-plugin-vue: ^10.9.2
+  vue-eslint-parser: ^10.4.1
+  '@types/node': ^25.9.1
+  '@types/jmespath': ^0.15.2
+  '@vitejs/plugin-vue': ^6.0.7
+  '@vue/language-core': 3.3.3
+  '@vue/test-utils': ^2.4.11
+  vue-tsc: ^3.3.3
+  rimraf: ^6.1.3
