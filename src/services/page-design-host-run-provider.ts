@@ -31,6 +31,13 @@ import type {
   AiHostRunTarget,
   AiHostRunPrepare,
 } from '@/services/ai-host-run-bridge'
+import {
+  attachAiDeliveryResult,
+  createAiDeliveryFailureError,
+  createAiDeliveryResultExtras,
+  toError,
+} from '@/services/ai-delivery-port'
+import { createPageDesignHostRunDeliveryPort } from '@/services/page-design-delivery-port'
 
 const pageDesignEditors = new Map<string, ProjectWorkspace>()
 
@@ -56,6 +63,7 @@ function createSavingPageDesignHost(
   host: AiHostRunTarget,
   pageId: string | null,
 ): AiHostRunTarget {
+  const delivery = createPageDesignHostRunDeliveryPort()
   return {
     has(alias) {
       return host.has(alias)
@@ -70,11 +78,36 @@ function createSavingPageDesignHost(
     ): Promise<AiAgentHostRunResult> {
       const editor = pageId === null ? undefined : pageDesignEditors.get(pageId)
       try {
-        return await host.run(alias, args, chat)
-      } finally {
-        if (editor !== undefined) {
-          await editor.saveDirtyPageFiles()
+        let result: AiAgentHostRunResult
+        try {
+          result = await host.run(alias, args, chat)
+        } catch (error: unknown) {
+          if (editor === undefined || pageId === null) throw error
+          const normalizedError = toError(error)
+          const deliveryContext = { editor, pageId }
+          const deliveryResult = await delivery.rollback(deliveryContext, normalizedError)
+          await delivery.trace(deliveryContext, deliveryResult)
+          throw attachAiDeliveryResult(normalizedError, deliveryResult)
         }
+
+        if (editor === undefined || pageId === null) return result
+        const deliveryContext = { editor, pageId }
+        const deliveryResult = await delivery.save(deliveryContext)
+        await delivery.trace(deliveryContext, deliveryResult)
+        if (deliveryResult.status === 'failed') {
+          throw createAiDeliveryFailureError(
+            deliveryResult.message ?? 'pageDesign Host Run delivery failed.',
+            deliveryResult,
+          )
+        }
+        return {
+          ...result,
+          resultExtras: {
+            ...(result.resultExtras ?? {}),
+            ...createAiDeliveryResultExtras(deliveryResult),
+          },
+        }
+      } finally {
         if (pageId !== null) {
           pageDesignEditors.delete(pageId)
         }

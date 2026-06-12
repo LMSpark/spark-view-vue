@@ -30,6 +30,13 @@ import {
   ensureProjectPlanningBusiness,
   PROJECT_PLANNING_MODULE_ID,
 } from '@/services/project-planning-business'
+import {
+  attachAiDeliveryResult,
+  createAiDeliveryFailureError,
+  createAiDeliveryResultExtras,
+  toError,
+} from '@/services/ai-delivery-port'
+import { createProjectPlanningHostRunDeliveryPort } from '@/services/project-planning-delivery-port'
 
 type ProjectPlanningHostRunScope = Readonly<{
   tenantId: string
@@ -68,6 +75,7 @@ function createScopedProjectPlanningHost(
   scope: ProjectPlanningHostRunScope,
   editor: ProjectWorkspace,
 ): AiHostRunTarget {
+  const delivery = createProjectPlanningHostRunDeliveryPort()
   return {
     has(alias) {
       return host.has(alias)
@@ -84,21 +92,44 @@ function createScopedProjectPlanningHost(
       const normalizedInput = alias === PROJECT_PLANNING_MODULE_ID
         ? normalizeProjectPlanningHostRunInput(args, scope, editor)
         : args
-      const result = await host.run(alias, normalizedInput, chat)
-      const shouldSaveNavigation = scope.saveNavigationAfterRun && editor.project.navigationDirty
-      if (shouldSaveNavigation) {
-        await editor.saveAll()
+      let result: AiAgentHostRunResult
+      try {
+        result = await host.run(alias, normalizedInput, chat)
+      } catch (error: unknown) {
+        const normalizedError = toError(error)
+        const deliveryContext = {
+          editor,
+          saveNavigationAfterRun: scope.saveNavigationAfterRun,
+        }
+        const deliveryResult = await delivery.rollback(deliveryContext, normalizedError)
+        await delivery.trace(deliveryContext, deliveryResult)
+        throw attachAiDeliveryResult(normalizedError, deliveryResult)
+      }
+
+      const deliveryContext = {
+        editor,
+        saveNavigationAfterRun: scope.saveNavigationAfterRun,
+      }
+      const deliveryResult = await delivery.save(deliveryContext)
+      await delivery.trace(deliveryContext, deliveryResult)
+      if (deliveryResult.status === 'failed') {
+        throw createAiDeliveryFailureError(
+          deliveryResult.message ?? 'projectPlanning Host Run delivery failed.',
+          deliveryResult,
+        )
       }
       return {
         ...result,
         resultExtras: {
+          ...(result.resultExtras ?? {}),
+          ...createAiDeliveryResultExtras(deliveryResult),
           projectPlanning: {
             tenantId: scope.tenantId,
             projectId: scope.projectId,
             projectScopeKey: scope.scopeKey,
             agentScopeKey: scope.agentScopeKey,
             navigationDirty: editor.project.navigationDirty,
-            savedNavigation: shouldSaveNavigation,
+            savedNavigation: deliveryResult.status === 'saved',
             navigationRoot: editor.project.navigationRoot,
           },
         },

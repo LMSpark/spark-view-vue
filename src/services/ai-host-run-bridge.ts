@@ -30,6 +30,7 @@ import {
   type AiHostRunRequestEvent,
   type AiHostRunResultStatus,
 } from '@/services/sse-events'
+import { readAiDeliveryErrorExtras } from '@/services/ai-delivery-port'
 
 /** Ai Host Run Target 的语义模型。 */
 export type AiHostRunTarget = Readonly<{
@@ -64,6 +65,7 @@ type AiHostRunErrorCode =
   | 'AI_HOST_RUN_BUSY'
   | 'AI_HOST_RUN_TIMEOUT'
   | 'AI_HOST_RUN_CANCELLED'
+  | 'AI_HOST_RUN_DELIVERY_FAILED'
   | 'AI_HOST_RUN_FAILED'
 
 type AiHostRunError = Readonly<{
@@ -215,8 +217,11 @@ export function createAiHostRunBridge<THost extends AiHostRunTarget>(
         ...resultExtras,
       })
     } catch (error: unknown) {
+      const deliveryExtras = readAiDeliveryErrorExtras(error)
       const failure = timeoutState.timedOut
         ? { status: 'timeout' as const, code: 'AI_HOST_RUN_TIMEOUT' as const }
+        : deliveryExtras !== undefined
+          ? { status: 'failed' as const, code: 'AI_HOST_RUN_DELIVERY_FAILED' as const }
         : classifyRuntimeFailure(errorMessage(error))
       await completeRequest(completedResults, createFailureResult({
         event,
@@ -227,7 +232,10 @@ export function createAiHostRunBridge<THost extends AiHostRunTarget>(
         details: {
           aiTurnDiagnostics: readAiTurnBridgeDiagnostics(),
         },
-        extras: failureTraceExtras(trace, sseEvents),
+        extras: {
+          ...failureTraceExtras(trace, sseEvents),
+          ...(deliveryExtras ?? {}),
+        },
       }))
     } finally {
       clearTimeout(timeoutId)

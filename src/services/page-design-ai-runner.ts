@@ -34,6 +34,8 @@ import {
   type PageDesignRunInput,
   type PageDesignRunMode,
 } from '@/services/page-design-business'
+import { createAiDeliveryFailureError } from '@/services/ai-delivery-port'
+import { createPageDesignInlineDeliveryPort } from '@/services/page-design-delivery-port'
 
 /** Page Design Ai Run Options 的调用配置。 */
 export type PageDesignAiRunOptions = {
@@ -149,13 +151,20 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
     userMessage: command.userMessage ?? description,
   })
 
-  const dirtyFileNames = readDirtyFileNames(command.editor)
-  const savedDirtyFileNames = command.saveDirtyFilesAfterRun === true
-    ? dirtyFileNames
-    : []
-  if (savedDirtyFileNames.length > 0) {
-    await command.editor.saveDirtyPageFiles()
+  const delivery = createPageDesignInlineDeliveryPort({
+    autoSave: command.saveDirtyFilesAfterRun === true,
+  })
+  const deliveryResult = await delivery.save({ editor: command.editor, pageId })
+  await delivery.trace({ editor: command.editor, pageId }, deliveryResult)
+  if (deliveryResult.status === 'failed') {
+    throw createAiDeliveryFailureError(
+      deliveryResult.message ?? 'pageDesign delivery failed.',
+      deliveryResult,
+    )
   }
+  const savedDirtyFileNames = deliveryResult.artifacts
+    .filter(artifact => artifact.kind === 'page-file' && artifact.status === 'saved')
+    .map(artifact => artifact.name as PageNodeFileName)
 
   return {
     sawToolCall,

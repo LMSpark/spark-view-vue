@@ -28,6 +28,8 @@ import {
   type ProjectPlanningAgentInput,
   type ResolveScopedProjectPlanningRunInputOptions,
 } from '@/services/project-planning-business'
+import { createAiDeliveryFailureError } from '@/services/ai-delivery-port'
+import { createProjectPlanningHostRunDeliveryPort } from '@/services/project-planning-delivery-port'
 
 /** Project Planning Ai Run Options 的调用配置。 */
 export type ProjectPlanningAiRunOptions = ResolveScopedProjectPlanningRunInputOptions & Readonly<{
@@ -112,16 +114,25 @@ export async function runProjectPlanningAiSession(
   })
 
   const navigationDirty = editor.project.navigationDirty
-  const savedNavigation = command.saveNavigationAfterRun === true && navigationDirty
-  if (savedNavigation) {
-    await editor.saveAll()
+  const delivery = createProjectPlanningHostRunDeliveryPort()
+  const deliveryContext = {
+    editor,
+    saveNavigationAfterRun: command.saveNavigationAfterRun === true,
+  }
+  const deliveryResult = await delivery.save(deliveryContext)
+  await delivery.trace(deliveryContext, deliveryResult)
+  if (deliveryResult.status === 'failed') {
+    throw createAiDeliveryFailureError(
+      deliveryResult.message ?? 'projectPlanning delivery failed.',
+      deliveryResult,
+    )
   }
 
   return {
     sawToolCall,
     input,
     navigationDirty,
-    savedNavigation,
+    savedNavigation: deliveryResult.status === 'saved',
   }
 }
 
