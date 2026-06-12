@@ -302,6 +302,28 @@ describe('verification rules', () => {
     expect(output).toContain('openPageDesign')
     expect(output).not.toContain('class-model.test.ts')
   })
+
+  it('rejects forbidden pages-config page ids outside manifest', () => {
+    const root = createTempRoot()
+    writeJson(root, 'spark-ai-server/data/pages-config/manifest.json', {
+      protocol: 'spark-appworks.pages-config-manifest',
+      schemaVersion: 1,
+      projects: {
+        'demo/homepage': ['good-page'],
+      },
+    })
+    writeJson(root, 'spark-ai-server/data/pages-config/demo/homepage/good-page/rule.json', [])
+    writeJson(root, 'spark-ai-server/data/pages-config/demo/homepage/good-page/pagedata.json', {})
+    writeJson(root, 'spark-ai-server/data/pages-config/demo/homepage/123/rule.json', [])
+    writeJson(root, 'spark-ai-server/data/pages-config/demo/homepage/123/pagedata.json', {})
+
+    const result = runNode(['tools/verify-pages-config.mjs', '--root', root])
+    const output = `${result.stdout}\n${result.stderr}`
+
+    expect(result.status).toBe(1)
+    expect(output).toContain('pure numeric pageId')
+    expect(output).toContain('not listed in spark-ai-server/data/pages-config/manifest.json')
+  })
 })
 
 function createTempRoot(): string {

@@ -15,6 +15,8 @@
 - `navigation/vue-pages.json`：系统 Vue 页面声明，作为路由、公共路径、设计器页面选项的配置源。
 - `schemas/*.schema.json`：配置协议的 JSON Schema。
 
+动态页面配置（`spark-ai-server/data/pages-config/`）的允许清单见同目录 `manifest.json`；新增/删除页面需同步 manifest，并通过 `pnpm run verify:pages-config`。
+
 ## 格式约定
 
 - 纯声明数据使用 JSON，并通过 `protocol` + `schemaVersion` 标识协议。

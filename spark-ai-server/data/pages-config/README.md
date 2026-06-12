@@ -109,3 +109,4 @@ GET  /api/pages-config/__list              # 列出所有页面
 - ✅ 优先通过 `rule.json` / `pagedata.json` 配置解决需求，减少 script.js 代码量
 - ❌ 不要提交纯数字、单字母、UUID、`_plan_*` 或 `ai-*-form-*` 等临时探针页；本地试验页应留在 `.gitignore` 覆盖范围内
 - ✅ 正式 demo 页保留 kebab-case 命名，并与 `src/layout/demo-nav.ts` 或测试/fixture 引用对齐；跨项目示例放独立 `{projectId}`（如 `engineering-pm/r-table-series`）
+- ✅ 仓库内允许提交的 pageId 以 `manifest.json` 为真源；变更目录后运行 `pnpm run verify:pages-config`
