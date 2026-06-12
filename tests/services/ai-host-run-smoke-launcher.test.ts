@@ -26,7 +26,7 @@ vi.mock('@/services/auth', () => ({
   switchProject: mocks.switchProject,
 }))
 
-vi.mock('@/services/navigation-sync', () => ({
+vi.mock('@/services/project/project-shell', () => ({
   reloadAndSyncNavigation: vi.fn().mockResolvedValue(null),
 }))
 
@@ -97,7 +97,7 @@ describe('runAiHostRunSmokeLauncherFromUrl', () => {
       return () => undefined
     }) as typeof mocks.onAiHostRunResult)
 
-    const { runAiHostRunSmokeLauncherFromUrl } = await import('@/services/ai-host-run-smoke-launcher')
+    const { runAiHostRunSmokeLauncherFromUrl } = await import('@/services/ai/ai-host-run-smoke-launcher')
     runAiHostRunSmokeLauncherFromUrl()
     await vi.waitFor(() => {
       expect(mocks.httpPost).toHaveBeenCalled()
@@ -156,7 +156,7 @@ describe('runAiHostRunSmokeLauncherFromUrl', () => {
       return () => undefined
     }) as typeof mocks.onAiHostRunResult)
 
-    const { runAiHostRunSmokeLauncherFromUrl } = await import('@/services/ai-host-run-smoke-launcher')
+    const { runAiHostRunSmokeLauncherFromUrl } = await import('@/services/ai/ai-host-run-smoke-launcher')
     runAiHostRunSmokeLauncherFromUrl()
     await vi.waitFor(() => {
       expect(mocks.httpPost).toHaveBeenCalledTimes(2)
@@ -207,7 +207,7 @@ describe('runAiHostRunSmokeLauncherFromUrl', () => {
       login: { tenantId: 'lmspark', username: 'admin', password: 'admin123' },
     })}`)
 
-    const { runAiHostRunSmokeLauncherFromUrl } = await import('@/services/ai-host-run-smoke-launcher')
+    const { runAiHostRunSmokeLauncherFromUrl } = await import('@/services/ai/ai-host-run-smoke-launcher')
     runAiHostRunSmokeLauncherFromUrl()
     await vi.waitFor(() => {
       expect(mocks.httpPost).toHaveBeenCalledWith('/api/ai/host-run/request', expect.any(Object))

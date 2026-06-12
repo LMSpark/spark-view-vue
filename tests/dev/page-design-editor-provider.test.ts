@@ -4,7 +4,7 @@ import {
   createHeadlessPageDesignEditor,
   createPageDesignEditorGetter,
   resolvePageDesignEditor,
-} from '@/services/page-design-editor-provider'
+} from '@/services/page-design/page-design-headless'
 
 describe('page-design-editor-provider', () => {
   it('isolated mode resolves from headless registry', () => {

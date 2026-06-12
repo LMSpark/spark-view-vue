@@ -7,14 +7,14 @@ import {
 } from '@spark-appworks/spark-ai/agent'
 import { HttpClientBase, type HttpResponse, type RequestConfig, type SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
 import type { AiRunAdapterState } from '@spark-appworks/spark-app'
-import { runPageDesignAiSession } from '@/services/page-design-ai-runner'
+import { runPageDesignAiSession } from '@/services/page-design/page-design-ai-runner'
 
 const mocks = vi.hoisted(() => ({
   ensurePageDesignBusiness: vi.fn((options: { host: AiAgentHost }) => options.host),
 }))
 
-vi.mock('@/services/page-design-business', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/page-design-business')>()
+vi.mock('@/services/page-design/page-design-business', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/page-design/page-design-business')>()
   return {
     ...actual,
     ensurePageDesignBusiness: mocks.ensurePageDesignBusiness,
@@ -106,7 +106,7 @@ describe('runPageDesignAiSession delivery', () => {
 
   it('saves dirty page files when saveDirtyFilesAfterRun is true', async () => {
     const editor = createEditor()
-    const saveDirtyPageFiles = vi.spyOn(editor, 'saveDirtyPageFiles').mockResolvedValue()
+    const savePageFile = vi.spyOn(editor, 'savePageFile').mockResolvedValue()
     const adapter = createAdapter(vi.fn(async () => {
       editor.project.writePageFile({ fileName: 'script.js', text: 'export default {}' })
       return 'completed' as const
@@ -121,7 +121,8 @@ describe('runPageDesignAiSession delivery', () => {
       saveDirtyFilesAfterRun: true,
     })
 
-    expect(saveDirtyPageFiles).toHaveBeenCalledOnce()
+    expect(savePageFile).toHaveBeenCalledOnce()
+    expect(savePageFile).toHaveBeenCalledWith('script.js')
     expect(result.savedDirtyFileNames).toEqual(['script.js'])
   })
 

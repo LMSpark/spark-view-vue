@@ -306,7 +306,7 @@ host.ensure('pageDesign', {
 | alias | moduleId | rootClass | APP 入口 |
 |-------|----------|-----------|----------|
 | `pageDesign` | `pageDesign` | `ProjectModel` | `ensurePageDesignBusiness()` |
-| `pageDataDesign` | `pageDataDesign` | `ProjectModel` | `ensurePageDataDesignBusiness()` |
+| `pageDataDesign` | 调度 preset → `pageDesign` | `ProjectModel` | `page-data-design-host-run-provider.ts` |
 | `projectPlanning` | `projectPlanning` | `ProjectRootModel` | `ensureProjectPlanningBusiness()` |
 
 ### 6.3 扩展新业务
@@ -514,12 +514,12 @@ createAiHostRunBridge()
 
 | 审核项 | 结论 | 代码证据 | 备注 |
 |--------|------|----------|------|
-| pageDesign 生产注册 | ✅ 通过 | `src/services/page-design-business.ts` | `ensurePageDesignBusiness()` 使用 `ProjectModel`、`dtsClassModelManifestUrl`、inputContract、gates、SOP nudge。 |
-| projectPlanning 生产注册 | ✅ 通过 | `src/services/project-planning-business.ts` | `ensureProjectPlanningBusiness()` 使用 `ProjectRootModel`、DTS 主线、navigation-only gates、`afterFunctionCall` 回写 `ProjectModel`。 |
+| pageDesign 生产注册 | ✅ 通过 | `src/services/page-design/page-design-business.ts` | `ensurePageDesignBusiness()` 使用 `ProjectModel`、`dtsClassModelManifestUrl`、inputContract、gates、SOP nudge；data-only preset 分支 systemPrompt / nudge。 |
+| projectPlanning 生产注册 | ✅ 通过 | `src/services/project-planning/project-planning-business.ts` | `ensureProjectPlanningBusiness()` 使用 `ProjectRootModel`、DTS 主线、navigation-only gates、`afterFunctionCall` 回写 `ProjectModel`。 |
 | DevSystem 内联运行 | ✅ pageDesign 通过 | `src/views/app/dev-system/useDevState.ts` | 当前 UI 入口调用 `runPageDesignAiSession()`，复用同一个 `ProjectWorkspace`，默认不自动保存。 |
-| projectPlanning 运行入口 | ⚠️ headless/service 通过 | `src/services/project-planning-ai-runner.ts` | 已有 runner 和 Host Run；未看到 DevSystem 按钮级入口。若要求可视调试入口，应作为后续 UI 补项。 |
-| Host Run 接入 | ✅ 通过 | `src/App.vue`, `src/services/*-host-run-provider.ts` | 壳层 `chainAiHostRunPrepare()` 串联 pageDesign / projectPlanning provider。 |
-| Host Run 回执 | ✅ 通过 | `src/services/ai-host-run-bridge.ts` | bridge 收集 trace、diagnostics、session scope 后 `POST /api/ai/host-run/result`。 |
+| projectPlanning 运行入口 | ⚠️ headless/service 通过 | `src/services/project-planning/project-planning-ai-runner.ts` | 已有 runner 和 Host Run；未看到 DevSystem 按钮级入口。若要求可视调试入口，应作为后续 UI 补项。 |
+| Host Run 接入 | ✅ 通过 | `src/App.vue`, `src/services/page-design/page-design-host-run-provider.ts`, `src/services/page-data-design/page-data-design-host-run-provider.ts`, `src/services/project-planning/project-planning-host-run-provider.ts` | 壳层 `chainAiHostRunPrepare()` 串联 pageDesign / pageDataDesign preset / projectPlanning provider。 |
+| Host Run 回执 | ✅ 通过 | `src/services/ai/ai-host-run-bridge.ts` | bridge 收集 trace、diagnostics、session scope 后 `POST /api/ai/host-run/result`。 |
 | 交付策略 | ⚠️ 可运行但分散 | runner / provider / bridge | save、trace、rollback 不是一个抽象，Phase 2 必须收束。 |
 
 **Phase 1 判定：** 生产注册 + Host Run 主链路成立；DevSystem 已覆盖 pageDesign 内联链路。projectPlanning 以 headless runner / Host Run 为主，若把 DevSystem 理解为两个业务都有可视入口，则需要补 UI 入口，但不阻断生产 Host Run。
@@ -532,7 +532,7 @@ createAiHostRunBridge()
 | rollback 语义 | Host Run 失败会写入 delivery rollback；DevSystem 保留 dirty | 后续可加 UI 侧手动恢复 |
 | trace 语义 | save / rollback 已进入 `resultExtras.delivery` | Host Run 回执固定读取 delivery |
 | projectPlanning DevSystem UI | 只有 headless runner 与 Host Run provider | 如需人工调试，补 DevSystem 入口 |
-| 第三业务 | ✅ `pageDataDesign` | `page-data-design-business.ts` | 新 alias + inputContract + selective pagedata.json Delivery |
+| 第三业务 | ✅ preset `pageDataDesign` → `pageDesign` | `page-data-design-host-run-provider.ts` | allowedOperations gate + selective save + data-only prompt |
 | semantic-gaps | `gapCount = 0` | 保持生成门禁，不允许回退 |
 | orders 独立业务 | 无；仅为 pageId 示例 | 若需独立 SOP，新 alias + Model |
 | Worker 依赖 | 浏览器 Worker 必须 | Node 侧可直载 loader（测试已覆盖） |
@@ -615,25 +615,24 @@ Phase 2 落地状态：
 ✅ 覆盖测试：成功保存、显式保存、run 失败 rollback、DevSystem manual save
 ```
 
-### 12.4 Phase 3：第三业务能力 pageDataDesign（已落地）
+### 12.4 Phase 3：pageDataDesign preset（方案 B，已落地）
 
-第三业务能力用于验证 §15 接入清单可复用，不引入新领域根 class：
+第三业务能力验证 §15 接入清单；**产品口径合并进 pageDesign**，`pageDataDesign` 仅作调度 preset：
 
 | 组件 | 落地 |
 |------|------|
-| alias / moduleId | `pageDataDesign` |
-| rootClassName | `ProjectModel`（与 pageDesign 同根，script 范围不同） |
-| inputContract | `pageId` + `description` + `effectiveDescription` + 可选 `dataRequirement` |
-| gates | 复用 pageDesign 策划闸门 + script 禁止 editNodeTree / setFileText |
-| Delivery | **selective save**：`savePageFile('pagedata.json')`，非 `saveDirtyPageFiles` |
-| Host Run | `preparePageDataDesignHostRun` 接入 `chainAiHostRunPrepare` |
+| 运行时 alias | 调度仍可用 `pageDataDesign`；`host.run` 实际走 **`pageDesign`** |
+| 操作域 | `allowedOperations` 写入工单 + `bindPageDesignRunContext`；**gate 硬拦截** + **systemPrompt / toolLoopNudge data-only 分支** |
+| Delivery | `deliverySaveFileNames: ['pagedata.json']` → `savePageFile` selective save |
+| 实现 | `page-data-design-host-run-provider.ts`（无独立 Registration） |
 
 ```text
-✅ ensurePageDataDesignBusiness + inputContract
-✅ page-data-design-gates（DataSet-only script 门禁）
-✅ PageDataDesignHostRunDeliveryPort（单文件交付）
-✅ preparePageDataDesignHostRun + App.vue 串联
-✅ 单元测试：gates + Host Run delivery（save / skip / rollback）
+✅ page-design-gates 读取 allowedOperations 并拦截 model_script marker
+✅ page-design-delivery-port 支持 saveFileNames 白名单
+✅ page-data-design-host-run-provider 归一化 pageDesign 工单 + run 上下文
+✅ preparePageDataDesignHostRun → ensurePageDesignBusiness + pageDesign alias
+✅ formatPageDesignSystemPrompt / buildPageDesignToolLoopNudge data-only 变体
+✅ 单元测试：gates / preset / Host Run selective save / prompt nudge
 ```
 
 ---
@@ -649,8 +648,11 @@ Phase 2 落地状态：
 | pageDesign × DevSystem | [`pagedesign-devsystem-zh-cn.md`](pagedesign-devsystem-zh-cn.md) |
 | TypeDoc 签名对齐 | [`../src/class-model/docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md`](../src/class-model/docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md) |
 | 业务注册 | [`../src/agent/business/README.md`](../src/agent/business/README.md) |
-| APP pageDesign | [`../../../src/services/page-design-business.ts`](../../../src/services/page-design-business.ts) |
-| Host Run 桥 | [`../../../src/services/ai-host-run-bridge.ts`](../../../src/services/ai-host-run-bridge.ts) |
+| APP pageDesign | [`../../../src/services/page-design/page-design-business.ts`](../../../src/services/page-design/page-design-business.ts) |
+| APP pageDataDesign preset | [`../../../src/services/page-data-design/page-data-design-host-run-provider.ts`](../../../src/services/page-data-design/page-data-design-host-run-provider.ts) |
+| APP projectPlanning | [`../../../src/services/project-planning/project-planning-business.ts`](../../../src/services/project-planning/project-planning-business.ts) |
+| DeliveryPort | [`../../../src/services/ai/ai-delivery-port.ts`](../../../src/services/ai/ai-delivery-port.ts) |
+| Host Run 桥 | [`../../../src/services/ai/ai-host-run-bridge.ts`](../../../src/services/ai/ai-host-run-bridge.ts) |
 
 ---
 
@@ -660,7 +662,7 @@ Phase 2 落地状态：
 Phase 0 ✅  DTS ClassModel + TypeDoc type 树 + bundle regen
 Phase 1 ✅  pageDesign / projectPlanning 生产注册 + Host Run；DevSystem 已覆盖 pageDesign 内联链路
 Phase 2 ✅  统一 DeliveryPort（save / trace / rollback / resultExtras.delivery）
-Phase 3 ✅  第三 **业务能力** pageDataDesign（新 alias + inputContract + selective save Delivery）
+Phase 3 ✅  pageDataDesign preset（方案 B）→ pageDesign + allowedOperations gate + selective save + data-only prompt
 Phase 4 🔲  CI：signature 派生 golden + semantic-gaps 归零门禁
 Phase 5 🔲  多租户 Host Run 规模化 + session 诊断面板
 ```
@@ -740,12 +742,13 @@ export function ensureXxxBusiness(options: {
 
 ### 15.7 与现有能力对照
 
-| 抽象项 | pageDesign | pageDataDesign | projectPlanning |
-|--------|------------|----------------|-----------------|
-| alias | `pageDesign` | `pageDataDesign` | `projectPlanning` |
+| 抽象项 | pageDesign | pageDataDesign (preset) | projectPlanning |
+|--------|------------|-------------------------|-----------------|
+| alias | `pageDesign` | 调度 `pageDataDesign` → run `pageDesign` | `projectPlanning` |
 | rootClassName | `ProjectModel` | `ProjectModel` | `ProjectRootModel` |
 | identityField | `pageId` | `pageId` | `projectScopeKey` |
-| Delivery | `saveDirtyPageFiles` | `savePageFile('pagedata.json')` | `saveAll()` navigation |
+| 操作域 | 默认四文件 | `allowedOperations.dataSet` only | navigation |
+| Delivery | 全部 dirty 四文件 | 仅 `pagedata.json` | navigation `saveAll()` |
 
 ### 15.8 常见误接
 

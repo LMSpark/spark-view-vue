@@ -33,9 +33,13 @@ import {
   type PageDesignAllowedOperations,
   type PageDesignRunInput,
   type PageDesignRunMode,
-} from '@/services/page-design-business'
-import { createAiDeliveryFailureError } from '@/services/ai-delivery-port'
-import { createPageDesignInlineDeliveryPort } from '@/services/page-design-delivery-port'
+} from '@/services/page-design/page-design-business'
+import { createAiDeliveryFailureError } from '@/services/ai/ai-delivery-port'
+import { createPageDesignInlineDeliveryPort } from '@/services/page-design/page-design-host-run-provider'
+import {
+  bindPageDesignRunContext,
+  clearPageDesignRunContext,
+} from '@/services/page-design/page-design-gates'
 
 /** Page Design Ai Run Options 的调用配置。 */
 export type PageDesignAiRunOptions = {
@@ -81,6 +85,8 @@ onAbort?: AiRunAbortHandler
 userMessage?: string
   /** 自动化/headless 调用可打开；DevSystem 默认保持手动保存语义。 */
   saveDirtyFilesAfterRun?: boolean
+  /** 仅 commit 指定 dirty 页面文件；未传则 save 全部 dirty 四文件。 */
+  deliverySaveFileNames?: readonly PageNodeFileName[]
 }
 
 /** Page Design Ai Run Result 的返回结果。 */
@@ -127,9 +133,15 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
     },
   })
 
+  bindPageDesignRunContext(pageId, {
+    ...(command.allowedOperations === undefined ? {} : { allowedOperations: command.allowedOperations }),
+    ...(command.deliverySaveFileNames === undefined ? {} : { deliverySaveFileNames: command.deliverySaveFileNames }),
+  })
+
   let sawToolCall = false
   const adapter = command.adapter ?? createAiRunAdapter()
-  await adapter.run({
+  try {
+    await adapter.run({
     host: pageDesignHost,
     alias: PAGE_DESIGN_MODULE_ID,
     input: buildPageDesignRunInput({
@@ -149,10 +161,16 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
       },
     }),
     userMessage: command.userMessage ?? description,
-  })
+    })
+  } finally {
+    clearPageDesignRunContext(pageId)
+  }
 
   const delivery = createPageDesignInlineDeliveryPort({
     autoSave: command.saveDirtyFilesAfterRun === true,
+    ...(command.deliverySaveFileNames === undefined
+      ? {}
+      : { saveFileNames: command.deliverySaveFileNames }),
   })
   const deliveryResult = await delivery.save({ editor: command.editor, pageId })
   await delivery.trace({ editor: command.editor, pageId }, deliveryResult)

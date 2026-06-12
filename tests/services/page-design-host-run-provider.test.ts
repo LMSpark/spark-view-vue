@@ -7,8 +7,8 @@ import type {
 } from '@spark-appworks/spark-ai/agent'
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 import { HttpClientBase, type HttpResponse, type RequestConfig } from '@spark-appworks/spark-utils'
-import { preparePageDesignHostRun } from '@/services/page-design-host-run-provider'
-import { readAiDeliveryErrorExtras } from '@/services/ai-delivery-port'
+import { preparePageDesignHostRun } from '@/services/page-design/page-design-host-run-provider'
+import { readAiDeliveryErrorExtras } from '@/services/ai/ai-delivery-port'
 
 const mocks = vi.hoisted(() => {
   const createHeadlessPageDesignEditor = vi.fn()
@@ -24,16 +24,16 @@ const mocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('@/services/page-design-editor-provider', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/page-design-editor-provider')>()
+vi.mock('@/services/page-design/page-design-headless', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/page-design/page-design-headless')>()
   return {
     ...actual,
     createHeadlessPageDesignEditor: mocks.createHeadlessPageDesignEditor,
   }
 })
 
-vi.mock('@/services/page-design-business', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/page-design-business')>()
+vi.mock('@/services/page-design/page-design-business', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/page-design/page-design-business')>()
   return {
     ...actual,
     ensurePageDesignBusiness: mocks.ensurePageDesignBusiness,
@@ -54,7 +54,7 @@ function createEditor(dirtyFileNames: readonly PageNodeFileName[] = ['rule.json'
     getNavigationApi: () => '/api/navigation',
   })
   vi.spyOn(editor, 'selectPage').mockResolvedValue()
-  vi.spyOn(editor, 'saveDirtyPageFiles').mockResolvedValue()
+  vi.spyOn(editor, 'savePageFile').mockResolvedValue()
   vi.spyOn(editor.project, 'readDirtyProjection').mockReturnValue({
     dirtyFiles: new Set(dirtyFileNames),
     hasAnyFileDirty: dirtyFileNames.length > 0,
@@ -114,7 +114,9 @@ describe('preparePageDesignHostRun', () => {
     const result = await host.run('pageDesign', {} as AiJsonParams)
 
     expect(editor.selectPage).toHaveBeenCalledWith('orders', { forceReload: true })
-    expect(editor.saveDirtyPageFiles).toHaveBeenCalledOnce()
+    expect(editor.savePageFile).toHaveBeenCalledTimes(2)
+    expect(editor.savePageFile).toHaveBeenCalledWith('rule.json')
+    expect(editor.savePageFile).toHaveBeenCalledWith('script.js')
     expect(result.resultExtras?.['delivery']).toEqual({
       mode: 'auto',
       status: 'saved',
@@ -145,7 +147,7 @@ describe('preparePageDesignHostRun', () => {
     }
 
     expect(thrown).toBeInstanceOf(Error)
-    expect(editor.saveDirtyPageFiles).not.toHaveBeenCalled()
+    expect(editor.savePageFile).not.toHaveBeenCalled()
     expect(readAiDeliveryErrorExtras(thrown)?.delivery).toEqual({
       mode: 'auto',
       status: 'rolledBack',

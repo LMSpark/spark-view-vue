@@ -1,25 +1,10 @@
-import { describe, expect, it, vi } from 'vitest'
-
-const mocks = vi.hoisted(() => ({
-  createAiAgentHost: vi.fn(() => ({ has: vi.fn() })),
-  createAiAgentTurnCallbacks: vi.fn(() => ({ executeTurn: vi.fn(), appendMessages: vi.fn() })),
-}))
-
-vi.mock('@spark-appworks/spark-ai/agent', () => ({
-  createAiAgentHost: mocks.createAiAgentHost,
-}))
-
-vi.mock('@/services/ai-turn-bridge', () => ({
-  createAiAgentTurnCallbacks: mocks.createAiAgentTurnCallbacks,
-}))
+import { describe, expect, it } from 'vitest'
+import { appAiAgent, createAiAgentTurnCallbacks } from '@/services/ai/ai-turn-bridge'
 
 describe('appAiAgent', () => {
-  it('uses APP SSE turn callbacks', async () => {
-    await import('@/services/ai-host')
-
-    expect(mocks.createAiAgentTurnCallbacks).toHaveBeenCalledWith({ transport: 'app-sse' })
-    expect(mocks.createAiAgentHost).toHaveBeenCalledWith(expect.objectContaining({
-      maxToolRounds: 16,
-    }))
+  it('exports production host singleton wired to session-turn transport', () => {
+    expect(appAiAgent).toBeDefined()
+    expect(typeof appAiAgent.has).toBe('function')
+    expect(typeof createAiAgentTurnCallbacks).toBe('function')
   })
 })

@@ -18,36 +18,74 @@ import {
   type AiAgentHost,
   type AiAgentRuntimeContext,
   type AiAgentToolLoopNudgeContext,
-} from '@/services/spark-ai-agent-bindings'
-import { buildPageDesignToolLoopNudge } from './page-design/page-design-sop'
-import { CLASS_MODEL_TOOL_NAMES } from '@spark-appworks/spark-ai/class-model'
+  type AiAgentToolLoopNudgeReason,
+} from '@/services/ai/spark-ai-agent-bindings'
+import {
+  WorkerClassModelKnowledgeProvider,
+  CLASS_MODEL_TOOL_NAMES,
+  type ClassModelKnowledgeProvider,
+} from '@spark-appworks/spark-ai/class-model'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
 import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
   evaluatePageDesignMutationToolGate,
-} from '@/services/page-design-gates'
-import { createPageDesignClassModelKnowledgeProvider } from './page-design/page-design-class-model-knowledge-provider'
+  isPageDesignDataSetOnlyMode,
+  readPageDesignRunContext,
+  type PageDesignAllowedOperations,
+  type PageDesignRunMode,
+} from '@/services/page-design/page-design-gates'
 import { dtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
+
+export type { PageDesignAllowedOperations, PageDesignRunMode }
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
 const PAGE_DESIGN_ROOT_CLASS_NAME = 'ProjectModel'
 
-/** Page Design Run Mode 的语义模型。 */
-export type PageDesignRunMode = 'create' | 'update' | 'fix'
+/** pageDesign SOP：toolLoopNudge 触发时机与 pageId / allowedOperations 上下文。 */
+export function buildPageDesignToolLoopNudge(
+  reason: AiAgentToolLoopNudgeReason,
+  pageId: string,
+  allowedOperations?: PageDesignAllowedOperations,
+): string | undefined {
+  if (isPageDesignDataSetOnlyMode(allowedOperations)) {
+    switch (reason) {
+      case 'plan_without_tool':
+        return `pageId="${pageId}"；pageDataDesign preset：禁止只输出计划，下一回合必须 model_script 调用 editDataSet。`
+      case 'execution_phase':
+        return `pageId="${pageId}"；只改 pagedata.json：await this.openPageDesign({ pageId: "${pageId}" }).editDataSet(tool => …)；禁止 nodeTree / setFileText 变更。`
+      case 'model_script_retry':
+        return `pageId="${pageId}"；按 RECOVERY_HINT 修正后重试 model_script，仍只通过 editDataSet 变更 DataSet。`
+      default:
+        return undefined
+    }
+  }
+  switch (reason) {
+    case 'plan_without_tool':
+      return `pageId="${pageId}"；禁止只输出计划，下一回合必须发起 tool_call（见 model_action_guide / RECOVERY_HINT）。`
+    case 'execution_phase':
+      return `pageId="${pageId}"；目录/指南阶段已完成，直接 model_script。`
+    case 'model_script_retry':
+      return `pageId="${pageId}"；按 RECOVERY_HINT 修正后重试 model_script。`
+    default:
+      return undefined
+  }
+}
 
-/** Page Design Allowed Operations 的语义模型。 */
-export type PageDesignAllowedOperations = {
-    /** node Tree 字段。 */
-nodeTree?: boolean
-    /** data Set 字段。 */
-dataSet?: boolean
-    /** script 字段。 */
-script?: boolean
-    /** style 字段。 */
-style?: boolean
-    /** navigation 字段。 */
-navigation?: boolean
+function createPageDesignClassModelKnowledgeProvider(): ClassModelKnowledgeProvider {
+  if (typeof Worker === 'undefined') {
+    throw new Error('DTS ClassModel knowledge requires Web Worker on-demand loading.')
+  }
+
+  const worker = new Worker(
+    new URL('../class-model-knowledge.worker.ts', import.meta.url),
+    { type: 'module' },
+  )
+
+  return new WorkerClassModelKnowledgeProvider(worker, {
+    dtsClassModelManifestUrl,
+    rootClassName: PAGE_DESIGN_ROOT_CLASS_NAME,
+  })
 }
 
 /** Page Design Run Input 的输入数据。 */
@@ -191,10 +229,16 @@ const PAGE_DESIGN_PLAN_WITHOUT_TOOL_MARKERS = [
 function createPageDesignToolLoopNudge(context: AiAgentToolLoopNudgeContext): string | undefined {
   const pageId = context.moduleInstanceId.trim()
   if (pageId.length === 0) return undefined
-  return buildPageDesignToolLoopNudge(context.reason, pageId)
+  const runContext = readPageDesignRunContext(pageId)
+  return buildPageDesignToolLoopNudge(
+    context.reason,
+    pageId,
+    runContext?.allowedOperations,
+  )
 }
 
-function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
+/** 供 inputContract 与单测使用的 systemPrompt 格式化。 */
+export function formatPageDesignSystemPrompt(input: PageDesignRunInput): string {
   const effectiveDescription = input.effectiveDescription.trim()
   if (effectiveDescription.length === 0) {
     throw new Error('pageDesign systemPrompt requires effectiveDescription from readPlanningProjection.')
@@ -202,15 +246,33 @@ function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
   const planningTitle = input.planningTitle?.trim() ?? input.pageId
   const planningPath = input.planningPath?.trim() ?? `/${input.pageId}`
   const projectId = input.projectId?.trim() ?? 'homepage'
-  return [
-    `当前 pageDesign 页面: ${input.pageId}（${planningTitle}，path=${planningPath}）`,
+  const sharedHeader = [
     `projectId=${projectId}；pageId=${input.pageId}。`,
     '策划约束（readPlanningProjection.effectiveDescription）:',
     effectiveDescription,
     `用户本轮目标: ${input.description}`,
+  ]
+  if (isPageDesignDataSetOnlyMode(input.allowedOperations)) {
+    return [
+      `当前 pageDataDesign preset（pageDesign 数据域）: ${input.pageId}（${planningTitle}，path=${planningPath}）`,
+      ...sharedHeader,
+      '能力边界: 只修改 pagedata.json（DataSet）；禁止 editNodeTree、rule.json、script.js、style.css。',
+      '知识索引: DTS ClassModel（ProjectModel → openPageDesign → editDataSet / DataSetCrudTool）。',
+      '执行规则: 先 model_action_guide 查 editDataSet 与 DataSetCrudTool，再 model_script 通过 editDataSet 回调变更表/视图/绑定。',
+      '交付: 仅 commit pagedata.json；nodeTree / rule / script / style 即使 dirty 也不落盘。',
+      '模型来源: generated/dts-class-model。',
+    ].join('\n')
+  }
+  return [
+    `当前 pageDesign 页面: ${input.pageId}（${planningTitle}，path=${planningPath}）`,
+    ...sharedHeader,
     '知识索引: DTS ClassModel（ProjectModel → ConfigPageNode）；用 model_query / model_action_guide 读取契约后 model_script 执行。',
     '模型来源: generated/dts-class-model。',
   ].join('\n')
+}
+
+function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
+  return formatPageDesignSystemPrompt(input)
 }
 
 function resolvePageDesignProject(
@@ -231,14 +293,14 @@ export {
   evaluatePageDesignMutationToolGate,
   readPageDesignGateState,
   validatePageDesignRunGate,
-} from '@/services/page-design-gates'
+} from '@/services/page-design/page-design-gates'
 
 export type {
   PageDesignGateState,
   PageDesignGateValidationResult,
   PageDesignImplGate,
   PageDesignPlanningStatus,
-} from '@/services/page-design-gates'
+} from '@/services/page-design/page-design-gates'
 
 function evaluatePageDesignBeforeFunctionCall(
   project: ProjectModel,
@@ -256,9 +318,14 @@ function evaluatePageDesignBeforeFunctionCall(
       fix: '先 readPlanningProjection，确认 pageId 存在于 pageFeatures。',
     }
   }
+  const runContext = readPageDesignRunContext(pageId)
   const gate = evaluatePageDesignMutationToolGate({
     toolName: options.toolName,
     summary,
+    ...(runContext?.allowedOperations === undefined
+      ? {}
+      : { allowedOperations: runContext.allowedOperations }),
+    toolArgs: options.args,
   })
   if (gate.ok) {
     return { status: 'allow' }

@@ -14,7 +14,7 @@ import type {
 } from '@spark-appworks/spark-ai/agent'
 import { AI_AGENT_HOST, createAiAgentHost } from '@spark-appworks/spark-ai/agent'
 import { HttpClientBase, type HttpResponse, type RequestConfig, type SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
-import { runProjectPlanningAiSession } from '@/services/project-planning-ai-runner'
+import { runProjectPlanningAiSession } from '@/services/project-planning/project-planning-ai-runner'
 
 const mocks = vi.hoisted(() => {
   const projectPlanningRun = vi.fn()
@@ -24,8 +24,8 @@ const mocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('@/services/project-planning-business', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/project-planning-business')>()
+vi.mock('@/services/project-planning/project-planning-business', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/project-planning/project-planning-business')>()
   return {
     ...actual,
     ensureProjectPlanningBusiness: mocks.ensureProjectPlanningBusiness,

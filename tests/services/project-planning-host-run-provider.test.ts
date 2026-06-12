@@ -7,8 +7,8 @@ import type {
 } from '@spark-appworks/spark-ai/agent'
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 import { HttpClientBase, type HttpResponse, type RequestConfig } from '@spark-appworks/spark-utils'
-import { prepareProjectPlanningHostRun } from '@/services/project-planning-host-run-provider'
-import { readAiDeliveryErrorExtras } from '@/services/ai-delivery-port'
+import { prepareProjectPlanningHostRun } from '@/services/project-planning/project-planning-host-run-provider'
+import { readAiDeliveryErrorExtras } from '@/services/ai/ai-delivery-port'
 
 const mocks = vi.hoisted(() => {
   const createHeadlessProjectPlanningEditor = vi.fn()
@@ -24,16 +24,16 @@ const mocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('@/services/project-planning-editor-provider', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/project-planning-editor-provider')>()
+vi.mock('@/services/project-planning/project-planning-headless', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/project-planning/project-planning-headless')>()
   return {
     ...actual,
     createHeadlessProjectPlanningEditor: mocks.createHeadlessProjectPlanningEditor,
   }
 })
 
-vi.mock('@/services/project-planning-business', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/project-planning-business')>()
+vi.mock('@/services/project-planning/project-planning-business', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/project-planning/project-planning-business')>()
   return {
     ...actual,
     ensureProjectPlanningBusiness: mocks.ensureProjectPlanningBusiness,

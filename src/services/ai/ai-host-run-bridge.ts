@@ -24,13 +24,13 @@ import { http } from '@/services/http'
 import {
   clearAiTurnBridgeDiagnostics,
   readAiTurnBridgeDiagnostics,
-} from '@/services/ai-turn-bridge'
+} from '@/services/ai/ai-turn-bridge'
 import {
   onAiHostRunRequest,
   type AiHostRunRequestEvent,
   type AiHostRunResultStatus,
 } from '@/services/sse-events'
-import { readAiDeliveryErrorExtras } from '@/services/ai-delivery-port'
+import { readAiDeliveryErrorExtras } from '@/services/ai/ai-delivery-port'
 
 /** Ai Host Run Target 的语义模型。 */
 export type AiHostRunTarget = Readonly<{
@@ -426,4 +426,25 @@ async function awaitAbortable<T>(value: T | Promise<T>, signal: AbortSignal): Pr
       promise.finally(() => signal.removeEventListener('abort', onAbort)).catch(() => undefined)
     }),
   ])
+}
+
+/** 串联多个 Host Run prepare；各业务 alias 只处理自己的 event，其余透传。 */
+export function chainAiHostRunPrepare<THost extends AiHostRunTarget>(
+  ...preparers: ReadonlyArray<AiHostRunPrepare<THost>>
+): AiHostRunPrepare<THost> {
+  return async (event, host): Promise<THost> => {
+    let current: THost = host
+    for (const prepare of preparers) {
+      const next = await prepare(event, current)
+      if (!isPreparedHost<THost>(next)) {
+        throw new Error('ai-host-run prepare returned an invalid host target.')
+      }
+      current = next
+    }
+    return current
+  }
+}
+
+function isPreparedHost<THost extends AiHostRunTarget>(_host: AiHostRunTarget): _host is THost {
+  return true
 }

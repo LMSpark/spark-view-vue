@@ -12,6 +12,7 @@
  */
 
 import {
+  createAiAgentHost,
   createAiAgentTransportTurn,
   createTurnEventCollector,
   toAiAgentRuntimeScope,
@@ -376,3 +377,9 @@ function readString(value: unknown, key: string): string | undefined {
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
+
+/** 生产 AiAgentHost 单例：session-turn + app SSE transport。 */
+export const appAiAgent = createAiAgentHost({
+  turnCallbacks: createAiAgentTurnCallbacks({ transport: 'app-sse' }),
+  maxToolRounds: 16,
+})

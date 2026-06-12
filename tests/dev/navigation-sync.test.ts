@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ProjectModelData } from '@spark-appworks/spark-project-model'
-import { resetAppProjectWorkspace } from '@/services/project-workspace'
-import { readAppProjectNavigationRoot, resetAppProjectModel } from '@/services/app-project-model'
+import { resetAppProjectWorkspace } from '@/services/project/project-shell'
+import { readAppProjectNavigationRoot, resetAppProjectModel } from '@/services/project/project-shell'
 
 const navTreeState = vi.hoisted(() => ({
   tree: null as ProjectModelData | null,
@@ -22,8 +22,8 @@ import {
   reloadAndSyncNavigation,
   syncCommittedNavigation,
   syncCommittedNavigationFromRouter,
-} from '@/services/navigation-sync'
-import { getAppProjectWorkspace } from '@/services/project-workspace'
+} from '@/services/project/project-shell'
+import { getAppProjectWorkspace } from '@/services/project/project-shell'
 
 const sampleNav: ProjectModelData = {
   title: 'root',

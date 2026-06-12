@@ -1,6 +1,6 @@
 import type { PageNodeFileName, ProjectModelData } from '@spark-appworks/spark-project-model'
 import { useDevState } from '@/views/app/dev-system/useDevState'
-import { resetAppProjectWorkspace } from '@/services/project-workspace'
+import { resetAppProjectWorkspace } from '@/services/project/project-shell'
 
 export type DevState = ReturnType<typeof useDevState>
 

@@ -61,9 +61,10 @@
 
 | 能力 | 文件 |
 |------|------|
-| pageDesign | `src/services/page-design-business.ts` |
-| pageDataDesign | `src/services/page-data-design-business.ts` |
-| projectPlanning | `src/services/project-planning-business.ts` |
+| pageDesign | `src/services/page-design/page-design-business.ts` |
+| pageDataDesign preset | `src/services/page-data-design/page-data-design-host-run-provider.ts` |
+| projectPlanning | `src/services/project-planning/project-planning-business.ts` |
+| DeliveryPort | `src/services/ai/ai-delivery-port.ts` |
 
 ## 常见误接
 

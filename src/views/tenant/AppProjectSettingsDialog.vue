@@ -57,7 +57,7 @@ import {
   type ProjectHomeNodeOption,
   type ProjectLayoutPlacement,
   type ProjectRuntimeSettings,
-} from '@/services/project-settings'
+} from '@/services/project/project-settings'
 
 const props = defineProps<{
   tenantId: string

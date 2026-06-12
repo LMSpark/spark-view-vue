@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AiAgentHostRunResult } from '@spark-appworks/spark-ai/agent'
-import { createAiHostRunBridge } from '@/services/ai-host-run-bridge'
-import { attachAiDeliveryResult, type AiDeliveryResult } from '@/services/ai-delivery-port'
+import { createAiHostRunBridge } from '@/services/ai/ai-host-run-bridge'
+import { attachAiDeliveryResult, type AiDeliveryResult } from '@/services/ai/ai-delivery-port'
 
 const httpPost = vi.fn()
 const subscribers = new Map<string, Set<(data: unknown) => void>>()

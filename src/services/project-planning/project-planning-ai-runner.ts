@@ -27,9 +27,9 @@ import {
   PROJECT_PLANNING_MODULE_ID,
   type ProjectPlanningAgentInput,
   type ResolveScopedProjectPlanningRunInputOptions,
-} from '@/services/project-planning-business'
-import { createAiDeliveryFailureError } from '@/services/ai-delivery-port'
-import { createProjectPlanningHostRunDeliveryPort } from '@/services/project-planning-delivery-port'
+} from '@/services/project-planning/project-planning-business'
+import { createAiDeliveryFailureError } from '@/services/ai/ai-delivery-port'
+import { createProjectPlanningHostRunDeliveryPort } from '@/services/project-planning/project-planning-host-run-provider'
 
 /** Project Planning Ai Run Options 的调用配置。 */
 export type ProjectPlanningAiRunOptions = ResolveScopedProjectPlanningRunInputOptions & Readonly<{

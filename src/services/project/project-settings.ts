@@ -1,14 +1,15 @@
 /**
- * @module app:services/project-settings
- * 职责：提供主应用 project-settings 能力，围绕 ProjectLayoutPlacement、ProjectDetail、ProjectHomeNodeOption 等 6 个公开契约 连接视图、服务、布局、路由或平台租户流程。
- * 边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。
- * AI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 services/project-settings。
+ * @module app:services/project/project-settings
+ * 职责：项目运行时设置（HTTP）与壳层 UI 偏好（localStorage）。
+ * 边界：只处理 app 层配置读写，不修改 spark-project-model 协议。
  */
+import type { PageMode } from '@spark-appworks/spark-app'
 import {
   normalizeNavRoot,
   type ProjectModelData,
   type ProjectNodeData,
 } from '@spark-appworks/spark-project-model'
+import { isRecord } from '@spark-appworks/spark-utils'
 import { http } from '@/services/http'
 import { getProjectDetailApi, getProjectNavigationApi } from '@/services/api-paths'
 
@@ -17,54 +18,36 @@ export type ProjectLayoutPlacement = 'header' | 'sidebar'
 
 /** Project Detail 的语义模型。 */
 export type ProjectDetail = {
-    /** tenant Id 标识。 */
-tenantId: string
-    /** project Id 标识。 */
-projectId: string
-    /** 显示或业务名称。 */
-name: string
-    /** project Type 字段。 */
-projectType: string
-    /** icon 字段。 */
-icon: string
-    /** description 字段。 */
-description: string
-    /** home Node Id 标识。 */
-homeNodeId: string | null
-    /** order 字段。 */
-order: number
+  tenantId: string
+  projectId: string
+  name: string
+  projectType: string
+  icon: string
+  description: string
+  homeNodeId: string | null
+  order: number
 }
 
 /** Project Home Node Option 的语义模型。 */
 export type ProjectHomeNodeOption = {
-    /** 唯一标识。 */
-id: string
-    /** 显示标题。 */
-title: string
-    /** 资源路径。 */
-path: string
-    /** 展示标签。 */
-label: string
+  id: string
+  title: string
+  path: string
+  label: string
 }
 
 /** Project Runtime Settings 的语义模型。 */
 export type ProjectRuntimeSettings = {
-    /** project 字段。 */
-project: ProjectDetail
-    /** child Placement 字段。 */
-childPlacement: ProjectLayoutPlacement
-    /** root Module Id 标识。 */
-rootModuleId: string | null
-    /** home Node Options 配置项。 */
-homeNodeOptions: ProjectHomeNodeOption[]
+  project: ProjectDetail
+  childPlacement: ProjectLayoutPlacement
+  rootModuleId: string | null
+  homeNodeOptions: ProjectHomeNodeOption[]
 }
 
 /** Project Runtime Settings Input 的输入数据。 */
 export type ProjectRuntimeSettingsInput = {
-    /** child Placement 字段。 */
-childPlacement: ProjectLayoutPlacement
-    /** home Node Id 标识。 */
-homeNodeId: string | null
+  childPlacement: ProjectLayoutPlacement
+  homeNodeId: string | null
 }
 
 const HOME_NODE_KINDS = new Set(['page', 'system-page', 'link'])
@@ -160,5 +143,73 @@ export async function saveProjectRuntimeSettings(command: SaveProjectRuntimeSett
     await http.put(`${getProjectNavigationApi(projectId, tenantId)}/nodes/${encodeURIComponent(current.rootModuleId)}`, {
       childPlacement: input.childPlacement,
     })
+  }
+}
+
+/** Project Ui Settings 的语义模型。 */
+export type ProjectUiSettings = {
+  headerFirst: boolean
+  sidebarCollapsed: boolean
+  showFooter: boolean
+  pageMode: PageMode
+}
+
+export const PROJECT_UI_SETTINGS_STORAGE_PREFIX = 'spark-ui-settings'
+
+export const DEFAULT_PROJECT_UI_SETTINGS: ProjectUiSettings = {
+  headerFirst: false,
+  sidebarCollapsed: false,
+  showFooter: true,
+  pageMode: 'multi',
+}
+
+function normalizeScopeKey(scopeKey: string | null | undefined): string | null {
+  if (typeof scopeKey !== 'string') return null
+  const trimmed = scopeKey.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+export function getProjectUiSettingsStorageKey(scopeKey: string | null): string {
+  const normalized = normalizeScopeKey(scopeKey)
+  return normalized === null
+    ? PROJECT_UI_SETTINGS_STORAGE_PREFIX
+    : `${PROJECT_UI_SETTINGS_STORAGE_PREFIX}:${normalized}`
+}
+
+function normalizeUiSettings(raw: unknown): ProjectUiSettings | null {
+  if (!isRecord(raw)) return null
+  return {
+    headerFirst: typeof raw['headerFirst'] === 'boolean'
+      ? raw['headerFirst']
+      : DEFAULT_PROJECT_UI_SETTINGS.headerFirst,
+    sidebarCollapsed: typeof raw['sidebarCollapsed'] === 'boolean'
+      ? raw['sidebarCollapsed']
+      : DEFAULT_PROJECT_UI_SETTINGS.sidebarCollapsed,
+    showFooter: typeof raw['showFooter'] === 'boolean'
+      ? raw['showFooter']
+      : DEFAULT_PROJECT_UI_SETTINGS.showFooter,
+    pageMode: raw['pageMode'] === 'single' || raw['pageMode'] === 'multi'
+      ? raw['pageMode']
+      : DEFAULT_PROJECT_UI_SETTINGS.pageMode,
+  }
+}
+
+export function loadProjectUiSettings(scopeKey: string | null): ProjectUiSettings {
+  try {
+    if (typeof localStorage === 'undefined') return { ...DEFAULT_PROJECT_UI_SETTINGS }
+    const raw = localStorage.getItem(getProjectUiSettingsStorageKey(scopeKey))
+    if (raw === null) return { ...DEFAULT_PROJECT_UI_SETTINGS }
+    return normalizeUiSettings(JSON.parse(raw)) ?? { ...DEFAULT_PROJECT_UI_SETTINGS }
+  } catch {
+    return { ...DEFAULT_PROJECT_UI_SETTINGS }
+  }
+}
+
+export function saveProjectUiSettings(scopeKey: string | null, settings: ProjectUiSettings): void {
+  try {
+    if (typeof localStorage === 'undefined') return
+    localStorage.setItem(getProjectUiSettingsStorageKey(scopeKey), JSON.stringify(settings))
+  } catch {
+    // localStorage may be unavailable in restricted browser contexts.
   }
 }

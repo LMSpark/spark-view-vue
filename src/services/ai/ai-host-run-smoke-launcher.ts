@@ -13,7 +13,7 @@
 import { getProjectApi, getProjectDetailApi } from '@/services/api-paths'
 import { login as loginUser, switchProject } from '@/services/auth'
 import { http } from '@/services/http'
-import { reloadAndSyncNavigation } from '@/services/navigation-sync'
+import { reloadAndSyncNavigation } from '@/services/project/project-shell'
 import { onAiHostRunResult, waitForAppSseConnection, type AiHostRunResultEvent } from '@/services/sse-events'
 import { buildTenantRootPath } from '@/services/tenant-scope'
 

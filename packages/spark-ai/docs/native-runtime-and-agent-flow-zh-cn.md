@@ -32,7 +32,7 @@ DTS ClassModel runtime
 ## 注册流程
 
 ```text
-page-design-business.ts
+src/services/page-design/page-design-business.ts
   -> ClassModelAgentAdapter.register()
      -> resolveRuntimeApiMetadataJson()
      -> createClassModelDocumentFromRuntimeDocument()

@@ -146,17 +146,17 @@ import {
   markLogoutPending,
   switchProject,
 } from '@/services/auth'
-import { resetAppProjectWorkspace } from '@/services/project-workspace'
+import { resetAppProjectWorkspace } from '@/services/project/project-shell'
 import {
   readAppProjectNavigationRoot,
   resetAppProjectModel,
   syncAppProjectModelFromNav,
-} from '@/services/app-project-model'
+} from '@/services/project/project-shell'
 import {
   registerShellNavRootListener,
   reloadAndSyncNavigation,
   syncCommittedNavigationFromRouter,
-} from '@/services/navigation-sync'
+} from '@/services/project/project-shell'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
 import AppBreadcrumb from '@/layout/AppBreadcrumb.vue'
@@ -166,18 +166,18 @@ import AppTabBar from '@/layout/AppTabBar.vue'
 import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
-import { createAiHostRunBridge } from '@/services/ai-host-run-bridge'
-import { appAiAgent } from '@/services/ai-host'
+import { createAiHostRunBridge } from '@/services/ai/ai-host-run-bridge'
+import { appAiAgent } from '@/services/ai/ai-turn-bridge'
 import { createAuthHeaders } from '@/services/http'
-import { chainAiHostRunPrepare } from '@/services/ai-host-run-prepare'
-import { preparePageDesignHostRun } from '@/services/page-design-host-run-provider'
-import { preparePageDataDesignHostRun } from '@/services/page-data-design-host-run-provider'
-import { prepareProjectPlanningHostRun } from '@/services/project-planning-host-run-provider'
-import { runAiHostRunSmokeLauncherFromUrl } from '@/services/ai-host-run-smoke-launcher'
+import { chainAiHostRunPrepare } from '@/services/ai/ai-host-run-bridge'
+import { preparePageDesignHostRun } from '@/services/page-design/page-design-host-run-provider'
+import { preparePageDataDesignHostRun } from '@/services/page-data-design/page-data-design-host-run-provider'
+import { prepareProjectPlanningHostRun } from '@/services/project-planning/project-planning-host-run-provider'
+import { runAiHostRunSmokeLauncherFromUrl } from '@/services/ai/ai-host-run-smoke-launcher'
 import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
-import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
-import type { ProjectSwitchService } from '@/services/project-switch'
-import { loadProjectUiSettings, saveProjectUiSettings } from '@/services/project-ui-settings'
+import { PROJECT_SWITCH_KEY } from '@/services/project/project-shell'
+import type { ProjectSwitchService } from '@/services/project/project-shell'
+import { loadProjectUiSettings, saveProjectUiSettings } from '@/services/project/project-settings'
 import { buildTenantPath, buildTenantRootPath, parseTenantScope, stripTenantScope } from '@/services/tenant-scope'
 import { getPublicPaths } from '@/registries/vue-page-registry'
 

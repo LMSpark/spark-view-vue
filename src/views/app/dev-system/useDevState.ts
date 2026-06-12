@@ -45,10 +45,10 @@ import {
 import {
   runPageDesignAiSession,
   type PageDesignAiRunOptions,
-} from '@/services/page-design-ai-runner'
-import { getAppProjectWorkspace } from '@/services/project-workspace'
-import type { ProjectWorkspaceScope } from '@/services/project-workspace'
-import { reloadAndSyncNavigation, syncCommittedNavigationFromRouter } from '@/services/navigation-sync'
+} from '@/services/page-design/page-design-ai-runner'
+import { getAppProjectWorkspace } from '@/services/project/project-shell'
+import type { ProjectWorkspaceScope } from '@/services/project/project-shell'
+import { reloadAndSyncNavigation, syncCommittedNavigationFromRouter } from '@/services/project/project-shell'
 import { getUser } from '@/services/auth'
 import { getProjectApi } from '@/services/api-paths'
 import { http } from '@/services/http'

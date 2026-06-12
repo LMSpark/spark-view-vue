@@ -4,7 +4,7 @@ import {
   getProjectUiSettingsStorageKey,
   loadProjectUiSettings,
   saveProjectUiSettings,
-} from '../../src/services/project-ui-settings'
+} from '../../src/services/project/project-settings'
 
 describe('project UI settings storage', () => {
   beforeEach(() => {

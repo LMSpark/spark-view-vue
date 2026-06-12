@@ -7,8 +7,9 @@ import type {
 } from '@spark-appworks/spark-ai/agent'
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 import { HttpClientBase, type HttpResponse, type RequestConfig } from '@spark-appworks/spark-utils'
-import { preparePageDataDesignHostRun } from '@/services/page-data-design-host-run-provider'
-import { readAiDeliveryErrorExtras } from '@/services/ai-delivery-port'
+import { PAGE_DESIGN_MODULE_ID } from '@/services/page-design/page-design-business'
+import { preparePageDataDesignHostRun } from '@/services/page-data-design/page-data-design-host-run-provider'
+import { readAiDeliveryErrorExtras } from '@/services/ai/ai-delivery-port'
 
 const mocks = vi.hoisted(() => {
   const createHeadlessPageDesignEditor = vi.fn()
@@ -20,23 +21,23 @@ const mocks = vi.hoisted(() => {
   return {
     createHeadlessPageDesignEditor,
     delegateHost,
-    ensurePageDataDesignBusiness: vi.fn(() => delegateHost),
+    ensurePageDesignBusiness: vi.fn(() => delegateHost),
   }
 })
 
-vi.mock('@/services/page-design-editor-provider', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/page-design-editor-provider')>()
+vi.mock('@/services/page-design/page-design-headless', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/page-design/page-design-headless')>()
   return {
     ...actual,
     createHeadlessPageDesignEditor: mocks.createHeadlessPageDesignEditor,
   }
 })
 
-vi.mock('@/services/page-data-design-business', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/services/page-data-design-business')>()
+vi.mock('@/services/page-design/page-design-business', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/page-design/page-design-business')>()
   return {
     ...actual,
-    ensurePageDataDesignBusiness: mocks.ensurePageDataDesignBusiness,
+    ensurePageDesignBusiness: mocks.ensurePageDesignBusiness,
   }
 })
 
@@ -70,7 +71,7 @@ function createRunResult(): AiAgentHostRunResult {
     session: {
       sessionId: 'session-1',
       scope: {
-        businessRegistrationId: 'pageDataDesign',
+        businessRegistrationId: 'pageDesign',
         businessInstanceId: 'orders',
       },
     } as never,
@@ -80,8 +81,8 @@ function createRunResult(): AiAgentHostRunResult {
 function createDryRunResult(): AiAgentHostDryRunResult {
   return {
     ok: true,
-    alias: 'pageDataDesign',
-    moduleId: 'pageDataDesign',
+    alias: 'pageDesign',
+    moduleId: 'pageDesign',
     normalizedInput: {},
     scope: {} as never,
     orchestration: { userMessage: '补数据表', systemPrompt: '' },
@@ -100,7 +101,7 @@ describe('preparePageDataDesignHostRun', () => {
     mocks.delegateHost.run.mockResolvedValue(createRunResult())
   })
 
-  it('saves only pagedata.json and returns delivery artifacts after Host Run succeeds', async () => {
+  it('routes pageDataDesign alias to pageDesign run and saves only pagedata.json', async () => {
     const editor = createEditor(['pagedata.json', 'rule.json'])
     mocks.createHeadlessPageDesignEditor.mockReturnValue(editor)
 
@@ -111,9 +112,21 @@ describe('preparePageDataDesignHostRun', () => {
       timestamp: Date.now(),
     }, {} as AiAgentHost)
 
-    const result = await host.run('pageDataDesign', {} as AiJsonParams)
+    const result = await host.run('pageDataDesign', {
+      pageId: 'orders',
+      description: '补 CRUD 表',
+      effectiveDescription: '订单列表需要主从表',
+    } as AiJsonParams)
 
-    expect(editor.selectPage).toHaveBeenCalledWith('orders', { forceReload: true })
+    expect(mocks.ensurePageDesignBusiness).toHaveBeenCalledOnce()
+    expect(mocks.delegateHost.run).toHaveBeenCalledWith(
+      PAGE_DESIGN_MODULE_ID,
+      expect.objectContaining({
+        pageId: 'orders',
+        allowedOperations: { dataSet: true, nodeTree: false, script: false, style: false, navigation: false },
+      }),
+      undefined,
+    )
     expect(editor.savePageFile).toHaveBeenCalledOnce()
     expect(editor.savePageFile).toHaveBeenCalledWith('pagedata.json')
     expect(result.resultExtras?.['delivery']).toEqual({
@@ -134,9 +147,11 @@ describe('preparePageDataDesignHostRun', () => {
       timestamp: Date.now(),
     }, {} as AiAgentHost)
 
-    const result = await host.run('pageDataDesign', {} as AiJsonParams)
-
-    expect(editor.savePageFile).not.toHaveBeenCalled()
+    const result = await host.run('pageDataDesign', {
+      pageId: 'orders',
+      description: 'noop',
+      effectiveDescription: 'x',
+    } as AiJsonParams)
     expect(result.resultExtras?.['delivery']).toEqual({
       mode: 'auto',
       status: 'skipped',
@@ -144,7 +159,7 @@ describe('preparePageDataDesignHostRun', () => {
     })
   })
 
-  it('rolls back delivery extras when host run fails', async () => {
+  it('rolls back delivery extras when pageDesign run fails', async () => {
     const editor = createEditor(['pagedata.json'])
     mocks.createHeadlessPageDesignEditor.mockReturnValue(editor)
     mocks.delegateHost.run.mockRejectedValue(new Error('tool loop failed'))
@@ -158,7 +173,11 @@ describe('preparePageDataDesignHostRun', () => {
 
     let caught: unknown
     try {
-      await host.run('pageDataDesign', {} as AiJsonParams)
+      await host.run('pageDataDesign', {
+        pageId: 'orders',
+        description: 'fail',
+        effectiveDescription: 'x',
+      } as AiJsonParams)
     } catch (error: unknown) {
       caught = error
     }
@@ -180,6 +199,6 @@ describe('preparePageDataDesignHostRun', () => {
     }, mocks.delegateHost as unknown as AiAgentHost)
 
     expect(host).toBe(mocks.delegateHost)
-    expect(mocks.ensurePageDataDesignBusiness).not.toHaveBeenCalled()
+    expect(mocks.ensurePageDesignBusiness).not.toHaveBeenCalled()
   })
 })

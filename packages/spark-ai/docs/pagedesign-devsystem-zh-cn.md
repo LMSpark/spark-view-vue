@@ -103,9 +103,10 @@ return {
 
 | 路径 | 职责 |
 |------|------|
-| `src/services/page-design-business.ts` | 注册、resolve、systemPrompt |
-| `src/services/page-design-ai-runner.ts` | DevSystem session 启动 |
-| `src/services/page-design-gates.ts` | mutation gate |
+| `src/services/page-design/page-design-business.ts` | 注册、resolve、systemPrompt（含 pageDataDesign data-only 分支） |
+| `src/services/page-design/page-design-ai-runner.ts` | DevSystem session 启动 |
+| `src/services/page-design/page-design-gates.ts` | mutation gate、`allowedOperations` |
+| `src/services/page-data-design/page-data-design-host-run-provider.ts` | pageDataDesign preset Host Run |
 | `src/services/ai-host.ts` | `appAiAgent` |
 | `src/services/ai-turn-bridge.ts` | transport（session-turn） |
 | `src/views/app/dev-system/useDevState.ts` | UI 集成 |

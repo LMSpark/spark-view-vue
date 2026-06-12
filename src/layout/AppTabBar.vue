@@ -51,7 +51,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useTabPages } from '@spark-appworks/spark-app'
 import type { TabPage } from '@spark-appworks/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
-import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
+import { PROJECT_SWITCH_KEY } from '@/services/project/project-shell'
 import { parseTenantScope } from '@/services/tenant-scope'
 
 const router = useRouter()

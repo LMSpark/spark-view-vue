@@ -27,7 +27,7 @@ import {
 import {
   ensurePageDesignBusiness,
   resolvePageDesignPlanningContext,
-} from '../src/services/page-design-business.ts'
+} from '../src/services/page-design/page-design-business.ts'
 import { createRequest } from '@spark-appworks/spark-utils'
 import { PAGE_NODE_FILE_NAMES } from '@spark-appworks/spark-project-model'
 import { ProjectWorkspace } from '@spark-appworks/spark-project-model'

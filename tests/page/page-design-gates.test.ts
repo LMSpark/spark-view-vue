@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest'
 import {
   assertPageDesignRunGateAllowed,
   evaluatePageDesignMutationToolGate,
+  evaluatePageDesignScriptOperationGate,
   isPageDesignMutationTool,
   readPageDesignGateState,
   validatePageDesignRunGate,
-} from '@/services/page-design-gates'
+} from '@/services/page-design/page-design-gates'
+import { PAGE_DATA_DESIGN_ALLOWED_OPERATIONS } from '@/services/page-data-design/page-data-design-host-run-provider'
 import type { ProjectPageNodeSummary } from '@spark-appworks/spark-project-model'
 
 function createSummary(
@@ -101,5 +103,59 @@ describe('isPageDesignMutationTool', () => {
     expect(isPageDesignMutationTool('model_script')).toBe(true)
     expect(isPageDesignMutationTool('writePageFile')).toBe(true)
     expect(isPageDesignMutationTool('model_class_guide')).toBe(false)
+  })
+})
+
+describe('evaluatePageDesignScriptOperationGate', () => {
+  it('allows editDataSet when dataSet-only preset is active', () => {
+    const result = evaluatePageDesignScriptOperationGate({
+      toolName: 'model_script',
+      allowedOperations: PAGE_DATA_DESIGN_ALLOWED_OPERATIONS,
+      args: {
+        script: [
+          'const page = await this.openPageDesign({ pageId: "orders" })',
+          'await page.editDataSet(tool => tool.addTable({ id: "orders", title: "Orders" }))',
+        ].join('\n'),
+      },
+    })
+    expect(result.ok).toBe(true)
+  })
+
+  it('rejects editNodeTree under dataSet-only preset', () => {
+    const result = evaluatePageDesignScriptOperationGate({
+      toolName: 'model_script',
+      allowedOperations: PAGE_DATA_DESIGN_ALLOWED_OPERATIONS,
+      args: {
+        script: 'await this.openPageDesign({ pageId: "orders" }).editNodeTree(t => t)',
+      },
+    })
+    expect(result.ok).toBe(false)
+    expect(result.reason).toContain('editNodeTree')
+  })
+
+  it('does not restrict script when allowedOperations is omitted', () => {
+    const result = evaluatePageDesignScriptOperationGate({
+      toolName: 'model_script',
+      args: {
+        script: 'await this.openPageDesign({ pageId: "orders" }).editNodeTree(t => t)',
+      },
+    })
+    expect(result.ok).toBe(true)
+  })
+})
+
+describe('evaluatePageDesignMutationToolGate with allowedOperations', () => {
+  it('rejects planning_draft before script marker checks', () => {
+    const result = evaluatePageDesignMutationToolGate({
+      toolName: 'model_script',
+      summary: createSummary({
+        planningStatus: 'planning_draft',
+        effectiveDescription: '',
+      }),
+      allowedOperations: PAGE_DATA_DESIGN_ALLOWED_OPERATIONS,
+      toolArgs: { script: 'await this.openPageDesign({ pageId: "orders" }).editDataSet(() => {})' },
+    })
+    expect(result.ok).toBe(false)
+    expect(result.reason).toContain('planning_draft')
   })
 })

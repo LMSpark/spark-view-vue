@@ -22,21 +22,88 @@ import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import type {
   AiHostRunPrepare,
   AiHostRunTarget,
-} from '@/services/ai-host-run-bridge'
-import { createAiAgentTurnCallbacks } from '@/services/ai-turn-bridge'
-import { createHeadlessProjectPlanningEditor } from '@/services/project-planning-editor-provider'
+} from '@/services/ai/ai-host-run-bridge'
+import { createAiAgentTurnCallbacks } from '@/services/ai/ai-turn-bridge'
 import {
   buildProjectPlanningAgentInput,
   ensureProjectPlanningBusiness,
   PROJECT_PLANNING_MODULE_ID,
-} from '@/services/project-planning-business'
+} from '@/services/project-planning/project-planning-business'
+import { createHeadlessProjectPlanningEditor } from '@/services/project-planning/project-planning-headless'
 import {
   attachAiDeliveryResult,
   createAiDeliveryFailureError,
   createAiDeliveryResultExtras,
   toError,
-} from '@/services/ai-delivery-port'
-import { createProjectPlanningHostRunDeliveryPort } from '@/services/project-planning-delivery-port'
+  type AiDeliveryArtifact,
+  type AiDeliveryPort,
+} from '@/services/ai/ai-delivery-port'
+
+export {
+  createHeadlessProjectPlanningEditor,
+  createProjectPlanningEditorGetter,
+  resolveProjectPlanningEditor,
+  type HeadlessProjectPlanningEditorScope,
+  type ProjectPlanningEditorResolveContext,
+} from '@/services/project-planning/project-planning-headless'
+
+// --- delivery ---
+
+export type ProjectPlanningDeliveryContext = Readonly<{
+  editor: ProjectWorkspace
+  saveNavigationAfterRun: boolean
+}>
+
+export function createProjectPlanningHostRunDeliveryPort(): AiDeliveryPort<ProjectPlanningDeliveryContext> {
+  return {
+    mode: 'auto',
+    async save(context) {
+      const navigationDirty = context.editor.project.navigationDirty
+      if (!context.saveNavigationAfterRun || !navigationDirty) {
+        return {
+          mode: 'auto',
+          status: 'skipped',
+          artifacts: navigationDirty ? [createNavigationArtifact('skipped')] : [],
+        }
+      }
+      try {
+        await context.editor.saveAll()
+        return {
+          mode: 'auto',
+          status: 'saved',
+          artifacts: [createNavigationArtifact('saved')],
+        }
+      } catch (error: unknown) {
+        return {
+          mode: 'auto',
+          status: 'failed',
+          artifacts: [createNavigationArtifact('dirty')],
+          message: error instanceof Error ? error.message : String(error),
+        }
+      }
+    },
+    trace() {
+      return Promise.resolve()
+    },
+    rollback(context, error) {
+      const navigationDirty = context.editor.project.navigationDirty
+      return Promise.resolve({
+        mode: 'auto',
+        status: navigationDirty ? 'rolledBack' : 'skipped',
+        artifacts: navigationDirty ? [createNavigationArtifact('rolledBack')] : [],
+        message: error.message,
+      })
+    },
+  }
+}
+
+function createNavigationArtifact(status: AiDeliveryArtifact['status']): AiDeliveryArtifact {
+  return {
+    kind: 'navigation',
+    name: 'navigation',
+    status,
+  }
+}
 
 type ProjectPlanningHostRunScope = Readonly<{
   tenantId: string

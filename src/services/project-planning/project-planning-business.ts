@@ -18,8 +18,12 @@ import {
   type AiAgentHost,
   type AiAgentRuntimeContext,
   type AiAgentToolLoopNudgeContext,
-} from '@/services/spark-ai-agent-bindings'
-import { CLASS_MODEL_TOOL_NAMES } from '@spark-appworks/spark-ai/class-model'
+} from '@/services/ai/spark-ai-agent-bindings'
+import {
+  WorkerClassModelKnowledgeProvider,
+  CLASS_MODEL_TOOL_NAMES,
+  type ClassModelKnowledgeProvider,
+} from '@spark-appworks/spark-ai/class-model'
 import {
   ProjectRootModel,
   applyProjectRootModelToProjectModel,
@@ -28,13 +32,27 @@ import {
   type ProjectNodeData,
   type ProjectWorkspace,
 } from '@spark-appworks/spark-project-model'
-import { evaluateProjectPlanningToolGate } from '@/services/project-planning-gates'
-import { createProjectPlanningClassModelKnowledgeProvider } from '@/services/project-planning-class-model-knowledge-provider'
 import { dtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
 
 export const PROJECT_PLANNING_MODULE_ID = 'projectPlanning'
 
 const PROJECT_PLANNING_ROOT_CLASS_NAME = 'ProjectRootModel'
+
+function createProjectPlanningClassModelKnowledgeProvider(): ClassModelKnowledgeProvider {
+  if (typeof Worker === 'undefined') {
+    throw new Error('DTS ClassModel knowledge requires Web Worker on-demand loading.')
+  }
+
+  const worker = new Worker(
+    new URL('../class-model-knowledge.worker.ts', import.meta.url),
+    { type: 'module' },
+  )
+
+  return new WorkerClassModelKnowledgeProvider(worker, {
+    dtsClassModelManifestUrl,
+    rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
+  })
+}
 
 const projectPlanningDomainRoots = new Map<string, ProjectRootModel>()
 
@@ -465,4 +483,114 @@ function countNavigationNodesByKind(nodes: readonly ProjectNodeData[], nodeKind:
     if (Array.isArray(node.children)) count += countNavigationNodesByKind(node.children, nodeKind)
   }
   return count
+}
+
+/** Project Planning Gate Validation Result 的返回结果。 */
+export type ProjectPlanningGateValidationResult = Readonly<{
+  ok: boolean
+  reason?: string
+  fix?: string
+}>
+
+const FORBIDDEN_SCRIPT_MARKERS = [
+  'openPageDesign',
+  'writePageFile',
+  'setFileText',
+  'getFileText',
+  'editNodeTree',
+  'editDataSet',
+  'getNodeTree',
+  'getDataSetTool',
+] as const
+
+const PROJECT_ACTION_NAMES = [
+  'readProjectPlanningInput',
+  'readNavigationPlanningInputs',
+  'replaceNavigationChildren',
+] as const
+
+const PROJECT_PARAM_TYPE_NAMES = [
+  'ProjectNodeData',
+] as const
+
+export function evaluateProjectPlanningToolGate(
+  options: Pick<AiAgentBeforeFunctionCallOptions, 'toolName' | 'args'>,
+): ProjectPlanningGateValidationResult {
+  const toolName = normalizeProjectPlanningToolName(options.toolName)
+  const actionLookupGate = evaluateProjectActionLookupGate(toolName, options.args)
+  if (!actionLookupGate.ok) return actionLookupGate
+  if (toolName !== 'model_script') {
+    return { ok: true }
+  }
+  const script = readProjectPlanningModelScriptBody(options.args)
+  if (script === undefined) {
+    return { ok: true }
+  }
+  const marker = findForbiddenProjectPlanningScriptMarker(script)
+  if (marker === undefined) {
+    return { ok: true }
+  }
+  return {
+    ok: false,
+    reason: `projectPlanning: model_script 禁止调用 ${marker}；本阶段只处理 navigation 策划，不涉及四文件或 openPageDesign。`,
+    fix: '改用 readProjectPlanningInput / readNavigationPlanningInputs / replaceNavigationChildren 等通用 ProjectRootModel action；完成概要后 agent_complete。',
+  }
+}
+
+function evaluateProjectActionLookupGate(
+  toolName: string,
+  args: AiAgentBeforeFunctionCallOptions['args'],
+): ProjectPlanningGateValidationResult {
+  if (toolName !== 'model_attribute_guide') return { ok: true }
+  const kind = readProjectPlanningTextArg(args, 'kind')
+  if (kind !== 'project') return { ok: true }
+  const attributeName = readProjectPlanningTextArg(args, 'attributeName')
+  if (attributeName === undefined || !isProjectActionName(attributeName)) {
+    if (attributeName !== undefined && isProjectParamTypeName(attributeName)) {
+      return {
+        ok: false,
+        reason: `projectPlanning: ${attributeName} 是参数结构名，不是 project attribute。`,
+        fix: '改用 model_action_guide({ kind: "project", actionName: "replaceNavigationChildren" }) 查看 paramsSchema.children，然后在 model_script 中构造 children 数组。',
+      }
+    }
+    return { ok: true }
+  }
+  return {
+    ok: false,
+    reason: `projectPlanning: ${attributeName} 是 ProjectRootModel action，不是 attribute。`,
+    fix: `改用 model_action_guide({ kind: "project", actionName: "${attributeName}" })，然后在 model_script 中通过 this.${attributeName}(...) 调用。`,
+  }
+}
+
+function readProjectPlanningModelScriptBody(args: AiAgentBeforeFunctionCallOptions['args']): string | undefined {
+  const script = args['script']
+  if (typeof script !== 'string') return undefined
+  const trimmed = script.trim()
+  return trimmed.length > 0 ? trimmed : undefined
+}
+
+function findForbiddenProjectPlanningScriptMarker(script: string): string | undefined {
+  for (const marker of FORBIDDEN_SCRIPT_MARKERS) {
+    if (script.includes(marker)) return marker
+  }
+  return undefined
+}
+
+function readProjectPlanningTextArg(args: AiAgentBeforeFunctionCallOptions['args'], key: string): string | undefined {
+  const value = args[key]
+  if (typeof value !== 'string') return undefined
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : undefined
+}
+
+function isProjectActionName(value: string): value is typeof PROJECT_ACTION_NAMES[number] {
+  return PROJECT_ACTION_NAMES.some(actionName => actionName === value)
+}
+
+function isProjectParamTypeName(value: string): value is typeof PROJECT_PARAM_TYPE_NAMES[number] {
+  return PROJECT_PARAM_TYPE_NAMES.some(typeName => typeName === value)
+}
+
+function normalizeProjectPlanningToolName(toolName: string): string {
+  return toolName.trim().toLowerCase().replace(/[^a-z0-9_]/gu, '')
 }
