@@ -45,6 +45,7 @@ AI用途：需要理解应用入口、平台视图或业务服务接线时，用
 
 <script setup lang="ts">
 import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
+import { isNestedConfigPageNode } from '@spark-appworks/spark-project-model'
 import { useNav } from '@spark-appworks/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 
@@ -76,7 +77,7 @@ function hasDropdown(item: ProjectNodeData): boolean {
 }
 
 function visibleChildren(item: ProjectNodeData): ProjectNodeData[] {
-  return (item.children ?? []).filter((c) => !c.hidden && !c.disabled && c.nodeKind !== 'sub-page')
+  return (item.children ?? []).filter((c) => !c.hidden && !c.disabled && !isNestedConfigPageNode(c))
 }
 </script>
 
