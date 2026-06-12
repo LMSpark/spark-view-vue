@@ -15,6 +15,11 @@ import {
   sourceFileFromDeclarationFile,
 } from './dts-ast-utils'
 import {
+  cleanJsDocBlock,
+  cleanVueModuleComment,
+  readJsDoc,
+} from './dts-jsdoc-reader'
+import {
   DTS_CLASS_MODEL_SURFACE_VERSION,
   type DtsClassModelSurfaceDocument,
   type ProjectDtsClassModelSurfaceOptions,
@@ -1170,17 +1175,6 @@ function isModuleHeaderAnchor(statement: ts.Statement): boolean {
     || ts.isExportDeclaration(statement)
 }
 
-function cleanJsDocBlock(text: string): string {
-  return text
-    .replace(/^\/\*\*/u, '')
-    .replace(/\*\/$/u, '')
-    .split(/\r?\n/u)
-    .map(line => line.replace(/^\s*\*\s?/u, '').trim())
-    .filter(line => line.length > 0)
-    .join('\n')
-    .trim()
-}
-
 function readSourceFileModuleJsDoc(repoRoot: string, sourceFilePath: string): string {
   const text = ts.sys.readFile(resolve(repoRoot, sourceFilePath))
   if (text === undefined) return ''
@@ -1196,17 +1190,6 @@ function readSourceFileModuleJsDoc(repoRoot: string, sourceFilePath: string): st
     return cleanVueModuleComment(normalized.slice(0, end + 3))
   }
   return ''
-}
-
-function cleanVueModuleComment(text: string): string {
-  return text
-    .replace(/^<!--/u, '')
-    .replace(/-->$/u, '')
-    .split(/\r?\n/u)
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
-    .join('\n')
-    .trim()
 }
 
 function inferModuleJsDoc(input: {
@@ -1428,70 +1411,6 @@ function readMemberName(name: ts.PropertyName): string | undefined {
 function readComponentNameFromPropsFile(file: string): string | undefined {
   const match = /\/([^/]+)\.props\.d\.ts$/.exec(file)
   return match?.[1]
-}
-
-function readJsDoc(checker: ts.TypeChecker, node: ts.Node): string {
-  const symbol = readJsDocSymbol(checker, node)
-  if (symbol !== undefined) {
-    const lines = [
-      normalizeJsDocText(ts.displayPartsToString(symbol.getDocumentationComment(checker))),
-      ...symbol.getJsDocTags(checker).map(renderJsDocTag),
-    ].filter(line => line.length > 0)
-    if (lines.length > 0) return lines.join('\n')
-  }
-  const tags = ts.getJSDocCommentsAndTags(node)
-  if (tags.length === 0) return ''
-  return tags
-    .map(tag => normalizeJsDocText(tag.getText()))
-    .filter(text => text.length > 0)
-    .join('\n')
-    .trim()
-}
-
-function readJsDocSymbol(checker: ts.TypeChecker, node: ts.Node): ts.Symbol | undefined {
-  const name = readDeclarationNameNode(node)
-  if (name !== undefined) {
-    const symbol = checker.getSymbolAtLocation(name)
-    if (symbol !== undefined) return symbol
-  }
-  return checker.getSymbolAtLocation(node)
-}
-
-function readDeclarationNameNode(node: ts.Node): ts.Node | undefined {
-  if (
-    ts.isClassDeclaration(node)
-    || ts.isInterfaceDeclaration(node)
-    || ts.isTypeAliasDeclaration(node)
-    || ts.isEnumDeclaration(node)
-    || ts.isFunctionDeclaration(node)
-    || ts.isPropertyDeclaration(node)
-    || ts.isPropertySignature(node)
-    || ts.isMethodDeclaration(node)
-    || ts.isMethodSignature(node)
-    || ts.isEnumMember(node)
-  ) {
-    return node.name
-  }
-  return undefined
-}
-
-function renderJsDocTag(tag: ts.JSDocTagInfo): string {
-  const text = tag.text === undefined ? '' : ts.displayPartsToString(tag.text).trim()
-  return text.length === 0 ? `@${tag.name}` : `@${tag.name} ${text}`
-}
-
-function normalizeJsDocText(text: string): string {
-  const normalized = text.trim()
-  if (normalized.length === 0) return ''
-  if (normalized.startsWith('/**') || normalized.startsWith('/*')) {
-    return cleanJsDocBlock(normalized)
-  }
-  return normalized
-    .split(/\r?\n/u)
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
-    .join('\n')
-    .trim()
 }
 
 const formatHost: ts.FormatDiagnosticsHost = {

@@ -42,5 +42,8 @@
   "vetur.validation.style": false,
   "chatgpt.openOnStartup": false,
   "claudeCode.useTerminal": false,
-  "claudeCode.preferredLocation": "ide"
+  "claudeCode.initialPermissionMode": "auto",
+  "claudeCode.preferredLocation": "ide",
+  "cursor.composer.textSizeScale": 1.3,
+  "cursor.general.disableHttp2": true
 }

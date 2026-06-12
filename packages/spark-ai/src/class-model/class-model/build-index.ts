@@ -21,6 +21,12 @@ export {
   sourceFileFromDeclarationFile,
 } from './dts-ast-utils'
 
+export {
+  cleanJsDocBlock,
+  cleanVueModuleComment,
+  readJsDoc,
+} from './dts-jsdoc-reader'
+
 export type {
   BuildDtsClassModelBundleOptions,
   BuildDtsClassModelBundleProgress,

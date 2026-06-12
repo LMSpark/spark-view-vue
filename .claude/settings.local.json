@@ -1,5 +1,18 @@
 {
+  "model": "claude-sonnet-4-6",
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://api.anthropic.com",
+    "ANTHROPIC_AUTH_TOKEN": "",
+    "ANTHROPIC_MODEL": "claude-sonnet-4-6",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-sonnet-4-6",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-sonnet-4-6",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4-6",
+    "ENABLE_TOOL_SEARCH": "1",
+    "API_TIMEOUT_MS": "300000"
+  },
   "permissions": {
+    "defaultMode": "auto",
     "allow": [
       "Bash(git remote *)",
       "Bash(git push *)",
