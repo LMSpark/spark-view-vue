@@ -4,7 +4,7 @@
  * 边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。
  * AI用途：当需要判断 ClassModel 在 class-model/projection/dts-renderer 这一段如何生成、加载或投影时，用本模块定位职责。
  */
-import type { AttributeMeta, ClassModel, ClassModelDocument, JsDocMeta, MethodMeta } from '../class-model'
+import type { AttributeMeta, ClassModel, ClassModelDocument, JsDocMeta, MethodMeta } from '../class-model/types'
 import { projectClassModelForGuide } from '../class-model/model-projection'
 import {
   renderAttributeDeclarationLine,

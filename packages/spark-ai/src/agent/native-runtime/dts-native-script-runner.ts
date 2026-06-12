@@ -11,13 +11,10 @@ import type {
 } from '../../json'
 import type { AiAgentRuntimeHostContext } from '../tool-runtime'
 import { AiAgentToolResult } from '../tool-runtime'
-import {
-  DtsClassModelBundleLoader,
-  resolveMethodReturnType,
-  type ClassModel,
-  type DtsClassModelSurfaceDocument,
-} from '../../class-model/class-model'
-import type { DtsTypeMeta } from '../../class-model/class-model/types'
+import { DtsClassModelBundleLoader } from '../../class-model/class-model/dts-class-model-bundle-loader'
+import { resolveMethodReturnType } from '../../class-model/class-model/dts-type-meta-ops'
+import type { DtsClassModelSurfaceDocument } from '../../class-model/class-model/dts-surface-types'
+import type { ClassModel, DtsTypeMeta } from '../../class-model/class-model/types'
 import type {
   AiApiActionMetadata,
   AiApiAttributeMetadata,

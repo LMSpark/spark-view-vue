@@ -68,10 +68,6 @@ export {
 } from './dts-bundle-url'
 
 export {
-  buildDtsClassModelBundle,
-} from './build-dts-class-model-bundle'
-
-export {
   DtsClassModelBundleLoader,
 } from './dts-class-model-bundle-loader'
 
@@ -84,19 +80,6 @@ export {
 export {
   DTS_CLASS_MODEL_SURFACE_VERSION,
 } from './dts-surface-types'
-
-export {
-  projectDtsClassModelSurface,
-  projectDtsFileProjection,
-  resolveDtsClassModel,
-} from './project-from-declarations'
-
-export type {
-  BuildDtsClassModelBundleOptions,
-  BuildDtsClassModelBundleProgress,
-  BuildDtsClassModelBundleProgressPhase,
-  BuildDtsClassModelBundleResult,
-} from './build-dts-class-model-bundle'
 
 export type {
   DtsClassModelBundleManifest,

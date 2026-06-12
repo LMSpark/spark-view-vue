@@ -11,6 +11,7 @@
 - `setup-claude-deepseek.ps1`：历史 DeepSeek 接入脚本；新配置优先使用 `claude-model.ps1`。
 - `migrate-navigation-sub-page.mjs`：legacy `sub-page` 行审计/迁移（Flyway V8；自动 fallback docker compose exec mysql）。
 - `verify-model-convergence-offline.mjs`：模型收敛离线验收测试集。
+- ClassModel 编译期入口：`packages/spark-ai/src/class-model/class-model/build-index.ts`（禁止浏览器 import）。
 
 ## 放置原则
 

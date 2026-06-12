@@ -7,7 +7,7 @@
 export {
   createClassModelDocumentFromRuntimeApiMetadata,
   createClassModelDocumentFromRuntimeDocument,
-} from '../class-model'
+} from '../class-model/from-runtime-metadata'
 
 export {
   ClassModelRuntime,

@@ -5,7 +5,7 @@
  * AI用途：LLM 需要按 kind/action/attribute 获取模型知识时，用本模块理解查询如何收敛到可见上下文。
  */
 import type { AiJsonValue } from '../../json'
-import type { ClassModel, ClassModelDocument, SourceProvenanceMeta } from '../class-model'
+import type { ClassModel, ClassModelDocument, SourceProvenanceMeta } from '../class-model/types'
 import type { DtsClassModelSurfaceDocument } from '../class-model/dts-surface-types'
 import type { DtsTypeMeta } from '../class-model/types'
 import { resolveMethodReturnType, visitDtsTypeMeta } from '../class-model/dts-type-meta-ops'

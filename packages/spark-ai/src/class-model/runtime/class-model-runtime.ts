@@ -5,7 +5,7 @@
  * AI用途：当需要判断 ClassModel 在 class-model/runtime/class-model-runtime 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import type { AiJsonValue } from '../../json'
-import type { ClassModelDocument } from '../class-model'
+import type { ClassModelDocument } from '../class-model/types'
 import {
   ClassModelKnowledgeService,
   type ClassModelKnowledgeProvider,
