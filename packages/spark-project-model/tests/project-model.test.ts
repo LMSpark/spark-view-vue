@@ -1,13 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import type { ProjectModelData, ProjectNodeData } from '../src/navigation/project-node'
+import type { ProjectModelData, ProjectNodeData, NavNodeKind } from '../src/navigation/project-node'
+import { ProjectNode } from '../src/navigation/project-node'
 import type { HttpClientBase, HttpResponse } from '@spark-appworks/spark-utils'
-import {
-  ModuleNode,
-  SystemPageNode,
-  SystemDirectoryNode,
-} from '../src/navigation/navigation-kinds'
 import { ConfigPageNode } from '../src/page/config-page'
-import { ConfigSubPageNode } from '../src/page/config-page'
 import { resolveProjectPageSurface } from '../src/navigation/navigation-tree'
 import { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import { createRequest } from '@spark-appworks/spark-utils'
@@ -41,18 +36,20 @@ describe('ProjectModel', () => {
     expect(resolveProjectPageSurface({ id: 'l', title: 'L', nodeKind: 'link', path: '/ext' })).toBe('link')
   })
 
-  it('maps system-page nodes to SystemPageNode', () => {
+  it('maps system-page nodes to ProjectNode with system-page family', () => {
     const p = createWorkspace().project
     p.replaceNavigationRoot(createRoot([
       { id: 'dashboard', title: '仪表盘', nodeKind: 'system-page', path: '/dashboard' },
     ]))
     const node = p.findNodeById('dashboard')
-    expect(node).toBeInstanceOf(SystemPageNode)
-    const summaries = p.readPageSummaries()
+    expect(node).toBeInstanceOf(ProjectNode)
+    expect(node?.nodeKind).toBe('system-page')
+    expect(node?.family).toBe('system-page')
+    const summaries = p.readPlanningProjection()
     expect(summaries[0]?.designSurface).toBe('system-page')
   })
 
-  it('maps system-directory nodes to SystemDirectoryNode class', () => {
+  it('maps system-directory nodes to ProjectNode with module family', () => {
     const p = createWorkspace().project
     p.replaceNavigationRoot({
       id: 'homepage_root',
@@ -70,7 +67,8 @@ describe('ProjectModel', () => {
       ],
     })
     const toolbarRoot = p.findNodeById('toolbar-root')
-    expect(toolbarRoot).toBeInstanceOf(SystemDirectoryNode)
+    expect(toolbarRoot).toBeInstanceOf(ProjectNode)
+    expect(toolbarRoot?.nodeKind).toBe('system-directory')
     expect(toolbarRoot?.family).toBe('module')
   })
 
@@ -88,19 +86,37 @@ describe('ProjectModel', () => {
     const p = createWorkspace().project
     p.replaceNavigationRoot(createRoot([{
       id: 'orders-node', title: '订单页面', nodeKind: 'page', path: '/orders',
-      children: [{ id: 'order-detail', title: '订单详情', nodeKind: 'sub-page', description: '订单详情功能' }],
+      children: [{
+        id: 'order-detail',
+        title: '订单详情',
+        nodeKind: 'sub-page',
+        description: '订单详情功能',
+      } as ProjectNodeData],
     }]))
     const page = p.findConfigPageByPageId('orders')
     const sub = p.findConfigPageByPageId('order-detail')
     expect(page).toBeInstanceOf(ConfigPageNode)
-    expect(page).not.toBeInstanceOf(ConfigSubPageNode)
-    expect(sub).toBeInstanceOf(ConfigSubPageNode)
+    expect(sub).toBeInstanceOf(ConfigPageNode)
+    expect(sub?.isSubPage).toBe(true)
     expect(page?.nodeKind).toBe('page')
-    expect(sub?.nodeKind).toBe('sub-page')
+    expect(sub?.nodeKind).toBe('page')
+    expect(sub?.hidden).toBe(true)
     expect(sub?.pageId).toBe('order-detail')
     expect(sub?.isSubPage).toBe(true)
     expect(sub?.toSummary().designSurface).toBe('config-files')
-    expect(sub?.toSummary().nodeKind).toBe('sub-page')
+    expect(sub?.toSummary().nodeKind).toBe('page')
+  })
+
+  it('migrates legacy sub-page nodeKind on navigation load', () => {
+    const p = createWorkspace().project
+    p.replaceNavigationRoot(createRoot([{
+      id: 'orders-node', title: '订单页面', nodeKind: 'page', path: '/orders',
+      children: [{ id: 'order-detail', title: '订单详情', nodeKind: 'sub-page' as NavNodeKind, description: '订单详情功能' }],
+    }]))
+    const sub = p.findConfigPageByPageId('order-detail')
+    expect(sub?.nodeKind).toBe('page')
+    expect(sub?.hidden).toBe(true)
+    expect(sub?.isSubPage).toBe(true)
   })
 
   it('builds tree from flat collection and finds nodes', () => {
@@ -113,7 +129,8 @@ describe('ProjectModel', () => {
     const tree = p.navigationRoot.children
     expect(tree.length).toBeGreaterThanOrEqual(1)
     const salesNode = p.findNodeById('sales')
-    expect(salesNode).toBeInstanceOf(ModuleNode)
+    expect(salesNode).toBeInstanceOf(ProjectNode)
+    expect(salesNode?.nodeKind).toBe('module')
     expect(salesNode?.family).toBe('module')
     expect(salesNode?.description).toBe('销售模块')
     const orderNode = p.findNodeById('orders')
@@ -177,22 +194,34 @@ describe('ProjectModel', () => {
     ]))
     workspace.project.selectNode('orders')
     const dto = workspace.project.beginNavigationDraft()
-    dto.node.planningStatus = 'planning_confirmed'
     dto.node.implGate = 'open'
     dto.node.upstreamContractsSatisfied = false
     workspace.project.applyNavigationNodeEdit(dto)
 
     const summary = workspace.project.readPlanningProjection().find(item => item.pageId === 'orders')
     expect(summary).toMatchObject({
-      planningStatus: 'planning_confirmed',
       implGate: 'open',
       upstreamContractsSatisfied: false,
     })
     expect(workspace.project.findNodeById('orders')?.toNodeData()).toMatchObject({
-      planningStatus: 'planning_confirmed',
       implGate: 'open',
       upstreamContractsSatisfied: false,
     })
+  })
+
+  it('strips legacy planningStatus when loading navigation', () => {
+    const workspace = createWorkspace()
+    const legacyNode = {
+      id: 'orders',
+      title: '订单页面',
+      nodeKind: 'page' as const,
+      path: '/orders',
+      description: '订单列表',
+      order: 0,
+      planningStatus: 'planning_confirmed',
+    }
+    workspace.project.replaceNavigationRoot(createRoot([legacyNode as ProjectNodeData]))
+    expect(workspace.project.findNodeById('orders')?.toNodeData()).not.toHaveProperty('planningStatus')
   })
 
   it('does not mark navigation dirty when opening draft without edits', () => {
@@ -234,7 +263,8 @@ describe('ProjectModel', () => {
     const rootNodes = p.getChildNodes('')
     expect(rootNodes.map(node => node.id)).toEqual(['homepage_root'])
     expect(rootNodes.map(node => node.pid)).toEqual([''])
-    expect(rootNodes[0]).toBeInstanceOf(ModuleNode)
+    expect(rootNodes[0]).toBeInstanceOf(ProjectNode)
+    expect(rootNodes[0]?.nodeKind).toBe('module')
     expect(rootNodes[0]?.family).toBe('module')
     const root = rootNodes[0]
     expect(root?.title).toBe('CRM')
@@ -478,5 +508,22 @@ describe('ProjectModel', () => {
     expect(project.readProjectPlanningInput()).toEqual({
       requirement: '仅项目描述',
     })
+  })
+
+  it('replaceNavigationChildren accepts ClassModel command object', () => {
+    const workspace = createWorkspace()
+    const project = workspace.project
+    const children: ProjectNodeData[] = [{
+      id: 'orders',
+      title: '订单',
+      nodeKind: 'page',
+      path: '/orders',
+      description: '订单页',
+    }]
+
+    project.replaceNavigationChildren({ children })
+
+    expect(project.navigationRoot.children.map(node => node.id)).toEqual(['orders'])
+    expect(project.readDirtyProjection().navigationDirty).toBe(true)
   })
 })

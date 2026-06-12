@@ -18,7 +18,12 @@ import {
   type ProjectNodeModelOptions,
   type ProjectPageNodeSummary,
 } from '../navigation/project-node'
-import { normalizeConfigPageId, resolveProjectPageSurface, resolvePageNodePageId } from '../navigation/navigation-tree'
+import {
+  normalizeConfigPageId,
+  isNestedConfigPageNode,
+  resolveProjectPageSurface,
+  resolvePageNodePageId,
+} from '../navigation/navigation-tree'
 import { PageRuleFile } from './content/rule-file'
 import { PageDataSetFile } from './content/dataset-file'
 import { PageTextFile } from './content/text-file'
@@ -113,7 +118,13 @@ readonly script: PageTextFile
 
   get isLoaded(): boolean { return this._isLoaded }
 
-  get isSubPage(): boolean { return false }
+  get isSubPage(): boolean {
+    return isNestedConfigPageNode({
+      nodeKind: this.nodeKind,
+      path: this.path,
+      hidden: this.hidden,
+    })
+  }
 
     /** 是否 is Dirty。 */
 isDirty(): boolean {
@@ -317,31 +328,11 @@ toSummary(): ProjectPageNodeSummary {
         : { planningAttachmentRef: this.planningAttachmentRef }),
       descriptionContext: this.descriptionContext,
       effectiveDescription: this.effectiveDescription,
-      ...(this.planningStatus !== undefined ? { planningStatus: this.planningStatus } : {}),
       ...(this.implGate !== undefined ? { implGate: this.implGate } : {}),
       ...(this.upstreamContractsSatisfied !== undefined
         ? { upstreamContractsSatisfied: this.upstreamContractsSatisfied }
         : {}),
       ...(this.icon === undefined ? {} : { icon: this.icon }),
-    }
-  }
-}
-
-/** sub-page 配置页：四文件模型，nodeKind=sub-page，无独立 path。 */
-export class ConfigSubPageNode extends ConfigPageNode {
-  override get isSubPage(): boolean { return true }
-
-  override get family() {
-    return 'config-page' as const
-  }
-
-    /** 执行 to Summary 操作。 */
-override toSummary(): ProjectPageNodeSummary {
-    const summary = super.toSummary()
-    return {
-      ...summary,
-      nodeKind: 'sub-page',
-      designSurface: 'config-files',
     }
   }
 }

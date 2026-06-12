@@ -267,8 +267,8 @@ closePageDesign(pageId: string): void {
     this.configPagesByPageId.delete(page.pageId)
   }
 
-    /** 执行 read Page Summaries 操作。 */
-readPageSummaries(): ProjectPageNodeSummary[] {
+    /** 读取策划轴投影：各 page/sub-page 的 description 与 descriptionContext。 */
+readPlanningProjection(): ProjectPageNodeSummary[] {
     const summaries = buildProjectPageSummaries(this.navigationIndex.buildTree(), {
       descriptionContext: this.readProjectDescriptionContext(),
     })

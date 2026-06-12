@@ -14,6 +14,7 @@ import type { ProjectNode } from '../navigation/project-node'
 import { ProjectDesign } from './project-design'
 import {
   applyNodeKindPresetToDraft,
+  applyNestedConfigPagePresetToDraft,
   createNavigationNodeDraft,
   navigationDraftContentKey,
   type NavigationNodeDraft,
@@ -140,9 +141,12 @@ replaceProjectInfo(project: ProjectInfoInput): ProjectInfo { return this.design.
   /**
    * 替换导航根节点的 children，返回更新后的导航根数据。
    *
-   * @param children 新的导航 children 树；每个节点必须包含稳定 id、title、nodeKind。
+   * @param input 新的导航 children 树，或 `{ children }` 命令对象（与 ClassModel script 对齐）。
    */
-  replaceNavigationChildren(children: ProjectNodeData[]): ProjectModelData {
+  replaceNavigationChildren(
+    input: ProjectNodeData[] | Readonly<{ children: ProjectNodeData[] }>,
+  ): ProjectModelData {
+    const children = Array.isArray(input) ? input : input.children
     const root = this.design.replaceNavigationChildren(children)
     this.session.markNavigationDirty('root')
     this.emitNavigationChanged({ scope: 'root' })
@@ -170,13 +174,7 @@ closePageDesign(pageId: string): void { this.design.closePageDesign(pageId) }
   /**
    * 读取策划轴投影：各 page/sub-page 的 description 与 descriptionContext。
    */
-  readPageSummaries(): ProjectPageNodeSummary[] { return this.design.readPageSummaries() }
-
-  /**
-   * 策划轴投影别名；与 readPageSummaries 同源。
-   *
-   */
-  readPlanningProjection(): ProjectPageNodeSummary[] { return this.readPageSummaries() }
+  readPlanningProjection(): ProjectPageNodeSummary[] { return this.design.readPlanningProjection() }
 
   /**
    * 读取项目级策划输入：navigation 根 description（短需求）+ 可选策划附件引用。
@@ -370,6 +368,17 @@ applyNodeKindPreset(kind: NavNodeKind): void {
     this.applyNavigationNodeEdit(nextDraft)
   }
 
+    /** 嵌套配置页 preset：page + hidden + 无 path。 */
+applyNestedConfigPagePreset(): void {
+    const node = this.requireSelectedNode('未选中导航节点，无法修改节点类型')
+    const draft = this.session.navigationDraft ?? createNavigationNodeDraft(node)
+    const nextDraft: NavigationNodeDraft = {
+      ...draft,
+      node: applyNestedConfigPagePresetToDraft(draft.node),
+    }
+    this.applyNavigationNodeEdit(nextDraft)
+  }
+
   /**
    * 写入指定配置页四文件文本到内存模型。
    *
@@ -486,7 +495,7 @@ markPageLoadedChanged(pageId: string, loaded: boolean): void {
     const navigationDraft = selectedNode
       ? this.session.navigationDraft ?? createNavigationNodeDraft(selectedNode)
       : null
-    const pageFeatures = this.design.readPageSummaries()
+    const pageFeatures = this.design.readPlanningProjection()
 
     return {
       navigationRoot,

@@ -32,7 +32,6 @@ export type NavNodeKind =
   | 'system-action'
   | 'page'
   | 'link'
-  | 'sub-page'
   | 'ref'
 
 /** 权限未匹配时的展示模式。 */
@@ -119,8 +118,6 @@ export type ProjectNodeData = {
   refProjectId?: string | undefined
   /** ref 引用是否已失效。 */
   refBroken?: boolean | undefined
-  /** Agent 策划闸门；缺省时由 effectiveDescription 推断。 */
-  planningStatus?: 'planning_draft' | 'planning_confirmed' | undefined
   /** pageDesign 实现放行闸门；缺省过渡期为 open。 */
   implGate?: 'closed' | 'open' | undefined
   /** 上游 iPaaS / 契约就绪；缺省 true。 */
@@ -159,8 +156,6 @@ export type ProjectNodeNavigationPatch = {
   permissionMode?: NavPermissionMode | undefined
   /** 新导航上下文配置。 */
   context?: string | NavContextItem[] | NavContextConfig | undefined
-  /** 新 Agent 策划闸门。 */
-  planningStatus?: 'planning_draft' | 'planning_confirmed' | undefined
   /** 新 pageDesign 实现放行闸门。 */
   implGate?: 'closed' | 'open' | undefined
   /** 新上游契约就绪状态。 */
@@ -273,8 +268,6 @@ export type ProjectPageNodeSummary = Record<string, unknown> & {
   descriptionContext: ProjectDescriptionContext[]
   /** 聚合后的有效描述文本，供 AI 理解页面意图。 */
   effectiveDescription: string
-  /** Agent 可见策划闸门；缺省时由 effectiveDescription 推断 planning_confirmed。 */
-  planningStatus?: 'planning_draft' | 'planning_confirmed'
   /** 实现放行闸门；缺省过渡期为 open（runner 可 strictImplGate）。 */
   implGate?: 'closed' | 'open'
   /** 上游 iPaaS / 契约就绪；缺省 true。 */
@@ -341,7 +334,6 @@ toNodeData(): ProjectNodeData { return cloneProjectNodeData(this.#node) }
     if (!('refId' in patch)) delete next.refId
     if (!('permissionMode' in patch)) delete next.permissionMode
     if (!('planningAttachmentRef' in patch)) delete next.planningAttachmentRef
-    if (!('planningStatus' in patch)) delete next.planningStatus
     if (!('implGate' in patch)) delete next.implGate
     if (!('upstreamContractsSatisfied' in patch)) delete next.upstreamContractsSatisfied
 
@@ -358,7 +350,6 @@ toNodeData(): ProjectNodeData { return cloneProjectNodeData(this.#node) }
     if (next.context === undefined || next.context === '') delete next.context
     if (!next.dividerAfter) delete next.dividerAfter
     if (next.nodeKind !== 'ref' || !next.refId) delete next.refId
-    if (!next.planningStatus) delete next.planningStatus
     if (!next.implGate) delete next.implGate
     if (next.upstreamContractsSatisfied !== false) delete next.upstreamContractsSatisfied
     this.#node = next
@@ -415,8 +406,6 @@ toNodeData(): ProjectNodeData { return cloneProjectNodeData(this.#node) }
   get permissionMode(): NavPermissionMode | undefined { return this.#node.permissionMode }
   /** 节点策划详细说明附件引用。 */
   get planningAttachmentRef(): string | undefined { return this.#node.planningAttachmentRef }
-  /** Agent 策划闸门。 */
-  get planningStatus(): ProjectPageNodeSummary['planningStatus'] { return this.#node.planningStatus }
   /** pageDesign 实现放行闸门。 */
   get implGate(): ProjectPageNodeSummary['implGate'] { return this.#node.implGate }
   /** 上游契约是否已就绪。 */

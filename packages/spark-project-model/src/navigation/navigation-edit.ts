@@ -20,6 +20,7 @@ import type {
   ProjectNodeNavigationPatch,
   ProjectNodeData,
 } from './project-node'
+import { isNestedConfigPageNode } from './navigation-tree'
 
 /** Navigation Node Draft Node 的语义模型。 */
 export type NavigationNodeDraftNode = {
@@ -53,8 +54,6 @@ disabled: boolean
 refId: string
     /** permission Mode 字段。 */
 permissionMode: NavPermissionMode
-    /** planning Status 字段。 */
-planningStatus?: ProjectNodeData['planningStatus']
     /** impl Gate 字段。 */
 implGate?: ProjectNodeData['implGate']
     /** upstream Contracts Satisfied 字段。 */
@@ -117,7 +116,6 @@ const DEFAULT_NAV_ICON_BY_KIND: Record<NavNodeKind, string> = {
   'system-action': 'Lightning',
   'page': 'Document',
   'link': 'Link',
-  'sub-page': 'Document',
   'ref': 'Connection',
 }
 
@@ -165,7 +163,6 @@ export function createNavigationNodeDraft(navNode: ProjectNodeData): NavigationN
     hidden: navNode.hidden ?? false,
     disabled: navNode.disabled ?? false,
     permissionMode: navNode.permissionMode ?? 'masked',
-    ...(navNode.planningStatus !== undefined ? { planningStatus: navNode.planningStatus } : {}),
     ...(navNode.implGate !== undefined ? { implGate: navNode.implGate } : {}),
     ...(navNode.upstreamContractsSatisfied !== undefined
       ? { upstreamContractsSatisfied: navNode.upstreamContractsSatisfied }
@@ -212,6 +209,14 @@ export function createNavigationNodeDraft(navNode: ProjectNodeData): NavigationN
     node: nodeDto,
     context: { hasContext: false, items: [], config: emptyContextConfig() },
   }
+}
+
+export function applyNestedConfigPagePresetToDraft(node: NavigationNodeDraftNode): NavigationNodeDraftNode {
+  const next = applyNodeKindPresetToDraft(node, 'page')
+  next.hidden = true
+  next.path = ''
+  next.linkTarget = 'iframe'
+  return next
 }
 
 export function applyNodeKindPresetToDraft(node: NavigationNodeDraftNode, kind: NavNodeKind): NavigationNodeDraftNode {
@@ -265,7 +270,8 @@ export function createNavigationNodePatch(input: NavigationNodeDraft): Navigatio
   const nodeDto = { ...input.node }
   const warnings: string[] = []
 
-  if (nodeDto.nodeKind === 'sub-page') {
+  if ((nodeDto.nodeKind as string) === 'sub-page' || isNestedConfigPageNode(nodeDto)) {
+    nodeDto.nodeKind = 'page'
     nodeDto.hidden = true
     nodeDto.path = ''
     nodeDto.linkTarget = 'iframe'
@@ -295,12 +301,11 @@ export function createNavigationNodePatch(input: NavigationNodeDraft): Navigatio
     permissionMode: nodeDto.permissionMode,
   }
   Object.assign(patch, {
-    planningStatus: nodeDto.planningStatus,
     implGate: nodeDto.implGate,
     upstreamContractsSatisfied: nodeDto.upstreamContractsSatisfied,
   } satisfies Pick<
     ProjectNodeNavigationPatch,
-    'planningStatus' | 'implGate' | 'upstreamContractsSatisfied'
+    'implGate' | 'upstreamContractsSatisfied'
   >)
 
   if (nodeDto.nodeKind === 'link') patch.linkTarget = nodeDto.linkTarget

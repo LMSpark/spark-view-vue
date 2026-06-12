@@ -24,7 +24,19 @@ export function normalizePageIdFromPath(path: string | undefined | null): string
   return path ? path.replace(/^\/+/, '').trim() : ''
 }
 
-export function isConfigNodeKind(kind: string | undefined | null): boolean { return (kind ?? 'page') === 'page' || kind === 'sub-page' }
+export function isConfigNodeKind(kind: string | undefined | null): boolean {
+  const normalized = kind ?? 'page'
+  return normalized === 'page' || normalized === 'sub-page'
+}
+
+/** 嵌套配置页：无独立路由（legacy `sub-page` 在 normalize 时迁移为 page + hidden）。 */
+export function isNestedConfigPageNode(
+  node: Pick<ProjectNodeData, 'nodeKind' | 'path' | 'hidden'>,
+): boolean {
+  const kind = node.nodeKind ?? 'page'
+  if ((kind as string) === 'sub-page') return true
+  return kind === 'page' && node.hidden === true && normalizePageIdFromPath(node.path) === ''
+}
 
 /** 按 nodeKind 解析模型侧页面表面（不依赖应用路由表）。 */
 export function resolveProjectPageSurface(node: ProjectNodeData): ProjectPageSurface {
@@ -52,7 +64,8 @@ function inferNavNodeKind(node: ProjectNodeData, parentPlacement?: string): NavN
 export function normalizeProjectNodeData(node: ProjectNodeData, parentPlacement?: string): ProjectNodeData {
   const cloned = deepClone(node)
   cloned.nodeKind = inferNavNodeKind(cloned, parentPlacement)
-  if (cloned.nodeKind === 'sub-page') {
+  if ((cloned.nodeKind as string) === 'sub-page') {
+    cloned.nodeKind = 'page'
     cloned.hidden = true
     delete cloned.path
     delete cloned.linkTarget
@@ -66,6 +79,7 @@ export function normalizeProjectNodeData(node: ProjectNodeData, parentPlacement?
   if (Array.isArray(cloned.children)) {
     cloned.children = cloned.children.map(child => normalizeProjectNodeData(child, cloned.childPlacement))
   }
+  delete (cloned as Record<string, unknown>)['planningStatus']
   return cloned
 }
 
@@ -169,7 +183,7 @@ export function buildNavRoot(children: ProjectNodeData[], options?: Partial<Omit
   })
 }
 
-function isPageLikeKind(kind: NavNodeKind): boolean {
+function isPageLikeKind(kind: NavNodeKind | 'sub-page'): boolean {
   return kind === 'page'
     || kind === 'system-page'
     || kind === 'system-action'
@@ -316,7 +330,6 @@ export function buildProjectPageSummaries(
           descriptionContext: nextContext,
           effectiveDescription: formatProjectDescriptionContext(nextContext),
           ...(node.icon !== undefined ? { icon: node.icon } : {}),
-          ...(node.planningStatus !== undefined ? { planningStatus: node.planningStatus } : {}),
           ...(node.implGate !== undefined ? { implGate: node.implGate } : {}),
           ...(node.upstreamContractsSatisfied !== undefined
             ? { upstreamContractsSatisfied: node.upstreamContractsSatisfied }

@@ -20,7 +20,7 @@
 | 项目 | `ProjectModel` 根；L0 元数据 | `ProjectModelData`（`childPlacement`、`homeNodeId` …） |
 | 模块 | 策划轴结构单元 | `module`、`system-directory` |
 | 页面 | 策划轴入口 | `page`、`system-page`、`link`、`ref` … |
-| 子页面 | 页面下嵌套入口 | `sub-page` |
+| 子页面 | 页面下嵌套入口（无路由） | `page` + `hidden` + 无 `path` |
 | 四文件 | 实现轴编辑真源 | `ConfigPageNode` → rule / pagedata / script / style |
 
 **节点树（后端 API 仍称 navigation）≠ 主策划。** 节点树承载模块结构、页面入口、路由派生、权限与引用等；**不要**用「导航」一词替代模块 / 页面 / 子页面策划层级。
@@ -76,12 +76,24 @@ readProjectPlanningInput()
   → runner 解析附件正文
   → LLM 输出子模块/页面概要（title + description）
   → 写入 navigation 节点 description
-  → planning_confirmed 后再进入 openPageDesign
+  → effectiveDescription 非空后再进入 openPageDesign
 ```
 
 勿恢复独立 `NavigationDesign` 或 `PlanningModel`。
 
 AI 只消费这里暴露的项目模型入口，不在本包维护独立运行态路线图。
+
+### 0.1 最小真源（2026-06）
+
+| 能力 | 唯一 class |
+|------|------------|
+| 项目 + 导航 + 策划 | `ProjectModel` |
+| 配置页四文件 | `ConfigPageNode`（经 `openPageDesign`） |
+| 落盘 | `ProjectWorkspace` |
+
+`domain-model/`（`ProjectRootModel` / 扁平行 / `PageConfigModel`）**已删除**。策划脚本：`this.replaceNavigationChildren({ children })`。
+
+验收清单：[`docs/guides/MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md`](../../../docs/guides/MODEL-CONVERGENCE-ACCEPTANCE.zh-CN.md)
 
 ---
 
@@ -118,53 +130,30 @@ classDiagram
   direction TB
 
   class ProjectNode {
-    <<abstract 基类>>
-    +family: ProjectNodeFamily
+    <<基类>>
+    +nodeKind
+    +family
     +applyNavigationPatch()
-    +toNodeData() ProjectNodeData
   }
-
-  class ModuleNode
-  class SystemDirectoryNode
-  class SystemPageNode
-  class SystemActionNode
-  class LinkNode
-  class RefNode
 
   class ConfigPageNode {
     +pageId
-    +rule: PageRuleFile
-    +dataSet: PageDataSetFile
-    +script/style: PageTextFile
-    +hydrateFileText()
-    +getDirtyFileNames()
+    +isSubPage
+    +四文件子模型
   }
-  class ConfigSubPageNode
 
-  ProjectNode <|-- ModuleNode
-  ProjectNode <|-- SystemDirectoryNode
-  ProjectNode <|-- SystemPageNode
-  ProjectNode <|-- SystemActionNode
-  ProjectNode <|-- LinkNode
-  ProjectNode <|-- RefNode
   ProjectNode <|-- ConfigPageNode
-  ConfigPageNode <|-- ConfigSubPageNode
 
-  note for ProjectNode "instantiate-project-node.ts\n统一 nodeKind 分发"
+  note for ProjectNode "非配置页：统一 ProjectNode\n配置页：ConfigPageNode"
 ```
 
-| nodeKind | class | family | designSurface |
-|---|---|---|---|
-| `module` | ModuleNode | module | none |
-| `system-directory` | SystemDirectoryNode | module | none |
-| `system-page` | SystemPageNode | system-page | system-page |
-| `system-action` | SystemActionNode | system-action | none |
-| `link` | LinkNode | link | link |
-| `ref` | RefNode | ref | ref |
-| `page` | ConfigPageNode | config-page | config-files |
-| `sub-page` | ConfigSubPageNode | config-page | config-files |
+| nodeKind | 实例 class | 说明 |
+|---|---|---|
+| `module` / `system-directory` / `link` / `ref` / `system-page` / `system-action` | ProjectNode | `family` 由 `nodeKind` 派生 |
+| `page` | ConfigPageNode | 四文件配置页 |
+| `page`（嵌套） | ConfigPageNode | `isSubPage=true`（hidden + 无 path）；legacy `sub-page` 加载时迁移 |
 
-配置页 kind 由 `page/instantiate-project-node.ts` 实例化；其余 kind 由 `navigation/navigation-kinds.ts` 实例化。**navigation 不 import page**。
+配置页 kind 由 `page/instantiate-project-node.ts` 实例化；其余 kind 由 `navigation/navigation-kinds.ts` 返回 `ProjectNode`。**navigation 不 import page**。
 
 ---
 
@@ -199,7 +188,7 @@ classDiagram
     +openPageDesign() / closePageDesign()
     +replaceNavigationRoot()
     +applyNavigationNodeEdit()
-    +readPageSummaries()
+    +readPlanningProjection()
   }
 
   class NavigationIndex {
@@ -284,7 +273,7 @@ flowchart LR
 | `readActivePageProjection()` | 四文件文本、parseErrors、isLoaded |
 | `readDirtyProjection()` | dirtyFiles、navigationDirty、hasAnyDirty |
 
-`readNavigationProjection().pageFeatures` 与 `readPlanningProjection()` 同源（`ProjectDesign.readPageSummaries()`）。DevSystem / AI 读策划时用 `readPlanningProjection()`，勿从菜单节点自行拼接需求。
+`readNavigationProjection().pageFeatures` 与 `readPlanningProjection()` 同源（`ProjectDesign.readPlanningProjection()`）。DevSystem / AI 读策划时用 `readPlanningProjection()`，勿从菜单节点自行拼接需求。
 
 **dirty 语义（勿混用）：**
 
