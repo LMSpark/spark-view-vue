@@ -28,8 +28,12 @@ function createSummary(
 }
 
 describe('readPageDesignGateState', () => {
-  it('infers planning_confirmed from effectiveDescription when planningStatus omitted', () => {
-    expect(readPageDesignGateState(createSummary()).planningStatus).toBe('planning_confirmed')
+  it('marks planningReady when effectiveDescription is non-empty', () => {
+    expect(readPageDesignGateState(createSummary()).planningReady).toBe(true)
+  })
+
+  it('marks planningReady false when effectiveDescription is empty', () => {
+    expect(readPageDesignGateState(createSummary({ effectiveDescription: '' })).planningReady).toBe(false)
   })
 
   it('defaults implGate to open when field omitted', () => {
@@ -42,10 +46,10 @@ describe('readPageDesignGateState', () => {
 })
 
 describe('validatePageDesignRunGate', () => {
-  it('rejects planning_draft', () => {
+  it('rejects when planning is not ready', () => {
     const result = validatePageDesignRunGate({
       pageId: 'orders',
-      planningStatus: 'planning_draft',
+      planningReady: false,
       implGate: 'open',
       upstreamContractsSatisfied: true,
     })
@@ -56,7 +60,7 @@ describe('validatePageDesignRunGate', () => {
   it('rejects closed impl gate', () => {
     const result = validatePageDesignRunGate({
       pageId: 'orders',
-      planningStatus: 'planning_confirmed',
+      planningReady: true,
       implGate: 'closed',
       upstreamContractsSatisfied: true,
     })
@@ -64,10 +68,10 @@ describe('validatePageDesignRunGate', () => {
     expect(result.code).toBe('IMPL_GATE_CLOSED')
   })
 
-  it('allows confirmed + open gate', () => {
+  it('allows ready + open gate', () => {
     expect(validatePageDesignRunGate({
       pageId: 'orders',
-      planningStatus: 'planning_confirmed',
+      planningReady: true,
       implGate: 'open',
       upstreamContractsSatisfied: true,
     }).ok).toBe(true)
@@ -145,17 +149,16 @@ describe('evaluatePageDesignScriptOperationGate', () => {
 })
 
 describe('evaluatePageDesignMutationToolGate with allowedOperations', () => {
-  it('rejects planning_draft before script marker checks', () => {
+  it('rejects empty effectiveDescription before script marker checks', () => {
     const result = evaluatePageDesignMutationToolGate({
       toolName: 'model_script',
       summary: createSummary({
-        planningStatus: 'planning_draft',
         effectiveDescription: '',
       }),
       allowedOperations: PAGE_DATA_DESIGN_ALLOWED_OPERATIONS,
       toolArgs: { script: 'await this.openPageDesign({ pageId: "orders" }).editDataSet(() => {})' },
     })
     expect(result.ok).toBe(false)
-    expect(result.reason).toContain('planning_draft')
+    expect(result.reason).toContain('effectiveDescription')
   })
 })

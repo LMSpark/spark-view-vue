@@ -47,7 +47,6 @@ function createEditor(): ProjectWorkspace {
         nodeKind: 'page',
         path: '/orders',
         description: '订单列表页面',
-        planningStatus: 'planning_confirmed',
         implGate: 'open',
       },
     ],
