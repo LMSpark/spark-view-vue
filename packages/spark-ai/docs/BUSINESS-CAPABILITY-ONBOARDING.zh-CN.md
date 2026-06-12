@@ -62,6 +62,7 @@
 | 能力 | 文件 |
 |------|------|
 | pageDesign | `src/services/page-design-business.ts` |
+| pageDataDesign | `src/services/page-data-design-business.ts` |
 | projectPlanning | `src/services/project-planning-business.ts` |
 
 ## 常见误接

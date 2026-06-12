@@ -306,6 +306,7 @@ host.ensure('pageDesign', {
 | alias | moduleId | rootClass | APP 入口 |
 |-------|----------|-----------|----------|
 | `pageDesign` | `pageDesign` | `ProjectModel` | `ensurePageDesignBusiness()` |
+| `pageDataDesign` | `pageDataDesign` | `ProjectModel` | `ensurePageDataDesignBusiness()` |
 | `projectPlanning` | `projectPlanning` | `ProjectRootModel` | `ensureProjectPlanningBusiness()` |
 
 ### 6.3 扩展新业务
@@ -507,16 +508,133 @@ createAiHostRunBridge()
 
 ---
 
-## 12. 现状缺口与演进
+## 12. Phase 1 审核与现状缺口
+
+### 12.1 Phase 1 审核结论
+
+| 审核项 | 结论 | 代码证据 | 备注 |
+|--------|------|----------|------|
+| pageDesign 生产注册 | ✅ 通过 | `src/services/page-design-business.ts` | `ensurePageDesignBusiness()` 使用 `ProjectModel`、`dtsClassModelManifestUrl`、inputContract、gates、SOP nudge。 |
+| projectPlanning 生产注册 | ✅ 通过 | `src/services/project-planning-business.ts` | `ensureProjectPlanningBusiness()` 使用 `ProjectRootModel`、DTS 主线、navigation-only gates、`afterFunctionCall` 回写 `ProjectModel`。 |
+| DevSystem 内联运行 | ✅ pageDesign 通过 | `src/views/app/dev-system/useDevState.ts` | 当前 UI 入口调用 `runPageDesignAiSession()`，复用同一个 `ProjectWorkspace`，默认不自动保存。 |
+| projectPlanning 运行入口 | ⚠️ headless/service 通过 | `src/services/project-planning-ai-runner.ts` | 已有 runner 和 Host Run；未看到 DevSystem 按钮级入口。若要求可视调试入口，应作为后续 UI 补项。 |
+| Host Run 接入 | ✅ 通过 | `src/App.vue`, `src/services/*-host-run-provider.ts` | 壳层 `chainAiHostRunPrepare()` 串联 pageDesign / projectPlanning provider。 |
+| Host Run 回执 | ✅ 通过 | `src/services/ai-host-run-bridge.ts` | bridge 收集 trace、diagnostics、session scope 后 `POST /api/ai/host-run/result`。 |
+| 交付策略 | ⚠️ 可运行但分散 | runner / provider / bridge | save、trace、rollback 不是一个抽象，Phase 2 必须收束。 |
+
+**Phase 1 判定：** 生产注册 + Host Run 主链路成立；DevSystem 已覆盖 pageDesign 内联链路。projectPlanning 以 headless runner / Host Run 为主，若把 DevSystem 理解为两个业务都有可视入口，则需要补 UI 入口，但不阻断生产 Host Run。
+
+### 12.2 当前缺口
 
 | 项 | 现状 | 建议 |
 |----|------|------|
-| 统一 Delivery 抽象 | 无；DevSystem / Host Run 各自 save | 可选 `DeliveryPort` 接口 |
-| 第三业务 | 仅 pageDesign + projectPlanning | 复制 ensure 模板 |
-| semantic-gaps | 2 条弱 JSDoc | 补 JSDoc 后 regen |
+| 统一 Delivery 抽象 | 已有 APP `DeliveryPort` | 后续新增业务复用同一端口 |
+| rollback 语义 | Host Run 失败会写入 delivery rollback；DevSystem 保留 dirty | 后续可加 UI 侧手动恢复 |
+| trace 语义 | save / rollback 已进入 `resultExtras.delivery` | Host Run 回执固定读取 delivery |
+| projectPlanning DevSystem UI | 只有 headless runner 与 Host Run provider | 如需人工调试，补 DevSystem 入口 |
+| 第三业务 | ✅ `pageDataDesign` | `page-data-design-business.ts` | 新 alias + inputContract + selective pagedata.json Delivery |
+| semantic-gaps | `gapCount = 0` | 保持生成门禁，不允许回退 |
 | orders 独立业务 | 无；仅为 pageId 示例 | 若需独立 SOP，新 alias + Model |
 | Worker 依赖 | 浏览器 Worker 必须 | Node 侧可直载 loader（测试已覆盖） |
 | signatureText CI diff | 可选 warn | golden 对比派生签名 vs AST 文本 |
+
+### 12.3 Phase 2：统一 DeliveryPort（已落地）
+
+DeliveryPort 是 **APP 层交付端口**，不进入 `spark-ai` 内核。它只回答三件事：
+
+| 能力 | 语义 | 现有散点 |
+|------|------|----------|
+| `save` | 把 Working Copy 持久化到外部世界 | `saveDirtyPageFiles()`, `saveAll()` |
+| `trace` | 把交付结果写入 Host Run 回执 / UI 状态 | `resultExtras`, `ai-host-run-bridge` payload |
+| `rollback` | run 失败、取消或保存失败时恢复/丢弃工作副本 | headless editor 丢弃、DevSystem 手动处理 |
+
+当前契约：
+
+```typescript
+export type AiDeliveryMode = 'manual' | 'auto'
+
+export type AiDeliveryArtifact = Readonly<{
+  kind: 'page-file' | 'navigation'
+  name: string
+  status: 'dirty' | 'saved' | 'skipped' | 'rolledBack'
+}>
+
+export type AiDeliveryResult = Readonly<{
+  status: 'saved' | 'skipped' | 'rolledBack' | 'failed'
+  artifacts: readonly AiDeliveryArtifact[]
+  message?: string
+}>
+
+export interface AiDeliveryPort<TContext> {
+  readonly mode: AiDeliveryMode
+  save(context: TContext): Promise<AiDeliveryResult>
+  trace(context: TContext, result: AiDeliveryResult): Promise<void>
+  rollback(context: TContext, error: Error): Promise<AiDeliveryResult>
+}
+```
+
+第一批 adapter：
+
+| Adapter | 场景 | `save` | `rollback` | `trace` |
+|---------|------|--------|------------|---------|
+| `PageDesignInlineDeliveryPort` | DevSystem | 默认 `skipped`，用户手动保存；自动化可开启 | 不自动回滚，保留 dirty 供人工检查 | DevSystem status / trace sink |
+| `PageDesignHostRunDeliveryPort` | pageDesign Host Run | `editor.saveDirtyPageFiles()` | 丢弃 headless editor，记录未保存 dirty 文件 | Host Run result extras |
+| `ProjectPlanningHostRunDeliveryPort` | projectPlanning Host Run | `editor.saveAll()` 保存 navigation | 丢弃 headless editor，记录 navigation dirty | Host Run result extras |
+| `PageDataDesignHostRunDeliveryPort` | pageDataDesign Host Run | `editor.savePageFile('pagedata.json')` | 丢弃 headless editor，记录 pagedata dirty | Host Run result extras |
+| `NoopDeliveryPort` | 测试 / dry-run | `skipped` | `skipped` | 仅记录调用顺序 |
+
+标准生命周期：
+
+```text
+prepareRun()
+  → create editor / snapshot
+  → host.run(alias, args)
+  → 成功：delivery.save(context)
+  → 失败/取消/超时：delivery.rollback(context, error)
+  → delivery.trace(context, deliveryResult)
+  → Host Run bridge POST result
+```
+
+失败规则：
+
+| 场景 | 处理 |
+|------|------|
+| `host.run` 成功但 `save` 失败 | Host Run 不报 `completed`；转为 `failed`，错误写入 delivery trace。 |
+| `host.run` 失败 / timeout / cancelled | 不保存；执行 `rollback`；仍提交失败回执。 |
+| `rollback` 失败 | 原始错误保留，rollback 错误附加到 trace。 |
+| DevSystem 内联 run 成功 | 默认只留下 dirty 状态，由用户点击保存；不要偷偷落盘。 |
+| Host Run 隔离 run 成功 | 默认自动保存；保存结果必须进入 `resultExtras.delivery`。 |
+
+Phase 2 落地状态：
+
+```text
+✅ APP 层 DeliveryPort 类型与 NoopDeliveryPort
+✅ pageDesign runner/provider 接入 PageDesign delivery adapter
+✅ projectPlanning runner/provider 接入 ProjectPlanning delivery adapter
+✅ ai-host-run-bridge 读取 delivery error extras，回执 payload 固定到 resultExtras.delivery
+✅ 覆盖测试：成功保存、显式保存、run 失败 rollback、DevSystem manual save
+```
+
+### 12.4 Phase 3：第三业务能力 pageDataDesign（已落地）
+
+第三业务能力用于验证 §15 接入清单可复用，不引入新领域根 class：
+
+| 组件 | 落地 |
+|------|------|
+| alias / moduleId | `pageDataDesign` |
+| rootClassName | `ProjectModel`（与 pageDesign 同根，script 范围不同） |
+| inputContract | `pageId` + `description` + `effectiveDescription` + 可选 `dataRequirement` |
+| gates | 复用 pageDesign 策划闸门 + script 禁止 editNodeTree / setFileText |
+| Delivery | **selective save**：`savePageFile('pagedata.json')`，非 `saveDirtyPageFiles` |
+| Host Run | `preparePageDataDesignHostRun` 接入 `chainAiHostRunPrepare` |
+
+```text
+✅ ensurePageDataDesignBusiness + inputContract
+✅ page-data-design-gates（DataSet-only script 门禁）
+✅ PageDataDesignHostRunDeliveryPort（单文件交付）
+✅ preparePageDataDesignHostRun + App.vue 串联
+✅ 单元测试：gates + Host Run delivery（save / skip / rollback）
+```
 
 ---
 
@@ -540,9 +658,9 @@ createAiHostRunBridge()
 
 ```text
 Phase 0 ✅  DTS ClassModel + TypeDoc type 树 + bundle regen
-Phase 1 ✅  pageDesign / projectPlanning 生产注册 + DevSystem + Host Run
-Phase 2 🔲  统一 DeliveryPort（save / trace / rollback）
-Phase 3 🔲  第三 **业务能力**（新 alias + 新 inputContract + 新 Delivery 策略）
+Phase 1 ✅  pageDesign / projectPlanning 生产注册 + Host Run；DevSystem 已覆盖 pageDesign 内联链路
+Phase 2 ✅  统一 DeliveryPort（save / trace / rollback / resultExtras.delivery）
+Phase 3 ✅  第三 **业务能力** pageDataDesign（新 alias + inputContract + selective save Delivery）
 Phase 4 🔲  CI：signature 派生 golden + semantic-gaps 归零门禁
 Phase 5 🔲  多租户 Host Run 规模化 + session 诊断面板
 ```
@@ -622,12 +740,12 @@ export function ensureXxxBusiness(options: {
 
 ### 15.7 与现有能力对照
 
-| 抽象项 | pageDesign | projectPlanning |
-|--------|------------|-----------------|
-| alias | `pageDesign` | `projectPlanning` |
-| rootClassName | `ProjectModel` | `ProjectRootModel` |
-| identityField | `pageId` | 见 `project-planning-business.ts` |
-| Delivery | `saveDirtyPageFiles` | navigation 保存等 |
+| 抽象项 | pageDesign | pageDataDesign | projectPlanning |
+|--------|------------|----------------|-----------------|
+| alias | `pageDesign` | `pageDataDesign` | `projectPlanning` |
+| rootClassName | `ProjectModel` | `ProjectModel` | `ProjectRootModel` |
+| identityField | `pageId` | `pageId` | `projectScopeKey` |
+| Delivery | `saveDirtyPageFiles` | `savePageFile('pagedata.json')` | `saveAll()` navigation |
 
 ### 15.8 常见误接
 
