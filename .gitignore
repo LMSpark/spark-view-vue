@@ -95,6 +95,12 @@ spark-ai-server/data/pages-config/**/ai-leave-request-form-*/
 spark-ai-server/data/pages-config/**/ai-student-grade-management-*/
 spark-ai-server/data/pages-config/**/ai-employee-info-management-*/
 spark-ai-server/data/pages-config/**/ai-test/
+spark-ai-server/data/pages-config/**/_plan_*/
+spark-ai-server/data/pages-config/**/[0-9]*/
+spark-ai-server/data/pages-config/**/[0-9][0-9]*/
+spark-ai-server/data/pages-config/**/[0-9][0-9][0-9]*/
+spark-ai-server/data/pages-config/**/[0-9][0-9][0-9][0-9]*/
+spark-ai-server/data/pages-config/**/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]/
 
 # TypeScript incremental build cache
 *.tsbuildinfo

@@ -107,3 +107,5 @@ GET  /api/pages-config/__list              # 列出所有页面
 - ✅ 必需：rule.json, pagedata.json；可选：style.css, script.js
 - ✅ 大数据集通过 `api.list` 配置远程加载，内联数据仅用于静态小表
 - ✅ 优先通过 `rule.json` / `pagedata.json` 配置解决需求，减少 script.js 代码量
+- ❌ 不要提交纯数字、单字母、UUID、`_plan_*` 或 `ai-*-form-*` 等临时探针页；本地试验页应留在 `.gitignore` 覆盖范围内
+- ✅ 正式 demo 页保留 kebab-case 命名，并与 `src/layout/demo-nav.ts` 或测试/fixture 引用对齐；跨项目示例放独立 `{projectId}`（如 `engineering-pm/r-table-series`）
