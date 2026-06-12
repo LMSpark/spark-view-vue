@@ -63,9 +63,12 @@ export {
 } from './json-schema-to-type'
 
 export {
-  buildDtsClassModelBundle,
   dtsSourcePathToBundleRelativeJson,
   resolveDtsBundleRelativeUrl,
+} from './dts-bundle-url'
+
+export {
+  buildDtsClassModelBundle,
 } from './build-dts-class-model-bundle'
 
 export {

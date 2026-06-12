@@ -11,7 +11,7 @@ import type {
   DtsFileProjectionDocument,
 } from './dts-bundle-types'
 import type { DtsClassModelSurfaceDocument } from './dts-surface-types'
-import { resolveDtsBundleRelativeUrl } from './build-dts-class-model-bundle'
+import { resolveDtsBundleRelativeUrl } from './dts-bundle-url'
 import {
   readDtsClassModelBundleManifest,
   readDtsFileProjectionDocument,

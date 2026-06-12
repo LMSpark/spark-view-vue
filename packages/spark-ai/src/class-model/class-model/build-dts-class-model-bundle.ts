@@ -88,9 +88,7 @@ type BundleSchemaRefContext = Readonly<{
   typeReferenceIndex: ReadonlyMap<string, ReadonlyMap<string, TypeReferenceTarget>>
 }>
 
-export function dtsSourcePathToBundleRelativeJson(sourcePath: string): string {
-  return `files/${sourcePath}.json`
-}
+import { dtsSourcePathToBundleRelativeJson } from './dts-bundle-url'
 
 export function buildDtsClassModelBundle(
   options: BuildDtsClassModelBundleOptions,
@@ -225,9 +223,7 @@ export function buildDtsClassModelBundle(
   }
 }
 
-export function resolveDtsBundleRelativeUrl(manifestUrl: string, relativePath: string): string {
-  return new URL(relativePath.replace(/\\/g, '/'), new URL(manifestUrl)).href
-}
+export { dtsSourcePathToBundleRelativeJson, resolveDtsBundleRelativeUrl } from './dts-bundle-url'
 
 function normalizeRepoPath(absolutePath: string, repoRoot: string): string {
   return relative(resolve(repoRoot), resolve(absolutePath)).replace(/\\/g, '/')
