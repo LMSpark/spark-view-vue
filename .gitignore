@@ -28,6 +28,14 @@ spark-ai-server/data/sparkdb*.db
 *.cache
 tsc-output.txt
 tmpclaude-*
+temp-*.mjs
+tmp-*.mjs
+scratch-*.mjs
+debug-*.mjs
+probe-*.mjs
+/sp[0-9]*.mjs
+/sp[0-9]*.js
+/prune_script.ps1
 
 # Local env overrides（不提交 API Key）
 .env.local
