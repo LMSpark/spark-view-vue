@@ -51,7 +51,8 @@
           "schema": {
             "anyOf": [
               {
-                "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+                "type": "object",
+                "title": "ProjectNodeData"
               },
               {
                 "type": "null"
@@ -213,7 +214,8 @@
           "name": "rule",
           "jsdoc": "rule 字段。",
           "schema": {
-            "$ref": "content/rule-file.d.ts.json#/$defs/PageRuleFile"
+            "type": "object",
+            "title": "PageRuleFile"
           },
           "readable": true,
           "writable": false
@@ -222,7 +224,8 @@
           "name": "dataSet",
           "jsdoc": "data Set 字段。",
           "schema": {
-            "$ref": "content/dataset-file.d.ts.json#/$defs/PageDataSetFile"
+            "type": "object",
+            "title": "PageDataSetFile"
           },
           "readable": true,
           "writable": false
@@ -231,7 +234,8 @@
           "name": "style",
           "jsdoc": "style 字段。",
           "schema": {
-            "$ref": "content/text-file.d.ts.json#/$defs/PageTextFile"
+            "type": "object",
+            "title": "PageTextFile"
           },
           "readable": true,
           "writable": false
@@ -240,7 +244,8 @@
           "name": "script",
           "jsdoc": "script 字段。",
           "schema": {
-            "$ref": "content/text-file.d.ts.json#/$defs/PageTextFile"
+            "type": "object",
+            "title": "PageTextFile"
           },
           "readable": true,
           "writable": false
@@ -275,8 +280,7 @@
               "name": "name",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             },
             {
@@ -321,8 +325,7 @@
               "name": "name",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -340,8 +343,7 @@
               "name": "name",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -359,8 +361,7 @@
               "name": "name",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             },
             {
@@ -385,8 +386,7 @@
               "name": "name",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -404,8 +404,7 @@
               "name": "name",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -423,8 +422,7 @@
               "name": "name",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -442,8 +440,7 @@
               "name": "name",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -461,8 +458,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "PageNodeFileName",
-              "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -618,14 +614,13 @@
           "parameters": [],
           "type": {
             "type": "reference",
-            "name": "ProjectPageNodeSummary",
-            "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+            "name": "unknown"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.836Z",
+  "generatedAt": "2026-06-13T04:00:57.884Z",
   "$defs": {
     "PageNodeRenderConfig": {
       "type": "object",
@@ -638,7 +633,8 @@
         "navigation": {
           "anyOf": [
             {
-              "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+              "type": "object",
+              "title": "ProjectNodeData"
             },
             {
               "type": "null"
@@ -693,16 +689,20 @@
       "description": "配置页面节点。\n持有当前页面的 rule.json、pagedata.json、script.js、style.css 子模型。\n四文件持久化由 ProjectWorkspace 或 PageContentLoader 编排。",
       "properties": {
         "rule": {
-          "$ref": "content/rule-file.d.ts.json#/$defs/PageRuleFile"
+          "type": "object",
+          "title": "PageRuleFile"
         },
         "dataSet": {
-          "$ref": "content/dataset-file.d.ts.json#/$defs/PageDataSetFile"
+          "type": "object",
+          "title": "PageDataSetFile"
         },
         "style": {
-          "$ref": "content/text-file.d.ts.json#/$defs/PageTextFile"
+          "type": "object",
+          "title": "PageTextFile"
         },
         "script": {
-          "$ref": "content/text-file.d.ts.json#/$defs/PageTextFile"
+          "type": "object",
+          "title": "PageTextFile"
         },
         "pageId": {
           "type": "string"

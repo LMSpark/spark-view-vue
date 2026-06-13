@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/services/ai/ai-host-run-bridge.d.ts",
+  "symbols": [
+    "AiHostRunTarget",
+    "AiHostRunPrepare",
+    "AiHostRunBridgeOptions",
+    "AiHostRunBridge"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiHostRunTarget": {
+      "ref": "spark-class-model://schema/AiHostRunTarget",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiHostRunTarget",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiHostRunTarget"
+      }
+    },
+    "spark-class-model://model/AiHostRunTarget": {
+      "ref": "spark-class-model://model/AiHostRunTarget",
+      "kind": "model",
+      "className": "AiHostRunTarget",
+      "schemaRef": "spark-class-model://schema/AiHostRunTarget",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiHostRunPrepare": {
+      "ref": "spark-class-model://schema/AiHostRunPrepare",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiHostRunPrepare",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiHostRunPrepare"
+      }
+    },
+    "spark-class-model://model/AiHostRunPrepare": {
+      "ref": "spark-class-model://model/AiHostRunPrepare",
+      "kind": "model",
+      "className": "AiHostRunPrepare",
+      "schemaRef": "spark-class-model://schema/AiHostRunPrepare",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiHostRunBridgeOptions": {
+      "ref": "spark-class-model://schema/AiHostRunBridgeOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiHostRunBridgeOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiHostRunBridgeOptions"
+      }
+    },
+    "spark-class-model://model/AiHostRunBridgeOptions": {
+      "ref": "spark-class-model://model/AiHostRunBridgeOptions",
+      "kind": "model",
+      "className": "AiHostRunBridgeOptions",
+      "schemaRef": "spark-class-model://schema/AiHostRunBridgeOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiHostRunBridge": {
+      "ref": "spark-class-model://schema/AiHostRunBridge",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiHostRunBridge",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiHostRunBridge"
+      }
+    },
+    "spark-class-model://model/AiHostRunBridge": {
+      "ref": "spark-class-model://model/AiHostRunBridge",
+      "kind": "model",
+      "className": "AiHostRunBridge",
+      "schemaRef": "spark-class-model://schema/AiHostRunBridge",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

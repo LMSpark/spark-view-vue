@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts",
+  "symbols": [
+    "OptionalWithUndefined",
+    "FieldPermissionProps",
+    "UseFieldPermissionOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/OptionalWithUndefined": {
+      "ref": "spark-class-model://schema/OptionalWithUndefined",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "OptionalWithUndefined",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/OptionalWithUndefined"
+      }
+    },
+    "spark-class-model://model/OptionalWithUndefined": {
+      "ref": "spark-class-model://model/OptionalWithUndefined",
+      "kind": "model",
+      "className": "OptionalWithUndefined",
+      "schemaRef": "spark-class-model://schema/OptionalWithUndefined",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/FieldPermissionProps": {
+      "ref": "spark-class-model://schema/FieldPermissionProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "FieldPermissionProps",
+        "properties": {
+          "modelValue": true,
+          "value": true
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/FieldPermissionProps"
+      }
+    },
+    "spark-class-model://model/FieldPermissionProps/attributes/modelValue/0": {
+      "ref": "spark-class-model://model/FieldPermissionProps/attributes/modelValue/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FieldPermissionProps",
+      "name": "modelValue",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/FieldPermissionProps/attributes/value/1": {
+      "ref": "spark-class-model://model/FieldPermissionProps/attributes/value/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FieldPermissionProps",
+      "name": "value",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/FieldPermissionProps": {
+      "ref": "spark-class-model://model/FieldPermissionProps",
+      "kind": "model",
+      "className": "FieldPermissionProps",
+      "schemaRef": "spark-class-model://schema/FieldPermissionProps",
+      "attributeRefs": [
+        "spark-class-model://model/FieldPermissionProps/attributes/modelValue/0",
+        "spark-class-model://model/FieldPermissionProps/attributes/value/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/UseFieldPermissionOptions": {
+      "ref": "spark-class-model://schema/UseFieldPermissionOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "UseFieldPermissionOptions",
+        "properties": {
+          "props": {
+            "$ref": "spark-class-model://schema/FieldPermissionProps",
+            "title": "FieldPermissionProps<TValue>"
+          },
+          "type": {
+            "type": "string"
+          },
+          "fallbackValue": true,
+          "formatDisplay": {
+            "type": "object",
+            "title": "(value: unknown) => string"
+          },
+          "coerce": {
+            "type": "object",
+            "title": "(rawValue: unknown) => TValue"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/UseFieldPermissionOptions"
+      }
+    },
+    "spark-class-model://schema/shared/97e25a771e05d6dd0dd3b52be7af4233f9a2026c9c0b76514296ebdd048b30bb": {
+      "ref": "spark-class-model://schema/shared/97e25a771e05d6dd0dd3b52be7af4233f9a2026c9c0b76514296ebdd048b30bb",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/FieldPermissionProps",
+        "title": "FieldPermissionProps<TValue>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/97e25a771e05d6dd0dd3b52be7af4233f9a2026c9c0b76514296ebdd048b30bb"
+      }
+    },
+    "spark-class-model://model/UseFieldPermissionOptions/attributes/props/0": {
+      "ref": "spark-class-model://model/UseFieldPermissionOptions/attributes/props/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseFieldPermissionOptions",
+      "name": "props",
+      "schemaRef": "spark-class-model://schema/shared/97e25a771e05d6dd0dd3b52be7af4233f9a2026c9c0b76514296ebdd048b30bb",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseFieldPermissionOptions%2Fattributes%2Fprops%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FFieldPermissionProps": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseFieldPermissionOptions%2Fattributes%2Fprops%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FFieldPermissionProps",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UseFieldPermissionOptions/attributes/props/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/FieldPermissionProps",
+      "targetClassName": "FieldPermissionProps",
+      "targetFile": "files/declarations/packages/spark-component/src/components/fields/context/useFieldPermission.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/FieldPermissionProps"
+    },
+    "spark-class-model://model/UseFieldPermissionOptions/attributes/type/1": {
+      "ref": "spark-class-model://model/UseFieldPermissionOptions/attributes/type/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseFieldPermissionOptions",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/UseFieldPermissionOptions/attributes/fallbackValue/2": {
+      "ref": "spark-class-model://model/UseFieldPermissionOptions/attributes/fallbackValue/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseFieldPermissionOptions",
+      "name": "fallbackValue",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/47dc07fc3ebab6f00d7befe88a4a55746d799a4110b813da9c5edaf6787573b1": {
+      "ref": "spark-class-model://schema/shared/47dc07fc3ebab6f00d7befe88a4a55746d799a4110b813da9c5edaf6787573b1",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(value: unknown) => string",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/47dc07fc3ebab6f00d7befe88a4a55746d799a4110b813da9c5edaf6787573b1"
+      }
+    },
+    "spark-class-model://model/UseFieldPermissionOptions/attributes/formatDisplay/3": {
+      "ref": "spark-class-model://model/UseFieldPermissionOptions/attributes/formatDisplay/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseFieldPermissionOptions",
+      "name": "formatDisplay",
+      "schemaRef": "spark-class-model://schema/shared/47dc07fc3ebab6f00d7befe88a4a55746d799a4110b813da9c5edaf6787573b1",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/4bb76035769a6ea18d138d5f288016f11a0a879f6b9fcad3500c968b84b53bd3": {
+      "ref": "spark-class-model://schema/shared/4bb76035769a6ea18d138d5f288016f11a0a879f6b9fcad3500c968b84b53bd3",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(rawValue: unknown) => TValue",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4bb76035769a6ea18d138d5f288016f11a0a879f6b9fcad3500c968b84b53bd3"
+      }
+    },
+    "spark-class-model://model/UseFieldPermissionOptions/attributes/coerce/4": {
+      "ref": "spark-class-model://model/UseFieldPermissionOptions/attributes/coerce/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseFieldPermissionOptions",
+      "name": "coerce",
+      "schemaRef": "spark-class-model://schema/shared/4bb76035769a6ea18d138d5f288016f11a0a879f6b9fcad3500c968b84b53bd3",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/UseFieldPermissionOptions": {
+      "ref": "spark-class-model://model/UseFieldPermissionOptions",
+      "kind": "model",
+      "className": "UseFieldPermissionOptions",
+      "schemaRef": "spark-class-model://schema/UseFieldPermissionOptions",
+      "attributeRefs": [
+        "spark-class-model://model/UseFieldPermissionOptions/attributes/props/0",
+        "spark-class-model://model/UseFieldPermissionOptions/attributes/type/1",
+        "spark-class-model://model/UseFieldPermissionOptions/attributes/fallbackValue/2",
+        "spark-class-model://model/UseFieldPermissionOptions/attributes/formatDisplay/3",
+        "spark-class-model://model/UseFieldPermissionOptions/attributes/coerce/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseFieldPermissionOptions%2Fattributes%2Fprops%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FFieldPermissionProps"
+      ]
+    }
+  }
+}

@@ -44,7 +44,7 @@
           "name": "currentValue",
           "jsdoc": "current Value 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<string | number | Array<string | number> | undefined>"
           },
           "readable": true,
@@ -64,7 +64,7 @@
           "name": "itemConfigs",
           "jsdoc": "item Configs 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<SparkNode[]>"
           },
           "readable": true,
@@ -94,7 +94,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.582Z",
+  "generatedAt": "2026-06-13T04:00:57.671Z",
   "$defs": {
     "RendererCollapseZeroCodeOptions": {
       "type": "object",
@@ -102,7 +102,7 @@
       "description": "Renderer Collapse Zero Code Options 的调用配置。",
       "properties": {
         "currentValue": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<string | number | Array<string | number> | undefined>"
         },
         "commitCollapseValue": {
@@ -110,7 +110,7 @@
           "title": "(value: string | number | Array<string | number>, options?: {\n        emit?: boolean;\n    }) => void"
         },
         "itemConfigs": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<SparkNode[]>"
         },
         "getItemName": {

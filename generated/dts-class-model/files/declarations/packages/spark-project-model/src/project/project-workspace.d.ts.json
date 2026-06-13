@@ -145,7 +145,8 @@
           "name": "node",
           "jsdoc": "node 字段。",
           "schema": {
-            "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+            "type": "object",
+            "title": "ProjectNodeData"
           },
           "readable": true,
           "writable": false
@@ -250,7 +251,8 @@
           "name": "node",
           "jsdoc": "node 字段。",
           "schema": {
-            "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+            "type": "object",
+            "title": "ProjectNodeData"
           },
           "readable": true,
           "writable": true
@@ -277,7 +279,8 @@
           "schema": {
             "anyOf": [
               {
-                "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+                "type": "object",
+                "title": "ProjectNodeData"
               },
               {
                 "type": "null"
@@ -468,7 +471,8 @@
           "name": "project",
           "jsdoc": "project 字段。",
           "schema": {
-            "$ref": "project-model.d.ts.json#/$defs/ProjectModel"
+            "type": "object",
+            "title": "ProjectModel"
           },
           "readable": true,
           "writable": false
@@ -485,8 +489,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "PageNodeLike",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/config-page.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "literal",
@@ -506,8 +509,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "ProjectModelData",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -521,8 +523,7 @@
               "name": "root",
               "type": {
                 "type": "reference",
-                "name": "ProjectModelData",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                "name": "unknown"
               }
             },
             {
@@ -538,8 +539,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "ProjectModelData",
-            "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -696,8 +696,7 @@
               "name": "name",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             },
             {
@@ -732,8 +731,7 @@
               "name": "name",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -799,8 +797,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "ProjectNodeData",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -827,8 +824,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "ProjectNodeData",
-                    "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "literal",
@@ -1018,8 +1014,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "ProjectNodeData",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -1033,8 +1028,7 @@
               "name": "filename",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -1046,8 +1040,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "PageNodeFileVersionSummary",
-                  "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                  "name": "unknown"
                 }
               }
             ]
@@ -1069,8 +1062,7 @@
               "name": "filename",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -1094,8 +1086,7 @@
               "name": "filename",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -1126,8 +1117,7 @@
               "name": "filename",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -1161,8 +1151,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "PageNodeFileName",
-                    "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "literal",
@@ -1222,8 +1211,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "ProjectSummary",
-                  "sourcePath": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts"
+                  "name": "unknown"
                 }
               }
             ]
@@ -1250,8 +1238,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "ProjectPageReference",
-                  "sourcePath": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts"
+                  "name": "unknown"
                 }
               }
             ]
@@ -1260,7 +1247,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.847Z",
+  "generatedAt": "2026-06-13T04:00:57.899Z",
   "$defs": {
     "ProjectPageLoadOptions": {
       "type": "object",
@@ -1303,7 +1290,8 @@
           "type": "string"
         },
         "node": {
-          "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+          "type": "object",
+          "title": "ProjectNodeData"
         },
         "parentId": {
           "anyOf": [
@@ -1343,7 +1331,8 @@
           "title": "Record<string, unknown>"
         },
         "node": {
-          "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+          "type": "object",
+          "title": "ProjectNodeData"
         }
       }
     },
@@ -1355,7 +1344,8 @@
         "deletedNode": {
           "anyOf": [
             {
-              "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+              "type": "object",
+              "title": "ProjectNodeData"
             },
             {
               "type": "null"
@@ -1427,7 +1417,8 @@
       "description": "项目 IO 编排层：将 ProjectModel 的操作委托到远端 API。",
       "properties": {
         "project": {
-          "$ref": "project-model.d.ts.json#/$defs/ProjectModel"
+          "type": "object",
+          "title": "ProjectModel"
         }
       }
     }

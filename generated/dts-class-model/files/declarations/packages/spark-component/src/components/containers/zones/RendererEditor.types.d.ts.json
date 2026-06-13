@@ -89,7 +89,8 @@
           "name": "position",
           "jsdoc": "编辑区停靠位置",
           "schema": {
-            "$ref": "../runtime/container-ui.d.ts.json#/$defs/ToolbarPosition"
+            "type": "object",
+            "title": "ToolbarPosition"
           },
           "readable": true,
           "writable": false
@@ -123,7 +124,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.618Z",
+  "generatedAt": "2026-06-13T04:00:57.702Z",
   "$defs": {
     "REditorProps": {
       "type": "object",
@@ -147,7 +148,8 @@
           }
         },
         "position": {
-          "$ref": "../runtime/container-ui.d.ts.json#/$defs/ToolbarPosition"
+          "type": "object",
+          "title": "ToolbarPosition"
         },
         "width": {
           "anyOf": [

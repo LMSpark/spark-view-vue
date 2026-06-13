@@ -305,8 +305,7 @@
               "name": "registration",
               "type": {
                 "type": "reference",
-                "name": "AiAgentRegistration",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
@@ -341,8 +340,7 @@
                       },
                       {
                         "type": "reference",
-                        "name": "AiAgentRegistration",
-                        "sourcePath": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
+                        "name": "unknown",
                         "typeArguments": [
                           {
                             "type": "reference",
@@ -411,8 +409,7 @@
                       },
                       {
                         "type": "reference",
-                        "name": "AiAgentRegistration",
-                        "sourcePath": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts",
+                        "name": "unknown",
                         "typeArguments": [
                           {
                             "type": "reference",
@@ -575,8 +572,7 @@
               "name": "chat",
               "type": {
                 "type": "reference",
-                "name": "AiAgentTaskChatOptions",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-task.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -619,8 +615,7 @@
               "name": "chat",
               "type": {
                 "type": "reference",
-                "name": "AiAgentTaskChatOptions",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-task.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -642,7 +637,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.396Z",
+  "generatedAt": "2026-06-13T04:00:57.539Z",
   "$defs": {
     "CreateAiAgentHostOptions": {
       "type": "object",

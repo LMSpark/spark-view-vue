@@ -42,7 +42,7 @@
           "name": "value",
           "jsdoc": "当前值。",
           "schema": {
-            "$ref": "../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<TValue | undefined>"
           },
           "readable": true,
@@ -126,7 +126,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.599Z",
+  "generatedAt": "2026-06-13T04:00:57.688Z",
   "$defs": {
     "UnifiedValueBridgeOptions": {
       "type": "object",
@@ -134,7 +134,7 @@
       "description": "Unified Value Bridge Options 的调用配置。",
       "properties": {
         "value": {
-          "$ref": "../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<TValue | undefined>"
         },
         "fallbackValue": true,

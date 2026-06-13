@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererTabs/types.d.ts",
+  "symbols": [
+    "RendererTabsApi"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RendererTabsApi": {
+      "ref": "spark-class-model://schema/RendererTabsApi",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RendererTabsApi",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RendererTabsApi"
+      }
+    },
+    "spark-class-model://model/RendererTabsApi": {
+      "ref": "spark-class-model://model/RendererTabsApi",
+      "kind": "model",
+      "className": "RendererTabsApi",
+      "schemaRef": "spark-class-model://schema/RendererTabsApi",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

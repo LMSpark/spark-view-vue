@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-app/src/auth/TokenManager.d.ts",
+  "symbols": [
+    "TokenManager"
+  ],
+  "@refs": {
+    "spark-class-model://schema/TokenManager": {
+      "ref": "spark-class-model://schema/TokenManager",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "TokenManager",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/TokenManager"
+      }
+    },
+    "spark-class-model://model/TokenManager/methods/getToken/0": {
+      "ref": "spark-class-model://model/TokenManager/methods/getToken/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/TokenManager",
+      "name": "getToken",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
+    },
+    "spark-class-model://model/TokenManager/methods/setToken/1": {
+      "ref": "spark-class-model://model/TokenManager/methods/setToken/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/TokenManager",
+      "name": "setToken",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f2e37ca44f1d438c86143a03851616b4358a71ccc58a63d6c7987536a03c08f0"
+    },
+    "spark-class-model://model/TokenManager/methods/clearToken/2": {
+      "ref": "spark-class-model://model/TokenManager/methods/clearToken/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/TokenManager",
+      "name": "clearToken",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/TokenManager": {
+      "ref": "spark-class-model://model/TokenManager",
+      "kind": "model",
+      "className": "TokenManager",
+      "schemaRef": "spark-class-model://schema/TokenManager",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/TokenManager/methods/getToken/0",
+        "spark-class-model://model/TokenManager/methods/setToken/1",
+        "spark-class-model://model/TokenManager/methods/clearToken/2"
+      ],
+      "linkRefs": []
+    }
+  }
+}

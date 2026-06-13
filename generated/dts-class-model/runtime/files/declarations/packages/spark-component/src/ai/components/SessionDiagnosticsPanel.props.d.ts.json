@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionDiagnosticsPanel.props.d.ts",
+  "symbols": [
+    "SessionDiagnosticsPanelProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/SessionDiagnosticsPanelProps": {
+      "ref": "spark-class-model://schema/SessionDiagnosticsPanelProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SessionDiagnosticsPanelProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SessionDiagnosticsPanelProps"
+      }
+    },
+    "spark-class-model://model/SessionDiagnosticsPanelProps": {
+      "ref": "spark-class-model://model/SessionDiagnosticsPanelProps",
+      "kind": "model",
+      "className": "SessionDiagnosticsPanelProps",
+      "schemaRef": "spark-class-model://schema/SessionDiagnosticsPanelProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

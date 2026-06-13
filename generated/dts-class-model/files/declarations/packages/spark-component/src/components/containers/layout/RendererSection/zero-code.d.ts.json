@@ -44,7 +44,7 @@
           "name": "collapsed",
           "jsdoc": "collapsed 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<boolean>"
           },
           "readable": true,
@@ -54,7 +54,7 @@
           "name": "collapsible",
           "jsdoc": "collapsible 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<boolean>"
           },
           "readable": true,
@@ -64,7 +64,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.590Z",
+  "generatedAt": "2026-06-13T04:00:57.680Z",
   "$defs": {
     "RendererSectionZeroCodeOptions": {
       "type": "object",
@@ -72,11 +72,11 @@
       "description": "Renderer Section Zero Code Options 的调用配置。",
       "properties": {
         "collapsed": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<boolean>"
         },
         "collapsible": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<boolean>"
         }
       }

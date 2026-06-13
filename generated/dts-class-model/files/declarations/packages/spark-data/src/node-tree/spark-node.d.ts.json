@@ -95,7 +95,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.790Z",
+  "generatedAt": "2026-06-13T04:00:57.835Z",
   "$defs": {
     "SparkNodeChildren": {
       "type": "object",

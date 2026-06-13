@@ -1,0 +1,390 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/RendererVirtualCard.props.d.ts",
+  "symbols": [
+    "RVirtualCardProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RVirtualCardProps": {
+      "ref": "spark-class-model://schema/RVirtualCardProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RVirtualCardProps",
+        "properties": {
+          "dataSource": {
+            "$ref": "spark-class-model://schema/DataView"
+          },
+          "toolbar": {
+            "$ref": "spark-class-model://schema/RToolbarProps"
+          },
+          "rowKey": {
+            "type": "string"
+          },
+          "emptyText": {
+            "type": "string"
+          },
+          "pageHeight": {
+            "type": "number"
+          },
+          "mobilePageHeight": {
+            "type": "number"
+          },
+          "mobileBreakpoint": {
+            "type": "number"
+          },
+          "viewportHeight": {
+            "type": "string"
+          },
+          "minViewportHeight": {
+            "type": "string"
+          },
+          "overscanPages": {
+            "type": "number"
+          },
+          "prefetchPages": {
+            "type": "number"
+          },
+          "maxCachedPages": {
+            "type": "number"
+          },
+          "columns": {
+            "type": "number"
+          },
+          "mobileColumns": {
+            "type": "number"
+          },
+          "settleDelay": {
+            "type": "number"
+          },
+          "wheelStepPx": {
+            "type": "number"
+          },
+          "maxWheelJumpPages": {
+            "type": "number"
+          },
+          "itemClass": {
+            "type": "string"
+          },
+          "itemStyle": {
+            "type": "object",
+            "title": "CSSProperties"
+          },
+          "showHeader": {
+            "type": "boolean"
+          },
+          "showHud": {
+            "type": "boolean"
+          },
+          "showPageMeta": {
+            "type": "boolean"
+          },
+          "onItemClick": {
+            "$ref": "spark-class-model://schema/RowClickHandler"
+          },
+          "onPageChange": {
+            "type": "object",
+            "title": "(page: number) => void | Promise<void>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RVirtualCardProps"
+      }
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/dataSource/0": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/dataSource/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "dataSource",
+      "schemaRef": "spark-class-model://schema/shared/26422d000505dc4310895bf07a58f20f12afe485aad929313bf1e59d8fa876c9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRVirtualCardProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRVirtualCardProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RVirtualCardProps/attributes/dataSource/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/declarations/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/toolbar/1": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/toolbar/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "toolbar",
+      "schemaRef": "spark-class-model://schema/shared/90ee312d29807b286eddc2cc5030c41559559369c056e076a6d7f62f72cea167",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRVirtualCardProps%2Fattributes%2Ftoolbar%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRVirtualCardProps%2Fattributes%2Ftoolbar%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RVirtualCardProps/attributes/toolbar/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/RToolbarProps",
+      "targetClassName": "RToolbarProps",
+      "targetFile": "files/declarations/packages/spark-component/src/components/containers/layout/RendererToolbar.types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RToolbarProps"
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/rowKey/2": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/rowKey/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "rowKey",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/emptyText/3": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/emptyText/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "emptyText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/pageHeight/4": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/pageHeight/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "pageHeight",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/mobilePageHeight/5": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/mobilePageHeight/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "mobilePageHeight",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/mobileBreakpoint/6": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/mobileBreakpoint/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "mobileBreakpoint",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/viewportHeight/7": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/viewportHeight/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "viewportHeight",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/minViewportHeight/8": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/minViewportHeight/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "minViewportHeight",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/overscanPages/9": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/overscanPages/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "overscanPages",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/prefetchPages/10": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/prefetchPages/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "prefetchPages",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/maxCachedPages/11": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/maxCachedPages/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "maxCachedPages",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/columns/12": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/columns/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "columns",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/mobileColumns/13": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/mobileColumns/13",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "mobileColumns",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/settleDelay/14": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/settleDelay/14",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "settleDelay",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/wheelStepPx/15": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/wheelStepPx/15",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "wheelStepPx",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/maxWheelJumpPages/16": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/maxWheelJumpPages/16",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "maxWheelJumpPages",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/itemClass/17": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/itemClass/17",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "itemClass",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/itemStyle/18": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/itemStyle/18",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "itemStyle",
+      "schemaRef": "spark-class-model://schema/shared/1859dcab515acd103a9939b6d74840ad0aaf06a95da104d59ae6daa56aaa73f1",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/showHeader/19": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/showHeader/19",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "showHeader",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/showHud/20": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/showHud/20",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "showHud",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/showPageMeta/21": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/showPageMeta/21",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "showPageMeta",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/onItemClick/22": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/onItemClick/22",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "onItemClick",
+      "schemaRef": "spark-class-model://schema/shared/dc436f5c915e32f9f8eb9996c5185b3a291dd54fbc00635da4d8459df5c4b6b6",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRVirtualCardProps%2Fattributes%2FonItemClick%2F22/attribute/spark-class-model%3A%2F%2Fmodel%2FRowClickHandler": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRVirtualCardProps%2Fattributes%2FonItemClick%2F22/attribute/spark-class-model%3A%2F%2Fmodel%2FRowClickHandler",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RVirtualCardProps/attributes/onItemClick/22",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/RowClickHandler",
+      "targetClassName": "RowClickHandler",
+      "targetFile": "files/declarations/packages/spark-component/src/components/containers/support/interactionControl.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RowClickHandler"
+    },
+    "spark-class-model://schema/shared/02302bb1db021a4fea57b265fc51ab44ef969447e72f8d829854b8b6dee755a5": {
+      "ref": "spark-class-model://schema/shared/02302bb1db021a4fea57b265fc51ab44ef969447e72f8d829854b8b6dee755a5",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(page: number) => void | Promise<void>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/02302bb1db021a4fea57b265fc51ab44ef969447e72f8d829854b8b6dee755a5"
+      }
+    },
+    "spark-class-model://model/RVirtualCardProps/attributes/onPageChange/23": {
+      "ref": "spark-class-model://model/RVirtualCardProps/attributes/onPageChange/23",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RVirtualCardProps",
+      "name": "onPageChange",
+      "schemaRef": "spark-class-model://schema/shared/02302bb1db021a4fea57b265fc51ab44ef969447e72f8d829854b8b6dee755a5",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RVirtualCardProps": {
+      "ref": "spark-class-model://model/RVirtualCardProps",
+      "kind": "model",
+      "className": "RVirtualCardProps",
+      "schemaRef": "spark-class-model://schema/RVirtualCardProps",
+      "attributeRefs": [
+        "spark-class-model://model/RVirtualCardProps/attributes/dataSource/0",
+        "spark-class-model://model/RVirtualCardProps/attributes/toolbar/1",
+        "spark-class-model://model/RVirtualCardProps/attributes/rowKey/2",
+        "spark-class-model://model/RVirtualCardProps/attributes/emptyText/3",
+        "spark-class-model://model/RVirtualCardProps/attributes/pageHeight/4",
+        "spark-class-model://model/RVirtualCardProps/attributes/mobilePageHeight/5",
+        "spark-class-model://model/RVirtualCardProps/attributes/mobileBreakpoint/6",
+        "spark-class-model://model/RVirtualCardProps/attributes/viewportHeight/7",
+        "spark-class-model://model/RVirtualCardProps/attributes/minViewportHeight/8",
+        "spark-class-model://model/RVirtualCardProps/attributes/overscanPages/9",
+        "spark-class-model://model/RVirtualCardProps/attributes/prefetchPages/10",
+        "spark-class-model://model/RVirtualCardProps/attributes/maxCachedPages/11",
+        "spark-class-model://model/RVirtualCardProps/attributes/columns/12",
+        "spark-class-model://model/RVirtualCardProps/attributes/mobileColumns/13",
+        "spark-class-model://model/RVirtualCardProps/attributes/settleDelay/14",
+        "spark-class-model://model/RVirtualCardProps/attributes/wheelStepPx/15",
+        "spark-class-model://model/RVirtualCardProps/attributes/maxWheelJumpPages/16",
+        "spark-class-model://model/RVirtualCardProps/attributes/itemClass/17",
+        "spark-class-model://model/RVirtualCardProps/attributes/itemStyle/18",
+        "spark-class-model://model/RVirtualCardProps/attributes/showHeader/19",
+        "spark-class-model://model/RVirtualCardProps/attributes/showHud/20",
+        "spark-class-model://model/RVirtualCardProps/attributes/showPageMeta/21",
+        "spark-class-model://model/RVirtualCardProps/attributes/onItemClick/22",
+        "spark-class-model://model/RVirtualCardProps/attributes/onPageChange/23"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRVirtualCardProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRVirtualCardProps%2Fattributes%2Ftoolbar%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRVirtualCardProps%2Fattributes%2FonItemClick%2F22/attribute/spark-class-model%3A%2F%2Fmodel%2FRowClickHandler"
+      ]
+    }
+  }
+}

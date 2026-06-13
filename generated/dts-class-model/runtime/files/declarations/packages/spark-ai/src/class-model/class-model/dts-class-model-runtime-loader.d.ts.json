@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
+  "symbols": [
+    "DtsClassModelRuntimeLoaderOptions",
+    "DtsClassModelRuntimeSchemaClosure",
+    "DtsClassModelRuntimeLoader"
+  ],
+  "@refs": {
+    "spark-class-model://schema/DtsClassModelRuntimeLoaderOptions": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeLoaderOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeLoaderOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeLoaderOptions"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLoaderOptions": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoaderOptions",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeLoaderOptions",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeLoaderOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeSchemaClosure": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeSchemaClosure",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeSchemaClosure",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeSchemaClosure"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeSchemaClosure": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeSchemaClosure",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeSchemaClosure",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeSchemaClosure",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeLoader": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeLoader",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeLoader",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeLoader"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/init/0": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/init/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
+      "name": "init",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/d5f683e488ab25c32b54605ab3371fa3366f895974ab9f5578d0a438862d2ee0"
+    },
+    "spark-class-model://schema/shared/d5f683e488ab25c32b54605ab3371fa3366f895974ab9f5578d0a438862d2ee0": {
+      "ref": "spark-class-model://schema/shared/d5f683e488ab25c32b54605ab3371fa3366f895974ab9f5578d0a438862d2ee0",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<DtsClassModelRuntimeManifest>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d5f683e488ab25c32b54605ab3371fa3366f895974ab9f5578d0a438862d2ee0"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureClassName/1": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureClassName/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
+      "name": "ensureClassName",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4012f6ab3d9444dc9cbbc071a82b946acd9a7a74e6abc894ceb0f7ea84147ea3",
+      "returnSchemaRef": "spark-class-model://schema/shared/02b9324e33860b3972e5960c0b7dc83872b1ca7c8dce4dde70c4c0ec734cbb68"
+    },
+    "spark-class-model://schema/shared/02b9324e33860b3972e5960c0b7dc83872b1ca7c8dce4dde70c4c0ec734cbb68": {
+      "ref": "spark-class-model://schema/shared/02b9324e33860b3972e5960c0b7dc83872b1ca7c8dce4dde70c4c0ec734cbb68",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<DtsClassModelRuntimeModel>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/02b9324e33860b3972e5960c0b7dc83872b1ca7c8dce4dde70c4c0ec734cbb68"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureRef/2": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureRef/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
+      "name": "ensureRef",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/9b679612215a69ae453228e69b03d40e579ddeb76e875a1e235fecd8cbe773a8",
+      "returnSchemaRef": "spark-class-model://schema/shared/95294c92d01311fe8434c7a61f5033a6b1ed01ecf03ebfb11e498a0424b5fd89"
+    },
+    "spark-class-model://schema/shared/9b679612215a69ae453228e69b03d40e579ddeb76e875a1e235fecd8cbe773a8": {
+      "ref": "spark-class-model://schema/shared/9b679612215a69ae453228e69b03d40e579ddeb76e875a1e235fecd8cbe773a8",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9b679612215a69ae453228e69b03d40e579ddeb76e875a1e235fecd8cbe773a8"
+      }
+    },
+    "spark-class-model://schema/shared/95294c92d01311fe8434c7a61f5033a6b1ed01ecf03ebfb11e498a0424b5fd89": {
+      "ref": "spark-class-model://schema/shared/95294c92d01311fe8434c7a61f5033a6b1ed01ecf03ebfb11e498a0424b5fd89",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<DtsClassModelRuntimeRef>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/95294c92d01311fe8434c7a61f5033a6b1ed01ecf03ebfb11e498a0424b5fd89"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchema/3": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchema/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
+      "name": "ensureSchema",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/9b679612215a69ae453228e69b03d40e579ddeb76e875a1e235fecd8cbe773a8",
+      "returnSchemaRef": "spark-class-model://schema/shared/83085bacc42f21f4d33ce64394735d1a2021e181517eba2ce5d43d8f34c8ea4f"
+    },
+    "spark-class-model://schema/shared/83085bacc42f21f4d33ce64394735d1a2021e181517eba2ce5d43d8f34c8ea4f": {
+      "ref": "spark-class-model://schema/shared/83085bacc42f21f4d33ce64394735d1a2021e181517eba2ce5d43d8f34c8ea4f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<DtsClassModelRuntimeSchemaRef>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/83085bacc42f21f4d33ce64394735d1a2021e181517eba2ce5d43d8f34c8ea4f"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchemaClosure/4": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchemaClosure/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
+      "name": "ensureSchemaClosure",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/dd7b671e268ce2fca06a10d9cc9a01d16e07e06145d8c42148eec13eadcad677",
+      "returnSchemaRef": "spark-class-model://schema/shared/1b17a909e072af40768eb699304948e7aa87a2f853e3606ec48fc3ba7efff2a1"
+    },
+    "spark-class-model://schema/shared/dd7b671e268ce2fca06a10d9cc9a01d16e07e06145d8c42148eec13eadcad677": {
+      "ref": "spark-class-model://schema/shared/dd7b671e268ce2fca06a10d9cc9a01d16e07e06145d8c42148eec13eadcad677",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "rootSchemaRef": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/dd7b671e268ce2fca06a10d9cc9a01d16e07e06145d8c42148eec13eadcad677"
+      }
+    },
+    "spark-class-model://schema/shared/1b17a909e072af40768eb699304948e7aa87a2f853e3606ec48fc3ba7efff2a1": {
+      "ref": "spark-class-model://schema/shared/1b17a909e072af40768eb699304948e7aa87a2f853e3606ec48fc3ba7efff2a1",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<DtsClassModelRuntimeSchemaClosure>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/1b17a909e072af40768eb699304948e7aa87a2f853e3606ec48fc3ba7efff2a1"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureSchemaClosure%2F4/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeSchemaClosure": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureSchemaClosure%2F4/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeSchemaClosure",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchemaClosure/4",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DtsClassModelRuntimeSchemaClosure",
+      "targetClassName": "DtsClassModelRuntimeSchemaClosure",
+      "targetFile": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DtsClassModelRuntimeSchemaClosure"
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureReachableClosure/5": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureReachableClosure/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
+      "name": "ensureReachableClosure",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/6e619ca4e495d932d648aca7a48302c18b16b99edf4f390fb4fb25fb5980e4ab",
+      "returnSchemaRef": "spark-class-model://schema/shared/72f1a6432f7c696317171917c870a46d076e0ea50602bb1e8c405d4b614b2853"
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/buildLoadedModels/6": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/buildLoadedModels/6",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
+      "name": "buildLoadedModels",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/2914b6b0eb703b6471b99448ce9c1b4fe476b489df9633ed8b5f3c0ea20671ca"
+    },
+    "spark-class-model://schema/shared/2914b6b0eb703b6471b99448ce9c1b4fe476b489df9633ed8b5f3c0ea20671ca": {
+      "ref": "spark-class-model://schema/shared/2914b6b0eb703b6471b99448ce9c1b4fe476b489df9633ed8b5f3c0ea20671ca",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Readonly<Record<string, DtsClassModelRuntimeModel>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/2914b6b0eb703b6471b99448ce9c1b4fe476b489df9633ed8b5f3c0ea20671ca"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLoader": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeLoader",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeLoader",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/init/0",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureClassName/1",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureRef/2",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchema/3",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchemaClosure/4",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureReachableClosure/5",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/buildLoadedModels/6"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureSchemaClosure%2F4/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeSchemaClosure"
+      ]
+    }
+  }
+}

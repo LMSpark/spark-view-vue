@@ -54,7 +54,8 @@
           "name": "actionRegistry",
           "jsdoc": "system-action 命令执行器",
           "schema": {
-            "$ref": "action-registry.d.ts.json#/$defs/NavigationActionRegistry"
+            "type": "object",
+            "title": "NavigationActionRegistry"
           },
           "readable": true,
           "writable": false
@@ -63,7 +64,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.507Z",
+  "generatedAt": "2026-06-13T04:00:57.617Z",
   "$defs": {
     "UseNavigationOptions": {
       "type": "object",
@@ -79,7 +80,8 @@
           "title": "() => Record<string, string>"
         },
         "actionRegistry": {
-          "$ref": "action-registry.d.ts.json#/$defs/NavigationActionRegistry"
+          "type": "object",
+          "title": "NavigationActionRegistry"
         }
       }
     }

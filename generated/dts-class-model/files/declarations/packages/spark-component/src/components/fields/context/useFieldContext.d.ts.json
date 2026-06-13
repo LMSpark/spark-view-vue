@@ -258,7 +258,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "../columnFormRules.d.ts.json#/$defs/FormItemRule"
+              "type": "object",
+              "title": "FormItemRule"
             }
           },
           "readable": true,
@@ -420,7 +421,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.649Z",
+  "generatedAt": "2026-06-13T04:00:57.732Z",
   "$defs": {
     "FieldContextProps": {
       "type": "object",
@@ -538,7 +539,8 @@
         "validationRules": {
           "type": "array",
           "items": {
-            "$ref": "../columnFormRules.d.ts.json#/$defs/FormItemRule"
+            "type": "object",
+            "title": "FormItemRule"
           }
         }
       }

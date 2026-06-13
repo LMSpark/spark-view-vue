@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/page/renderer/usePageDataSet.d.ts",
+  "symbols": [
+    "UsePageDataSetOptions",
+    "UsePageDataSetReturn"
+  ],
+  "@refs": {
+    "spark-class-model://schema/UsePageDataSetOptions": {
+      "ref": "spark-class-model://schema/UsePageDataSetOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "UsePageDataSetOptions",
+        "properties": {
+          "enableDataSet": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/UsePageDataSetOptions"
+      }
+    },
+    "spark-class-model://model/UsePageDataSetOptions/attributes/enableDataSet/0": {
+      "ref": "spark-class-model://model/UsePageDataSetOptions/attributes/enableDataSet/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UsePageDataSetOptions",
+      "name": "enableDataSet",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UsePageDataSetOptions": {
+      "ref": "spark-class-model://model/UsePageDataSetOptions",
+      "kind": "model",
+      "className": "UsePageDataSetOptions",
+      "schemaRef": "spark-class-model://schema/UsePageDataSetOptions",
+      "attributeRefs": [
+        "spark-class-model://model/UsePageDataSetOptions/attributes/enableDataSet/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/UsePageDataSetReturn": {
+      "ref": "spark-class-model://schema/UsePageDataSetReturn",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "UsePageDataSetReturn",
+        "properties": {
+          "dataSet": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/DataSet"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "initDataSet": {
+            "type": "object",
+            "title": "(ds: DataSet) => void"
+          },
+          "clearDataSet": {
+            "type": "object",
+            "title": "() => void"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/UsePageDataSetReturn"
+      }
+    },
+    "spark-class-model://schema/shared/30d1d54ffbc5b4bdc5fbd8c7da348a33cf850237efdd31ae74f620e95ea88eef": {
+      "ref": "spark-class-model://schema/shared/30d1d54ffbc5b4bdc5fbd8c7da348a33cf850237efdd31ae74f620e95ea88eef",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/DataSet"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/30d1d54ffbc5b4bdc5fbd8c7da348a33cf850237efdd31ae74f620e95ea88eef"
+      }
+    },
+    "spark-class-model://model/UsePageDataSetReturn/attributes/dataSet/0": {
+      "ref": "spark-class-model://model/UsePageDataSetReturn/attributes/dataSet/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UsePageDataSetReturn",
+      "name": "dataSet",
+      "schemaRef": "spark-class-model://schema/shared/30d1d54ffbc5b4bdc5fbd8c7da348a33cf850237efdd31ae74f620e95ea88eef",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUsePageDataSetReturn%2Fattributes%2FdataSet%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSet": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUsePageDataSetReturn%2Fattributes%2FdataSet%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSet",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UsePageDataSetReturn/attributes/dataSet/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataSet",
+      "targetClassName": "DataSet",
+      "targetFile": "files/declarations/packages/spark-data/src/dataset.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataSet"
+    },
+    "spark-class-model://schema/shared/d6fca2a050d4661ec3e3c594feb5843f2277ac12ea9bb3f2ecbfbecf579aa63e": {
+      "ref": "spark-class-model://schema/shared/d6fca2a050d4661ec3e3c594feb5843f2277ac12ea9bb3f2ecbfbecf579aa63e",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(ds: DataSet) => void",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d6fca2a050d4661ec3e3c594feb5843f2277ac12ea9bb3f2ecbfbecf579aa63e"
+      }
+    },
+    "spark-class-model://model/UsePageDataSetReturn/attributes/initDataSet/1": {
+      "ref": "spark-class-model://model/UsePageDataSetReturn/attributes/initDataSet/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UsePageDataSetReturn",
+      "name": "initDataSet",
+      "schemaRef": "spark-class-model://schema/shared/d6fca2a050d4661ec3e3c594feb5843f2277ac12ea9bb3f2ecbfbecf579aa63e",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/UsePageDataSetReturn/attributes/clearDataSet/2": {
+      "ref": "spark-class-model://model/UsePageDataSetReturn/attributes/clearDataSet/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UsePageDataSetReturn",
+      "name": "clearDataSet",
+      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/UsePageDataSetReturn": {
+      "ref": "spark-class-model://model/UsePageDataSetReturn",
+      "kind": "model",
+      "className": "UsePageDataSetReturn",
+      "schemaRef": "spark-class-model://schema/UsePageDataSetReturn",
+      "attributeRefs": [
+        "spark-class-model://model/UsePageDataSetReturn/attributes/dataSet/0",
+        "spark-class-model://model/UsePageDataSetReturn/attributes/initDataSet/1",
+        "spark-class-model://model/UsePageDataSetReturn/attributes/clearDataSet/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUsePageDataSetReturn%2Fattributes%2FdataSet%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSet"
+      ]
+    }
+  }
+}

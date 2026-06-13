@@ -161,7 +161,8 @@
           "name": "runtime",
           "jsdoc": "工具运行时——工具调用时从中读取知识并执行 model_script",
           "schema": {
-            "$ref": "../tool-runtime/tool-runtime-types.d.ts.json#/$defs/AiAgentToolRuntime"
+            "type": "object",
+            "title": "AiAgentToolRuntime"
           },
           "readable": true,
           "writable": false
@@ -170,7 +171,7 @@
           "name": "inputContract",
           "jsdoc": "kindID 的注册化输入契约；由 host.run[alias]() 的内部 task 创建使用",
           "schema": {
-            "$ref": "business-task.d.ts.json#/$defs/AiAgentInputContract",
+            "type": "object",
             "title": "AiAgentInputContract<TInput>"
           },
           "readable": true,
@@ -180,7 +181,8 @@
           "name": "sessionStore",
           "jsdoc": "会话历史持久化存储",
           "schema": {
-            "$ref": "../session/session-types.d.ts.json#/$defs/AiAgentSessionStore"
+            "type": "object",
+            "title": "AiAgentSessionStore"
           },
           "readable": true,
           "writable": false
@@ -288,7 +290,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.415Z",
+  "generatedAt": "2026-06-13T04:00:57.559Z",
   "$defs": {
     "AiAgentToolLoopNudgeReason": {
       "type": "object",
@@ -320,14 +322,16 @@
           "type": "string"
         },
         "runtime": {
-          "$ref": "../tool-runtime/tool-runtime-types.d.ts.json#/$defs/AiAgentToolRuntime"
+          "type": "object",
+          "title": "AiAgentToolRuntime"
         },
         "inputContract": {
-          "$ref": "business-task.d.ts.json#/$defs/AiAgentInputContract",
+          "type": "object",
           "title": "AiAgentInputContract<TInput>"
         },
         "sessionStore": {
-          "$ref": "../session/session-types.d.ts.json#/$defs/AiAgentSessionStore"
+          "type": "object",
+          "title": "AiAgentSessionStore"
         },
         "systemPrompt": {
           "type": "object",

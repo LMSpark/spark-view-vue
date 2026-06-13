@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts",
+  "symbols": [
+    "AiAgentToolNameResolver",
+    "AiAgentToolCallExecutionInput",
+    "AiAgentToolCallExecutionOutput",
+    "AiAgentToolCallExecutor"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentToolNameResolver": {
+      "ref": "spark-class-model://schema/AiAgentToolNameResolver",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolNameResolver",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolNameResolver"
+      }
+    },
+    "spark-class-model://model/AiAgentToolNameResolver": {
+      "ref": "spark-class-model://model/AiAgentToolNameResolver",
+      "kind": "model",
+      "className": "AiAgentToolNameResolver",
+      "schemaRef": "spark-class-model://schema/AiAgentToolNameResolver",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentToolCallExecutionInput": {
+      "ref": "spark-class-model://schema/AiAgentToolCallExecutionInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolCallExecutionInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolCallExecutionInput"
+      }
+    },
+    "spark-class-model://model/AiAgentToolCallExecutionInput": {
+      "ref": "spark-class-model://model/AiAgentToolCallExecutionInput",
+      "kind": "model",
+      "className": "AiAgentToolCallExecutionInput",
+      "schemaRef": "spark-class-model://schema/AiAgentToolCallExecutionInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentToolCallExecutionOutput": {
+      "ref": "spark-class-model://schema/AiAgentToolCallExecutionOutput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolCallExecutionOutput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolCallExecutionOutput"
+      }
+    },
+    "spark-class-model://model/AiAgentToolCallExecutionOutput": {
+      "ref": "spark-class-model://model/AiAgentToolCallExecutionOutput",
+      "kind": "model",
+      "className": "AiAgentToolCallExecutionOutput",
+      "schemaRef": "spark-class-model://schema/AiAgentToolCallExecutionOutput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentToolCallExecutor": {
+      "ref": "spark-class-model://schema/AiAgentToolCallExecutor",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolCallExecutor",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolCallExecutor"
+      }
+    },
+    "spark-class-model://model/AiAgentToolCallExecutor/methods/execute/0": {
+      "ref": "spark-class-model://model/AiAgentToolCallExecutor/methods/execute/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentToolCallExecutor",
+      "name": "execute",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f5005481e0e71856cd953130647db32f740e3840160324f8b937e634b5fea69b",
+      "returnSchemaRef": "spark-class-model://schema/shared/e5775d35ea9c7189a2b41d7a076441dfd10112f9cc740472a3ea136ab560f494"
+    },
+    "spark-class-model://schema/shared/f5005481e0e71856cd953130647db32f740e3840160324f8b937e634b5fea69b": {
+      "ref": "spark-class-model://schema/shared/f5005481e0e71856cd953130647db32f740e3840160324f8b937e634b5fea69b",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "$ref": "spark-class-model://schema/AiAgentToolCallExecutionInput",
+            "title": "AiAgentToolCallExecutionInput<TInput>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f5005481e0e71856cd953130647db32f740e3840160324f8b937e634b5fea69b"
+      }
+    },
+    "spark-class-model://schema/shared/e5775d35ea9c7189a2b41d7a076441dfd10112f9cc740472a3ea136ab560f494": {
+      "ref": "spark-class-model://schema/shared/e5775d35ea9c7189a2b41d7a076441dfd10112f9cc740472a3ea136ab560f494",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<AiAgentToolCallExecutionOutput | null>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e5775d35ea9c7189a2b41d7a076441dfd10112f9cc740472a3ea136ab560f494"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallExecutor%2Fmethods%2Fexecute%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallExecutionInput": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallExecutor%2Fmethods%2Fexecute%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallExecutionInput",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentToolCallExecutor/methods/execute/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentToolCallExecutionInput",
+      "targetClassName": "AiAgentToolCallExecutionInput",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolCallExecutionInput"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallExecutor%2Fmethods%2Fexecute%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallExecutionOutput": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallExecutor%2Fmethods%2Fexecute%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallExecutionOutput",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentToolCallExecutor/methods/execute/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentToolCallExecutionOutput",
+      "targetClassName": "AiAgentToolCallExecutionOutput",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolCallExecutionOutput"
+    },
+    "spark-class-model://model/AiAgentToolCallExecutor": {
+      "ref": "spark-class-model://model/AiAgentToolCallExecutor",
+      "kind": "model",
+      "className": "AiAgentToolCallExecutor",
+      "schemaRef": "spark-class-model://schema/AiAgentToolCallExecutor",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/AiAgentToolCallExecutor/methods/execute/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallExecutor%2Fmethods%2Fexecute%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallExecutionInput",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallExecutor%2Fmethods%2Fexecute%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallExecutionOutput"
+      ]
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/native-runtime/native-script-sandbox.d.ts",
+  "symbols": [
+    "AiNativeScriptSandboxContext"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiNativeScriptSandboxContext": {
+      "ref": "spark-class-model://schema/AiNativeScriptSandboxContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiNativeScriptSandboxContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiNativeScriptSandboxContext"
+      }
+    },
+    "spark-class-model://model/AiNativeScriptSandboxContext": {
+      "ref": "spark-class-model://model/AiNativeScriptSandboxContext",
+      "kind": "model",
+      "className": "AiNativeScriptSandboxContext",
+      "schemaRef": "spark-class-model://schema/AiNativeScriptSandboxContext",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

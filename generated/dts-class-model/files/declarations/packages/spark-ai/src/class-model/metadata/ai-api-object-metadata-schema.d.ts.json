@@ -273,7 +273,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.470Z",
+  "generatedAt": "2026-06-13T04:00:57.592Z",
   "$defs": {
     "AiApiActionFailureMode": {
       "type": "object",

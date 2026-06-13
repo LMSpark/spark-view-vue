@@ -146,7 +146,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "types.d.ts.json#/$defs/DataColumn"
+              "type": "object",
+              "title": "DataColumn"
             }
           },
           "readable": true,
@@ -201,8 +202,7 @@
               "name": "row",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -223,8 +223,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "DataRow",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             }
@@ -247,8 +246,7 @@
               "name": "row",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -266,8 +264,7 @@
               "name": "row",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -289,7 +286,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.814Z",
+  "generatedAt": "2026-06-13T04:00:57.859Z",
   "$defs": {
     "ValidationError": {
       "type": "object",
@@ -337,7 +334,8 @@
         "columns": {
           "type": "array",
           "items": {
-            "$ref": "types.d.ts.json#/$defs/DataColumn"
+            "type": "object",
+            "title": "DataColumn"
           }
         },
         "validate": {

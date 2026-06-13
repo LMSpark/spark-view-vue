@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/data-views/RendererList/types.d.ts",
+  "symbols": [
+    "RendererListApi"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RendererListApi": {
+      "ref": "spark-class-model://schema/RendererListApi",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RendererListApi",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RendererListApi"
+      }
+    },
+    "spark-class-model://model/RendererListApi": {
+      "ref": "spark-class-model://model/RendererListApi",
+      "kind": "model",
+      "className": "RendererListApi",
+      "schemaRef": "spark-class-model://schema/RendererListApi",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

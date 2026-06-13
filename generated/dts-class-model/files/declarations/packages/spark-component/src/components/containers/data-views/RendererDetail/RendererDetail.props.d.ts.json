@@ -75,7 +75,8 @@
           "name": "toolbar",
           "jsdoc": "结构化工具栏",
           "schema": {
-            "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+            "type": "object",
+            "title": "RToolbarProps"
           },
           "readable": true,
           "writable": false
@@ -225,7 +226,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.548Z",
+  "generatedAt": "2026-06-13T04:00:57.635Z",
   "$defs": {
     "RDetailProps": {
       "type": "object",
@@ -237,7 +238,8 @@
           "title": "DataView"
         },
         "toolbar": {
-          "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+          "type": "object",
+          "title": "RToolbarProps"
         },
         "contextDataMember": {
           "anyOf": [

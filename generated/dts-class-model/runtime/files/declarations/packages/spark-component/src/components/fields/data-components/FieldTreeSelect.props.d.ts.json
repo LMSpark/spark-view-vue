@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldTreeSelect.props.d.ts",
+  "symbols": [
+    "RTreeSelectProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RTreeSelectProps": {
+      "ref": "spark-class-model://schema/RTreeSelectProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RTreeSelectProps",
+        "properties": {
+          "defaultExpandAll": {
+            "type": "boolean"
+          },
+          "renderAfterExpand": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RTreeSelectProps"
+      }
+    },
+    "spark-class-model://model/RTreeSelectProps/attributes/defaultExpandAll/0": {
+      "ref": "spark-class-model://model/RTreeSelectProps/attributes/defaultExpandAll/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeSelectProps",
+      "name": "defaultExpandAll",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeSelectProps/attributes/renderAfterExpand/1": {
+      "ref": "spark-class-model://model/RTreeSelectProps/attributes/renderAfterExpand/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeSelectProps",
+      "name": "renderAfterExpand",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeSelectProps": {
+      "ref": "spark-class-model://model/RTreeSelectProps",
+      "kind": "model",
+      "className": "RTreeSelectProps",
+      "schemaRef": "spark-class-model://schema/RTreeSelectProps",
+      "attributeRefs": [
+        "spark-class-model://model/RTreeSelectProps/attributes/defaultExpandAll/0",
+        "spark-class-model://model/RTreeSelectProps/attributes/renderAfterExpand/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

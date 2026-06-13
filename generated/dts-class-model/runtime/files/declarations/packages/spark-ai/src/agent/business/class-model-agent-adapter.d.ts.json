@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+  "symbols": [
+    "ClassModelAgentAdapterConstructor",
+    "ClassModelAgentAdapterRegisterCommand",
+    "ClassModelAgentAdapterRegistrationCommand",
+    "ClassModelAgentAdapterRegisterOptions",
+    "ClassModelAgentAdapter"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ClassModelAgentAdapterConstructor": {
+      "ref": "spark-class-model://schema/ClassModelAgentAdapterConstructor",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelAgentAdapterConstructor",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelAgentAdapterConstructor"
+      }
+    },
+    "spark-class-model://model/ClassModelAgentAdapterConstructor": {
+      "ref": "spark-class-model://model/ClassModelAgentAdapterConstructor",
+      "kind": "model",
+      "className": "ClassModelAgentAdapterConstructor",
+      "schemaRef": "spark-class-model://schema/ClassModelAgentAdapterConstructor",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelAgentAdapterRegisterCommand": {
+      "ref": "spark-class-model://schema/ClassModelAgentAdapterRegisterCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelAgentAdapterRegisterCommand",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelAgentAdapterRegisterCommand"
+      }
+    },
+    "spark-class-model://model/ClassModelAgentAdapterRegisterCommand": {
+      "ref": "spark-class-model://model/ClassModelAgentAdapterRegisterCommand",
+      "kind": "model",
+      "className": "ClassModelAgentAdapterRegisterCommand",
+      "schemaRef": "spark-class-model://schema/ClassModelAgentAdapterRegisterCommand",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelAgentAdapterRegistrationCommand": {
+      "ref": "spark-class-model://schema/ClassModelAgentAdapterRegistrationCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelAgentAdapterRegistrationCommand",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelAgentAdapterRegistrationCommand"
+      }
+    },
+    "spark-class-model://model/ClassModelAgentAdapterRegistrationCommand": {
+      "ref": "spark-class-model://model/ClassModelAgentAdapterRegistrationCommand",
+      "kind": "model",
+      "className": "ClassModelAgentAdapterRegistrationCommand",
+      "schemaRef": "spark-class-model://schema/ClassModelAgentAdapterRegistrationCommand",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelAgentAdapterRegisterOptions": {
+      "ref": "spark-class-model://schema/ClassModelAgentAdapterRegisterOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelAgentAdapterRegisterOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelAgentAdapterRegisterOptions"
+      }
+    },
+    "spark-class-model://model/ClassModelAgentAdapterRegisterOptions": {
+      "ref": "spark-class-model://model/ClassModelAgentAdapterRegisterOptions",
+      "kind": "model",
+      "className": "ClassModelAgentAdapterRegisterOptions",
+      "schemaRef": "spark-class-model://schema/ClassModelAgentAdapterRegisterOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelAgentAdapter": {
+      "ref": "spark-class-model://schema/ClassModelAgentAdapter",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelAgentAdapter",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelAgentAdapter"
+      }
+    },
+    "spark-class-model://model/ClassModelAgentAdapter/methods/register/0": {
+      "ref": "spark-class-model://model/ClassModelAgentAdapter/methods/register/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ClassModelAgentAdapter",
+      "name": "register",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/7a96739ec6305b5f5f3add333e49bc790382797c111916073bde4a901c080859",
+      "returnSchemaRef": "spark-class-model://schema/shared/aa01c5647ec31607d9e4c07c1df9d069439cbaf323cbdd42b9796717236d1f38"
+    },
+    "spark-class-model://schema/shared/7a96739ec6305b5f5f3add333e49bc790382797c111916073bde4a901c080859": {
+      "ref": "spark-class-model://schema/shared/7a96739ec6305b5f5f3add333e49bc790382797c111916073bde4a901c080859",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "$ref": "spark-class-model://schema/ClassModelAgentAdapterRegisterCommand",
+            "title": "ClassModelAgentAdapterRegisterCommand<T>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7a96739ec6305b5f5f3add333e49bc790382797c111916073bde4a901c080859"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapter%2Fmethods%2Fregister%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapterRegisterCommand": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapter%2Fmethods%2Fregister%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapterRegisterCommand",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ClassModelAgentAdapter/methods/register/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/ClassModelAgentAdapterRegisterCommand",
+      "targetClassName": "ClassModelAgentAdapterRegisterCommand",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ClassModelAgentAdapterRegisterCommand"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapter%2Fmethods%2Fregister%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapter%2Fmethods%2Fregister%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ClassModelAgentAdapter/methods/register/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentHost",
+      "targetClassName": "AiAgentHost",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHost"
+    },
+    "spark-class-model://model/ClassModelAgentAdapter/methods/createRegistration/1": {
+      "ref": "spark-class-model://model/ClassModelAgentAdapter/methods/createRegistration/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ClassModelAgentAdapter",
+      "name": "createRegistration",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/98bcec61bb9001f1801118f7e162cdb151ba4fb07e2f407750d45aeab80f5f28",
+      "returnSchemaRef": "spark-class-model://schema/shared/6446c89793ff27fb1cb1179edc63010a6f4a2948dd9dc561767770d6be01c404"
+    },
+    "spark-class-model://schema/shared/98bcec61bb9001f1801118f7e162cdb151ba4fb07e2f407750d45aeab80f5f28": {
+      "ref": "spark-class-model://schema/shared/98bcec61bb9001f1801118f7e162cdb151ba4fb07e2f407750d45aeab80f5f28",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "$ref": "spark-class-model://schema/ClassModelAgentAdapterRegistrationCommand",
+            "title": "ClassModelAgentAdapterRegistrationCommand<T>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/98bcec61bb9001f1801118f7e162cdb151ba4fb07e2f407750d45aeab80f5f28"
+      }
+    },
+    "spark-class-model://schema/shared/6446c89793ff27fb1cb1179edc63010a6f4a2948dd9dc561767770d6be01c404": {
+      "ref": "spark-class-model://schema/shared/6446c89793ff27fb1cb1179edc63010a6f4a2948dd9dc561767770d6be01c404",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentRegistration",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6446c89793ff27fb1cb1179edc63010a6f4a2948dd9dc561767770d6be01c404"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapter%2Fmethods%2FcreateRegistration%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapterRegistrationCommand": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapter%2Fmethods%2FcreateRegistration%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapterRegistrationCommand",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ClassModelAgentAdapter/methods/createRegistration/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/ClassModelAgentAdapterRegistrationCommand",
+      "targetClassName": "ClassModelAgentAdapterRegistrationCommand",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ClassModelAgentAdapterRegistrationCommand"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapter%2Fmethods%2FcreateRegistration%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapter%2Fmethods%2FcreateRegistration%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ClassModelAgentAdapter/methods/createRegistration/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentRegistration",
+      "targetClassName": "AiAgentRegistration",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/registration-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRegistration"
+    },
+    "spark-class-model://model/ClassModelAgentAdapter": {
+      "ref": "spark-class-model://model/ClassModelAgentAdapter",
+      "kind": "model",
+      "className": "ClassModelAgentAdapter",
+      "schemaRef": "spark-class-model://schema/ClassModelAgentAdapter",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ClassModelAgentAdapter/methods/register/0",
+        "spark-class-model://model/ClassModelAgentAdapter/methods/createRegistration/1"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapter%2Fmethods%2Fregister%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapterRegisterCommand",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapter%2Fmethods%2Fregister%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapter%2Fmethods%2FcreateRegistration%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapterRegistrationCommand",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelAgentAdapter%2Fmethods%2FcreateRegistration%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration"
+      ]
+    }
+  }
+}

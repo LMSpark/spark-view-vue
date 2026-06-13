@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-helpers.d.ts",
+  "symbols": [
+    "StringSchemaOptions",
+    "NumberSchemaOptions",
+    "BooleanSchemaOptions",
+    "EnumSchemaOptions",
+    "ObjectSchemaOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/StringSchemaOptions": {
+      "ref": "spark-class-model://schema/StringSchemaOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "StringSchemaOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/StringSchemaOptions"
+      }
+    },
+    "spark-class-model://model/StringSchemaOptions": {
+      "ref": "spark-class-model://model/StringSchemaOptions",
+      "kind": "model",
+      "className": "StringSchemaOptions",
+      "schemaRef": "spark-class-model://schema/StringSchemaOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NumberSchemaOptions": {
+      "ref": "spark-class-model://schema/NumberSchemaOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NumberSchemaOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NumberSchemaOptions"
+      }
+    },
+    "spark-class-model://model/NumberSchemaOptions": {
+      "ref": "spark-class-model://model/NumberSchemaOptions",
+      "kind": "model",
+      "className": "NumberSchemaOptions",
+      "schemaRef": "spark-class-model://schema/NumberSchemaOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/BooleanSchemaOptions": {
+      "ref": "spark-class-model://schema/BooleanSchemaOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "BooleanSchemaOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/BooleanSchemaOptions"
+      }
+    },
+    "spark-class-model://model/BooleanSchemaOptions": {
+      "ref": "spark-class-model://model/BooleanSchemaOptions",
+      "kind": "model",
+      "className": "BooleanSchemaOptions",
+      "schemaRef": "spark-class-model://schema/BooleanSchemaOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/EnumSchemaOptions": {
+      "ref": "spark-class-model://schema/EnumSchemaOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "EnumSchemaOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/EnumSchemaOptions"
+      }
+    },
+    "spark-class-model://model/EnumSchemaOptions": {
+      "ref": "spark-class-model://model/EnumSchemaOptions",
+      "kind": "model",
+      "className": "EnumSchemaOptions",
+      "schemaRef": "spark-class-model://schema/EnumSchemaOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ObjectSchemaOptions": {
+      "ref": "spark-class-model://schema/ObjectSchemaOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ObjectSchemaOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ObjectSchemaOptions"
+      }
+    },
+    "spark-class-model://model/ObjectSchemaOptions": {
+      "ref": "spark-class-model://model/ObjectSchemaOptions",
+      "kind": "model",
+      "className": "ObjectSchemaOptions",
+      "schemaRef": "spark-class-model://schema/ObjectSchemaOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

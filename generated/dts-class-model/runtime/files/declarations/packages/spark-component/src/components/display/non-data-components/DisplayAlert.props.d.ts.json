@@ -1,0 +1,230 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayAlert.props.d.ts",
+  "symbols": [
+    "RAlertProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RAlertProps": {
+      "ref": "spark-class-model://schema/RAlertProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RAlertProps",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "alertType": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "success"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warning"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              }
+            ]
+          },
+          "closable": {
+            "type": "boolean"
+          },
+          "closeText": {
+            "type": "string"
+          },
+          "center": {
+            "type": "boolean"
+          },
+          "showIcon": {
+            "type": "boolean"
+          },
+          "effect": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "light"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "dark"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RAlertProps"
+      }
+    },
+    "spark-class-model://model/RAlertProps/attributes/title/0": {
+      "ref": "spark-class-model://model/RAlertProps/attributes/title/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAlertProps",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RAlertProps/attributes/description/1": {
+      "ref": "spark-class-model://model/RAlertProps/attributes/description/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAlertProps",
+      "name": "description",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/ccb2be383cb64e5776600525a7454dad8318e75d22a93761ac4127a4fff6815d": {
+      "ref": "spark-class-model://schema/shared/ccb2be383cb64e5776600525a7454dad8318e75d22a93761ac4127a4fff6815d",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "success"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "warning"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "info"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ccb2be383cb64e5776600525a7454dad8318e75d22a93761ac4127a4fff6815d"
+      }
+    },
+    "spark-class-model://model/RAlertProps/attributes/alertType/2": {
+      "ref": "spark-class-model://model/RAlertProps/attributes/alertType/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAlertProps",
+      "name": "alertType",
+      "schemaRef": "spark-class-model://schema/shared/ccb2be383cb64e5776600525a7454dad8318e75d22a93761ac4127a4fff6815d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RAlertProps/attributes/closable/3": {
+      "ref": "spark-class-model://model/RAlertProps/attributes/closable/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAlertProps",
+      "name": "closable",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RAlertProps/attributes/closeText/4": {
+      "ref": "spark-class-model://model/RAlertProps/attributes/closeText/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAlertProps",
+      "name": "closeText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RAlertProps/attributes/center/5": {
+      "ref": "spark-class-model://model/RAlertProps/attributes/center/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAlertProps",
+      "name": "center",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RAlertProps/attributes/showIcon/6": {
+      "ref": "spark-class-model://model/RAlertProps/attributes/showIcon/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAlertProps",
+      "name": "showIcon",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/f5ea9d3c3215b366487dea3403d670b51d215374ae0579f0b7beca88e211efd8": {
+      "ref": "spark-class-model://schema/shared/f5ea9d3c3215b366487dea3403d670b51d215374ae0579f0b7beca88e211efd8",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "light"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "dark"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f5ea9d3c3215b366487dea3403d670b51d215374ae0579f0b7beca88e211efd8"
+      }
+    },
+    "spark-class-model://model/RAlertProps/attributes/effect/7": {
+      "ref": "spark-class-model://model/RAlertProps/attributes/effect/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAlertProps",
+      "name": "effect",
+      "schemaRef": "spark-class-model://schema/shared/f5ea9d3c3215b366487dea3403d670b51d215374ae0579f0b7beca88e211efd8",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RAlertProps": {
+      "ref": "spark-class-model://model/RAlertProps",
+      "kind": "model",
+      "className": "RAlertProps",
+      "schemaRef": "spark-class-model://schema/RAlertProps",
+      "attributeRefs": [
+        "spark-class-model://model/RAlertProps/attributes/title/0",
+        "spark-class-model://model/RAlertProps/attributes/description/1",
+        "spark-class-model://model/RAlertProps/attributes/alertType/2",
+        "spark-class-model://model/RAlertProps/attributes/closable/3",
+        "spark-class-model://model/RAlertProps/attributes/closeText/4",
+        "spark-class-model://model/RAlertProps/attributes/center/5",
+        "spark-class-model://model/RAlertProps/attributes/showIcon/6",
+        "spark-class-model://model/RAlertProps/attributes/effect/7"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

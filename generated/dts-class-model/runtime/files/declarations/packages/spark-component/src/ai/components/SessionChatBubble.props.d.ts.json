@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionChatBubble.props.d.ts",
+  "symbols": [
+    "SessionChatBubbleProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/SessionChatBubbleProps": {
+      "ref": "spark-class-model://schema/SessionChatBubbleProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SessionChatBubbleProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SessionChatBubbleProps"
+      }
+    },
+    "spark-class-model://model/SessionChatBubbleProps": {
+      "ref": "spark-class-model://model/SessionChatBubbleProps",
+      "kind": "model",
+      "className": "SessionChatBubbleProps",
+      "schemaRef": "spark-class-model://schema/SessionChatBubbleProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

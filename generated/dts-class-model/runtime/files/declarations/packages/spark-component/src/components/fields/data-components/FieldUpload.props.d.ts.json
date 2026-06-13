@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldUpload.props.d.ts",
+  "symbols": [
+    "RUploadProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RUploadProps": {
+      "ref": "spark-class-model://schema/RUploadProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RUploadProps",
+        "properties": {
+          "autoUpload": {
+            "type": "boolean"
+          },
+          "showFileList": {
+            "type": "boolean"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "listType": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "text"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "picture"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "picture-card"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RUploadProps"
+      }
+    },
+    "spark-class-model://model/RUploadProps/attributes/autoUpload/0": {
+      "ref": "spark-class-model://model/RUploadProps/attributes/autoUpload/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RUploadProps",
+      "name": "autoUpload",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RUploadProps/attributes/showFileList/1": {
+      "ref": "spark-class-model://model/RUploadProps/attributes/showFileList/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RUploadProps",
+      "name": "showFileList",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RUploadProps/attributes/limit/2": {
+      "ref": "spark-class-model://model/RUploadProps/attributes/limit/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RUploadProps",
+      "name": "limit",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/9b57a1bd212eff75dc5886b56eeb91003376abb87f05df1da9ea5e5a6531f0af": {
+      "ref": "spark-class-model://schema/shared/9b57a1bd212eff75dc5886b56eeb91003376abb87f05df1da9ea5e5a6531f0af",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "text"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "picture"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "picture-card"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9b57a1bd212eff75dc5886b56eeb91003376abb87f05df1da9ea5e5a6531f0af"
+      }
+    },
+    "spark-class-model://model/RUploadProps/attributes/listType/3": {
+      "ref": "spark-class-model://model/RUploadProps/attributes/listType/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RUploadProps",
+      "name": "listType",
+      "schemaRef": "spark-class-model://schema/shared/9b57a1bd212eff75dc5886b56eeb91003376abb87f05df1da9ea5e5a6531f0af",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RUploadProps": {
+      "ref": "spark-class-model://model/RUploadProps",
+      "kind": "model",
+      "className": "RUploadProps",
+      "schemaRef": "spark-class-model://schema/RUploadProps",
+      "attributeRefs": [
+        "spark-class-model://model/RUploadProps/attributes/autoUpload/0",
+        "spark-class-model://model/RUploadProps/attributes/showFileList/1",
+        "spark-class-model://model/RUploadProps/attributes/limit/2",
+        "spark-class-model://model/RUploadProps/attributes/listType/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

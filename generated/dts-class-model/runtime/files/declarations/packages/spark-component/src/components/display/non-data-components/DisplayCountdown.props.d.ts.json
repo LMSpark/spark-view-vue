@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayCountdown.props.d.ts",
+  "symbols": [
+    "RDisplayCountdownProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RDisplayCountdownProps": {
+      "ref": "spark-class-model://schema/RDisplayCountdownProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RDisplayCountdownProps",
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "object",
+                "title": "Date"
+              }
+            ]
+          },
+          "format": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "suffix": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "valueStyle": {
+            "type": "object",
+            "title": "CSSProperties"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RDisplayCountdownProps"
+      }
+    },
+    "spark-class-model://schema/shared/255efefbed97053222316db2da8495222e690b1e96c20df0b83dd3ae3c336ac6": {
+      "ref": "spark-class-model://schema/shared/255efefbed97053222316db2da8495222e690b1e96c20df0b83dd3ae3c336ac6",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "object",
+            "title": "Date"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/255efefbed97053222316db2da8495222e690b1e96c20df0b83dd3ae3c336ac6"
+      }
+    },
+    "spark-class-model://model/RDisplayCountdownProps/attributes/value/0": {
+      "ref": "spark-class-model://model/RDisplayCountdownProps/attributes/value/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDisplayCountdownProps",
+      "name": "value",
+      "schemaRef": "spark-class-model://schema/shared/255efefbed97053222316db2da8495222e690b1e96c20df0b83dd3ae3c336ac6",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDisplayCountdownProps/attributes/format/1": {
+      "ref": "spark-class-model://model/RDisplayCountdownProps/attributes/format/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDisplayCountdownProps",
+      "name": "format",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDisplayCountdownProps/attributes/prefix/2": {
+      "ref": "spark-class-model://model/RDisplayCountdownProps/attributes/prefix/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDisplayCountdownProps",
+      "name": "prefix",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDisplayCountdownProps/attributes/suffix/3": {
+      "ref": "spark-class-model://model/RDisplayCountdownProps/attributes/suffix/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDisplayCountdownProps",
+      "name": "suffix",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDisplayCountdownProps/attributes/title/4": {
+      "ref": "spark-class-model://model/RDisplayCountdownProps/attributes/title/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDisplayCountdownProps",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDisplayCountdownProps/attributes/valueStyle/5": {
+      "ref": "spark-class-model://model/RDisplayCountdownProps/attributes/valueStyle/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDisplayCountdownProps",
+      "name": "valueStyle",
+      "schemaRef": "spark-class-model://schema/shared/1859dcab515acd103a9939b6d74840ad0aaf06a95da104d59ae6daa56aaa73f1",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDisplayCountdownProps": {
+      "ref": "spark-class-model://model/RDisplayCountdownProps",
+      "kind": "model",
+      "className": "RDisplayCountdownProps",
+      "schemaRef": "spark-class-model://schema/RDisplayCountdownProps",
+      "attributeRefs": [
+        "spark-class-model://model/RDisplayCountdownProps/attributes/value/0",
+        "spark-class-model://model/RDisplayCountdownProps/attributes/format/1",
+        "spark-class-model://model/RDisplayCountdownProps/attributes/prefix/2",
+        "spark-class-model://model/RDisplayCountdownProps/attributes/suffix/3",
+        "spark-class-model://model/RDisplayCountdownProps/attributes/title/4",
+        "spark-class-model://model/RDisplayCountdownProps/attributes/valueStyle/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

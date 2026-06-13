@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionReasoningBlock.props.d.ts",
+  "symbols": [
+    "SessionReasoningBlockProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/SessionReasoningBlockProps": {
+      "ref": "spark-class-model://schema/SessionReasoningBlockProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SessionReasoningBlockProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SessionReasoningBlockProps"
+      }
+    },
+    "spark-class-model://model/SessionReasoningBlockProps": {
+      "ref": "spark-class-model://model/SessionReasoningBlockProps",
+      "kind": "model",
+      "className": "SessionReasoningBlockProps",
+      "schemaRef": "spark-class-model://schema/SessionReasoningBlockProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

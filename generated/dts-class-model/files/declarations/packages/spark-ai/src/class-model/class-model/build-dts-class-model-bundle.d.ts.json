@@ -28,7 +28,7 @@
       "className": "BuildDtsClassModelBundleProgressPhase",
       "jsdoc": "Build Dts Class Model Bundle Progress Phase 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "'create-program' | 'program-ready' | 'project-file' | 'write-semantic-gaps' | 'write-manifest' | 'done'",
+      "declarationTypeText": "'create-program' | 'program-ready' | 'project-file' | 'write-runtime' | 'write-semantic-gaps' | 'write-manifest' | 'done'",
       "declarationRelations": [
         {
           "kind": "union",
@@ -41,6 +41,10 @@
         {
           "kind": "union",
           "typeText": "'project-file'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'write-runtime'"
         },
         {
           "kind": "union",
@@ -57,7 +61,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-        "line": 3,
+        "line": 4,
         "className": "BuildDtsClassModelBundleProgressPhase",
         "declarationKind": "type"
       },
@@ -79,7 +83,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-        "line": 5,
+        "line": 6,
         "className": "BuildDtsClassModelBundleProgress",
         "declarationKind": "type"
       },
@@ -91,17 +95,17 @@
       "className": "BuildDtsClassModelBundleOptions",
       "jsdoc": "Build Dts Class Model Bundle Options 的调用配置。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    outputDir: string;\n    exportedOnly?: boolean;\n    onProgress?: (event: BuildDtsClassModelBundleProgress) => void;\n    progressInterval?: number;\n}>",
+      "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    outputDir: string;\n    compilerHost?: ts.CompilerHost;\n    exportedOnly?: boolean;\n    onProgress?: (event: BuildDtsClassModelBundleProgress) => void;\n    progressInterval?: number;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    outputDir: string;\n    exportedOnly?: boolean;\n    onProgress?: (event: BuildDtsClassModelBundleProgress) => void;\n    progressInterval?: number;\n}>",
+          "typeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    outputDir: string;\n    compilerHost?: ts.CompilerHost;\n    exportedOnly?: boolean;\n    onProgress?: (event: BuildDtsClassModelBundleProgress) => void;\n    progressInterval?: number;\n}>",
           "targetName": "Readonly"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-        "line": 12,
+        "line": 13,
         "className": "BuildDtsClassModelBundleOptions",
         "declarationKind": "type"
       },
@@ -113,17 +117,17 @@
       "className": "BuildDtsClassModelBundleResult",
       "jsdoc": "Build Dts Class Model Bundle Result 的返回结果。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    manifest: DtsClassModelBundleManifest;\n    manifestPath: string;\n    semanticLogPath: string;\n    semanticLogJsonPath: string;\n    semanticGapCount: number;\n    fileCount: number;\n    modelCount: number;\n}>",
+      "declarationTypeText": "Readonly<{\n    manifest: DtsClassModelBundleManifest;\n    manifestPath: string;\n    runtimeManifest: DtsClassModelRuntimeManifest;\n    runtimeManifestPath: string;\n    semanticLogPath: string;\n    semanticLogJsonPath: string;\n    semanticGapCount: number;\n    fileCount: number;\n    modelCount: number;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    manifest: DtsClassModelBundleManifest;\n    manifestPath: string;\n    semanticLogPath: string;\n    semanticLogJsonPath: string;\n    semanticGapCount: number;\n    fileCount: number;\n    modelCount: number;\n}>",
+          "typeText": "Readonly<{\n    manifest: DtsClassModelBundleManifest;\n    manifestPath: string;\n    runtimeManifest: DtsClassModelRuntimeManifest;\n    runtimeManifestPath: string;\n    semanticLogPath: string;\n    semanticLogJsonPath: string;\n    semanticGapCount: number;\n    fileCount: number;\n    modelCount: number;\n}>",
           "targetName": "Readonly"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-        "line": 21,
+        "line": 23,
         "className": "BuildDtsClassModelBundleResult",
         "declarationKind": "type"
       },
@@ -131,7 +135,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.444Z",
+  "generatedAt": "2026-06-13T04:00:57.576Z",
   "$defs": {
     "BuildDtsClassModelBundleProgressPhase": {
       "type": "object",

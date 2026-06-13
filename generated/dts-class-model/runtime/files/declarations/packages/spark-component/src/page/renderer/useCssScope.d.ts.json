@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/page/renderer/useCssScope.d.ts",
+  "symbols": [
+    "UseCssScopeOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/UseCssScopeOptions": {
+      "ref": "spark-class-model://schema/UseCssScopeOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "UseCssScopeOptions",
+        "properties": {
+          "enableScope": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/UseCssScopeOptions"
+      }
+    },
+    "spark-class-model://model/UseCssScopeOptions/attributes/enableScope/0": {
+      "ref": "spark-class-model://model/UseCssScopeOptions/attributes/enableScope/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseCssScopeOptions",
+      "name": "enableScope",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UseCssScopeOptions": {
+      "ref": "spark-class-model://model/UseCssScopeOptions",
+      "kind": "model",
+      "className": "UseCssScopeOptions",
+      "schemaRef": "spark-class-model://schema/UseCssScopeOptions",
+      "attributeRefs": [
+        "spark-class-model://model/UseCssScopeOptions/attributes/enableScope/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

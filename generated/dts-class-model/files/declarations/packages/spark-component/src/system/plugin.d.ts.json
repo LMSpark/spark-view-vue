@@ -34,7 +34,8 @@
           "name": "registry",
           "jsdoc": "自定义注册表（测试/隔离场景用）",
           "schema": {
-            "$ref": "../core/types.d.ts.json#/$defs/ComponentRegistry"
+            "type": "object",
+            "title": "ComponentRegistry"
           },
           "readable": true,
           "writable": false
@@ -43,7 +44,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.733Z",
+  "generatedAt": "2026-06-13T04:00:57.800Z",
   "$defs": {
     "SparkPluginOptions": {
       "type": "object",
@@ -51,7 +52,8 @@
       "description": "Spark Plugin Options 的调用配置。",
       "properties": {
         "registry": {
-          "$ref": "../core/types.d.ts.json#/$defs/ComponentRegistry"
+          "type": "object",
+          "title": "ComponentRegistry"
         }
       }
     }

@@ -1,0 +1,355 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts",
+  "symbols": [
+    "PageRuntimeErrorPhase",
+    "PageRuntimeErrorPayload",
+    "Props"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PageRuntimeErrorPhase": {
+      "ref": "spark-class-model://schema/PageRuntimeErrorPhase",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageRuntimeErrorPhase",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageRuntimeErrorPhase"
+      }
+    },
+    "spark-class-model://model/PageRuntimeErrorPhase": {
+      "ref": "spark-class-model://model/PageRuntimeErrorPhase",
+      "kind": "model",
+      "className": "PageRuntimeErrorPhase",
+      "schemaRef": "spark-class-model://schema/PageRuntimeErrorPhase",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageRuntimeErrorPayload": {
+      "ref": "spark-class-model://schema/PageRuntimeErrorPayload",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageRuntimeErrorPayload",
+        "properties": {
+          "phase": {
+            "$ref": "spark-class-model://schema/PageRuntimeErrorPhase"
+          },
+          "message": {
+            "type": "string"
+          },
+          "pageId": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageRuntimeErrorPayload"
+      }
+    },
+    "spark-class-model://schema/shared/c2e737c5c09f8eeecbc47c8ea288f0e386038f6dabb480b1b8ace0b028862395": {
+      "ref": "spark-class-model://schema/shared/c2e737c5c09f8eeecbc47c8ea288f0e386038f6dabb480b1b8ace0b028862395",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/PageRuntimeErrorPhase",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c2e737c5c09f8eeecbc47c8ea288f0e386038f6dabb480b1b8ace0b028862395"
+      }
+    },
+    "spark-class-model://model/PageRuntimeErrorPayload/attributes/phase/0": {
+      "ref": "spark-class-model://model/PageRuntimeErrorPayload/attributes/phase/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageRuntimeErrorPayload",
+      "name": "phase",
+      "schemaRef": "spark-class-model://schema/shared/c2e737c5c09f8eeecbc47c8ea288f0e386038f6dabb480b1b8ace0b028862395",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageRuntimeErrorPayload%2Fattributes%2Fphase%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FPageRuntimeErrorPhase": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageRuntimeErrorPayload%2Fattributes%2Fphase%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FPageRuntimeErrorPhase",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PageRuntimeErrorPayload/attributes/phase/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/PageRuntimeErrorPhase",
+      "targetClassName": "PageRuntimeErrorPhase",
+      "targetFile": "files/declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageRuntimeErrorPhase"
+    },
+    "spark-class-model://model/PageRuntimeErrorPayload/attributes/message/1": {
+      "ref": "spark-class-model://model/PageRuntimeErrorPayload/attributes/message/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageRuntimeErrorPayload",
+      "name": "message",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageRuntimeErrorPayload/attributes/pageId/2": {
+      "ref": "spark-class-model://model/PageRuntimeErrorPayload/attributes/pageId/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageRuntimeErrorPayload",
+      "name": "pageId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageRuntimeErrorPayload/attributes/at/3": {
+      "ref": "spark-class-model://model/PageRuntimeErrorPayload/attributes/at/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageRuntimeErrorPayload",
+      "name": "at",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageRuntimeErrorPayload": {
+      "ref": "spark-class-model://model/PageRuntimeErrorPayload",
+      "kind": "model",
+      "className": "PageRuntimeErrorPayload",
+      "schemaRef": "spark-class-model://schema/PageRuntimeErrorPayload",
+      "attributeRefs": [
+        "spark-class-model://model/PageRuntimeErrorPayload/attributes/phase/0",
+        "spark-class-model://model/PageRuntimeErrorPayload/attributes/message/1",
+        "spark-class-model://model/PageRuntimeErrorPayload/attributes/pageId/2",
+        "spark-class-model://model/PageRuntimeErrorPayload/attributes/at/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageRuntimeErrorPayload%2Fattributes%2Fphase%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FPageRuntimeErrorPhase"
+      ]
+    },
+    "spark-class-model://schema/Props": {
+      "ref": "spark-class-model://schema/Props",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Props",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "pageNode": {
+            "$ref": "spark-class-model://schema/PageNodeLike"
+          },
+          "pageNodeRevision": {
+            "type": "number"
+          },
+          "pageId": {
+            "type": "string"
+          },
+          "enableCssScope": {
+            "type": "boolean"
+          },
+          "enableDataSet": {
+            "type": "boolean"
+          },
+          "messageService": true,
+          "confirmService": true,
+          "beforeLoad": {
+            "type": "object",
+            "title": "(pageId: string) => void | Promise<void>"
+          },
+          "afterLoad": {
+            "type": "object",
+            "title": "(state: PageNodeRenderConfig) => void | Promise<void>"
+          },
+          "onError": {
+            "type": "object",
+            "title": "(error: Error) => void"
+          },
+          "onRuntimeError": {
+            "type": "object",
+            "title": "(payload: PageRuntimeErrorPayload) => void"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/Props"
+      }
+    },
+    "spark-class-model://model/Props/attributes/type/0": {
+      "ref": "spark-class-model://model/Props/attributes/type/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Props",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/64846817f9fd2d6932754559b7c5f1122fe71bc3da8a71d80600b29a3a5dcd64": {
+      "ref": "spark-class-model://schema/shared/64846817f9fd2d6932754559b7c5f1122fe71bc3da8a71d80600b29a3a5dcd64",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/PageNodeLike",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/64846817f9fd2d6932754559b7c5f1122fe71bc3da8a71d80600b29a3a5dcd64"
+      }
+    },
+    "spark-class-model://model/Props/attributes/pageNode/1": {
+      "ref": "spark-class-model://model/Props/attributes/pageNode/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Props",
+      "name": "pageNode",
+      "schemaRef": "spark-class-model://schema/shared/64846817f9fd2d6932754559b7c5f1122fe71bc3da8a71d80600b29a3a5dcd64",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProps%2Fattributes%2FpageNode%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FPageNodeLike": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProps%2Fattributes%2FpageNode%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FPageNodeLike",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/Props/attributes/pageNode/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/PageNodeLike",
+      "targetClassName": "PageNodeLike",
+      "targetFile": "files/declarations/packages/spark-project-model/src/page/config-page.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageNodeLike"
+    },
+    "spark-class-model://model/Props/attributes/pageNodeRevision/2": {
+      "ref": "spark-class-model://model/Props/attributes/pageNodeRevision/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Props",
+      "name": "pageNodeRevision",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/Props/attributes/pageId/3": {
+      "ref": "spark-class-model://model/Props/attributes/pageId/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Props",
+      "name": "pageId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/Props/attributes/enableCssScope/4": {
+      "ref": "spark-class-model://model/Props/attributes/enableCssScope/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Props",
+      "name": "enableCssScope",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/Props/attributes/enableDataSet/5": {
+      "ref": "spark-class-model://model/Props/attributes/enableDataSet/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Props",
+      "name": "enableDataSet",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/Props/attributes/messageService/6": {
+      "ref": "spark-class-model://model/Props/attributes/messageService/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Props",
+      "name": "messageService",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/Props/attributes/confirmService/7": {
+      "ref": "spark-class-model://model/Props/attributes/confirmService/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Props",
+      "name": "confirmService",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/aad797d534839d30ff37f546263f5a09cc8bfeca81d6e8e9ef68da4965284b2a": {
+      "ref": "spark-class-model://schema/shared/aad797d534839d30ff37f546263f5a09cc8bfeca81d6e8e9ef68da4965284b2a",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(pageId: string) => void | Promise<void>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/aad797d534839d30ff37f546263f5a09cc8bfeca81d6e8e9ef68da4965284b2a"
+      }
+    },
+    "spark-class-model://model/Props/attributes/beforeLoad/8": {
+      "ref": "spark-class-model://model/Props/attributes/beforeLoad/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Props",
+      "name": "beforeLoad",
+      "schemaRef": "spark-class-model://schema/shared/aad797d534839d30ff37f546263f5a09cc8bfeca81d6e8e9ef68da4965284b2a",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/ba51252cbb2b0f657eacbfc108d7fbe75b8b79a27f1fb47e4d4606a11670a249": {
+      "ref": "spark-class-model://schema/shared/ba51252cbb2b0f657eacbfc108d7fbe75b8b79a27f1fb47e4d4606a11670a249",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(state: PageNodeRenderConfig) => void | Promise<void>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ba51252cbb2b0f657eacbfc108d7fbe75b8b79a27f1fb47e4d4606a11670a249"
+      }
+    },
+    "spark-class-model://model/Props/attributes/afterLoad/9": {
+      "ref": "spark-class-model://model/Props/attributes/afterLoad/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Props",
+      "name": "afterLoad",
+      "schemaRef": "spark-class-model://schema/shared/ba51252cbb2b0f657eacbfc108d7fbe75b8b79a27f1fb47e4d4606a11670a249",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/Props/attributes/onError/10": {
+      "ref": "spark-class-model://model/Props/attributes/onError/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Props",
+      "name": "onError",
+      "schemaRef": "spark-class-model://schema/shared/da432f81902feae1997f87c55181073805e842639d312c3b6bca952a31bf04c9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/fc406123e5e0b6c6d2bdf4a9983ad92bc2f39e0d3221d96e769c9cd6c0e11397": {
+      "ref": "spark-class-model://schema/shared/fc406123e5e0b6c6d2bdf4a9983ad92bc2f39e0d3221d96e769c9cd6c0e11397",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(payload: PageRuntimeErrorPayload) => void",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/fc406123e5e0b6c6d2bdf4a9983ad92bc2f39e0d3221d96e769c9cd6c0e11397"
+      }
+    },
+    "spark-class-model://model/Props/attributes/onRuntimeError/11": {
+      "ref": "spark-class-model://model/Props/attributes/onRuntimeError/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Props",
+      "name": "onRuntimeError",
+      "schemaRef": "spark-class-model://schema/shared/fc406123e5e0b6c6d2bdf4a9983ad92bc2f39e0d3221d96e769c9cd6c0e11397",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/Props": {
+      "ref": "spark-class-model://model/Props",
+      "kind": "model",
+      "className": "Props",
+      "schemaRef": "spark-class-model://schema/Props",
+      "attributeRefs": [
+        "spark-class-model://model/Props/attributes/type/0",
+        "spark-class-model://model/Props/attributes/pageNode/1",
+        "spark-class-model://model/Props/attributes/pageNodeRevision/2",
+        "spark-class-model://model/Props/attributes/pageId/3",
+        "spark-class-model://model/Props/attributes/enableCssScope/4",
+        "spark-class-model://model/Props/attributes/enableDataSet/5",
+        "spark-class-model://model/Props/attributes/messageService/6",
+        "spark-class-model://model/Props/attributes/confirmService/7",
+        "spark-class-model://model/Props/attributes/beforeLoad/8",
+        "spark-class-model://model/Props/attributes/afterLoad/9",
+        "spark-class-model://model/Props/attributes/onError/10",
+        "spark-class-model://model/Props/attributes/onRuntimeError/11"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProps%2Fattributes%2FpageNode%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FPageNodeLike"
+      ]
+    }
+  }
+}

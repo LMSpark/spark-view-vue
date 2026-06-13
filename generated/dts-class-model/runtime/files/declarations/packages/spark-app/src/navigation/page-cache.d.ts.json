@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-app/src/navigation/page-cache.d.ts",
+  "symbols": [
+    "PageCacheSource",
+    "PageCacheHandle"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PageCacheSource": {
+      "ref": "spark-class-model://schema/PageCacheSource",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageCacheSource",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageCacheSource"
+      }
+    },
+    "spark-class-model://model/PageCacheSource": {
+      "ref": "spark-class-model://model/PageCacheSource",
+      "kind": "model",
+      "className": "PageCacheSource",
+      "schemaRef": "spark-class-model://schema/PageCacheSource",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageCacheHandle": {
+      "ref": "spark-class-model://schema/PageCacheHandle",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageCacheHandle",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageCacheHandle"
+      }
+    },
+    "spark-class-model://model/PageCacheHandle": {
+      "ref": "spark-class-model://model/PageCacheHandle",
+      "kind": "model",
+      "className": "PageCacheHandle",
+      "schemaRef": "spark-class-model://schema/PageCacheHandle",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

@@ -50,7 +50,7 @@
           "name": "fieldValue",
           "jsdoc": "field Value 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<unknown>"
           },
           "readable": true,
@@ -60,7 +60,7 @@
           "name": "isCurrentFieldEditable",
           "jsdoc": "是否 is Current Field Editable。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<boolean>"
           },
           "readable": true,
@@ -100,7 +100,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.663Z",
+  "generatedAt": "2026-06-13T04:00:57.741Z",
   "$defs": {
     "UseHtmlEditorStateOptions": {
       "type": "object",
@@ -112,11 +112,11 @@
           "title": "Ref<HTMLElement | null>"
         },
         "fieldValue": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<unknown>"
         },
         "isCurrentFieldEditable": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<boolean>"
         },
         "syncValue": {

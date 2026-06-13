@@ -45,8 +45,7 @@
                       "type": "array",
                       "elementType": {
                         "type": "reference",
-                        "name": "DataColumn",
-                        "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                        "name": "unknown"
                       }
                     }
                   }
@@ -74,8 +73,7 @@
                           },
                           {
                             "type": "reference",
-                            "name": "DataColumn",
-                            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                            "name": "unknown"
                           }
                         ]
                       }
@@ -97,8 +95,7 @@
                       "type": "array",
                       "elementType": {
                         "type": "reference",
-                        "name": "DataRow",
-                        "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                        "name": "unknown"
                       }
                     }
                   }
@@ -133,8 +130,7 @@
                                     "name": "row",
                                     "type": {
                                       "type": "reference",
-                                      "name": "DataRow",
-                                      "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                                      "name": "unknown"
                                     }
                                   }
                                 ],
@@ -178,8 +174,7 @@
           "parameters": [],
           "type": {
             "type": "reference",
-            "name": "DataColumn",
-            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -201,8 +196,7 @@
               "name": "row",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -233,8 +227,7 @@
               "name": "row",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -262,16 +255,14 @@
               "name": "row1",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             },
             {
               "name": "row2",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -289,8 +280,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "PrimaryKeyGeneratorConfig",
-                "sourcePath": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -322,8 +312,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -331,8 +320,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "DataRow",
-            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -348,8 +336,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -357,8 +344,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "DataRow",
-            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -374,8 +360,7 @@
               "typeArguments": [
                 {
                   "type": "reference",
-                  "name": "PrimaryKeyGeneratorConfig",
-                  "sourcePath": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts"
+                  "name": "unknown"
                 }
               ]
             }
@@ -384,7 +369,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.797Z",
+  "generatedAt": "2026-06-13T04:00:57.841Z",
   "$defs": {
     "PrimaryKeyDelegate": {
       "type": "object",

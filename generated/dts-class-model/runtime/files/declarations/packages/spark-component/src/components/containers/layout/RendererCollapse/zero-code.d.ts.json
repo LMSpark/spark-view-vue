@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererCollapse/zero-code.d.ts",
+  "symbols": [
+    "RendererCollapseZeroCodeOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RendererCollapseZeroCodeOptions": {
+      "ref": "spark-class-model://schema/RendererCollapseZeroCodeOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RendererCollapseZeroCodeOptions",
+        "properties": {
+          "currentValue": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<string | number | Array<string | number> | undefined>"
+          },
+          "commitCollapseValue": {
+            "type": "object",
+            "title": "(value: string | number | Array<string | number>, options?: {\n        emit?: boolean;\n    }) => void"
+          },
+          "itemConfigs": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<SparkNode[]>"
+          },
+          "getItemName": {
+            "type": "object",
+            "title": "(item: SparkNode, index: number) => string | number"
+          },
+          "onChange": {
+            "type": "object",
+            "title": "(value: string | number | Array<string | number>) => void"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RendererCollapseZeroCodeOptions"
+      }
+    },
+    "spark-class-model://schema/shared/f33509a87c09e7f56569270a44db585bf42c4464b04db886078ccdd58c14510e": {
+      "ref": "spark-class-model://schema/shared/f33509a87c09e7f56569270a44db585bf42c4464b04db886078ccdd58c14510e",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ValueRef",
+        "title": "ValueRef<string | number | Array<string | number> | undefined>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f33509a87c09e7f56569270a44db585bf42c4464b04db886078ccdd58c14510e"
+      }
+    },
+    "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/currentValue/0": {
+      "ref": "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/currentValue/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererCollapseZeroCodeOptions",
+      "name": "currentValue",
+      "schemaRef": "spark-class-model://schema/shared/f33509a87c09e7f56569270a44db585bf42c4464b04db886078ccdd58c14510e",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererCollapseZeroCodeOptions%2Fattributes%2FcurrentValue%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererCollapseZeroCodeOptions%2Fattributes%2FcurrentValue%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/currentValue/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/declarations/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://schema/shared/d6bf9ec771574e3b72d9c5fe9d0a4d940cd0f63a93b436bc16fdb5fa519dfe1a": {
+      "ref": "spark-class-model://schema/shared/d6bf9ec771574e3b72d9c5fe9d0a4d940cd0f63a93b436bc16fdb5fa519dfe1a",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(value: string | number | Array<string | number>, options?: {\n        emit?: boolean;\n    }) => void",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d6bf9ec771574e3b72d9c5fe9d0a4d940cd0f63a93b436bc16fdb5fa519dfe1a"
+      }
+    },
+    "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/commitCollapseValue/1": {
+      "ref": "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/commitCollapseValue/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererCollapseZeroCodeOptions",
+      "name": "commitCollapseValue",
+      "schemaRef": "spark-class-model://schema/shared/d6bf9ec771574e3b72d9c5fe9d0a4d940cd0f63a93b436bc16fdb5fa519dfe1a",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/120b95eaeafeb03017cb7aa6228c4bd900258a53bed78ebbbea78626cd7aac52": {
+      "ref": "spark-class-model://schema/shared/120b95eaeafeb03017cb7aa6228c4bd900258a53bed78ebbbea78626cd7aac52",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ValueRef",
+        "title": "ValueRef<SparkNode[]>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/120b95eaeafeb03017cb7aa6228c4bd900258a53bed78ebbbea78626cd7aac52"
+      }
+    },
+    "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/itemConfigs/2": {
+      "ref": "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/itemConfigs/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererCollapseZeroCodeOptions",
+      "name": "itemConfigs",
+      "schemaRef": "spark-class-model://schema/shared/120b95eaeafeb03017cb7aa6228c4bd900258a53bed78ebbbea78626cd7aac52",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererCollapseZeroCodeOptions%2Fattributes%2FitemConfigs%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererCollapseZeroCodeOptions%2Fattributes%2FitemConfigs%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/itemConfigs/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/declarations/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://schema/shared/21d42f2049aa22b78fe5d7e9df40250960b0d79ca76cf54d851cef7dead2d5f1": {
+      "ref": "spark-class-model://schema/shared/21d42f2049aa22b78fe5d7e9df40250960b0d79ca76cf54d851cef7dead2d5f1",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(item: SparkNode, index: number) => string | number",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/21d42f2049aa22b78fe5d7e9df40250960b0d79ca76cf54d851cef7dead2d5f1"
+      }
+    },
+    "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/getItemName/3": {
+      "ref": "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/getItemName/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererCollapseZeroCodeOptions",
+      "name": "getItemName",
+      "schemaRef": "spark-class-model://schema/shared/21d42f2049aa22b78fe5d7e9df40250960b0d79ca76cf54d851cef7dead2d5f1",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/onChange/4": {
+      "ref": "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/onChange/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererCollapseZeroCodeOptions",
+      "name": "onChange",
+      "schemaRef": "spark-class-model://schema/shared/ac67cf878f05657514d98820d0403f2cd7ac3239a44557e9b20863305d93cab1",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RendererCollapseZeroCodeOptions": {
+      "ref": "spark-class-model://model/RendererCollapseZeroCodeOptions",
+      "kind": "model",
+      "className": "RendererCollapseZeroCodeOptions",
+      "schemaRef": "spark-class-model://schema/RendererCollapseZeroCodeOptions",
+      "attributeRefs": [
+        "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/currentValue/0",
+        "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/commitCollapseValue/1",
+        "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/itemConfigs/2",
+        "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/getItemName/3",
+        "spark-class-model://model/RendererCollapseZeroCodeOptions/attributes/onChange/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererCollapseZeroCodeOptions%2Fattributes%2FcurrentValue%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererCollapseZeroCodeOptions%2Fattributes%2FitemConfigs%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef"
+      ]
+    }
+  }
+}

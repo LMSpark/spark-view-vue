@@ -349,7 +349,7 @@
     "DtsTypeMeta": {
       "kind": "DtsTypeMeta",
       "className": "DtsTypeMeta",
-      "jsdoc": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。\n改造清单（optional / reflection / tuple / rest）：[`docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md`](../../docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md)",
+      "jsdoc": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。\n改造清单（optional / reflection / tuple / rest）：[`docs/typedoc-signature-alignment.md`](../../docs/typedoc-signature-alignment.md)",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    type: 'intrinsic';\n    name: string;\n}> | Readonly<{\n    type: 'reference';\n    name: string;\n    sourcePath?: string;\n    refersToTypeParameter?: boolean;\n    typeArguments?: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'array';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'union';\n    types: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'intersection';\n    types: readonly DtsTypeMeta[];\n}> | Readonly<{\n    type: 'literal';\n    value: string | number | boolean | null;\n}> | Readonly<{\n    type: 'optional';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'rest';\n    elementType: DtsTypeMeta;\n}> | Readonly<{\n    type: 'tuple';\n    elements: readonly DtsTypeMeta[];\n}> | DtsReflectionTypeMeta | Readonly<{\n    type: 'unknown';\n    name: string;\n}>",
       "declarationRelations": [
@@ -507,7 +507,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.462Z",
+  "generatedAt": "2026-06-13T04:00:57.586Z",
   "$defs": {
     "ClassModelDocument": {
       "type": "object",
@@ -567,7 +567,7 @@
     "DtsTypeMeta": {
       "type": "object",
       "title": "DtsTypeMeta",
-      "description": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。\n改造清单（optional / reflection / tuple / rest）：[`docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md`](../../docs/TYPEDOC-SIGNATURE-ALIGNMENT.zh-CN.md)"
+      "description": "DTS Type Meta 按 TypeDoc JSONOutput 的 type discriminator 表达参数和返回值类型。\nintrinsic/literal 可直接用于 FC 基础类型校验；reference 通过 sourcePath 和 typeArguments 递归定位声明；\narray/union/intersection 保留组合结构，避免把 .d.ts 类型降级成不可验证的字符串。\n改造清单（optional / reflection / tuple / rest）：[`docs/typedoc-signature-alignment.md`](../../docs/typedoc-signature-alignment.md)"
     },
     "DtsReflectionSignature": {
       "type": "object",

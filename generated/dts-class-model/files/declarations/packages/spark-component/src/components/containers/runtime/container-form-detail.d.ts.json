@@ -132,7 +132,8 @@
           "name": "toolbar",
           "jsdoc": "toolbar 字段。",
           "schema": {
-            "$ref": "../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+            "type": "object",
+            "title": "RToolbarProps"
           },
           "readable": true,
           "writable": false
@@ -199,18 +200,14 @@
         {
           "name": "type",
           "jsdoc": "类型标识。",
-          "schema": {
-            "type": "string"
-          },
+          "schema": true,
           "readable": true,
           "writable": true
         },
         {
           "name": "id",
           "jsdoc": "唯一标识。",
-          "schema": {
-            "type": "string"
-          },
+          "schema": true,
           "readable": true,
           "writable": false
         },
@@ -218,7 +215,8 @@
           "name": "toolbar",
           "jsdoc": "toolbar 字段。",
           "schema": {
-            "$ref": "../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+            "type": "object",
+            "title": "RToolbarProps"
           },
           "readable": true,
           "writable": false
@@ -226,9 +224,7 @@
         {
           "name": "children",
           "jsdoc": "子节点集合。",
-          "schema": {
-            "type": "array"
-          },
+          "schema": true,
           "readable": true,
           "writable": false
         },
@@ -364,7 +360,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.605Z",
+  "generatedAt": "2026-06-13T04:00:57.691Z",
   "$defs": {
     "FormDetailContainerProps": {
       "type": "object",
@@ -433,7 +429,8 @@
           "title": "DataView"
         },
         "toolbar": {
-          "$ref": "../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+          "type": "object",
+          "title": "RToolbarProps"
         },
         "autoColumns": {
           "type": "boolean"
@@ -461,18 +458,13 @@
       "title": "FormDetailContainerConsumerProps",
       "description": "r-form / r-detail 消费 `useFormDetailContainer` 时的最小输入形状。\n目的：统一两侧组件的入参组装，避免在消费端重复展开同一批可选字段。",
       "properties": {
-        "type": {
-          "type": "string"
-        },
-        "id": {
-          "type": "string"
-        },
+        "type": true,
+        "id": true,
         "toolbar": {
-          "$ref": "../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+          "type": "object",
+          "title": "RToolbarProps"
         },
-        "children": {
-          "type": "array"
-        },
+        "children": true,
         "dataSource": {
           "type": "object",
           "title": "DataView"

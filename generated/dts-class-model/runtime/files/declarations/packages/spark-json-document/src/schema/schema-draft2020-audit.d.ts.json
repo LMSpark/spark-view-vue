@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-draft2020-audit.d.ts",
+  "symbols": [
+    "Draft2020AuditIssue"
+  ],
+  "@refs": {
+    "spark-class-model://schema/Draft2020AuditIssue": {
+      "ref": "spark-class-model://schema/Draft2020AuditIssue",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Draft2020AuditIssue",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/Draft2020AuditIssue"
+      }
+    },
+    "spark-class-model://model/Draft2020AuditIssue": {
+      "ref": "spark-class-model://model/Draft2020AuditIssue",
+      "kind": "model",
+      "className": "Draft2020AuditIssue",
+      "schemaRef": "spark-class-model://schema/Draft2020AuditIssue",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

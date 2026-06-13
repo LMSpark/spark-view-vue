@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
+  "symbols": [
+    "AiAgentSessionSummary",
+    "AiAgentSessionTranscriptEntry",
+    "AiAgentSessionTranscriptOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentSessionSummary": {
+      "ref": "spark-class-model://schema/AiAgentSessionSummary",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentSessionSummary",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentSessionSummary"
+      }
+    },
+    "spark-class-model://model/AiAgentSessionSummary": {
+      "ref": "spark-class-model://model/AiAgentSessionSummary",
+      "kind": "model",
+      "className": "AiAgentSessionSummary",
+      "schemaRef": "spark-class-model://schema/AiAgentSessionSummary",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentSessionTranscriptEntry": {
+      "ref": "spark-class-model://schema/AiAgentSessionTranscriptEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentSessionTranscriptEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentSessionTranscriptEntry"
+      }
+    },
+    "spark-class-model://model/AiAgentSessionTranscriptEntry": {
+      "ref": "spark-class-model://model/AiAgentSessionTranscriptEntry",
+      "kind": "model",
+      "className": "AiAgentSessionTranscriptEntry",
+      "schemaRef": "spark-class-model://schema/AiAgentSessionTranscriptEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentSessionTranscriptOptions": {
+      "ref": "spark-class-model://schema/AiAgentSessionTranscriptOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentSessionTranscriptOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentSessionTranscriptOptions"
+      }
+    },
+    "spark-class-model://model/AiAgentSessionTranscriptOptions": {
+      "ref": "spark-class-model://model/AiAgentSessionTranscriptOptions",
+      "kind": "model",
+      "className": "AiAgentSessionTranscriptOptions",
+      "schemaRef": "spark-class-model://schema/AiAgentSessionTranscriptOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

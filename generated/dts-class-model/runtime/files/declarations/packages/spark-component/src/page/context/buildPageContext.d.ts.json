@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/page/context/buildPageContext.d.ts",
+  "symbols": [
+    "PageContextDeps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PageContextDeps": {
+      "ref": "spark-class-model://schema/PageContextDeps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageContextDeps",
+        "properties": {
+          "getDataSet": {
+            "type": "object",
+            "title": "() => DataSet | null"
+          },
+          "pageRoute": {
+            "$ref": "spark-class-model://schema/PageRoute"
+          },
+          "pageContainer": {
+            "type": "object",
+            "title": "Ref<HTMLElement | null>"
+          },
+          "pageService": {
+            "$ref": "spark-class-model://schema/PageServiceCapability"
+          },
+          "getComponentRegistry": {
+            "type": "object",
+            "title": "() => PageComponentRegistry | null"
+          },
+          "getModuleContext": {
+            "type": "object",
+            "title": "() => ModuleContext | null"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageContextDeps"
+      }
+    },
+    "spark-class-model://schema/shared/d2c2384d4941bbdb4b363ed83a9d63cbae80c2abe4d5d32ea402c011edc58062": {
+      "ref": "spark-class-model://schema/shared/d2c2384d4941bbdb4b363ed83a9d63cbae80c2abe4d5d32ea402c011edc58062",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "() => DataSet | null",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d2c2384d4941bbdb4b363ed83a9d63cbae80c2abe4d5d32ea402c011edc58062"
+      }
+    },
+    "spark-class-model://model/PageContextDeps/attributes/getDataSet/0": {
+      "ref": "spark-class-model://model/PageContextDeps/attributes/getDataSet/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContextDeps",
+      "name": "getDataSet",
+      "schemaRef": "spark-class-model://schema/shared/d2c2384d4941bbdb4b363ed83a9d63cbae80c2abe4d5d32ea402c011edc58062",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/c123d68b91dc8da08433d03ec6fbbcc2fbf0b709172480a8256339f3a538e522": {
+      "ref": "spark-class-model://schema/shared/c123d68b91dc8da08433d03ec6fbbcc2fbf0b709172480a8256339f3a538e522",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/PageRoute",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c123d68b91dc8da08433d03ec6fbbcc2fbf0b709172480a8256339f3a538e522"
+      }
+    },
+    "spark-class-model://model/PageContextDeps/attributes/pageRoute/1": {
+      "ref": "spark-class-model://model/PageContextDeps/attributes/pageRoute/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContextDeps",
+      "name": "pageRoute",
+      "schemaRef": "spark-class-model://schema/shared/c123d68b91dc8da08433d03ec6fbbcc2fbf0b709172480a8256339f3a538e522",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageContextDeps%2Fattributes%2FpageRoute%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FPageRoute": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageContextDeps%2Fattributes%2FpageRoute%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FPageRoute",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PageContextDeps/attributes/pageRoute/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/PageRoute",
+      "targetClassName": "PageRoute",
+      "targetFile": "files/declarations/packages/spark-component/src/runtime/script-context-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageRoute"
+    },
+    "spark-class-model://model/PageContextDeps/attributes/pageContainer/2": {
+      "ref": "spark-class-model://model/PageContextDeps/attributes/pageContainer/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContextDeps",
+      "name": "pageContainer",
+      "schemaRef": "spark-class-model://schema/shared/4b1dd24b7d42f636ab3f84e99fc2c2fcec6e305a5d47803ad373a0e171f203e9",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/5024def73ea3dd159fc8334907153e3f8bd41a0bc702611bdcca6f79ee371430": {
+      "ref": "spark-class-model://schema/shared/5024def73ea3dd159fc8334907153e3f8bd41a0bc702611bdcca6f79ee371430",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/PageServiceCapability",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5024def73ea3dd159fc8334907153e3f8bd41a0bc702611bdcca6f79ee371430"
+      }
+    },
+    "spark-class-model://model/PageContextDeps/attributes/pageService/3": {
+      "ref": "spark-class-model://model/PageContextDeps/attributes/pageService/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContextDeps",
+      "name": "pageService",
+      "schemaRef": "spark-class-model://schema/shared/5024def73ea3dd159fc8334907153e3f8bd41a0bc702611bdcca6f79ee371430",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageContextDeps%2Fattributes%2FpageService%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FPageServiceCapability": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageContextDeps%2Fattributes%2FpageService%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FPageServiceCapability",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PageContextDeps/attributes/pageService/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/PageServiceCapability",
+      "targetClassName": "PageServiceCapability",
+      "targetFile": "files/declarations/packages/spark-component/src/runtime/app-services.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageServiceCapability"
+    },
+    "spark-class-model://schema/shared/c9e15dcedf6e9bd8616d74e73b8b93e7582a58bdd5d0eba57588e01f760a7501": {
+      "ref": "spark-class-model://schema/shared/c9e15dcedf6e9bd8616d74e73b8b93e7582a58bdd5d0eba57588e01f760a7501",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "() => PageComponentRegistry | null",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c9e15dcedf6e9bd8616d74e73b8b93e7582a58bdd5d0eba57588e01f760a7501"
+      }
+    },
+    "spark-class-model://model/PageContextDeps/attributes/getComponentRegistry/4": {
+      "ref": "spark-class-model://model/PageContextDeps/attributes/getComponentRegistry/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContextDeps",
+      "name": "getComponentRegistry",
+      "schemaRef": "spark-class-model://schema/shared/c9e15dcedf6e9bd8616d74e73b8b93e7582a58bdd5d0eba57588e01f760a7501",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/4eb00f2fd8332dde0b589bf2dfe51995b8530d523cc681d790626d5657c6ea40": {
+      "ref": "spark-class-model://schema/shared/4eb00f2fd8332dde0b589bf2dfe51995b8530d523cc681d790626d5657c6ea40",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "() => ModuleContext | null",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4eb00f2fd8332dde0b589bf2dfe51995b8530d523cc681d790626d5657c6ea40"
+      }
+    },
+    "spark-class-model://model/PageContextDeps/attributes/getModuleContext/5": {
+      "ref": "spark-class-model://model/PageContextDeps/attributes/getModuleContext/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContextDeps",
+      "name": "getModuleContext",
+      "schemaRef": "spark-class-model://schema/shared/4eb00f2fd8332dde0b589bf2dfe51995b8530d523cc681d790626d5657c6ea40",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageContextDeps": {
+      "ref": "spark-class-model://model/PageContextDeps",
+      "kind": "model",
+      "className": "PageContextDeps",
+      "schemaRef": "spark-class-model://schema/PageContextDeps",
+      "attributeRefs": [
+        "spark-class-model://model/PageContextDeps/attributes/getDataSet/0",
+        "spark-class-model://model/PageContextDeps/attributes/pageRoute/1",
+        "spark-class-model://model/PageContextDeps/attributes/pageContainer/2",
+        "spark-class-model://model/PageContextDeps/attributes/pageService/3",
+        "spark-class-model://model/PageContextDeps/attributes/getComponentRegistry/4",
+        "spark-class-model://model/PageContextDeps/attributes/getModuleContext/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageContextDeps%2Fattributes%2FpageRoute%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FPageRoute",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageContextDeps%2Fattributes%2FpageService%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FPageServiceCapability"
+      ]
+    }
+  }
+}

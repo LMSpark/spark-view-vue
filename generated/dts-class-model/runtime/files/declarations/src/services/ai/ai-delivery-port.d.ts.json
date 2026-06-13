@@ -1,0 +1,266 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/services/ai/ai-delivery-port.d.ts",
+  "symbols": [
+    "AiDeliveryMode",
+    "AiDeliveryArtifact",
+    "AiDeliveryResult",
+    "AiDeliveryPort",
+    "AiDeliveryResultExtras"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiDeliveryMode": {
+      "ref": "spark-class-model://schema/AiDeliveryMode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiDeliveryMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiDeliveryMode"
+      }
+    },
+    "spark-class-model://model/AiDeliveryMode": {
+      "ref": "spark-class-model://model/AiDeliveryMode",
+      "kind": "model",
+      "className": "AiDeliveryMode",
+      "schemaRef": "spark-class-model://schema/AiDeliveryMode",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiDeliveryArtifact": {
+      "ref": "spark-class-model://schema/AiDeliveryArtifact",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiDeliveryArtifact",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiDeliveryArtifact"
+      }
+    },
+    "spark-class-model://model/AiDeliveryArtifact": {
+      "ref": "spark-class-model://model/AiDeliveryArtifact",
+      "kind": "model",
+      "className": "AiDeliveryArtifact",
+      "schemaRef": "spark-class-model://schema/AiDeliveryArtifact",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiDeliveryResult": {
+      "ref": "spark-class-model://schema/AiDeliveryResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiDeliveryResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiDeliveryResult"
+      }
+    },
+    "spark-class-model://model/AiDeliveryResult": {
+      "ref": "spark-class-model://model/AiDeliveryResult",
+      "kind": "model",
+      "className": "AiDeliveryResult",
+      "schemaRef": "spark-class-model://schema/AiDeliveryResult",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiDeliveryPort": {
+      "ref": "spark-class-model://schema/AiDeliveryPort",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiDeliveryPort",
+        "properties": {
+          "mode": {
+            "$ref": "spark-class-model://schema/AiDeliveryMode"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiDeliveryPort"
+      }
+    },
+    "spark-class-model://schema/shared/5541d4556c6f3a0d3c5dd76ef7b19e58286be24b973139c6257e2002d5e5010a": {
+      "ref": "spark-class-model://schema/shared/5541d4556c6f3a0d3c5dd76ef7b19e58286be24b973139c6257e2002d5e5010a",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiDeliveryMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5541d4556c6f3a0d3c5dd76ef7b19e58286be24b973139c6257e2002d5e5010a"
+      }
+    },
+    "spark-class-model://model/AiDeliveryPort/attributes/mode/0": {
+      "ref": "spark-class-model://model/AiDeliveryPort/attributes/mode/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiDeliveryPort",
+      "name": "mode",
+      "schemaRef": "spark-class-model://schema/shared/5541d4556c6f3a0d3c5dd76ef7b19e58286be24b973139c6257e2002d5e5010a",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryPort%2Fattributes%2Fmode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryMode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryPort%2Fattributes%2Fmode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryMode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiDeliveryPort/attributes/mode/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiDeliveryMode",
+      "targetClassName": "AiDeliveryMode",
+      "targetFile": "files/declarations/src/services/ai/ai-delivery-port.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiDeliveryMode"
+    },
+    "spark-class-model://model/AiDeliveryPort/methods/save/0": {
+      "ref": "spark-class-model://model/AiDeliveryPort/methods/save/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiDeliveryPort",
+      "name": "save",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3d732e152d8c38b130366fdfa4943424009df5f3e87da193dc58abf3b383a71c",
+      "returnSchemaRef": "spark-class-model://schema/shared/8a407def5672c5192dbf2b2de8c64be184375e23a9f5d9823fa8e2d3b5caf758"
+    },
+    "spark-class-model://schema/shared/3d732e152d8c38b130366fdfa4943424009df5f3e87da193dc58abf3b383a71c": {
+      "ref": "spark-class-model://schema/shared/3d732e152d8c38b130366fdfa4943424009df5f3e87da193dc58abf3b383a71c",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "context": true
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3d732e152d8c38b130366fdfa4943424009df5f3e87da193dc58abf3b383a71c"
+      }
+    },
+    "spark-class-model://schema/shared/8a407def5672c5192dbf2b2de8c64be184375e23a9f5d9823fa8e2d3b5caf758": {
+      "ref": "spark-class-model://schema/shared/8a407def5672c5192dbf2b2de8c64be184375e23a9f5d9823fa8e2d3b5caf758",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<AiDeliveryResult>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8a407def5672c5192dbf2b2de8c64be184375e23a9f5d9823fa8e2d3b5caf758"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryPort%2Fmethods%2Fsave%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryPort%2Fmethods%2Fsave%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiDeliveryPort/methods/save/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiDeliveryResult",
+      "targetClassName": "AiDeliveryResult",
+      "targetFile": "files/declarations/src/services/ai/ai-delivery-port.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiDeliveryResult"
+    },
+    "spark-class-model://model/AiDeliveryPort/methods/trace/1": {
+      "ref": "spark-class-model://model/AiDeliveryPort/methods/trace/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiDeliveryPort",
+      "name": "trace",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/62a4bf22b71f0e9a924185add26ddcdce1c8d61de714f300a8de0fecdc146b9b",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://schema/shared/62a4bf22b71f0e9a924185add26ddcdce1c8d61de714f300a8de0fecdc146b9b": {
+      "ref": "spark-class-model://schema/shared/62a4bf22b71f0e9a924185add26ddcdce1c8d61de714f300a8de0fecdc146b9b",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "context": true,
+          "result": {
+            "$ref": "spark-class-model://schema/AiDeliveryResult"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/62a4bf22b71f0e9a924185add26ddcdce1c8d61de714f300a8de0fecdc146b9b"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryPort%2Fmethods%2Ftrace%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryPort%2Fmethods%2Ftrace%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiDeliveryPort/methods/trace/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiDeliveryResult",
+      "targetClassName": "AiDeliveryResult",
+      "targetFile": "files/declarations/src/services/ai/ai-delivery-port.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiDeliveryResult"
+    },
+    "spark-class-model://model/AiDeliveryPort/methods/rollback/2": {
+      "ref": "spark-class-model://model/AiDeliveryPort/methods/rollback/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiDeliveryPort",
+      "name": "rollback",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f010bf987c3551cdad13808f09a56307edde7ecc3eb6994acf950a10f9550215",
+      "returnSchemaRef": "spark-class-model://schema/shared/8a407def5672c5192dbf2b2de8c64be184375e23a9f5d9823fa8e2d3b5caf758"
+    },
+    "spark-class-model://schema/shared/f010bf987c3551cdad13808f09a56307edde7ecc3eb6994acf950a10f9550215": {
+      "ref": "spark-class-model://schema/shared/f010bf987c3551cdad13808f09a56307edde7ecc3eb6994acf950a10f9550215",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "context": true,
+          "error": {
+            "type": "object",
+            "title": "Error"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f010bf987c3551cdad13808f09a56307edde7ecc3eb6994acf950a10f9550215"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryPort%2Fmethods%2Frollback%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryPort%2Fmethods%2Frollback%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiDeliveryPort/methods/rollback/2",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiDeliveryResult",
+      "targetClassName": "AiDeliveryResult",
+      "targetFile": "files/declarations/src/services/ai/ai-delivery-port.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiDeliveryResult"
+    },
+    "spark-class-model://model/AiDeliveryPort": {
+      "ref": "spark-class-model://model/AiDeliveryPort",
+      "kind": "model",
+      "className": "AiDeliveryPort",
+      "schemaRef": "spark-class-model://schema/AiDeliveryPort",
+      "attributeRefs": [
+        "spark-class-model://model/AiDeliveryPort/attributes/mode/0"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/AiDeliveryPort/methods/save/0",
+        "spark-class-model://model/AiDeliveryPort/methods/trace/1",
+        "spark-class-model://model/AiDeliveryPort/methods/rollback/2"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryPort%2Fattributes%2Fmode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryMode",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryPort%2Fmethods%2Fsave%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryResult",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryPort%2Fmethods%2Ftrace%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryResult",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryPort%2Fmethods%2Frollback%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiDeliveryResult"
+      ]
+    },
+    "spark-class-model://schema/AiDeliveryResultExtras": {
+      "ref": "spark-class-model://schema/AiDeliveryResultExtras",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiDeliveryResultExtras",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiDeliveryResultExtras"
+      }
+    },
+    "spark-class-model://model/AiDeliveryResultExtras": {
+      "ref": "spark-class-model://model/AiDeliveryResultExtras",
+      "kind": "model",
+      "className": "AiDeliveryResultExtras",
+      "schemaRef": "spark-class-model://schema/AiDeliveryResultExtras",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

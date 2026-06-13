@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/permission/PermissionChecker.d.ts",
+  "symbols": [
+    "FieldMaskInput"
+  ],
+  "@refs": {
+    "spark-class-model://schema/FieldMaskInput": {
+      "ref": "spark-class-model://schema/FieldMaskInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "FieldMaskInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/FieldMaskInput"
+      }
+    },
+    "spark-class-model://model/FieldMaskInput": {
+      "ref": "spark-class-model://model/FieldMaskInput",
+      "kind": "model",
+      "className": "FieldMaskInput",
+      "schemaRef": "spark-class-model://schema/FieldMaskInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

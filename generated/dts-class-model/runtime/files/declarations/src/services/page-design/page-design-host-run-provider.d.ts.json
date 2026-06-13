@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/services/page-design/page-design-host-run-provider.d.ts",
+  "symbols": [
+    "PageDesignDeliveryContext",
+    "CreatePageDesignDeliveryPortOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PageDesignDeliveryContext": {
+      "ref": "spark-class-model://schema/PageDesignDeliveryContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignDeliveryContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignDeliveryContext"
+      }
+    },
+    "spark-class-model://model/PageDesignDeliveryContext": {
+      "ref": "spark-class-model://model/PageDesignDeliveryContext",
+      "kind": "model",
+      "className": "PageDesignDeliveryContext",
+      "schemaRef": "spark-class-model://schema/PageDesignDeliveryContext",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/CreatePageDesignDeliveryPortOptions": {
+      "ref": "spark-class-model://schema/CreatePageDesignDeliveryPortOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "CreatePageDesignDeliveryPortOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/CreatePageDesignDeliveryPortOptions"
+      }
+    },
+    "spark-class-model://model/CreatePageDesignDeliveryPortOptions": {
+      "ref": "spark-class-model://model/CreatePageDesignDeliveryPortOptions",
+      "kind": "model",
+      "className": "CreatePageDesignDeliveryPortOptions",
+      "schemaRef": "spark-class-model://schema/CreatePageDesignDeliveryPortOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

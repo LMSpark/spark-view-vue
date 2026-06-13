@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-app/src/navigation/action-registry.d.ts",
+  "symbols": [
+    "NavigationActionContext",
+    "NavigationActionHandler",
+    "NavigationActionRegistry"
+  ],
+  "@refs": {
+    "spark-class-model://schema/NavigationActionContext": {
+      "ref": "spark-class-model://schema/NavigationActionContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavigationActionContext",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "node": {
+            "$ref": "spark-class-model://schema/ProjectNodeData"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "navigation"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "toolbar"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "user-menu"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "app-shell"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavigationActionContext"
+      }
+    },
+    "spark-class-model://model/NavigationActionContext/attributes/command/0": {
+      "ref": "spark-class-model://model/NavigationActionContext/attributes/command/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavigationActionContext",
+      "name": "command",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6": {
+      "ref": "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ProjectNodeData",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6"
+      }
+    },
+    "spark-class-model://model/NavigationActionContext/attributes/node/1": {
+      "ref": "spark-class-model://model/NavigationActionContext/attributes/node/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavigationActionContext",
+      "name": "node",
+      "schemaRef": "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationActionContext%2Fattributes%2Fnode%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationActionContext%2Fattributes%2Fnode%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavigationActionContext/attributes/node/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/declarations/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://schema/shared/2a7443a976cbbc33f13591009afe18343921ce9656725680086cbdfeec43b395": {
+      "ref": "spark-class-model://schema/shared/2a7443a976cbbc33f13591009afe18343921ce9656725680086cbdfeec43b395",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "navigation"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "toolbar"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "user-menu"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "app-shell"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/2a7443a976cbbc33f13591009afe18343921ce9656725680086cbdfeec43b395"
+      }
+    },
+    "spark-class-model://model/NavigationActionContext/attributes/source/2": {
+      "ref": "spark-class-model://model/NavigationActionContext/attributes/source/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavigationActionContext",
+      "name": "source",
+      "schemaRef": "spark-class-model://schema/shared/2a7443a976cbbc33f13591009afe18343921ce9656725680086cbdfeec43b395",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/NavigationActionContext": {
+      "ref": "spark-class-model://model/NavigationActionContext",
+      "kind": "model",
+      "className": "NavigationActionContext",
+      "schemaRef": "spark-class-model://schema/NavigationActionContext",
+      "attributeRefs": [
+        "spark-class-model://model/NavigationActionContext/attributes/command/0",
+        "spark-class-model://model/NavigationActionContext/attributes/node/1",
+        "spark-class-model://model/NavigationActionContext/attributes/source/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationActionContext%2Fattributes%2Fnode%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData"
+      ]
+    },
+    "spark-class-model://schema/NavigationActionHandler": {
+      "ref": "spark-class-model://schema/NavigationActionHandler",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavigationActionHandler",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavigationActionHandler"
+      }
+    },
+    "spark-class-model://model/NavigationActionHandler": {
+      "ref": "spark-class-model://model/NavigationActionHandler",
+      "kind": "model",
+      "className": "NavigationActionHandler",
+      "schemaRef": "spark-class-model://schema/NavigationActionHandler",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NavigationActionRegistry": {
+      "ref": "spark-class-model://schema/NavigationActionRegistry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavigationActionRegistry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavigationActionRegistry"
+      }
+    },
+    "spark-class-model://model/NavigationActionRegistry": {
+      "ref": "spark-class-model://model/NavigationActionRegistry",
+      "kind": "model",
+      "className": "NavigationActionRegistry",
+      "schemaRef": "spark-class-model://schema/NavigationActionRegistry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

@@ -1,0 +1,615 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+  "symbols": [
+    "AiAgentToolCheckLevel",
+    "AiAgentToolCheck",
+    "AiAgentToolResultOptions",
+    "AiAgentToolResult",
+    "AiAgentToolSpec",
+    "AiAgentRuntimeHostContext",
+    "AiAgentToolRuntimeKnowledgeProjection",
+    "AiAgentToolRuntimeInspectFinding",
+    "AiAgentToolRuntimeInspectReport",
+    "AiAgentToolRuntime"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentToolCheckLevel": {
+      "ref": "spark-class-model://schema/AiAgentToolCheckLevel",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolCheckLevel",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolCheckLevel"
+      }
+    },
+    "spark-class-model://model/AiAgentToolCheckLevel": {
+      "ref": "spark-class-model://model/AiAgentToolCheckLevel",
+      "kind": "model",
+      "className": "AiAgentToolCheckLevel",
+      "schemaRef": "spark-class-model://schema/AiAgentToolCheckLevel",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentToolCheck": {
+      "ref": "spark-class-model://schema/AiAgentToolCheck",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolCheck",
+        "properties": {
+          "level": {
+            "$ref": "spark-class-model://schema/AiAgentToolCheckLevel"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "hint": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolCheck"
+      }
+    },
+    "spark-class-model://schema/shared/8c0576bbe81f87378f92e42892e94eabb6fc3b00cccabe376ad4095b10d5a131": {
+      "ref": "spark-class-model://schema/shared/8c0576bbe81f87378f92e42892e94eabb6fc3b00cccabe376ad4095b10d5a131",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentToolCheckLevel",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8c0576bbe81f87378f92e42892e94eabb6fc3b00cccabe376ad4095b10d5a131"
+      }
+    },
+    "spark-class-model://model/AiAgentToolCheck/attributes/level/0": {
+      "ref": "spark-class-model://model/AiAgentToolCheck/attributes/level/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentToolCheck",
+      "name": "level",
+      "schemaRef": "spark-class-model://schema/shared/8c0576bbe81f87378f92e42892e94eabb6fc3b00cccabe376ad4095b10d5a131",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck%2Fattributes%2Flevel%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheckLevel": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck%2Fattributes%2Flevel%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheckLevel",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentToolCheck/attributes/level/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentToolCheckLevel",
+      "targetClassName": "AiAgentToolCheckLevel",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolCheckLevel"
+    },
+    "spark-class-model://model/AiAgentToolCheck/attributes/code/1": {
+      "ref": "spark-class-model://model/AiAgentToolCheck/attributes/code/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentToolCheck",
+      "name": "code",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentToolCheck/attributes/message/2": {
+      "ref": "spark-class-model://model/AiAgentToolCheck/attributes/message/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentToolCheck",
+      "name": "message",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentToolCheck/attributes/hint/3": {
+      "ref": "spark-class-model://model/AiAgentToolCheck/attributes/hint/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentToolCheck",
+      "name": "hint",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentToolCheck/methods/error/0": {
+      "ref": "spark-class-model://model/AiAgentToolCheck/methods/error/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentToolCheck",
+      "name": "error",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e5aac6c2353446aa9b8cacbb6cf0c29ca678ace13a3c9a33dcf917dd324b414d",
+      "returnSchemaRef": "spark-class-model://schema/shared/a156ef68a8fa43ffeb1ef0155815e0fc125212e2afc884f3477a17d01df925c7"
+    },
+    "spark-class-model://schema/shared/e5aac6c2353446aa9b8cacbb6cf0c29ca678ace13a3c9a33dcf917dd324b414d": {
+      "ref": "spark-class-model://schema/shared/e5aac6c2353446aa9b8cacbb6cf0c29ca678ace13a3c9a33dcf917dd324b414d",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "hint": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e5aac6c2353446aa9b8cacbb6cf0c29ca678ace13a3c9a33dcf917dd324b414d"
+      }
+    },
+    "spark-class-model://schema/shared/a156ef68a8fa43ffeb1ef0155815e0fc125212e2afc884f3477a17d01df925c7": {
+      "ref": "spark-class-model://schema/shared/a156ef68a8fa43ffeb1ef0155815e0fc125212e2afc884f3477a17d01df925c7",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentToolCheck",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a156ef68a8fa43ffeb1ef0155815e0fc125212e2afc884f3477a17d01df925c7"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck%2Fmethods%2Ferror%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck%2Fmethods%2Ferror%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentToolCheck/methods/error/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentToolCheck",
+      "targetClassName": "AiAgentToolCheck",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolCheck"
+    },
+    "spark-class-model://model/AiAgentToolCheck/methods/warn/1": {
+      "ref": "spark-class-model://model/AiAgentToolCheck/methods/warn/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentToolCheck",
+      "name": "warn",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e5aac6c2353446aa9b8cacbb6cf0c29ca678ace13a3c9a33dcf917dd324b414d",
+      "returnSchemaRef": "spark-class-model://schema/shared/a156ef68a8fa43ffeb1ef0155815e0fc125212e2afc884f3477a17d01df925c7"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck%2Fmethods%2Fwarn%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck%2Fmethods%2Fwarn%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentToolCheck/methods/warn/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentToolCheck",
+      "targetClassName": "AiAgentToolCheck",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolCheck"
+    },
+    "spark-class-model://model/AiAgentToolCheck/methods/info/2": {
+      "ref": "spark-class-model://model/AiAgentToolCheck/methods/info/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentToolCheck",
+      "name": "info",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e5aac6c2353446aa9b8cacbb6cf0c29ca678ace13a3c9a33dcf917dd324b414d",
+      "returnSchemaRef": "spark-class-model://schema/shared/a156ef68a8fa43ffeb1ef0155815e0fc125212e2afc884f3477a17d01df925c7"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck%2Fmethods%2Finfo%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck%2Fmethods%2Finfo%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentToolCheck/methods/info/2",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentToolCheck",
+      "targetClassName": "AiAgentToolCheck",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolCheck"
+    },
+    "spark-class-model://model/AiAgentToolCheck": {
+      "ref": "spark-class-model://model/AiAgentToolCheck",
+      "kind": "model",
+      "className": "AiAgentToolCheck",
+      "schemaRef": "spark-class-model://schema/AiAgentToolCheck",
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentToolCheck/attributes/level/0",
+        "spark-class-model://model/AiAgentToolCheck/attributes/code/1",
+        "spark-class-model://model/AiAgentToolCheck/attributes/message/2",
+        "spark-class-model://model/AiAgentToolCheck/attributes/hint/3"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/AiAgentToolCheck/methods/error/0",
+        "spark-class-model://model/AiAgentToolCheck/methods/warn/1",
+        "spark-class-model://model/AiAgentToolCheck/methods/info/2"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck%2Fattributes%2Flevel%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheckLevel",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck%2Fmethods%2Ferror%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck%2Fmethods%2Fwarn%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck%2Fmethods%2Finfo%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCheck"
+      ]
+    },
+    "spark-class-model://schema/AiAgentToolResultOptions": {
+      "ref": "spark-class-model://schema/AiAgentToolResultOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolResultOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolResultOptions"
+      }
+    },
+    "spark-class-model://model/AiAgentToolResultOptions": {
+      "ref": "spark-class-model://model/AiAgentToolResultOptions",
+      "kind": "model",
+      "className": "AiAgentToolResultOptions",
+      "schemaRef": "spark-class-model://schema/AiAgentToolResultOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentToolResult": {
+      "ref": "spark-class-model://schema/AiAgentToolResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolResult",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "data": true,
+          "checks": {
+            "type": "array"
+          },
+          "state": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolResult"
+      }
+    },
+    "spark-class-model://model/AiAgentToolResult/attributes/ok/0": {
+      "ref": "spark-class-model://model/AiAgentToolResult/attributes/ok/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentToolResult",
+      "name": "ok",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentToolResult/attributes/data/1": {
+      "ref": "spark-class-model://model/AiAgentToolResult/attributes/data/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentToolResult",
+      "name": "data",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentToolResult/attributes/checks/2": {
+      "ref": "spark-class-model://model/AiAgentToolResult/attributes/checks/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentToolResult",
+      "name": "checks",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9": {
+      "ref": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Record<string, unknown>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9"
+      }
+    },
+    "spark-class-model://model/AiAgentToolResult/attributes/state/3": {
+      "ref": "spark-class-model://model/AiAgentToolResult/attributes/state/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentToolResult",
+      "name": "state",
+      "schemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentToolResult/methods/ok/0": {
+      "ref": "spark-class-model://model/AiAgentToolResult/methods/ok/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentToolResult",
+      "name": "ok",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4ea1837a29f8b87dd2f51a52146ed6b2512d60fb3fde33f173e3be5712efe3ae",
+      "returnSchemaRef": "spark-class-model://schema/shared/774d806258ea35e84f51f545434351c31eba2258155e10035181b3fdda16559e"
+    },
+    "spark-class-model://schema/shared/4ea1837a29f8b87dd2f51a52146ed6b2512d60fb3fde33f173e3be5712efe3ae": {
+      "ref": "spark-class-model://schema/shared/4ea1837a29f8b87dd2f51a52146ed6b2512d60fb3fde33f173e3be5712efe3ae",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": true,
+          "checks": {
+            "type": "array"
+          },
+          "state": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4ea1837a29f8b87dd2f51a52146ed6b2512d60fb3fde33f173e3be5712efe3ae"
+      }
+    },
+    "spark-class-model://schema/shared/774d806258ea35e84f51f545434351c31eba2258155e10035181b3fdda16559e": {
+      "ref": "spark-class-model://schema/shared/774d806258ea35e84f51f545434351c31eba2258155e10035181b3fdda16559e",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentToolResult",
+        "title": "AiAgentToolResult<TData>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/774d806258ea35e84f51f545434351c31eba2258155e10035181b3fdda16559e"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2Fok%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2Fok%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentToolResult/methods/ok/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentToolResult",
+      "targetClassName": "AiAgentToolResult",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolResult"
+    },
+    "spark-class-model://model/AiAgentToolResult/methods/fail/1": {
+      "ref": "spark-class-model://model/AiAgentToolResult/methods/fail/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentToolResult",
+      "name": "fail",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/6da54fe7975f57c0b3bdea7b1c491f8b711fbe04412fbefea0f345ad79de8621",
+      "returnSchemaRef": "spark-class-model://schema/shared/d358c4eda9f0bfa61c564b994fa58b6b86d3d11ea8a2f6c45a414a642deee4ba"
+    },
+    "spark-class-model://schema/shared/6da54fe7975f57c0b3bdea7b1c491f8b711fbe04412fbefea0f345ad79de8621": {
+      "ref": "spark-class-model://schema/shared/6da54fe7975f57c0b3bdea7b1c491f8b711fbe04412fbefea0f345ad79de8621",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "checks": {
+            "type": "array"
+          },
+          "state": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6da54fe7975f57c0b3bdea7b1c491f8b711fbe04412fbefea0f345ad79de8621"
+      }
+    },
+    "spark-class-model://schema/shared/d358c4eda9f0bfa61c564b994fa58b6b86d3d11ea8a2f6c45a414a642deee4ba": {
+      "ref": "spark-class-model://schema/shared/d358c4eda9f0bfa61c564b994fa58b6b86d3d11ea8a2f6c45a414a642deee4ba",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentToolResult",
+        "title": "AiAgentToolResult<never>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d358c4eda9f0bfa61c564b994fa58b6b86d3d11ea8a2f6c45a414a642deee4ba"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2Ffail%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2Ffail%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentToolResult/methods/fail/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentToolResult",
+      "targetClassName": "AiAgentToolResult",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolResult"
+    },
+    "spark-class-model://model/AiAgentToolResult/methods/failCode/2": {
+      "ref": "spark-class-model://model/AiAgentToolResult/methods/failCode/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentToolResult",
+      "name": "failCode",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e5aac6c2353446aa9b8cacbb6cf0c29ca678ace13a3c9a33dcf917dd324b414d",
+      "returnSchemaRef": "spark-class-model://schema/shared/d358c4eda9f0bfa61c564b994fa58b6b86d3d11ea8a2f6c45a414a642deee4ba"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2FfailCode%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2FfailCode%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentToolResult/methods/failCode/2",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentToolResult",
+      "targetClassName": "AiAgentToolResult",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolResult"
+    },
+    "spark-class-model://model/AiAgentToolResult/methods/passthroughFailure/3": {
+      "ref": "spark-class-model://model/AiAgentToolResult/methods/passthroughFailure/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentToolResult",
+      "name": "passthroughFailure",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3a5bf2ad25264dd690a8ac54d0c9c13672acfa0a74afea192d6bac899b72f530",
+      "returnSchemaRef": "spark-class-model://schema/shared/d358c4eda9f0bfa61c564b994fa58b6b86d3d11ea8a2f6c45a414a642deee4ba"
+    },
+    "spark-class-model://schema/shared/3a5bf2ad25264dd690a8ac54d0c9c13672acfa0a74afea192d6bac899b72f530": {
+      "ref": "spark-class-model://schema/shared/3a5bf2ad25264dd690a8ac54d0c9c13672acfa0a74afea192d6bac899b72f530",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "$ref": "spark-class-model://schema/AiAgentToolResult",
+            "title": "AiAgentToolResult<unknown>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3a5bf2ad25264dd690a8ac54d0c9c13672acfa0a74afea192d6bac899b72f530"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2FpassthroughFailure%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2FpassthroughFailure%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentToolResult/methods/passthroughFailure/3",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentToolResult",
+      "targetClassName": "AiAgentToolResult",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolResult"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2FpassthroughFailure%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2FpassthroughFailure%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentToolResult/methods/passthroughFailure/3",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentToolResult",
+      "targetClassName": "AiAgentToolResult",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolResult"
+    },
+    "spark-class-model://model/AiAgentToolResult": {
+      "ref": "spark-class-model://model/AiAgentToolResult",
+      "kind": "model",
+      "className": "AiAgentToolResult",
+      "schemaRef": "spark-class-model://schema/AiAgentToolResult",
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentToolResult/attributes/ok/0",
+        "spark-class-model://model/AiAgentToolResult/attributes/data/1",
+        "spark-class-model://model/AiAgentToolResult/attributes/checks/2",
+        "spark-class-model://model/AiAgentToolResult/attributes/state/3"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/AiAgentToolResult/methods/ok/0",
+        "spark-class-model://model/AiAgentToolResult/methods/fail/1",
+        "spark-class-model://model/AiAgentToolResult/methods/failCode/2",
+        "spark-class-model://model/AiAgentToolResult/methods/passthroughFailure/3"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2Fok%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2Ffail%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2FfailCode%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2FpassthroughFailure%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult%2Fmethods%2FpassthroughFailure%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult"
+      ]
+    },
+    "spark-class-model://schema/AiAgentToolSpec": {
+      "ref": "spark-class-model://schema/AiAgentToolSpec",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolSpec",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolSpec"
+      }
+    },
+    "spark-class-model://model/AiAgentToolSpec": {
+      "ref": "spark-class-model://model/AiAgentToolSpec",
+      "kind": "model",
+      "className": "AiAgentToolSpec",
+      "schemaRef": "spark-class-model://schema/AiAgentToolSpec",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentRuntimeHostContext": {
+      "ref": "spark-class-model://schema/AiAgentRuntimeHostContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentRuntimeHostContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentRuntimeHostContext"
+      }
+    },
+    "spark-class-model://model/AiAgentRuntimeHostContext": {
+      "ref": "spark-class-model://model/AiAgentRuntimeHostContext",
+      "kind": "model",
+      "className": "AiAgentRuntimeHostContext",
+      "schemaRef": "spark-class-model://schema/AiAgentRuntimeHostContext",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentToolRuntimeKnowledgeProjection": {
+      "ref": "spark-class-model://schema/AiAgentToolRuntimeKnowledgeProjection",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolRuntimeKnowledgeProjection",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolRuntimeKnowledgeProjection"
+      }
+    },
+    "spark-class-model://model/AiAgentToolRuntimeKnowledgeProjection": {
+      "ref": "spark-class-model://model/AiAgentToolRuntimeKnowledgeProjection",
+      "kind": "model",
+      "className": "AiAgentToolRuntimeKnowledgeProjection",
+      "schemaRef": "spark-class-model://schema/AiAgentToolRuntimeKnowledgeProjection",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentToolRuntimeInspectFinding": {
+      "ref": "spark-class-model://schema/AiAgentToolRuntimeInspectFinding",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolRuntimeInspectFinding",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolRuntimeInspectFinding"
+      }
+    },
+    "spark-class-model://model/AiAgentToolRuntimeInspectFinding": {
+      "ref": "spark-class-model://model/AiAgentToolRuntimeInspectFinding",
+      "kind": "model",
+      "className": "AiAgentToolRuntimeInspectFinding",
+      "schemaRef": "spark-class-model://schema/AiAgentToolRuntimeInspectFinding",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentToolRuntimeInspectReport": {
+      "ref": "spark-class-model://schema/AiAgentToolRuntimeInspectReport",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolRuntimeInspectReport",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolRuntimeInspectReport"
+      }
+    },
+    "spark-class-model://model/AiAgentToolRuntimeInspectReport": {
+      "ref": "spark-class-model://model/AiAgentToolRuntimeInspectReport",
+      "kind": "model",
+      "className": "AiAgentToolRuntimeInspectReport",
+      "schemaRef": "spark-class-model://schema/AiAgentToolRuntimeInspectReport",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentToolRuntime": {
+      "ref": "spark-class-model://schema/AiAgentToolRuntime",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolRuntime",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolRuntime"
+      }
+    },
+    "spark-class-model://model/AiAgentToolRuntime": {
+      "ref": "spark-class-model://model/AiAgentToolRuntime",
+      "kind": "model",
+      "className": "AiAgentToolRuntime",
+      "schemaRef": "spark-class-model://schema/AiAgentToolRuntime",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

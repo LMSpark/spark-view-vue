@@ -424,8 +424,7 @@
               "name": "context",
               "type": {
                 "type": "reference",
-                "name": "AiAgentRuntimeContext",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -444,8 +443,7 @@
               "name": "context",
               "type": {
                 "type": "reference",
-                "name": "AiAgentRuntimeContext",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                "name": "unknown"
               }
             },
             {
@@ -483,8 +481,7 @@
               "name": "context",
               "type": {
                 "type": "reference",
-                "name": "AiAgentRuntimeContext",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -522,8 +519,7 @@
               "name": "context",
               "type": {
                 "type": "reference",
-                "name": "AiAgentRuntimeContext",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -541,8 +537,7 @@
               "name": "options",
               "type": {
                 "type": "reference",
-                "name": "AiAgentAppendMessageOptions",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -575,7 +570,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.430Z",
+  "generatedAt": "2026-06-13T04:00:57.567Z",
   "$defs": {
     "AiAgentFunctionCallCheck": {
       "type": "object",

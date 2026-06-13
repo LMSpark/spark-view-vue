@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/projection/dts-renderer.d.ts",
+  "symbols": [
+    "ModelGuideRenderInput",
+    "ModelGuide",
+    "AttributeGuideRenderInput",
+    "AttributeGuide",
+    "MethodGuideRenderInput",
+    "MethodGuide"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ModelGuideRenderInput": {
+      "ref": "spark-class-model://schema/ModelGuideRenderInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ModelGuideRenderInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ModelGuideRenderInput"
+      }
+    },
+    "spark-class-model://model/ModelGuideRenderInput": {
+      "ref": "spark-class-model://model/ModelGuideRenderInput",
+      "kind": "model",
+      "className": "ModelGuideRenderInput",
+      "schemaRef": "spark-class-model://schema/ModelGuideRenderInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ModelGuide": {
+      "ref": "spark-class-model://schema/ModelGuide",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ModelGuide",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ModelGuide"
+      }
+    },
+    "spark-class-model://model/ModelGuide": {
+      "ref": "spark-class-model://model/ModelGuide",
+      "kind": "model",
+      "className": "ModelGuide",
+      "schemaRef": "spark-class-model://schema/ModelGuide",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AttributeGuideRenderInput": {
+      "ref": "spark-class-model://schema/AttributeGuideRenderInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AttributeGuideRenderInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AttributeGuideRenderInput"
+      }
+    },
+    "spark-class-model://model/AttributeGuideRenderInput": {
+      "ref": "spark-class-model://model/AttributeGuideRenderInput",
+      "kind": "model",
+      "className": "AttributeGuideRenderInput",
+      "schemaRef": "spark-class-model://schema/AttributeGuideRenderInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AttributeGuide": {
+      "ref": "spark-class-model://schema/AttributeGuide",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AttributeGuide",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AttributeGuide"
+      }
+    },
+    "spark-class-model://model/AttributeGuide": {
+      "ref": "spark-class-model://model/AttributeGuide",
+      "kind": "model",
+      "className": "AttributeGuide",
+      "schemaRef": "spark-class-model://schema/AttributeGuide",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/MethodGuideRenderInput": {
+      "ref": "spark-class-model://schema/MethodGuideRenderInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MethodGuideRenderInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/MethodGuideRenderInput"
+      }
+    },
+    "spark-class-model://model/MethodGuideRenderInput": {
+      "ref": "spark-class-model://model/MethodGuideRenderInput",
+      "kind": "model",
+      "className": "MethodGuideRenderInput",
+      "schemaRef": "spark-class-model://schema/MethodGuideRenderInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/MethodGuide": {
+      "ref": "spark-class-model://schema/MethodGuide",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MethodGuide",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/MethodGuide"
+      }
+    },
+    "spark-class-model://model/MethodGuide": {
+      "ref": "spark-class-model://model/MethodGuide",
+      "kind": "model",
+      "className": "MethodGuide",
+      "schemaRef": "spark-class-model://schema/MethodGuide",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

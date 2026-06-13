@@ -70,7 +70,8 @@
           "name": "toolbar",
           "jsdoc": "结构化工具栏",
           "schema": {
-            "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+            "type": "object",
+            "title": "RToolbarProps"
           },
           "readable": true,
           "writable": false
@@ -79,7 +80,8 @@
           "name": "actions",
           "jsdoc": "结构化节点动作（toolbar 结构）",
           "schema": {
-            "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+            "type": "object",
+            "title": "RToolbarProps"
           },
           "readable": true,
           "writable": false
@@ -88,7 +90,8 @@
           "name": "editor",
           "jsdoc": "结构化编辑区",
           "schema": {
-            "$ref": "../../zones/RendererEditor.types.d.ts.json#/$defs/REditorProps"
+            "type": "object",
+            "title": "REditorProps"
           },
           "readable": true,
           "writable": false
@@ -153,7 +156,8 @@
           "name": "onNodeClick",
           "jsdoc": "节点点击回调",
           "schema": {
-            "$ref": "zero-code.d.ts.json#/$defs/TreeEventHandler"
+            "type": "object",
+            "title": "TreeEventHandler"
           },
           "readable": true,
           "writable": false
@@ -162,7 +166,8 @@
           "name": "onNodeExpand",
           "jsdoc": "节点展开回调",
           "schema": {
-            "$ref": "zero-code.d.ts.json#/$defs/TreeEventHandler"
+            "type": "object",
+            "title": "TreeEventHandler"
           },
           "readable": true,
           "writable": false
@@ -171,7 +176,8 @@
           "name": "onNodeCollapse",
           "jsdoc": "节点折叠回调",
           "schema": {
-            "$ref": "zero-code.d.ts.json#/$defs/TreeEventHandler"
+            "type": "object",
+            "title": "TreeEventHandler"
           },
           "readable": true,
           "writable": false
@@ -190,7 +196,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.560Z",
+  "generatedAt": "2026-06-13T04:00:57.644Z",
   "$defs": {
     "RTreeProps": {
       "type": "object",
@@ -202,13 +208,16 @@
           "title": "DataView"
         },
         "toolbar": {
-          "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+          "type": "object",
+          "title": "RToolbarProps"
         },
         "actions": {
-          "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+          "type": "object",
+          "title": "RToolbarProps"
         },
         "editor": {
-          "$ref": "../../zones/RendererEditor.types.d.ts.json#/$defs/REditorProps"
+          "type": "object",
+          "title": "REditorProps"
         },
         "nodeKey": {
           "type": "string"
@@ -243,13 +252,16 @@
           "type": "number"
         },
         "onNodeClick": {
-          "$ref": "zero-code.d.ts.json#/$defs/TreeEventHandler"
+          "type": "object",
+          "title": "TreeEventHandler"
         },
         "onNodeExpand": {
-          "$ref": "zero-code.d.ts.json#/$defs/TreeEventHandler"
+          "type": "object",
+          "title": "TreeEventHandler"
         },
         "onNodeCollapse": {
-          "$ref": "zero-code.d.ts.json#/$defs/TreeEventHandler"
+          "type": "object",
+          "title": "TreeEventHandler"
         },
         "treeProps": {
           "type": "object",

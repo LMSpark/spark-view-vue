@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldRadio.props.d.ts",
+  "symbols": [
+    "RRadioProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RRadioProps": {
+      "ref": "spark-class-model://schema/RRadioProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RRadioProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RRadioProps"
+      }
+    },
+    "spark-class-model://model/RRadioProps": {
+      "ref": "spark-class-model://model/RRadioProps",
+      "kind": "model",
+      "className": "RRadioProps",
+      "schemaRef": "spark-class-model://schema/RRadioProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

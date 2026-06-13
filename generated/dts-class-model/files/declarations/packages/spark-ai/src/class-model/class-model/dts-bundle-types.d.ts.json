@@ -16,6 +16,18 @@
       "DtsClassModelBundleFileEntry",
       "DtsClassModelBundleClassEntry",
       "DtsClassModelBundleManifest",
+      "DtsClassModelRuntimeFileEntry",
+      "DtsClassModelRuntimeClassEntry",
+      "DtsClassModelRuntimeRefEntry",
+      "DtsClassModelRuntimeManifest",
+      "DtsClassModelRuntimeLinkRelation",
+      "DtsClassModelRuntimeLink",
+      "DtsClassModelRuntimeAttribute",
+      "DtsClassModelRuntimeMethod",
+      "DtsClassModelRuntimeModel",
+      "DtsClassModelRuntimeSchemaRef",
+      "DtsClassModelRuntimeRef",
+      "DtsClassModelRuntimeShard",
       "DtsClassModelDuplicateRecord",
       "DtsClassModelSemanticGapKind",
       "DtsClassModelSemanticGap",
@@ -30,6 +42,18 @@
     "DtsClassModelBundleFileEntry",
     "DtsClassModelBundleClassEntry",
     "DtsClassModelBundleManifest",
+    "DtsClassModelRuntimeFileEntry",
+    "DtsClassModelRuntimeClassEntry",
+    "DtsClassModelRuntimeRefEntry",
+    "DtsClassModelRuntimeManifest",
+    "DtsClassModelRuntimeLinkRelation",
+    "DtsClassModelRuntimeLink",
+    "DtsClassModelRuntimeAttribute",
+    "DtsClassModelRuntimeMethod",
+    "DtsClassModelRuntimeModel",
+    "DtsClassModelRuntimeSchemaRef",
+    "DtsClassModelRuntimeRef",
+    "DtsClassModelRuntimeShard",
     "DtsClassModelDuplicateRecord",
     "DtsClassModelSemanticGapKind",
     "DtsClassModelSemanticGap",
@@ -52,7 +76,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 13,
+        "line": 15,
         "className": "DtsFileProjectionDocument",
         "declarationKind": "type"
       },
@@ -81,7 +105,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 23,
+        "line": 25,
         "className": "DtsFileModuleJsDocSource",
         "declarationKind": "type"
       },
@@ -103,7 +127,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 25,
+        "line": 27,
         "className": "DtsFileModuleSemanticMeta",
         "declarationKind": "type"
       },
@@ -125,7 +149,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 41,
+        "line": 43,
         "className": "DtsClassModelBundleFileEntry",
         "declarationKind": "type"
       },
@@ -147,7 +171,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 46,
+        "line": 48,
         "className": "DtsClassModelBundleClassEntry",
         "declarationKind": "type"
       },
@@ -169,8 +193,299 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 51,
+        "line": 53,
         "className": "DtsClassModelBundleManifest",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeFileEntry": {
+      "kind": "DtsClassModelRuntimeFileEntry",
+      "className": "DtsClassModelRuntimeFileEntry",
+      "jsdoc": "Dts Class Model Runtime File Entry 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    file: string;\n    symbols: readonly string[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    file: string;\n    symbols: readonly string[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 63,
+        "className": "DtsClassModelRuntimeFileEntry",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeClassEntry": {
+      "kind": "DtsClassModelRuntimeClassEntry",
+      "className": "DtsClassModelRuntimeClassEntry",
+      "jsdoc": "Dts Class Model Runtime Class Entry 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    sourcePath: string;\n    file: string;\n    modelRef: string;\n    schemaRef: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    sourcePath: string;\n    file: string;\n    modelRef: string;\n    schemaRef: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 68,
+        "className": "DtsClassModelRuntimeClassEntry",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeRefEntry": {
+      "kind": "DtsClassModelRuntimeRefEntry",
+      "className": "DtsClassModelRuntimeRefEntry",
+      "jsdoc": "Dts Class Model Runtime Ref Entry 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    file: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    file: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 75,
+        "className": "DtsClassModelRuntimeRefEntry",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeManifest": {
+      "kind": "DtsClassModelRuntimeManifest",
+      "className": "DtsClassModelRuntimeManifest",
+      "jsdoc": "Dts Class Model Runtime Manifest 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_RUNTIME_VERSION;\n    protocol: typeof DTS_CLASS_MODEL_RUNTIME_PROTOCOL;\n    files: Readonly<Record<string, DtsClassModelRuntimeFileEntry>>;\n    classIndex: Readonly<Record<string, DtsClassModelRuntimeClassEntry>>;\n    refIndex: Readonly<Record<string, DtsClassModelRuntimeRefEntry>>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_RUNTIME_VERSION;\n    protocol: typeof DTS_CLASS_MODEL_RUNTIME_PROTOCOL;\n    files: Readonly<Record<string, DtsClassModelRuntimeFileEntry>>;\n    classIndex: Readonly<Record<string, DtsClassModelRuntimeClassEntry>>;\n    refIndex: Readonly<Record<string, DtsClassModelRuntimeRefEntry>>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 79,
+        "className": "DtsClassModelRuntimeManifest",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeLinkRelation": {
+      "kind": "DtsClassModelRuntimeLinkRelation",
+      "className": "DtsClassModelRuntimeLinkRelation",
+      "jsdoc": "Dts Class Model Runtime Link Relation 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "'attribute' | 'method-parameter' | 'method-return'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'attribute'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'method-parameter'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'method-return'"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 87,
+        "className": "DtsClassModelRuntimeLinkRelation",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeLink": {
+      "kind": "DtsClassModelRuntimeLink",
+      "className": "DtsClassModelRuntimeLink",
+      "jsdoc": "Dts Class Model Runtime Link 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ref: string;\n    kind: 'link';\n    fromRef: string;\n    relation: DtsClassModelRuntimeLinkRelation;\n    targetModelRef: string;\n    targetClassName: string;\n    targetFile: string;\n    targetSchemaRef: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    ref: string;\n    kind: 'link';\n    fromRef: string;\n    relation: DtsClassModelRuntimeLinkRelation;\n    targetModelRef: string;\n    targetClassName: string;\n    targetFile: string;\n    targetSchemaRef: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 89,
+        "className": "DtsClassModelRuntimeLink",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeAttribute": {
+      "kind": "DtsClassModelRuntimeAttribute",
+      "className": "DtsClassModelRuntimeAttribute",
+      "jsdoc": "Dts Class Model Runtime Attribute 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ref: string;\n    kind: 'attribute';\n    ownerRef: string;\n    name: string;\n    schemaRef: string;\n    readable: boolean;\n    writable: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    ref: string;\n    kind: 'attribute';\n    ownerRef: string;\n    name: string;\n    schemaRef: string;\n    readable: boolean;\n    writable: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 100,
+        "className": "DtsClassModelRuntimeAttribute",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeMethod": {
+      "kind": "DtsClassModelRuntimeMethod",
+      "className": "DtsClassModelRuntimeMethod",
+      "jsdoc": "Dts Class Model Runtime Method 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ref: string;\n    kind: 'method';\n    ownerRef: string;\n    name: string;\n    parameterStyle: MethodParameterStyle;\n    paramsSchemaRef: string;\n    returnSchemaRef?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    ref: string;\n    kind: 'method';\n    ownerRef: string;\n    name: string;\n    parameterStyle: MethodParameterStyle;\n    paramsSchemaRef: string;\n    returnSchemaRef?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 110,
+        "className": "DtsClassModelRuntimeMethod",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeModel": {
+      "kind": "DtsClassModelRuntimeModel",
+      "className": "DtsClassModelRuntimeModel",
+      "jsdoc": "Dts Class Model Runtime Model 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ref: string;\n    kind: 'model';\n    className: string;\n    schemaRef: string;\n    attributeRefs: readonly string[];\n    methodRefs: readonly string[];\n    linkRefs: readonly string[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    ref: string;\n    kind: 'model';\n    className: string;\n    schemaRef: string;\n    attributeRefs: readonly string[];\n    methodRefs: readonly string[];\n    linkRefs: readonly string[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 120,
+        "className": "DtsClassModelRuntimeModel",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeSchemaRef": {
+      "kind": "DtsClassModelRuntimeSchemaRef",
+      "className": "DtsClassModelRuntimeSchemaRef",
+      "jsdoc": "Dts Class Model Runtime Schema Ref 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ref: string;\n    kind: 'schema';\n    schema: AiJsonSchema;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    ref: string;\n    kind: 'schema';\n    schema: AiJsonSchema;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 130,
+        "className": "DtsClassModelRuntimeSchemaRef",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeRef": {
+      "kind": "DtsClassModelRuntimeRef",
+      "className": "DtsClassModelRuntimeRef",
+      "jsdoc": "Dts Class Model Runtime Ref 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "DtsClassModelRuntimeModel | DtsClassModelRuntimeAttribute | DtsClassModelRuntimeMethod | DtsClassModelRuntimeSchemaRef | DtsClassModelRuntimeLink",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "DtsClassModelRuntimeModel",
+          "targetName": "DtsClassModelRuntimeModel"
+        },
+        {
+          "kind": "union",
+          "typeText": "DtsClassModelRuntimeAttribute",
+          "targetName": "DtsClassModelRuntimeAttribute"
+        },
+        {
+          "kind": "union",
+          "typeText": "DtsClassModelRuntimeMethod",
+          "targetName": "DtsClassModelRuntimeMethod"
+        },
+        {
+          "kind": "union",
+          "typeText": "DtsClassModelRuntimeSchemaRef",
+          "targetName": "DtsClassModelRuntimeSchemaRef"
+        },
+        {
+          "kind": "union",
+          "typeText": "DtsClassModelRuntimeLink",
+          "targetName": "DtsClassModelRuntimeLink"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 136,
+        "className": "DtsClassModelRuntimeRef",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeShard": {
+      "kind": "DtsClassModelRuntimeShard",
+      "className": "DtsClassModelRuntimeShard",
+      "jsdoc": "Dts Class Model Runtime Shard 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_RUNTIME_VERSION;\n    protocol: typeof DTS_CLASS_MODEL_RUNTIME_PROTOCOL;\n    sourcePath: string;\n    symbols: readonly string[];\n    '@refs': Readonly<Record<string, DtsClassModelRuntimeRef>>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_RUNTIME_VERSION;\n    protocol: typeof DTS_CLASS_MODEL_RUNTIME_PROTOCOL;\n    sourcePath: string;\n    symbols: readonly string[];\n    '@refs': Readonly<Record<string, DtsClassModelRuntimeRef>>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 138,
+        "className": "DtsClassModelRuntimeShard",
         "declarationKind": "type"
       },
       "attributes": [],
@@ -191,7 +506,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 61,
+        "line": 146,
         "className": "DtsClassModelDuplicateRecord",
         "declarationKind": "type"
       },
@@ -228,7 +543,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 67,
+        "line": 152,
         "className": "DtsClassModelSemanticGapKind",
         "declarationKind": "type"
       },
@@ -250,7 +565,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 69,
+        "line": 154,
         "className": "DtsClassModelSemanticGap",
         "declarationKind": "type"
       },
@@ -272,7 +587,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 88,
+        "line": 173,
         "className": "DtsClassModelSemanticGapReport",
         "declarationKind": "type"
       },
@@ -294,7 +609,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 95,
+        "line": 180,
         "className": "ProjectDtsFileProjectionOptions",
         "declarationKind": "type"
       },
@@ -302,7 +617,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.446Z",
+  "generatedAt": "2026-06-13T04:00:57.579Z",
   "$defs": {
     "DtsFileProjectionDocument": {
       "type": "object",
@@ -333,6 +648,66 @@
       "type": "object",
       "title": "DtsClassModelBundleManifest",
       "description": "Dts Class Model Bundle Manifest 的语义模型。"
+    },
+    "DtsClassModelRuntimeFileEntry": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeFileEntry",
+      "description": "Dts Class Model Runtime File Entry 的语义模型。"
+    },
+    "DtsClassModelRuntimeClassEntry": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeClassEntry",
+      "description": "Dts Class Model Runtime Class Entry 的语义模型。"
+    },
+    "DtsClassModelRuntimeRefEntry": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeRefEntry",
+      "description": "Dts Class Model Runtime Ref Entry 的语义模型。"
+    },
+    "DtsClassModelRuntimeManifest": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeManifest",
+      "description": "Dts Class Model Runtime Manifest 的语义模型。"
+    },
+    "DtsClassModelRuntimeLinkRelation": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeLinkRelation",
+      "description": "Dts Class Model Runtime Link Relation 的语义模型。"
+    },
+    "DtsClassModelRuntimeLink": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeLink",
+      "description": "Dts Class Model Runtime Link 的语义模型。"
+    },
+    "DtsClassModelRuntimeAttribute": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeAttribute",
+      "description": "Dts Class Model Runtime Attribute 的语义模型。"
+    },
+    "DtsClassModelRuntimeMethod": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeMethod",
+      "description": "Dts Class Model Runtime Method 的语义模型。"
+    },
+    "DtsClassModelRuntimeModel": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeModel",
+      "description": "Dts Class Model Runtime Model 的语义模型。"
+    },
+    "DtsClassModelRuntimeSchemaRef": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeSchemaRef",
+      "description": "Dts Class Model Runtime Schema Ref 的语义模型。"
+    },
+    "DtsClassModelRuntimeRef": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeRef",
+      "description": "Dts Class Model Runtime Ref 的语义模型。"
+    },
+    "DtsClassModelRuntimeShard": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeShard",
+      "description": "Dts Class Model Runtime Shard 的语义模型。"
     },
     "DtsClassModelDuplicateRecord": {
       "type": "object",

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/AiToolApprovalCard.props.d.ts",
+  "symbols": [
+    "AiToolApprovalCardProps",
+    "AiToolApprovalCardEmits"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiToolApprovalCardProps": {
+      "ref": "spark-class-model://schema/AiToolApprovalCardProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiToolApprovalCardProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiToolApprovalCardProps"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalCardProps": {
+      "ref": "spark-class-model://model/AiToolApprovalCardProps",
+      "kind": "model",
+      "className": "AiToolApprovalCardProps",
+      "schemaRef": "spark-class-model://schema/AiToolApprovalCardProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiToolApprovalCardEmits": {
+      "ref": "spark-class-model://schema/AiToolApprovalCardEmits",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiToolApprovalCardEmits",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiToolApprovalCardEmits"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalCardEmits": {
+      "ref": "spark-class-model://model/AiToolApprovalCardEmits",
+      "kind": "model",
+      "className": "AiToolApprovalCardEmits",
+      "schemaRef": "spark-class-model://schema/AiToolApprovalCardEmits",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

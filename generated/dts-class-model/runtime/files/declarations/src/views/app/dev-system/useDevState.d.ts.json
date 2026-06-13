@@ -1,0 +1,348 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/views/app/dev-system/useDevState.d.ts",
+  "symbols": [
+    "DevPageFileName",
+    "PageConfigPageSummary",
+    "NavigationNodeDraftNode",
+    "RunPageDesignAiOptions",
+    "EditableProjectOption",
+    "StatusMessage",
+    "DevContextConfig",
+    "DevWorkspaceTab",
+    "DevState"
+  ],
+  "@refs": {
+    "spark-class-model://schema/DevPageFileName": {
+      "ref": "spark-class-model://schema/DevPageFileName",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DevPageFileName",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DevPageFileName"
+      }
+    },
+    "spark-class-model://model/DevPageFileName": {
+      "ref": "spark-class-model://model/DevPageFileName",
+      "kind": "model",
+      "className": "DevPageFileName",
+      "schemaRef": "spark-class-model://schema/DevPageFileName",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageConfigPageSummary": {
+      "ref": "spark-class-model://schema/PageConfigPageSummary",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageConfigPageSummary",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageConfigPageSummary"
+      }
+    },
+    "spark-class-model://model/PageConfigPageSummary": {
+      "ref": "spark-class-model://model/PageConfigPageSummary",
+      "kind": "model",
+      "className": "PageConfigPageSummary",
+      "schemaRef": "spark-class-model://schema/PageConfigPageSummary",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NavigationNodeDraftNode": {
+      "ref": "spark-class-model://schema/NavigationNodeDraftNode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavigationNodeDraftNode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavigationNodeDraftNode"
+      }
+    },
+    "spark-class-model://model/NavigationNodeDraftNode": {
+      "ref": "spark-class-model://model/NavigationNodeDraftNode",
+      "kind": "model",
+      "className": "NavigationNodeDraftNode",
+      "schemaRef": "spark-class-model://schema/NavigationNodeDraftNode",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/RunPageDesignAiOptions": {
+      "ref": "spark-class-model://schema/RunPageDesignAiOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RunPageDesignAiOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RunPageDesignAiOptions"
+      }
+    },
+    "spark-class-model://model/RunPageDesignAiOptions": {
+      "ref": "spark-class-model://model/RunPageDesignAiOptions",
+      "kind": "model",
+      "className": "RunPageDesignAiOptions",
+      "schemaRef": "spark-class-model://schema/RunPageDesignAiOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/EditableProjectOption": {
+      "ref": "spark-class-model://schema/EditableProjectOption",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "EditableProjectOption",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/EditableProjectOption"
+      }
+    },
+    "spark-class-model://model/EditableProjectOption/attributes/tenantId/0": {
+      "ref": "spark-class-model://model/EditableProjectOption/attributes/tenantId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EditableProjectOption",
+      "name": "tenantId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/EditableProjectOption": {
+      "ref": "spark-class-model://model/EditableProjectOption",
+      "kind": "model",
+      "className": "EditableProjectOption",
+      "schemaRef": "spark-class-model://schema/EditableProjectOption",
+      "attributeRefs": [
+        "spark-class-model://model/EditableProjectOption/attributes/tenantId/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/StatusMessage": {
+      "ref": "spark-class-model://schema/StatusMessage",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "StatusMessage",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "success"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warning"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              }
+            ]
+          },
+          "time": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/StatusMessage"
+      }
+    },
+    "spark-class-model://model/StatusMessage/attributes/text/0": {
+      "ref": "spark-class-model://model/StatusMessage/attributes/text/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StatusMessage",
+      "name": "text",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/23df4234846c942fd2e675222100f753e000e170ea997ef047c039d7c0754c89": {
+      "ref": "spark-class-model://schema/shared/23df4234846c942fd2e675222100f753e000e170ea997ef047c039d7c0754c89",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "success"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "warning"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "info"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/23df4234846c942fd2e675222100f753e000e170ea997ef047c039d7c0754c89"
+      }
+    },
+    "spark-class-model://model/StatusMessage/attributes/type/1": {
+      "ref": "spark-class-model://model/StatusMessage/attributes/type/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StatusMessage",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/23df4234846c942fd2e675222100f753e000e170ea997ef047c039d7c0754c89",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StatusMessage/attributes/time/2": {
+      "ref": "spark-class-model://model/StatusMessage/attributes/time/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StatusMessage",
+      "name": "time",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StatusMessage": {
+      "ref": "spark-class-model://model/StatusMessage",
+      "kind": "model",
+      "className": "StatusMessage",
+      "schemaRef": "spark-class-model://schema/StatusMessage",
+      "attributeRefs": [
+        "spark-class-model://model/StatusMessage/attributes/text/0",
+        "spark-class-model://model/StatusMessage/attributes/type/1",
+        "spark-class-model://model/StatusMessage/attributes/time/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DevContextConfig": {
+      "ref": "spark-class-model://schema/DevContextConfig",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DevContextConfig",
+        "properties": {
+          "placeholder": {
+            "type": "string"
+          },
+          "defaultValue": {
+            "type": "string"
+          },
+          "paramName": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DevContextConfig"
+      }
+    },
+    "spark-class-model://model/DevContextConfig/attributes/placeholder/0": {
+      "ref": "spark-class-model://model/DevContextConfig/attributes/placeholder/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DevContextConfig",
+      "name": "placeholder",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DevContextConfig/attributes/defaultValue/1": {
+      "ref": "spark-class-model://model/DevContextConfig/attributes/defaultValue/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DevContextConfig",
+      "name": "defaultValue",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DevContextConfig/attributes/paramName/2": {
+      "ref": "spark-class-model://model/DevContextConfig/attributes/paramName/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DevContextConfig",
+      "name": "paramName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DevContextConfig": {
+      "ref": "spark-class-model://model/DevContextConfig",
+      "kind": "model",
+      "className": "DevContextConfig",
+      "schemaRef": "spark-class-model://schema/DevContextConfig",
+      "attributeRefs": [
+        "spark-class-model://model/DevContextConfig/attributes/placeholder/0",
+        "spark-class-model://model/DevContextConfig/attributes/defaultValue/1",
+        "spark-class-model://model/DevContextConfig/attributes/paramName/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DevWorkspaceTab": {
+      "ref": "spark-class-model://schema/DevWorkspaceTab",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DevWorkspaceTab",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DevWorkspaceTab"
+      }
+    },
+    "spark-class-model://model/DevWorkspaceTab": {
+      "ref": "spark-class-model://model/DevWorkspaceTab",
+      "kind": "model",
+      "className": "DevWorkspaceTab",
+      "schemaRef": "spark-class-model://schema/DevWorkspaceTab",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DevState": {
+      "ref": "spark-class-model://schema/DevState",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DevState",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DevState"
+      }
+    },
+    "spark-class-model://model/DevState": {
+      "ref": "spark-class-model://model/DevState",
+      "kind": "model",
+      "className": "DevState",
+      "schemaRef": "spark-class-model://schema/DevState",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

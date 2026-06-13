@@ -1,0 +1,326 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/page/actions/button-templates.d.ts",
+  "symbols": [
+    "ButtonTemplateProps",
+    "ResolvedButtonStyle"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ButtonTemplateProps": {
+      "ref": "spark-class-model://schema/ButtonTemplateProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ButtonTemplateProps",
+        "properties": {
+          "buttonType": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "primary"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "success"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warning"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "danger"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              }
+            ]
+          },
+          "plain": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "boolean"
+          },
+          "link": {
+            "type": "boolean"
+          },
+          "round": {
+            "type": "boolean"
+          },
+          "circle": {
+            "type": "boolean"
+          },
+          "buttonSize": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "large"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "default"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "small"
+                ]
+              }
+            ]
+          },
+          "icon": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ButtonTemplateProps"
+      }
+    },
+    "spark-class-model://model/ButtonTemplateProps/attributes/buttonType/0": {
+      "ref": "spark-class-model://model/ButtonTemplateProps/attributes/buttonType/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ButtonTemplateProps",
+      "name": "buttonType",
+      "schemaRef": "spark-class-model://schema/shared/e15eedc09fe0d02b269d9754845226d11eb7489632237ceddeda2f286a376cd2",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ButtonTemplateProps/attributes/plain/1": {
+      "ref": "spark-class-model://model/ButtonTemplateProps/attributes/plain/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ButtonTemplateProps",
+      "name": "plain",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ButtonTemplateProps/attributes/text/2": {
+      "ref": "spark-class-model://model/ButtonTemplateProps/attributes/text/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ButtonTemplateProps",
+      "name": "text",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ButtonTemplateProps/attributes/link/3": {
+      "ref": "spark-class-model://model/ButtonTemplateProps/attributes/link/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ButtonTemplateProps",
+      "name": "link",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ButtonTemplateProps/attributes/round/4": {
+      "ref": "spark-class-model://model/ButtonTemplateProps/attributes/round/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ButtonTemplateProps",
+      "name": "round",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ButtonTemplateProps/attributes/circle/5": {
+      "ref": "spark-class-model://model/ButtonTemplateProps/attributes/circle/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ButtonTemplateProps",
+      "name": "circle",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ButtonTemplateProps/attributes/buttonSize/6": {
+      "ref": "spark-class-model://model/ButtonTemplateProps/attributes/buttonSize/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ButtonTemplateProps",
+      "name": "buttonSize",
+      "schemaRef": "spark-class-model://schema/shared/b3967b006397ba2048babc68ea79f9ee037cb6634b989906402097608573139f",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ButtonTemplateProps/attributes/icon/7": {
+      "ref": "spark-class-model://model/ButtonTemplateProps/attributes/icon/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ButtonTemplateProps",
+      "name": "icon",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ButtonTemplateProps": {
+      "ref": "spark-class-model://model/ButtonTemplateProps",
+      "kind": "model",
+      "className": "ButtonTemplateProps",
+      "schemaRef": "spark-class-model://schema/ButtonTemplateProps",
+      "attributeRefs": [
+        "spark-class-model://model/ButtonTemplateProps/attributes/buttonType/0",
+        "spark-class-model://model/ButtonTemplateProps/attributes/plain/1",
+        "spark-class-model://model/ButtonTemplateProps/attributes/text/2",
+        "spark-class-model://model/ButtonTemplateProps/attributes/link/3",
+        "spark-class-model://model/ButtonTemplateProps/attributes/round/4",
+        "spark-class-model://model/ButtonTemplateProps/attributes/circle/5",
+        "spark-class-model://model/ButtonTemplateProps/attributes/buttonSize/6",
+        "spark-class-model://model/ButtonTemplateProps/attributes/icon/7"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ResolvedButtonStyle": {
+      "ref": "spark-class-model://schema/ResolvedButtonStyle",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ResolvedButtonStyle",
+        "properties": {
+          "buttonType": {
+            "type": "string"
+          },
+          "buttonSize": {
+            "type": "string"
+          },
+          "plain": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "boolean"
+          },
+          "link": {
+            "type": "boolean"
+          },
+          "round": {
+            "type": "boolean"
+          },
+          "circle": {
+            "type": "boolean"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ResolvedButtonStyle"
+      }
+    },
+    "spark-class-model://model/ResolvedButtonStyle/attributes/buttonType/0": {
+      "ref": "spark-class-model://model/ResolvedButtonStyle/attributes/buttonType/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedButtonStyle",
+      "name": "buttonType",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ResolvedButtonStyle/attributes/buttonSize/1": {
+      "ref": "spark-class-model://model/ResolvedButtonStyle/attributes/buttonSize/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedButtonStyle",
+      "name": "buttonSize",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ResolvedButtonStyle/attributes/plain/2": {
+      "ref": "spark-class-model://model/ResolvedButtonStyle/attributes/plain/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedButtonStyle",
+      "name": "plain",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ResolvedButtonStyle/attributes/text/3": {
+      "ref": "spark-class-model://model/ResolvedButtonStyle/attributes/text/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedButtonStyle",
+      "name": "text",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ResolvedButtonStyle/attributes/link/4": {
+      "ref": "spark-class-model://model/ResolvedButtonStyle/attributes/link/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedButtonStyle",
+      "name": "link",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ResolvedButtonStyle/attributes/round/5": {
+      "ref": "spark-class-model://model/ResolvedButtonStyle/attributes/round/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedButtonStyle",
+      "name": "round",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ResolvedButtonStyle/attributes/circle/6": {
+      "ref": "spark-class-model://model/ResolvedButtonStyle/attributes/circle/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedButtonStyle",
+      "name": "circle",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ResolvedButtonStyle/attributes/icon/7": {
+      "ref": "spark-class-model://model/ResolvedButtonStyle/attributes/icon/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedButtonStyle",
+      "name": "icon",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ResolvedButtonStyle/attributes/label/8": {
+      "ref": "spark-class-model://model/ResolvedButtonStyle/attributes/label/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedButtonStyle",
+      "name": "label",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ResolvedButtonStyle": {
+      "ref": "spark-class-model://model/ResolvedButtonStyle",
+      "kind": "model",
+      "className": "ResolvedButtonStyle",
+      "schemaRef": "spark-class-model://schema/ResolvedButtonStyle",
+      "attributeRefs": [
+        "spark-class-model://model/ResolvedButtonStyle/attributes/buttonType/0",
+        "spark-class-model://model/ResolvedButtonStyle/attributes/buttonSize/1",
+        "spark-class-model://model/ResolvedButtonStyle/attributes/plain/2",
+        "spark-class-model://model/ResolvedButtonStyle/attributes/text/3",
+        "spark-class-model://model/ResolvedButtonStyle/attributes/link/4",
+        "spark-class-model://model/ResolvedButtonStyle/attributes/round/5",
+        "spark-class-model://model/ResolvedButtonStyle/attributes/circle/6",
+        "spark-class-model://model/ResolvedButtonStyle/attributes/icon/7",
+        "spark-class-model://model/ResolvedButtonStyle/attributes/label/8"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

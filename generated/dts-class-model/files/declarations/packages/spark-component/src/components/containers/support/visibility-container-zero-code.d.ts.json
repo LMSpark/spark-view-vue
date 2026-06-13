@@ -34,7 +34,7 @@
           "name": "visibleValue",
           "jsdoc": "visible Value 字段。",
           "schema": {
-            "$ref": "../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<boolean>"
           },
           "readable": true,
@@ -94,7 +94,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.618Z",
+  "generatedAt": "2026-06-13T04:00:57.701Z",
   "$defs": {
     "VisibilityContainerZeroCodeOptions": {
       "type": "object",
@@ -102,7 +102,7 @@
       "description": "Visibility Container Zero Code Options 的调用配置。",
       "properties": {
         "visibleValue": {
-          "$ref": "../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<boolean>"
         },
         "commitVisibleValue": {

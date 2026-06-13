@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
+  "symbols": [
+    "ToolArgsParseError"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ToolArgsParseError": {
+      "ref": "spark-class-model://schema/ToolArgsParseError",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ToolArgsParseError",
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "TOOL_ARGS_INVALID_JSON"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "TOOL_ARGS_NOT_OBJECT"
+                ]
+              }
+            ]
+          },
+          "raw": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ToolArgsParseError"
+      }
+    },
+    "spark-class-model://schema/shared/e83f8d0267e7e838bcfd26dbd4ee8136fcb37c8e8bbee3ca06e4959d879f144f": {
+      "ref": "spark-class-model://schema/shared/e83f8d0267e7e838bcfd26dbd4ee8136fcb37c8e8bbee3ca06e4959d879f144f",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "TOOL_ARGS_INVALID_JSON"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "TOOL_ARGS_NOT_OBJECT"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e83f8d0267e7e838bcfd26dbd4ee8136fcb37c8e8bbee3ca06e4959d879f144f"
+      }
+    },
+    "spark-class-model://model/ToolArgsParseError/attributes/code/0": {
+      "ref": "spark-class-model://model/ToolArgsParseError/attributes/code/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ToolArgsParseError",
+      "name": "code",
+      "schemaRef": "spark-class-model://schema/shared/e83f8d0267e7e838bcfd26dbd4ee8136fcb37c8e8bbee3ca06e4959d879f144f",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ToolArgsParseError/attributes/raw/1": {
+      "ref": "spark-class-model://model/ToolArgsParseError/attributes/raw/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ToolArgsParseError",
+      "name": "raw",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ToolArgsParseError": {
+      "ref": "spark-class-model://model/ToolArgsParseError",
+      "kind": "model",
+      "className": "ToolArgsParseError",
+      "schemaRef": "spark-class-model://schema/ToolArgsParseError",
+      "attributeRefs": [
+        "spark-class-model://model/ToolArgsParseError/attributes/code/0",
+        "spark-class-model://model/ToolArgsParseError/attributes/raw/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

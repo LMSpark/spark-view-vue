@@ -48,8 +48,7 @@
               "typeArguments": [
                 {
                   "type": "reference",
-                  "name": "RequestConfig",
-                  "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+                  "name": "unknown"
                 }
               ]
             },
@@ -70,8 +69,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "RequestConfig",
-                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -81,8 +79,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "HttpResponse",
-                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "intrinsic",
@@ -109,8 +106,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "RequestConfig",
-                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -119,14 +115,13 @@
           ],
           "type": {
             "type": "reference",
-            "name": "RequestError",
-            "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+            "name": "unknown"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.859Z",
+  "generatedAt": "2026-06-13T04:00:57.910Z",
   "$defs": {
     "Request": {
       "type": "object",

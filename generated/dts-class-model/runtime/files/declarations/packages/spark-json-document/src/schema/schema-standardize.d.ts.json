@@ -1,0 +1,336 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts",
+  "symbols": [
+    "StandardJsonSchema",
+    "StandardJsonSchemaObject"
+  ],
+  "@refs": {
+    "spark-class-model://schema/StandardJsonSchema": {
+      "ref": "spark-class-model://schema/StandardJsonSchema",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "StandardJsonSchema",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/StandardJsonSchema"
+      }
+    },
+    "spark-class-model://model/StandardJsonSchema": {
+      "ref": "spark-class-model://model/StandardJsonSchema",
+      "kind": "model",
+      "className": "StandardJsonSchema",
+      "schemaRef": "spark-class-model://schema/StandardJsonSchema",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/StandardJsonSchemaObject": {
+      "ref": "spark-class-model://schema/StandardJsonSchemaObject",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "StandardJsonSchemaObject",
+        "properties": {
+          "$ref": {
+            "type": "string"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array"
+              }
+            ]
+          },
+          "properties": {
+            "type": "object",
+            "title": "Readonly<Record<string, StandardJsonSchema>>"
+          },
+          "required": {
+            "type": "array"
+          },
+          "items": {
+            "$ref": "spark-class-model://schema/StandardJsonSchema"
+          },
+          "prefixItems": {
+            "type": "array"
+          },
+          "additionalProperties": {
+            "$ref": "spark-class-model://schema/StandardJsonSchema"
+          },
+          "enum": {
+            "type": "array"
+          },
+          "const": true,
+          "anyOf": {
+            "type": "array"
+          },
+          "oneOf": {
+            "type": "array"
+          },
+          "allOf": {
+            "type": "array"
+          },
+          "not": {
+            "$ref": "spark-class-model://schema/StandardJsonSchema"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "$defs": {
+            "type": "object",
+            "title": "Readonly<Record<string, StandardJsonSchema>>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/StandardJsonSchemaObject"
+      }
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/%24ref/0": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/%24ref/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "$ref",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/43270971b1e0ab7888eabe141c82d22d7cd8ffb30f369da18297bf280551cf28": {
+      "ref": "spark-class-model://schema/shared/43270971b1e0ab7888eabe141c82d22d7cd8ffb30f369da18297bf280551cf28",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/43270971b1e0ab7888eabe141c82d22d7cd8ffb30f369da18297bf280551cf28"
+      }
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/type/1": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/type/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/43270971b1e0ab7888eabe141c82d22d7cd8ffb30f369da18297bf280551cf28",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/768dd0e4990cf70cd54627fc77c7da80ade2987853b1b8c3eddab62d7bf8603f": {
+      "ref": "spark-class-model://schema/shared/768dd0e4990cf70cd54627fc77c7da80ade2987853b1b8c3eddab62d7bf8603f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Readonly<Record<string, StandardJsonSchema>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/768dd0e4990cf70cd54627fc77c7da80ade2987853b1b8c3eddab62d7bf8603f"
+      }
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/properties/2": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/properties/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "properties",
+      "schemaRef": "spark-class-model://schema/shared/768dd0e4990cf70cd54627fc77c7da80ade2987853b1b8c3eddab62d7bf8603f",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/required/3": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/required/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "required",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/c6303a1b1be65146e42350a776203349222f35210d2a41b1c6329878b4e45d7d": {
+      "ref": "spark-class-model://schema/shared/c6303a1b1be65146e42350a776203349222f35210d2a41b1c6329878b4e45d7d",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/StandardJsonSchema",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c6303a1b1be65146e42350a776203349222f35210d2a41b1c6329878b4e45d7d"
+      }
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/items/4": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/items/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "items",
+      "schemaRef": "spark-class-model://schema/shared/c6303a1b1be65146e42350a776203349222f35210d2a41b1c6329878b4e45d7d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchemaObject%2Fattributes%2Fitems%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchema": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchemaObject%2Fattributes%2Fitems%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchema",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/StandardJsonSchemaObject/attributes/items/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/StandardJsonSchema",
+      "targetClassName": "StandardJsonSchema",
+      "targetFile": "files/declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/StandardJsonSchema"
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/prefixItems/5": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/prefixItems/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "prefixItems",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/additionalProperties/6": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/additionalProperties/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "additionalProperties",
+      "schemaRef": "spark-class-model://schema/shared/c6303a1b1be65146e42350a776203349222f35210d2a41b1c6329878b4e45d7d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchemaObject%2Fattributes%2FadditionalProperties%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchema": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchemaObject%2Fattributes%2FadditionalProperties%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchema",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/StandardJsonSchemaObject/attributes/additionalProperties/6",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/StandardJsonSchema",
+      "targetClassName": "StandardJsonSchema",
+      "targetFile": "files/declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/StandardJsonSchema"
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/enum/7": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/enum/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "enum",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/const/8": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/const/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "const",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/anyOf/9": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/anyOf/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "anyOf",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/oneOf/10": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/oneOf/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "oneOf",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/allOf/11": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/allOf/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "allOf",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/not/12": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/not/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "not",
+      "schemaRef": "spark-class-model://schema/shared/c6303a1b1be65146e42350a776203349222f35210d2a41b1c6329878b4e45d7d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchemaObject%2Fattributes%2Fnot%2F12/attribute/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchema": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchemaObject%2Fattributes%2Fnot%2F12/attribute/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchema",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/StandardJsonSchemaObject/attributes/not/12",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/StandardJsonSchema",
+      "targetClassName": "StandardJsonSchema",
+      "targetFile": "files/declarations/packages/spark-json-document/src/schema/schema-standardize.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/StandardJsonSchema"
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/title/13": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/title/13",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/description/14": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/description/14",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "description",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/StandardJsonSchemaObject/attributes/%24defs/15": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject/attributes/%24defs/15",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StandardJsonSchemaObject",
+      "name": "$defs",
+      "schemaRef": "spark-class-model://schema/shared/768dd0e4990cf70cd54627fc77c7da80ade2987853b1b8c3eddab62d7bf8603f",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/StandardJsonSchemaObject": {
+      "ref": "spark-class-model://model/StandardJsonSchemaObject",
+      "kind": "model",
+      "className": "StandardJsonSchemaObject",
+      "schemaRef": "spark-class-model://schema/StandardJsonSchemaObject",
+      "attributeRefs": [
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/%24ref/0",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/type/1",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/properties/2",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/required/3",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/items/4",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/prefixItems/5",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/additionalProperties/6",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/enum/7",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/const/8",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/anyOf/9",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/oneOf/10",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/allOf/11",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/not/12",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/title/13",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/description/14",
+        "spark-class-model://model/StandardJsonSchemaObject/attributes/%24defs/15"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchemaObject%2Fattributes%2Fitems%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchema",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchemaObject%2Fattributes%2FadditionalProperties%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchema",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchemaObject%2Fattributes%2Fnot%2F12/attribute/spark-class-model%3A%2F%2Fmodel%2FStandardJsonSchema"
+      ]
+    }
+  }
+}

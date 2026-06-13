@@ -309,7 +309,8 @@
                 "type": "boolean"
               },
               {
-                "$ref": "theme/index.d.ts.json#/$defs/ThemeServiceOptions"
+                "type": "object",
+                "title": "ThemeServiceOptions"
               }
             ]
           },
@@ -340,7 +341,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.531Z",
+  "generatedAt": "2026-06-13T04:00:57.625Z",
   "$defs": {
     "SparkOptions": {
       "type": "object",
@@ -464,7 +465,8 @@
               "type": "boolean"
             },
             {
-              "$ref": "theme/index.d.ts.json#/$defs/ThemeServiceOptions"
+              "type": "object",
+              "title": "ThemeServiceOptions"
             }
           ]
         },

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.d.ts",
+  "symbols": [
+    "CreateClassModelKnowledgeWorkerApiOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/CreateClassModelKnowledgeWorkerApiOptions": {
+      "ref": "spark-class-model://schema/CreateClassModelKnowledgeWorkerApiOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "CreateClassModelKnowledgeWorkerApiOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/CreateClassModelKnowledgeWorkerApiOptions"
+      }
+    },
+    "spark-class-model://model/CreateClassModelKnowledgeWorkerApiOptions": {
+      "ref": "spark-class-model://model/CreateClassModelKnowledgeWorkerApiOptions",
+      "kind": "model",
+      "className": "CreateClassModelKnowledgeWorkerApiOptions",
+      "schemaRef": "spark-class-model://schema/CreateClassModelKnowledgeWorkerApiOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

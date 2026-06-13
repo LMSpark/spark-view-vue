@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/display/non-data-components/DisplayEmpty.props.d.ts",
+  "symbols": [
+    "REmptyProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/REmptyProps": {
+      "ref": "spark-class-model://schema/REmptyProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "REmptyProps",
+        "properties": {
+          "image": {
+            "type": "string"
+          },
+          "imageSize": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/REmptyProps"
+      }
+    },
+    "spark-class-model://model/REmptyProps/attributes/image/0": {
+      "ref": "spark-class-model://model/REmptyProps/attributes/image/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/REmptyProps",
+      "name": "image",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/REmptyProps/attributes/imageSize/1": {
+      "ref": "spark-class-model://model/REmptyProps/attributes/imageSize/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/REmptyProps",
+      "name": "imageSize",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/REmptyProps/attributes/description/2": {
+      "ref": "spark-class-model://model/REmptyProps/attributes/description/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/REmptyProps",
+      "name": "description",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/REmptyProps": {
+      "ref": "spark-class-model://model/REmptyProps",
+      "kind": "model",
+      "className": "REmptyProps",
+      "schemaRef": "spark-class-model://schema/REmptyProps",
+      "attributeRefs": [
+        "spark-class-model://model/REmptyProps/attributes/image/0",
+        "spark-class-model://model/REmptyProps/attributes/imageSize/1",
+        "spark-class-model://model/REmptyProps/attributes/description/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

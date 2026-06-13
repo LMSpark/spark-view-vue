@@ -1,0 +1,768 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/services/sse-events.d.ts",
+  "symbols": [
+    "FileChangeEvent",
+    "DataBatchJobEvent",
+    "DataChangeEvent",
+    "ServerNotificationEvent",
+    "AiHostRunRequestEvent",
+    "AiHostRunResultStatus",
+    "AiHostRunResultEvent"
+  ],
+  "@refs": {
+    "spark-class-model://schema/FileChangeEvent": {
+      "ref": "spark-class-model://schema/FileChangeEvent",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "FileChangeEvent",
+        "properties": {
+          "pageId": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/FileChangeEvent"
+      }
+    },
+    "spark-class-model://model/FileChangeEvent/attributes/pageId/0": {
+      "ref": "spark-class-model://model/FileChangeEvent/attributes/pageId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileChangeEvent",
+      "name": "pageId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/FileChangeEvent/attributes/file/1": {
+      "ref": "spark-class-model://model/FileChangeEvent/attributes/file/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileChangeEvent",
+      "name": "file",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/FileChangeEvent/attributes/timestamp/2": {
+      "ref": "spark-class-model://model/FileChangeEvent/attributes/timestamp/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileChangeEvent",
+      "name": "timestamp",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/FileChangeEvent": {
+      "ref": "spark-class-model://model/FileChangeEvent",
+      "kind": "model",
+      "className": "FileChangeEvent",
+      "schemaRef": "spark-class-model://schema/FileChangeEvent",
+      "attributeRefs": [
+        "spark-class-model://model/FileChangeEvent/attributes/pageId/0",
+        "spark-class-model://model/FileChangeEvent/attributes/file/1",
+        "spark-class-model://model/FileChangeEvent/attributes/timestamp/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DataBatchJobEvent": {
+      "ref": "spark-class-model://schema/DataBatchJobEvent",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataBatchJobEvent",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "jobId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "timestamp": {
+            "type": "number"
+          },
+          "result": true,
+          "error": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataBatchJobEvent"
+      }
+    },
+    "spark-class-model://model/DataBatchJobEvent/attributes/tenantId/0": {
+      "ref": "spark-class-model://model/DataBatchJobEvent/attributes/tenantId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataBatchJobEvent",
+      "name": "tenantId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataBatchJobEvent/attributes/projectId/1": {
+      "ref": "spark-class-model://model/DataBatchJobEvent/attributes/projectId/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataBatchJobEvent",
+      "name": "projectId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataBatchJobEvent/attributes/jobId/2": {
+      "ref": "spark-class-model://model/DataBatchJobEvent/attributes/jobId/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataBatchJobEvent",
+      "name": "jobId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataBatchJobEvent/attributes/status/3": {
+      "ref": "spark-class-model://model/DataBatchJobEvent/attributes/status/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataBatchJobEvent",
+      "name": "status",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataBatchJobEvent/attributes/completed/4": {
+      "ref": "spark-class-model://model/DataBatchJobEvent/attributes/completed/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataBatchJobEvent",
+      "name": "completed",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataBatchJobEvent/attributes/total/5": {
+      "ref": "spark-class-model://model/DataBatchJobEvent/attributes/total/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataBatchJobEvent",
+      "name": "total",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataBatchJobEvent/attributes/timestamp/6": {
+      "ref": "spark-class-model://model/DataBatchJobEvent/attributes/timestamp/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataBatchJobEvent",
+      "name": "timestamp",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataBatchJobEvent/attributes/result/7": {
+      "ref": "spark-class-model://model/DataBatchJobEvent/attributes/result/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataBatchJobEvent",
+      "name": "result",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataBatchJobEvent/attributes/error/8": {
+      "ref": "spark-class-model://model/DataBatchJobEvent/attributes/error/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataBatchJobEvent",
+      "name": "error",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataBatchJobEvent": {
+      "ref": "spark-class-model://model/DataBatchJobEvent",
+      "kind": "model",
+      "className": "DataBatchJobEvent",
+      "schemaRef": "spark-class-model://schema/DataBatchJobEvent",
+      "attributeRefs": [
+        "spark-class-model://model/DataBatchJobEvent/attributes/tenantId/0",
+        "spark-class-model://model/DataBatchJobEvent/attributes/projectId/1",
+        "spark-class-model://model/DataBatchJobEvent/attributes/jobId/2",
+        "spark-class-model://model/DataBatchJobEvent/attributes/status/3",
+        "spark-class-model://model/DataBatchJobEvent/attributes/completed/4",
+        "spark-class-model://model/DataBatchJobEvent/attributes/total/5",
+        "spark-class-model://model/DataBatchJobEvent/attributes/timestamp/6",
+        "spark-class-model://model/DataBatchJobEvent/attributes/result/7",
+        "spark-class-model://model/DataBatchJobEvent/attributes/error/8"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DataChangeEvent": {
+      "ref": "spark-class-model://schema/DataChangeEvent",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataChangeEvent",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "tableName": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "number"
+          },
+          "jobId": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataChangeEvent"
+      }
+    },
+    "spark-class-model://model/DataChangeEvent/attributes/tenantId/0": {
+      "ref": "spark-class-model://model/DataChangeEvent/attributes/tenantId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataChangeEvent",
+      "name": "tenantId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataChangeEvent/attributes/projectId/1": {
+      "ref": "spark-class-model://model/DataChangeEvent/attributes/projectId/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataChangeEvent",
+      "name": "projectId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataChangeEvent/attributes/tableName/2": {
+      "ref": "spark-class-model://model/DataChangeEvent/attributes/tableName/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataChangeEvent",
+      "name": "tableName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataChangeEvent/attributes/operation/3": {
+      "ref": "spark-class-model://model/DataChangeEvent/attributes/operation/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataChangeEvent",
+      "name": "operation",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataChangeEvent/attributes/timestamp/4": {
+      "ref": "spark-class-model://model/DataChangeEvent/attributes/timestamp/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataChangeEvent",
+      "name": "timestamp",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataChangeEvent/attributes/jobId/5": {
+      "ref": "spark-class-model://model/DataChangeEvent/attributes/jobId/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataChangeEvent",
+      "name": "jobId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataChangeEvent": {
+      "ref": "spark-class-model://model/DataChangeEvent",
+      "kind": "model",
+      "className": "DataChangeEvent",
+      "schemaRef": "spark-class-model://schema/DataChangeEvent",
+      "attributeRefs": [
+        "spark-class-model://model/DataChangeEvent/attributes/tenantId/0",
+        "spark-class-model://model/DataChangeEvent/attributes/projectId/1",
+        "spark-class-model://model/DataChangeEvent/attributes/tableName/2",
+        "spark-class-model://model/DataChangeEvent/attributes/operation/3",
+        "spark-class-model://model/DataChangeEvent/attributes/timestamp/4",
+        "spark-class-model://model/DataChangeEvent/attributes/jobId/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ServerNotificationEvent": {
+      "ref": "spark-class-model://schema/ServerNotificationEvent",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ServerNotificationEvent",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "number"
+          },
+          "notificationId": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "actionUrl": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ServerNotificationEvent"
+      }
+    },
+    "spark-class-model://model/ServerNotificationEvent/attributes/title/0": {
+      "ref": "spark-class-model://model/ServerNotificationEvent/attributes/title/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ServerNotificationEvent",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ServerNotificationEvent/attributes/message/1": {
+      "ref": "spark-class-model://model/ServerNotificationEvent/attributes/message/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ServerNotificationEvent",
+      "name": "message",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ServerNotificationEvent/attributes/timestamp/2": {
+      "ref": "spark-class-model://model/ServerNotificationEvent/attributes/timestamp/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ServerNotificationEvent",
+      "name": "timestamp",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ServerNotificationEvent/attributes/notificationId/3": {
+      "ref": "spark-class-model://model/ServerNotificationEvent/attributes/notificationId/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ServerNotificationEvent",
+      "name": "notificationId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ServerNotificationEvent/attributes/level/4": {
+      "ref": "spark-class-model://model/ServerNotificationEvent/attributes/level/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ServerNotificationEvent",
+      "name": "level",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ServerNotificationEvent/attributes/category/5": {
+      "ref": "spark-class-model://model/ServerNotificationEvent/attributes/category/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ServerNotificationEvent",
+      "name": "category",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ServerNotificationEvent/attributes/source/6": {
+      "ref": "spark-class-model://model/ServerNotificationEvent/attributes/source/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ServerNotificationEvent",
+      "name": "source",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ServerNotificationEvent/attributes/actionUrl/7": {
+      "ref": "spark-class-model://model/ServerNotificationEvent/attributes/actionUrl/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ServerNotificationEvent",
+      "name": "actionUrl",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ServerNotificationEvent": {
+      "ref": "spark-class-model://model/ServerNotificationEvent",
+      "kind": "model",
+      "className": "ServerNotificationEvent",
+      "schemaRef": "spark-class-model://schema/ServerNotificationEvent",
+      "attributeRefs": [
+        "spark-class-model://model/ServerNotificationEvent/attributes/title/0",
+        "spark-class-model://model/ServerNotificationEvent/attributes/message/1",
+        "spark-class-model://model/ServerNotificationEvent/attributes/timestamp/2",
+        "spark-class-model://model/ServerNotificationEvent/attributes/notificationId/3",
+        "spark-class-model://model/ServerNotificationEvent/attributes/level/4",
+        "spark-class-model://model/ServerNotificationEvent/attributes/category/5",
+        "spark-class-model://model/ServerNotificationEvent/attributes/source/6",
+        "spark-class-model://model/ServerNotificationEvent/attributes/actionUrl/7"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiHostRunRequestEvent": {
+      "ref": "spark-class-model://schema/AiHostRunRequestEvent",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiHostRunRequestEvent",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "alias": {
+            "type": "string"
+          },
+          "args": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "timestamp": {
+            "type": "number"
+          },
+          "timeoutMs": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiHostRunRequestEvent"
+      }
+    },
+    "spark-class-model://model/AiHostRunRequestEvent/attributes/requestId/0": {
+      "ref": "spark-class-model://model/AiHostRunRequestEvent/attributes/requestId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunRequestEvent",
+      "name": "requestId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiHostRunRequestEvent/attributes/alias/1": {
+      "ref": "spark-class-model://model/AiHostRunRequestEvent/attributes/alias/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunRequestEvent",
+      "name": "alias",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiHostRunRequestEvent/attributes/args/2": {
+      "ref": "spark-class-model://model/AiHostRunRequestEvent/attributes/args/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunRequestEvent",
+      "name": "args",
+      "schemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiHostRunRequestEvent/attributes/timestamp/3": {
+      "ref": "spark-class-model://model/AiHostRunRequestEvent/attributes/timestamp/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunRequestEvent",
+      "name": "timestamp",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiHostRunRequestEvent/attributes/timeoutMs/4": {
+      "ref": "spark-class-model://model/AiHostRunRequestEvent/attributes/timeoutMs/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunRequestEvent",
+      "name": "timeoutMs",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunRequestEvent/attributes/reason/5": {
+      "ref": "spark-class-model://model/AiHostRunRequestEvent/attributes/reason/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunRequestEvent",
+      "name": "reason",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunRequestEvent": {
+      "ref": "spark-class-model://model/AiHostRunRequestEvent",
+      "kind": "model",
+      "className": "AiHostRunRequestEvent",
+      "schemaRef": "spark-class-model://schema/AiHostRunRequestEvent",
+      "attributeRefs": [
+        "spark-class-model://model/AiHostRunRequestEvent/attributes/requestId/0",
+        "spark-class-model://model/AiHostRunRequestEvent/attributes/alias/1",
+        "spark-class-model://model/AiHostRunRequestEvent/attributes/args/2",
+        "spark-class-model://model/AiHostRunRequestEvent/attributes/timestamp/3",
+        "spark-class-model://model/AiHostRunRequestEvent/attributes/timeoutMs/4",
+        "spark-class-model://model/AiHostRunRequestEvent/attributes/reason/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiHostRunResultStatus": {
+      "ref": "spark-class-model://schema/AiHostRunResultStatus",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiHostRunResultStatus",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiHostRunResultStatus"
+      }
+    },
+    "spark-class-model://model/AiHostRunResultStatus": {
+      "ref": "spark-class-model://model/AiHostRunResultStatus",
+      "kind": "model",
+      "className": "AiHostRunResultStatus",
+      "schemaRef": "spark-class-model://schema/AiHostRunResultStatus",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiHostRunResultEvent": {
+      "ref": "spark-class-model://schema/AiHostRunResultEvent",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiHostRunResultEvent",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "alias": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "spark-class-model://schema/AiHostRunResultStatus"
+          },
+          "durationMs": {
+            "type": "number"
+          },
+          "clientTimestamp": {
+            "type": "number"
+          },
+          "serverTimestamp": {
+            "type": "number"
+          },
+          "sessionId": {
+            "type": "string"
+          },
+          "businessRegistrationId": {
+            "type": "string"
+          },
+          "businessInstanceId": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          },
+          "toolCalls": true,
+          "error": true
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiHostRunResultEvent"
+      }
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/requestId/0": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/requestId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "requestId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/alias/1": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/alias/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "alias",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/993ee2c4b219e3d346b96157dc1f76bd47088176407bad006d647c452912ba48": {
+      "ref": "spark-class-model://schema/shared/993ee2c4b219e3d346b96157dc1f76bd47088176407bad006d647c452912ba48",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiHostRunResultStatus",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/993ee2c4b219e3d346b96157dc1f76bd47088176407bad006d647c452912ba48"
+      }
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/status/2": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/status/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "status",
+      "schemaRef": "spark-class-model://schema/shared/993ee2c4b219e3d346b96157dc1f76bd47088176407bad006d647c452912ba48",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiHostRunResultEvent%2Fattributes%2Fstatus%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiHostRunResultStatus": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiHostRunResultEvent%2Fattributes%2Fstatus%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiHostRunResultStatus",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiHostRunResultEvent/attributes/status/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiHostRunResultStatus",
+      "targetClassName": "AiHostRunResultStatus",
+      "targetFile": "files/declarations/src/services/sse-events.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiHostRunResultStatus"
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/durationMs/3": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/durationMs/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "durationMs",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/clientTimestamp/4": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/clientTimestamp/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "clientTimestamp",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/serverTimestamp/5": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/serverTimestamp/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "serverTimestamp",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/sessionId/6": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/sessionId/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "sessionId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/businessRegistrationId/7": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/businessRegistrationId/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "businessRegistrationId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/businessInstanceId/8": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/businessInstanceId/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "businessInstanceId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/text/9": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/text/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "text",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/reasoning/10": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/reasoning/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "reasoning",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/toolCalls/11": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/toolCalls/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "toolCalls",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunResultEvent/attributes/error/12": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent/attributes/error/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunResultEvent",
+      "name": "error",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunResultEvent": {
+      "ref": "spark-class-model://model/AiHostRunResultEvent",
+      "kind": "model",
+      "className": "AiHostRunResultEvent",
+      "schemaRef": "spark-class-model://schema/AiHostRunResultEvent",
+      "attributeRefs": [
+        "spark-class-model://model/AiHostRunResultEvent/attributes/requestId/0",
+        "spark-class-model://model/AiHostRunResultEvent/attributes/alias/1",
+        "spark-class-model://model/AiHostRunResultEvent/attributes/status/2",
+        "spark-class-model://model/AiHostRunResultEvent/attributes/durationMs/3",
+        "spark-class-model://model/AiHostRunResultEvent/attributes/clientTimestamp/4",
+        "spark-class-model://model/AiHostRunResultEvent/attributes/serverTimestamp/5",
+        "spark-class-model://model/AiHostRunResultEvent/attributes/sessionId/6",
+        "spark-class-model://model/AiHostRunResultEvent/attributes/businessRegistrationId/7",
+        "spark-class-model://model/AiHostRunResultEvent/attributes/businessInstanceId/8",
+        "spark-class-model://model/AiHostRunResultEvent/attributes/text/9",
+        "spark-class-model://model/AiHostRunResultEvent/attributes/reasoning/10",
+        "spark-class-model://model/AiHostRunResultEvent/attributes/toolCalls/11",
+        "spark-class-model://model/AiHostRunResultEvent/attributes/error/12"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiHostRunResultEvent%2Fattributes%2Fstatus%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiHostRunResultStatus"
+      ]
+    }
+  }
+}

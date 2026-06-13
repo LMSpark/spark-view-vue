@@ -1,0 +1,556 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererButton.props.d.ts",
+  "symbols": [
+    "RButtonProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RButtonProps": {
+      "ref": "spark-class-model://schema/RButtonProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RButtonProps",
+        "properties": {
+          "action": {
+            "$ref": "spark-class-model://schema/BuiltinActionName"
+          },
+          "dataViewKey": {
+            "type": "string"
+          },
+          "idField": {
+            "type": "string"
+          },
+          "appendPayload": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "inheritFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "inheritFieldMap": {
+            "type": "object",
+            "title": "Record<string, string>"
+          },
+          "setCurrentRowOnSuccess": {
+            "type": "boolean"
+          },
+          "patch": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "field": {
+            "type": "string"
+          },
+          "value": true,
+          "then": {
+            "$ref": "spark-class-model://schema/ActionDescriptor"
+          },
+          "successMessage": {
+            "type": "string"
+          },
+          "failureMessage": {
+            "type": "string"
+          },
+          "emptyMessage": {
+            "type": "string"
+          },
+          "errorMessage": {
+            "type": "string"
+          },
+          "validateMessage": {
+            "type": "string"
+          },
+          "confirmMessage": {
+            "type": "string"
+          },
+          "confirmTitle": {
+            "type": "string"
+          },
+          "confirmType": {
+            "type": "string"
+          },
+          "silent": {
+            "type": "boolean"
+          },
+          "disabledWhenRow": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "template": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "buttonType": {
+            "type": "string"
+          },
+          "buttonSize": {
+            "type": "string"
+          },
+          "plain": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": "boolean"
+          },
+          "bg": {
+            "type": "boolean"
+          },
+          "link": {
+            "type": "boolean"
+          },
+          "round": {
+            "type": "boolean"
+          },
+          "circle": {
+            "type": "boolean"
+          },
+          "loading": {
+            "type": "boolean"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "autoInsertSpace": {
+            "type": "boolean"
+          },
+          "color": {
+            "type": "string"
+          },
+          "dark": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RButtonProps"
+      }
+    },
+    "spark-class-model://schema/shared/7baf7916fcf33daf524c917254e1304f2df4202119eb70896ddbfd29de507732": {
+      "ref": "spark-class-model://schema/shared/7baf7916fcf33daf524c917254e1304f2df4202119eb70896ddbfd29de507732",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/BuiltinActionName",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7baf7916fcf33daf524c917254e1304f2df4202119eb70896ddbfd29de507732"
+      }
+    },
+    "spark-class-model://model/RButtonProps/attributes/action/0": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/action/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "action",
+      "schemaRef": "spark-class-model://schema/shared/7baf7916fcf33daf524c917254e1304f2df4202119eb70896ddbfd29de507732",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRButtonProps%2Fattributes%2Faction%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FBuiltinActionName": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRButtonProps%2Fattributes%2Faction%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FBuiltinActionName",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RButtonProps/attributes/action/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/BuiltinActionName",
+      "targetClassName": "BuiltinActionName",
+      "targetFile": "files/declarations/packages/spark-component/src/page/actions/executor-helpers.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/BuiltinActionName"
+    },
+    "spark-class-model://model/RButtonProps/attributes/dataViewKey/1": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/dataViewKey/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "dataViewKey",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/idField/2": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/idField/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "idField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/appendPayload/3": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/appendPayload/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "appendPayload",
+      "schemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/inheritFields/4": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/inheritFields/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "inheritFields",
+      "schemaRef": "spark-class-model://schema/shared/681004346c78d5f384b654c986b4eda8fea28010db3be7da70b19aa0080f3ff9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730": {
+      "ref": "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Record<string, string>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730"
+      }
+    },
+    "spark-class-model://model/RButtonProps/attributes/inheritFieldMap/5": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/inheritFieldMap/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "inheritFieldMap",
+      "schemaRef": "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/setCurrentRowOnSuccess/6": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/setCurrentRowOnSuccess/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "setCurrentRowOnSuccess",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/patch/7": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/patch/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "patch",
+      "schemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/field/8": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/field/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "field",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/value/9": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/value/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "value",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/0556af95a9d3b5dc1b681ccbdd232d0e2b989d96f121a796ea52082fdae064db": {
+      "ref": "spark-class-model://schema/shared/0556af95a9d3b5dc1b681ccbdd232d0e2b989d96f121a796ea52082fdae064db",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ActionDescriptor",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/0556af95a9d3b5dc1b681ccbdd232d0e2b989d96f121a796ea52082fdae064db"
+      }
+    },
+    "spark-class-model://model/RButtonProps/attributes/then/10": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/then/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "then",
+      "schemaRef": "spark-class-model://schema/shared/0556af95a9d3b5dc1b681ccbdd232d0e2b989d96f121a796ea52082fdae064db",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRButtonProps%2Fattributes%2Fthen%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FActionDescriptor": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRButtonProps%2Fattributes%2Fthen%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FActionDescriptor",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RButtonProps/attributes/then/10",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ActionDescriptor",
+      "targetClassName": "ActionDescriptor",
+      "targetFile": "files/declarations/packages/spark-component/src/page/actions/action-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ActionDescriptor"
+    },
+    "spark-class-model://model/RButtonProps/attributes/successMessage/11": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/successMessage/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "successMessage",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/failureMessage/12": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/failureMessage/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "failureMessage",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/emptyMessage/13": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/emptyMessage/13",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "emptyMessage",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/errorMessage/14": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/errorMessage/14",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "errorMessage",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/validateMessage/15": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/validateMessage/15",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "validateMessage",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/confirmMessage/16": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/confirmMessage/16",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "confirmMessage",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/confirmTitle/17": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/confirmTitle/17",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "confirmTitle",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/confirmType/18": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/confirmType/18",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "confirmType",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/silent/19": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/silent/19",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "silent",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/disabledWhenRow/20": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/disabledWhenRow/20",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "disabledWhenRow",
+      "schemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/template/21": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/template/21",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "template",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/label/22": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/label/22",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "label",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/buttonType/23": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/buttonType/23",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "buttonType",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/buttonSize/24": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/buttonSize/24",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "buttonSize",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/plain/25": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/plain/25",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "plain",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/text/26": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/text/26",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "text",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/bg/27": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/bg/27",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "bg",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/link/28": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/link/28",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "link",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/round/29": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/round/29",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "round",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/circle/30": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/circle/30",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "circle",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/loading/31": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/loading/31",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "loading",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/icon/32": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/icon/32",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "icon",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/autoInsertSpace/33": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/autoInsertSpace/33",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "autoInsertSpace",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/color/34": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/color/34",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "color",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps/attributes/dark/35": {
+      "ref": "spark-class-model://model/RButtonProps/attributes/dark/35",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RButtonProps",
+      "name": "dark",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RButtonProps": {
+      "ref": "spark-class-model://model/RButtonProps",
+      "kind": "model",
+      "className": "RButtonProps",
+      "schemaRef": "spark-class-model://schema/RButtonProps",
+      "attributeRefs": [
+        "spark-class-model://model/RButtonProps/attributes/action/0",
+        "spark-class-model://model/RButtonProps/attributes/dataViewKey/1",
+        "spark-class-model://model/RButtonProps/attributes/idField/2",
+        "spark-class-model://model/RButtonProps/attributes/appendPayload/3",
+        "spark-class-model://model/RButtonProps/attributes/inheritFields/4",
+        "spark-class-model://model/RButtonProps/attributes/inheritFieldMap/5",
+        "spark-class-model://model/RButtonProps/attributes/setCurrentRowOnSuccess/6",
+        "spark-class-model://model/RButtonProps/attributes/patch/7",
+        "spark-class-model://model/RButtonProps/attributes/field/8",
+        "spark-class-model://model/RButtonProps/attributes/value/9",
+        "spark-class-model://model/RButtonProps/attributes/then/10",
+        "spark-class-model://model/RButtonProps/attributes/successMessage/11",
+        "spark-class-model://model/RButtonProps/attributes/failureMessage/12",
+        "spark-class-model://model/RButtonProps/attributes/emptyMessage/13",
+        "spark-class-model://model/RButtonProps/attributes/errorMessage/14",
+        "spark-class-model://model/RButtonProps/attributes/validateMessage/15",
+        "spark-class-model://model/RButtonProps/attributes/confirmMessage/16",
+        "spark-class-model://model/RButtonProps/attributes/confirmTitle/17",
+        "spark-class-model://model/RButtonProps/attributes/confirmType/18",
+        "spark-class-model://model/RButtonProps/attributes/silent/19",
+        "spark-class-model://model/RButtonProps/attributes/disabledWhenRow/20",
+        "spark-class-model://model/RButtonProps/attributes/template/21",
+        "spark-class-model://model/RButtonProps/attributes/label/22",
+        "spark-class-model://model/RButtonProps/attributes/buttonType/23",
+        "spark-class-model://model/RButtonProps/attributes/buttonSize/24",
+        "spark-class-model://model/RButtonProps/attributes/plain/25",
+        "spark-class-model://model/RButtonProps/attributes/text/26",
+        "spark-class-model://model/RButtonProps/attributes/bg/27",
+        "spark-class-model://model/RButtonProps/attributes/link/28",
+        "spark-class-model://model/RButtonProps/attributes/round/29",
+        "spark-class-model://model/RButtonProps/attributes/circle/30",
+        "spark-class-model://model/RButtonProps/attributes/loading/31",
+        "spark-class-model://model/RButtonProps/attributes/icon/32",
+        "spark-class-model://model/RButtonProps/attributes/autoInsertSpace/33",
+        "spark-class-model://model/RButtonProps/attributes/color/34",
+        "spark-class-model://model/RButtonProps/attributes/dark/35"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRButtonProps%2Fattributes%2Faction%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FBuiltinActionName",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRButtonProps%2Fattributes%2Fthen%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FActionDescriptor"
+      ]
+    }
+  }
+}

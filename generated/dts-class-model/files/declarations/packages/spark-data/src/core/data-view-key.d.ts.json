@@ -497,7 +497,8 @@
           "name": "source",
           "jsdoc": "来源对象。",
           "schema": {
-            "$ref": "../types.d.ts.json#/$defs/DataSource"
+            "type": "object",
+            "title": "DataSource"
           },
           "readable": true,
           "writable": true
@@ -748,7 +749,8 @@
           "schema": {
             "anyOf": [
               {
-                "$ref": "../data-view.d.ts.json#/$defs/DataView"
+                "type": "object",
+                "title": "DataView"
               },
               {
                 "type": "null"
@@ -764,7 +766,8 @@
           "schema": {
             "anyOf": [
               {
-                "$ref": "../types.d.ts.json#/$defs/DataRow"
+                "type": "object",
+                "title": "DataRow"
               },
               {
                 "type": "null"
@@ -778,7 +781,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.739Z",
+  "generatedAt": "2026-06-13T04:00:57.803Z",
   "$defs": {
     "DataMember": {
       "type": "object",
@@ -949,7 +952,8 @@
           "$ref": "#/$defs/DataViewMemberValue"
         },
         "source": {
-          "$ref": "../types.d.ts.json#/$defs/DataSource"
+          "type": "object",
+          "title": "DataSource"
         },
         "descriptor": {
           "$ref": "#/$defs/DataViewMemberDescriptor"
@@ -1032,7 +1036,8 @@
         "dataSource": {
           "anyOf": [
             {
-              "$ref": "../data-view.d.ts.json#/$defs/DataView"
+              "type": "object",
+              "title": "DataView"
             },
             {
               "type": "null"
@@ -1042,7 +1047,8 @@
         "dataRow": {
           "anyOf": [
             {
-              "$ref": "../types.d.ts.json#/$defs/DataRow"
+              "type": "object",
+              "title": "DataRow"
             },
             {
               "type": "null"

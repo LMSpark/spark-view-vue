@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts",
+  "symbols": [
+    "AiRunTraceSink",
+    "AiRunErrorFormatter",
+    "AiRunBeforeFunctionCall",
+    "AiRunAbortHandler",
+    "AiRunAdapterRunStatus",
+    "AiRunHost",
+    "AiRunAdapterOptions",
+    "AiRunAdapterCommand",
+    "AiRunAdapterState"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiRunTraceSink": {
+      "ref": "spark-class-model://schema/AiRunTraceSink",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiRunTraceSink",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiRunTraceSink"
+      }
+    },
+    "spark-class-model://model/AiRunTraceSink": {
+      "ref": "spark-class-model://model/AiRunTraceSink",
+      "kind": "model",
+      "className": "AiRunTraceSink",
+      "schemaRef": "spark-class-model://schema/AiRunTraceSink",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiRunErrorFormatter": {
+      "ref": "spark-class-model://schema/AiRunErrorFormatter",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiRunErrorFormatter",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiRunErrorFormatter"
+      }
+    },
+    "spark-class-model://model/AiRunErrorFormatter": {
+      "ref": "spark-class-model://model/AiRunErrorFormatter",
+      "kind": "model",
+      "className": "AiRunErrorFormatter",
+      "schemaRef": "spark-class-model://schema/AiRunErrorFormatter",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiRunBeforeFunctionCall": {
+      "ref": "spark-class-model://schema/AiRunBeforeFunctionCall",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiRunBeforeFunctionCall",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiRunBeforeFunctionCall"
+      }
+    },
+    "spark-class-model://model/AiRunBeforeFunctionCall": {
+      "ref": "spark-class-model://model/AiRunBeforeFunctionCall",
+      "kind": "model",
+      "className": "AiRunBeforeFunctionCall",
+      "schemaRef": "spark-class-model://schema/AiRunBeforeFunctionCall",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiRunAbortHandler": {
+      "ref": "spark-class-model://schema/AiRunAbortHandler",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiRunAbortHandler",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiRunAbortHandler"
+      }
+    },
+    "spark-class-model://model/AiRunAbortHandler": {
+      "ref": "spark-class-model://model/AiRunAbortHandler",
+      "kind": "model",
+      "className": "AiRunAbortHandler",
+      "schemaRef": "spark-class-model://schema/AiRunAbortHandler",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiRunAdapterRunStatus": {
+      "ref": "spark-class-model://schema/AiRunAdapterRunStatus",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiRunAdapterRunStatus",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiRunAdapterRunStatus"
+      }
+    },
+    "spark-class-model://model/AiRunAdapterRunStatus": {
+      "ref": "spark-class-model://model/AiRunAdapterRunStatus",
+      "kind": "model",
+      "className": "AiRunAdapterRunStatus",
+      "schemaRef": "spark-class-model://schema/AiRunAdapterRunStatus",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiRunHost": {
+      "ref": "spark-class-model://schema/AiRunHost",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiRunHost",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiRunHost"
+      }
+    },
+    "spark-class-model://model/AiRunHost": {
+      "ref": "spark-class-model://model/AiRunHost",
+      "kind": "model",
+      "className": "AiRunHost",
+      "schemaRef": "spark-class-model://schema/AiRunHost",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiRunAdapterOptions": {
+      "ref": "spark-class-model://schema/AiRunAdapterOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiRunAdapterOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiRunAdapterOptions"
+      }
+    },
+    "spark-class-model://model/AiRunAdapterOptions": {
+      "ref": "spark-class-model://model/AiRunAdapterOptions",
+      "kind": "model",
+      "className": "AiRunAdapterOptions",
+      "schemaRef": "spark-class-model://schema/AiRunAdapterOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiRunAdapterCommand": {
+      "ref": "spark-class-model://schema/AiRunAdapterCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiRunAdapterCommand",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiRunAdapterCommand"
+      }
+    },
+    "spark-class-model://model/AiRunAdapterCommand": {
+      "ref": "spark-class-model://model/AiRunAdapterCommand",
+      "kind": "model",
+      "className": "AiRunAdapterCommand",
+      "schemaRef": "spark-class-model://schema/AiRunAdapterCommand",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiRunAdapterState": {
+      "ref": "spark-class-model://schema/AiRunAdapterState",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiRunAdapterState",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiRunAdapterState"
+      }
+    },
+    "spark-class-model://model/AiRunAdapterState": {
+      "ref": "spark-class-model://model/AiRunAdapterState",
+      "kind": "model",
+      "className": "AiRunAdapterState",
+      "schemaRef": "spark-class-model://schema/AiRunAdapterState",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

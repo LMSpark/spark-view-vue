@@ -42,7 +42,8 @@
           "name": "decorator",
           "jsdoc": "decorator 字段。",
           "schema": {
-            "$ref": "action-types.d.ts.json#/$defs/ActionUiDecorator"
+            "type": "object",
+            "title": "ActionUiDecorator"
           },
           "readable": true,
           "writable": true
@@ -50,37 +51,7 @@
         {
           "name": "key",
           "jsdoc": "定位键。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
+          "schema": true,
           "readable": true,
           "writable": true
         },
@@ -239,7 +210,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.712Z",
+  "generatedAt": "2026-06-13T04:00:57.790Z",
   "$defs": {
     "PickActionTextInput": {
       "type": "object",
@@ -247,39 +218,10 @@
       "description": "Pick Action Text Input 的输入数据。",
       "properties": {
         "decorator": {
-          "$ref": "action-types.d.ts.json#/$defs/ActionUiDecorator"
+          "type": "object",
+          "title": "ActionUiDecorator"
         },
-        "key": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "string"
-            },
-            {
-              "type": "string"
-            },
-            {
-              "type": "string"
-            },
-            {
-              "type": "string"
-            },
-            {
-              "type": "string"
-            },
-            {
-              "type": "string"
-            },
-            {
-              "type": "string"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
+        "key": true,
         "fallback": {
           "type": "string"
         },

@@ -53,7 +53,8 @@
           "schema": {
             "anyOf": [
               {
-                "$ref": "../../../core/capability-keys.d.ts.json#/$defs/ModuleContext"
+                "type": "object",
+                "title": "ModuleContext"
               },
               {
                 "type": "null"
@@ -67,7 +68,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.617Z",
+  "generatedAt": "2026-06-13T04:00:57.700Z",
   "$defs": {
     "BaseScopeContext": {
       "type": "object",
@@ -82,7 +83,8 @@
         "moduleContext": {
           "anyOf": [
             {
-              "$ref": "../../../core/capability-keys.d.ts.json#/$defs/ModuleContext"
+              "type": "object",
+              "title": "ModuleContext"
             },
             {
               "type": "null"

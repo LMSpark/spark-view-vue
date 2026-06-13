@@ -44,7 +44,8 @@
           "name": "control",
           "jsdoc": "流程控制信号（cancelDefault 时置 cancel=true）",
           "schema": {
-            "$ref": "action-types.d.ts.json#/$defs/ActionExecutionControl"
+            "type": "object",
+            "title": "ActionExecutionControl"
           },
           "readable": true,
           "writable": false
@@ -53,7 +54,8 @@
           "name": "scope",
           "jsdoc": "执行作用域（行内动作注入的当前行 + formApi 等）",
           "schema": {
-            "$ref": "action-types.d.ts.json#/$defs/ActionExecutionScope"
+            "type": "object",
+            "title": "ActionExecutionScope"
           },
           "readable": true,
           "writable": false
@@ -62,7 +64,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.707Z",
+  "generatedAt": "2026-06-13T04:00:57.783Z",
   "$defs": {
     "ActionExecutionOptions": {
       "type": "object",
@@ -74,10 +76,12 @@
           "items": true
         },
         "control": {
-          "$ref": "action-types.d.ts.json#/$defs/ActionExecutionControl"
+          "type": "object",
+          "title": "ActionExecutionControl"
         },
         "scope": {
-          "$ref": "action-types.d.ts.json#/$defs/ActionExecutionScope"
+          "type": "object",
+          "title": "ActionExecutionScope"
         }
       }
     }

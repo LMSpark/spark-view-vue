@@ -147,7 +147,8 @@
           "name": "confirmType",
           "jsdoc": "确认弹窗类型（warning / danger 等）",
           "schema": {
-            "$ref": "../../runtime/app-services.d.ts.json#/$defs/PageMessageType"
+            "type": "object",
+            "title": "PageMessageType"
           },
           "readable": true,
           "writable": false
@@ -514,7 +515,8 @@
           "name": "messageType",
           "jsdoc": "消息类型，默认 `'info'`",
           "schema": {
-            "$ref": "../../runtime/app-services.d.ts.json#/$defs/PageMessageType"
+            "type": "object",
+            "title": "PageMessageType"
           },
           "readable": true,
           "writable": false
@@ -580,7 +582,8 @@
           "name": "confirmType",
           "jsdoc": "对话框类型",
           "schema": {
-            "$ref": "../../runtime/app-services.d.ts.json#/$defs/PageMessageType"
+            "type": "object",
+            "title": "PageMessageType"
           },
           "readable": true,
           "writable": false
@@ -1422,7 +1425,8 @@
           "name": "messageType",
           "jsdoc": "消息类型，默认 `'info'`",
           "schema": {
-            "$ref": "../../runtime/app-services.d.ts.json#/$defs/PageMessageType"
+            "type": "object",
+            "title": "PageMessageType"
           },
           "readable": true,
           "writable": false
@@ -1776,9 +1780,7 @@
         {
           "name": "cancel",
           "jsdoc": "cancel 字段。",
-          "schema": {
-            "type": "boolean"
-          },
+          "schema": true,
           "readable": true,
           "writable": true
         }
@@ -1801,7 +1803,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.710Z",
+  "generatedAt": "2026-06-13T04:00:57.788Z",
   "$defs": {
     "ActionUiDecorator": {
       "type": "object",
@@ -1830,7 +1832,8 @@
           "type": "string"
         },
         "confirmType": {
-          "$ref": "../../runtime/app-services.d.ts.json#/$defs/PageMessageType"
+          "type": "object",
+          "title": "PageMessageType"
         },
         "disabledWhenRow": {
           "type": "object",
@@ -1906,7 +1909,8 @@
           "type": "string"
         },
         "messageType": {
-          "$ref": "../../runtime/app-services.d.ts.json#/$defs/PageMessageType"
+          "type": "object",
+          "title": "PageMessageType"
         }
       }
     },
@@ -1928,7 +1932,8 @@
           "type": "string"
         },
         "confirmType": {
-          "$ref": "../../runtime/app-services.d.ts.json#/$defs/PageMessageType"
+          "type": "object",
+          "title": "PageMessageType"
         },
         "onConfirm": {
           "$ref": "#/$defs/ActionDescriptor"
@@ -2238,7 +2243,8 @@
           }
         },
         "messageType": {
-          "$ref": "../../runtime/app-services.d.ts.json#/$defs/PageMessageType"
+          "type": "object",
+          "title": "PageMessageType"
         }
       }
     },
@@ -2360,9 +2366,7 @@
       "title": "ActionExecutionControl",
       "description": "执行流程控制信号（= CancellableControl）。\n执行器在 `cancelDefault: true` 时将 `control.cancel` 置 true，\n通知容器跳过其内置处理（例如内联编辑的行确认）。",
       "properties": {
-        "cancel": {
-          "type": "boolean"
-        }
+        "cancel": true
       }
     },
     "RouterLike": {

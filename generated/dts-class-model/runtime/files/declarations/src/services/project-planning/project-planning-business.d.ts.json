@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/services/project-planning/project-planning-business.d.ts",
+  "symbols": [
+    "ProjectPlanningRunInput",
+    "ProjectPlanningAgentInput",
+    "NavigationPlanningAgentInput",
+    "NavigationPlanningRunInput",
+    "ResolveProjectPlanningRunInputOptions",
+    "FilterNavigationPlanningNodesOptions",
+    "ResolveScopedProjectPlanningRunInputOptions",
+    "EnsureProjectPlanningBusinessOptions",
+    "ProjectPlanningGateValidationResult"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ProjectPlanningRunInput": {
+      "ref": "spark-class-model://schema/ProjectPlanningRunInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningRunInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningRunInput"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningRunInput": {
+      "ref": "spark-class-model://model/ProjectPlanningRunInput",
+      "kind": "model",
+      "className": "ProjectPlanningRunInput",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningRunInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectPlanningAgentInput": {
+      "ref": "spark-class-model://schema/ProjectPlanningAgentInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningAgentInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningAgentInput"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningAgentInput": {
+      "ref": "spark-class-model://model/ProjectPlanningAgentInput",
+      "kind": "model",
+      "className": "ProjectPlanningAgentInput",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningAgentInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NavigationPlanningAgentInput": {
+      "ref": "spark-class-model://schema/NavigationPlanningAgentInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavigationPlanningAgentInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavigationPlanningAgentInput"
+      }
+    },
+    "spark-class-model://model/NavigationPlanningAgentInput": {
+      "ref": "spark-class-model://model/NavigationPlanningAgentInput",
+      "kind": "model",
+      "className": "NavigationPlanningAgentInput",
+      "schemaRef": "spark-class-model://schema/NavigationPlanningAgentInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NavigationPlanningRunInput": {
+      "ref": "spark-class-model://schema/NavigationPlanningRunInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavigationPlanningRunInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavigationPlanningRunInput"
+      }
+    },
+    "spark-class-model://model/NavigationPlanningRunInput": {
+      "ref": "spark-class-model://model/NavigationPlanningRunInput",
+      "kind": "model",
+      "className": "NavigationPlanningRunInput",
+      "schemaRef": "spark-class-model://schema/NavigationPlanningRunInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ResolveProjectPlanningRunInputOptions": {
+      "ref": "spark-class-model://schema/ResolveProjectPlanningRunInputOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ResolveProjectPlanningRunInputOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ResolveProjectPlanningRunInputOptions"
+      }
+    },
+    "spark-class-model://model/ResolveProjectPlanningRunInputOptions": {
+      "ref": "spark-class-model://model/ResolveProjectPlanningRunInputOptions",
+      "kind": "model",
+      "className": "ResolveProjectPlanningRunInputOptions",
+      "schemaRef": "spark-class-model://schema/ResolveProjectPlanningRunInputOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/FilterNavigationPlanningNodesOptions": {
+      "ref": "spark-class-model://schema/FilterNavigationPlanningNodesOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "FilterNavigationPlanningNodesOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/FilterNavigationPlanningNodesOptions"
+      }
+    },
+    "spark-class-model://model/FilterNavigationPlanningNodesOptions": {
+      "ref": "spark-class-model://model/FilterNavigationPlanningNodesOptions",
+      "kind": "model",
+      "className": "FilterNavigationPlanningNodesOptions",
+      "schemaRef": "spark-class-model://schema/FilterNavigationPlanningNodesOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ResolveScopedProjectPlanningRunInputOptions": {
+      "ref": "spark-class-model://schema/ResolveScopedProjectPlanningRunInputOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ResolveScopedProjectPlanningRunInputOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ResolveScopedProjectPlanningRunInputOptions"
+      }
+    },
+    "spark-class-model://model/ResolveScopedProjectPlanningRunInputOptions": {
+      "ref": "spark-class-model://model/ResolveScopedProjectPlanningRunInputOptions",
+      "kind": "model",
+      "className": "ResolveScopedProjectPlanningRunInputOptions",
+      "schemaRef": "spark-class-model://schema/ResolveScopedProjectPlanningRunInputOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/EnsureProjectPlanningBusinessOptions": {
+      "ref": "spark-class-model://schema/EnsureProjectPlanningBusinessOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "EnsureProjectPlanningBusinessOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/EnsureProjectPlanningBusinessOptions"
+      }
+    },
+    "spark-class-model://model/EnsureProjectPlanningBusinessOptions": {
+      "ref": "spark-class-model://model/EnsureProjectPlanningBusinessOptions",
+      "kind": "model",
+      "className": "EnsureProjectPlanningBusinessOptions",
+      "schemaRef": "spark-class-model://schema/EnsureProjectPlanningBusinessOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectPlanningGateValidationResult": {
+      "ref": "spark-class-model://schema/ProjectPlanningGateValidationResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningGateValidationResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningGateValidationResult"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningGateValidationResult": {
+      "ref": "spark-class-model://model/ProjectPlanningGateValidationResult",
+      "kind": "model",
+      "className": "ProjectPlanningGateValidationResult",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningGateValidationResult",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

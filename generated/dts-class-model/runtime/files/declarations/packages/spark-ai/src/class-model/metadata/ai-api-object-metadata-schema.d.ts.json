@@ -1,0 +1,229 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+  "symbols": [
+    "AiApiActionFailureMode",
+    "AiApiActionExample",
+    "AiApiActionAntiExample",
+    "AiApiJsDocMetadata",
+    "AiApiSourceProvenanceMetadata",
+    "AiApiObjectMetadata",
+    "AiApiConstructorMetadata",
+    "AiApiAttributeMetadata",
+    "AiApiActionMetadata",
+    "AiApiResultApiRef",
+    "AiRuntimeApiMetadataJson"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiApiActionFailureMode": {
+      "ref": "spark-class-model://schema/AiApiActionFailureMode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiActionFailureMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiActionFailureMode"
+      }
+    },
+    "spark-class-model://model/AiApiActionFailureMode": {
+      "ref": "spark-class-model://model/AiApiActionFailureMode",
+      "kind": "model",
+      "className": "AiApiActionFailureMode",
+      "schemaRef": "spark-class-model://schema/AiApiActionFailureMode",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiActionExample": {
+      "ref": "spark-class-model://schema/AiApiActionExample",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiActionExample",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiActionExample"
+      }
+    },
+    "spark-class-model://model/AiApiActionExample": {
+      "ref": "spark-class-model://model/AiApiActionExample",
+      "kind": "model",
+      "className": "AiApiActionExample",
+      "schemaRef": "spark-class-model://schema/AiApiActionExample",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiActionAntiExample": {
+      "ref": "spark-class-model://schema/AiApiActionAntiExample",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiActionAntiExample",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiActionAntiExample"
+      }
+    },
+    "spark-class-model://model/AiApiActionAntiExample": {
+      "ref": "spark-class-model://model/AiApiActionAntiExample",
+      "kind": "model",
+      "className": "AiApiActionAntiExample",
+      "schemaRef": "spark-class-model://schema/AiApiActionAntiExample",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiJsDocMetadata": {
+      "ref": "spark-class-model://schema/AiApiJsDocMetadata",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiJsDocMetadata",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiJsDocMetadata"
+      }
+    },
+    "spark-class-model://model/AiApiJsDocMetadata": {
+      "ref": "spark-class-model://model/AiApiJsDocMetadata",
+      "kind": "model",
+      "className": "AiApiJsDocMetadata",
+      "schemaRef": "spark-class-model://schema/AiApiJsDocMetadata",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiSourceProvenanceMetadata": {
+      "ref": "spark-class-model://schema/AiApiSourceProvenanceMetadata",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiSourceProvenanceMetadata",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiSourceProvenanceMetadata"
+      }
+    },
+    "spark-class-model://model/AiApiSourceProvenanceMetadata": {
+      "ref": "spark-class-model://model/AiApiSourceProvenanceMetadata",
+      "kind": "model",
+      "className": "AiApiSourceProvenanceMetadata",
+      "schemaRef": "spark-class-model://schema/AiApiSourceProvenanceMetadata",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiObjectMetadata": {
+      "ref": "spark-class-model://schema/AiApiObjectMetadata",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiObjectMetadata",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiObjectMetadata"
+      }
+    },
+    "spark-class-model://model/AiApiObjectMetadata": {
+      "ref": "spark-class-model://model/AiApiObjectMetadata",
+      "kind": "model",
+      "className": "AiApiObjectMetadata",
+      "schemaRef": "spark-class-model://schema/AiApiObjectMetadata",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiConstructorMetadata": {
+      "ref": "spark-class-model://schema/AiApiConstructorMetadata",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiConstructorMetadata",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiConstructorMetadata"
+      }
+    },
+    "spark-class-model://model/AiApiConstructorMetadata": {
+      "ref": "spark-class-model://model/AiApiConstructorMetadata",
+      "kind": "model",
+      "className": "AiApiConstructorMetadata",
+      "schemaRef": "spark-class-model://schema/AiApiConstructorMetadata",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiAttributeMetadata": {
+      "ref": "spark-class-model://schema/AiApiAttributeMetadata",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiAttributeMetadata",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiAttributeMetadata"
+      }
+    },
+    "spark-class-model://model/AiApiAttributeMetadata": {
+      "ref": "spark-class-model://model/AiApiAttributeMetadata",
+      "kind": "model",
+      "className": "AiApiAttributeMetadata",
+      "schemaRef": "spark-class-model://schema/AiApiAttributeMetadata",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiActionMetadata": {
+      "ref": "spark-class-model://schema/AiApiActionMetadata",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiActionMetadata",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiActionMetadata"
+      }
+    },
+    "spark-class-model://model/AiApiActionMetadata": {
+      "ref": "spark-class-model://model/AiApiActionMetadata",
+      "kind": "model",
+      "className": "AiApiActionMetadata",
+      "schemaRef": "spark-class-model://schema/AiApiActionMetadata",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiResultApiRef": {
+      "ref": "spark-class-model://schema/AiApiResultApiRef",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiResultApiRef",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiResultApiRef"
+      }
+    },
+    "spark-class-model://model/AiApiResultApiRef": {
+      "ref": "spark-class-model://model/AiApiResultApiRef",
+      "kind": "model",
+      "className": "AiApiResultApiRef",
+      "schemaRef": "spark-class-model://schema/AiApiResultApiRef",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiRuntimeApiMetadataJson": {
+      "ref": "spark-class-model://schema/AiRuntimeApiMetadataJson",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiRuntimeApiMetadataJson",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiRuntimeApiMetadataJson"
+      }
+    },
+    "spark-class-model://model/AiRuntimeApiMetadataJson": {
+      "ref": "spark-class-model://model/AiRuntimeApiMetadataJson",
+      "kind": "model",
+      "className": "AiRuntimeApiMetadataJson",
+      "schemaRef": "spark-class-model://schema/AiRuntimeApiMetadataJson",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

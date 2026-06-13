@@ -38,7 +38,8 @@
           "name": "config",
           "jsdoc": "配置对象。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/TreeConfig"
+            "type": "object",
+            "title": "TreeConfig"
           },
           "readable": true,
           "writable": true
@@ -47,7 +48,8 @@
           "name": "api",
           "jsdoc": "api 字段。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/TreeApi"
+            "type": "object",
+            "title": "TreeApi"
           },
           "readable": true,
           "writable": false
@@ -58,7 +60,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "types.d.ts.json#/$defs/FlatTreeNode"
+              "type": "object",
+              "title": "FlatTreeNode"
             }
           },
           "readable": true,
@@ -144,8 +147,7 @@
           "parameters": [],
           "type": {
             "type": "reference",
-            "name": "TreeConfig",
-            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -159,8 +161,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "FlatTreeNode",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             }
@@ -189,8 +190,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "FlatTreeNode",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -208,8 +208,7 @@
                     "type": "array",
                     "elementType": {
                       "type": "reference",
-                      "name": "FlatTreeNode",
-                      "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                      "name": "unknown"
                     }
                   },
                   {
@@ -284,8 +283,7 @@
             "type": "optional",
             "elementType": {
               "type": "reference",
-              "name": "FlatTreeNode",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -319,8 +317,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "FlatTreeNode",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -333,8 +330,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "FlatTreeNode",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -382,8 +378,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "FlatTreeNode",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             ]
@@ -417,8 +412,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "TreePath",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -514,8 +508,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "FlatTreeNode",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -551,8 +544,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "NestedTreeSearchResult",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             ]
@@ -583,8 +575,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "NestedTreeNode",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             ]
@@ -614,8 +605,7 @@
                           "name": "node",
                           "type": {
                             "type": "reference",
-                            "name": "FlatTreeNode",
-                            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                            "name": "unknown"
                           }
                         },
                         {
@@ -643,8 +633,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "FlatTreeNode",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -672,8 +661,7 @@
                           "name": "node",
                           "type": {
                             "type": "reference",
-                            "name": "FlatTreeNode",
-                            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                            "name": "unknown"
                           }
                         },
                         {
@@ -711,8 +699,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "NestedTreeSearchResult",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -740,8 +727,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "TreePath",
-            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -777,8 +763,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "NestedTreeNode",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -809,8 +794,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "NestedTreeNode",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "literal",
@@ -822,7 +806,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.800Z",
+  "generatedAt": "2026-06-13T04:00:57.845Z",
   "$defs": {
     "TreeManagerOptions": {
       "type": "object",
@@ -830,15 +814,18 @@
       "description": "Tree Manager Options 的调用配置。",
       "properties": {
         "config": {
-          "$ref": "types.d.ts.json#/$defs/TreeConfig"
+          "type": "object",
+          "title": "TreeConfig"
         },
         "api": {
-          "$ref": "types.d.ts.json#/$defs/TreeApi"
+          "type": "object",
+          "title": "TreeApi"
         },
         "initialNodes": {
           "type": "array",
           "items": {
-            "$ref": "types.d.ts.json#/$defs/FlatTreeNode"
+            "type": "object",
+            "title": "FlatTreeNode"
           }
         },
         "httpClient": {

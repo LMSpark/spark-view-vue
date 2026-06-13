@@ -153,8 +153,7 @@
             "name": "scope",
             "type": {
               "type": "reference",
-              "name": "AiAgentScope",
-              "sourcePath": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts"
+              "name": "unknown"
             }
           },
           {
@@ -188,7 +187,8 @@
           "name": "scope",
           "jsdoc": "当前任务的业务作用域，贯穿 session 和 tool loop。",
           "schema": {
-            "$ref": "scope-types.d.ts.json#/$defs/AiAgentScope"
+            "type": "object",
+            "title": "AiAgentScope"
           },
           "readable": true,
           "writable": false
@@ -206,7 +206,8 @@
           "name": "target",
           "jsdoc": "目标对象。",
           "schema": {
-            "$ref": "scope-types.d.ts.json#/$defs/AiAgentTarget"
+            "type": "object",
+            "title": "AiAgentTarget"
           },
           "readable": true,
           "writable": false
@@ -232,14 +233,13 @@
           ],
           "type": {
             "type": "reference",
-            "name": "AiAgentChatRequest",
-            "sourcePath": "declarations/packages/spark-ai/src/agent/chat/chat-types.d.ts"
+            "name": "unknown"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.406Z",
+  "generatedAt": "2026-06-13T04:00:57.546Z",
   "$defs": {
     "AiAgentOrchestrationPlan": {
       "type": "object",
@@ -271,13 +271,15 @@
         },
         "normalizedInput": true,
         "scope": {
-          "$ref": "scope-types.d.ts.json#/$defs/AiAgentScope"
+          "type": "object",
+          "title": "AiAgentScope"
         },
         "orchestration": {
           "$ref": "#/$defs/AiAgentOrchestrationPlan"
         },
         "target": {
-          "$ref": "scope-types.d.ts.json#/$defs/AiAgentTarget"
+          "type": "object",
+          "title": "AiAgentTarget"
         }
       }
     }

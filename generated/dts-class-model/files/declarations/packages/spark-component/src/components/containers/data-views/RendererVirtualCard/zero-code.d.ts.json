@@ -54,7 +54,7 @@
           "name": "resolvedView",
           "jsdoc": "当前解析出的 DataView。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<DataView | null>"
           },
           "readable": true,
@@ -64,7 +64,7 @@
           "name": "rows",
           "jsdoc": "当前可见或缓存中的卡片行数据。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<readonly DataRow[]>"
           },
           "readable": true,
@@ -74,7 +74,7 @@
           "name": "cachedPages",
           "jsdoc": "已缓存的页码集合。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<readonly number[]>"
           },
           "readable": true,
@@ -84,7 +84,7 @@
           "name": "pendingPages",
           "jsdoc": "正在加载的页码集合。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<readonly number[]>"
           },
           "readable": true,
@@ -94,7 +94,7 @@
           "name": "visiblePages",
           "jsdoc": "当前视口附近需要渲染的页码集合。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<readonly number[]>"
           },
           "readable": true,
@@ -104,7 +104,7 @@
           "name": "currentPage",
           "jsdoc": "当前滚动位置对应的页码。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<number>"
           },
           "readable": true,
@@ -114,7 +114,7 @@
           "name": "totalPages",
           "jsdoc": "当前数据集总页数。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<number>"
           },
           "readable": true,
@@ -124,7 +124,7 @@
           "name": "progressText",
           "jsdoc": "滚动进度文本。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<string>"
           },
           "readable": true,
@@ -134,7 +134,7 @@
           "name": "loadPolicyText",
           "jsdoc": "当前虚拟分页加载策略说明。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<string>"
           },
           "readable": true,
@@ -144,7 +144,7 @@
           "name": "wheelStatusText",
           "jsdoc": "最近一次滚轮跳页状态说明。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<string>"
           },
           "readable": true,
@@ -174,7 +174,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.568Z",
+  "generatedAt": "2026-06-13T04:00:57.654Z",
   "$defs": {
     "RendererVirtualCardZeroCodeOptions": {
       "type": "object",
@@ -186,43 +186,43 @@
           "title": "Readonly<Record<string, unknown>>"
         },
         "resolvedView": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<DataView | null>"
         },
         "rows": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<readonly DataRow[]>"
         },
         "cachedPages": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<readonly number[]>"
         },
         "pendingPages": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<readonly number[]>"
         },
         "visiblePages": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<readonly number[]>"
         },
         "currentPage": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<number>"
         },
         "totalPages": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<number>"
         },
         "progressText": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<string>"
         },
         "loadPolicyText": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<string>"
         },
         "wheelStatusText": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<string>"
         },
         "scrollToPage": {

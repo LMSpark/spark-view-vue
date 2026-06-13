@@ -55,7 +55,8 @@
           "name": "action",
           "jsdoc": "CRUD 或页面动作名，由宿主内置 action runner 接管执行。\n新建申请、提交新单据等“创建一条新记录”的按钮优先使用 append-row，并用 dataViewKey 指向目标列表/待处理视图。\nappend-row/prompt-append 会读取按钮当前作用域行、appendPayload、inheritFields 和 inheritFieldMap。",
           "schema": {
-            "$ref": "../../../page/actions/executor-helpers.d.ts.json#/$defs/BuiltinActionName"
+            "type": "object",
+            "title": "BuiltinActionName"
           },
           "readable": true,
           "writable": false
@@ -149,7 +150,8 @@
           "name": "then",
           "jsdoc": "当前内置动作成功后的链式动作。\n例如 append-row 成功后再 patch-current 清空草稿表单。",
           "schema": {
-            "$ref": "../../../page/actions/action-types.d.ts.json#/$defs/ActionDescriptor"
+            "type": "object",
+            "title": "ActionDescriptor"
           },
           "readable": true,
           "writable": false
@@ -384,7 +386,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.580Z",
+  "generatedAt": "2026-06-13T04:00:57.669Z",
   "$defs": {
     "RButtonProps": {
       "type": "object",
@@ -392,7 +394,8 @@
       "description": "RButton Props 的属性契约。",
       "properties": {
         "action": {
-          "$ref": "../../../page/actions/executor-helpers.d.ts.json#/$defs/BuiltinActionName"
+          "type": "object",
+          "title": "BuiltinActionName"
         },
         "dataViewKey": {
           "type": "string"
@@ -426,7 +429,8 @@
         },
         "value": true,
         "then": {
-          "$ref": "../../../page/actions/action-types.d.ts.json#/$defs/ActionDescriptor"
+          "type": "object",
+          "title": "ActionDescriptor"
         },
         "successMessage": {
           "type": "string"

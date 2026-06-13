@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/metadata/metadata-graph.d.ts",
+  "symbols": [
+    "AiApiMetadataGraphEdge",
+    "AiApiMetadataGraphNode",
+    "AiApiNestedApiRecord"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiApiMetadataGraphEdge": {
+      "ref": "spark-class-model://schema/AiApiMetadataGraphEdge",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiMetadataGraphEdge",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiMetadataGraphEdge"
+      }
+    },
+    "spark-class-model://model/AiApiMetadataGraphEdge": {
+      "ref": "spark-class-model://model/AiApiMetadataGraphEdge",
+      "kind": "model",
+      "className": "AiApiMetadataGraphEdge",
+      "schemaRef": "spark-class-model://schema/AiApiMetadataGraphEdge",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiMetadataGraphNode": {
+      "ref": "spark-class-model://schema/AiApiMetadataGraphNode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiMetadataGraphNode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiMetadataGraphNode"
+      }
+    },
+    "spark-class-model://model/AiApiMetadataGraphNode": {
+      "ref": "spark-class-model://model/AiApiMetadataGraphNode",
+      "kind": "model",
+      "className": "AiApiMetadataGraphNode",
+      "schemaRef": "spark-class-model://schema/AiApiMetadataGraphNode",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiNestedApiRecord": {
+      "ref": "spark-class-model://schema/AiApiNestedApiRecord",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiNestedApiRecord",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiNestedApiRecord"
+      }
+    },
+    "spark-class-model://model/AiApiNestedApiRecord": {
+      "ref": "spark-class-model://model/AiApiNestedApiRecord",
+      "kind": "model",
+      "className": "AiApiNestedApiRecord",
+      "schemaRef": "spark-class-model://schema/AiApiNestedApiRecord",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

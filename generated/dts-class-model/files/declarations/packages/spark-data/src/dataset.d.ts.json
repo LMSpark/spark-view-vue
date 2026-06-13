@@ -66,7 +66,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "types.d.ts.json#/$defs/TableRelation"
+              "type": "object",
+              "title": "TableRelation"
             }
           },
           "readable": true,
@@ -78,7 +79,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "types.d.ts.json#/$defs/ViewDependency"
+              "type": "object",
+              "title": "ViewDependency"
             }
           },
           "readable": true,
@@ -106,7 +108,8 @@
           "name": "saveChanges",
           "jsdoc": "save Changes 字段。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/DataSetSaveChangesConfig"
+            "type": "object",
+            "title": "DataSetSaveChangesConfig"
           },
           "readable": true,
           "writable": false
@@ -114,10 +117,7 @@
         {
           "name": "layout",
           "jsdoc": "layout 字段。",
-          "schema": {
-            "type": "object",
-            "title": "DataSetLayoutMetadata"
-          },
+          "schema": true,
           "readable": true,
           "writable": false
         }
@@ -188,7 +188,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "types.d.ts.json#/$defs/TableRelation"
+              "type": "object",
+              "title": "TableRelation"
             }
           },
           "readable": true,
@@ -200,7 +201,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "types.d.ts.json#/$defs/ViewDependency"
+              "type": "object",
+              "title": "ViewDependency"
             }
           },
           "readable": true,
@@ -212,7 +214,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "types.d.ts.json#/$defs/DataRelation"
+              "type": "object",
+              "title": "DataRelation"
             }
           },
           "readable": true,
@@ -249,7 +252,8 @@
           "name": "saveChangesConfig",
           "jsdoc": "DataSet.saveChanges 的默认提交策略。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/DataSetSaveChangesConfig"
+            "type": "object",
+            "title": "DataSetSaveChangesConfig"
           },
           "readable": true,
           "writable": true
@@ -257,10 +261,7 @@
         {
           "name": "layout",
           "jsdoc": "设计器布局信息（不参与运行时数据逻辑）。",
-          "schema": {
-            "type": "object",
-            "title": "DataSetLayoutMetadata"
-          },
+          "schema": true,
           "readable": true,
           "writable": true
         },
@@ -278,7 +279,8 @@
           "name": "_appServices",
           "jsdoc": "@internal 页面运行时服务上下文（用于 URL 模板 tenant/project 占位参数解析）",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/DataSetAppServices"
+            "type": "object",
+            "title": "DataSetAppServices"
           },
           "readable": true,
           "writable": true
@@ -353,8 +355,7 @@
               "name": "appServices",
               "type": {
                 "type": "reference",
-                "name": "DataSetAppServices",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -472,8 +473,7 @@
               "name": "handlers",
               "type": {
                 "type": "reference",
-                "name": "ViewChangeHandlers",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -501,8 +501,7 @@
               "name": "view",
               "type": {
                 "type": "reference",
-                "name": "DataView",
-                "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -545,8 +544,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "DataRelation",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -574,8 +572,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "DataRelation",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -588,8 +585,7 @@
               "name": "rel",
               "type": {
                 "type": "reference",
-                "name": "DataRelation",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -598,8 +594,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "FilterExpression",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "intrinsic",
@@ -629,8 +624,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "TableRelation",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -651,8 +645,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "TableRelation",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -668,8 +661,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "DataSetMetadata",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "reference",
@@ -707,8 +699,7 @@
               "name": "options",
               "type": {
                 "type": "reference",
-                "name": "DataSetHistoryListOptions",
-                "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -719,8 +710,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "DataSetHistorySnapshot",
-              "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -733,16 +723,14 @@
               "name": "selector",
               "type": {
                 "type": "reference",
-                "name": "DataSetSnapshotSelector",
-                "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+                "name": "unknown"
               }
             },
             {
               "name": "options",
               "type": {
                 "type": "reference",
-                "name": "DataSetHistoryListOptions",
-                "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -754,8 +742,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "DataSetHistorySnapshot",
-                "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "literal",
@@ -773,8 +760,7 @@
               "name": "options",
               "type": {
                 "type": "reference",
-                "name": "DataSetCommitSnapshotOptions",
-                "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -783,8 +769,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "DataSetHistorySnapshot",
-            "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -796,16 +781,14 @@
               "name": "selector",
               "type": {
                 "type": "reference",
-                "name": "DataSetSnapshotSelector",
-                "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+                "name": "unknown"
               }
             },
             {
               "name": "options",
               "type": {
                 "type": "reference",
-                "name": "DataSetHistoryListOptions",
-                "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -817,8 +800,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "DataSetHistorySnapshot",
-                "sourcePath": "declarations/packages/spark-data/src/dataset-history.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "literal",
@@ -845,16 +827,14 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "DataColumn",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             }
           ],
           "type": {
             "type": "reference",
-            "name": "DataTable",
-            "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -913,8 +893,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "TableRelation",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -922,8 +901,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "TableRelation",
-            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -953,8 +931,7 @@
               "name": "dependency",
               "type": {
                 "type": "reference",
-                "name": "ViewDependency",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -990,8 +967,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "ViewDependency",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -999,8 +975,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "ViewDependency",
-            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -1055,8 +1030,7 @@
             "type": "optional",
             "elementType": {
               "type": "reference",
-              "name": "DataTable",
-              "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -1087,8 +1061,7 @@
             "type": "optional",
             "elementType": {
               "type": "reference",
-              "name": "DataView",
-              "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -1101,8 +1074,7 @@
               "name": "options",
               "type": {
                 "type": "reference",
-                "name": "DataSetSaveChangesOptions",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -1115,13 +1087,11 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "DataSetSaveChangesResult",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -1135,8 +1105,7 @@
           "parameters": [],
           "type": {
             "type": "reference",
-            "name": "DataSetMetadata",
-            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -1151,8 +1120,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "DataSetMetadata",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "reference",
@@ -1185,7 +1153,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.785Z",
+  "generatedAt": "2026-06-13T04:00:57.830Z",
   "$defs": {
     "DataSetConfig": {
       "type": "object",
@@ -1205,13 +1173,15 @@
         "tableRelations": {
           "type": "array",
           "items": {
-            "$ref": "types.d.ts.json#/$defs/TableRelation"
+            "type": "object",
+            "title": "TableRelation"
           }
         },
         "viewDependencies": {
           "type": "array",
           "items": {
-            "$ref": "types.d.ts.json#/$defs/ViewDependency"
+            "type": "object",
+            "title": "ViewDependency"
           }
         },
         "version": {
@@ -1221,12 +1191,10 @@
           "type": "string"
         },
         "saveChanges": {
-          "$ref": "types.d.ts.json#/$defs/DataSetSaveChangesConfig"
-        },
-        "layout": {
           "type": "object",
-          "title": "DataSetLayoutMetadata"
-        }
+          "title": "DataSetSaveChangesConfig"
+        },
+        "layout": true
       }
     },
     "DataSet": {
@@ -1244,19 +1212,22 @@
         "tableRelations": {
           "type": "array",
           "items": {
-            "$ref": "types.d.ts.json#/$defs/TableRelation"
+            "type": "object",
+            "title": "TableRelation"
           }
         },
         "viewDependencies": {
           "type": "array",
           "items": {
-            "$ref": "types.d.ts.json#/$defs/ViewDependency"
+            "type": "object",
+            "title": "ViewDependency"
           }
         },
         "_resolvedRelations": {
           "type": "array",
           "items": {
-            "$ref": "types.d.ts.json#/$defs/DataRelation"
+            "type": "object",
+            "title": "DataRelation"
           }
         },
         "schemaVersion": {
@@ -1269,18 +1240,17 @@
           "type": "string"
         },
         "saveChangesConfig": {
-          "$ref": "types.d.ts.json#/$defs/DataSetSaveChangesConfig"
-        },
-        "layout": {
           "type": "object",
-          "title": "DataSetLayoutMetadata"
+          "title": "DataSetSaveChangesConfig"
         },
+        "layout": true,
         "_sharedHttpClient": {
           "type": "object",
           "title": "HttpClientBase"
         },
         "_appServices": {
-          "$ref": "types.d.ts.json#/$defs/DataSetAppServices"
+          "type": "object",
+          "title": "DataSetAppServices"
         },
         "_pageRoute": true,
         "_activeViewSubs": {

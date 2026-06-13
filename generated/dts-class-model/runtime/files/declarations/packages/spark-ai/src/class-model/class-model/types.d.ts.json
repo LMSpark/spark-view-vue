@@ -1,0 +1,329 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts",
+  "symbols": [
+    "ClassModelDocument",
+    "SourceProvenanceMeta",
+    "ComponentClassModelLevel",
+    "ComponentClassModelLayer",
+    "ClassModelDeclarationRelationKind",
+    "ClassModelDeclarationRelation",
+    "ClassModel",
+    "JsDocMeta",
+    "ConstructorMeta",
+    "AttributeMeta",
+    "MethodParameterStyle",
+    "DtsTypeMeta",
+    "DtsReflectionSignature",
+    "DtsReflectionTypeMeta",
+    "MethodParameterMeta",
+    "MethodMeta"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ClassModelDocument": {
+      "ref": "spark-class-model://schema/ClassModelDocument",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelDocument",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelDocument"
+      }
+    },
+    "spark-class-model://model/ClassModelDocument": {
+      "ref": "spark-class-model://model/ClassModelDocument",
+      "kind": "model",
+      "className": "ClassModelDocument",
+      "schemaRef": "spark-class-model://schema/ClassModelDocument",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SourceProvenanceMeta": {
+      "ref": "spark-class-model://schema/SourceProvenanceMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SourceProvenanceMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SourceProvenanceMeta"
+      }
+    },
+    "spark-class-model://model/SourceProvenanceMeta": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta",
+      "kind": "model",
+      "className": "SourceProvenanceMeta",
+      "schemaRef": "spark-class-model://schema/SourceProvenanceMeta",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ComponentClassModelLevel": {
+      "ref": "spark-class-model://schema/ComponentClassModelLevel",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComponentClassModelLevel",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ComponentClassModelLevel"
+      }
+    },
+    "spark-class-model://model/ComponentClassModelLevel": {
+      "ref": "spark-class-model://model/ComponentClassModelLevel",
+      "kind": "model",
+      "className": "ComponentClassModelLevel",
+      "schemaRef": "spark-class-model://schema/ComponentClassModelLevel",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ComponentClassModelLayer": {
+      "ref": "spark-class-model://schema/ComponentClassModelLayer",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComponentClassModelLayer",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ComponentClassModelLayer"
+      }
+    },
+    "spark-class-model://model/ComponentClassModelLayer": {
+      "ref": "spark-class-model://model/ComponentClassModelLayer",
+      "kind": "model",
+      "className": "ComponentClassModelLayer",
+      "schemaRef": "spark-class-model://schema/ComponentClassModelLayer",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelDeclarationRelationKind": {
+      "ref": "spark-class-model://schema/ClassModelDeclarationRelationKind",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelDeclarationRelationKind",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelDeclarationRelationKind"
+      }
+    },
+    "spark-class-model://model/ClassModelDeclarationRelationKind": {
+      "ref": "spark-class-model://model/ClassModelDeclarationRelationKind",
+      "kind": "model",
+      "className": "ClassModelDeclarationRelationKind",
+      "schemaRef": "spark-class-model://schema/ClassModelDeclarationRelationKind",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelDeclarationRelation": {
+      "ref": "spark-class-model://schema/ClassModelDeclarationRelation",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelDeclarationRelation",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelDeclarationRelation"
+      }
+    },
+    "spark-class-model://model/ClassModelDeclarationRelation": {
+      "ref": "spark-class-model://model/ClassModelDeclarationRelation",
+      "kind": "model",
+      "className": "ClassModelDeclarationRelation",
+      "schemaRef": "spark-class-model://schema/ClassModelDeclarationRelation",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModel": {
+      "ref": "spark-class-model://schema/ClassModel",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModel",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModel"
+      }
+    },
+    "spark-class-model://model/ClassModel": {
+      "ref": "spark-class-model://model/ClassModel",
+      "kind": "model",
+      "className": "ClassModel",
+      "schemaRef": "spark-class-model://schema/ClassModel",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/JsDocMeta": {
+      "ref": "spark-class-model://schema/JsDocMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "JsDocMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/JsDocMeta"
+      }
+    },
+    "spark-class-model://model/JsDocMeta": {
+      "ref": "spark-class-model://model/JsDocMeta",
+      "kind": "model",
+      "className": "JsDocMeta",
+      "schemaRef": "spark-class-model://schema/JsDocMeta",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ConstructorMeta": {
+      "ref": "spark-class-model://schema/ConstructorMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ConstructorMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ConstructorMeta"
+      }
+    },
+    "spark-class-model://model/ConstructorMeta": {
+      "ref": "spark-class-model://model/ConstructorMeta",
+      "kind": "model",
+      "className": "ConstructorMeta",
+      "schemaRef": "spark-class-model://schema/ConstructorMeta",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AttributeMeta": {
+      "ref": "spark-class-model://schema/AttributeMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AttributeMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AttributeMeta"
+      }
+    },
+    "spark-class-model://model/AttributeMeta": {
+      "ref": "spark-class-model://model/AttributeMeta",
+      "kind": "model",
+      "className": "AttributeMeta",
+      "schemaRef": "spark-class-model://schema/AttributeMeta",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/MethodParameterStyle": {
+      "ref": "spark-class-model://schema/MethodParameterStyle",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MethodParameterStyle",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/MethodParameterStyle"
+      }
+    },
+    "spark-class-model://model/MethodParameterStyle": {
+      "ref": "spark-class-model://model/MethodParameterStyle",
+      "kind": "model",
+      "className": "MethodParameterStyle",
+      "schemaRef": "spark-class-model://schema/MethodParameterStyle",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsTypeMeta": {
+      "ref": "spark-class-model://schema/DtsTypeMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsTypeMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsTypeMeta"
+      }
+    },
+    "spark-class-model://model/DtsTypeMeta": {
+      "ref": "spark-class-model://model/DtsTypeMeta",
+      "kind": "model",
+      "className": "DtsTypeMeta",
+      "schemaRef": "spark-class-model://schema/DtsTypeMeta",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsReflectionSignature": {
+      "ref": "spark-class-model://schema/DtsReflectionSignature",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsReflectionSignature",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsReflectionSignature"
+      }
+    },
+    "spark-class-model://model/DtsReflectionSignature": {
+      "ref": "spark-class-model://model/DtsReflectionSignature",
+      "kind": "model",
+      "className": "DtsReflectionSignature",
+      "schemaRef": "spark-class-model://schema/DtsReflectionSignature",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsReflectionTypeMeta": {
+      "ref": "spark-class-model://schema/DtsReflectionTypeMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsReflectionTypeMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsReflectionTypeMeta"
+      }
+    },
+    "spark-class-model://model/DtsReflectionTypeMeta": {
+      "ref": "spark-class-model://model/DtsReflectionTypeMeta",
+      "kind": "model",
+      "className": "DtsReflectionTypeMeta",
+      "schemaRef": "spark-class-model://schema/DtsReflectionTypeMeta",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/MethodParameterMeta": {
+      "ref": "spark-class-model://schema/MethodParameterMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MethodParameterMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/MethodParameterMeta"
+      }
+    },
+    "spark-class-model://model/MethodParameterMeta": {
+      "ref": "spark-class-model://model/MethodParameterMeta",
+      "kind": "model",
+      "className": "MethodParameterMeta",
+      "schemaRef": "spark-class-model://schema/MethodParameterMeta",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/MethodMeta": {
+      "ref": "spark-class-model://schema/MethodMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MethodMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/MethodMeta"
+      }
+    },
+    "spark-class-model://model/MethodMeta": {
+      "ref": "spark-class-model://model/MethodMeta",
+      "kind": "model",
+      "className": "MethodMeta",
+      "schemaRef": "spark-class-model://schema/MethodMeta",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

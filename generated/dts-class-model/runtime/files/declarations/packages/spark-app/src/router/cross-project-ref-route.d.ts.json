@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-app/src/router/cross-project-ref-route.d.ts",
+  "symbols": [],
+  "@refs": {}
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererSection/types.d.ts",
+  "symbols": [
+    "RendererSectionApi"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RendererSectionApi": {
+      "ref": "spark-class-model://schema/RendererSectionApi",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RendererSectionApi",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RendererSectionApi"
+      }
+    },
+    "spark-class-model://model/RendererSectionApi": {
+      "ref": "spark-class-model://model/RendererSectionApi",
+      "kind": "model",
+      "className": "RendererSectionApi",
+      "schemaRef": "spark-class-model://schema/RendererSectionApi",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

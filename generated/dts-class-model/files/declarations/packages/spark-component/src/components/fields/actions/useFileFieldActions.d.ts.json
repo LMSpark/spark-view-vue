@@ -36,7 +36,8 @@
           "schema": {
             "anyOf": [
               {
-                "$ref": "../../../runtime/app-services.d.ts.json#/$defs/PageServiceCapability"
+                "type": "object",
+                "title": "PageServiceCapability"
               },
               {
                 "type": "null"
@@ -60,7 +61,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.646Z",
+  "generatedAt": "2026-06-13T04:00:57.729Z",
   "$defs": {
     "UseFileFieldActionsOptions": {
       "type": "object",
@@ -70,7 +71,8 @@
         "pageService": {
           "anyOf": [
             {
-              "$ref": "../../../runtime/app-services.d.ts.json#/$defs/PageServiceCapability"
+              "type": "object",
+              "title": "PageServiceCapability"
             },
             {
               "type": "null"

@@ -169,8 +169,7 @@
             "name": "result",
             "type": {
               "type": "reference",
-              "name": "AiAgentToolResult",
-              "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+              "name": "unknown",
               "typeArguments": [
                 {
                   "type": "intrinsic",
@@ -195,7 +194,7 @@
           "name": "result",
           "jsdoc": "action 返回的失败工具结果。",
           "schema": {
-            "$ref": "../tool-runtime/tool-runtime-types.d.ts.json#/$defs/AiAgentToolResult",
+            "type": "object",
             "title": "AiAgentToolResult<unknown>"
           },
           "readable": true,
@@ -205,7 +204,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.422Z",
+  "generatedAt": "2026-06-13T04:00:57.562Z",
   "$defs": {
     "ScriptCallback": {
       "type": "object",
@@ -241,7 +240,7 @@
           "type": "string"
         },
         "result": {
-          "$ref": "../tool-runtime/tool-runtime-types.d.ts.json#/$defs/AiAgentToolResult",
+          "type": "object",
           "title": "AiAgentToolResult<unknown>"
         }
       }

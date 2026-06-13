@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.d.ts",
+  "symbols": [
+    "JsonSchemaObject",
+    "ResolveRuntimeApiMetadataJsonOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/JsonSchemaObject": {
+      "ref": "spark-class-model://schema/JsonSchemaObject",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "JsonSchemaObject",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/JsonSchemaObject"
+      }
+    },
+    "spark-class-model://model/JsonSchemaObject": {
+      "ref": "spark-class-model://model/JsonSchemaObject",
+      "kind": "model",
+      "className": "JsonSchemaObject",
+      "schemaRef": "spark-class-model://schema/JsonSchemaObject",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ResolveRuntimeApiMetadataJsonOptions": {
+      "ref": "spark-class-model://schema/ResolveRuntimeApiMetadataJsonOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ResolveRuntimeApiMetadataJsonOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ResolveRuntimeApiMetadataJsonOptions"
+      }
+    },
+    "spark-class-model://model/ResolveRuntimeApiMetadataJsonOptions": {
+      "ref": "spark-class-model://model/ResolveRuntimeApiMetadataJsonOptions",
+      "kind": "model",
+      "className": "ResolveRuntimeApiMetadataJsonOptions",
+      "schemaRef": "spark-class-model://schema/ResolveRuntimeApiMetadataJsonOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

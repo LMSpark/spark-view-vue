@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/ai/types.d.ts",
+  "symbols": [
+    "ToolCallDisplayItem",
+    "ReasoningDisplayItem",
+    "StreamDisplayEntry",
+    "SessionDiagnosticIssue",
+    "SessionDiagnosticsData",
+    "ToolApprovalDisplayItem"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ToolCallDisplayItem": {
+      "ref": "spark-class-model://schema/ToolCallDisplayItem",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ToolCallDisplayItem",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ToolCallDisplayItem"
+      }
+    },
+    "spark-class-model://model/ToolCallDisplayItem": {
+      "ref": "spark-class-model://model/ToolCallDisplayItem",
+      "kind": "model",
+      "className": "ToolCallDisplayItem",
+      "schemaRef": "spark-class-model://schema/ToolCallDisplayItem",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ReasoningDisplayItem": {
+      "ref": "spark-class-model://schema/ReasoningDisplayItem",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ReasoningDisplayItem",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ReasoningDisplayItem"
+      }
+    },
+    "spark-class-model://model/ReasoningDisplayItem": {
+      "ref": "spark-class-model://model/ReasoningDisplayItem",
+      "kind": "model",
+      "className": "ReasoningDisplayItem",
+      "schemaRef": "spark-class-model://schema/ReasoningDisplayItem",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/StreamDisplayEntry": {
+      "ref": "spark-class-model://schema/StreamDisplayEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "StreamDisplayEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/StreamDisplayEntry"
+      }
+    },
+    "spark-class-model://model/StreamDisplayEntry": {
+      "ref": "spark-class-model://model/StreamDisplayEntry",
+      "kind": "model",
+      "className": "StreamDisplayEntry",
+      "schemaRef": "spark-class-model://schema/StreamDisplayEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SessionDiagnosticIssue": {
+      "ref": "spark-class-model://schema/SessionDiagnosticIssue",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SessionDiagnosticIssue",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SessionDiagnosticIssue"
+      }
+    },
+    "spark-class-model://model/SessionDiagnosticIssue": {
+      "ref": "spark-class-model://model/SessionDiagnosticIssue",
+      "kind": "model",
+      "className": "SessionDiagnosticIssue",
+      "schemaRef": "spark-class-model://schema/SessionDiagnosticIssue",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SessionDiagnosticsData": {
+      "ref": "spark-class-model://schema/SessionDiagnosticsData",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SessionDiagnosticsData",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SessionDiagnosticsData"
+      }
+    },
+    "spark-class-model://model/SessionDiagnosticsData": {
+      "ref": "spark-class-model://model/SessionDiagnosticsData",
+      "kind": "model",
+      "className": "SessionDiagnosticsData",
+      "schemaRef": "spark-class-model://schema/SessionDiagnosticsData",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ToolApprovalDisplayItem": {
+      "ref": "spark-class-model://schema/ToolApprovalDisplayItem",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ToolApprovalDisplayItem",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ToolApprovalDisplayItem"
+      }
+    },
+    "spark-class-model://model/ToolApprovalDisplayItem": {
+      "ref": "spark-class-model://model/ToolApprovalDisplayItem",
+      "kind": "model",
+      "className": "ToolApprovalDisplayItem",
+      "schemaRef": "spark-class-model://schema/ToolApprovalDisplayItem",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

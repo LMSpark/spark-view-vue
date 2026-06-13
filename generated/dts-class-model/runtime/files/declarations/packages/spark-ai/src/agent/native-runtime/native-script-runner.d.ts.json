@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/native-runtime/native-script-runner.d.ts",
+  "symbols": [
+    "AiNativeRuntimeSchemaDefs",
+    "AiNativeScriptContextCommand",
+    "AiNativeScriptRunCommand"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiNativeRuntimeSchemaDefs": {
+      "ref": "spark-class-model://schema/AiNativeRuntimeSchemaDefs",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiNativeRuntimeSchemaDefs",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiNativeRuntimeSchemaDefs"
+      }
+    },
+    "spark-class-model://model/AiNativeRuntimeSchemaDefs": {
+      "ref": "spark-class-model://model/AiNativeRuntimeSchemaDefs",
+      "kind": "model",
+      "className": "AiNativeRuntimeSchemaDefs",
+      "schemaRef": "spark-class-model://schema/AiNativeRuntimeSchemaDefs",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiNativeScriptContextCommand": {
+      "ref": "spark-class-model://schema/AiNativeScriptContextCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiNativeScriptContextCommand",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiNativeScriptContextCommand"
+      }
+    },
+    "spark-class-model://model/AiNativeScriptContextCommand": {
+      "ref": "spark-class-model://model/AiNativeScriptContextCommand",
+      "kind": "model",
+      "className": "AiNativeScriptContextCommand",
+      "schemaRef": "spark-class-model://schema/AiNativeScriptContextCommand",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiNativeScriptRunCommand": {
+      "ref": "spark-class-model://schema/AiNativeScriptRunCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiNativeScriptRunCommand",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiNativeScriptRunCommand"
+      }
+    },
+    "spark-class-model://model/AiNativeScriptRunCommand": {
+      "ref": "spark-class-model://model/AiNativeScriptRunCommand",
+      "kind": "model",
+      "className": "AiNativeScriptRunCommand",
+      "schemaRef": "spark-class-model://schema/AiNativeScriptRunCommand",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

@@ -125,7 +125,8 @@
           "name": "result",
           "jsdoc": "操作结果（仅 after 阶段）",
           "schema": {
-            "$ref": "../types.d.ts.json#/$defs/CrudResult"
+            "type": "object",
+            "title": "CrudResult"
           },
           "readable": true,
           "writable": false
@@ -165,7 +166,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.799Z",
+  "generatedAt": "2026-06-13T04:00:57.843Z",
   "$defs": {
     "CrudOperation": {
       "type": "object",
@@ -198,7 +199,8 @@
         },
         "data": true,
         "result": {
-          "$ref": "../types.d.ts.json#/$defs/CrudResult"
+          "type": "object",
+          "title": "CrudResult"
         },
         "cancelled": {
           "type": "boolean"

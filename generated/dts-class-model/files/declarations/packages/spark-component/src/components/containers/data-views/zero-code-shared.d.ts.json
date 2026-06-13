@@ -50,7 +50,7 @@
           "name": "resolvedView",
           "jsdoc": "resolved View 字段。",
           "schema": {
-            "$ref": "../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<DataView | null>"
           },
           "readable": true,
@@ -59,10 +59,7 @@
         {
           "name": "eventDefaults",
           "jsdoc": "CRUD 事件默认处理器；直接沿用 createCrudDispatcher 的第二个参数契约。",
-          "schema": {
-            "type": "object",
-            "title": "Readonly<Record<string, EventDefaultDeclaration>>"
-          },
+          "schema": true,
           "readable": true,
           "writable": false
         }
@@ -70,7 +67,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.577Z",
+  "generatedAt": "2026-06-13T04:00:57.663Z",
   "$defs": {
     "CreateContainerCrudContextOptions": {
       "type": "object",
@@ -82,13 +79,10 @@
           "title": "Readonly<Record<string, unknown>>"
         },
         "resolvedView": {
-          "$ref": "../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<DataView | null>"
         },
-        "eventDefaults": {
-          "type": "object",
-          "title": "Readonly<Record<string, EventDefaultDeclaration>>"
-        }
+        "eventDefaults": true
       }
     }
   }

@@ -1,0 +1,469 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+  "symbols": [
+    "DtsFileProjectionDocument",
+    "DtsFileModuleJsDocSource",
+    "DtsFileModuleSemanticMeta",
+    "DtsClassModelBundleFileEntry",
+    "DtsClassModelBundleClassEntry",
+    "DtsClassModelBundleManifest",
+    "DtsClassModelRuntimeFileEntry",
+    "DtsClassModelRuntimeClassEntry",
+    "DtsClassModelRuntimeRefEntry",
+    "DtsClassModelRuntimeManifest",
+    "DtsClassModelRuntimeLinkRelation",
+    "DtsClassModelRuntimeLink",
+    "DtsClassModelRuntimeAttribute",
+    "DtsClassModelRuntimeMethod",
+    "DtsClassModelRuntimeModel",
+    "DtsClassModelRuntimeSchemaRef",
+    "DtsClassModelRuntimeRef",
+    "DtsClassModelRuntimeShard",
+    "DtsClassModelDuplicateRecord",
+    "DtsClassModelSemanticGapKind",
+    "DtsClassModelSemanticGap",
+    "DtsClassModelSemanticGapReport",
+    "ProjectDtsFileProjectionOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/DtsFileProjectionDocument": {
+      "ref": "spark-class-model://schema/DtsFileProjectionDocument",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsFileProjectionDocument",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsFileProjectionDocument"
+      }
+    },
+    "spark-class-model://model/DtsFileProjectionDocument": {
+      "ref": "spark-class-model://model/DtsFileProjectionDocument",
+      "kind": "model",
+      "className": "DtsFileProjectionDocument",
+      "schemaRef": "spark-class-model://schema/DtsFileProjectionDocument",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsFileModuleJsDocSource": {
+      "ref": "spark-class-model://schema/DtsFileModuleJsDocSource",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsFileModuleJsDocSource",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsFileModuleJsDocSource"
+      }
+    },
+    "spark-class-model://model/DtsFileModuleJsDocSource": {
+      "ref": "spark-class-model://model/DtsFileModuleJsDocSource",
+      "kind": "model",
+      "className": "DtsFileModuleJsDocSource",
+      "schemaRef": "spark-class-model://schema/DtsFileModuleJsDocSource",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsFileModuleSemanticMeta": {
+      "ref": "spark-class-model://schema/DtsFileModuleSemanticMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsFileModuleSemanticMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsFileModuleSemanticMeta"
+      }
+    },
+    "spark-class-model://model/DtsFileModuleSemanticMeta": {
+      "ref": "spark-class-model://model/DtsFileModuleSemanticMeta",
+      "kind": "model",
+      "className": "DtsFileModuleSemanticMeta",
+      "schemaRef": "spark-class-model://schema/DtsFileModuleSemanticMeta",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelBundleFileEntry": {
+      "ref": "spark-class-model://schema/DtsClassModelBundleFileEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelBundleFileEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelBundleFileEntry"
+      }
+    },
+    "spark-class-model://model/DtsClassModelBundleFileEntry": {
+      "ref": "spark-class-model://model/DtsClassModelBundleFileEntry",
+      "kind": "model",
+      "className": "DtsClassModelBundleFileEntry",
+      "schemaRef": "spark-class-model://schema/DtsClassModelBundleFileEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelBundleClassEntry": {
+      "ref": "spark-class-model://schema/DtsClassModelBundleClassEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelBundleClassEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelBundleClassEntry"
+      }
+    },
+    "spark-class-model://model/DtsClassModelBundleClassEntry": {
+      "ref": "spark-class-model://model/DtsClassModelBundleClassEntry",
+      "kind": "model",
+      "className": "DtsClassModelBundleClassEntry",
+      "schemaRef": "spark-class-model://schema/DtsClassModelBundleClassEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelBundleManifest": {
+      "ref": "spark-class-model://schema/DtsClassModelBundleManifest",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelBundleManifest",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelBundleManifest"
+      }
+    },
+    "spark-class-model://model/DtsClassModelBundleManifest": {
+      "ref": "spark-class-model://model/DtsClassModelBundleManifest",
+      "kind": "model",
+      "className": "DtsClassModelBundleManifest",
+      "schemaRef": "spark-class-model://schema/DtsClassModelBundleManifest",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeFileEntry": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeFileEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeFileEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeFileEntry"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeFileEntry": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeFileEntry",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeFileEntry",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeFileEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeClassEntry": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeClassEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeClassEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeClassEntry"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeClassEntry": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeClassEntry",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeClassEntry",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeClassEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeRefEntry": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeRefEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeRefEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeRefEntry"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeRefEntry": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeRefEntry",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeRefEntry",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeRefEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeManifest": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeManifest",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeManifest",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeManifest"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeManifest": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeManifest",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeManifest",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeManifest",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeLinkRelation": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeLinkRelation",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeLinkRelation",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeLinkRelation"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLinkRelation": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLinkRelation",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeLinkRelation",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeLinkRelation",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeLink": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeLink",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeLink",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeLink"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLink": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLink",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeLink",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeLink",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeAttribute": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeAttribute",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeAttribute",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeAttribute"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeAttribute": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeAttribute",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeAttribute",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeAttribute",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeMethod": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeMethod",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeMethod",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeMethod"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeMethod": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeMethod",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeMethod",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeMethod",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeModel": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeModel",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeModel",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeModel"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeModel": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeModel",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeModel",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeModel",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeSchemaRef": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeSchemaRef",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeSchemaRef",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeSchemaRef"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeSchemaRef": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeSchemaRef",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeSchemaRef",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeSchemaRef",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeRef": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeRef",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeRef",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeRef"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeRef": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeRef",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeRef",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeRef",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelRuntimeShard": {
+      "ref": "spark-class-model://schema/DtsClassModelRuntimeShard",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelRuntimeShard",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelRuntimeShard"
+      }
+    },
+    "spark-class-model://model/DtsClassModelRuntimeShard": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeShard",
+      "kind": "model",
+      "className": "DtsClassModelRuntimeShard",
+      "schemaRef": "spark-class-model://schema/DtsClassModelRuntimeShard",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelDuplicateRecord": {
+      "ref": "spark-class-model://schema/DtsClassModelDuplicateRecord",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelDuplicateRecord",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelDuplicateRecord"
+      }
+    },
+    "spark-class-model://model/DtsClassModelDuplicateRecord": {
+      "ref": "spark-class-model://model/DtsClassModelDuplicateRecord",
+      "kind": "model",
+      "className": "DtsClassModelDuplicateRecord",
+      "schemaRef": "spark-class-model://schema/DtsClassModelDuplicateRecord",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelSemanticGapKind": {
+      "ref": "spark-class-model://schema/DtsClassModelSemanticGapKind",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelSemanticGapKind",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelSemanticGapKind"
+      }
+    },
+    "spark-class-model://model/DtsClassModelSemanticGapKind": {
+      "ref": "spark-class-model://model/DtsClassModelSemanticGapKind",
+      "kind": "model",
+      "className": "DtsClassModelSemanticGapKind",
+      "schemaRef": "spark-class-model://schema/DtsClassModelSemanticGapKind",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelSemanticGap": {
+      "ref": "spark-class-model://schema/DtsClassModelSemanticGap",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelSemanticGap",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelSemanticGap"
+      }
+    },
+    "spark-class-model://model/DtsClassModelSemanticGap": {
+      "ref": "spark-class-model://model/DtsClassModelSemanticGap",
+      "kind": "model",
+      "className": "DtsClassModelSemanticGap",
+      "schemaRef": "spark-class-model://schema/DtsClassModelSemanticGap",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsClassModelSemanticGapReport": {
+      "ref": "spark-class-model://schema/DtsClassModelSemanticGapReport",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelSemanticGapReport",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelSemanticGapReport"
+      }
+    },
+    "spark-class-model://model/DtsClassModelSemanticGapReport": {
+      "ref": "spark-class-model://model/DtsClassModelSemanticGapReport",
+      "kind": "model",
+      "className": "DtsClassModelSemanticGapReport",
+      "schemaRef": "spark-class-model://schema/DtsClassModelSemanticGapReport",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectDtsFileProjectionOptions": {
+      "ref": "spark-class-model://schema/ProjectDtsFileProjectionOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectDtsFileProjectionOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectDtsFileProjectionOptions"
+      }
+    },
+    "spark-class-model://model/ProjectDtsFileProjectionOptions": {
+      "ref": "spark-class-model://model/ProjectDtsFileProjectionOptions",
+      "kind": "model",
+      "className": "ProjectDtsFileProjectionOptions",
+      "schemaRef": "spark-class-model://schema/ProjectDtsFileProjectionOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

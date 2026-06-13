@@ -1,12 +1,34 @@
 {
-  "generatedAt": "2026-06-12T04:27:42.375Z",
-  "gapCount": 43,
+  "generatedAt": "2026-06-13T04:00:59.863Z",
+  "gapCount": 45,
   "notes": [
     ".d.ts 是类型关系真源；declarationRelations 保留 extends / alias / intersection / union 等直接声明边。",
     "module 是单个 DTS shard 的入口语义；必须来自源文件头 JSDoc，路径/组件目录/symbol 推导只作为定位日志，不算语义闭环。",
     "attributes 和 methods 是 TypeScript TypeChecker 派生缓存；当 JSDoc 缺失时，语义链断在本报告列出的 declaration/source 位置。"
   ],
   "gaps": [
+    {
+      "kind": "module",
+      "className": "@spark-appworks/spark-ai:class-model/class-model/build-index",
+      "moduleName": "@spark-appworks/spark-ai:class-model/class-model/build-index",
+      "reason": "weak-module-jsdoc",
+      "chainBreak": "@spark-appworks/spark-ai:class-model/class-model/build-index 的模块级语义链过弱：当前说明只复述包名、路径、组件目录或 symbol 列表，没有表达职责、边界和使用场景。",
+      "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-index.ts 文件顶部补高质量模块级 JSDoc：说明职责、边界和 AI 选择该模块的用途，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-index.d.ts",
+      "declarationLine": 1,
+      "sourceFile": "packages/spark-ai/src/class-model/class-model/build-index.ts"
+    },
+    {
+      "kind": "module",
+      "className": "@spark-appworks/spark-ai:class-model/class-model/dts-bundle-url",
+      "moduleName": "@spark-appworks/spark-ai:class-model/class-model/dts-bundle-url",
+      "reason": "weak-module-jsdoc",
+      "chainBreak": "@spark-appworks/spark-ai:class-model/class-model/dts-bundle-url 的模块级语义链过弱：当前说明只复述包名、路径、组件目录或 symbol 列表，没有表达职责、边界和使用场景。",
+      "fixHint": "在 packages/spark-ai/src/class-model/class-model/dts-bundle-url.ts 文件顶部补高质量模块级 JSDoc：说明职责、边界和 AI 选择该模块的用途，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-url.d.ts",
+      "declarationLine": 1,
+      "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-bundle-url.ts"
+    },
     {
       "kind": "module",
       "className": "@spark-appworks/spark-project-model:navigation/navigation-kinds",

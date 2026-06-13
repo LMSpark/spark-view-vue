@@ -67,7 +67,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "project-node.d.ts.json#/$defs/ProjectNodeData"
+              "type": "object",
+              "title": "ProjectNodeData"
             }
           },
           "readable": true,
@@ -203,7 +204,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.832Z",
+  "generatedAt": "2026-06-13T04:00:57.879Z",
   "$defs": {
     "NormalizeNavRootInput": {
       "type": "object",
@@ -222,7 +223,8 @@
         "children": {
           "type": "array",
           "items": {
-            "$ref": "project-node.d.ts.json#/$defs/ProjectNodeData"
+            "type": "object",
+            "title": "ProjectNodeData"
           }
         },
         "icon": {

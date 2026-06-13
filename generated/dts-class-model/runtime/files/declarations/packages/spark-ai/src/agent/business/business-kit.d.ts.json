@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-kit.d.ts",
+  "symbols": [
+    "AiBusinessIdOptions",
+    "AiBusinessInputOptions",
+    "CreateSimpleInputContractOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiBusinessIdOptions": {
+      "ref": "spark-class-model://schema/AiBusinessIdOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiBusinessIdOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiBusinessIdOptions"
+      }
+    },
+    "spark-class-model://model/AiBusinessIdOptions": {
+      "ref": "spark-class-model://model/AiBusinessIdOptions",
+      "kind": "model",
+      "className": "AiBusinessIdOptions",
+      "schemaRef": "spark-class-model://schema/AiBusinessIdOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiBusinessInputOptions": {
+      "ref": "spark-class-model://schema/AiBusinessInputOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiBusinessInputOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiBusinessInputOptions"
+      }
+    },
+    "spark-class-model://model/AiBusinessInputOptions": {
+      "ref": "spark-class-model://model/AiBusinessInputOptions",
+      "kind": "model",
+      "className": "AiBusinessInputOptions",
+      "schemaRef": "spark-class-model://schema/AiBusinessInputOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/CreateSimpleInputContractOptions": {
+      "ref": "spark-class-model://schema/CreateSimpleInputContractOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "CreateSimpleInputContractOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/CreateSimpleInputContractOptions"
+      }
+    },
+    "spark-class-model://model/CreateSimpleInputContractOptions": {
+      "ref": "spark-class-model://model/CreateSimpleInputContractOptions",
+      "kind": "model",
+      "className": "CreateSimpleInputContractOptions",
+      "schemaRef": "spark-class-model://schema/CreateSimpleInputContractOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

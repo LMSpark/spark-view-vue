@@ -268,7 +268,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.567Z",
+  "generatedAt": "2026-06-13T04:00:57.653Z",
   "$defs": {
     "VirtualCardViewportExpose": {
       "type": "object",

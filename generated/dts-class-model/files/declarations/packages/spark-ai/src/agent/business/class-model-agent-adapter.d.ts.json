@@ -89,11 +89,11 @@
       "className": "ClassModelAgentAdapterRegisterOptions",
       "jsdoc": "Class Model Agent Adapter Register Options 的调用配置。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    moduleId?: string;\n    instance?: T;\n    constructArgs?: readonly unknown[];\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    dtsClassModelManifestUrl?: string;\n    rootClassName?: string;\n    knowledge?: ClassModelKnowledgeProvider;\n    inputContract?: AiAgentInputContract;\n    sessionStore?: AiAgentSessionStore;\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    executionToolNames?: ReadonlySet<string>;\n    planWithoutToolMarkers?: readonly string[];\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
+      "declarationTypeText": "Readonly<{\n    moduleId?: string;\n    instance?: T;\n    constructArgs?: readonly unknown[];\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    dtsClassModelManifestUrl?: string;\n    dtsClassModelFetchJson?: (url: string) => Promise<unknown>;\n    rootClassName?: string;\n    knowledge?: ClassModelKnowledgeProvider;\n    inputContract?: AiAgentInputContract;\n    sessionStore?: AiAgentSessionStore;\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    executionToolNames?: ReadonlySet<string>;\n    planWithoutToolMarkers?: readonly string[];\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    moduleId?: string;\n    instance?: T;\n    constructArgs?: readonly unknown[];\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    dtsClassModelManifestUrl?: string;\n    rootClassName?: string;\n    knowledge?: ClassModelKnowledgeProvider;\n    inputContract?: AiAgentInputContract;\n    sessionStore?: AiAgentSessionStore;\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    executionToolNames?: ReadonlySet<string>;\n    planWithoutToolMarkers?: readonly string[];\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
+          "typeText": "Readonly<{\n    moduleId?: string;\n    instance?: T;\n    constructArgs?: readonly unknown[];\n    resolveInstance?: (context: AiAgentRuntimeContext) => T;\n    /** metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */\n    jsonSchemaDefs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    dtsClassModelManifestUrl?: string;\n    dtsClassModelFetchJson?: (url: string) => Promise<unknown>;\n    rootClassName?: string;\n    knowledge?: ClassModelKnowledgeProvider;\n    inputContract?: AiAgentInputContract;\n    sessionStore?: AiAgentSessionStore;\n    systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined;\n    beforeFunctionCall?: (instance: T, options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    afterFunctionCall?: (instance: T, options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    onStartSession?: (instance: T, context: AiAgentRuntimeContext) => void | Promise<void>;\n    onEndBusinessInstance?: (instance: T, context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void;\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    executionToolNames?: ReadonlySet<string>;\n    planWithoutToolMarkers?: readonly string[];\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
           "targetName": "Readonly"
         }
       ],
@@ -113,7 +113,7 @@
       "shapeKind": "class",
       "provenance": {
         "file": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-        "line": 57,
+        "line": 58,
         "className": "ClassModelAgentAdapter",
         "declarationKind": "class"
       },
@@ -142,8 +142,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "AiAgentHost",
-            "sourcePath": "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -169,14 +168,13 @@
           ],
           "type": {
             "type": "reference",
-            "name": "AiAgentRegistration",
-            "sourcePath": "declarations/packages/spark-ai/src/agent/business/registration-types.d.ts"
+            "name": "unknown"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.408Z",
+  "generatedAt": "2026-06-13T04:00:57.554Z",
   "$defs": {
     "ClassModelAgentAdapterConstructor": {
       "type": "object",

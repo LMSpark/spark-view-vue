@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-component/src/runtime/script-context-types.ts",
     "packageName": "@spark-appworks/spark-component",
     "modulePath": "runtime/script-context-types",
-    "jsdoc": "@module @spark-appworks/spark-component:runtime/script-context-types\n职责：提供 script context types 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\n\nSPARK 页面沙箱上下文类型\n=====================================================\n## 设计意图：跨前端框架的业务脚本层\n`script.js` 沙箱的核心目标是**让业务逻辑与具体前端框架解耦**：\n- 业务脚本只能看到此文件定义的**框架无关抽象接口**（`$page / $route / $dataSet`）\n- 底层实现（Vue Router / Element Plus）由**渲染层**注入，脚本不感知\n- 同一份 `script.js` 理论上可在任何实现了 `ScriptContext` 的渲染层上运行\n这是 `$page` 替代 `ElMessage`、`$route` 替代 Vue Router 的根本原因——**接口是契约，实现可替换**。\n## 约束\n- ✅ 与前端框架完全无关：无 Vue / Element Plus / Vue Router 依赖\n- ✅ 可独立测试：不依赖任何渲染层或 DOM 框架\n- ✅ 稳定边界：变更此文件需同步更新脚本文档\n⚠️ **禁止将此文件改名为 `script-api.ts`**（见 copilot-instructions 规划节）",
+    "jsdoc": "@module @spark-appworks/spark-component:runtime/script-context-types\n职责：提供 script context types 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\n\nSPARK 页面沙箱上下文类型\n=====================================================\n## 设计意图：跨前端框架的业务脚本层\n`script.js` 沙箱的核心目标是**让业务逻辑与具体前端框架解耦**：\n- 业务脚本只能看到此文件定义的**框架无关抽象接口**（`$page / $route / $dataSet`）\n- 底层实现（Vue Router / Element Plus）由**渲染层**注入，脚本不感知\n- 同一份 `script.js` 理论上可在任何实现了 `ScriptContext` 的渲染层上运行\n这是 `$page` 替代 `ElMessage`、`$route` 替代 Vue Router 的根本原因——**接口是契约，实现可替换**。\n## 约束\n- ✅ 与前端框架完全无关：无 Vue / Element Plus / Vue Router 依赖\n- ✅ 可独立测试：不依赖任何渲染层或 DOM 框架\n- ✅ 稳定边界：变更此文件需同步更新脚本文档\n⚠️ **禁止将此文件改名为 `script-api.ts`**，脚本沙箱契约依赖当前模块边界。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "PageRoute",
@@ -168,7 +168,8 @@
           "name": "$page",
           "jsdoc": "UI 交互服务（框架无关，替代 ElMessage / ElMessageBox）。\n✅ 推荐：所有消息提示、确认框、输入框、导航均通过此接口调用。\n类型直接来自 page-config 的 runtime service contract，渲染层注入对应实现。",
           "schema": {
-            "$ref": "app-services.d.ts.json#/$defs/PageServiceCapability"
+            "type": "object",
+            "title": "PageServiceCapability"
           },
           "readable": true,
           "writable": true
@@ -243,7 +244,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.733Z",
+  "generatedAt": "2026-06-13T04:00:57.800Z",
   "$defs": {
     "PageRoute": {
       "type": "object",
@@ -298,7 +299,8 @@
           "title": "(key?: string) => Promise<void>"
         },
         "$page": {
-          "$ref": "app-services.d.ts.json#/$defs/PageServiceCapability"
+          "type": "object",
+          "title": "PageServiceCapability"
         },
         "permission": {
           "$ref": "#/$defs/PermissionApiInScript"

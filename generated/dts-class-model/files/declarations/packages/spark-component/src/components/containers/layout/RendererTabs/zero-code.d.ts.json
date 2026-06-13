@@ -75,7 +75,7 @@
           "name": "currentActiveName",
           "jsdoc": "current Active Name 名称。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<string | number | undefined>"
           },
           "readable": true,
@@ -85,7 +85,7 @@
           "name": "paneConfigs",
           "jsdoc": "pane Configs 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<SparkNode[]>"
           },
           "readable": true,
@@ -115,7 +115,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.595Z",
+  "generatedAt": "2026-06-13T04:00:57.685Z",
   "$defs": {
     "TabsEmit": {
       "type": "object",
@@ -131,11 +131,11 @@
           "$ref": "#/$defs/TabsEmit"
         },
         "currentActiveName": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<string | number | undefined>"
         },
         "paneConfigs": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<SparkNode[]>"
         },
         "getPaneName": {

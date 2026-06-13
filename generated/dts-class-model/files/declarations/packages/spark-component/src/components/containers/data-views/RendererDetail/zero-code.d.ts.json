@@ -54,7 +54,7 @@
           "name": "resolvedView",
           "jsdoc": "resolved View 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<DataView | null>"
           },
           "readable": true,
@@ -84,7 +84,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.549Z",
+  "generatedAt": "2026-06-13T04:00:57.636Z",
   "$defs": {
     "RendererDetailZeroCodeOptions": {
       "type": "object",
@@ -96,7 +96,7 @@
           "title": "Readonly<Record<string, unknown>>"
         },
         "resolvedView": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<DataView | null>"
         },
         "detailData": {

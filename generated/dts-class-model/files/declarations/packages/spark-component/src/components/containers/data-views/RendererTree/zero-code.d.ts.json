@@ -392,9 +392,7 @@
         {
           "name": "cancel",
           "jsdoc": "事件处理器调用后阻止组件默认行为。",
-          "schema": {
-            "type": "boolean"
-          },
+          "schema": true,
           "readable": true,
           "writable": true
         }
@@ -511,7 +509,7 @@
           "name": "resolvedView",
           "jsdoc": "当前解析出的 DataView；为空时树 API 只处理原生实例能力。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<DataView | null>"
           },
           "readable": true,
@@ -521,7 +519,7 @@
           "name": "treeData",
           "jsdoc": "树渲染使用的行数据集合。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<DataRow[]>"
           },
           "readable": true,
@@ -531,7 +529,7 @@
           "name": "nativeTreeRef",
           "jsdoc": "Element Plus tree 原生组件 ref。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<unknown>"
           },
           "readable": true,
@@ -551,7 +549,7 @@
           "name": "nodeKeyField",
           "jsdoc": "作为树节点 key 的字段名。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<string>"
           },
           "readable": true,
@@ -561,7 +559,7 @@
           "name": "treeIdField",
           "jsdoc": "作为树节点 id 的字段名，用于诊断缺主键场景。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<string>"
           },
           "readable": true,
@@ -571,7 +569,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.563Z",
+  "generatedAt": "2026-06-13T04:00:57.648Z",
   "$defs": {
     "TreeNode": {
       "type": "object",
@@ -708,9 +706,7 @@
       "title": "TreeEventControl",
       "description": "树事件回调的默认行为控制器。",
       "properties": {
-        "cancel": {
-          "type": "boolean"
-        }
+        "cancel": true
       }
     },
     "TreeEventHandler": {
@@ -743,15 +739,15 @@
           "$ref": "#/$defs/RendererTreeBehaviorProps"
         },
         "resolvedView": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<DataView | null>"
         },
         "treeData": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<DataRow[]>"
         },
         "nativeTreeRef": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<unknown>"
         },
         "logger": {
@@ -759,11 +755,11 @@
           "title": "LoggerApi"
         },
         "nodeKeyField": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<string>"
         },
         "treeIdField": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<string>"
         }
       }

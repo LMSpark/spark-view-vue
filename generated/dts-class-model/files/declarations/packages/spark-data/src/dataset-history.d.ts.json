@@ -210,7 +210,8 @@
           "name": "snapshot",
           "jsdoc": "snapshot 字段。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/DataSetMetadata"
+            "type": "object",
+            "title": "DataSetMetadata"
           },
           "readable": true,
           "writable": true
@@ -390,7 +391,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.780Z",
+  "generatedAt": "2026-06-13T04:00:57.828Z",
   "$defs": {
     "DataSetHistoryStorageAdapter": {
       "type": "object",
@@ -456,7 +457,8 @@
           "type": "string"
         },
         "snapshot": {
-          "$ref": "types.d.ts.json#/$defs/DataSetMetadata"
+          "type": "object",
+          "title": "DataSetMetadata"
         },
         "sourceData": {
           "type": "object",

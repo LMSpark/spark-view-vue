@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts",
+  "symbols": [
+    "AiToolApprovalRequest",
+    "AiToolApprovalBridgeSnapshot",
+    "AiToolApprovalBridgeListener",
+    "AiToolApprovalRequestIdFactory",
+    "AiToolApprovalBridgeOptions",
+    "AiToolApprovalBridge"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiToolApprovalRequest": {
+      "ref": "spark-class-model://schema/AiToolApprovalRequest",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiToolApprovalRequest",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiToolApprovalRequest"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalRequest": {
+      "ref": "spark-class-model://model/AiToolApprovalRequest",
+      "kind": "model",
+      "className": "AiToolApprovalRequest",
+      "schemaRef": "spark-class-model://schema/AiToolApprovalRequest",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiToolApprovalBridgeSnapshot": {
+      "ref": "spark-class-model://schema/AiToolApprovalBridgeSnapshot",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiToolApprovalBridgeSnapshot",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiToolApprovalBridgeSnapshot"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalBridgeSnapshot": {
+      "ref": "spark-class-model://model/AiToolApprovalBridgeSnapshot",
+      "kind": "model",
+      "className": "AiToolApprovalBridgeSnapshot",
+      "schemaRef": "spark-class-model://schema/AiToolApprovalBridgeSnapshot",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiToolApprovalBridgeListener": {
+      "ref": "spark-class-model://schema/AiToolApprovalBridgeListener",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiToolApprovalBridgeListener",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiToolApprovalBridgeListener"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalBridgeListener": {
+      "ref": "spark-class-model://model/AiToolApprovalBridgeListener",
+      "kind": "model",
+      "className": "AiToolApprovalBridgeListener",
+      "schemaRef": "spark-class-model://schema/AiToolApprovalBridgeListener",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiToolApprovalRequestIdFactory": {
+      "ref": "spark-class-model://schema/AiToolApprovalRequestIdFactory",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiToolApprovalRequestIdFactory",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiToolApprovalRequestIdFactory"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalRequestIdFactory": {
+      "ref": "spark-class-model://model/AiToolApprovalRequestIdFactory",
+      "kind": "model",
+      "className": "AiToolApprovalRequestIdFactory",
+      "schemaRef": "spark-class-model://schema/AiToolApprovalRequestIdFactory",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiToolApprovalBridgeOptions": {
+      "ref": "spark-class-model://schema/AiToolApprovalBridgeOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiToolApprovalBridgeOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiToolApprovalBridgeOptions"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalBridgeOptions": {
+      "ref": "spark-class-model://model/AiToolApprovalBridgeOptions",
+      "kind": "model",
+      "className": "AiToolApprovalBridgeOptions",
+      "schemaRef": "spark-class-model://schema/AiToolApprovalBridgeOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiToolApprovalBridge": {
+      "ref": "spark-class-model://schema/AiToolApprovalBridge",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiToolApprovalBridge",
+        "properties": {
+          "beforeFunctionCall": {
+            "type": "object",
+            "title": "(options: AiAgentBeforeFunctionCallOptions) => Promise<AiAgentBeforeFunctionCallDirective>"
+          },
+          "cancelPending": {
+            "type": "object",
+            "title": "(reason?: string) => number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiToolApprovalBridge"
+      }
+    },
+    "spark-class-model://schema/shared/1e77b8918fd8d8f2fafdcd8d9ae15e4fb22767c9ac179dd3a0af45d2fb0b8b2e": {
+      "ref": "spark-class-model://schema/shared/1e77b8918fd8d8f2fafdcd8d9ae15e4fb22767c9ac179dd3a0af45d2fb0b8b2e",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(options: AiAgentBeforeFunctionCallOptions) => Promise<AiAgentBeforeFunctionCallDirective>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/1e77b8918fd8d8f2fafdcd8d9ae15e4fb22767c9ac179dd3a0af45d2fb0b8b2e"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalBridge/attributes/beforeFunctionCall/0": {
+      "ref": "spark-class-model://model/AiToolApprovalBridge/attributes/beforeFunctionCall/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiToolApprovalBridge",
+      "name": "beforeFunctionCall",
+      "schemaRef": "spark-class-model://schema/shared/1e77b8918fd8d8f2fafdcd8d9ae15e4fb22767c9ac179dd3a0af45d2fb0b8b2e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/3dcbd77d7995a670ee4a958863527424f8bacd27ef3bdd06de230efb1a536aaf": {
+      "ref": "spark-class-model://schema/shared/3dcbd77d7995a670ee4a958863527424f8bacd27ef3bdd06de230efb1a536aaf",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(reason?: string) => number",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3dcbd77d7995a670ee4a958863527424f8bacd27ef3bdd06de230efb1a536aaf"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalBridge/attributes/cancelPending/1": {
+      "ref": "spark-class-model://model/AiToolApprovalBridge/attributes/cancelPending/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiToolApprovalBridge",
+      "name": "cancelPending",
+      "schemaRef": "spark-class-model://schema/shared/3dcbd77d7995a670ee4a958863527424f8bacd27ef3bdd06de230efb1a536aaf",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiToolApprovalBridge/methods/listPending/0": {
+      "ref": "spark-class-model://model/AiToolApprovalBridge/methods/listPending/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiToolApprovalBridge",
+      "name": "listPending",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22"
+    },
+    "spark-class-model://model/AiToolApprovalBridge/methods/decide/1": {
+      "ref": "spark-class-model://model/AiToolApprovalBridge/methods/decide/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiToolApprovalBridge",
+      "name": "decide",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/9684e60f4ff61d7e267e91d336cb3707a6d27937c3ef044cd33013654c7a1f7e",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://schema/shared/9684e60f4ff61d7e267e91d336cb3707a6d27937c3ef044cd33013654c7a1f7e": {
+      "ref": "spark-class-model://schema/shared/9684e60f4ff61d7e267e91d336cb3707a6d27937c3ef044cd33013654c7a1f7e",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "directive": {
+            "$ref": "spark-class-model://schema/AiAgentBeforeFunctionCallDirective"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9684e60f4ff61d7e267e91d336cb3707a6d27937c3ef044cd33013654c7a1f7e"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiToolApprovalBridge%2Fmethods%2Fdecide%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentBeforeFunctionCallDirective": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiToolApprovalBridge%2Fmethods%2Fdecide%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentBeforeFunctionCallDirective",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiToolApprovalBridge/methods/decide/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentBeforeFunctionCallDirective",
+      "targetClassName": "AiAgentBeforeFunctionCallDirective",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/lifecycle-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentBeforeFunctionCallDirective"
+    },
+    "spark-class-model://model/AiToolApprovalBridge/methods/subscribe/2": {
+      "ref": "spark-class-model://model/AiToolApprovalBridge/methods/subscribe/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiToolApprovalBridge",
+      "name": "subscribe",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ec4a547da49e7a4f87bedf07bc191ca6ca61812df86fb75a86015253a6aea70e",
+      "returnSchemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839"
+    },
+    "spark-class-model://schema/shared/ec4a547da49e7a4f87bedf07bc191ca6ca61812df86fb75a86015253a6aea70e": {
+      "ref": "spark-class-model://schema/shared/ec4a547da49e7a4f87bedf07bc191ca6ca61812df86fb75a86015253a6aea70e",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "listener": {
+            "$ref": "spark-class-model://schema/AiToolApprovalBridgeListener"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ec4a547da49e7a4f87bedf07bc191ca6ca61812df86fb75a86015253a6aea70e"
+      }
+    },
+    "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839": {
+      "ref": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "() => void",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiToolApprovalBridge%2Fmethods%2Fsubscribe%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiToolApprovalBridgeListener": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiToolApprovalBridge%2Fmethods%2Fsubscribe%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiToolApprovalBridgeListener",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiToolApprovalBridge/methods/subscribe/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiToolApprovalBridgeListener",
+      "targetClassName": "AiToolApprovalBridgeListener",
+      "targetFile": "files/declarations/packages/spark-app/src/ai/tool-approval-bridge.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiToolApprovalBridgeListener"
+    },
+    "spark-class-model://model/AiToolApprovalBridge": {
+      "ref": "spark-class-model://model/AiToolApprovalBridge",
+      "kind": "model",
+      "className": "AiToolApprovalBridge",
+      "schemaRef": "spark-class-model://schema/AiToolApprovalBridge",
+      "attributeRefs": [
+        "spark-class-model://model/AiToolApprovalBridge/attributes/beforeFunctionCall/0",
+        "spark-class-model://model/AiToolApprovalBridge/attributes/cancelPending/1"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/AiToolApprovalBridge/methods/listPending/0",
+        "spark-class-model://model/AiToolApprovalBridge/methods/decide/1",
+        "spark-class-model://model/AiToolApprovalBridge/methods/subscribe/2"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiToolApprovalBridge%2Fmethods%2Fdecide%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentBeforeFunctionCallDirective",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiToolApprovalBridge%2Fmethods%2Fsubscribe%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiToolApprovalBridgeListener"
+      ]
+    }
+  }
+}

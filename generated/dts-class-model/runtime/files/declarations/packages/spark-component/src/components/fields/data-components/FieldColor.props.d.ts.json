@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldColor.props.d.ts",
+  "symbols": [
+    "RColorProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RColorProps": {
+      "ref": "spark-class-model://schema/RColorProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RColorProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RColorProps"
+      }
+    },
+    "spark-class-model://model/RColorProps": {
+      "ref": "spark-class-model://model/RColorProps",
+      "kind": "model",
+      "className": "RColorProps",
+      "schemaRef": "spark-class-model://schema/RColorProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

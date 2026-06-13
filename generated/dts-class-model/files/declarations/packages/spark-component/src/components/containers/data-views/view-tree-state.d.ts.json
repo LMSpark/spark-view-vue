@@ -119,7 +119,8 @@
           "name": "dataState",
           "jsdoc": "data State 状态。",
           "schema": {
-            "$ref": "view-runtime-state.d.ts.json#/$defs/DataViewState"
+            "type": "object",
+            "title": "DataViewState"
           },
           "readable": true,
           "writable": true
@@ -128,7 +129,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.572Z",
+  "generatedAt": "2026-06-13T04:00:57.662Z",
   "$defs": {
     "RendererTreeViewState": {
       "type": "object",
@@ -156,7 +157,8 @@
       "description": "Renderer Tree View State Options 的调用配置。",
       "properties": {
         "dataState": {
-          "$ref": "view-runtime-state.d.ts.json#/$defs/DataViewState"
+          "type": "object",
+          "title": "DataViewState"
         }
       }
     }

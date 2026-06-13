@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-surface-types.d.ts",
+  "symbols": [
+    "DtsClassModelSurfaceDocument",
+    "ProjectDtsClassModelSurfaceOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/DtsClassModelSurfaceDocument": {
+      "ref": "spark-class-model://schema/DtsClassModelSurfaceDocument",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsClassModelSurfaceDocument",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsClassModelSurfaceDocument"
+      }
+    },
+    "spark-class-model://model/DtsClassModelSurfaceDocument": {
+      "ref": "spark-class-model://model/DtsClassModelSurfaceDocument",
+      "kind": "model",
+      "className": "DtsClassModelSurfaceDocument",
+      "schemaRef": "spark-class-model://schema/DtsClassModelSurfaceDocument",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectDtsClassModelSurfaceOptions": {
+      "ref": "spark-class-model://schema/ProjectDtsClassModelSurfaceOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectDtsClassModelSurfaceOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectDtsClassModelSurfaceOptions"
+      }
+    },
+    "spark-class-model://model/ProjectDtsClassModelSurfaceOptions": {
+      "ref": "spark-class-model://model/ProjectDtsClassModelSurfaceOptions",
+      "kind": "model",
+      "className": "ProjectDtsClassModelSurfaceOptions",
+      "schemaRef": "spark-class-model://schema/ProjectDtsClassModelSurfaceOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

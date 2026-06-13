@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/services/project-planning/project-planning-ai-runner.d.ts",
+  "symbols": [
+    "ProjectPlanningAiRunOptions",
+    "ProjectPlanningAiRunEvents",
+    "ProjectPlanningAiRunCommand",
+    "ProjectPlanningAiRunResult"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ProjectPlanningAiRunOptions": {
+      "ref": "spark-class-model://schema/ProjectPlanningAiRunOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningAiRunOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningAiRunOptions"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningAiRunOptions": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunOptions",
+      "kind": "model",
+      "className": "ProjectPlanningAiRunOptions",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningAiRunOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectPlanningAiRunEvents": {
+      "ref": "spark-class-model://schema/ProjectPlanningAiRunEvents",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningAiRunEvents",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningAiRunEvents"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningAiRunEvents": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunEvents",
+      "kind": "model",
+      "className": "ProjectPlanningAiRunEvents",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningAiRunEvents",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectPlanningAiRunCommand": {
+      "ref": "spark-class-model://schema/ProjectPlanningAiRunCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningAiRunCommand",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningAiRunCommand"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningAiRunCommand": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunCommand",
+      "kind": "model",
+      "className": "ProjectPlanningAiRunCommand",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningAiRunCommand",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectPlanningAiRunResult": {
+      "ref": "spark-class-model://schema/ProjectPlanningAiRunResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningAiRunResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningAiRunResult"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningAiRunResult": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunResult",
+      "kind": "model",
+      "className": "ProjectPlanningAiRunResult",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningAiRunResult",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

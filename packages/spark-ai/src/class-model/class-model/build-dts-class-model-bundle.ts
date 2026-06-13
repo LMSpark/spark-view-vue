@@ -4,6 +4,7 @@
  * 边界：只负责编译期索引生成和语义缺口报告，不在运行时解析业务数据，也不替代源文件 JSDoc。
  * AI用途：需要重建知识索引、定位 JSDoc 断链或验证模块/成员语义闭环时，用本模块作为编译入口。
  */
+import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, posix, resolve } from 'node:path'
 
@@ -12,7 +13,16 @@ import ts from 'typescript'
 import {
   DTS_CLASS_MODEL_BUNDLE_PROTOCOL,
   DTS_CLASS_MODEL_BUNDLE_VERSION,
+  DTS_CLASS_MODEL_RUNTIME_PROTOCOL,
+  DTS_CLASS_MODEL_RUNTIME_VERSION,
   type DtsFileModuleSemanticMeta,
+  type DtsClassModelRuntimeClassEntry,
+  type DtsClassModelRuntimeLink,
+  type DtsClassModelRuntimeManifest,
+  type DtsClassModelRuntimeMethod,
+  type DtsClassModelRuntimeRef,
+  type DtsClassModelRuntimeSchemaRef,
+  type DtsClassModelRuntimeShard,
   type DtsClassModelSemanticGap,
   type DtsClassModelSemanticGapKind,
   type DtsClassModelSemanticGapReport,
@@ -21,7 +31,7 @@ import {
 } from './dts-bundle-types'
 import type { AttributeMeta, ClassModel, ConstructorMeta, MethodMeta, SourceProvenanceMeta } from './types'
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
-import { canRenderMethodSignatureFromTypeTree, resolveMethodReturnType } from './dts-type-meta-ops'
+import { canRenderMethodSignatureFromTypeTree, resolveMethodReturnType, visitDtsTypeMeta } from './dts-type-meta-ops'
 import { normalizeRepoPath, resolveAliasedSymbol, declarationNameText, sourceFileFromDeclarationFile } from './dts-ast-utils'
 import { projectDtsSourceFileProjection } from './project-from-declarations'
 
@@ -30,6 +40,7 @@ export type BuildDtsClassModelBundleProgressPhase =
   | 'create-program'
   | 'program-ready'
   | 'project-file'
+  | 'write-runtime'
   | 'write-semantic-gaps'
   | 'write-manifest'
   | 'done'
@@ -47,6 +58,7 @@ export type BuildDtsClassModelBundleOptions = Readonly<{
   repoRoot: string
   rootFiles: readonly string[]
   outputDir: string
+  compilerHost?: ts.CompilerHost
   exportedOnly?: boolean
   onProgress?: (event: BuildDtsClassModelBundleProgress) => void
   progressInterval?: number
@@ -56,6 +68,8 @@ export type BuildDtsClassModelBundleOptions = Readonly<{
 export type BuildDtsClassModelBundleResult = Readonly<{
   manifest: DtsClassModelBundleManifest
   manifestPath: string
+  runtimeManifest: DtsClassModelRuntimeManifest
+  runtimeManifestPath: string
   semanticLogPath: string
   semanticLogJsonPath: string
   semanticGapCount: number
@@ -82,6 +96,27 @@ type TypeReferenceTarget = Readonly<{
   targetSourcePath: string
 }>
 
+type RuntimeClassTarget = DtsClassModelRuntimeClassEntry & Readonly<{
+  className: string
+}>
+
+type RuntimeMethodRefs = Readonly<{
+  method: DtsClassModelRuntimeMethod
+  paramsSchema: RuntimePooledSchema
+  returnSchema?: RuntimePooledSchema
+}>
+
+type RuntimeSharedSchemaPool = Readonly<{
+  refByCanonicalSchema: Map<string, string>
+  schemaByRef: Map<string, AiJsonSchema>
+}>
+
+type RuntimePooledSchema = Readonly<{
+  schemaRef: string
+  schema: AiJsonSchema
+  schemaNode?: DtsClassModelRuntimeSchemaRef
+}>
+
 type BundleSchemaRefContext = Readonly<{
   currentSourcePath: string
   currentBundleFile: string
@@ -89,7 +124,17 @@ type BundleSchemaRefContext = Readonly<{
   typeReferenceIndex: ReadonlyMap<string, ReadonlyMap<string, TypeReferenceTarget>>
 }>
 
+type RuntimeBundleContext = BundleSchemaRefContext & Readonly<{
+  runtimeClassIndex: Readonly<Record<string, DtsClassModelRuntimeClassEntry>>
+  runtimeClassTargetsBySourceAndName: ReadonlyMap<string, RuntimeClassTarget>
+  runtimeClassTargetsBySchemaRef: ReadonlyMap<string, RuntimeClassTarget>
+  sourcePathByBundleFile: ReadonlyMap<string, string>
+  sharedSchemaPool: RuntimeSharedSchemaPool
+}>
+
 import { dtsSourcePathToBundleRelativeJson } from './dts-bundle-url'
+
+const parsedTypeReferenceRootNameCache = new Map<string, string | undefined>()
 
 export function buildDtsClassModelBundle(
   options: BuildDtsClassModelBundleOptions,
@@ -103,7 +148,7 @@ export function buildDtsClassModelBundle(
   const total = rootFiles.length
   const progressInterval = options.progressInterval ?? 50
   reportProgress(options, { phase: 'create-program', total })
-  const program = createBundleProjectionProgram(rootFiles)
+  const program = createBundleProjectionProgram(rootFiles, options.compilerHost)
   const checker = program.getTypeChecker()
   reportProgress(options, { phase: 'program-ready', total })
   const files: Record<string, DtsClassModelBundleManifest['files'][string]> = {}
@@ -189,6 +234,15 @@ export function buildDtsClassModelBundle(
     writeFileSync(projectedFile.outputPath, `${JSON.stringify(compactProjection, null, 2)}\n`, 'utf8')
   }
 
+  reportProgress(options, { phase: 'write-runtime', total })
+  const runtimeBundle = writeRuntimeClassModelBundle({
+    outputDir: resolve(outputDir, 'runtime'),
+    projectedFiles,
+    classIndex,
+    projectedClassNamesBySourcePath,
+    typeReferenceIndex,
+  })
+
   const generatedAt = new Date().toISOString()
   const semanticReport = createSemanticGapReport(generatedAt, semanticGaps)
   const semanticLogPath = resolve(outputDir, 'semantic-gaps.log')
@@ -216,6 +270,8 @@ export function buildDtsClassModelBundle(
   return {
     manifest,
     manifestPath,
+    runtimeManifest: runtimeBundle.manifest,
+    runtimeManifestPath: runtimeBundle.manifestPath,
     semanticLogPath,
     semanticLogJsonPath,
     semanticGapCount: semanticReport.gapCount,
@@ -226,7 +282,7 @@ export function buildDtsClassModelBundle(
 
 export { dtsSourcePathToBundleRelativeJson, resolveDtsBundleRelativeUrl } from './dts-bundle-url'
 
-function createBundleProjectionProgram(rootFiles: readonly string[]): ts.Program {
+function createBundleProjectionProgram(rootFiles: readonly string[], compilerHost?: ts.CompilerHost): ts.Program {
   return ts.createProgram({
     rootNames: rootFiles.map(file => resolve(file)),
     options: {
@@ -238,6 +294,7 @@ function createBundleProjectionProgram(rootFiles: readonly string[]): ts.Program
       module: ts.ModuleKind.ES2022,
       moduleResolution: ts.ModuleResolutionKind.Bundler,
     },
+    ...(compilerHost === undefined ? {} : { host: compilerHost }),
   })
 }
 
@@ -401,6 +458,701 @@ function compactMethodMetaForBundle(method: MethodMeta): MethodMeta {
     throw new Error(`DTS method is missing signatureText: ${method.name}`)
   }
   return { ...compact, signatureText }
+}
+
+function writeRuntimeClassModelBundle(command: {
+  outputDir: string
+  projectedFiles: readonly ProjectedBundleFile[]
+  classIndex: DtsClassModelBundleManifest['classIndex']
+  projectedClassNamesBySourcePath: ReadonlyMap<string, ReadonlySet<string>>
+  typeReferenceIndex: ReadonlyMap<string, ReadonlyMap<string, TypeReferenceTarget>>
+}): Readonly<{ manifest: DtsClassModelRuntimeManifest; manifestPath: string }> {
+  const runtimeClassIndex: Record<string, DtsClassModelRuntimeClassEntry> = {}
+  for (const [className, entry] of Object.entries(command.classIndex)) {
+    runtimeClassIndex[className] = {
+      sourcePath: entry.sourcePath,
+      file: entry.file,
+      modelRef: runtimeModelRef(className),
+      schemaRef: runtimeClassSchemaRef(className),
+    }
+  }
+
+  const runtimeClassTargetsBySourceAndName = new Map<string, RuntimeClassTarget>()
+  const runtimeClassTargetsBySchemaRef = new Map<string, RuntimeClassTarget>()
+  for (const projectedFile of command.projectedFiles) {
+    for (const className of Object.keys(projectedFile.projection.models)) {
+      const target: RuntimeClassTarget = {
+        className,
+        sourcePath: projectedFile.sourcePath,
+        file: projectedFile.bundleFile,
+        modelRef: runtimeModelRef(className),
+        schemaRef: runtimeClassSchemaRef(className),
+      }
+      runtimeClassTargetsBySourceAndName.set(runtimeClassKey(projectedFile.sourcePath, className), target)
+      runtimeClassTargetsBySchemaRef.set(target.schemaRef, target)
+    }
+  }
+
+  const sourcePathByBundleFile = new Map(
+    command.projectedFiles.map(file => [file.bundleFile, file.sourcePath] as const),
+  )
+  const files: Record<string, DtsClassModelRuntimeManifest['files'][string]> = {}
+  const refIndex: Record<string, DtsClassModelRuntimeManifest['refIndex'][string]> = {}
+  const sharedSchemaPool: RuntimeSharedSchemaPool = {
+    refByCanonicalSchema: new Map(),
+    schemaByRef: new Map(),
+  }
+
+  for (const projectedFile of command.projectedFiles) {
+    files[projectedFile.sourcePath] = {
+      file: projectedFile.bundleFile,
+      symbols: projectedFile.projection.symbols,
+    }
+
+    const runtimeShard = createRuntimeShard(projectedFile, {
+      currentSourcePath: projectedFile.sourcePath,
+      currentBundleFile: projectedFile.bundleFile,
+      projectedClassNamesBySourcePath: command.projectedClassNamesBySourcePath,
+      typeReferenceIndex: command.typeReferenceIndex,
+      runtimeClassIndex,
+      runtimeClassTargetsBySourceAndName,
+      runtimeClassTargetsBySchemaRef,
+      sourcePathByBundleFile,
+      sharedSchemaPool,
+    })
+    for (const ref of Object.keys(runtimeShard['@refs'])) {
+      refIndex[ref] ??= { file: projectedFile.bundleFile }
+    }
+    const outputPath = resolve(command.outputDir, projectedFile.bundleFile)
+    mkdirSync(dirname(outputPath), { recursive: true })
+    writeFileSync(outputPath, `${JSON.stringify(runtimeShard, null, 2)}\n`, 'utf8')
+  }
+
+  const manifest: DtsClassModelRuntimeManifest = {
+    schemaVersion: DTS_CLASS_MODEL_RUNTIME_VERSION,
+    protocol: DTS_CLASS_MODEL_RUNTIME_PROTOCOL,
+    files,
+    classIndex: runtimeClassIndex,
+    refIndex,
+  }
+  const manifestPath = resolve(command.outputDir, 'manifest.json')
+  mkdirSync(command.outputDir, { recursive: true })
+  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
+  return { manifest, manifestPath }
+}
+
+function createRuntimeShard(
+  projectedFile: ProjectedBundleFile,
+  context: RuntimeBundleContext,
+): DtsClassModelRuntimeShard {
+  const refs: Record<string, DtsClassModelRuntimeRef> = {}
+  for (const model of Object.values(projectedFile.projection.models)) {
+    Object.assign(refs, createRuntimeModel(model, context))
+  }
+  return {
+    schemaVersion: DTS_CLASS_MODEL_RUNTIME_VERSION,
+    protocol: DTS_CLASS_MODEL_RUNTIME_PROTOCOL,
+    sourcePath: projectedFile.sourcePath,
+    symbols: projectedFile.projection.symbols,
+    '@refs': refs,
+  }
+}
+
+function createRuntimeModel(
+  model: ClassModel,
+  context: RuntimeBundleContext,
+): Record<string, DtsClassModelRuntimeRef> {
+  const modelRef = runtimeModelRef(model.className)
+  const schemaRef = runtimeClassSchemaRef(model.className)
+  const refs: Record<string, DtsClassModelRuntimeRef> = {
+    [schemaRef]: {
+      ref: schemaRef,
+      kind: 'schema',
+      schema: runtimeClassSchemaForBundle(model, schemaRef, context),
+    },
+  }
+  const attributeRefs: string[] = []
+  const methodRefs: string[] = []
+  const linkRefs: string[] = []
+  const seenLinks = new Set<string>()
+
+  model.attributes.forEach((attribute, index) => {
+    const attributeRef = runtimeAttributeRef(model.className, attribute.name, index)
+    const schema = referenceRequiredSchemaForRuntime(attribute.schema, context)
+    const attributeSchema = poolRuntimeSchemaForBundle(schema, context)
+    if (attributeSchema.schemaNode !== undefined) refs[attributeSchema.schemaRef] = attributeSchema.schemaNode
+    refs[attributeRef] = {
+      ref: attributeRef,
+      kind: 'attribute',
+      ownerRef: modelRef,
+      name: attribute.name,
+      schemaRef: attributeSchema.schemaRef,
+      readable: attribute.readable,
+      writable: attribute.writable,
+    }
+    attributeRefs.push(attributeRef)
+    collectRuntimeLinksFromSchema({
+      schema: attributeSchema.schema,
+      fromRef: attributeRef,
+      relation: 'attribute',
+      context,
+      refs,
+      linkRefs,
+      seenLinks,
+    })
+  })
+
+  model.methods.forEach((method, index) => {
+    const runtimeMethod = createRuntimeMethod(modelRef, model.className, method, index, context)
+    refs[runtimeMethod.method.ref] = runtimeMethod.method
+    if (runtimeMethod.paramsSchema.schemaNode !== undefined) {
+      refs[runtimeMethod.paramsSchema.schemaRef] = runtimeMethod.paramsSchema.schemaNode
+    }
+    if (runtimeMethod.returnSchema?.schemaNode !== undefined) {
+      refs[runtimeMethod.returnSchema.schemaRef] = runtimeMethod.returnSchema.schemaNode
+    }
+    methodRefs.push(runtimeMethod.method.ref)
+    for (const parameter of method.parameters ?? []) {
+      collectRuntimeLinksFromTypeMeta({
+        typeMeta: parameter.type,
+        fromRef: runtimeMethod.method.ref,
+        relation: 'method-parameter',
+        context,
+        refs,
+        linkRefs,
+        seenLinks,
+      })
+    }
+    collectRuntimeLinksFromTypeMeta({
+      typeMeta: resolveMethodReturnType(method),
+      fromRef: runtimeMethod.method.ref,
+      relation: 'method-return',
+      context,
+      refs,
+      linkRefs,
+      seenLinks,
+    })
+    collectRuntimeLinksFromSchema({
+      schema: runtimeMethod.paramsSchema.schema,
+      fromRef: runtimeMethod.method.ref,
+      relation: 'method-parameter',
+      context,
+      refs,
+      linkRefs,
+      seenLinks,
+    })
+    collectRuntimeLinksFromSchema({
+      schema: runtimeMethod.returnSchema?.schema,
+      fromRef: runtimeMethod.method.ref,
+      relation: 'method-return',
+      context,
+      refs,
+      linkRefs,
+      seenLinks,
+    })
+  })
+
+  refs[modelRef] = {
+    ref: modelRef,
+    kind: 'model',
+    className: model.className,
+    schemaRef,
+    attributeRefs,
+    methodRefs,
+    linkRefs,
+  }
+  return refs
+}
+
+function createRuntimeMethod(
+  ownerRef: string,
+  className: string,
+  method: MethodMeta,
+  methodIndex: number,
+  context: RuntimeBundleContext,
+): RuntimeMethodRefs {
+  const methodRef = runtimeMethodRef(className, method.name, methodIndex)
+  const paramsSchema = poolRuntimeSchemaForBundle(runtimeParamsSchemaForMethod(method, context), context)
+  const returnSchema = runtimeReturnSchemaForMethod(method, context)
+  const pooledReturnSchema = returnSchema === undefined
+    ? undefined
+    : poolRuntimeSchemaForBundle(returnSchema, context)
+  return {
+    method: {
+      ref: methodRef,
+      kind: 'method',
+      ownerRef,
+      name: method.name,
+      parameterStyle: method.parameterStyle ?? 'positional',
+      paramsSchemaRef: paramsSchema.schemaRef,
+      ...(pooledReturnSchema === undefined ? {} : { returnSchemaRef: pooledReturnSchema.schemaRef }),
+    },
+    paramsSchema,
+    ...(pooledReturnSchema === undefined ? {} : { returnSchema: pooledReturnSchema }),
+  }
+}
+
+function poolRuntimeSchemaForBundle(
+  schema: AiJsonSchema,
+  context: RuntimeBundleContext,
+): RuntimePooledSchema {
+  const canonicalJson = canonicalRuntimeSchemaJson(schema)
+  const existingRef = context.sharedSchemaPool.refByCanonicalSchema.get(canonicalJson)
+  if (existingRef !== undefined) {
+    const existingSchema = context.sharedSchemaPool.schemaByRef.get(existingRef)
+    if (existingSchema === undefined) {
+      throw new Error(`DTS class-model runtime schema pool lost schema for ref "${existingRef}".`)
+    }
+    return {
+      schemaRef: existingRef,
+      schema: existingSchema,
+    }
+  }
+
+  const schemaRef = runtimeSharedSchemaRef(canonicalJson)
+  const runtimeSchema = schemaForRuntimeRef(schema, schemaRef)
+  context.sharedSchemaPool.refByCanonicalSchema.set(canonicalJson, schemaRef)
+  context.sharedSchemaPool.schemaByRef.set(schemaRef, runtimeSchema)
+  return {
+    schemaRef,
+    schema: runtimeSchema,
+    schemaNode: {
+      ref: schemaRef,
+      kind: 'schema',
+      schema: runtimeSchema,
+    },
+  }
+}
+
+function schemaForRuntimeRef(schema: AiJsonSchema, schemaRef: string): AiJsonSchema {
+  return isJsonSchemaObject(schema) ? withRuntimeSchemaId(schema, schemaRef) : schema
+}
+
+function runtimeClassSchemaForBundle(
+  model: ClassModel,
+  schemaRef: string,
+  context: RuntimeBundleContext,
+): AiJsonSchemaObject {
+  const properties: Record<string, AiJsonSchema> = {}
+  for (const attribute of model.attributes) {
+    if (!attribute.readable) continue
+    properties[attribute.name] = referenceRequiredSchemaForRuntime(attribute.schema, context)
+  }
+  return withRuntimeSchemaId({
+    type: 'object',
+    title: model.className,
+    ...(Object.keys(properties).length === 0 ? {} : { properties }),
+  }, schemaRef)
+}
+
+function runtimeParamsSchemaForMethod(
+  method: MethodMeta,
+  context: RuntimeBundleContext,
+): AiJsonSchemaObject {
+  const schema = method.paramsSchema ?? {
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  }
+  const referenced = referenceSchemaObjectForRuntime(schema, context)
+  return {
+    ...referenced,
+    type: referenced.type ?? 'object',
+    properties: referenced.properties ?? {},
+    additionalProperties: referenced.additionalProperties ?? false,
+  }
+}
+
+function runtimeReturnSchemaForMethod(
+  method: MethodMeta,
+  context: RuntimeBundleContext,
+): AiJsonSchema | undefined {
+  const returnType = resolveMethodReturnType(method)
+  if (isVoidLikeDtsType(returnType)) return undefined
+  const schema = method.returnSchema ?? dtsTypeMetaToRuntimeSchema(returnType, context)
+  return referenceSchemaForRuntime(schema, context)
+}
+
+function dtsTypeMetaToRuntimeSchema(
+  typeMeta: MethodMeta['type'],
+  context: RuntimeBundleContext,
+): AiJsonSchema | undefined {
+  if (typeMeta === undefined) return undefined
+  switch (typeMeta.type) {
+    case 'intrinsic':
+      if (typeMeta.name === 'string') return { type: 'string' }
+      if (typeMeta.name === 'number') return { type: 'number' }
+      if (typeMeta.name === 'boolean') return { type: 'boolean' }
+      if (typeMeta.name === 'null') return { type: 'null' }
+      if (typeMeta.name === 'never') return false
+      if (typeMeta.name === 'void' || typeMeta.name === 'undefined') return undefined
+      return true
+    case 'literal':
+      if (typeMeta.value === null) return { type: 'null' }
+      return { enum: [typeMeta.value] }
+    case 'reference': {
+      if (typeMeta.refersToTypeParameter === true) return true
+      const typeArgument = typeMeta.typeArguments?.[0]
+      if ((typeMeta.name === 'Array' || typeMeta.name === 'ReadonlyArray') && typeArgument !== undefined) {
+        return {
+          type: 'array',
+          items: dtsTypeMetaToRuntimeSchema(typeArgument, context) ?? true,
+        }
+      }
+      const target = resolveRuntimeTypeReferenceTarget(typeMeta.name, typeMeta.sourcePath, context)
+      return target === undefined ? true : { $ref: target.schemaRef }
+    }
+    case 'array':
+      return {
+        type: 'array',
+        items: dtsTypeMetaToRuntimeSchema(typeMeta.elementType, context) ?? true,
+      }
+    case 'optional':
+    case 'rest':
+      return dtsTypeMetaToRuntimeSchema(typeMeta.elementType, context)
+    case 'union': {
+      const schemas = typeMeta.types
+        .map(item => dtsTypeMetaToRuntimeSchema(item, context))
+        .filter((schema): schema is AiJsonSchema => schema !== undefined)
+      if (schemas.length === 0) return undefined
+      if (schemas.length === 1) return schemas[0] ?? true
+      return { anyOf: schemas }
+    }
+    case 'intersection': {
+      const schemas = typeMeta.types
+        .map(item => dtsTypeMetaToRuntimeSchema(item, context))
+        .filter((schema): schema is AiJsonSchema => schema !== undefined)
+      if (schemas.length === 0) return undefined
+      if (schemas.length === 1) return schemas[0] ?? true
+      return { allOf: schemas }
+    }
+    case 'tuple':
+      return {
+        type: 'array',
+        prefixItems: typeMeta.elements.map(item => dtsTypeMetaToRuntimeSchema(item, context) ?? true),
+      }
+    case 'reflection':
+      return { type: 'object' }
+    case 'unknown':
+      return true
+  }
+}
+
+function referenceRequiredSchemaForRuntime(
+  schema: AiJsonSchema,
+  context: RuntimeBundleContext,
+): AiJsonSchema {
+  return referenceSchemaForRuntime(schema, context) ?? true
+}
+
+function referenceSchemaObjectForRuntime(
+  schema: AiJsonSchemaObject,
+  context: RuntimeBundleContext,
+): AiJsonSchemaObject {
+  const referenced = referenceSchemaForRuntime(schema, context)
+  return isJsonSchemaObject(referenced) ? referenced : {}
+}
+
+function referenceSchemaForRuntime(
+  schema: AiJsonSchema | undefined,
+  context: RuntimeBundleContext,
+): AiJsonSchema | undefined {
+  if (schema === undefined || schema === true || schema === false || typeof schema !== 'object' || Array.isArray(schema)) {
+    return schema
+  }
+
+  const directTarget = runtimeTargetForPlaceholderSchema(schema, context)
+  if (directTarget !== undefined) {
+    const title = typeof schema.title === 'string' && schema.title !== directTarget.className
+      ? schema.title
+      : undefined
+    return {
+      $ref: directTarget.schemaRef,
+      ...(title === undefined ? {} : { title }),
+    }
+  }
+
+  const schemaRefTarget = typeof schema.$ref === 'string'
+    ? runtimeTargetForSchemaRef(schema.$ref, context)
+    : undefined
+  const next: Record<string, unknown> = {
+    ...schema,
+    ...(schemaRefTarget === undefined ? {} : { $ref: schemaRefTarget.schemaRef }),
+  }
+  if (schema.items !== undefined) next['items'] = referenceSchemaForRuntime(schema.items, context)
+  if (schema.prefixItems !== undefined) {
+    next['prefixItems'] = schema.prefixItems.map(child => referenceSchemaForRuntime(child, context) ?? true)
+  }
+  if (schema.properties !== undefined) {
+    const properties: Record<string, AiJsonSchema> = {}
+    for (const [name, child] of Object.entries(schema.properties)) {
+      const referenced = referenceSchemaForRuntime(child, context)
+      if (referenced !== undefined) properties[name] = referenced
+    }
+    next['properties'] = properties
+  }
+  if (schema.anyOf !== undefined) {
+    next['anyOf'] = schema.anyOf.map(child => referenceSchemaForRuntime(child, context) ?? true)
+  }
+  if (schema.oneOf !== undefined) {
+    next['oneOf'] = schema.oneOf.map(child => referenceSchemaForRuntime(child, context) ?? true)
+  }
+  if (schema.allOf !== undefined) {
+    next['allOf'] = schema.allOf.map(child => referenceSchemaForRuntime(child, context) ?? true)
+  }
+  if (schema.not !== undefined) next['not'] = referenceSchemaForRuntime(schema.not, context)
+  return next
+}
+
+function collectRuntimeLinksFromSchema(command: {
+  schema: AiJsonSchema | undefined
+  fromRef: string
+  relation: DtsClassModelRuntimeLink['relation']
+  context: RuntimeBundleContext
+  refs: Record<string, DtsClassModelRuntimeRef>
+  linkRefs: string[]
+  seenLinks: Set<string>
+}): void {
+  const { schema, fromRef, relation, context, refs, linkRefs, seenLinks } = command
+  if (schema === undefined || schema === true || schema === false || typeof schema !== 'object' || Array.isArray(schema)) return
+  if (typeof schema.$ref === 'string') {
+    const target = runtimeTargetForSchemaRef(schema.$ref, context)
+    if (target !== undefined) addRuntimeLink({ fromRef, relation, target, refs, linkRefs, seenLinks })
+  }
+  if (schema.items !== undefined) {
+    collectRuntimeLinksFromSchema({ schema: schema.items, fromRef, relation, context, refs, linkRefs, seenLinks })
+  }
+  for (const child of schema.prefixItems ?? []) {
+    collectRuntimeLinksFromSchema({ schema: child, fromRef, relation, context, refs, linkRefs, seenLinks })
+  }
+  for (const child of Object.values(schema.properties ?? {})) {
+    collectRuntimeLinksFromSchema({
+      schema: child,
+      fromRef,
+      relation,
+      context,
+      refs,
+      linkRefs,
+      seenLinks,
+    })
+  }
+  for (const child of schema.anyOf ?? []) collectRuntimeLinksFromSchema({ schema: child, fromRef, relation, context, refs, linkRefs, seenLinks })
+  for (const child of schema.oneOf ?? []) collectRuntimeLinksFromSchema({ schema: child, fromRef, relation, context, refs, linkRefs, seenLinks })
+  for (const child of schema.allOf ?? []) collectRuntimeLinksFromSchema({ schema: child, fromRef, relation, context, refs, linkRefs, seenLinks })
+  if (schema.not !== undefined) collectRuntimeLinksFromSchema({ schema: schema.not, fromRef, relation, context, refs, linkRefs, seenLinks })
+}
+
+function collectRuntimeLinksFromTypeMeta(command: {
+  typeMeta: MethodMeta['type']
+  fromRef: string
+  relation: DtsClassModelRuntimeLink['relation']
+  context: RuntimeBundleContext
+  refs: Record<string, DtsClassModelRuntimeRef>
+  linkRefs: string[]
+  seenLinks: Set<string>
+}): void {
+  const { typeMeta, fromRef, relation, context, refs, linkRefs, seenLinks } = command
+  visitDtsTypeMeta(typeMeta, (node) => {
+    if (node.type !== 'reference' || node.refersToTypeParameter === true) return
+    const target = resolveRuntimeTypeReferenceTarget(node.name, node.sourcePath, context)
+    if (target !== undefined) addRuntimeLink({ fromRef, relation, target, refs, linkRefs, seenLinks })
+  })
+}
+
+function addRuntimeLink(command: {
+  fromRef: string
+  relation: DtsClassModelRuntimeLink['relation']
+  target: RuntimeClassTarget
+  refs: Record<string, DtsClassModelRuntimeRef>
+  linkRefs: string[]
+  seenLinks: Set<string>
+}): void {
+  const { fromRef, relation, target, refs, linkRefs, seenLinks } = command
+  const linkRef = runtimeLinkRef(fromRef, relation, target.modelRef)
+  if (seenLinks.has(linkRef)) return
+  seenLinks.add(linkRef)
+  refs[linkRef] = {
+    ref: linkRef,
+    kind: 'link',
+    fromRef,
+    relation,
+    targetModelRef: target.modelRef,
+    targetClassName: target.className,
+    targetFile: target.file,
+    targetSchemaRef: target.schemaRef,
+  }
+  linkRefs.push(linkRef)
+}
+
+function runtimeTargetForPlaceholderSchema(
+  schema: AiJsonSchemaObject,
+  context: RuntimeBundleContext,
+): RuntimeClassTarget | undefined {
+  if (!isTypeReferencePlaceholderSchema(schema)) return undefined
+  const title = schema.title
+  if (typeof title !== 'string') return undefined
+  const dtsTarget = dtsTypeReferenceTargetForBundle(title, context)
+  if (dtsTarget === undefined) return runtimeTargetForTypeExpressionTitle(title, context)
+  return resolveRuntimeTypeReferenceTarget(dtsTarget.targetName, dtsTarget.targetSourcePath, context)
+}
+
+function runtimeTargetForTypeExpressionTitle(
+  title: string,
+  context: RuntimeBundleContext,
+): RuntimeClassTarget | undefined {
+  const className = parseTypeReferenceRootName(title)
+  if (className === undefined) return undefined
+  return resolveRuntimeTypeReferenceTarget(className, undefined, context)
+}
+
+function parseTypeReferenceRootName(typeText: string): string | undefined {
+  if (parsedTypeReferenceRootNameCache.has(typeText)) {
+    return parsedTypeReferenceRootNameCache.get(typeText)
+  }
+  const sourceFile = ts.createSourceFile(
+    'runtime-type-ref.ts',
+    `type __RuntimeTypeRef = ${typeText}`,
+    ts.ScriptTarget.Latest,
+    false,
+    ts.ScriptKind.TS,
+  )
+  const statement = sourceFile.statements[0]
+  const className = statement === undefined || !ts.isTypeAliasDeclaration(statement)
+    ? undefined
+    : typeReferenceRootNameFromTypeNode(statement.type)
+  parsedTypeReferenceRootNameCache.set(typeText, className)
+  return className
+}
+
+function typeReferenceRootNameFromTypeNode(node: ts.TypeNode): string | undefined {
+  if (ts.isParenthesizedTypeNode(node)) return typeReferenceRootNameFromTypeNode(node.type)
+  if (ts.isArrayTypeNode(node)) return typeReferenceRootNameFromTypeNode(node.elementType)
+  if (!ts.isTypeReferenceNode(node)) return undefined
+  return entityNameRightText(node.typeName)
+}
+
+function entityNameRightText(name: ts.EntityName): string {
+  return ts.isIdentifier(name) ? name.text : name.right.text
+}
+
+function runtimeTargetForSchemaRef(
+  ref: string,
+  context: RuntimeBundleContext,
+): RuntimeClassTarget | undefined {
+  const directTarget = context.runtimeClassTargetsBySchemaRef.get(ref)
+  if (directTarget !== undefined) return directTarget
+
+  const parsedRef = parseBundleSchemaRef(ref, context)
+  if (parsedRef === undefined) return undefined
+  return context.runtimeClassTargetsBySourceAndName.get(runtimeClassKey(parsedRef.sourcePath, parsedRef.className))
+}
+
+function parseBundleSchemaRef(
+  ref: string,
+  context: RuntimeBundleContext,
+): Readonly<{ sourcePath: string; className: string }> | undefined {
+  const [filePart = '', fragment = ''] = ref.split('#', 2)
+  const prefix = '/$defs/'
+  if (!fragment.startsWith(prefix)) return undefined
+  const className = decodeJsonPointerToken(fragment.slice(prefix.length))
+  const targetBundleFile = filePart.length === 0
+    ? context.currentBundleFile
+    : posix.normalize(posix.join(posix.dirname(context.currentBundleFile), filePart))
+  const sourcePath = context.sourcePathByBundleFile.get(targetBundleFile)
+  if (sourcePath === undefined) return undefined
+  return { sourcePath, className }
+}
+
+function resolveRuntimeTypeReferenceTarget(
+  className: string,
+  sourcePath: string | undefined,
+  context: RuntimeBundleContext,
+): RuntimeClassTarget | undefined {
+  if (sourcePath !== undefined) {
+    const sourceScoped = context.runtimeClassTargetsBySourceAndName.get(runtimeClassKey(sourcePath, className))
+    if (sourceScoped !== undefined) return sourceScoped
+  }
+  const manifestEntry = context.runtimeClassIndex[className]
+  if (manifestEntry === undefined) return undefined
+  return {
+    className,
+    sourcePath: manifestEntry.sourcePath,
+    file: manifestEntry.file,
+    modelRef: manifestEntry.modelRef,
+    schemaRef: manifestEntry.schemaRef,
+  }
+}
+
+function withRuntimeSchemaId(schema: AiJsonSchemaObject, schemaRef: string): AiJsonSchemaObject {
+  return {
+    ...schema,
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    $id: schemaRef,
+  }
+}
+
+function canonicalRuntimeSchemaJson(schema: AiJsonSchema): string {
+  return JSON.stringify(canonicalRuntimeSchemaValue(schema))
+}
+
+function canonicalRuntimeSchemaValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(item => canonicalRuntimeSchemaValue(item))
+  if (value === null || typeof value !== 'object') return value
+
+  const record = value as Record<string, unknown>
+  const next: Record<string, unknown> = {}
+  for (const key of Object.keys(record).sort()) {
+    if (key === '$id' || key === '$schema') continue
+    const child = record[key]
+    if (child !== undefined) next[key] = canonicalRuntimeSchemaValue(child)
+  }
+  return next
+}
+
+function runtimeModelRef(className: string): string {
+  return `spark-class-model://model/${encodeURIComponent(className)}`
+}
+
+function runtimeClassSchemaRef(className: string): string {
+  return `spark-class-model://schema/${encodeURIComponent(className)}`
+}
+
+function runtimeSharedSchemaRef(canonicalSchemaJson: string): string {
+  const digest = createHash('sha256').update(canonicalSchemaJson).digest('hex')
+  return `spark-class-model://schema/shared/${digest}`
+}
+
+function runtimeAttributeRef(className: string, attributeName: string, attributeIndex: number): string {
+  return `${runtimeModelRef(className)}/attributes/${encodeURIComponent(attributeName)}/${String(attributeIndex)}`
+}
+
+function runtimeMethodRef(className: string, methodName: string, methodIndex: number): string {
+  return `${runtimeModelRef(className)}/methods/${encodeURIComponent(methodName)}/${String(methodIndex)}`
+}
+
+function runtimeLinkRef(
+  fromRef: string,
+  relation: DtsClassModelRuntimeLink['relation'],
+  targetModelRef: string,
+): string {
+  return `spark-class-model://link/${encodeURIComponent(fromRef)}/${relation}/${encodeURIComponent(targetModelRef)}`
+}
+
+function runtimeClassKey(sourcePath: string, className: string): string {
+  return `${sourcePath}\0${className}`
+}
+
+function isVoidLikeDtsType(typeMeta: MethodMeta['type']): boolean {
+  return typeMeta?.type === 'intrinsic'
+    && (typeMeta.name === 'void' || typeMeta.name === 'undefined')
+}
+
+function isJsonSchemaObject(schema: AiJsonSchema | undefined): schema is AiJsonSchemaObject {
+  return schema !== undefined && schema !== true && schema !== false && typeof schema === 'object' && !Array.isArray(schema)
+}
+
+function decodeJsonPointerToken(value: string): string {
+  return value.replaceAll('~1', '/').replaceAll('~0', '~')
 }
 
 function createSchemaDefsForBundle(

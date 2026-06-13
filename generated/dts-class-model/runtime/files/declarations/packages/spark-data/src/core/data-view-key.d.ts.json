@@ -1,0 +1,1083 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-data/src/core/data-view-key.d.ts",
+  "symbols": [
+    "DataMember",
+    "DataViewKeyDescriptor",
+    "DataViewMemberDescriptor",
+    "DataViewMemberInput",
+    "DataViewMemberObject",
+    "DataViewMemberValue",
+    "DataViewMemberBinding",
+    "DataViewKeyDiagnosticStatus",
+    "DataViewKeyDiagnostic",
+    "DataViewMemberDiagnosticStatus",
+    "DataViewMemberDiagnostic",
+    "ResolvedDataViewCapabilities"
+  ],
+  "@refs": {
+    "spark-class-model://schema/DataMember": {
+      "ref": "spark-class-model://schema/DataMember",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataMember",
+        "properties": {
+          "Rows": {
+            "type": "string"
+          },
+          "Columns": {
+            "type": "string"
+          },
+          "CurrentRow": {
+            "type": "string"
+          },
+          "SelectedRows": {
+            "type": "string"
+          },
+          "AggregateResult": {
+            "type": "string"
+          },
+          "SelectionAggregateResult": {
+            "type": "string"
+          },
+          "Total": {
+            "type": "string"
+          },
+          "Page": {
+            "type": "string"
+          },
+          "PageSize": {
+            "type": "string"
+          },
+          "RequestState": {
+            "type": "string"
+          },
+          "Mutating": {
+            "type": "string"
+          },
+          "LoadingError": {
+            "type": "string"
+          },
+          "MutatingError": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataMember"
+      }
+    },
+    "spark-class-model://model/DataMember/attributes/Rows/0": {
+      "ref": "spark-class-model://model/DataMember/attributes/Rows/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "Rows",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember/attributes/Columns/1": {
+      "ref": "spark-class-model://model/DataMember/attributes/Columns/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "Columns",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember/attributes/CurrentRow/2": {
+      "ref": "spark-class-model://model/DataMember/attributes/CurrentRow/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "CurrentRow",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember/attributes/SelectedRows/3": {
+      "ref": "spark-class-model://model/DataMember/attributes/SelectedRows/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "SelectedRows",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember/attributes/AggregateResult/4": {
+      "ref": "spark-class-model://model/DataMember/attributes/AggregateResult/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "AggregateResult",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember/attributes/SelectionAggregateResult/5": {
+      "ref": "spark-class-model://model/DataMember/attributes/SelectionAggregateResult/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "SelectionAggregateResult",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember/attributes/Total/6": {
+      "ref": "spark-class-model://model/DataMember/attributes/Total/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "Total",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember/attributes/Page/7": {
+      "ref": "spark-class-model://model/DataMember/attributes/Page/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "Page",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember/attributes/PageSize/8": {
+      "ref": "spark-class-model://model/DataMember/attributes/PageSize/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "PageSize",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember/attributes/RequestState/9": {
+      "ref": "spark-class-model://model/DataMember/attributes/RequestState/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "RequestState",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember/attributes/Mutating/10": {
+      "ref": "spark-class-model://model/DataMember/attributes/Mutating/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "Mutating",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember/attributes/LoadingError/11": {
+      "ref": "spark-class-model://model/DataMember/attributes/LoadingError/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "LoadingError",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember/attributes/MutatingError/12": {
+      "ref": "spark-class-model://model/DataMember/attributes/MutatingError/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataMember",
+      "name": "MutatingError",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataMember": {
+      "ref": "spark-class-model://model/DataMember",
+      "kind": "model",
+      "className": "DataMember",
+      "schemaRef": "spark-class-model://schema/DataMember",
+      "attributeRefs": [
+        "spark-class-model://model/DataMember/attributes/Rows/0",
+        "spark-class-model://model/DataMember/attributes/Columns/1",
+        "spark-class-model://model/DataMember/attributes/CurrentRow/2",
+        "spark-class-model://model/DataMember/attributes/SelectedRows/3",
+        "spark-class-model://model/DataMember/attributes/AggregateResult/4",
+        "spark-class-model://model/DataMember/attributes/SelectionAggregateResult/5",
+        "spark-class-model://model/DataMember/attributes/Total/6",
+        "spark-class-model://model/DataMember/attributes/Page/7",
+        "spark-class-model://model/DataMember/attributes/PageSize/8",
+        "spark-class-model://model/DataMember/attributes/RequestState/9",
+        "spark-class-model://model/DataMember/attributes/Mutating/10",
+        "spark-class-model://model/DataMember/attributes/LoadingError/11",
+        "spark-class-model://model/DataMember/attributes/MutatingError/12"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DataViewKeyDescriptor": {
+      "ref": "spark-class-model://schema/DataViewKeyDescriptor",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewKeyDescriptor",
+        "properties": {
+          "scope": {
+            "type": "string"
+          },
+          "tableName": {
+            "type": "string"
+          },
+          "viewId": {
+            "type": "string"
+          },
+          "raw": {
+            "type": "string"
+          },
+          "crossPage": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewKeyDescriptor"
+      }
+    },
+    "spark-class-model://model/DataViewKeyDescriptor/attributes/scope/0": {
+      "ref": "spark-class-model://model/DataViewKeyDescriptor/attributes/scope/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewKeyDescriptor",
+      "name": "scope",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataViewKeyDescriptor/attributes/tableName/1": {
+      "ref": "spark-class-model://model/DataViewKeyDescriptor/attributes/tableName/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewKeyDescriptor",
+      "name": "tableName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataViewKeyDescriptor/attributes/viewId/2": {
+      "ref": "spark-class-model://model/DataViewKeyDescriptor/attributes/viewId/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewKeyDescriptor",
+      "name": "viewId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataViewKeyDescriptor/attributes/raw/3": {
+      "ref": "spark-class-model://model/DataViewKeyDescriptor/attributes/raw/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewKeyDescriptor",
+      "name": "raw",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataViewKeyDescriptor/attributes/crossPage/4": {
+      "ref": "spark-class-model://model/DataViewKeyDescriptor/attributes/crossPage/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewKeyDescriptor",
+      "name": "crossPage",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataViewKeyDescriptor": {
+      "ref": "spark-class-model://model/DataViewKeyDescriptor",
+      "kind": "model",
+      "className": "DataViewKeyDescriptor",
+      "schemaRef": "spark-class-model://schema/DataViewKeyDescriptor",
+      "attributeRefs": [
+        "spark-class-model://model/DataViewKeyDescriptor/attributes/scope/0",
+        "spark-class-model://model/DataViewKeyDescriptor/attributes/tableName/1",
+        "spark-class-model://model/DataViewKeyDescriptor/attributes/viewId/2",
+        "spark-class-model://model/DataViewKeyDescriptor/attributes/raw/3",
+        "spark-class-model://model/DataViewKeyDescriptor/attributes/crossPage/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DataViewMemberDescriptor": {
+      "ref": "spark-class-model://schema/DataViewMemberDescriptor",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewMemberDescriptor",
+        "properties": {
+          "dataMember": {
+            "$ref": "spark-class-model://schema/DataMember"
+          },
+          "dataField": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewMemberDescriptor"
+      }
+    },
+    "spark-class-model://schema/shared/82b2e25b8e5e16a28019ca2eac91debf6d15bffe269f442e5d5fb158a97d9507": {
+      "ref": "spark-class-model://schema/shared/82b2e25b8e5e16a28019ca2eac91debf6d15bffe269f442e5d5fb158a97d9507",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DataMember",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/82b2e25b8e5e16a28019ca2eac91debf6d15bffe269f442e5d5fb158a97d9507"
+      }
+    },
+    "spark-class-model://model/DataViewMemberDescriptor/attributes/dataMember/0": {
+      "ref": "spark-class-model://model/DataViewMemberDescriptor/attributes/dataMember/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberDescriptor",
+      "name": "dataMember",
+      "schemaRef": "spark-class-model://schema/shared/82b2e25b8e5e16a28019ca2eac91debf6d15bffe269f442e5d5fb158a97d9507",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDescriptor%2Fattributes%2FdataMember%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDescriptor%2Fattributes%2FdataMember%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataViewMemberDescriptor/attributes/dataMember/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataMember",
+      "targetClassName": "DataMember",
+      "targetFile": "files/declarations/packages/spark-data/src/core/data-view-key.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataMember"
+    },
+    "spark-class-model://model/DataViewMemberDescriptor/attributes/dataField/1": {
+      "ref": "spark-class-model://model/DataViewMemberDescriptor/attributes/dataField/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberDescriptor",
+      "name": "dataField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataViewMemberDescriptor": {
+      "ref": "spark-class-model://model/DataViewMemberDescriptor",
+      "kind": "model",
+      "className": "DataViewMemberDescriptor",
+      "schemaRef": "spark-class-model://schema/DataViewMemberDescriptor",
+      "attributeRefs": [
+        "spark-class-model://model/DataViewMemberDescriptor/attributes/dataMember/0",
+        "spark-class-model://model/DataViewMemberDescriptor/attributes/dataField/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDescriptor%2Fattributes%2FdataMember%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember"
+      ]
+    },
+    "spark-class-model://schema/DataViewMemberInput": {
+      "ref": "spark-class-model://schema/DataViewMemberInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewMemberInput",
+        "properties": {
+          "dataViewKey": {
+            "type": "string"
+          },
+          "dataMember": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/DataMember"
+              },
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "dataField": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewMemberInput"
+      }
+    },
+    "spark-class-model://model/DataViewMemberInput/attributes/dataViewKey/0": {
+      "ref": "spark-class-model://model/DataViewMemberInput/attributes/dataViewKey/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberInput",
+      "name": "dataViewKey",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataViewMemberInput/attributes/dataMember/1": {
+      "ref": "spark-class-model://model/DataViewMemberInput/attributes/dataMember/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberInput",
+      "name": "dataMember",
+      "schemaRef": "spark-class-model://schema/shared/4603c1669031d67c761d0d7d1f6503d91703c9a98f2b29aaf267d9aceed7dd6e",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberInput%2Fattributes%2FdataMember%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberInput%2Fattributes%2FdataMember%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataViewMemberInput/attributes/dataMember/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataMember",
+      "targetClassName": "DataMember",
+      "targetFile": "files/declarations/packages/spark-data/src/core/data-view-key.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataMember"
+    },
+    "spark-class-model://model/DataViewMemberInput/attributes/dataField/2": {
+      "ref": "spark-class-model://model/DataViewMemberInput/attributes/dataField/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberInput",
+      "name": "dataField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DataViewMemberInput": {
+      "ref": "spark-class-model://model/DataViewMemberInput",
+      "kind": "model",
+      "className": "DataViewMemberInput",
+      "schemaRef": "spark-class-model://schema/DataViewMemberInput",
+      "attributeRefs": [
+        "spark-class-model://model/DataViewMemberInput/attributes/dataViewKey/0",
+        "spark-class-model://model/DataViewMemberInput/attributes/dataMember/1",
+        "spark-class-model://model/DataViewMemberInput/attributes/dataField/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberInput%2Fattributes%2FdataMember%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember"
+      ]
+    },
+    "spark-class-model://schema/DataViewMemberObject": {
+      "ref": "spark-class-model://schema/DataViewMemberObject",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewMemberObject",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewMemberObject"
+      }
+    },
+    "spark-class-model://model/DataViewMemberObject": {
+      "ref": "spark-class-model://model/DataViewMemberObject",
+      "kind": "model",
+      "className": "DataViewMemberObject",
+      "schemaRef": "spark-class-model://schema/DataViewMemberObject",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DataViewMemberValue": {
+      "ref": "spark-class-model://schema/DataViewMemberValue",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewMemberValue",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewMemberValue"
+      }
+    },
+    "spark-class-model://model/DataViewMemberValue": {
+      "ref": "spark-class-model://model/DataViewMemberValue",
+      "kind": "model",
+      "className": "DataViewMemberValue",
+      "schemaRef": "spark-class-model://schema/DataViewMemberValue",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DataViewMemberBinding": {
+      "ref": "spark-class-model://schema/DataViewMemberBinding",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewMemberBinding",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "value"
+            ]
+          },
+          "value": {
+            "$ref": "spark-class-model://schema/DataViewMemberValue"
+          },
+          "source": {
+            "$ref": "spark-class-model://schema/DataSource"
+          },
+          "descriptor": {
+            "$ref": "spark-class-model://schema/DataViewMemberDescriptor"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewMemberBinding"
+      }
+    },
+    "spark-class-model://schema/shared/e4610ca99be4ced1e0828077b6c1245330bceeb9d658a21c85a73a12ea5afc3e": {
+      "ref": "spark-class-model://schema/shared/e4610ca99be4ced1e0828077b6c1245330bceeb9d658a21c85a73a12ea5afc3e",
+      "kind": "schema",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "value"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e4610ca99be4ced1e0828077b6c1245330bceeb9d658a21c85a73a12ea5afc3e"
+      }
+    },
+    "spark-class-model://model/DataViewMemberBinding/attributes/kind/0": {
+      "ref": "spark-class-model://model/DataViewMemberBinding/attributes/kind/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberBinding",
+      "name": "kind",
+      "schemaRef": "spark-class-model://schema/shared/e4610ca99be4ced1e0828077b6c1245330bceeb9d658a21c85a73a12ea5afc3e",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/9b5cf845451d06337613d65df1aaec2c14941b8b278625b08c68cfa08fab655a": {
+      "ref": "spark-class-model://schema/shared/9b5cf845451d06337613d65df1aaec2c14941b8b278625b08c68cfa08fab655a",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DataViewMemberValue",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9b5cf845451d06337613d65df1aaec2c14941b8b278625b08c68cfa08fab655a"
+      }
+    },
+    "spark-class-model://model/DataViewMemberBinding/attributes/value/1": {
+      "ref": "spark-class-model://model/DataViewMemberBinding/attributes/value/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberBinding",
+      "name": "value",
+      "schemaRef": "spark-class-model://schema/shared/9b5cf845451d06337613d65df1aaec2c14941b8b278625b08c68cfa08fab655a",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberBinding%2Fattributes%2Fvalue%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberValue": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberBinding%2Fattributes%2Fvalue%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberValue",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataViewMemberBinding/attributes/value/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataViewMemberValue",
+      "targetClassName": "DataViewMemberValue",
+      "targetFile": "files/declarations/packages/spark-data/src/core/data-view-key.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataViewMemberValue"
+    },
+    "spark-class-model://schema/shared/9daf6b12b84db80d2502951398c446f9ae96ea0acb6c849d602526cb51253eed": {
+      "ref": "spark-class-model://schema/shared/9daf6b12b84db80d2502951398c446f9ae96ea0acb6c849d602526cb51253eed",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DataSource",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9daf6b12b84db80d2502951398c446f9ae96ea0acb6c849d602526cb51253eed"
+      }
+    },
+    "spark-class-model://model/DataViewMemberBinding/attributes/source/2": {
+      "ref": "spark-class-model://model/DataViewMemberBinding/attributes/source/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberBinding",
+      "name": "source",
+      "schemaRef": "spark-class-model://schema/shared/9daf6b12b84db80d2502951398c446f9ae96ea0acb6c849d602526cb51253eed",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberBinding%2Fattributes%2Fsource%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSource": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberBinding%2Fattributes%2Fsource%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSource",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataViewMemberBinding/attributes/source/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataSource",
+      "targetClassName": "DataSource",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataSource"
+    },
+    "spark-class-model://schema/shared/0a1d5200b0179630c21fcfb00fefe1335a1452498a6c91de51de830f60741f2c": {
+      "ref": "spark-class-model://schema/shared/0a1d5200b0179630c21fcfb00fefe1335a1452498a6c91de51de830f60741f2c",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DataViewMemberDescriptor",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/0a1d5200b0179630c21fcfb00fefe1335a1452498a6c91de51de830f60741f2c"
+      }
+    },
+    "spark-class-model://model/DataViewMemberBinding/attributes/descriptor/3": {
+      "ref": "spark-class-model://model/DataViewMemberBinding/attributes/descriptor/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberBinding",
+      "name": "descriptor",
+      "schemaRef": "spark-class-model://schema/shared/0a1d5200b0179630c21fcfb00fefe1335a1452498a6c91de51de830f60741f2c",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberBinding%2Fattributes%2Fdescriptor%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDescriptor": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberBinding%2Fattributes%2Fdescriptor%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDescriptor",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataViewMemberBinding/attributes/descriptor/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataViewMemberDescriptor",
+      "targetClassName": "DataViewMemberDescriptor",
+      "targetFile": "files/declarations/packages/spark-data/src/core/data-view-key.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataViewMemberDescriptor"
+    },
+    "spark-class-model://model/DataViewMemberBinding": {
+      "ref": "spark-class-model://model/DataViewMemberBinding",
+      "kind": "model",
+      "className": "DataViewMemberBinding",
+      "schemaRef": "spark-class-model://schema/DataViewMemberBinding",
+      "attributeRefs": [
+        "spark-class-model://model/DataViewMemberBinding/attributes/kind/0",
+        "spark-class-model://model/DataViewMemberBinding/attributes/value/1",
+        "spark-class-model://model/DataViewMemberBinding/attributes/source/2",
+        "spark-class-model://model/DataViewMemberBinding/attributes/descriptor/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberBinding%2Fattributes%2Fvalue%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberValue",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberBinding%2Fattributes%2Fsource%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSource",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberBinding%2Fattributes%2Fdescriptor%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDescriptor"
+      ]
+    },
+    "spark-class-model://schema/DataViewKeyDiagnosticStatus": {
+      "ref": "spark-class-model://schema/DataViewKeyDiagnosticStatus",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewKeyDiagnosticStatus",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewKeyDiagnosticStatus"
+      }
+    },
+    "spark-class-model://model/DataViewKeyDiagnosticStatus": {
+      "ref": "spark-class-model://model/DataViewKeyDiagnosticStatus",
+      "kind": "model",
+      "className": "DataViewKeyDiagnosticStatus",
+      "schemaRef": "spark-class-model://schema/DataViewKeyDiagnosticStatus",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DataViewKeyDiagnostic": {
+      "ref": "spark-class-model://schema/DataViewKeyDiagnostic",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewKeyDiagnostic",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "spark-class-model://schema/DataViewKeyDiagnosticStatus"
+          },
+          "rawKey": {
+            "type": "string"
+          },
+          "descriptor": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/DataViewKeyDescriptor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewKeyDiagnostic"
+      }
+    },
+    "spark-class-model://model/DataViewKeyDiagnostic/attributes/ok/0": {
+      "ref": "spark-class-model://model/DataViewKeyDiagnostic/attributes/ok/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewKeyDiagnostic",
+      "name": "ok",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/5fdef57d4ca6f2e9efccd4d045361a35dbc9bc203a4982a60684fe7f66c81592": {
+      "ref": "spark-class-model://schema/shared/5fdef57d4ca6f2e9efccd4d045361a35dbc9bc203a4982a60684fe7f66c81592",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DataViewKeyDiagnosticStatus",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5fdef57d4ca6f2e9efccd4d045361a35dbc9bc203a4982a60684fe7f66c81592"
+      }
+    },
+    "spark-class-model://model/DataViewKeyDiagnostic/attributes/status/1": {
+      "ref": "spark-class-model://model/DataViewKeyDiagnostic/attributes/status/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewKeyDiagnostic",
+      "name": "status",
+      "schemaRef": "spark-class-model://schema/shared/5fdef57d4ca6f2e9efccd4d045361a35dbc9bc203a4982a60684fe7f66c81592",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewKeyDiagnostic%2Fattributes%2Fstatus%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewKeyDiagnosticStatus": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewKeyDiagnostic%2Fattributes%2Fstatus%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewKeyDiagnosticStatus",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataViewKeyDiagnostic/attributes/status/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataViewKeyDiagnosticStatus",
+      "targetClassName": "DataViewKeyDiagnosticStatus",
+      "targetFile": "files/declarations/packages/spark-data/src/core/data-view-key.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataViewKeyDiagnosticStatus"
+    },
+    "spark-class-model://model/DataViewKeyDiagnostic/attributes/rawKey/2": {
+      "ref": "spark-class-model://model/DataViewKeyDiagnostic/attributes/rawKey/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewKeyDiagnostic",
+      "name": "rawKey",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/df87972064fcf8dc9d388a3d1b0971aeaf5498ad7c54d8e6e2c37d4e139ad410": {
+      "ref": "spark-class-model://schema/shared/df87972064fcf8dc9d388a3d1b0971aeaf5498ad7c54d8e6e2c37d4e139ad410",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/DataViewKeyDescriptor"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/df87972064fcf8dc9d388a3d1b0971aeaf5498ad7c54d8e6e2c37d4e139ad410"
+      }
+    },
+    "spark-class-model://model/DataViewKeyDiagnostic/attributes/descriptor/3": {
+      "ref": "spark-class-model://model/DataViewKeyDiagnostic/attributes/descriptor/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewKeyDiagnostic",
+      "name": "descriptor",
+      "schemaRef": "spark-class-model://schema/shared/df87972064fcf8dc9d388a3d1b0971aeaf5498ad7c54d8e6e2c37d4e139ad410",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewKeyDiagnostic%2Fattributes%2Fdescriptor%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewKeyDescriptor": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewKeyDiagnostic%2Fattributes%2Fdescriptor%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewKeyDescriptor",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataViewKeyDiagnostic/attributes/descriptor/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataViewKeyDescriptor",
+      "targetClassName": "DataViewKeyDescriptor",
+      "targetFile": "files/declarations/packages/spark-data/src/core/data-view-key.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataViewKeyDescriptor"
+    },
+    "spark-class-model://model/DataViewKeyDiagnostic/attributes/message/4": {
+      "ref": "spark-class-model://model/DataViewKeyDiagnostic/attributes/message/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewKeyDiagnostic",
+      "name": "message",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataViewKeyDiagnostic": {
+      "ref": "spark-class-model://model/DataViewKeyDiagnostic",
+      "kind": "model",
+      "className": "DataViewKeyDiagnostic",
+      "schemaRef": "spark-class-model://schema/DataViewKeyDiagnostic",
+      "attributeRefs": [
+        "spark-class-model://model/DataViewKeyDiagnostic/attributes/ok/0",
+        "spark-class-model://model/DataViewKeyDiagnostic/attributes/status/1",
+        "spark-class-model://model/DataViewKeyDiagnostic/attributes/rawKey/2",
+        "spark-class-model://model/DataViewKeyDiagnostic/attributes/descriptor/3",
+        "spark-class-model://model/DataViewKeyDiagnostic/attributes/message/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewKeyDiagnostic%2Fattributes%2Fstatus%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewKeyDiagnosticStatus",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewKeyDiagnostic%2Fattributes%2Fdescriptor%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewKeyDescriptor"
+      ]
+    },
+    "spark-class-model://schema/DataViewMemberDiagnosticStatus": {
+      "ref": "spark-class-model://schema/DataViewMemberDiagnosticStatus",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewMemberDiagnosticStatus",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewMemberDiagnosticStatus"
+      }
+    },
+    "spark-class-model://model/DataViewMemberDiagnosticStatus": {
+      "ref": "spark-class-model://model/DataViewMemberDiagnosticStatus",
+      "kind": "model",
+      "className": "DataViewMemberDiagnosticStatus",
+      "schemaRef": "spark-class-model://schema/DataViewMemberDiagnosticStatus",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DataViewMemberDiagnostic": {
+      "ref": "spark-class-model://schema/DataViewMemberDiagnostic",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewMemberDiagnostic",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "spark-class-model://schema/DataViewMemberDiagnosticStatus"
+          },
+          "rawKey": {
+            "type": "string"
+          },
+          "descriptor": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/DataViewMemberDescriptor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewMemberDiagnostic"
+      }
+    },
+    "spark-class-model://model/DataViewMemberDiagnostic/attributes/ok/0": {
+      "ref": "spark-class-model://model/DataViewMemberDiagnostic/attributes/ok/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberDiagnostic",
+      "name": "ok",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/a4c6fa357d3a8e58b0dbde30dd3d94509adfe33753cffa8440e9fe7869a5de63": {
+      "ref": "spark-class-model://schema/shared/a4c6fa357d3a8e58b0dbde30dd3d94509adfe33753cffa8440e9fe7869a5de63",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DataViewMemberDiagnosticStatus",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a4c6fa357d3a8e58b0dbde30dd3d94509adfe33753cffa8440e9fe7869a5de63"
+      }
+    },
+    "spark-class-model://model/DataViewMemberDiagnostic/attributes/status/1": {
+      "ref": "spark-class-model://model/DataViewMemberDiagnostic/attributes/status/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberDiagnostic",
+      "name": "status",
+      "schemaRef": "spark-class-model://schema/shared/a4c6fa357d3a8e58b0dbde30dd3d94509adfe33753cffa8440e9fe7869a5de63",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDiagnostic%2Fattributes%2Fstatus%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDiagnosticStatus": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDiagnostic%2Fattributes%2Fstatus%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDiagnosticStatus",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataViewMemberDiagnostic/attributes/status/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataViewMemberDiagnosticStatus",
+      "targetClassName": "DataViewMemberDiagnosticStatus",
+      "targetFile": "files/declarations/packages/spark-data/src/core/data-view-key.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataViewMemberDiagnosticStatus"
+    },
+    "spark-class-model://model/DataViewMemberDiagnostic/attributes/rawKey/2": {
+      "ref": "spark-class-model://model/DataViewMemberDiagnostic/attributes/rawKey/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberDiagnostic",
+      "name": "rawKey",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/f7ecfb92d3d579af89b9f40816d2201217fdcd0fdf38ff84b479c039582ddff0": {
+      "ref": "spark-class-model://schema/shared/f7ecfb92d3d579af89b9f40816d2201217fdcd0fdf38ff84b479c039582ddff0",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/DataViewMemberDescriptor"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f7ecfb92d3d579af89b9f40816d2201217fdcd0fdf38ff84b479c039582ddff0"
+      }
+    },
+    "spark-class-model://model/DataViewMemberDiagnostic/attributes/descriptor/3": {
+      "ref": "spark-class-model://model/DataViewMemberDiagnostic/attributes/descriptor/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberDiagnostic",
+      "name": "descriptor",
+      "schemaRef": "spark-class-model://schema/shared/f7ecfb92d3d579af89b9f40816d2201217fdcd0fdf38ff84b479c039582ddff0",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDiagnostic%2Fattributes%2Fdescriptor%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDescriptor": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDiagnostic%2Fattributes%2Fdescriptor%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDescriptor",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataViewMemberDiagnostic/attributes/descriptor/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataViewMemberDescriptor",
+      "targetClassName": "DataViewMemberDescriptor",
+      "targetFile": "files/declarations/packages/spark-data/src/core/data-view-key.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataViewMemberDescriptor"
+    },
+    "spark-class-model://model/DataViewMemberDiagnostic/attributes/message/4": {
+      "ref": "spark-class-model://model/DataViewMemberDiagnostic/attributes/message/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewMemberDiagnostic",
+      "name": "message",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DataViewMemberDiagnostic": {
+      "ref": "spark-class-model://model/DataViewMemberDiagnostic",
+      "kind": "model",
+      "className": "DataViewMemberDiagnostic",
+      "schemaRef": "spark-class-model://schema/DataViewMemberDiagnostic",
+      "attributeRefs": [
+        "spark-class-model://model/DataViewMemberDiagnostic/attributes/ok/0",
+        "spark-class-model://model/DataViewMemberDiagnostic/attributes/status/1",
+        "spark-class-model://model/DataViewMemberDiagnostic/attributes/rawKey/2",
+        "spark-class-model://model/DataViewMemberDiagnostic/attributes/descriptor/3",
+        "spark-class-model://model/DataViewMemberDiagnostic/attributes/message/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDiagnostic%2Fattributes%2Fstatus%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDiagnosticStatus",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDiagnostic%2Fattributes%2Fdescriptor%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewMemberDescriptor"
+      ]
+    },
+    "spark-class-model://schema/ResolvedDataViewCapabilities": {
+      "ref": "spark-class-model://schema/ResolvedDataViewCapabilities",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ResolvedDataViewCapabilities",
+        "properties": {
+          "dataSource": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/DataView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dataRow": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/DataRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ResolvedDataViewCapabilities"
+      }
+    },
+    "spark-class-model://model/ResolvedDataViewCapabilities/attributes/dataSource/0": {
+      "ref": "spark-class-model://model/ResolvedDataViewCapabilities/attributes/dataSource/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedDataViewCapabilities",
+      "name": "dataSource",
+      "schemaRef": "spark-class-model://schema/shared/de198bbc656283f2c9813b1de32a14906b73742a8dcad13d3d0d4dc61fb90390",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResolvedDataViewCapabilities%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResolvedDataViewCapabilities%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ResolvedDataViewCapabilities/attributes/dataSource/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/declarations/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
+    },
+    "spark-class-model://model/ResolvedDataViewCapabilities/attributes/dataRow/1": {
+      "ref": "spark-class-model://model/ResolvedDataViewCapabilities/attributes/dataRow/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedDataViewCapabilities",
+      "name": "dataRow",
+      "schemaRef": "spark-class-model://schema/shared/3fca7935715ce1bc7a9eb176303d6946df39828f4b54088be9fd2f262735b5a8",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResolvedDataViewCapabilities%2Fattributes%2FdataRow%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResolvedDataViewCapabilities%2Fattributes%2FdataRow%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ResolvedDataViewCapabilities/attributes/dataRow/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/ResolvedDataViewCapabilities": {
+      "ref": "spark-class-model://model/ResolvedDataViewCapabilities",
+      "kind": "model",
+      "className": "ResolvedDataViewCapabilities",
+      "schemaRef": "spark-class-model://schema/ResolvedDataViewCapabilities",
+      "attributeRefs": [
+        "spark-class-model://model/ResolvedDataViewCapabilities/attributes/dataSource/0",
+        "spark-class-model://model/ResolvedDataViewCapabilities/attributes/dataRow/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResolvedDataViewCapabilities%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResolvedDataViewCapabilities%2Fattributes%2FdataRow%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataRow"
+      ]
+    }
+  }
+}

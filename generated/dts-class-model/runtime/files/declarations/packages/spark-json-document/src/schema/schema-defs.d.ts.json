@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-defs.d.ts",
+  "symbols": [
+    "JsonSchemaLocalDefsExtraction"
+  ],
+  "@refs": {
+    "spark-class-model://schema/JsonSchemaLocalDefsExtraction": {
+      "ref": "spark-class-model://schema/JsonSchemaLocalDefsExtraction",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "JsonSchemaLocalDefsExtraction",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/JsonSchemaLocalDefsExtraction"
+      }
+    },
+    "spark-class-model://model/JsonSchemaLocalDefsExtraction": {
+      "ref": "spark-class-model://model/JsonSchemaLocalDefsExtraction",
+      "kind": "model",
+      "className": "JsonSchemaLocalDefsExtraction",
+      "schemaRef": "spark-class-model://schema/JsonSchemaLocalDefsExtraction",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

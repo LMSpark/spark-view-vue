@@ -40,7 +40,7 @@
           "name": "props",
           "jsdoc": "组件属性集合。",
           "schema": {
-            "$ref": "useOptionFieldState.d.ts.json#/$defs/OptionFieldStateProps",
+            "type": "object",
             "title": "OptionFieldStateProps<TValue>"
           },
           "readable": true,
@@ -86,7 +86,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.654Z",
+  "generatedAt": "2026-06-13T04:00:57.735Z",
   "$defs": {
     "UseChoiceFieldStateOptions": {
       "type": "object",
@@ -94,7 +94,7 @@
       "description": "Use Choice Field State Options 的调用配置。",
       "properties": {
         "props": {
-          "$ref": "useOptionFieldState.d.ts.json#/$defs/OptionFieldStateProps",
+          "type": "object",
           "title": "OptionFieldStateProps<TValue>"
         },
         "fieldType": {

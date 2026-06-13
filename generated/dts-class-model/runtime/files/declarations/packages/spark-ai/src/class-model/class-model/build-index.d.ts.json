@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/build-index.d.ts",
+  "symbols": [],
+  "@refs": {}
+}

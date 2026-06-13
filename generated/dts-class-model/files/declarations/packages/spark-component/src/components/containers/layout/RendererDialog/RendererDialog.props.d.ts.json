@@ -65,7 +65,8 @@
           "name": "header",
           "jsdoc": "结构化头部",
           "schema": {
-            "$ref": "../../zones/RendererHeader.types.d.ts.json#/$defs/RHeaderProps"
+            "type": "object",
+            "title": "RHeaderProps"
           },
           "readable": true,
           "writable": false
@@ -74,7 +75,8 @@
           "name": "footer",
           "jsdoc": "结构化底部",
           "schema": {
-            "$ref": "../../zones/RendererFooter.types.d.ts.json#/$defs/RFooterProps"
+            "type": "object",
+            "title": "RFooterProps"
           },
           "readable": true,
           "writable": false
@@ -110,7 +112,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.584Z",
+  "generatedAt": "2026-06-13T04:00:57.672Z",
   "$defs": {
     "RDialogProps": {
       "type": "object",
@@ -118,10 +120,12 @@
       "description": "RDialog Props 的属性契约。",
       "properties": {
         "header": {
-          "$ref": "../../zones/RendererHeader.types.d.ts.json#/$defs/RHeaderProps"
+          "type": "object",
+          "title": "RHeaderProps"
         },
         "footer": {
-          "$ref": "../../zones/RendererFooter.types.d.ts.json#/$defs/RFooterProps"
+          "type": "object",
+          "title": "RFooterProps"
         },
         "title": {
           "type": "string"

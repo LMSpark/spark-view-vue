@@ -187,8 +187,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "ProjectNodeData",
-              "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -210,8 +209,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "ProjectNodeLocation",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "literal",
@@ -223,7 +221,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.830Z",
+  "generatedAt": "2026-06-13T04:00:57.878Z",
   "$defs": {
     "NavigationTreeNodeLike": {
       "type": "object",

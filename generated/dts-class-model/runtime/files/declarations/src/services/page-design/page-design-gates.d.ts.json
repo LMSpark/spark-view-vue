@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/services/page-design/page-design-gates.d.ts",
+  "symbols": [
+    "PageDesignAllowedOperations",
+    "PageDesignRunContext",
+    "PageDesignRunMode",
+    "PageDesignImplGate",
+    "PageDesignGateState",
+    "ReadPageDesignGateStateOptions",
+    "PageDesignGateValidationResult",
+    "EvaluatePageDesignMutationToolGateOptions",
+    "EvaluatePageDesignScriptOperationGateOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PageDesignAllowedOperations": {
+      "ref": "spark-class-model://schema/PageDesignAllowedOperations",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignAllowedOperations",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignAllowedOperations"
+      }
+    },
+    "spark-class-model://model/PageDesignAllowedOperations": {
+      "ref": "spark-class-model://model/PageDesignAllowedOperations",
+      "kind": "model",
+      "className": "PageDesignAllowedOperations",
+      "schemaRef": "spark-class-model://schema/PageDesignAllowedOperations",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageDesignRunContext": {
+      "ref": "spark-class-model://schema/PageDesignRunContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignRunContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignRunContext"
+      }
+    },
+    "spark-class-model://model/PageDesignRunContext": {
+      "ref": "spark-class-model://model/PageDesignRunContext",
+      "kind": "model",
+      "className": "PageDesignRunContext",
+      "schemaRef": "spark-class-model://schema/PageDesignRunContext",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageDesignRunMode": {
+      "ref": "spark-class-model://schema/PageDesignRunMode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignRunMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignRunMode"
+      }
+    },
+    "spark-class-model://model/PageDesignRunMode": {
+      "ref": "spark-class-model://model/PageDesignRunMode",
+      "kind": "model",
+      "className": "PageDesignRunMode",
+      "schemaRef": "spark-class-model://schema/PageDesignRunMode",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageDesignImplGate": {
+      "ref": "spark-class-model://schema/PageDesignImplGate",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignImplGate",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignImplGate"
+      }
+    },
+    "spark-class-model://model/PageDesignImplGate": {
+      "ref": "spark-class-model://model/PageDesignImplGate",
+      "kind": "model",
+      "className": "PageDesignImplGate",
+      "schemaRef": "spark-class-model://schema/PageDesignImplGate",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageDesignGateState": {
+      "ref": "spark-class-model://schema/PageDesignGateState",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignGateState",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignGateState"
+      }
+    },
+    "spark-class-model://model/PageDesignGateState": {
+      "ref": "spark-class-model://model/PageDesignGateState",
+      "kind": "model",
+      "className": "PageDesignGateState",
+      "schemaRef": "spark-class-model://schema/PageDesignGateState",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ReadPageDesignGateStateOptions": {
+      "ref": "spark-class-model://schema/ReadPageDesignGateStateOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ReadPageDesignGateStateOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ReadPageDesignGateStateOptions"
+      }
+    },
+    "spark-class-model://model/ReadPageDesignGateStateOptions": {
+      "ref": "spark-class-model://model/ReadPageDesignGateStateOptions",
+      "kind": "model",
+      "className": "ReadPageDesignGateStateOptions",
+      "schemaRef": "spark-class-model://schema/ReadPageDesignGateStateOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageDesignGateValidationResult": {
+      "ref": "spark-class-model://schema/PageDesignGateValidationResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignGateValidationResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignGateValidationResult"
+      }
+    },
+    "spark-class-model://model/PageDesignGateValidationResult": {
+      "ref": "spark-class-model://model/PageDesignGateValidationResult",
+      "kind": "model",
+      "className": "PageDesignGateValidationResult",
+      "schemaRef": "spark-class-model://schema/PageDesignGateValidationResult",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/EvaluatePageDesignMutationToolGateOptions": {
+      "ref": "spark-class-model://schema/EvaluatePageDesignMutationToolGateOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "EvaluatePageDesignMutationToolGateOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/EvaluatePageDesignMutationToolGateOptions"
+      }
+    },
+    "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions": {
+      "ref": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions",
+      "kind": "model",
+      "className": "EvaluatePageDesignMutationToolGateOptions",
+      "schemaRef": "spark-class-model://schema/EvaluatePageDesignMutationToolGateOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/EvaluatePageDesignScriptOperationGateOptions": {
+      "ref": "spark-class-model://schema/EvaluatePageDesignScriptOperationGateOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "EvaluatePageDesignScriptOperationGateOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/EvaluatePageDesignScriptOperationGateOptions"
+      }
+    },
+    "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions": {
+      "ref": "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions",
+      "kind": "model",
+      "className": "EvaluatePageDesignScriptOperationGateOptions",
+      "schemaRef": "spark-class-model://schema/EvaluatePageDesignScriptOperationGateOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

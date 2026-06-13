@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/registries/vue-page-registry.d.ts",
+  "symbols": [
+    "PageScope",
+    "VuePageConfigEntry",
+    "VuePageEntry"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PageScope": {
+      "ref": "spark-class-model://schema/PageScope",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageScope",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageScope"
+      }
+    },
+    "spark-class-model://model/PageScope": {
+      "ref": "spark-class-model://model/PageScope",
+      "kind": "model",
+      "className": "PageScope",
+      "schemaRef": "spark-class-model://schema/PageScope",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/VuePageConfigEntry": {
+      "ref": "spark-class-model://schema/VuePageConfigEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "VuePageConfigEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/VuePageConfigEntry"
+      }
+    },
+    "spark-class-model://model/VuePageConfigEntry": {
+      "ref": "spark-class-model://model/VuePageConfigEntry",
+      "kind": "model",
+      "className": "VuePageConfigEntry",
+      "schemaRef": "spark-class-model://schema/VuePageConfigEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/VuePageEntry": {
+      "ref": "spark-class-model://schema/VuePageEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "VuePageEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/VuePageEntry"
+      }
+    },
+    "spark-class-model://model/VuePageEntry": {
+      "ref": "spark-class-model://model/VuePageEntry",
+      "kind": "model",
+      "className": "VuePageEntry",
+      "schemaRef": "spark-class-model://schema/VuePageEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

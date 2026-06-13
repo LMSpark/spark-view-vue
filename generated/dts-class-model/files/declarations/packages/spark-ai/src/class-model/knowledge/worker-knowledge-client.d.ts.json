@@ -10,13 +10,42 @@
     "jsdoc": "@module @spark-appworks/spark-ai:class-model/knowledge/worker-knowledge-client\n职责：维护 DTS ClassModel 知识链路中的 worker-knowledge-client 能力，围绕 WorkerClassModelKnowledgeProvider 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-client 这一段如何生成、加载或投影时，用本模块定位职责。",
     "jsdocSource": "source-file-jsdoc",
     "symbols": [
+      "CreateWorkerDtsClassModelKnowledgeProviderOptions",
       "WorkerClassModelKnowledgeProvider"
     ]
   },
   "symbols": [
+    "CreateWorkerDtsClassModelKnowledgeProviderOptions",
     "WorkerClassModelKnowledgeProvider"
   ],
   "models": {
+    "CreateWorkerDtsClassModelKnowledgeProviderOptions": {
+      "kind": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
+      "className": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
+      "jsdoc": "Create Worker Dts Class Model Knowledge Provider Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "ClassModelKnowledgeWorkerInitInput & Readonly<{\n    workerUrl: string | URL;\n    workerOptions?: WorkerOptions;\n    createWorker?: (url: string | URL, options?: WorkerOptions) => Worker;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "ClassModelKnowledgeWorkerInitInput",
+          "targetName": "ClassModelKnowledgeWorkerInitInput"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "Readonly<{\n    workerUrl: string | URL;\n    workerOptions?: WorkerOptions;\n    createWorker?: (url: string | URL, options?: WorkerOptions) => Worker;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.d.ts",
+        "line": 5,
+        "className": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
     "WorkerClassModelKnowledgeProvider": {
       "kind": "WorkerClassModelKnowledgeProvider",
       "className": "WorkerClassModelKnowledgeProvider",
@@ -31,7 +60,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-client.d.ts",
-        "line": 10,
+        "line": 17,
         "className": "WorkerClassModelKnowledgeProvider",
         "declarationKind": "class"
       },
@@ -51,8 +80,7 @@
             "name": "init",
             "type": {
               "type": "reference",
-              "name": "ClassModelKnowledgeWorkerInitInput",
-              "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts"
+              "name": "unknown"
             }
           }
         ]
@@ -68,8 +96,7 @@
               "name": "input",
               "type": {
                 "type": "reference",
-                "name": "ClassModelKnowledgeQueryInput",
-                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -93,8 +120,7 @@
               "name": "input",
               "type": {
                 "type": "reference",
-                "name": "ClassModelModelGuideInput",
-                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -118,8 +144,7 @@
               "name": "input",
               "type": {
                 "type": "reference",
-                "name": "ClassModelAttributeGuideInput",
-                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -143,8 +168,7 @@
               "name": "input",
               "type": {
                 "type": "reference",
-                "name": "ClassModelMethodGuideInput",
-                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -162,8 +186,13 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.469Z",
+  "generatedAt": "2026-06-13T04:00:57.590Z",
   "$defs": {
+    "CreateWorkerDtsClassModelKnowledgeProviderOptions": {
+      "type": "object",
+      "title": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
+      "description": "Create Worker Dts Class Model Knowledge Provider Options 的调用配置。"
+    },
     "WorkerClassModelKnowledgeProvider": {
       "type": "object",
       "title": "WorkerClassModelKnowledgeProvider",

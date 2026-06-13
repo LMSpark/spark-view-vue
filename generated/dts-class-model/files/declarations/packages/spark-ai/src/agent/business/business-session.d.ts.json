@@ -85,16 +85,14 @@
             "name": "options",
             "type": {
               "type": "reference",
-              "name": "AiAgentOptions",
-              "sourcePath": "declarations/packages/spark-ai/src/agent/business/host-options.d.ts"
+              "name": "unknown"
             }
           },
           {
             "name": "targetInput",
             "type": {
               "type": "reference",
-              "name": "AiAgentTarget",
-              "sourcePath": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts"
+              "name": "unknown"
             }
           }
         ]
@@ -104,7 +102,8 @@
           "name": "target",
           "jsdoc": "目标对象。",
           "schema": {
-            "$ref": "scope-types.d.ts.json#/$defs/AiAgentTarget"
+            "type": "object",
+            "title": "AiAgentTarget"
           },
           "readable": true,
           "writable": false
@@ -113,7 +112,8 @@
           "name": "scope",
           "jsdoc": "业务作用域。",
           "schema": {
-            "$ref": "scope-types.d.ts.json#/$defs/AiAgentScope"
+            "type": "object",
+            "title": "AiAgentScope"
           },
           "readable": true,
           "writable": false
@@ -155,8 +155,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "AiAgentSessionRecord",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "literal",
@@ -190,8 +189,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "AiAgentSessionRecord",
-                    "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "literal",
@@ -211,8 +209,7 @@
               "name": "request",
               "type": {
                 "type": "reference",
-                "name": "AiAgentChatRequest",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/chat/chat-types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -230,7 +227,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.404Z",
+  "generatedAt": "2026-06-13T04:00:57.545Z",
   "$defs": {
     "AiAgentRunCommand": {
       "type": "object",
@@ -248,10 +245,12 @@
       "description": "业务会话。\n业务层推荐通过 AiAgent.run[alias](input) 进入；本类承载 Host 内部 session 状态。\n属性：\ntarget     — 业务定位\nscope      — 业务作用域\nsessionId  — 后端会话 ID（kind + 顶层实例 ID）",
       "properties": {
         "target": {
-          "$ref": "scope-types.d.ts.json#/$defs/AiAgentTarget"
+          "type": "object",
+          "title": "AiAgentTarget"
         },
         "scope": {
-          "$ref": "scope-types.d.ts.json#/$defs/AiAgentScope"
+          "type": "object",
+          "title": "AiAgentScope"
         },
         "sessionId": {
           "type": "string"

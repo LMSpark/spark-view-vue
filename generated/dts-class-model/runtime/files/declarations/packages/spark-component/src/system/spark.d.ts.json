@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/system/spark.d.ts",
+  "symbols": [
+    "SparkSystem"
+  ],
+  "@refs": {
+    "spark-class-model://schema/SparkSystem": {
+      "ref": "spark-class-model://schema/SparkSystem",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkSystem",
+        "properties": {
+          "registry": {
+            "$ref": "spark-class-model://schema/ComponentRegistry"
+          },
+          "rootContext": {
+            "$ref": "spark-class-model://schema/CapabilityContext"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkSystem"
+      }
+    },
+    "spark-class-model://model/SparkSystem/attributes/registry/0": {
+      "ref": "spark-class-model://model/SparkSystem/attributes/registry/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkSystem",
+      "name": "registry",
+      "schemaRef": "spark-class-model://schema/shared/97c6fc6f2982f4d117b6a51e2b7eae7b2a34db8ab10fde5c863c2084ecb98e8c",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fattributes%2Fregistry%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FComponentRegistry": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fattributes%2Fregistry%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FComponentRegistry",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkSystem/attributes/registry/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ComponentRegistry",
+      "targetClassName": "ComponentRegistry",
+      "targetFile": "files/declarations/packages/spark-component/src/core/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ComponentRegistry"
+    },
+    "spark-class-model://model/SparkSystem/attributes/rootContext/1": {
+      "ref": "spark-class-model://model/SparkSystem/attributes/rootContext/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkSystem",
+      "name": "rootContext",
+      "schemaRef": "spark-class-model://schema/shared/847bba11c938fd42135226be7d37ecca9d911709de29c0d0a075b63153cd9d2f",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fattributes%2FrootContext%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fattributes%2FrootContext%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkSystem/attributes/rootContext/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/CapabilityContext",
+      "targetClassName": "CapabilityContext",
+      "targetFile": "files/declarations/packages/spark-utils/src/capability/core.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CapabilityContext"
+    },
+    "spark-class-model://model/SparkSystem": {
+      "ref": "spark-class-model://model/SparkSystem",
+      "kind": "model",
+      "className": "SparkSystem",
+      "schemaRef": "spark-class-model://schema/SparkSystem",
+      "attributeRefs": [
+        "spark-class-model://model/SparkSystem/attributes/registry/0",
+        "spark-class-model://model/SparkSystem/attributes/rootContext/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fattributes%2Fregistry%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FComponentRegistry",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fattributes%2FrootContext%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext"
+      ]
+    }
+  }
+}

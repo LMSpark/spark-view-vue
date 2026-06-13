@@ -75,7 +75,8 @@
           "name": "toolbar",
           "jsdoc": "结构化工具栏。",
           "schema": {
-            "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+            "type": "object",
+            "title": "RToolbarProps"
           },
           "readable": true,
           "writable": false
@@ -265,7 +266,8 @@
           "name": "onItemClick",
           "jsdoc": "卡片点击回调。",
           "schema": {
-            "$ref": "../../support/interactionControl.d.ts.json#/$defs/RowClickHandler"
+            "type": "object",
+            "title": "RowClickHandler"
           },
           "readable": true,
           "writable": false
@@ -284,7 +286,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.564Z",
+  "generatedAt": "2026-06-13T04:00:57.649Z",
   "$defs": {
     "RVirtualCardProps": {
       "type": "object",
@@ -296,7 +298,8 @@
           "title": "DataView"
         },
         "toolbar": {
-          "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+          "type": "object",
+          "title": "RToolbarProps"
         },
         "rowKey": {
           "type": "string"
@@ -360,7 +363,8 @@
           "type": "boolean"
         },
         "onItemClick": {
-          "$ref": "../../support/interactionControl.d.ts.json#/$defs/RowClickHandler"
+          "type": "object",
+          "title": "RowClickHandler"
         },
         "onPageChange": {
           "type": "object",

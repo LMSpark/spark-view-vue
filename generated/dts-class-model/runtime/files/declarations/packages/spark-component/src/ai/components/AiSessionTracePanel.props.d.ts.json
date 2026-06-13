@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/AiSessionTracePanel.props.d.ts",
+  "symbols": [
+    "AiSessionTracePanelProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiSessionTracePanelProps": {
+      "ref": "spark-class-model://schema/AiSessionTracePanelProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiSessionTracePanelProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiSessionTracePanelProps"
+      }
+    },
+    "spark-class-model://model/AiSessionTracePanelProps": {
+      "ref": "spark-class-model://model/AiSessionTracePanelProps",
+      "kind": "model",
+      "className": "AiSessionTracePanelProps",
+      "schemaRef": "spark-class-model://schema/AiSessionTracePanelProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

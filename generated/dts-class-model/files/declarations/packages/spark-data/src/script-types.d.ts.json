@@ -36,7 +36,8 @@
           "name": "modelPermission",
           "jsdoc": "model Permission 字段。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/ModelPermission"
+            "type": "object",
+            "title": "ModelPermission"
           },
           "readable": true,
           "writable": false
@@ -47,7 +48,8 @@
           "schema": {
             "anyOf": [
               {
-                "$ref": "types.d.ts.json#/$defs/DataRow"
+                "type": "object",
+                "title": "DataRow"
               },
               {
                 "type": "null"
@@ -86,7 +88,8 @@
           "name": "visibility",
           "jsdoc": "visibility 字段。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/FieldVisibility"
+            "type": "object",
+            "title": "FieldVisibility"
           },
           "readable": true,
           "writable": true
@@ -131,7 +134,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.790Z",
+  "generatedAt": "2026-06-13T04:00:57.835Z",
   "$defs": {
     "PermissionActionContext": {
       "type": "object",
@@ -139,12 +142,14 @@
       "description": "权限动作上下文（脚本可用）",
       "properties": {
         "modelPermission": {
-          "$ref": "types.d.ts.json#/$defs/ModelPermission"
+          "type": "object",
+          "title": "ModelPermission"
         },
         "row": {
           "anyOf": [
             {
-              "$ref": "types.d.ts.json#/$defs/DataRow"
+              "type": "object",
+              "title": "DataRow"
             },
             {
               "type": "null"
@@ -162,7 +167,8 @@
           "type": "string"
         },
         "visibility": {
-          "$ref": "types.d.ts.json#/$defs/FieldVisibility"
+          "type": "object",
+          "title": "FieldVisibility"
         },
         "readable": {
           "type": "boolean"

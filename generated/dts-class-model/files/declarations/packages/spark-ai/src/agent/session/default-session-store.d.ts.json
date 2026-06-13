@@ -88,15 +88,13 @@
               "name": "context",
               "type": {
                 "type": "reference",
-                "name": "AiAgentRuntimeContext",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                "name": "unknown"
               }
             }
           ],
           "type": {
             "type": "reference",
-            "name": "AiAgentSessionRecord",
-            "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -108,8 +106,7 @@
               "name": "context",
               "type": {
                 "type": "reference",
-                "name": "AiAgentRuntimeContext",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                "name": "unknown"
               }
             },
             {
@@ -128,8 +125,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "AiAgentSessionRecord",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "literal",
@@ -147,8 +143,7 @@
               "name": "context",
               "type": {
                 "type": "reference",
-                "name": "AiAgentRuntimeContext",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -157,8 +152,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "AiAgentSessionRecord",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "literal",
@@ -186,8 +180,7 @@
               "name": "context",
               "type": {
                 "type": "reference",
-                "name": "AiAgentRuntimeContext",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -205,15 +198,13 @@
               "name": "options",
               "type": {
                 "type": "reference",
-                "name": "AiAgentAppendMessageOptions",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/business/scope-types.d.ts"
+                "name": "unknown"
               }
             }
           ],
           "type": {
             "type": "reference",
-            "name": "AiAgentMessageHistoryEntry",
-            "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -225,21 +216,19 @@
               "name": "options",
               "type": {
                 "type": "reference",
-                "name": "AiAgentAppendFunctionCallOptions",
-                "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
+                "name": "unknown"
               }
             }
           ],
           "type": {
             "type": "reference",
-            "name": "AiAgentFunctionCallHistoryEntry",
-            "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
+            "name": "unknown"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.426Z",
+  "generatedAt": "2026-06-13T04:00:57.565Z",
   "$defs": {
     "DefaultAiAgentSessionStoreOptions": {
       "type": "object",

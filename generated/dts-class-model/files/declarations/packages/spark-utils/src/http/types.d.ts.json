@@ -991,7 +991,8 @@
           "name": "request",
           "jsdoc": "自定义 HTTP client；用于复用上层认证、租户作用域或 URL 重写能力",
           "schema": {
-            "$ref": "HttpClientBase.d.ts.json#/$defs/HttpClientBase"
+            "type": "object",
+            "title": "HttpClientBase"
           },
           "readable": true,
           "writable": false
@@ -1314,7 +1315,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.861Z",
+  "generatedAt": "2026-06-13T04:00:57.913Z",
   "$defs": {
     "Method": {
       "type": "object",
@@ -1686,7 +1687,8 @@
           "type": "string"
         },
         "request": {
-          "$ref": "HttpClientBase.d.ts.json#/$defs/HttpClientBase"
+          "type": "object",
+          "title": "HttpClientBase"
         },
         "timeout": {
           "type": "number"

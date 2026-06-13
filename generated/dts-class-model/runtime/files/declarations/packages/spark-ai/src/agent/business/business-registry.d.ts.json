@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-registry.d.ts",
+  "symbols": [
+    "AiAgentRegistry"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentRegistry": {
+      "ref": "spark-class-model://schema/AiAgentRegistry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentRegistry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentRegistry"
+      }
+    },
+    "spark-class-model://model/AiAgentRegistry/methods/register/0": {
+      "ref": "spark-class-model://model/AiAgentRegistry/methods/register/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRegistry",
+      "name": "register",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/5f719b685b159eab06775e2a9fc017fbbce744057e3d33274e9680feface0dc0"
+    },
+    "spark-class-model://schema/shared/5f719b685b159eab06775e2a9fc017fbbce744057e3d33274e9680feface0dc0": {
+      "ref": "spark-class-model://schema/shared/5f719b685b159eab06775e2a9fc017fbbce744057e3d33274e9680feface0dc0",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "registration": {
+            "$ref": "spark-class-model://schema/AiAgentRegistration",
+            "title": "AiAgentRegistration<TInput>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5f719b685b159eab06775e2a9fc017fbbce744057e3d33274e9680feface0dc0"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistry%2Fmethods%2Fregister%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistry%2Fmethods%2Fregister%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentRegistry/methods/register/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentRegistration",
+      "targetClassName": "AiAgentRegistration",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/registration-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRegistration"
+    },
+    "spark-class-model://model/AiAgentRegistry/methods/get/1": {
+      "ref": "spark-class-model://model/AiAgentRegistry/methods/get/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRegistry",
+      "name": "get",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/eb3bf231ad06ba439557814b2287a8ddbb46cb4a9a6b0aa8167756016e5e9ecf",
+      "returnSchemaRef": "spark-class-model://schema/shared/670efbe61ac7a80a990322e748af43249d111c5f5dde6682f8ad50f11b10248f"
+    },
+    "spark-class-model://schema/shared/eb3bf231ad06ba439557814b2287a8ddbb46cb4a9a6b0aa8167756016e5e9ecf": {
+      "ref": "spark-class-model://schema/shared/eb3bf231ad06ba439557814b2287a8ddbb46cb4a9a6b0aa8167756016e5e9ecf",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "moduleId": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/eb3bf231ad06ba439557814b2287a8ddbb46cb4a9a6b0aa8167756016e5e9ecf"
+      }
+    },
+    "spark-class-model://schema/shared/670efbe61ac7a80a990322e748af43249d111c5f5dde6682f8ad50f11b10248f": {
+      "ref": "spark-class-model://schema/shared/670efbe61ac7a80a990322e748af43249d111c5f5dde6682f8ad50f11b10248f",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentRegistration",
+        "title": "AiAgentRegistration<TInput>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/670efbe61ac7a80a990322e748af43249d111c5f5dde6682f8ad50f11b10248f"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistry%2Fmethods%2Fget%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistry%2Fmethods%2Fget%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentRegistry/methods/get/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentRegistration",
+      "targetClassName": "AiAgentRegistration",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/registration-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRegistration"
+    },
+    "spark-class-model://model/AiAgentRegistry/methods/list/2": {
+      "ref": "spark-class-model://model/AiAgentRegistry/methods/list/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRegistry",
+      "name": "list",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/9d3dafbe1d957997ef6da3dd7f2b793ef962818e0ff8976a4637eb562c91c4c9"
+    },
+    "spark-class-model://schema/shared/9d3dafbe1d957997ef6da3dd7f2b793ef962818e0ff8976a4637eb562c91c4c9": {
+      "ref": "spark-class-model://schema/shared/9d3dafbe1d957997ef6da3dd7f2b793ef962818e0ff8976a4637eb562c91c4c9",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "spark-class-model://schema/AiAgentRegistration",
+          "title": "AiAgentRegistration<TInput>"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9d3dafbe1d957997ef6da3dd7f2b793ef962818e0ff8976a4637eb562c91c4c9"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistry%2Fmethods%2Flist%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistry%2Fmethods%2Flist%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentRegistry/methods/list/2",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentRegistration",
+      "targetClassName": "AiAgentRegistration",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/registration-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRegistration"
+    },
+    "spark-class-model://model/AiAgentRegistry/methods/delete/3": {
+      "ref": "spark-class-model://model/AiAgentRegistry/methods/delete/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRegistry",
+      "name": "delete",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/eb3bf231ad06ba439557814b2287a8ddbb46cb4a9a6b0aa8167756016e5e9ecf",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://model/AiAgentRegistry": {
+      "ref": "spark-class-model://model/AiAgentRegistry",
+      "kind": "model",
+      "className": "AiAgentRegistry",
+      "schemaRef": "spark-class-model://schema/AiAgentRegistry",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/AiAgentRegistry/methods/register/0",
+        "spark-class-model://model/AiAgentRegistry/methods/get/1",
+        "spark-class-model://model/AiAgentRegistry/methods/list/2",
+        "spark-class-model://model/AiAgentRegistry/methods/delete/3"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistry%2Fmethods%2Fregister%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistry%2Fmethods%2Fget%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistry%2Fmethods%2Flist%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration"
+      ]
+    }
+  }
+}

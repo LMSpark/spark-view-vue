@@ -230,7 +230,8 @@
           "name": "logger",
           "jsdoc": "Logger 配置",
           "schema": {
-            "$ref": "../logger/index.d.ts.json#/$defs/AppLoggerConfig"
+            "type": "object",
+            "title": "AppLoggerConfig"
           },
           "readable": true,
           "writable": true
@@ -275,7 +276,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.495Z",
+  "generatedAt": "2026-06-13T04:00:57.604Z",
   "$defs": {
     "ConfigSourceOptions": {
       "type": "object",
@@ -359,7 +360,8 @@
           "type": "object"
         },
         "logger": {
-          "$ref": "../logger/index.d.ts.json#/$defs/AppLoggerConfig"
+          "type": "object",
+          "title": "AppLoggerConfig"
         }
       }
     },

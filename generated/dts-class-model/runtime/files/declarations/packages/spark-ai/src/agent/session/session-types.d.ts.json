@@ -1,0 +1,502 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts",
+  "symbols": [
+    "AiAgentFunctionCallCheck",
+    "AiAgentFunctionCallFailure",
+    "AiAgentFunctionCallResult",
+    "AiAgentSessionStatus",
+    "AiAgentMessageRole",
+    "AiAgentMessageSource",
+    "AiAgentFunctionCallHistoryStatus",
+    "AiAgentHistoryEntryBase",
+    "AiAgentMessageHistoryEntry",
+    "AiAgentFunctionCallHistoryEntry",
+    "AiAgentHistoryEntry",
+    "AiAgentSessionRecord",
+    "AiAgentStartSessionResult",
+    "AiAgentAppendFunctionCallOptions",
+    "AiAgentSessionStore"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentFunctionCallCheck": {
+      "ref": "spark-class-model://schema/AiAgentFunctionCallCheck",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentFunctionCallCheck",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentFunctionCallCheck"
+      }
+    },
+    "spark-class-model://model/AiAgentFunctionCallCheck": {
+      "ref": "spark-class-model://model/AiAgentFunctionCallCheck",
+      "kind": "model",
+      "className": "AiAgentFunctionCallCheck",
+      "schemaRef": "spark-class-model://schema/AiAgentFunctionCallCheck",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentFunctionCallFailure": {
+      "ref": "spark-class-model://schema/AiAgentFunctionCallFailure",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentFunctionCallFailure",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentFunctionCallFailure"
+      }
+    },
+    "spark-class-model://model/AiAgentFunctionCallFailure": {
+      "ref": "spark-class-model://model/AiAgentFunctionCallFailure",
+      "kind": "model",
+      "className": "AiAgentFunctionCallFailure",
+      "schemaRef": "spark-class-model://schema/AiAgentFunctionCallFailure",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentFunctionCallResult": {
+      "ref": "spark-class-model://schema/AiAgentFunctionCallResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentFunctionCallResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentFunctionCallResult"
+      }
+    },
+    "spark-class-model://model/AiAgentFunctionCallResult": {
+      "ref": "spark-class-model://model/AiAgentFunctionCallResult",
+      "kind": "model",
+      "className": "AiAgentFunctionCallResult",
+      "schemaRef": "spark-class-model://schema/AiAgentFunctionCallResult",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentSessionStatus": {
+      "ref": "spark-class-model://schema/AiAgentSessionStatus",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentSessionStatus",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentSessionStatus"
+      }
+    },
+    "spark-class-model://model/AiAgentSessionStatus": {
+      "ref": "spark-class-model://model/AiAgentSessionStatus",
+      "kind": "model",
+      "className": "AiAgentSessionStatus",
+      "schemaRef": "spark-class-model://schema/AiAgentSessionStatus",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentMessageRole": {
+      "ref": "spark-class-model://schema/AiAgentMessageRole",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentMessageRole",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentMessageRole"
+      }
+    },
+    "spark-class-model://model/AiAgentMessageRole": {
+      "ref": "spark-class-model://model/AiAgentMessageRole",
+      "kind": "model",
+      "className": "AiAgentMessageRole",
+      "schemaRef": "spark-class-model://schema/AiAgentMessageRole",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentMessageSource": {
+      "ref": "spark-class-model://schema/AiAgentMessageSource",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentMessageSource",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentMessageSource"
+      }
+    },
+    "spark-class-model://model/AiAgentMessageSource": {
+      "ref": "spark-class-model://model/AiAgentMessageSource",
+      "kind": "model",
+      "className": "AiAgentMessageSource",
+      "schemaRef": "spark-class-model://schema/AiAgentMessageSource",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentFunctionCallHistoryStatus": {
+      "ref": "spark-class-model://schema/AiAgentFunctionCallHistoryStatus",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentFunctionCallHistoryStatus",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentFunctionCallHistoryStatus"
+      }
+    },
+    "spark-class-model://model/AiAgentFunctionCallHistoryStatus": {
+      "ref": "spark-class-model://model/AiAgentFunctionCallHistoryStatus",
+      "kind": "model",
+      "className": "AiAgentFunctionCallHistoryStatus",
+      "schemaRef": "spark-class-model://schema/AiAgentFunctionCallHistoryStatus",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentHistoryEntryBase": {
+      "ref": "spark-class-model://schema/AiAgentHistoryEntryBase",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentHistoryEntryBase",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentHistoryEntryBase"
+      }
+    },
+    "spark-class-model://model/AiAgentHistoryEntryBase": {
+      "ref": "spark-class-model://model/AiAgentHistoryEntryBase",
+      "kind": "model",
+      "className": "AiAgentHistoryEntryBase",
+      "schemaRef": "spark-class-model://schema/AiAgentHistoryEntryBase",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentMessageHistoryEntry": {
+      "ref": "spark-class-model://schema/AiAgentMessageHistoryEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentMessageHistoryEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentMessageHistoryEntry"
+      }
+    },
+    "spark-class-model://model/AiAgentMessageHistoryEntry": {
+      "ref": "spark-class-model://model/AiAgentMessageHistoryEntry",
+      "kind": "model",
+      "className": "AiAgentMessageHistoryEntry",
+      "schemaRef": "spark-class-model://schema/AiAgentMessageHistoryEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentFunctionCallHistoryEntry": {
+      "ref": "spark-class-model://schema/AiAgentFunctionCallHistoryEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentFunctionCallHistoryEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentFunctionCallHistoryEntry"
+      }
+    },
+    "spark-class-model://model/AiAgentFunctionCallHistoryEntry": {
+      "ref": "spark-class-model://model/AiAgentFunctionCallHistoryEntry",
+      "kind": "model",
+      "className": "AiAgentFunctionCallHistoryEntry",
+      "schemaRef": "spark-class-model://schema/AiAgentFunctionCallHistoryEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentHistoryEntry": {
+      "ref": "spark-class-model://schema/AiAgentHistoryEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentHistoryEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentHistoryEntry"
+      }
+    },
+    "spark-class-model://model/AiAgentHistoryEntry": {
+      "ref": "spark-class-model://model/AiAgentHistoryEntry",
+      "kind": "model",
+      "className": "AiAgentHistoryEntry",
+      "schemaRef": "spark-class-model://schema/AiAgentHistoryEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentSessionRecord": {
+      "ref": "spark-class-model://schema/AiAgentSessionRecord",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentSessionRecord",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentSessionRecord"
+      }
+    },
+    "spark-class-model://model/AiAgentSessionRecord": {
+      "ref": "spark-class-model://model/AiAgentSessionRecord",
+      "kind": "model",
+      "className": "AiAgentSessionRecord",
+      "schemaRef": "spark-class-model://schema/AiAgentSessionRecord",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentStartSessionResult": {
+      "ref": "spark-class-model://schema/AiAgentStartSessionResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentStartSessionResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentStartSessionResult"
+      }
+    },
+    "spark-class-model://model/AiAgentStartSessionResult": {
+      "ref": "spark-class-model://model/AiAgentStartSessionResult",
+      "kind": "model",
+      "className": "AiAgentStartSessionResult",
+      "schemaRef": "spark-class-model://schema/AiAgentStartSessionResult",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentAppendFunctionCallOptions": {
+      "ref": "spark-class-model://schema/AiAgentAppendFunctionCallOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentAppendFunctionCallOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentAppendFunctionCallOptions"
+      }
+    },
+    "spark-class-model://model/AiAgentAppendFunctionCallOptions": {
+      "ref": "spark-class-model://model/AiAgentAppendFunctionCallOptions",
+      "kind": "model",
+      "className": "AiAgentAppendFunctionCallOptions",
+      "schemaRef": "spark-class-model://schema/AiAgentAppendFunctionCallOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentSessionStore": {
+      "ref": "spark-class-model://schema/AiAgentSessionStore",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentSessionStore",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentSessionStore"
+      }
+    },
+    "spark-class-model://model/AiAgentSessionStore/methods/startSession/0": {
+      "ref": "spark-class-model://model/AiAgentSessionStore/methods/startSession/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentSessionStore",
+      "name": "startSession",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0d5d80b364bb7a89bb94f321e7ab1f234648393334af6cd14fda6d6f93f4c0b3",
+      "returnSchemaRef": "spark-class-model://schema/shared/894ca620d646864aea16d28f237cfd71b3e3a80e75cdfcf5a3be9bb9e29ec473"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FstartSession%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionRecord": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FstartSession%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionRecord",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentSessionStore/methods/startSession/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentSessionRecord",
+      "targetClassName": "AiAgentSessionRecord",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/session/session-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentSessionRecord"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FstartSession%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FstartSession%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentSessionStore/methods/startSession/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentRuntimeContext",
+      "targetClassName": "AiAgentRuntimeContext",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/scope-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRuntimeContext"
+    },
+    "spark-class-model://model/AiAgentSessionStore/methods/stopSession/1": {
+      "ref": "spark-class-model://model/AiAgentSessionStore/methods/stopSession/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentSessionStore",
+      "name": "stopSession",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/d54b46e9aeb41857189990561d8c199a11d878a6941e35e69ddd3ab62954744e",
+      "returnSchemaRef": "spark-class-model://schema/shared/5dc9b49733d3e8b5c456ceac47810e2a3f630d1d90770a88c049ecaf34d4e518"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FstopSession%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionRecord": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FstopSession%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionRecord",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentSessionStore/methods/stopSession/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentSessionRecord",
+      "targetClassName": "AiAgentSessionRecord",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/session/session-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentSessionRecord"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FstopSession%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FstopSession%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentSessionStore/methods/stopSession/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentRuntimeContext",
+      "targetClassName": "AiAgentRuntimeContext",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/scope-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRuntimeContext"
+    },
+    "spark-class-model://model/AiAgentSessionStore/methods/getSession/2": {
+      "ref": "spark-class-model://model/AiAgentSessionStore/methods/getSession/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentSessionStore",
+      "name": "getSession",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0d5d80b364bb7a89bb94f321e7ab1f234648393334af6cd14fda6d6f93f4c0b3",
+      "returnSchemaRef": "spark-class-model://schema/shared/5dc9b49733d3e8b5c456ceac47810e2a3f630d1d90770a88c049ecaf34d4e518"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FgetSession%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionRecord": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FgetSession%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionRecord",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentSessionStore/methods/getSession/2",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentSessionRecord",
+      "targetClassName": "AiAgentSessionRecord",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/session/session-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentSessionRecord"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FgetSession%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FgetSession%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentSessionStore/methods/getSession/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentRuntimeContext",
+      "targetClassName": "AiAgentRuntimeContext",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/scope-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRuntimeContext"
+    },
+    "spark-class-model://model/AiAgentSessionStore/methods/listSessions/3": {
+      "ref": "spark-class-model://model/AiAgentSessionStore/methods/listSessions/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentSessionStore",
+      "name": "listSessions",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22"
+    },
+    "spark-class-model://model/AiAgentSessionStore/methods/getSessionHistory/4": {
+      "ref": "spark-class-model://model/AiAgentSessionStore/methods/getSessionHistory/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentSessionStore",
+      "name": "getSessionHistory",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0d5d80b364bb7a89bb94f321e7ab1f234648393334af6cd14fda6d6f93f4c0b3",
+      "returnSchemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FgetSessionHistory%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FgetSessionHistory%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentSessionStore/methods/getSessionHistory/4",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentRuntimeContext",
+      "targetClassName": "AiAgentRuntimeContext",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/scope-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRuntimeContext"
+    },
+    "spark-class-model://model/AiAgentSessionStore/methods/appendMessage/5": {
+      "ref": "spark-class-model://model/AiAgentSessionStore/methods/appendMessage/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentSessionStore",
+      "name": "appendMessage",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/d622939a54db45c76187c38d26e8bb3f61e6e2d31110c324d75ffd2345b78c39",
+      "returnSchemaRef": "spark-class-model://schema/shared/23f575a05c9692c3910fa00033cbc28f39ea6bf71a408199a870a9b40aa4446c"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FappendMessage%2F5/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentMessageHistoryEntry": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FappendMessage%2F5/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentMessageHistoryEntry",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentSessionStore/methods/appendMessage/5",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentMessageHistoryEntry",
+      "targetClassName": "AiAgentMessageHistoryEntry",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/session/session-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentMessageHistoryEntry"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FappendMessage%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppendMessageOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FappendMessage%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppendMessageOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentSessionStore/methods/appendMessage/5",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentAppendMessageOptions",
+      "targetClassName": "AiAgentAppendMessageOptions",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/scope-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentAppendMessageOptions"
+    },
+    "spark-class-model://model/AiAgentSessionStore/methods/appendFunctionCall/6": {
+      "ref": "spark-class-model://model/AiAgentSessionStore/methods/appendFunctionCall/6",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentSessionStore",
+      "name": "appendFunctionCall",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/5320de5ff0426e0786b521ce130b641c45fcaa72ba3b78592de51862fdbca45b",
+      "returnSchemaRef": "spark-class-model://schema/shared/9eaceee74045c680f37b7382a6945159b6cc6b6d2b871fb62b55acf2b383c775"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FappendFunctionCall%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppendFunctionCallOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FappendFunctionCall%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppendFunctionCallOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentSessionStore/methods/appendFunctionCall/6",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentAppendFunctionCallOptions",
+      "targetClassName": "AiAgentAppendFunctionCallOptions",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/session/session-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentAppendFunctionCallOptions"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FappendFunctionCall%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentFunctionCallHistoryEntry": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FappendFunctionCall%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentFunctionCallHistoryEntry",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentSessionStore/methods/appendFunctionCall/6",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentFunctionCallHistoryEntry",
+      "targetClassName": "AiAgentFunctionCallHistoryEntry",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/session/session-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentFunctionCallHistoryEntry"
+    },
+    "spark-class-model://model/AiAgentSessionStore": {
+      "ref": "spark-class-model://model/AiAgentSessionStore",
+      "kind": "model",
+      "className": "AiAgentSessionStore",
+      "schemaRef": "spark-class-model://schema/AiAgentSessionStore",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/AiAgentSessionStore/methods/startSession/0",
+        "spark-class-model://model/AiAgentSessionStore/methods/stopSession/1",
+        "spark-class-model://model/AiAgentSessionStore/methods/getSession/2",
+        "spark-class-model://model/AiAgentSessionStore/methods/listSessions/3",
+        "spark-class-model://model/AiAgentSessionStore/methods/getSessionHistory/4",
+        "spark-class-model://model/AiAgentSessionStore/methods/appendMessage/5",
+        "spark-class-model://model/AiAgentSessionStore/methods/appendFunctionCall/6"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FstartSession%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionRecord",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FstartSession%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FstopSession%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionRecord",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FstopSession%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FgetSession%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionRecord",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FgetSession%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FgetSessionHistory%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FappendMessage%2F5/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentMessageHistoryEntry",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FappendMessage%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppendMessageOptions",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FappendFunctionCall%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppendFunctionCallOptions",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionStore%2Fmethods%2FappendFunctionCall%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentFunctionCallHistoryEntry"
+      ]
+    }
+  }
+}

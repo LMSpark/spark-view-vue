@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts",
+  "symbols": [
+    "ClassModelScriptCommand",
+    "ClassModelRuntimeOptions",
+    "ClassModelToolArgs",
+    "ClassModelToolResult",
+    "ClassModelToolCheck",
+    "ClassModelScriptExecutorResult",
+    "ClassModelScriptExecutor",
+    "ClassModelRuntime"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ClassModelScriptCommand": {
+      "ref": "spark-class-model://schema/ClassModelScriptCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelScriptCommand",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelScriptCommand"
+      }
+    },
+    "spark-class-model://model/ClassModelScriptCommand": {
+      "ref": "spark-class-model://model/ClassModelScriptCommand",
+      "kind": "model",
+      "className": "ClassModelScriptCommand",
+      "schemaRef": "spark-class-model://schema/ClassModelScriptCommand",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelRuntimeOptions": {
+      "ref": "spark-class-model://schema/ClassModelRuntimeOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelRuntimeOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelRuntimeOptions"
+      }
+    },
+    "spark-class-model://model/ClassModelRuntimeOptions": {
+      "ref": "spark-class-model://model/ClassModelRuntimeOptions",
+      "kind": "model",
+      "className": "ClassModelRuntimeOptions",
+      "schemaRef": "spark-class-model://schema/ClassModelRuntimeOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelToolArgs": {
+      "ref": "spark-class-model://schema/ClassModelToolArgs",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelToolArgs",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelToolArgs"
+      }
+    },
+    "spark-class-model://model/ClassModelToolArgs": {
+      "ref": "spark-class-model://model/ClassModelToolArgs",
+      "kind": "model",
+      "className": "ClassModelToolArgs",
+      "schemaRef": "spark-class-model://schema/ClassModelToolArgs",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelToolResult": {
+      "ref": "spark-class-model://schema/ClassModelToolResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelToolResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelToolResult"
+      }
+    },
+    "spark-class-model://model/ClassModelToolResult": {
+      "ref": "spark-class-model://model/ClassModelToolResult",
+      "kind": "model",
+      "className": "ClassModelToolResult",
+      "schemaRef": "spark-class-model://schema/ClassModelToolResult",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelToolCheck": {
+      "ref": "spark-class-model://schema/ClassModelToolCheck",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelToolCheck",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelToolCheck"
+      }
+    },
+    "spark-class-model://model/ClassModelToolCheck": {
+      "ref": "spark-class-model://model/ClassModelToolCheck",
+      "kind": "model",
+      "className": "ClassModelToolCheck",
+      "schemaRef": "spark-class-model://schema/ClassModelToolCheck",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelScriptExecutorResult": {
+      "ref": "spark-class-model://schema/ClassModelScriptExecutorResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelScriptExecutorResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelScriptExecutorResult"
+      }
+    },
+    "spark-class-model://model/ClassModelScriptExecutorResult": {
+      "ref": "spark-class-model://model/ClassModelScriptExecutorResult",
+      "kind": "model",
+      "className": "ClassModelScriptExecutorResult",
+      "schemaRef": "spark-class-model://schema/ClassModelScriptExecutorResult",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelScriptExecutor": {
+      "ref": "spark-class-model://schema/ClassModelScriptExecutor",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelScriptExecutor",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelScriptExecutor"
+      }
+    },
+    "spark-class-model://model/ClassModelScriptExecutor": {
+      "ref": "spark-class-model://model/ClassModelScriptExecutor",
+      "kind": "model",
+      "className": "ClassModelScriptExecutor",
+      "schemaRef": "spark-class-model://schema/ClassModelScriptExecutor",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelRuntime": {
+      "ref": "spark-class-model://schema/ClassModelRuntime",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelRuntime",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelRuntime"
+      }
+    },
+    "spark-class-model://model/ClassModelRuntime/methods/getTools/0": {
+      "ref": "spark-class-model://model/ClassModelRuntime/methods/getTools/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ClassModelRuntime",
+      "name": "getTools",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22"
+    },
+    "spark-class-model://model/ClassModelRuntime/methods/executeTool/1": {
+      "ref": "spark-class-model://model/ClassModelRuntime/methods/executeTool/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ClassModelRuntime",
+      "name": "executeTool",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/c322448570eeb114e54ca1cc09533e344d3af6ae83b2ce59ec688d64d987c758",
+      "returnSchemaRef": "spark-class-model://schema/shared/d1807ea798bfaa973e75f104d49317907402401db0461a1a72e53470d4adfb14"
+    },
+    "spark-class-model://schema/shared/c322448570eeb114e54ca1cc09533e344d3af6ae83b2ce59ec688d64d987c758": {
+      "ref": "spark-class-model://schema/shared/c322448570eeb114e54ca1cc09533e344d3af6ae83b2ce59ec688d64d987c758",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "toolName": {
+            "type": "string"
+          },
+          "rawArgs": {
+            "$ref": "spark-class-model://schema/ClassModelToolArgs"
+          },
+          "host": true
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c322448570eeb114e54ca1cc09533e344d3af6ae83b2ce59ec688d64d987c758"
+      }
+    },
+    "spark-class-model://schema/shared/d1807ea798bfaa973e75f104d49317907402401db0461a1a72e53470d4adfb14": {
+      "ref": "spark-class-model://schema/shared/d1807ea798bfaa973e75f104d49317907402401db0461a1a72e53470d4adfb14",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<ClassModelToolResult>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d1807ea798bfaa973e75f104d49317907402401db0461a1a72e53470d4adfb14"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelRuntime%2Fmethods%2FexecuteTool%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelToolArgs": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelRuntime%2Fmethods%2FexecuteTool%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelToolArgs",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ClassModelRuntime/methods/executeTool/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/ClassModelToolArgs",
+      "targetClassName": "ClassModelToolArgs",
+      "targetFile": "files/declarations/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ClassModelToolArgs"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelRuntime%2Fmethods%2FexecuteTool%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FClassModelToolResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelRuntime%2Fmethods%2FexecuteTool%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FClassModelToolResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ClassModelRuntime/methods/executeTool/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/ClassModelToolResult",
+      "targetClassName": "ClassModelToolResult",
+      "targetFile": "files/declarations/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ClassModelToolResult"
+    },
+    "spark-class-model://model/ClassModelRuntime": {
+      "ref": "spark-class-model://model/ClassModelRuntime",
+      "kind": "model",
+      "className": "ClassModelRuntime",
+      "schemaRef": "spark-class-model://schema/ClassModelRuntime",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ClassModelRuntime/methods/getTools/0",
+        "spark-class-model://model/ClassModelRuntime/methods/executeTool/1"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelRuntime%2Fmethods%2FexecuteTool%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelToolArgs",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelRuntime%2Fmethods%2FexecuteTool%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FClassModelToolResult"
+      ]
+    }
+  }
+}

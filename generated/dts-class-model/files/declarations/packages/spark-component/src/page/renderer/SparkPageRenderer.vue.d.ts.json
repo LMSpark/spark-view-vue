@@ -192,20 +192,14 @@
         {
           "name": "messageService",
           "jsdoc": "UI 消息服务接口",
-          "schema": {
-            "type": "object",
-            "title": "{ success: (msg: string) => void; warning: (msg: string) => void; error: (msg: string) => void; info: (msg: string) => void; }"
-          },
+          "schema": true,
           "readable": true,
           "writable": false
         },
         {
           "name": "confirmService",
           "jsdoc": "UI 确认对话框服务接口",
-          "schema": {
-            "type": "object",
-            "title": "{ confirm: (msg: string, title?: string | undefined) => Promise<unknown>; alert: (msg: string, title?: string | undefined) => Promise<unknown>; prompt?: ((msg: string, title?: string | undefined) => Promise<string | null>) | undefined; }"
-          },
+          "schema": true,
           "readable": true,
           "writable": false
         },
@@ -253,7 +247,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.721Z",
+  "generatedAt": "2026-06-13T04:00:57.794Z",
   "$defs": {
     "PageRuntimeErrorPhase": {
       "type": "object",
@@ -303,14 +297,8 @@
         "enableDataSet": {
           "type": "boolean"
         },
-        "messageService": {
-          "type": "object",
-          "title": "{ success: (msg: string) => void; warning: (msg: string) => void; error: (msg: string) => void; info: (msg: string) => void; }"
-        },
-        "confirmService": {
-          "type": "object",
-          "title": "{ confirm: (msg: string, title?: string | undefined) => Promise<unknown>; alert: (msg: string, title?: string | undefined) => Promise<unknown>; prompt?: ((msg: string, title?: string | undefined) => Promise<string | null>) | undefined; }"
-        },
+        "messageService": true,
+        "confirmService": true,
         "beforeLoad": {
           "type": "object",
           "title": "(pageId: string) => void | Promise<void>"

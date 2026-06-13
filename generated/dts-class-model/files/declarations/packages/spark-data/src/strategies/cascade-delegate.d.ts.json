@@ -37,8 +37,7 @@
             "name": "host",
             "type": {
               "type": "reference",
-              "name": "DataView",
-              "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+              "name": "unknown"
             }
           }
         ]
@@ -88,7 +87,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.791Z",
+  "generatedAt": "2026-06-13T04:00:57.836Z",
   "$defs": {
     "CascadeDelegate": {
       "type": "object",

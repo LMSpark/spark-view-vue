@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/reflection-connectivity.d.ts",
+  "symbols": [
+    "ClassModelReflectionConnectivityIssue"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ClassModelReflectionConnectivityIssue": {
+      "ref": "spark-class-model://schema/ClassModelReflectionConnectivityIssue",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelReflectionConnectivityIssue",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelReflectionConnectivityIssue"
+      }
+    },
+    "spark-class-model://model/ClassModelReflectionConnectivityIssue": {
+      "ref": "spark-class-model://model/ClassModelReflectionConnectivityIssue",
+      "kind": "model",
+      "className": "ClassModelReflectionConnectivityIssue",
+      "schemaRef": "spark-class-model://schema/ClassModelReflectionConnectivityIssue",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

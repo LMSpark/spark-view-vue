@@ -73,10 +73,13 @@ export {
 } from './class-model/dts-bundle-url'
 
 export { DtsClassModelBundleLoader } from './class-model/dts-class-model-bundle-loader'
+export { DtsClassModelRuntimeLoader } from './class-model/dts-class-model-runtime-loader'
 
 export {
   DTS_CLASS_MODEL_BUNDLE_PROTOCOL,
   DTS_CLASS_MODEL_BUNDLE_VERSION,
+  DTS_CLASS_MODEL_RUNTIME_PROTOCOL,
+  DTS_CLASS_MODEL_RUNTIME_VERSION,
   DTS_FILE_PROJECTION_VERSION,
 } from './class-model/dts-bundle-types'
 
@@ -88,8 +91,24 @@ export type {
 
 export type {
   DtsClassModelBundleManifest,
+  DtsClassModelRuntimeAttribute,
+  DtsClassModelRuntimeClassEntry,
+  DtsClassModelRuntimeFileEntry,
+  DtsClassModelRuntimeLink,
+  DtsClassModelRuntimeLinkRelation,
+  DtsClassModelRuntimeManifest,
+  DtsClassModelRuntimeMethod,
+  DtsClassModelRuntimeModel,
+  DtsClassModelRuntimeRef,
+  DtsClassModelRuntimeRefEntry,
+  DtsClassModelRuntimeSchemaRef,
+  DtsClassModelRuntimeShard,
   DtsFileProjectionDocument,
 } from './class-model/dts-bundle-types'
+
+export type {
+  DtsClassModelRuntimeLoaderOptions,
+} from './class-model/dts-class-model-runtime-loader'
 
 export type {
   DtsClassModelSurfaceDocument,

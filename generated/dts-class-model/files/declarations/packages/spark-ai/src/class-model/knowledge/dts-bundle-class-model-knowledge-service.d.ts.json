@@ -11,11 +11,13 @@
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "DtsBundleClassModelKnowledgeServiceOptions",
+      "CreateDtsBundleClassModelKnowledgeProviderOptions",
       "DtsBundleClassModelKnowledgeService"
     ]
   },
   "symbols": [
     "DtsBundleClassModelKnowledgeServiceOptions",
+    "CreateDtsBundleClassModelKnowledgeProviderOptions",
     "DtsBundleClassModelKnowledgeService"
   ],
   "models": {
@@ -41,6 +43,28 @@
       "attributes": [],
       "methods": []
     },
+    "CreateDtsBundleClassModelKnowledgeProviderOptions": {
+      "kind": "CreateDtsBundleClassModelKnowledgeProviderOptions",
+      "className": "CreateDtsBundleClassModelKnowledgeProviderOptions",
+      "jsdoc": "Create Dts Bundle Class Model Knowledge Provider Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    dtsClassModelManifestUrl: string;\n    rootClassName: string;\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    dtsClassModelManifestUrl: string;\n    rootClassName: string;\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+        "line": 16,
+        "className": "CreateDtsBundleClassModelKnowledgeProviderOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
     "DtsBundleClassModelKnowledgeService": {
       "kind": "DtsBundleClassModelKnowledgeService",
       "className": "DtsBundleClassModelKnowledgeService",
@@ -55,7 +79,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
-        "line": 16,
+        "line": 23,
         "className": "DtsBundleClassModelKnowledgeService",
         "declarationKind": "class"
       },
@@ -77,6 +101,22 @@
       "attributes": [],
       "methods": [
         {
+          "name": "init",
+          "jsdoc": "初始化 manifest，保持动态加载入口 fail-fast。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          }
+        },
+        {
           "name": "query",
           "jsdoc": "查询参数。",
           "parameterStyle": "positional",
@@ -85,8 +125,7 @@
               "name": "input",
               "type": {
                 "type": "reference",
-                "name": "ClassModelKnowledgeQueryInput",
-                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -110,8 +149,7 @@
               "name": "input",
               "type": {
                 "type": "reference",
-                "name": "ClassModelModelGuideInput",
-                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -135,8 +173,7 @@
               "name": "input",
               "type": {
                 "type": "reference",
-                "name": "ClassModelAttributeGuideInput",
-                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -160,8 +197,7 @@
               "name": "input",
               "type": {
                 "type": "reference",
-                "name": "ClassModelMethodGuideInput",
-                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -179,12 +215,17 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.467Z",
+  "generatedAt": "2026-06-13T04:00:57.589Z",
   "$defs": {
     "DtsBundleClassModelKnowledgeServiceOptions": {
       "type": "object",
       "title": "DtsBundleClassModelKnowledgeServiceOptions",
       "description": "Dts Bundle Class Model Knowledge Service Options 的调用配置。"
+    },
+    "CreateDtsBundleClassModelKnowledgeProviderOptions": {
+      "type": "object",
+      "title": "CreateDtsBundleClassModelKnowledgeProviderOptions",
+      "description": "Create Dts Bundle Class Model Knowledge Provider Options 的调用配置。"
     },
     "DtsBundleClassModelKnowledgeService": {
       "type": "object",

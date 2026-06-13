@@ -1,0 +1,230 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-app/src/auth/AuthService.d.ts",
+  "symbols": [
+    "AuthService"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AuthService": {
+      "ref": "spark-class-model://schema/AuthService",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AuthService",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AuthService"
+      }
+    },
+    "spark-class-model://model/AuthService/methods/initialize/0": {
+      "ref": "spark-class-model://model/AuthService/methods/initialize/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AuthService",
+      "name": "initialize",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/c8dcd323edc71e18b80f78b4442aa852d997fbfb095f55605ff71d68eb8e750b"
+    },
+    "spark-class-model://schema/shared/c8dcd323edc71e18b80f78b4442aa852d997fbfb095f55605ff71d68eb8e750b": {
+      "ref": "spark-class-model://schema/shared/c8dcd323edc71e18b80f78b4442aa852d997fbfb095f55605ff71d68eb8e750b",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "config": {
+            "$ref": "spark-class-model://schema/AuthConfig"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c8dcd323edc71e18b80f78b4442aa852d997fbfb095f55605ff71d68eb8e750b"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fmethods%2Finitialize%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAuthConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fmethods%2Finitialize%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAuthConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AuthService/methods/initialize/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AuthConfig",
+      "targetClassName": "AuthConfig",
+      "targetFile": "files/declarations/packages/spark-app/src/auth/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AuthConfig"
+    },
+    "spark-class-model://model/AuthService/methods/login/1": {
+      "ref": "spark-class-model://model/AuthService/methods/login/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AuthService",
+      "name": "login",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/1dc758cc46ce83d48fcb7e4cc592830e2c016174d761bed0aedfbced68190406",
+      "returnSchemaRef": "spark-class-model://schema/shared/b982f6c46f0e72958e1e28c7377f2a771a798360447108f080e6e8091126f7bd"
+    },
+    "spark-class-model://schema/shared/1dc758cc46ce83d48fcb7e4cc592830e2c016174d761bed0aedfbced68190406": {
+      "ref": "spark-class-model://schema/shared/1dc758cc46ce83d48fcb7e4cc592830e2c016174d761bed0aedfbced68190406",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "credentials": {
+            "$ref": "spark-class-model://schema/LoginCredentials"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/1dc758cc46ce83d48fcb7e4cc592830e2c016174d761bed0aedfbced68190406"
+      }
+    },
+    "spark-class-model://schema/shared/b982f6c46f0e72958e1e28c7377f2a771a798360447108f080e6e8091126f7bd": {
+      "ref": "spark-class-model://schema/shared/b982f6c46f0e72958e1e28c7377f2a771a798360447108f080e6e8091126f7bd",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<AuthResult>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b982f6c46f0e72958e1e28c7377f2a771a798360447108f080e6e8091126f7bd"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fmethods%2Flogin%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FLoginCredentials": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fmethods%2Flogin%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FLoginCredentials",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AuthService/methods/login/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/LoginCredentials",
+      "targetClassName": "LoginCredentials",
+      "targetFile": "files/declarations/packages/spark-app/src/auth/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/LoginCredentials"
+    },
+    "spark-class-model://model/AuthService/methods/logout/2": {
+      "ref": "spark-class-model://model/AuthService/methods/logout/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AuthService",
+      "name": "logout",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://model/AuthService/methods/checkAuth/3": {
+      "ref": "spark-class-model://model/AuthService/methods/checkAuth/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AuthService",
+      "name": "checkAuth",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/c79cf13cc2d8b7d4007fe5e704ecf0fb66546567e9f04645590b0e591a22f14f"
+    },
+    "spark-class-model://schema/shared/c79cf13cc2d8b7d4007fe5e704ecf0fb66546567e9f04645590b0e591a22f14f": {
+      "ref": "spark-class-model://schema/shared/c79cf13cc2d8b7d4007fe5e704ecf0fb66546567e9f04645590b0e591a22f14f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<AuthResult | null>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c79cf13cc2d8b7d4007fe5e704ecf0fb66546567e9f04645590b0e591a22f14f"
+      }
+    },
+    "spark-class-model://model/AuthService/methods/isAuthenticated/4": {
+      "ref": "spark-class-model://model/AuthService/methods/isAuthenticated/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AuthService",
+      "name": "isAuthenticated",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://model/AuthService/methods/getToken/5": {
+      "ref": "spark-class-model://model/AuthService/methods/getToken/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AuthService",
+      "name": "getToken",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
+    },
+    "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd": {
+      "ref": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
+      }
+    },
+    "spark-class-model://model/AuthService/methods/setToken/6": {
+      "ref": "spark-class-model://model/AuthService/methods/setToken/6",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AuthService",
+      "name": "setToken",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f2e37ca44f1d438c86143a03851616b4358a71ccc58a63d6c7987536a03c08f0"
+    },
+    "spark-class-model://schema/shared/f2e37ca44f1d438c86143a03851616b4358a71ccc58a63d6c7987536a03c08f0": {
+      "ref": "spark-class-model://schema/shared/f2e37ca44f1d438c86143a03851616b4358a71ccc58a63d6c7987536a03c08f0",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f2e37ca44f1d438c86143a03851616b4358a71ccc58a63d6c7987536a03c08f0"
+      }
+    },
+    "spark-class-model://model/AuthService/methods/clearToken/7": {
+      "ref": "spark-class-model://model/AuthService/methods/clearToken/7",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AuthService",
+      "name": "clearToken",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/AuthService/methods/destroy/8": {
+      "ref": "spark-class-model://model/AuthService/methods/destroy/8",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AuthService",
+      "name": "destroy",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/AuthService/methods/refreshToken/9": {
+      "ref": "spark-class-model://model/AuthService/methods/refreshToken/9",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AuthService",
+      "name": "refreshToken",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/412f4147f35a37bd44015ad0278dbcd3a2a8f74fa032ebf4bb77db05e20962e5"
+    },
+    "spark-class-model://model/AuthService": {
+      "ref": "spark-class-model://model/AuthService",
+      "kind": "model",
+      "className": "AuthService",
+      "schemaRef": "spark-class-model://schema/AuthService",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/AuthService/methods/initialize/0",
+        "spark-class-model://model/AuthService/methods/login/1",
+        "spark-class-model://model/AuthService/methods/logout/2",
+        "spark-class-model://model/AuthService/methods/checkAuth/3",
+        "spark-class-model://model/AuthService/methods/isAuthenticated/4",
+        "spark-class-model://model/AuthService/methods/getToken/5",
+        "spark-class-model://model/AuthService/methods/setToken/6",
+        "spark-class-model://model/AuthService/methods/clearToken/7",
+        "spark-class-model://model/AuthService/methods/destroy/8",
+        "spark-class-model://model/AuthService/methods/refreshToken/9"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fmethods%2Finitialize%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAuthConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fmethods%2Flogin%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FLoginCredentials"
+      ]
+    }
+  }
+}

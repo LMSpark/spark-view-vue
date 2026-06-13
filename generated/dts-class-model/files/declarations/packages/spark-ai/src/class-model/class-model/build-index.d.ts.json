@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/build-index.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/class-model/build-index",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/build-index.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/class-model/build-index.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/class-model/build-index",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/build-index\n职责：DTS ClassModel 编译期入口（Node + typescript）；不得被浏览器 / Worker 引用。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-13T04:00:57.576Z"
+}

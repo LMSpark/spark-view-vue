@@ -140,7 +140,8 @@
           "name": "tail",
           "jsdoc": "尾部动作区（通常放次要按钮）",
           "schema": {
-            "$ref": "../zones/RendererTail.types.d.ts.json#/$defs/RTailProps"
+            "type": "object",
+            "title": "RTailProps"
           },
           "readable": true,
           "writable": false
@@ -149,7 +150,8 @@
           "name": "position",
           "jsdoc": "工具栏停靠位置",
           "schema": {
-            "$ref": "../runtime/container-ui.d.ts.json#/$defs/ToolbarPosition"
+            "type": "object",
+            "title": "ToolbarPosition"
           },
           "readable": true,
           "writable": false
@@ -217,7 +219,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.596Z",
+  "generatedAt": "2026-06-13T04:00:57.686Z",
   "$defs": {
     "InlineAlign": {
       "type": "object",
@@ -235,10 +237,12 @@
       "description": "`RendererToolbar` Vue 组件公开属性。",
       "properties": {
         "tail": {
-          "$ref": "../zones/RendererTail.types.d.ts.json#/$defs/RTailProps"
+          "type": "object",
+          "title": "RTailProps"
         },
         "position": {
-          "$ref": "../runtime/container-ui.d.ts.json#/$defs/ToolbarPosition"
+          "type": "object",
+          "title": "ToolbarPosition"
         },
         "class": {
           "type": "string"

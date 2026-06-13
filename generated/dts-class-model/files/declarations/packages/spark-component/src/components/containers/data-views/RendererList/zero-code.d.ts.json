@@ -54,7 +54,7 @@
           "name": "resolvedView",
           "jsdoc": "resolved View 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<DataView | null>"
           },
           "readable": true,
@@ -64,7 +64,7 @@
           "name": "rows",
           "jsdoc": "行数据集合。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<readonly DataRow[]>"
           },
           "readable": true,
@@ -74,7 +74,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.555Z",
+  "generatedAt": "2026-06-13T04:00:57.640Z",
   "$defs": {
     "RendererListZeroCodeOptions": {
       "type": "object",
@@ -86,11 +86,11 @@
           "title": "Readonly<Record<string, unknown>>"
         },
         "resolvedView": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<DataView | null>"
         },
         "rows": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<readonly DataRow[]>"
         }
       }

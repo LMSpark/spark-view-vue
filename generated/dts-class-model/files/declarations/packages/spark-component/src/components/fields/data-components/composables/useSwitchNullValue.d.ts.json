@@ -79,7 +79,7 @@
           "name": "boundColumn",
           "jsdoc": "bound Column 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<BoundBooleanColumn | null | undefined>"
           },
           "readable": true,
@@ -113,7 +113,7 @@
           "name": "fieldName",
           "jsdoc": "绑定字段名。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<string>"
           },
           "readable": true,
@@ -133,7 +133,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.669Z",
+  "generatedAt": "2026-06-13T04:00:57.744Z",
   "$defs": {
     "BoundBooleanColumn": {
       "type": "object",
@@ -154,7 +154,7 @@
       "description": "Use Switch Null Value Options 的调用配置。",
       "properties": {
         "boundColumn": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<BoundBooleanColumn | null | undefined>"
         },
         "contextData": {
@@ -170,7 +170,7 @@
         },
         "dataSource": true,
         "fieldName": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<string>"
         },
         "syncValue": {

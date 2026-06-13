@@ -167,8 +167,7 @@
               "name": "schema",
               "type": {
                 "type": "reference",
-                "name": "JsonSchema",
-                "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-types.d.ts"
+                "name": "unknown"
               }
             },
             {
@@ -248,7 +247,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.819Z",
+  "generatedAt": "2026-06-13T04:00:57.867Z",
   "$defs": {
     "JsonValidationIssue": {
       "type": "object",

@@ -73,7 +73,8 @@
           "name": "nodeKind",
           "jsdoc": "node Kind 字段。",
           "schema": {
-            "$ref": "project-node.d.ts.json#/$defs/NavNodeKind"
+            "type": "object",
+            "title": "NavNodeKind"
           },
           "readable": true,
           "writable": true
@@ -173,7 +174,8 @@
           "name": "permissionMode",
           "jsdoc": "permission Mode 字段。",
           "schema": {
-            "$ref": "project-node.d.ts.json#/$defs/NavPermissionMode"
+            "type": "object",
+            "title": "NavPermissionMode"
           },
           "readable": true,
           "writable": true
@@ -181,16 +183,7 @@
         {
           "name": "implGate",
           "jsdoc": "impl Gate 字段。",
-          "schema": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
+          "schema": true,
           "readable": true,
           "writable": false
         },
@@ -241,11 +234,13 @@
               {
                 "type": "array",
                 "items": {
-                  "$ref": "project-node.d.ts.json#/$defs/NavContextItem"
+                  "type": "object",
+                  "title": "NavContextItem"
                 }
               },
               {
-                "$ref": "project-node.d.ts.json#/$defs/NavContextConfig"
+                "type": "object",
+                "title": "NavContextConfig"
               }
             ]
           },
@@ -439,7 +434,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.830Z",
+  "generatedAt": "2026-06-13T04:00:57.877Z",
   "$defs": {
     "NavigationNodeDraftNode": {
       "type": "object",
@@ -456,7 +451,8 @@
           "type": "string"
         },
         "nodeKind": {
-          "$ref": "project-node.d.ts.json#/$defs/NavNodeKind"
+          "type": "object",
+          "title": "NavNodeKind"
         },
         "dividerAfter": {
           "type": "boolean"
@@ -490,18 +486,10 @@
           "type": "string"
         },
         "permissionMode": {
-          "$ref": "project-node.d.ts.json#/$defs/NavPermissionMode"
+          "type": "object",
+          "title": "NavPermissionMode"
         },
-        "implGate": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
+        "implGate": true,
         "upstreamContractsSatisfied": {
           "type": "boolean"
         }
@@ -520,11 +508,13 @@
             {
               "type": "array",
               "items": {
-                "$ref": "project-node.d.ts.json#/$defs/NavContextItem"
+                "type": "object",
+                "title": "NavContextItem"
               }
             },
             {
-              "$ref": "project-node.d.ts.json#/$defs/NavContextConfig"
+              "type": "object",
+              "title": "NavContextConfig"
             }
           ]
         }

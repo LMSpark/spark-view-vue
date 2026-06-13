@@ -80,8 +80,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "DtsClassModelBundleManifest",
-                "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -105,8 +104,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "ClassModel",
-                "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/types.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -130,8 +128,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "DtsFileProjectionDocument",
-                "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -178,14 +175,13 @@
           ],
           "type": {
             "type": "reference",
-            "name": "DtsClassModelSurfaceDocument",
-            "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-surface-types.d.ts"
+            "name": "unknown"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.454Z",
+  "generatedAt": "2026-06-13T04:00:57.580Z",
   "$defs": {
     "DtsClassModelBundleLoaderOptions": {
       "type": "object",

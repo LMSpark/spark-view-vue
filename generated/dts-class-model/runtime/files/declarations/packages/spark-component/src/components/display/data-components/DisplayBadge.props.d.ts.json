@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/display/data-components/DisplayBadge.props.d.ts",
+  "symbols": [
+    "RBadgeProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RBadgeProps": {
+      "ref": "spark-class-model://schema/RBadgeProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RBadgeProps",
+        "properties": {
+          "badgeValue": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "max": {
+            "type": "number"
+          },
+          "isDot": {
+            "type": "boolean"
+          },
+          "hiddenBadge": {
+            "type": "boolean"
+          },
+          "badgeType": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  ""
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "primary"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "success"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warning"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "danger"
+                ]
+              }
+            ]
+          },
+          "showZero": {
+            "type": "boolean"
+          },
+          "color": {
+            "type": "string"
+          },
+          "offset": {
+            "type": "array"
+          },
+          "badgeStyle": true,
+          "badgeClass": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RBadgeProps"
+      }
+    },
+    "spark-class-model://model/RBadgeProps/attributes/badgeValue/0": {
+      "ref": "spark-class-model://model/RBadgeProps/attributes/badgeValue/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RBadgeProps",
+      "name": "badgeValue",
+      "schemaRef": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RBadgeProps/attributes/max/1": {
+      "ref": "spark-class-model://model/RBadgeProps/attributes/max/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RBadgeProps",
+      "name": "max",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RBadgeProps/attributes/isDot/2": {
+      "ref": "spark-class-model://model/RBadgeProps/attributes/isDot/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RBadgeProps",
+      "name": "isDot",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RBadgeProps/attributes/hiddenBadge/3": {
+      "ref": "spark-class-model://model/RBadgeProps/attributes/hiddenBadge/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RBadgeProps",
+      "name": "hiddenBadge",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/b53942ee2480c5db08d67f601ccf7d37b3ab64f39a1294079022778cf064ecdb": {
+      "ref": "spark-class-model://schema/shared/b53942ee2480c5db08d67f601ccf7d37b3ab64f39a1294079022778cf064ecdb",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              ""
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "primary"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "success"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "warning"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "info"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "danger"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b53942ee2480c5db08d67f601ccf7d37b3ab64f39a1294079022778cf064ecdb"
+      }
+    },
+    "spark-class-model://model/RBadgeProps/attributes/badgeType/4": {
+      "ref": "spark-class-model://model/RBadgeProps/attributes/badgeType/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RBadgeProps",
+      "name": "badgeType",
+      "schemaRef": "spark-class-model://schema/shared/b53942ee2480c5db08d67f601ccf7d37b3ab64f39a1294079022778cf064ecdb",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RBadgeProps/attributes/showZero/5": {
+      "ref": "spark-class-model://model/RBadgeProps/attributes/showZero/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RBadgeProps",
+      "name": "showZero",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RBadgeProps/attributes/color/6": {
+      "ref": "spark-class-model://model/RBadgeProps/attributes/color/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RBadgeProps",
+      "name": "color",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RBadgeProps/attributes/offset/7": {
+      "ref": "spark-class-model://model/RBadgeProps/attributes/offset/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RBadgeProps",
+      "name": "offset",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RBadgeProps/attributes/badgeStyle/8": {
+      "ref": "spark-class-model://model/RBadgeProps/attributes/badgeStyle/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RBadgeProps",
+      "name": "badgeStyle",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RBadgeProps/attributes/badgeClass/9": {
+      "ref": "spark-class-model://model/RBadgeProps/attributes/badgeClass/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RBadgeProps",
+      "name": "badgeClass",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RBadgeProps": {
+      "ref": "spark-class-model://model/RBadgeProps",
+      "kind": "model",
+      "className": "RBadgeProps",
+      "schemaRef": "spark-class-model://schema/RBadgeProps",
+      "attributeRefs": [
+        "spark-class-model://model/RBadgeProps/attributes/badgeValue/0",
+        "spark-class-model://model/RBadgeProps/attributes/max/1",
+        "spark-class-model://model/RBadgeProps/attributes/isDot/2",
+        "spark-class-model://model/RBadgeProps/attributes/hiddenBadge/3",
+        "spark-class-model://model/RBadgeProps/attributes/badgeType/4",
+        "spark-class-model://model/RBadgeProps/attributes/showZero/5",
+        "spark-class-model://model/RBadgeProps/attributes/color/6",
+        "spark-class-model://model/RBadgeProps/attributes/offset/7",
+        "spark-class-model://model/RBadgeProps/attributes/badgeStyle/8",
+        "spark-class-model://model/RBadgeProps/attributes/badgeClass/9"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

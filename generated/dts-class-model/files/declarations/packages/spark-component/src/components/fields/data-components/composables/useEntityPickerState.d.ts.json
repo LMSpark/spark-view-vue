@@ -40,7 +40,7 @@
           "name": "buttonText",
           "jsdoc": "可编辑态选择按钮文本。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>"
           },
           "readable": true,
@@ -50,7 +50,7 @@
           "name": "readonlyButtonText",
           "jsdoc": "只读态查看按钮文本。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>"
           },
           "readable": true,
@@ -60,7 +60,7 @@
           "name": "clearable",
           "jsdoc": "是否允许清空当前选择值。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>"
           },
           "readable": true,
@@ -70,7 +70,7 @@
           "name": "multiple",
           "jsdoc": "是否允许多选实体。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<NonNullable<SparkOptionFieldProps['multiple']>>"
           },
           "readable": true,
@@ -80,7 +80,7 @@
           "name": "searchable",
           "jsdoc": "选择器是否开启搜索。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<boolean>"
           },
           "readable": true,
@@ -90,7 +90,7 @@
           "name": "valueSeparator",
           "jsdoc": "多选字符串模式下的值分隔符。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<NonNullable<SparkOptionFieldProps['valueSeparator']>>"
           },
           "readable": true,
@@ -100,7 +100,7 @@
           "name": "valueMode",
           "jsdoc": "多选值写回模式：数组、字符串或按当前值自动判断。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<SparkOptionValueMode>"
           },
           "readable": true,
@@ -110,7 +110,7 @@
           "name": "entityName",
           "jsdoc": "选择器中展示的实体名称。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<string>"
           },
           "readable": true,
@@ -120,7 +120,7 @@
           "name": "placeholder",
           "jsdoc": "选择器搜索或空值提示。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<NonNullable<SparkFieldSemanticProps['placeholder']>>"
           },
           "readable": true,
@@ -130,7 +130,7 @@
           "name": "flatOptions",
           "jsdoc": "已归一化的一维可选实体集合。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<FieldOption[]>"
           },
           "readable": true,
@@ -140,7 +140,7 @@
           "name": "currentRawValue",
           "jsdoc": "当前字段原始值，保留数组或字符串等原始形态。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string>"
           },
           "readable": true,
@@ -150,7 +150,7 @@
           "name": "currentRawStringValue",
           "jsdoc": "当前字段值的字符串形态，用于判断是否有值。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<string>"
           },
           "readable": true,
@@ -160,7 +160,7 @@
           "name": "isCurrentFieldEditable",
           "jsdoc": "当前字段是否允许写入。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<boolean>"
           },
           "readable": true,
@@ -170,7 +170,7 @@
           "name": "hasSelectorCapability",
           "jsdoc": "当前页面运行时是否提供实体选择器能力。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<boolean>"
           },
           "readable": true,
@@ -180,7 +180,7 @@
           "name": "primaryAction",
           "jsdoc": "主按钮执行选择还是只读查看。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<'select' | 'view'>"
           },
           "readable": true,
@@ -210,7 +210,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.657Z",
+  "generatedAt": "2026-06-13T04:00:57.737Z",
   "$defs": {
     "UseEntityPickerStateOptions": {
       "type": "object",
@@ -218,63 +218,63 @@
       "description": "实体选择字段的运行态输入，负责选择器弹出、值模式转换和清空行为。",
       "properties": {
         "buttonText": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>"
         },
         "readonlyButtonText": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>"
         },
         "clearable": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>"
         },
         "multiple": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<NonNullable<SparkOptionFieldProps['multiple']>>"
         },
         "searchable": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<boolean>"
         },
         "valueSeparator": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<NonNullable<SparkOptionFieldProps['valueSeparator']>>"
         },
         "valueMode": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<SparkOptionValueMode>"
         },
         "entityName": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<string>"
         },
         "placeholder": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<NonNullable<SparkFieldSemanticProps['placeholder']>>"
         },
         "flatOptions": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<FieldOption[]>"
         },
         "currentRawValue": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string>"
         },
         "currentRawStringValue": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<string>"
         },
         "isCurrentFieldEditable": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<boolean>"
         },
         "hasSelectorCapability": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<boolean>"
         },
         "primaryAction": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<'select' | 'view'>"
         },
         "selectEntities": {

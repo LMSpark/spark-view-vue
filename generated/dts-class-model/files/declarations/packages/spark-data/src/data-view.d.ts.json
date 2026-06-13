@@ -211,7 +211,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "types.d.ts.json#/$defs/DataRow"
+              "type": "object",
+              "title": "DataRow"
             }
           },
           "readable": true,
@@ -314,7 +315,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "types.d.ts.json#/$defs/DataRow"
+              "type": "object",
+              "title": "DataRow"
             }
           },
           "readable": true,
@@ -441,9 +443,10 @@
         },
         {
           "name": "requestState",
-          "jsdoc": "请求状态机，见 {@link RequestState}。唯一状态源，勿另设布尔标志。",
+          "jsdoc": "请求状态机，见 {@link RequestState }。唯一状态源，勿另设布尔标志。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/RequestState"
+            "type": "object",
+            "title": "RequestState"
           },
           "readable": true,
           "writable": true
@@ -478,7 +481,8 @@
           "name": "filterExpression",
           "jsdoc": "filter Expression 字段。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/FilterExpression"
+            "type": "object",
+            "title": "FilterExpression"
           },
           "readable": true,
           "writable": true
@@ -487,7 +491,8 @@
           "name": "sortExpression",
           "jsdoc": "sort Expression 字段。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/SortExpression"
+            "type": "object",
+            "title": "SortExpression"
           },
           "readable": true,
           "writable": true
@@ -514,7 +519,8 @@
           "name": "treeConfig",
           "jsdoc": "树结构字段配置",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/TreeConfig"
+            "type": "object",
+            "title": "TreeConfig"
           },
           "readable": true,
           "writable": true
@@ -541,7 +547,8 @@
           "name": "commitMode",
           "jsdoc": "增删改提交模式（默认 `'immediate'`）。\n- `'immediate'`：每次 addRow/editRowById/removeRow 立即调用网络 CRUD（如已配置 API）\n- `'staged'`：仅修改内存并标脏，调用 saveChanges() 批量提交",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/CommitMode"
+            "type": "object",
+            "title": "CommitMode"
           },
           "readable": true,
           "writable": true
@@ -560,7 +567,8 @@
           "name": "treeManager",
           "jsdoc": "tree Manager 字段。",
           "schema": {
-            "$ref": "tree-manager.d.ts.json#/$defs/TreeManager"
+            "type": "object",
+            "title": "TreeManager"
           },
           "readable": true,
           "writable": true
@@ -579,7 +587,7 @@
           "name": "events",
           "jsdoc": "事件总线——独立事件模型（currentRowChanged / selectedRowsChanged / rowsChanged / cleared / configChanged / requestStateChanged / mutatingChanged）",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/SparkEventEmitter",
+            "type": "object",
             "title": "SparkEventEmitter<DataViewEventMap>"
           },
           "readable": true,
@@ -616,8 +624,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "literal",
@@ -694,8 +701,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "DataRow",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             },
@@ -726,8 +732,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "DataRow",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             }
@@ -748,8 +753,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "DataRow",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             }
@@ -862,8 +866,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -875,8 +878,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -908,8 +910,7 @@
             "type": "optional",
             "elementType": {
               "type": "reference",
-              "name": "DataColumn",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -922,8 +923,7 @@
             "type": "optional",
             "elementType": {
               "type": "reference",
-              "name": "DataSet",
-              "sourcePath": "declarations/packages/spark-data/src/dataset.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -936,8 +936,7 @@
               "name": "row",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -968,8 +967,7 @@
               "name": "row",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -1013,8 +1011,7 @@
               "name": "params",
               "type": {
                 "type": "reference",
-                "name": "QueryParams",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -1027,8 +1024,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -1059,8 +1055,7 @@
               "name": "options",
               "type": {
                 "type": "reference",
-                "name": "RetrieveRecordOptions",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -1073,13 +1068,11 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -1111,8 +1104,7 @@
               "name": "options",
               "type": {
                 "type": "reference",
-                "name": "RetrieveRecordOptions",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -1125,13 +1117,11 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -1193,15 +1183,13 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "array",
                     "elementType": {
                       "type": "reference",
-                      "name": "NestedTreeNode",
-                      "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                      "name": "unknown"
                     }
                   }
                 ]
@@ -1234,8 +1222,7 @@
               "name": "rel",
               "type": {
                 "type": "reference",
-                "name": "DataRelation",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             },
             {
@@ -1270,8 +1257,7 @@
                     "type": "array",
                     "elementType": {
                       "type": "reference",
-                      "name": "DataRow",
-                      "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                      "name": "unknown"
                     }
                   }
                 ]
@@ -1292,8 +1278,7 @@
               "name": "row",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -1331,8 +1316,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -1381,8 +1365,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "DataRow",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             }
@@ -1452,8 +1435,7 @@
               "typeArguments": [
                 {
                   "type": "reference",
-                  "name": "DataRow",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               ]
             }
@@ -1486,8 +1468,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "literal",
@@ -1534,8 +1515,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "DataRow",
-            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -1605,13 +1585,11 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "DataViewApplyEditingRowsResult",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -1631,8 +1609,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -1647,18 +1624,15 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "reference",
-                    "name": "CrudResult",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                    "name": "unknown",
                     "typeArguments": [
                       {
                         "type": "reference",
-                        "name": "DataRow",
-                        "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                        "name": "unknown"
                       }
                     ]
                   }
@@ -1702,8 +1676,7 @@
                   },
                   {
                     "type": "reference",
-                    "name": "CrudResult",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                    "name": "unknown",
                     "typeArguments": [
                       {
                         "type": "intrinsic",
@@ -1745,8 +1718,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -1765,13 +1737,11 @@
                   },
                   {
                     "type": "reference",
-                    "name": "CrudResult",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                    "name": "unknown",
                     "typeArguments": [
                       {
                         "type": "reference",
-                        "name": "DataRow",
-                        "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                        "name": "unknown"
                       }
                     ]
                   }
@@ -1804,8 +1774,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "RowDiff",
-            "sourcePath": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -1842,13 +1811,11 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "SaveChangesData",
-                    "sourcePath": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -1929,8 +1896,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "FlatTreeNode",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             ]
@@ -1964,8 +1930,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "TreePath",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -2064,8 +2029,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "literal",
@@ -2107,8 +2071,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "NestedTreeSearchResult",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             ]
@@ -2173,8 +2136,7 @@
                 "type": "optional",
                 "elementType": {
                   "type": "reference",
-                  "name": "SortExpression",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             }
@@ -2201,8 +2163,7 @@
                 "type": "optional",
                 "elementType": {
                   "type": "reference",
-                  "name": "FilterExpression",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             }
@@ -2229,8 +2190,7 @@
                 "type": "optional",
                 "elementType": {
                   "type": "reference",
-                  "name": "FilterExpression",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             }
@@ -2279,8 +2239,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "ViewMetadata",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -2304,8 +2263,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "ViewMetadata",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -2333,8 +2291,7 @@
                   },
                   {
                     "type": "reference",
-                    "name": "AggregateColumnConfig",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -2354,8 +2311,7 @@
               "name": "treeConfig",
               "type": {
                 "type": "reference",
-                "name": "TreeConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -2381,8 +2337,7 @@
           "parameters": [],
           "type": {
             "type": "reference",
-            "name": "ViewMetadata",
-            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -2397,8 +2352,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "ViewMetadata",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "reference",
@@ -2445,7 +2399,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.767Z",
+  "generatedAt": "2026-06-13T04:00:57.815Z",
   "$defs": {
     "DataViewEventMap": {
       "type": "object",
@@ -2511,7 +2465,8 @@
         "rows": {
           "type": "array",
           "items": {
-            "$ref": "types.d.ts.json#/$defs/DataRow"
+            "type": "object",
+            "title": "DataRow"
           }
         },
         "total": {
@@ -2539,7 +2494,8 @@
         "rows": {
           "type": "array",
           "items": {
-            "$ref": "types.d.ts.json#/$defs/DataRow"
+            "type": "object",
+            "title": "DataRow"
           }
         },
         "_currentRowId": {
@@ -2608,7 +2564,8 @@
           ]
         },
         "requestState": {
-          "$ref": "types.d.ts.json#/$defs/RequestState"
+          "type": "object",
+          "title": "RequestState"
         },
         "mutating": {
           "type": "boolean"
@@ -2625,10 +2582,12 @@
           ]
         },
         "filterExpression": {
-          "$ref": "types.d.ts.json#/$defs/FilterExpression"
+          "type": "object",
+          "title": "FilterExpression"
         },
         "sortExpression": {
-          "$ref": "types.d.ts.json#/$defs/SortExpression"
+          "type": "object",
+          "title": "SortExpression"
         },
         "autoCurrentFirst": {
           "type": "boolean"
@@ -2637,7 +2596,8 @@
           "type": "boolean"
         },
         "treeConfig": {
-          "$ref": "types.d.ts.json#/$defs/TreeConfig"
+          "type": "object",
+          "title": "TreeConfig"
         },
         "autoLoad": {
           "type": "boolean"
@@ -2646,21 +2606,23 @@
           "type": "boolean"
         },
         "commitMode": {
-          "$ref": "types.d.ts.json#/$defs/CommitMode"
+          "type": "object",
+          "title": "CommitMode"
         },
         "aggregates": {
           "type": "object",
           "title": "Record<string, AggregateColumnConfig>"
         },
         "treeManager": {
-          "$ref": "tree-manager.d.ts.json#/$defs/TreeManager"
+          "type": "object",
+          "title": "TreeManager"
         },
         "rowIndexMap": {
           "type": "object",
           "title": "Map<DataRow, number>"
         },
         "events": {
-          "$ref": "types.d.ts.json#/$defs/SparkEventEmitter",
+          "type": "object",
           "title": "SparkEventEmitter<DataViewEventMap>"
         },
         "logger": true

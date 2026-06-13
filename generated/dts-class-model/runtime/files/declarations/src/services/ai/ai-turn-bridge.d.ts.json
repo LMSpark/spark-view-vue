@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/services/ai/ai-turn-bridge.d.ts",
+  "symbols": [
+    "AiTurnBridgeDiagnostic",
+    "AiAgentTurnBridgeOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiTurnBridgeDiagnostic": {
+      "ref": "spark-class-model://schema/AiTurnBridgeDiagnostic",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiTurnBridgeDiagnostic",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiTurnBridgeDiagnostic"
+      }
+    },
+    "spark-class-model://model/AiTurnBridgeDiagnostic": {
+      "ref": "spark-class-model://model/AiTurnBridgeDiagnostic",
+      "kind": "model",
+      "className": "AiTurnBridgeDiagnostic",
+      "schemaRef": "spark-class-model://schema/AiTurnBridgeDiagnostic",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentTurnBridgeOptions": {
+      "ref": "spark-class-model://schema/AiAgentTurnBridgeOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentTurnBridgeOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentTurnBridgeOptions"
+      }
+    },
+    "spark-class-model://model/AiAgentTurnBridgeOptions": {
+      "ref": "spark-class-model://model/AiAgentTurnBridgeOptions",
+      "kind": "model",
+      "className": "AiAgentTurnBridgeOptions",
+      "schemaRef": "spark-class-model://schema/AiAgentTurnBridgeOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

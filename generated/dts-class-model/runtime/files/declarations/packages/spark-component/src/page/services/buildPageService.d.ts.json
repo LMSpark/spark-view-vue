@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/page/services/buildPageService.d.ts",
+  "symbols": [
+    "PageServiceOverrides"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PageServiceOverrides": {
+      "ref": "spark-class-model://schema/PageServiceOverrides",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageServiceOverrides",
+        "properties": {
+          "messageService": {
+            "type": "object"
+          },
+          "confirmService": {
+            "type": "object"
+          },
+          "pageService": {
+            "type": "object",
+            "title": "Partial<PageServiceCapability>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageServiceOverrides"
+      }
+    },
+    "spark-class-model://model/PageServiceOverrides/attributes/messageService/0": {
+      "ref": "spark-class-model://model/PageServiceOverrides/attributes/messageService/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageServiceOverrides",
+      "name": "messageService",
+      "schemaRef": "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageServiceOverrides/attributes/confirmService/1": {
+      "ref": "spark-class-model://model/PageServiceOverrides/attributes/confirmService/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageServiceOverrides",
+      "name": "confirmService",
+      "schemaRef": "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/41b3b2df5a5d4ba6b62db0ad07bad759afc886e25eab553a9f697f91126ec189": {
+      "ref": "spark-class-model://schema/shared/41b3b2df5a5d4ba6b62db0ad07bad759afc886e25eab553a9f697f91126ec189",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Partial<PageServiceCapability>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/41b3b2df5a5d4ba6b62db0ad07bad759afc886e25eab553a9f697f91126ec189"
+      }
+    },
+    "spark-class-model://model/PageServiceOverrides/attributes/pageService/2": {
+      "ref": "spark-class-model://model/PageServiceOverrides/attributes/pageService/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageServiceOverrides",
+      "name": "pageService",
+      "schemaRef": "spark-class-model://schema/shared/41b3b2df5a5d4ba6b62db0ad07bad759afc886e25eab553a9f697f91126ec189",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageServiceOverrides": {
+      "ref": "spark-class-model://model/PageServiceOverrides",
+      "kind": "model",
+      "className": "PageServiceOverrides",
+      "schemaRef": "spark-class-model://schema/PageServiceOverrides",
+      "attributeRefs": [
+        "spark-class-model://model/PageServiceOverrides/attributes/messageService/0",
+        "spark-class-model://model/PageServiceOverrides/attributes/confirmService/1",
+        "spark-class-model://model/PageServiceOverrides/attributes/pageService/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

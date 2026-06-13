@@ -130,8 +130,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "ProjectModelData",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -155,8 +154,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "ProjectNodeData",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -177,8 +175,7 @@
               "name": "patch",
               "type": {
                 "type": "reference",
-                "name": "NavigationNodePatch",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-edit.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -188,8 +185,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "ProjectNodeData",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -216,8 +212,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "ProjectNodeData",
-                    "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "literal",
@@ -270,8 +265,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "ProjectNodeData",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -304,7 +298,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.823Z",
+  "generatedAt": "2026-06-13T04:00:57.869Z",
   "$defs": {
     "NavigationClientOptions": {
       "type": "object",

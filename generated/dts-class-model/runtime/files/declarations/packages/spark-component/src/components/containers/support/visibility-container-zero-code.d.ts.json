@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/support/visibility-container-zero-code.d.ts",
+  "symbols": [
+    "VisibilityContainerZeroCodeOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/VisibilityContainerZeroCodeOptions": {
+      "ref": "spark-class-model://schema/VisibilityContainerZeroCodeOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "VisibilityContainerZeroCodeOptions",
+        "properties": {
+          "visibleValue": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<boolean>"
+          },
+          "commitVisibleValue": {
+            "type": "object",
+            "title": "(value: boolean) => void"
+          },
+          "onOpen": {
+            "type": "object",
+            "title": "() => void"
+          },
+          "onClose": {
+            "type": "object",
+            "title": "() => void"
+          },
+          "onOpened": {
+            "type": "object",
+            "title": "() => void"
+          },
+          "onClosed": {
+            "type": "object",
+            "title": "() => void"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/VisibilityContainerZeroCodeOptions"
+      }
+    },
+    "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/visibleValue/0": {
+      "ref": "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/visibleValue/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/VisibilityContainerZeroCodeOptions",
+      "name": "visibleValue",
+      "schemaRef": "spark-class-model://schema/shared/a3307797b1530af23dcbaec6dce6588485e55730cf77881d2c3e0568eab67f46",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FVisibilityContainerZeroCodeOptions%2Fattributes%2FvisibleValue%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FVisibilityContainerZeroCodeOptions%2Fattributes%2FvisibleValue%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/visibleValue/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/declarations/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://schema/shared/b668c823caece1999fe7fc7d12afc356c49156251c806147072111853a13da50": {
+      "ref": "spark-class-model://schema/shared/b668c823caece1999fe7fc7d12afc356c49156251c806147072111853a13da50",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(value: boolean) => void",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b668c823caece1999fe7fc7d12afc356c49156251c806147072111853a13da50"
+      }
+    },
+    "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/commitVisibleValue/1": {
+      "ref": "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/commitVisibleValue/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/VisibilityContainerZeroCodeOptions",
+      "name": "commitVisibleValue",
+      "schemaRef": "spark-class-model://schema/shared/b668c823caece1999fe7fc7d12afc356c49156251c806147072111853a13da50",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/onOpen/2": {
+      "ref": "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/onOpen/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/VisibilityContainerZeroCodeOptions",
+      "name": "onOpen",
+      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/onClose/3": {
+      "ref": "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/onClose/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/VisibilityContainerZeroCodeOptions",
+      "name": "onClose",
+      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/onOpened/4": {
+      "ref": "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/onOpened/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/VisibilityContainerZeroCodeOptions",
+      "name": "onOpened",
+      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/onClosed/5": {
+      "ref": "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/onClosed/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/VisibilityContainerZeroCodeOptions",
+      "name": "onClosed",
+      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/VisibilityContainerZeroCodeOptions": {
+      "ref": "spark-class-model://model/VisibilityContainerZeroCodeOptions",
+      "kind": "model",
+      "className": "VisibilityContainerZeroCodeOptions",
+      "schemaRef": "spark-class-model://schema/VisibilityContainerZeroCodeOptions",
+      "attributeRefs": [
+        "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/visibleValue/0",
+        "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/commitVisibleValue/1",
+        "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/onOpen/2",
+        "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/onClose/3",
+        "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/onOpened/4",
+        "spark-class-model://model/VisibilityContainerZeroCodeOptions/attributes/onClosed/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FVisibilityContainerZeroCodeOptions%2Fattributes%2FvisibleValue%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef"
+      ]
+    }
+  }
+}

@@ -565,7 +565,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.521Z",
+  "generatedAt": "2026-06-13T04:00:57.621Z",
   "$defs": {
     "PluginConfigItem": {
       "type": "object",

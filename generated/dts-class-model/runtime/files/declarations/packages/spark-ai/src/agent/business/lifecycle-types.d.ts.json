@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/business/lifecycle-types.d.ts",
+  "symbols": [
+    "AiAgentBeforeFunctionCallStatus",
+    "AiAgentBeforeFunctionCallDirective",
+    "AiAgentBeforeFunctionCallOptions",
+    "AiAgentLifecycleStatus",
+    "AiAgentLifecycleDirective",
+    "AiAgentAfterFunctionCallOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentBeforeFunctionCallStatus": {
+      "ref": "spark-class-model://schema/AiAgentBeforeFunctionCallStatus",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentBeforeFunctionCallStatus",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentBeforeFunctionCallStatus"
+      }
+    },
+    "spark-class-model://model/AiAgentBeforeFunctionCallStatus": {
+      "ref": "spark-class-model://model/AiAgentBeforeFunctionCallStatus",
+      "kind": "model",
+      "className": "AiAgentBeforeFunctionCallStatus",
+      "schemaRef": "spark-class-model://schema/AiAgentBeforeFunctionCallStatus",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentBeforeFunctionCallDirective": {
+      "ref": "spark-class-model://schema/AiAgentBeforeFunctionCallDirective",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentBeforeFunctionCallDirective",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentBeforeFunctionCallDirective"
+      }
+    },
+    "spark-class-model://model/AiAgentBeforeFunctionCallDirective": {
+      "ref": "spark-class-model://model/AiAgentBeforeFunctionCallDirective",
+      "kind": "model",
+      "className": "AiAgentBeforeFunctionCallDirective",
+      "schemaRef": "spark-class-model://schema/AiAgentBeforeFunctionCallDirective",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentBeforeFunctionCallOptions": {
+      "ref": "spark-class-model://schema/AiAgentBeforeFunctionCallOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentBeforeFunctionCallOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentBeforeFunctionCallOptions"
+      }
+    },
+    "spark-class-model://model/AiAgentBeforeFunctionCallOptions": {
+      "ref": "spark-class-model://model/AiAgentBeforeFunctionCallOptions",
+      "kind": "model",
+      "className": "AiAgentBeforeFunctionCallOptions",
+      "schemaRef": "spark-class-model://schema/AiAgentBeforeFunctionCallOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentLifecycleStatus": {
+      "ref": "spark-class-model://schema/AiAgentLifecycleStatus",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentLifecycleStatus",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentLifecycleStatus"
+      }
+    },
+    "spark-class-model://model/AiAgentLifecycleStatus": {
+      "ref": "spark-class-model://model/AiAgentLifecycleStatus",
+      "kind": "model",
+      "className": "AiAgentLifecycleStatus",
+      "schemaRef": "spark-class-model://schema/AiAgentLifecycleStatus",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentLifecycleDirective": {
+      "ref": "spark-class-model://schema/AiAgentLifecycleDirective",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentLifecycleDirective",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentLifecycleDirective"
+      }
+    },
+    "spark-class-model://model/AiAgentLifecycleDirective": {
+      "ref": "spark-class-model://model/AiAgentLifecycleDirective",
+      "kind": "model",
+      "className": "AiAgentLifecycleDirective",
+      "schemaRef": "spark-class-model://schema/AiAgentLifecycleDirective",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentAfterFunctionCallOptions": {
+      "ref": "spark-class-model://schema/AiAgentAfterFunctionCallOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentAfterFunctionCallOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentAfterFunctionCallOptions"
+      }
+    },
+    "spark-class-model://model/AiAgentAfterFunctionCallOptions": {
+      "ref": "spark-class-model://model/AiAgentAfterFunctionCallOptions",
+      "kind": "model",
+      "className": "AiAgentAfterFunctionCallOptions",
+      "schemaRef": "spark-class-model://schema/AiAgentAfterFunctionCallOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

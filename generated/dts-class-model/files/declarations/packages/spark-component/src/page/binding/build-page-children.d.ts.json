@@ -60,7 +60,8 @@
           "name": "actionCtx",
           "jsdoc": "动作执行上下文，用于把声明式 action descriptor 绑定成可执行闭包。",
           "schema": {
-            "$ref": "../actions/action-types.d.ts.json#/$defs/ActionExecutionContext"
+            "type": "object",
+            "title": "ActionExecutionContext"
           },
           "readable": true,
           "writable": true
@@ -69,7 +70,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.713Z",
+  "generatedAt": "2026-06-13T04:00:57.791Z",
   "$defs": {
     "PageScriptCaller": {
       "type": "object",
@@ -85,7 +86,8 @@
           "$ref": "#/$defs/PageScriptCaller"
         },
         "actionCtx": {
-          "$ref": "../actions/action-types.d.ts.json#/$defs/ActionExecutionContext"
+          "type": "object",
+          "title": "ActionExecutionContext"
         }
       }
     }

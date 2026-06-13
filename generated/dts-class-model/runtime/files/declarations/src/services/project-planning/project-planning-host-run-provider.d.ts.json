@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/services/project-planning/project-planning-host-run-provider.d.ts",
+  "symbols": [
+    "ProjectPlanningDeliveryContext"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ProjectPlanningDeliveryContext": {
+      "ref": "spark-class-model://schema/ProjectPlanningDeliveryContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningDeliveryContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningDeliveryContext"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningDeliveryContext": {
+      "ref": "spark-class-model://model/ProjectPlanningDeliveryContext",
+      "kind": "model",
+      "className": "ProjectPlanningDeliveryContext",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningDeliveryContext",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

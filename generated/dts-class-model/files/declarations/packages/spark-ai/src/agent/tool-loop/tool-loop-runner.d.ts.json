@@ -61,8 +61,7 @@
             "name": "callbacks",
             "type": {
               "type": "reference",
-              "name": "AiAgentTurnCallbacks",
-              "sourcePath": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts"
+              "name": "unknown"
             }
           },
           {
@@ -114,7 +113,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.435Z",
+  "generatedAt": "2026-06-13T04:00:57.570Z",
   "$defs": {
     "AiAgentToolLoopInput": {
       "type": "object",

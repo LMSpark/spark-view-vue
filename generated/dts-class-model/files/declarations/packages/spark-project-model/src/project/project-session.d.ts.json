@@ -81,7 +81,8 @@
           "schema": {
             "anyOf": [
               {
-                "$ref": "project-types.d.ts.json#/$defs/ProjectNavigationDirtyScope"
+                "type": "object",
+                "title": "ProjectNavigationDirtyScope"
               },
               {
                 "type": "null"
@@ -149,8 +150,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "NavigationNodeDraft",
-                    "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-edit.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "literal",
@@ -174,15 +174,13 @@
               "name": "draft",
               "type": {
                 "type": "reference",
-                "name": "NavigationNodeDraft",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-edit.d.ts"
+                "name": "unknown"
               }
             }
           ],
           "type": {
             "type": "reference",
-            "name": "NavigationNodeDraft",
-            "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-edit.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -204,8 +202,7 @@
               "name": "scope",
               "type": {
                 "type": "reference",
-                "name": "ProjectNavigationDirtyScope",
-                "sourcePath": "declarations/packages/spark-project-model/src/project/project-types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -309,7 +306,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.843Z",
+  "generatedAt": "2026-06-13T04:00:57.893Z",
   "$defs": {
     "ProjectSessionState": {
       "type": "object",
@@ -342,7 +339,8 @@
         "navigationDirtyScope": {
           "anyOf": [
             {
-              "$ref": "project-types.d.ts.json#/$defs/ProjectNavigationDirtyScope"
+              "type": "object",
+              "title": "ProjectNavigationDirtyScope"
             },
             {
               "type": "null"

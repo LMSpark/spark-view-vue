@@ -55,7 +55,8 @@
           "name": "toolbar",
           "jsdoc": "结构化工具栏",
           "schema": {
-            "$ref": "../RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+            "type": "object",
+            "title": "RToolbarProps"
           },
           "readable": true,
           "writable": false
@@ -90,7 +91,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.592Z",
+  "generatedAt": "2026-06-13T04:00:57.682Z",
   "$defs": {
     "RStepsProps": {
       "type": "object",
@@ -98,7 +99,8 @@
       "description": "RSteps Props 的属性契约。",
       "properties": {
         "toolbar": {
-          "$ref": "../RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+          "type": "object",
+          "title": "RToolbarProps"
         },
         "modelValue": {
           "anyOf": [

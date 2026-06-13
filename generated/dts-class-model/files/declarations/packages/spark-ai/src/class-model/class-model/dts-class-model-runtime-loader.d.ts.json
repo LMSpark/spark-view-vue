@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/class-model/dts-class-model-runtime-loader",
+    "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/class-model/dts-class-model-runtime-loader",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-class-model-runtime-loader\n职责：按 runtime manifest 动态加载最小 ClassModel shard，并沿构建期 links 扩展子模型闭包。\n边界：只消费 runtime JSON 协议，不解析 .d.ts、不扫描签名文本，也不生成 guide 文案。\nAI用途：需要按需加载 AJV 参数 schema 与属性/参数/返回值子模型链时，用本模块作为运行时入口。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "DtsClassModelRuntimeLoaderOptions",
+      "DtsClassModelRuntimeSchemaClosure",
+      "DtsClassModelRuntimeLoader"
+    ]
+  },
+  "symbols": [
+    "DtsClassModelRuntimeLoaderOptions",
+    "DtsClassModelRuntimeSchemaClosure",
+    "DtsClassModelRuntimeLoader"
+  ],
+  "models": {
+    "DtsClassModelRuntimeLoaderOptions": {
+      "kind": "DtsClassModelRuntimeLoaderOptions",
+      "className": "DtsClassModelRuntimeLoaderOptions",
+      "jsdoc": "Dts Class Model Runtime Loader Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    manifestUrl: string;\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    manifestUrl: string;\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
+        "line": 9,
+        "className": "DtsClassModelRuntimeLoaderOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeSchemaClosure": {
+      "kind": "DtsClassModelRuntimeSchemaClosure",
+      "className": "DtsClassModelRuntimeSchemaClosure",
+      "jsdoc": "Dts Class Model Runtime Schema Closure 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    rootRef: string;\n    schemas: readonly DtsClassModelRuntimeSchemaRef[];\n    schemaByRef: Readonly<Record<string, DtsClassModelRuntimeSchemaRef>>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    rootRef: string;\n    schemas: readonly DtsClassModelRuntimeSchemaRef[];\n    schemaByRef: Readonly<Record<string, DtsClassModelRuntimeSchemaRef>>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
+        "line": 14,
+        "className": "DtsClassModelRuntimeSchemaClosure",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "DtsClassModelRuntimeLoader": {
+      "kind": "DtsClassModelRuntimeLoader",
+      "className": "DtsClassModelRuntimeLoader",
+      "jsdoc": "Dts Class Model Runtime Loader 的语义模型。",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
+        "line": 20,
+        "className": "DtsClassModelRuntimeLoader",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Dts Class Model Runtime Loader 实例。",
+        "signatureText": "constructor(options: DtsClassModelRuntimeLoaderOptions)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "options",
+            "type": {
+              "type": "reference",
+              "name": "DtsClassModelRuntimeLoaderOptions",
+              "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts"
+            }
+          }
+        ]
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "init",
+          "jsdoc": "初始化并返回 runtime manifest。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          }
+        },
+        {
+          "name": "ensureClassName",
+          "jsdoc": "按 className 加载单个 runtime model。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "className",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          }
+        },
+        {
+          "name": "ensureRef",
+          "jsdoc": "按统一\n@refs id 加载 ref；跨文件 ref 可由 manifest 或显式 file 定位。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "ref",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "file",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          }
+        },
+        {
+          "name": "ensureSchema",
+          "jsdoc": "按统一\n@refs id 加载 schema ref，并校验 ref 类型。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "ref",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "file",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          }
+        },
+        {
+          "name": "ensureSchemaClosure",
+          "jsdoc": "加载 root schema 及其 runtime $ref 依赖，返回可注册给 AJV 的 schema 闭包。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rootSchemaRef",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "file",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "DtsClassModelRuntimeSchemaClosure",
+                "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts"
+              }
+            ]
+          }
+        },
+        {
+          "name": "ensureReachableClosure",
+          "jsdoc": "沿构建期 links 加载 root 可达子模型闭包。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rootClassName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "unknown",
+                "name": "readonly string[]"
+              }
+            ]
+          }
+        },
+        {
+          "name": "buildLoadedModels",
+          "jsdoc": "返回已加载的 runtime model map。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Readonly",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "Record",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T04:00:57.581Z",
+  "$defs": {
+    "DtsClassModelRuntimeLoaderOptions": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeLoaderOptions",
+      "description": "Dts Class Model Runtime Loader Options 的调用配置。"
+    },
+    "DtsClassModelRuntimeSchemaClosure": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeSchemaClosure",
+      "description": "Dts Class Model Runtime Schema Closure 的语义模型。"
+    },
+    "DtsClassModelRuntimeLoader": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeLoader",
+      "description": "Dts Class Model Runtime Loader 的语义模型。"
+    }
+  }
+}

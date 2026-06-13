@@ -257,8 +257,7 @@
               "name": "row",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -319,8 +318,7 @@
               "name": "original",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -384,8 +382,7 @@
               "name": "snapshot",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -574,8 +571,7 @@
             "type": "optional",
             "elementType": {
               "type": "reference",
-              "name": "DataRow",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -605,8 +601,7 @@
             "type": "optional",
             "elementType": {
               "type": "reference",
-              "name": "DataRow",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -635,8 +630,7 @@
               "name": "current",
               "type": {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -655,16 +649,14 @@
               "name": "host",
               "type": {
                 "type": "reference",
-                "name": "DataView",
-                "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+                "name": "unknown"
               }
             },
             {
               "name": "crud",
               "type": {
                 "type": "reference",
-                "name": "CrudDelegate",
-                "sourcePath": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts"
+                "name": "unknown"
               }
             },
             {
@@ -696,8 +688,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
@@ -722,7 +713,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.795Z",
+  "generatedAt": "2026-06-13T04:00:57.839Z",
   "$defs": {
     "FieldChange": {
       "type": "object",

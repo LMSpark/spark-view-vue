@@ -64,7 +64,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.467Z",
+  "generatedAt": "2026-06-13T04:00:57.589Z",
   "$defs": {
     "ClassModelKnowledgeWorkerInitInput": {
       "type": "object",

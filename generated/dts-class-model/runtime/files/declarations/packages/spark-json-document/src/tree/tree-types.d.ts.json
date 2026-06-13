@@ -1,0 +1,657 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-json-document/src/tree/tree-types.d.ts",
+  "symbols": [
+    "JsonNodeType",
+    "TreeNode",
+    "TreeDisplayNode",
+    "TreeModel",
+    "MutationResult",
+    "RenameNodeKeyInput",
+    "UpdateNodeTypeInput",
+    "JsonTreePolicy",
+    "AutoPopulateEntry",
+    "FlatJsonTreeDocument"
+  ],
+  "@refs": {
+    "spark-class-model://schema/JsonNodeType": {
+      "ref": "spark-class-model://schema/JsonNodeType",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "JsonNodeType",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/JsonNodeType"
+      }
+    },
+    "spark-class-model://model/JsonNodeType": {
+      "ref": "spark-class-model://model/JsonNodeType",
+      "kind": "model",
+      "className": "JsonNodeType",
+      "schemaRef": "spark-class-model://schema/JsonNodeType",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/TreeNode": {
+      "ref": "spark-class-model://schema/TreeNode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "TreeNode",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "parentId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "segment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "type": {
+            "$ref": "spark-class-model://schema/JsonNodeType"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "order": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/TreeNode"
+      }
+    },
+    "spark-class-model://model/TreeNode/attributes/id/0": {
+      "ref": "spark-class-model://model/TreeNode/attributes/id/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeNode",
+      "name": "id",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/TreeNode/attributes/parentId/1": {
+      "ref": "spark-class-model://model/TreeNode/attributes/parentId/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeNode",
+      "name": "parentId",
+      "schemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/TreeNode/attributes/segment/2": {
+      "ref": "spark-class-model://model/TreeNode/attributes/segment/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeNode",
+      "name": "segment",
+      "schemaRef": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/774e8813c7724e4ba52211d896408630529aa2104caa3bfafb09f8ed853c6dc0": {
+      "ref": "spark-class-model://schema/shared/774e8813c7724e4ba52211d896408630529aa2104caa3bfafb09f8ed853c6dc0",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/JsonNodeType",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/774e8813c7724e4ba52211d896408630529aa2104caa3bfafb09f8ed853c6dc0"
+      }
+    },
+    "spark-class-model://model/TreeNode/attributes/type/3": {
+      "ref": "spark-class-model://model/TreeNode/attributes/type/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeNode",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/774e8813c7724e4ba52211d896408630529aa2104caa3bfafb09f8ed853c6dc0",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeNode%2Fattributes%2Ftype%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonNodeType": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeNode%2Fattributes%2Ftype%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonNodeType",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/TreeNode/attributes/type/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/JsonNodeType",
+      "targetClassName": "JsonNodeType",
+      "targetFile": "files/declarations/packages/spark-json-document/src/tree/tree-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonNodeType"
+    },
+    "spark-class-model://model/TreeNode/attributes/value/4": {
+      "ref": "spark-class-model://model/TreeNode/attributes/value/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeNode",
+      "name": "value",
+      "schemaRef": "spark-class-model://schema/shared/81d0397840966389d7630dc56ed5038be8bf231120d1c52be38f565faac0f723",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/TreeNode/attributes/order/5": {
+      "ref": "spark-class-model://model/TreeNode/attributes/order/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeNode",
+      "name": "order",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/TreeNode": {
+      "ref": "spark-class-model://model/TreeNode",
+      "kind": "model",
+      "className": "TreeNode",
+      "schemaRef": "spark-class-model://schema/TreeNode",
+      "attributeRefs": [
+        "spark-class-model://model/TreeNode/attributes/id/0",
+        "spark-class-model://model/TreeNode/attributes/parentId/1",
+        "spark-class-model://model/TreeNode/attributes/segment/2",
+        "spark-class-model://model/TreeNode/attributes/type/3",
+        "spark-class-model://model/TreeNode/attributes/value/4",
+        "spark-class-model://model/TreeNode/attributes/order/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeNode%2Fattributes%2Ftype%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonNodeType"
+      ]
+    },
+    "spark-class-model://schema/TreeDisplayNode": {
+      "ref": "spark-class-model://schema/TreeDisplayNode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "TreeDisplayNode",
+        "properties": {
+          "depth": {
+            "type": "number"
+          },
+          "path": {
+            "$ref": "spark-class-model://schema/JsonPath"
+          },
+          "childCount": {
+            "type": "number"
+          },
+          "keyEditable": {
+            "type": "boolean"
+          },
+          "typeEditable": {
+            "type": "boolean"
+          },
+          "deletable": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/TreeDisplayNode"
+      }
+    },
+    "spark-class-model://model/TreeDisplayNode/attributes/depth/0": {
+      "ref": "spark-class-model://model/TreeDisplayNode/attributes/depth/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeDisplayNode",
+      "name": "depth",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/dd6fe73922d6f20ccf83ce5ced3f320ee477cb22b2274afee5ad84b930d01ff8": {
+      "ref": "spark-class-model://schema/shared/dd6fe73922d6f20ccf83ce5ced3f320ee477cb22b2274afee5ad84b930d01ff8",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/JsonPath",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/dd6fe73922d6f20ccf83ce5ced3f320ee477cb22b2274afee5ad84b930d01ff8"
+      }
+    },
+    "spark-class-model://model/TreeDisplayNode/attributes/path/1": {
+      "ref": "spark-class-model://model/TreeDisplayNode/attributes/path/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeDisplayNode",
+      "name": "path",
+      "schemaRef": "spark-class-model://schema/shared/dd6fe73922d6f20ccf83ce5ced3f320ee477cb22b2274afee5ad84b930d01ff8",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeDisplayNode%2Fattributes%2Fpath%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonPath": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeDisplayNode%2Fattributes%2Fpath%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/TreeDisplayNode/attributes/path/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/JsonPath",
+      "targetClassName": "JsonPath",
+      "targetFile": "files/declarations/packages/spark-json-document/src/core/json-path.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonPath"
+    },
+    "spark-class-model://model/TreeDisplayNode/attributes/childCount/2": {
+      "ref": "spark-class-model://model/TreeDisplayNode/attributes/childCount/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeDisplayNode",
+      "name": "childCount",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/TreeDisplayNode/attributes/keyEditable/3": {
+      "ref": "spark-class-model://model/TreeDisplayNode/attributes/keyEditable/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeDisplayNode",
+      "name": "keyEditable",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/TreeDisplayNode/attributes/typeEditable/4": {
+      "ref": "spark-class-model://model/TreeDisplayNode/attributes/typeEditable/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeDisplayNode",
+      "name": "typeEditable",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/TreeDisplayNode/attributes/deletable/5": {
+      "ref": "spark-class-model://model/TreeDisplayNode/attributes/deletable/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeDisplayNode",
+      "name": "deletable",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/TreeDisplayNode": {
+      "ref": "spark-class-model://model/TreeDisplayNode",
+      "kind": "model",
+      "className": "TreeDisplayNode",
+      "schemaRef": "spark-class-model://schema/TreeDisplayNode",
+      "attributeRefs": [
+        "spark-class-model://model/TreeDisplayNode/attributes/depth/0",
+        "spark-class-model://model/TreeDisplayNode/attributes/path/1",
+        "spark-class-model://model/TreeDisplayNode/attributes/childCount/2",
+        "spark-class-model://model/TreeDisplayNode/attributes/keyEditable/3",
+        "spark-class-model://model/TreeDisplayNode/attributes/typeEditable/4",
+        "spark-class-model://model/TreeDisplayNode/attributes/deletable/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeDisplayNode%2Fattributes%2Fpath%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonPath"
+      ]
+    },
+    "spark-class-model://schema/TreeModel": {
+      "ref": "spark-class-model://schema/TreeModel",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "TreeModel",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/TreeModel"
+      }
+    },
+    "spark-class-model://model/TreeModel": {
+      "ref": "spark-class-model://model/TreeModel",
+      "kind": "model",
+      "className": "TreeModel",
+      "schemaRef": "spark-class-model://schema/TreeModel",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/MutationResult": {
+      "ref": "spark-class-model://schema/MutationResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MutationResult",
+        "properties": {
+          "model": {
+            "$ref": "spark-class-model://schema/TreeModel"
+          },
+          "focusId": {
+            "type": "string"
+          },
+          "expandId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/MutationResult"
+      }
+    },
+    "spark-class-model://schema/shared/19ffbbe4b9166178cd04659518403fdcc2d5a1e8e7f240ede01e5b9a6f9a5971": {
+      "ref": "spark-class-model://schema/shared/19ffbbe4b9166178cd04659518403fdcc2d5a1e8e7f240ede01e5b9a6f9a5971",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/TreeModel",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/19ffbbe4b9166178cd04659518403fdcc2d5a1e8e7f240ede01e5b9a6f9a5971"
+      }
+    },
+    "spark-class-model://model/MutationResult/attributes/model/0": {
+      "ref": "spark-class-model://model/MutationResult/attributes/model/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MutationResult",
+      "name": "model",
+      "schemaRef": "spark-class-model://schema/shared/19ffbbe4b9166178cd04659518403fdcc2d5a1e8e7f240ede01e5b9a6f9a5971",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMutationResult%2Fattributes%2Fmodel%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FTreeModel": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMutationResult%2Fattributes%2Fmodel%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FTreeModel",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/MutationResult/attributes/model/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/TreeModel",
+      "targetClassName": "TreeModel",
+      "targetFile": "files/declarations/packages/spark-json-document/src/tree/tree-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/TreeModel"
+    },
+    "spark-class-model://model/MutationResult/attributes/focusId/1": {
+      "ref": "spark-class-model://model/MutationResult/attributes/focusId/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MutationResult",
+      "name": "focusId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/MutationResult/attributes/expandId/2": {
+      "ref": "spark-class-model://model/MutationResult/attributes/expandId/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MutationResult",
+      "name": "expandId",
+      "schemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/MutationResult": {
+      "ref": "spark-class-model://model/MutationResult",
+      "kind": "model",
+      "className": "MutationResult",
+      "schemaRef": "spark-class-model://schema/MutationResult",
+      "attributeRefs": [
+        "spark-class-model://model/MutationResult/attributes/model/0",
+        "spark-class-model://model/MutationResult/attributes/focusId/1",
+        "spark-class-model://model/MutationResult/attributes/expandId/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMutationResult%2Fattributes%2Fmodel%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FTreeModel"
+      ]
+    },
+    "spark-class-model://schema/RenameNodeKeyInput": {
+      "ref": "spark-class-model://schema/RenameNodeKeyInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RenameNodeKeyInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RenameNodeKeyInput"
+      }
+    },
+    "spark-class-model://model/RenameNodeKeyInput": {
+      "ref": "spark-class-model://model/RenameNodeKeyInput",
+      "kind": "model",
+      "className": "RenameNodeKeyInput",
+      "schemaRef": "spark-class-model://schema/RenameNodeKeyInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/UpdateNodeTypeInput": {
+      "ref": "spark-class-model://schema/UpdateNodeTypeInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "UpdateNodeTypeInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/UpdateNodeTypeInput"
+      }
+    },
+    "spark-class-model://model/UpdateNodeTypeInput": {
+      "ref": "spark-class-model://model/UpdateNodeTypeInput",
+      "kind": "model",
+      "className": "UpdateNodeTypeInput",
+      "schemaRef": "spark-class-model://schema/UpdateNodeTypeInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/JsonTreePolicy": {
+      "ref": "spark-class-model://schema/JsonTreePolicy",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "JsonTreePolicy",
+        "properties": {
+          "rootLabel": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/JsonTreePolicy"
+      }
+    },
+    "spark-class-model://model/JsonTreePolicy/attributes/rootLabel/0": {
+      "ref": "spark-class-model://model/JsonTreePolicy/attributes/rootLabel/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreePolicy",
+      "name": "rootLabel",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/JsonTreePolicy": {
+      "ref": "spark-class-model://model/JsonTreePolicy",
+      "kind": "model",
+      "className": "JsonTreePolicy",
+      "schemaRef": "spark-class-model://schema/JsonTreePolicy",
+      "attributeRefs": [
+        "spark-class-model://model/JsonTreePolicy/attributes/rootLabel/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AutoPopulateEntry": {
+      "ref": "spark-class-model://schema/AutoPopulateEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AutoPopulateEntry",
+        "properties": {
+          "targetPath": {
+            "$ref": "spark-class-model://schema/JsonPath"
+          },
+          "entries": {
+            "type": "object",
+            "title": "Record<string, JsonValue>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AutoPopulateEntry"
+      }
+    },
+    "spark-class-model://model/AutoPopulateEntry/attributes/targetPath/0": {
+      "ref": "spark-class-model://model/AutoPopulateEntry/attributes/targetPath/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AutoPopulateEntry",
+      "name": "targetPath",
+      "schemaRef": "spark-class-model://schema/shared/dd6fe73922d6f20ccf83ce5ced3f320ee477cb22b2274afee5ad84b930d01ff8",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAutoPopulateEntry%2Fattributes%2FtargetPath%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonPath": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAutoPopulateEntry%2Fattributes%2FtargetPath%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AutoPopulateEntry/attributes/targetPath/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/JsonPath",
+      "targetClassName": "JsonPath",
+      "targetFile": "files/declarations/packages/spark-json-document/src/core/json-path.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonPath"
+    },
+    "spark-class-model://schema/shared/aeef0e8cb6bf31ab227543e6fc25585acad1b2bc199f5c3f73ee965f697ba14d": {
+      "ref": "spark-class-model://schema/shared/aeef0e8cb6bf31ab227543e6fc25585acad1b2bc199f5c3f73ee965f697ba14d",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Record<string, JsonValue>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/aeef0e8cb6bf31ab227543e6fc25585acad1b2bc199f5c3f73ee965f697ba14d"
+      }
+    },
+    "spark-class-model://model/AutoPopulateEntry/attributes/entries/1": {
+      "ref": "spark-class-model://model/AutoPopulateEntry/attributes/entries/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AutoPopulateEntry",
+      "name": "entries",
+      "schemaRef": "spark-class-model://schema/shared/aeef0e8cb6bf31ab227543e6fc25585acad1b2bc199f5c3f73ee965f697ba14d",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AutoPopulateEntry": {
+      "ref": "spark-class-model://model/AutoPopulateEntry",
+      "kind": "model",
+      "className": "AutoPopulateEntry",
+      "schemaRef": "spark-class-model://schema/AutoPopulateEntry",
+      "attributeRefs": [
+        "spark-class-model://model/AutoPopulateEntry/attributes/targetPath/0",
+        "spark-class-model://model/AutoPopulateEntry/attributes/entries/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAutoPopulateEntry%2Fattributes%2FtargetPath%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonPath"
+      ]
+    },
+    "spark-class-model://schema/FlatJsonTreeDocument": {
+      "ref": "spark-class-model://schema/FlatJsonTreeDocument",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "FlatJsonTreeDocument",
+        "properties": {
+          "rootType": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "object"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "array"
+                ]
+              }
+            ]
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/TreeNode"
+            }
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/FlatJsonTreeDocument"
+      }
+    },
+    "spark-class-model://schema/shared/f1e3cba927a1bb23841259afecbac47c59b7b79df714b5d935a42dc644106f55": {
+      "ref": "spark-class-model://schema/shared/f1e3cba927a1bb23841259afecbac47c59b7b79df714b5d935a42dc644106f55",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "object"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "array"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f1e3cba927a1bb23841259afecbac47c59b7b79df714b5d935a42dc644106f55"
+      }
+    },
+    "spark-class-model://model/FlatJsonTreeDocument/attributes/rootType/0": {
+      "ref": "spark-class-model://model/FlatJsonTreeDocument/attributes/rootType/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FlatJsonTreeDocument",
+      "name": "rootType",
+      "schemaRef": "spark-class-model://schema/shared/f1e3cba927a1bb23841259afecbac47c59b7b79df714b5d935a42dc644106f55",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/FlatJsonTreeDocument/attributes/rows/1": {
+      "ref": "spark-class-model://model/FlatJsonTreeDocument/attributes/rows/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FlatJsonTreeDocument",
+      "name": "rows",
+      "schemaRef": "spark-class-model://schema/shared/e477735aa0655d3199eaaed2cface3a2f9b83617b78648cebe66f6d635b44c37",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFlatJsonTreeDocument%2Fattributes%2Frows%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FTreeNode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFlatJsonTreeDocument%2Fattributes%2Frows%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FTreeNode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/FlatJsonTreeDocument/attributes/rows/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/TreeNode",
+      "targetClassName": "TreeNode",
+      "targetFile": "files/declarations/packages/spark-json-document/src/tree/tree-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/TreeNode"
+    },
+    "spark-class-model://model/FlatJsonTreeDocument": {
+      "ref": "spark-class-model://model/FlatJsonTreeDocument",
+      "kind": "model",
+      "className": "FlatJsonTreeDocument",
+      "schemaRef": "spark-class-model://schema/FlatJsonTreeDocument",
+      "attributeRefs": [
+        "spark-class-model://model/FlatJsonTreeDocument/attributes/rootType/0",
+        "spark-class-model://model/FlatJsonTreeDocument/attributes/rows/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFlatJsonTreeDocument%2Fattributes%2Frows%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FTreeNode"
+      ]
+    }
+  }
+}

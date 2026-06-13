@@ -45,9 +45,7 @@
         {
           "name": "children",
           "jsdoc": "子节点集合。",
-          "schema": {
-            "type": "array"
-          },
+          "schema": true,
           "readable": true,
           "writable": false
         },
@@ -55,7 +53,8 @@
           "name": "toolbar",
           "jsdoc": "toolbar 字段。",
           "schema": {
-            "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+            "type": "object",
+            "title": "RToolbarProps"
           },
           "readable": true,
           "writable": false
@@ -64,7 +63,8 @@
           "name": "actions",
           "jsdoc": "actions 字段。",
           "schema": {
-            "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+            "type": "object",
+            "title": "RToolbarProps"
           },
           "readable": true,
           "writable": false
@@ -73,7 +73,8 @@
           "name": "editor",
           "jsdoc": "editor 字段。",
           "schema": {
-            "$ref": "../../zones/RendererEditor.types.d.ts.json#/$defs/REditorProps"
+            "type": "object",
+            "title": "REditorProps"
           },
           "readable": true,
           "writable": false
@@ -112,24 +113,25 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.559Z",
+  "generatedAt": "2026-06-13T04:00:57.643Z",
   "$defs": {
     "RendererTreeInputProps": {
       "type": "object",
       "title": "RendererTreeInputProps",
       "description": "Renderer Tree Input Props 的属性契约。",
       "properties": {
-        "children": {
-          "type": "array"
-        },
+        "children": true,
         "toolbar": {
-          "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+          "type": "object",
+          "title": "RToolbarProps"
         },
         "actions": {
-          "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+          "type": "object",
+          "title": "RToolbarProps"
         },
         "editor": {
-          "$ref": "../../zones/RendererEditor.types.d.ts.json#/$defs/REditorProps"
+          "type": "object",
+          "title": "REditorProps"
         }
       }
     },

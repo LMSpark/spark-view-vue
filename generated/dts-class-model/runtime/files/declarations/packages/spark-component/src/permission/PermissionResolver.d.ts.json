@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/permission/PermissionResolver.d.ts",
+  "symbols": [
+    "PermissionActionContext",
+    "PermissionActionName",
+    "PermissionAction",
+    "ResolveFieldPermissionStateInput"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PermissionActionContext": {
+      "ref": "spark-class-model://schema/PermissionActionContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PermissionActionContext",
+        "properties": {
+          "permissionMode": {
+            "$ref": "spark-class-model://schema/NavPermissionMode"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PermissionActionContext"
+      }
+    },
+    "spark-class-model://schema/shared/6c664c963c95f879c064e3b015b81359d40f5af9003d4756ed912d17aa6572d4": {
+      "ref": "spark-class-model://schema/shared/6c664c963c95f879c064e3b015b81359d40f5af9003d4756ed912d17aa6572d4",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/NavPermissionMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6c664c963c95f879c064e3b015b81359d40f5af9003d4756ed912d17aa6572d4"
+      }
+    },
+    "spark-class-model://model/PermissionActionContext/attributes/permissionMode/0": {
+      "ref": "spark-class-model://model/PermissionActionContext/attributes/permissionMode/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PermissionActionContext",
+      "name": "permissionMode",
+      "schemaRef": "spark-class-model://schema/shared/6c664c963c95f879c064e3b015b81359d40f5af9003d4756ed912d17aa6572d4",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPermissionActionContext%2Fattributes%2FpermissionMode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FNavPermissionMode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPermissionActionContext%2Fattributes%2FpermissionMode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FNavPermissionMode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PermissionActionContext/attributes/permissionMode/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavPermissionMode",
+      "targetClassName": "NavPermissionMode",
+      "targetFile": "files/declarations/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavPermissionMode"
+    },
+    "spark-class-model://model/PermissionActionContext": {
+      "ref": "spark-class-model://model/PermissionActionContext",
+      "kind": "model",
+      "className": "PermissionActionContext",
+      "schemaRef": "spark-class-model://schema/PermissionActionContext",
+      "attributeRefs": [
+        "spark-class-model://model/PermissionActionContext/attributes/permissionMode/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPermissionActionContext%2Fattributes%2FpermissionMode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FNavPermissionMode"
+      ]
+    },
+    "spark-class-model://schema/PermissionActionName": {
+      "ref": "spark-class-model://schema/PermissionActionName",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PermissionActionName",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PermissionActionName"
+      }
+    },
+    "spark-class-model://model/PermissionActionName": {
+      "ref": "spark-class-model://model/PermissionActionName",
+      "kind": "model",
+      "className": "PermissionActionName",
+      "schemaRef": "spark-class-model://schema/PermissionActionName",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PermissionAction": {
+      "ref": "spark-class-model://schema/PermissionAction",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PermissionAction",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PermissionAction"
+      }
+    },
+    "spark-class-model://model/PermissionAction": {
+      "ref": "spark-class-model://model/PermissionAction",
+      "kind": "model",
+      "className": "PermissionAction",
+      "schemaRef": "spark-class-model://schema/PermissionAction",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ResolveFieldPermissionStateInput": {
+      "ref": "spark-class-model://schema/ResolveFieldPermissionStateInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ResolveFieldPermissionStateInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ResolveFieldPermissionStateInput"
+      }
+    },
+    "spark-class-model://model/ResolveFieldPermissionStateInput": {
+      "ref": "spark-class-model://model/ResolveFieldPermissionStateInput",
+      "kind": "model",
+      "className": "ResolveFieldPermissionStateInput",
+      "schemaRef": "spark-class-model://schema/ResolveFieldPermissionStateInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

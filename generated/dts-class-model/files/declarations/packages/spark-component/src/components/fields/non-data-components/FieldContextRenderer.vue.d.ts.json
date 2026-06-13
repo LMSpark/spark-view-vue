@@ -285,7 +285,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "../columnFormRules.d.ts.json#/$defs/FormItemRule"
+              "type": "object",
+              "title": "FormItemRule"
             }
           },
           "readable": true,
@@ -387,7 +388,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.695Z",
+  "generatedAt": "2026-06-13T04:00:57.765Z",
   "$defs": {
     "Props": {
       "type": "object",
@@ -529,7 +530,8 @@
         "validationRules": {
           "type": "array",
           "items": {
-            "$ref": "../columnFormRules.d.ts.json#/$defs/FormItemRule"
+            "type": "object",
+            "title": "FormItemRule"
           }
         },
         "titleAlign": {

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererSteps/types.d.ts",
+  "symbols": [
+    "RendererStepsApi"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RendererStepsApi": {
+      "ref": "spark-class-model://schema/RendererStepsApi",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RendererStepsApi",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RendererStepsApi"
+      }
+    },
+    "spark-class-model://model/RendererStepsApi": {
+      "ref": "spark-class-model://model/RendererStepsApi",
+      "kind": "model",
+      "className": "RendererStepsApi",
+      "schemaRef": "spark-class-model://schema/RendererStepsApi",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

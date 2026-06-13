@@ -37,8 +37,7 @@
             "name": "storage",
             "type": {
               "type": "reference",
-              "name": "TokenStorage",
-              "sourcePath": "declarations/packages/spark-app/src/auth/types.d.ts"
+              "name": "unknown"
             },
             "flags": {
               "isOptional": true
@@ -108,7 +107,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.485Z",
+  "generatedAt": "2026-06-13T04:00:57.600Z",
   "$defs": {
     "TokenManager": {
       "type": "object",

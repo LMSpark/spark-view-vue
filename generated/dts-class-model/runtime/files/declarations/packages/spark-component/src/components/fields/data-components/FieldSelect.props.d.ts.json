@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldSelect.props.d.ts",
+  "symbols": [
+    "RSelectProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RSelectProps": {
+      "ref": "spark-class-model://schema/RSelectProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RSelectProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RSelectProps"
+      }
+    },
+    "spark-class-model://model/RSelectProps": {
+      "ref": "spark-class-model://model/RSelectProps",
+      "kind": "model",
+      "className": "RSelectProps",
+      "schemaRef": "spark-class-model://schema/RSelectProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

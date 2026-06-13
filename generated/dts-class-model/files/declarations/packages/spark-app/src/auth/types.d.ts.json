@@ -74,7 +74,8 @@
           "name": "user",
           "jsdoc": "user 字段。",
           "schema": {
-            "$ref": "../types.d.ts.json#/$defs/UserInfo"
+            "type": "object",
+            "title": "UserInfo"
           },
           "readable": true,
           "writable": true
@@ -83,7 +84,8 @@
           "name": "tenant",
           "jsdoc": "tenant 字段。",
           "schema": {
-            "$ref": "../types.d.ts.json#/$defs/TenantInfo"
+            "type": "object",
+            "title": "TenantInfo"
           },
           "readable": true,
           "writable": true
@@ -92,7 +94,8 @@
           "name": "env",
           "jsdoc": "env 字段。",
           "schema": {
-            "$ref": "../types.d.ts.json#/$defs/EnvironmentInfo"
+            "type": "object",
+            "title": "EnvironmentInfo"
           },
           "readable": true,
           "writable": true
@@ -222,7 +225,8 @@
           "name": "mockUser",
           "jsdoc": "Mock 用户数据（enableMock=true 时使用）",
           "schema": {
-            "$ref": "../types.d.ts.json#/$defs/UserInfo"
+            "type": "object",
+            "title": "UserInfo"
           },
           "readable": true,
           "writable": true
@@ -231,7 +235,8 @@
           "name": "mockTenant",
           "jsdoc": "Mock 租户数据",
           "schema": {
-            "$ref": "../types.d.ts.json#/$defs/TenantInfo"
+            "type": "object",
+            "title": "TenantInfo"
           },
           "readable": true,
           "writable": true
@@ -298,7 +303,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.491Z",
+  "generatedAt": "2026-06-13T04:00:57.603Z",
   "$defs": {
     "LoginCredentials": {
       "type": "object",
@@ -319,13 +324,16 @@
       "description": "认证结果",
       "properties": {
         "user": {
-          "$ref": "../types.d.ts.json#/$defs/UserInfo"
+          "type": "object",
+          "title": "UserInfo"
         },
         "tenant": {
-          "$ref": "../types.d.ts.json#/$defs/TenantInfo"
+          "type": "object",
+          "title": "TenantInfo"
         },
         "env": {
-          "$ref": "../types.d.ts.json#/$defs/EnvironmentInfo"
+          "type": "object",
+          "title": "EnvironmentInfo"
         },
         "token": {
           "type": "string"
@@ -370,10 +378,12 @@
           "type": "boolean"
         },
         "mockUser": {
-          "$ref": "../types.d.ts.json#/$defs/UserInfo"
+          "type": "object",
+          "title": "UserInfo"
         },
         "mockTenant": {
-          "$ref": "../types.d.ts.json#/$defs/TenantInfo"
+          "type": "object",
+          "title": "TenantInfo"
         },
         "timeout": {
           "type": "number"

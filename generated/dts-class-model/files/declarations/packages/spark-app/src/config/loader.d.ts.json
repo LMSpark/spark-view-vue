@@ -54,8 +54,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "AppFullConfig",
-                "sourcePath": "declarations/packages/spark-app/src/config/types.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -82,8 +81,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "TenantConfig",
-                    "sourcePath": "declarations/packages/spark-app/src/config/types.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "literal",
@@ -116,8 +114,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "AppFullConfig",
-                "sourcePath": "declarations/packages/spark-app/src/config/types.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -263,7 +260,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.494Z",
+  "generatedAt": "2026-06-13T04:00:57.604Z",
   "$defs": {
     "ConfigLoader": {
       "type": "object",

@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
+  "symbols": [
+    "BuildDtsClassModelBundleProgressPhase",
+    "BuildDtsClassModelBundleProgress",
+    "BuildDtsClassModelBundleOptions",
+    "BuildDtsClassModelBundleResult"
+  ],
+  "@refs": {
+    "spark-class-model://schema/BuildDtsClassModelBundleProgressPhase": {
+      "ref": "spark-class-model://schema/BuildDtsClassModelBundleProgressPhase",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "BuildDtsClassModelBundleProgressPhase",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/BuildDtsClassModelBundleProgressPhase"
+      }
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleProgressPhase": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleProgressPhase",
+      "kind": "model",
+      "className": "BuildDtsClassModelBundleProgressPhase",
+      "schemaRef": "spark-class-model://schema/BuildDtsClassModelBundleProgressPhase",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/BuildDtsClassModelBundleProgress": {
+      "ref": "spark-class-model://schema/BuildDtsClassModelBundleProgress",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "BuildDtsClassModelBundleProgress",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/BuildDtsClassModelBundleProgress"
+      }
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleProgress": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleProgress",
+      "kind": "model",
+      "className": "BuildDtsClassModelBundleProgress",
+      "schemaRef": "spark-class-model://schema/BuildDtsClassModelBundleProgress",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/BuildDtsClassModelBundleOptions": {
+      "ref": "spark-class-model://schema/BuildDtsClassModelBundleOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "BuildDtsClassModelBundleOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/BuildDtsClassModelBundleOptions"
+      }
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleOptions": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions",
+      "kind": "model",
+      "className": "BuildDtsClassModelBundleOptions",
+      "schemaRef": "spark-class-model://schema/BuildDtsClassModelBundleOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/BuildDtsClassModelBundleResult": {
+      "ref": "spark-class-model://schema/BuildDtsClassModelBundleResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "BuildDtsClassModelBundleResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/BuildDtsClassModelBundleResult"
+      }
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleResult": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleResult",
+      "kind": "model",
+      "className": "BuildDtsClassModelBundleResult",
+      "schemaRef": "spark-class-model://schema/BuildDtsClassModelBundleResult",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

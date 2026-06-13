@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/transport/transport-turn.d.ts",
+  "symbols": [
+    "AiAgentTransportTurn"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentTransportTurn": {
+      "ref": "spark-class-model://schema/AiAgentTransportTurn",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentTransportTurn",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentTransportTurn"
+      }
+    },
+    "spark-class-model://model/AiAgentTransportTurn": {
+      "ref": "spark-class-model://model/AiAgentTransportTurn",
+      "kind": "model",
+      "className": "AiAgentTransportTurn",
+      "schemaRef": "spark-class-model://schema/AiAgentTransportTurn",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

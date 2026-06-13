@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/AiToolApprovalPanel.props.d.ts",
+  "symbols": [
+    "AiToolApprovalPanelProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiToolApprovalPanelProps": {
+      "ref": "spark-class-model://schema/AiToolApprovalPanelProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiToolApprovalPanelProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiToolApprovalPanelProps"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalPanelProps": {
+      "ref": "spark-class-model://model/AiToolApprovalPanelProps",
+      "kind": "model",
+      "className": "AiToolApprovalPanelProps",
+      "schemaRef": "spark-class-model://schema/AiToolApprovalPanelProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

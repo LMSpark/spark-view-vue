@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-run-trace.d.ts",
+  "symbols": [
+    "AiAgentRunTraceToolCall",
+    "AiAgentRunTraceReasoning",
+    "AiAgentRunTraceEntry",
+    "AiAgentRunTraceSnapshot",
+    "AiAgentRunTraceOptions",
+    "AiAgentRunTraceListener",
+    "AiAgentRunTrace"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentRunTraceToolCall": {
+      "ref": "spark-class-model://schema/AiAgentRunTraceToolCall",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentRunTraceToolCall",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentRunTraceToolCall"
+      }
+    },
+    "spark-class-model://model/AiAgentRunTraceToolCall": {
+      "ref": "spark-class-model://model/AiAgentRunTraceToolCall",
+      "kind": "model",
+      "className": "AiAgentRunTraceToolCall",
+      "schemaRef": "spark-class-model://schema/AiAgentRunTraceToolCall",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentRunTraceReasoning": {
+      "ref": "spark-class-model://schema/AiAgentRunTraceReasoning",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentRunTraceReasoning",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentRunTraceReasoning"
+      }
+    },
+    "spark-class-model://model/AiAgentRunTraceReasoning": {
+      "ref": "spark-class-model://model/AiAgentRunTraceReasoning",
+      "kind": "model",
+      "className": "AiAgentRunTraceReasoning",
+      "schemaRef": "spark-class-model://schema/AiAgentRunTraceReasoning",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentRunTraceEntry": {
+      "ref": "spark-class-model://schema/AiAgentRunTraceEntry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentRunTraceEntry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentRunTraceEntry"
+      }
+    },
+    "spark-class-model://model/AiAgentRunTraceEntry": {
+      "ref": "spark-class-model://model/AiAgentRunTraceEntry",
+      "kind": "model",
+      "className": "AiAgentRunTraceEntry",
+      "schemaRef": "spark-class-model://schema/AiAgentRunTraceEntry",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentRunTraceSnapshot": {
+      "ref": "spark-class-model://schema/AiAgentRunTraceSnapshot",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentRunTraceSnapshot",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentRunTraceSnapshot"
+      }
+    },
+    "spark-class-model://model/AiAgentRunTraceSnapshot": {
+      "ref": "spark-class-model://model/AiAgentRunTraceSnapshot",
+      "kind": "model",
+      "className": "AiAgentRunTraceSnapshot",
+      "schemaRef": "spark-class-model://schema/AiAgentRunTraceSnapshot",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentRunTraceOptions": {
+      "ref": "spark-class-model://schema/AiAgentRunTraceOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentRunTraceOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentRunTraceOptions"
+      }
+    },
+    "spark-class-model://model/AiAgentRunTraceOptions": {
+      "ref": "spark-class-model://model/AiAgentRunTraceOptions",
+      "kind": "model",
+      "className": "AiAgentRunTraceOptions",
+      "schemaRef": "spark-class-model://schema/AiAgentRunTraceOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentRunTraceListener": {
+      "ref": "spark-class-model://schema/AiAgentRunTraceListener",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentRunTraceListener",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentRunTraceListener"
+      }
+    },
+    "spark-class-model://model/AiAgentRunTraceListener": {
+      "ref": "spark-class-model://model/AiAgentRunTraceListener",
+      "kind": "model",
+      "className": "AiAgentRunTraceListener",
+      "schemaRef": "spark-class-model://schema/AiAgentRunTraceListener",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentRunTrace": {
+      "ref": "spark-class-model://schema/AiAgentRunTrace",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentRunTrace",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentRunTrace"
+      }
+    },
+    "spark-class-model://model/AiAgentRunTrace": {
+      "ref": "spark-class-model://model/AiAgentRunTrace",
+      "kind": "model",
+      "className": "AiAgentRunTrace",
+      "schemaRef": "spark-class-model://schema/AiAgentRunTrace",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

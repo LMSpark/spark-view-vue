@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.d.ts",
+  "symbols": [
+    "OptionalWithUndefined",
+    "OptionFieldStateProps",
+    "UseOptionFieldStateOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/OptionalWithUndefined": {
+      "ref": "spark-class-model://schema/OptionalWithUndefined",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "OptionalWithUndefined",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/OptionalWithUndefined"
+      }
+    },
+    "spark-class-model://model/OptionalWithUndefined": {
+      "ref": "spark-class-model://model/OptionalWithUndefined",
+      "kind": "model",
+      "className": "OptionalWithUndefined",
+      "schemaRef": "spark-class-model://schema/OptionalWithUndefined",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/OptionFieldStateProps": {
+      "ref": "spark-class-model://schema/OptionFieldStateProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "OptionFieldStateProps",
+        "properties": {
+          "modelValue": true,
+          "value": true,
+          "options": {
+            "type": "array",
+            "items": true
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/OptionFieldStateProps"
+      }
+    },
+    "spark-class-model://model/OptionFieldStateProps/attributes/modelValue/0": {
+      "ref": "spark-class-model://model/OptionFieldStateProps/attributes/modelValue/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/OptionFieldStateProps",
+      "name": "modelValue",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/OptionFieldStateProps/attributes/value/1": {
+      "ref": "spark-class-model://model/OptionFieldStateProps/attributes/value/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/OptionFieldStateProps",
+      "name": "value",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6": {
+      "ref": "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": true,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6"
+      }
+    },
+    "spark-class-model://model/OptionFieldStateProps/attributes/options/2": {
+      "ref": "spark-class-model://model/OptionFieldStateProps/attributes/options/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/OptionFieldStateProps",
+      "name": "options",
+      "schemaRef": "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/OptionFieldStateProps": {
+      "ref": "spark-class-model://model/OptionFieldStateProps",
+      "kind": "model",
+      "className": "OptionFieldStateProps",
+      "schemaRef": "spark-class-model://schema/OptionFieldStateProps",
+      "attributeRefs": [
+        "spark-class-model://model/OptionFieldStateProps/attributes/modelValue/0",
+        "spark-class-model://model/OptionFieldStateProps/attributes/value/1",
+        "spark-class-model://model/OptionFieldStateProps/attributes/options/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/UseOptionFieldStateOptions": {
+      "ref": "spark-class-model://schema/UseOptionFieldStateOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "UseOptionFieldStateOptions",
+        "properties": {
+          "props": {
+            "$ref": "spark-class-model://schema/OptionFieldStateProps",
+            "title": "OptionFieldStateProps<TValue>"
+          },
+          "fieldType": {
+            "type": "string"
+          },
+          "fallbackValue": true,
+          "emitUpdate": {
+            "type": "object",
+            "title": "(value: TValue) => void"
+          },
+          "coerce": {
+            "type": "object",
+            "title": "(rawValue: unknown) => TValue"
+          },
+          "formatDisplay": {
+            "type": "object",
+            "title": "(value: unknown, helpers: ReturnType<typeof useFieldOptions>) => string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/UseOptionFieldStateOptions"
+      }
+    },
+    "spark-class-model://model/UseOptionFieldStateOptions/attributes/props/0": {
+      "ref": "spark-class-model://model/UseOptionFieldStateOptions/attributes/props/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseOptionFieldStateOptions",
+      "name": "props",
+      "schemaRef": "spark-class-model://schema/shared/77fa545ccedcb11b774f7482c952f082248bf1be918e0ccb68a28f36ef4190ff",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseOptionFieldStateOptions%2Fattributes%2Fprops%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FOptionFieldStateProps": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseOptionFieldStateOptions%2Fattributes%2Fprops%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FOptionFieldStateProps",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UseOptionFieldStateOptions/attributes/props/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/OptionFieldStateProps",
+      "targetClassName": "OptionFieldStateProps",
+      "targetFile": "files/declarations/packages/spark-component/src/components/fields/data-components/composables/useOptionFieldState.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/OptionFieldStateProps"
+    },
+    "spark-class-model://model/UseOptionFieldStateOptions/attributes/fieldType/1": {
+      "ref": "spark-class-model://model/UseOptionFieldStateOptions/attributes/fieldType/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseOptionFieldStateOptions",
+      "name": "fieldType",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/UseOptionFieldStateOptions/attributes/fallbackValue/2": {
+      "ref": "spark-class-model://model/UseOptionFieldStateOptions/attributes/fallbackValue/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseOptionFieldStateOptions",
+      "name": "fallbackValue",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/UseOptionFieldStateOptions/attributes/emitUpdate/3": {
+      "ref": "spark-class-model://model/UseOptionFieldStateOptions/attributes/emitUpdate/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseOptionFieldStateOptions",
+      "name": "emitUpdate",
+      "schemaRef": "spark-class-model://schema/shared/d26f6c41747f8e57172d0f8878a4ac54870b0d145d2c6f04fd3aaa8a1881a0ea",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/UseOptionFieldStateOptions/attributes/coerce/4": {
+      "ref": "spark-class-model://model/UseOptionFieldStateOptions/attributes/coerce/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseOptionFieldStateOptions",
+      "name": "coerce",
+      "schemaRef": "spark-class-model://schema/shared/4bb76035769a6ea18d138d5f288016f11a0a879f6b9fcad3500c968b84b53bd3",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/53f9ac75a5906b0a5b09a130a52abaaef55f69177de921efce24fc7dbb204b15": {
+      "ref": "spark-class-model://schema/shared/53f9ac75a5906b0a5b09a130a52abaaef55f69177de921efce24fc7dbb204b15",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(value: unknown, helpers: ReturnType<typeof useFieldOptions>) => string",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/53f9ac75a5906b0a5b09a130a52abaaef55f69177de921efce24fc7dbb204b15"
+      }
+    },
+    "spark-class-model://model/UseOptionFieldStateOptions/attributes/formatDisplay/5": {
+      "ref": "spark-class-model://model/UseOptionFieldStateOptions/attributes/formatDisplay/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseOptionFieldStateOptions",
+      "name": "formatDisplay",
+      "schemaRef": "spark-class-model://schema/shared/53f9ac75a5906b0a5b09a130a52abaaef55f69177de921efce24fc7dbb204b15",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UseOptionFieldStateOptions": {
+      "ref": "spark-class-model://model/UseOptionFieldStateOptions",
+      "kind": "model",
+      "className": "UseOptionFieldStateOptions",
+      "schemaRef": "spark-class-model://schema/UseOptionFieldStateOptions",
+      "attributeRefs": [
+        "spark-class-model://model/UseOptionFieldStateOptions/attributes/props/0",
+        "spark-class-model://model/UseOptionFieldStateOptions/attributes/fieldType/1",
+        "spark-class-model://model/UseOptionFieldStateOptions/attributes/fallbackValue/2",
+        "spark-class-model://model/UseOptionFieldStateOptions/attributes/emitUpdate/3",
+        "spark-class-model://model/UseOptionFieldStateOptions/attributes/coerce/4",
+        "spark-class-model://model/UseOptionFieldStateOptions/attributes/formatDisplay/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseOptionFieldStateOptions%2Fattributes%2Fprops%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FOptionFieldStateProps"
+      ]
+    }
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts",
+  "symbols": [
+    "DataViewEditingEventName",
+    "DataViewEditingEvents",
+    "DataViewEditingSource",
+    "DataViewEditingWriteInput"
+  ],
+  "@refs": {
+    "spark-class-model://schema/DataViewEditingEventName": {
+      "ref": "spark-class-model://schema/DataViewEditingEventName",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewEditingEventName",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewEditingEventName"
+      }
+    },
+    "spark-class-model://model/DataViewEditingEventName": {
+      "ref": "spark-class-model://model/DataViewEditingEventName",
+      "kind": "model",
+      "className": "DataViewEditingEventName",
+      "schemaRef": "spark-class-model://schema/DataViewEditingEventName",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DataViewEditingEvents": {
+      "ref": "spark-class-model://schema/DataViewEditingEvents",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewEditingEvents",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewEditingEvents"
+      }
+    },
+    "spark-class-model://model/DataViewEditingEvents": {
+      "ref": "spark-class-model://model/DataViewEditingEvents",
+      "kind": "model",
+      "className": "DataViewEditingEvents",
+      "schemaRef": "spark-class-model://schema/DataViewEditingEvents",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DataViewEditingSource": {
+      "ref": "spark-class-model://schema/DataViewEditingSource",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewEditingSource",
+        "properties": {
+          "events": {
+            "$ref": "spark-class-model://schema/DataViewEditingEvents"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewEditingSource"
+      }
+    },
+    "spark-class-model://schema/shared/079a8e0daead3649663f1a95a0f11ae92715052c37b22c90a99d18a4e2d7a852": {
+      "ref": "spark-class-model://schema/shared/079a8e0daead3649663f1a95a0f11ae92715052c37b22c90a99d18a4e2d7a852",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DataViewEditingEvents",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/079a8e0daead3649663f1a95a0f11ae92715052c37b22c90a99d18a4e2d7a852"
+      }
+    },
+    "spark-class-model://model/DataViewEditingSource/attributes/events/0": {
+      "ref": "spark-class-model://model/DataViewEditingSource/attributes/events/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataViewEditingSource",
+      "name": "events",
+      "schemaRef": "spark-class-model://schema/shared/079a8e0daead3649663f1a95a0f11ae92715052c37b22c90a99d18a4e2d7a852",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewEditingSource%2Fattributes%2Fevents%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewEditingEvents": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewEditingSource%2Fattributes%2Fevents%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewEditingEvents",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataViewEditingSource/attributes/events/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataViewEditingEvents",
+      "targetClassName": "DataViewEditingEvents",
+      "targetFile": "files/declarations/packages/spark-component/src/components/fields/context/dataViewEditing.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataViewEditingEvents"
+    },
+    "spark-class-model://model/DataViewEditingSource": {
+      "ref": "spark-class-model://model/DataViewEditingSource",
+      "kind": "model",
+      "className": "DataViewEditingSource",
+      "schemaRef": "spark-class-model://schema/DataViewEditingSource",
+      "attributeRefs": [
+        "spark-class-model://model/DataViewEditingSource/attributes/events/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataViewEditingSource%2Fattributes%2Fevents%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewEditingEvents"
+      ]
+    },
+    "spark-class-model://schema/DataViewEditingWriteInput": {
+      "ref": "spark-class-model://schema/DataViewEditingWriteInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataViewEditingWriteInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataViewEditingWriteInput"
+      }
+    },
+    "spark-class-model://model/DataViewEditingWriteInput": {
+      "ref": "spark-class-model://model/DataViewEditingWriteInput",
+      "kind": "model",
+      "className": "DataViewEditingWriteInput",
+      "schemaRef": "spark-class-model://schema/DataViewEditingWriteInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

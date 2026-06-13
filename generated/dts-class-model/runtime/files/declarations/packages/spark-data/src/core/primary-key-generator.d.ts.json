@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts",
+  "symbols": [
+    "PrimaryKeyStrategy",
+    "PrimaryKeyGeneratorConfig",
+    "PrimaryKeyGenerator"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PrimaryKeyStrategy": {
+      "ref": "spark-class-model://schema/PrimaryKeyStrategy",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PrimaryKeyStrategy",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PrimaryKeyStrategy"
+      }
+    },
+    "spark-class-model://model/PrimaryKeyStrategy": {
+      "ref": "spark-class-model://model/PrimaryKeyStrategy",
+      "kind": "model",
+      "className": "PrimaryKeyStrategy",
+      "schemaRef": "spark-class-model://schema/PrimaryKeyStrategy",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PrimaryKeyGeneratorConfig": {
+      "ref": "spark-class-model://schema/PrimaryKeyGeneratorConfig",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PrimaryKeyGeneratorConfig",
+        "properties": {
+          "strategy": {
+            "$ref": "spark-class-model://schema/PrimaryKeyStrategy"
+          },
+          "fields": {
+            "type": "string"
+          },
+          "generator": {
+            "type": "object",
+            "title": "(row: Partial<DataRow>, existingRows: DataRow[]) => string | number | Record<string, string | number>"
+          },
+          "startValue": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PrimaryKeyGeneratorConfig"
+      }
+    },
+    "spark-class-model://schema/shared/d851a1a921b08db6d6f3ae2a256bd9ad5cdd01c67e23e2a4633160bfc7cac661": {
+      "ref": "spark-class-model://schema/shared/d851a1a921b08db6d6f3ae2a256bd9ad5cdd01c67e23e2a4633160bfc7cac661",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/PrimaryKeyStrategy",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d851a1a921b08db6d6f3ae2a256bd9ad5cdd01c67e23e2a4633160bfc7cac661"
+      }
+    },
+    "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/strategy/0": {
+      "ref": "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/strategy/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PrimaryKeyGeneratorConfig",
+      "name": "strategy",
+      "schemaRef": "spark-class-model://schema/shared/d851a1a921b08db6d6f3ae2a256bd9ad5cdd01c67e23e2a4633160bfc7cac661",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGeneratorConfig%2Fattributes%2Fstrategy%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyStrategy": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGeneratorConfig%2Fattributes%2Fstrategy%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyStrategy",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/strategy/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/PrimaryKeyStrategy",
+      "targetClassName": "PrimaryKeyStrategy",
+      "targetFile": "files/declarations/packages/spark-data/src/core/primary-key-generator.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PrimaryKeyStrategy"
+    },
+    "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/fields/1": {
+      "ref": "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/fields/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PrimaryKeyGeneratorConfig",
+      "name": "fields",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/6eb195bcdd4910d014c9313908a6b2c9d87770893114f3b496c8b183c21d8c0f": {
+      "ref": "spark-class-model://schema/shared/6eb195bcdd4910d014c9313908a6b2c9d87770893114f3b496c8b183c21d8c0f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(row: Partial<DataRow>, existingRows: DataRow[]) => string | number | Record<string, string | number>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6eb195bcdd4910d014c9313908a6b2c9d87770893114f3b496c8b183c21d8c0f"
+      }
+    },
+    "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/generator/2": {
+      "ref": "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/generator/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PrimaryKeyGeneratorConfig",
+      "name": "generator",
+      "schemaRef": "spark-class-model://schema/shared/6eb195bcdd4910d014c9313908a6b2c9d87770893114f3b496c8b183c21d8c0f",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/startValue/3": {
+      "ref": "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/startValue/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PrimaryKeyGeneratorConfig",
+      "name": "startValue",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PrimaryKeyGeneratorConfig": {
+      "ref": "spark-class-model://model/PrimaryKeyGeneratorConfig",
+      "kind": "model",
+      "className": "PrimaryKeyGeneratorConfig",
+      "schemaRef": "spark-class-model://schema/PrimaryKeyGeneratorConfig",
+      "attributeRefs": [
+        "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/strategy/0",
+        "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/fields/1",
+        "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/generator/2",
+        "spark-class-model://model/PrimaryKeyGeneratorConfig/attributes/startValue/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGeneratorConfig%2Fattributes%2Fstrategy%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyStrategy"
+      ]
+    },
+    "spark-class-model://schema/PrimaryKeyGenerator": {
+      "ref": "spark-class-model://schema/PrimaryKeyGenerator",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PrimaryKeyGenerator",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PrimaryKeyGenerator"
+      }
+    },
+    "spark-class-model://model/PrimaryKeyGenerator/methods/generate/0": {
+      "ref": "spark-class-model://model/PrimaryKeyGenerator/methods/generate/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyGenerator",
+      "name": "generate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4add1398a33aafbe2623d636ba34d9f2fbb014526d856195e0dea512512cb6cb",
+      "returnSchemaRef": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8"
+    },
+    "spark-class-model://schema/shared/4add1398a33aafbe2623d636ba34d9f2fbb014526d856195e0dea512512cb6cb": {
+      "ref": "spark-class-model://schema/shared/4add1398a33aafbe2623d636ba34d9f2fbb014526d856195e0dea512512cb6cb",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "row": {
+            "type": "object",
+            "title": "Partial<DataRow>"
+          },
+          "existingRows": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/DataRow"
+            }
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4add1398a33aafbe2623d636ba34d9f2fbb014526d856195e0dea512512cb6cb"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGenerator%2Fmethods%2Fgenerate%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGenerator%2Fmethods%2Fgenerate%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PrimaryKeyGenerator/methods/generate/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/PrimaryKeyGenerator/methods/resetAutoIncrement/1": {
+      "ref": "spark-class-model://model/PrimaryKeyGenerator/methods/resetAutoIncrement/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyGenerator",
+      "name": "resetAutoIncrement",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/8836e3a881efad6e9ccece1859f3902106745ffe5546048f4f828d826649f531"
+    },
+    "spark-class-model://schema/shared/8836e3a881efad6e9ccece1859f3902106745ffe5546048f4f828d826649f531": {
+      "ref": "spark-class-model://schema/shared/8836e3a881efad6e9ccece1859f3902106745ffe5546048f4f828d826649f531",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8836e3a881efad6e9ccece1859f3902106745ffe5546048f4f828d826649f531"
+      }
+    },
+    "spark-class-model://model/PrimaryKeyGenerator/methods/getConfig/2": {
+      "ref": "spark-class-model://model/PrimaryKeyGenerator/methods/getConfig/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyGenerator",
+      "name": "getConfig",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/fc73b35f57ac89bb29f58bd3f456fc8b993a6f05dc6136c2d294a17512918e2a"
+    },
+    "spark-class-model://schema/shared/fc73b35f57ac89bb29f58bd3f456fc8b993a6f05dc6136c2d294a17512918e2a": {
+      "ref": "spark-class-model://schema/shared/fc73b35f57ac89bb29f58bd3f456fc8b993a6f05dc6136c2d294a17512918e2a",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Readonly<PrimaryKeyGeneratorConfig>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/fc73b35f57ac89bb29f58bd3f456fc8b993a6f05dc6136c2d294a17512918e2a"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGenerator%2Fmethods%2FgetConfig%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGeneratorConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGenerator%2Fmethods%2FgetConfig%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGeneratorConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PrimaryKeyGenerator/methods/getConfig/2",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/PrimaryKeyGeneratorConfig",
+      "targetClassName": "PrimaryKeyGeneratorConfig",
+      "targetFile": "files/declarations/packages/spark-data/src/core/primary-key-generator.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PrimaryKeyGeneratorConfig"
+    },
+    "spark-class-model://model/PrimaryKeyGenerator": {
+      "ref": "spark-class-model://model/PrimaryKeyGenerator",
+      "kind": "model",
+      "className": "PrimaryKeyGenerator",
+      "schemaRef": "spark-class-model://schema/PrimaryKeyGenerator",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/PrimaryKeyGenerator/methods/generate/0",
+        "spark-class-model://model/PrimaryKeyGenerator/methods/resetAutoIncrement/1",
+        "spark-class-model://model/PrimaryKeyGenerator/methods/getConfig/2"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGenerator%2Fmethods%2Fgenerate%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGenerator%2Fmethods%2FgetConfig%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGeneratorConfig"
+      ]
+    }
+  }
+}

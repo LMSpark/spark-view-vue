@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-app/src/navigation/useTabPages.d.ts",
+  "symbols": [
+    "TabPage",
+    "PageMode",
+    "UseTabPagesOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/TabPage": {
+      "ref": "spark-class-model://schema/TabPage",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "TabPage",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "closable": {
+            "type": "boolean"
+          },
+          "fullPath": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/TabPage"
+      }
+    },
+    "spark-class-model://model/TabPage/attributes/path/0": {
+      "ref": "spark-class-model://model/TabPage/attributes/path/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TabPage",
+      "name": "path",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/TabPage/attributes/title/1": {
+      "ref": "spark-class-model://model/TabPage/attributes/title/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TabPage",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/TabPage/attributes/icon/2": {
+      "ref": "spark-class-model://model/TabPage/attributes/icon/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TabPage",
+      "name": "icon",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/TabPage/attributes/name/3": {
+      "ref": "spark-class-model://model/TabPage/attributes/name/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TabPage",
+      "name": "name",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/TabPage/attributes/closable/4": {
+      "ref": "spark-class-model://model/TabPage/attributes/closable/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TabPage",
+      "name": "closable",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/TabPage/attributes/fullPath/5": {
+      "ref": "spark-class-model://model/TabPage/attributes/fullPath/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TabPage",
+      "name": "fullPath",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/TabPage": {
+      "ref": "spark-class-model://model/TabPage",
+      "kind": "model",
+      "className": "TabPage",
+      "schemaRef": "spark-class-model://schema/TabPage",
+      "attributeRefs": [
+        "spark-class-model://model/TabPage/attributes/path/0",
+        "spark-class-model://model/TabPage/attributes/title/1",
+        "spark-class-model://model/TabPage/attributes/icon/2",
+        "spark-class-model://model/TabPage/attributes/name/3",
+        "spark-class-model://model/TabPage/attributes/closable/4",
+        "spark-class-model://model/TabPage/attributes/fullPath/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageMode": {
+      "ref": "spark-class-model://schema/PageMode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageMode"
+      }
+    },
+    "spark-class-model://model/PageMode": {
+      "ref": "spark-class-model://model/PageMode",
+      "kind": "model",
+      "className": "PageMode",
+      "schemaRef": "spark-class-model://schema/PageMode",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/UseTabPagesOptions": {
+      "ref": "spark-class-model://schema/UseTabPagesOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "UseTabPagesOptions",
+        "properties": {
+          "navigate": {
+            "type": "object",
+            "title": "(fullPath: string) => Promise<void> | void"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/UseTabPagesOptions"
+      }
+    },
+    "spark-class-model://schema/shared/67999bf97a8de754385a6fd0c2a07814fc175bf113301d703cb8297e42b2e08c": {
+      "ref": "spark-class-model://schema/shared/67999bf97a8de754385a6fd0c2a07814fc175bf113301d703cb8297e42b2e08c",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(fullPath: string) => Promise<void> | void",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/67999bf97a8de754385a6fd0c2a07814fc175bf113301d703cb8297e42b2e08c"
+      }
+    },
+    "spark-class-model://model/UseTabPagesOptions/attributes/navigate/0": {
+      "ref": "spark-class-model://model/UseTabPagesOptions/attributes/navigate/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseTabPagesOptions",
+      "name": "navigate",
+      "schemaRef": "spark-class-model://schema/shared/67999bf97a8de754385a6fd0c2a07814fc175bf113301d703cb8297e42b2e08c",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UseTabPagesOptions": {
+      "ref": "spark-class-model://model/UseTabPagesOptions",
+      "kind": "model",
+      "className": "UseTabPagesOptions",
+      "schemaRef": "spark-class-model://schema/UseTabPagesOptions",
+      "attributeRefs": [
+        "spark-class-model://model/UseTabPagesOptions/attributes/navigate/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

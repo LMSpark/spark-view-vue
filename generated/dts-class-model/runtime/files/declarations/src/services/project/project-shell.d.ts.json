@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/services/project/project-shell.d.ts",
+  "symbols": [
+    "ProjectSwitchService",
+    "ProjectWorkspaceScope",
+    "ShellNavRootListener"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ProjectSwitchService": {
+      "ref": "spark-class-model://schema/ProjectSwitchService",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectSwitchService",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectSwitchService"
+      }
+    },
+    "spark-class-model://model/ProjectSwitchService": {
+      "ref": "spark-class-model://model/ProjectSwitchService",
+      "kind": "model",
+      "className": "ProjectSwitchService",
+      "schemaRef": "spark-class-model://schema/ProjectSwitchService",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectWorkspaceScope": {
+      "ref": "spark-class-model://schema/ProjectWorkspaceScope",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectWorkspaceScope",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectWorkspaceScope"
+      }
+    },
+    "spark-class-model://model/ProjectWorkspaceScope/attributes/tenantId/0": {
+      "ref": "spark-class-model://model/ProjectWorkspaceScope/attributes/tenantId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectWorkspaceScope",
+      "name": "tenantId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectWorkspaceScope/attributes/projectId/1": {
+      "ref": "spark-class-model://model/ProjectWorkspaceScope/attributes/projectId/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectWorkspaceScope",
+      "name": "projectId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectWorkspaceScope": {
+      "ref": "spark-class-model://model/ProjectWorkspaceScope",
+      "kind": "model",
+      "className": "ProjectWorkspaceScope",
+      "schemaRef": "spark-class-model://schema/ProjectWorkspaceScope",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectWorkspaceScope/attributes/tenantId/0",
+        "spark-class-model://model/ProjectWorkspaceScope/attributes/projectId/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ShellNavRootListener": {
+      "ref": "spark-class-model://schema/ShellNavRootListener",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ShellNavRootListener",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ShellNavRootListener"
+      }
+    },
+    "spark-class-model://model/ShellNavRootListener": {
+      "ref": "spark-class-model://model/ShellNavRootListener",
+      "kind": "model",
+      "className": "ShellNavRootListener",
+      "schemaRef": "spark-class-model://schema/ShellNavRootListener",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

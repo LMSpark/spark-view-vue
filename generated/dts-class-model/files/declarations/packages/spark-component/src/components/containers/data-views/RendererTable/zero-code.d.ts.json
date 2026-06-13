@@ -117,7 +117,7 @@
           "name": "resolvedView",
           "jsdoc": "当前解析出的 DataView。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<DataView | null>"
           },
           "readable": true,
@@ -127,7 +127,7 @@
           "name": "nativeTableRef",
           "jsdoc": "Element Plus table 原生组件 ref。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<NativeTableLike | null>"
           },
           "readable": true,
@@ -165,7 +165,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.557Z",
+  "generatedAt": "2026-06-13T04:00:57.643Z",
   "$defs": {
     "NativeTableLike": {
       "type": "object",
@@ -200,11 +200,11 @@
           "title": "Readonly<Record<string, unknown>>"
         },
         "resolvedView": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<DataView | null>"
         },
         "nativeTableRef": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<NativeTableLike | null>"
         },
         "currentRowOriginatorId": {

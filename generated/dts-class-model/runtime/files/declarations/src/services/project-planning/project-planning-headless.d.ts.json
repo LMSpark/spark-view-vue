@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/services/project-planning/project-planning-headless.d.ts",
+  "symbols": [
+    "ProjectPlanningEditorResolveContext",
+    "HeadlessProjectPlanningEditorScope"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ProjectPlanningEditorResolveContext": {
+      "ref": "spark-class-model://schema/ProjectPlanningEditorResolveContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningEditorResolveContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningEditorResolveContext"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningEditorResolveContext": {
+      "ref": "spark-class-model://model/ProjectPlanningEditorResolveContext",
+      "kind": "model",
+      "className": "ProjectPlanningEditorResolveContext",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningEditorResolveContext",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/HeadlessProjectPlanningEditorScope": {
+      "ref": "spark-class-model://schema/HeadlessProjectPlanningEditorScope",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "HeadlessProjectPlanningEditorScope",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/HeadlessProjectPlanningEditorScope"
+      }
+    },
+    "spark-class-model://model/HeadlessProjectPlanningEditorScope": {
+      "ref": "spark-class-model://model/HeadlessProjectPlanningEditorScope",
+      "kind": "model",
+      "className": "HeadlessProjectPlanningEditorScope",
+      "schemaRef": "spark-class-model://schema/HeadlessProjectPlanningEditorScope",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

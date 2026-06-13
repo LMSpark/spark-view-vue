@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/function-call-recovery-enricher.d.ts",
+  "symbols": [
+    "EnrichFunctionCallFailureCommand",
+    "EnrichFunctionCallResultOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/EnrichFunctionCallFailureCommand": {
+      "ref": "spark-class-model://schema/EnrichFunctionCallFailureCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "EnrichFunctionCallFailureCommand",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/EnrichFunctionCallFailureCommand"
+      }
+    },
+    "spark-class-model://model/EnrichFunctionCallFailureCommand": {
+      "ref": "spark-class-model://model/EnrichFunctionCallFailureCommand",
+      "kind": "model",
+      "className": "EnrichFunctionCallFailureCommand",
+      "schemaRef": "spark-class-model://schema/EnrichFunctionCallFailureCommand",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/EnrichFunctionCallResultOptions": {
+      "ref": "spark-class-model://schema/EnrichFunctionCallResultOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "EnrichFunctionCallResultOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/EnrichFunctionCallResultOptions"
+      }
+    },
+    "spark-class-model://model/EnrichFunctionCallResultOptions": {
+      "ref": "spark-class-model://model/EnrichFunctionCallResultOptions",
+      "kind": "model",
+      "className": "EnrichFunctionCallResultOptions",
+      "schemaRef": "spark-class-model://schema/EnrichFunctionCallResultOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

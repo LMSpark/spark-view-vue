@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldHtmlEditor.props.d.ts",
+  "symbols": [
+    "RHtmlEditorProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RHtmlEditorProps": {
+      "ref": "spark-class-model://schema/RHtmlEditorProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RHtmlEditorProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RHtmlEditorProps"
+      }
+    },
+    "spark-class-model://model/RHtmlEditorProps": {
+      "ref": "spark-class-model://model/RHtmlEditorProps",
+      "kind": "model",
+      "className": "RHtmlEditorProps",
+      "schemaRef": "spark-class-model://schema/RHtmlEditorProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

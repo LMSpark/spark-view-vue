@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldTextarea.props.d.ts",
+  "symbols": [
+    "RTextareaProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RTextareaProps": {
+      "ref": "spark-class-model://schema/RTextareaProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RTextareaProps",
+        "properties": {
+          "autosize": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object"
+              }
+            ]
+          },
+          "maxlength": {
+            "type": "number"
+          },
+          "showWordLimit": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RTextareaProps"
+      }
+    },
+    "spark-class-model://schema/shared/d1a70cdb96e058d2bbf7fcbe297b85bd7fc12f276cc3d3aab57824c4fc456ad2": {
+      "ref": "spark-class-model://schema/shared/d1a70cdb96e058d2bbf7fcbe297b85bd7fc12f276cc3d3aab57824c4fc456ad2",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "object"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d1a70cdb96e058d2bbf7fcbe297b85bd7fc12f276cc3d3aab57824c4fc456ad2"
+      }
+    },
+    "spark-class-model://model/RTextareaProps/attributes/autosize/0": {
+      "ref": "spark-class-model://model/RTextareaProps/attributes/autosize/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTextareaProps",
+      "name": "autosize",
+      "schemaRef": "spark-class-model://schema/shared/d1a70cdb96e058d2bbf7fcbe297b85bd7fc12f276cc3d3aab57824c4fc456ad2",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTextareaProps/attributes/maxlength/1": {
+      "ref": "spark-class-model://model/RTextareaProps/attributes/maxlength/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTextareaProps",
+      "name": "maxlength",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTextareaProps/attributes/showWordLimit/2": {
+      "ref": "spark-class-model://model/RTextareaProps/attributes/showWordLimit/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTextareaProps",
+      "name": "showWordLimit",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTextareaProps": {
+      "ref": "spark-class-model://model/RTextareaProps",
+      "kind": "model",
+      "className": "RTextareaProps",
+      "schemaRef": "spark-class-model://schema/RTextareaProps",
+      "attributeRefs": [
+        "spark-class-model://model/RTextareaProps/attributes/autosize/0",
+        "spark-class-model://model/RTextareaProps/attributes/maxlength/1",
+        "spark-class-model://model/RTextareaProps/attributes/showWordLimit/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/metadata/validate-api-object-metadata.d.ts",
+  "symbols": [
+    "ApiObjectValidationFinding",
+    "AiApiObjectMetadataValidationError"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ApiObjectValidationFinding": {
+      "ref": "spark-class-model://schema/ApiObjectValidationFinding",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ApiObjectValidationFinding",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ApiObjectValidationFinding"
+      }
+    },
+    "spark-class-model://model/ApiObjectValidationFinding": {
+      "ref": "spark-class-model://model/ApiObjectValidationFinding",
+      "kind": "model",
+      "className": "ApiObjectValidationFinding",
+      "schemaRef": "spark-class-model://schema/ApiObjectValidationFinding",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiObjectMetadataValidationError": {
+      "ref": "spark-class-model://schema/AiApiObjectMetadataValidationError",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiObjectMetadataValidationError",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "findings": {
+            "type": "array"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiObjectMetadataValidationError"
+      }
+    },
+    "spark-class-model://model/AiApiObjectMetadataValidationError/attributes/kind/0": {
+      "ref": "spark-class-model://model/AiApiObjectMetadataValidationError/attributes/kind/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiApiObjectMetadataValidationError",
+      "name": "kind",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiApiObjectMetadataValidationError/attributes/findings/1": {
+      "ref": "spark-class-model://model/AiApiObjectMetadataValidationError/attributes/findings/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiApiObjectMetadataValidationError",
+      "name": "findings",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiApiObjectMetadataValidationError": {
+      "ref": "spark-class-model://model/AiApiObjectMetadataValidationError",
+      "kind": "model",
+      "className": "AiApiObjectMetadataValidationError",
+      "schemaRef": "spark-class-model://schema/AiApiObjectMetadataValidationError",
+      "attributeRefs": [
+        "spark-class-model://model/AiApiObjectMetadataValidationError/attributes/kind/0",
+        "spark-class-model://model/AiApiObjectMetadataValidationError/attributes/findings/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

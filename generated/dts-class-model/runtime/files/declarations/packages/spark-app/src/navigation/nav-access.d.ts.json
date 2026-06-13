@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-app/src/navigation/nav-access.d.ts",
+  "symbols": [
+    "DynamicRouterAccess",
+    "NavAccessOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/DynamicRouterAccess": {
+      "ref": "spark-class-model://schema/DynamicRouterAccess",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DynamicRouterAccess",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DynamicRouterAccess"
+      }
+    },
+    "spark-class-model://model/DynamicRouterAccess": {
+      "ref": "spark-class-model://model/DynamicRouterAccess",
+      "kind": "model",
+      "className": "DynamicRouterAccess",
+      "schemaRef": "spark-class-model://schema/DynamicRouterAccess",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NavAccessOptions": {
+      "ref": "spark-class-model://schema/NavAccessOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavAccessOptions",
+        "properties": {
+          "defaultHomePath": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavAccessOptions"
+      }
+    },
+    "spark-class-model://model/NavAccessOptions/attributes/defaultHomePath/0": {
+      "ref": "spark-class-model://model/NavAccessOptions/attributes/defaultHomePath/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavAccessOptions",
+      "name": "defaultHomePath",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/NavAccessOptions": {
+      "ref": "spark-class-model://model/NavAccessOptions",
+      "kind": "model",
+      "className": "NavAccessOptions",
+      "schemaRef": "spark-class-model://schema/NavAccessOptions",
+      "attributeRefs": [
+        "spark-class-model://model/NavAccessOptions/attributes/defaultHomePath/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

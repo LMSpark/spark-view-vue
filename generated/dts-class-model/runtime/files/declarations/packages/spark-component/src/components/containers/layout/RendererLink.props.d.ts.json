@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererLink.props.d.ts",
+  "symbols": [
+    "RLinkProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RLinkProps": {
+      "ref": "spark-class-model://schema/RLinkProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RLinkProps",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "linkType": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  ""
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "default"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "primary"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "success"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warning"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "danger"
+                ]
+              }
+            ]
+          },
+          "underline": {
+            "type": "boolean"
+          },
+          "href": {
+            "type": "string"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "_blank"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "_self"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "_parent"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "_top"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RLinkProps"
+      }
+    },
+    "spark-class-model://model/RLinkProps/attributes/label/0": {
+      "ref": "spark-class-model://model/RLinkProps/attributes/label/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RLinkProps",
+      "name": "label",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/ccbaa6cd2952759458cf5c8af325b4ce4b7d2e3b2e999c34ec5269a838a385bf": {
+      "ref": "spark-class-model://schema/shared/ccbaa6cd2952759458cf5c8af325b4ce4b7d2e3b2e999c34ec5269a838a385bf",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              ""
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "default"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "primary"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "success"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "warning"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "info"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "danger"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ccbaa6cd2952759458cf5c8af325b4ce4b7d2e3b2e999c34ec5269a838a385bf"
+      }
+    },
+    "spark-class-model://model/RLinkProps/attributes/linkType/1": {
+      "ref": "spark-class-model://model/RLinkProps/attributes/linkType/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RLinkProps",
+      "name": "linkType",
+      "schemaRef": "spark-class-model://schema/shared/ccbaa6cd2952759458cf5c8af325b4ce4b7d2e3b2e999c34ec5269a838a385bf",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RLinkProps/attributes/underline/2": {
+      "ref": "spark-class-model://model/RLinkProps/attributes/underline/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RLinkProps",
+      "name": "underline",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RLinkProps/attributes/href/3": {
+      "ref": "spark-class-model://model/RLinkProps/attributes/href/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RLinkProps",
+      "name": "href",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/4615ca682bda6dd0c0af3cf8f853e4cd5ecd82275665bf51add5b7bc30893aa7": {
+      "ref": "spark-class-model://schema/shared/4615ca682bda6dd0c0af3cf8f853e4cd5ecd82275665bf51add5b7bc30893aa7",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "_blank"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "_self"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "_parent"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "_top"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4615ca682bda6dd0c0af3cf8f853e4cd5ecd82275665bf51add5b7bc30893aa7"
+      }
+    },
+    "spark-class-model://model/RLinkProps/attributes/target/4": {
+      "ref": "spark-class-model://model/RLinkProps/attributes/target/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RLinkProps",
+      "name": "target",
+      "schemaRef": "spark-class-model://schema/shared/4615ca682bda6dd0c0af3cf8f853e4cd5ecd82275665bf51add5b7bc30893aa7",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RLinkProps": {
+      "ref": "spark-class-model://model/RLinkProps",
+      "kind": "model",
+      "className": "RLinkProps",
+      "schemaRef": "spark-class-model://schema/RLinkProps",
+      "attributeRefs": [
+        "spark-class-model://model/RLinkProps/attributes/label/0",
+        "spark-class-model://model/RLinkProps/attributes/linkType/1",
+        "spark-class-model://model/RLinkProps/attributes/underline/2",
+        "spark-class-model://model/RLinkProps/attributes/href/3",
+        "spark-class-model://model/RLinkProps/attributes/target/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

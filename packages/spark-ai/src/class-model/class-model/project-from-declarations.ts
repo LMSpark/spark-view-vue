@@ -109,7 +109,17 @@ type TypeLiteralAttributesCommand = Readonly<{
   typeNode: ts.TypeLiteralNode
 }>
 
+type TypeLiteralMethodsCommand = Readonly<{
+  site: ProjectionSite
+  typeNode: ts.TypeLiteralNode
+}>
+
 type TypeNodeAttributesCommand = Readonly<{
+  site: ProjectionSite
+  typeNode: ts.TypeNode
+}>
+
+type TypeNodeMethodsCommand = Readonly<{
   site: ProjectionSite
   typeNode: ts.TypeNode
 }>
@@ -136,6 +146,13 @@ type MethodSignatureCommand = Readonly<{
   site: ProjectionSite
   memberName: string
   member: ts.MethodSignature
+}>
+
+type FunctionPropertySignatureCommand = Readonly<{
+  site: ProjectionSite
+  memberName: string
+  member: ts.PropertySignature
+  typeNode: ts.FunctionTypeNode
 }>
 
 type ConstructorProjectionCommand = Readonly<{
@@ -451,9 +468,14 @@ function projectTypeAlias(
   const typeText = node.type.getText(sourceFile)
   const declarationRelations = typeAliasDeclarationRelations(node.type, sourceFile)
   const objectSchema = typeToAiJsonSchema(context.checker, type, node.type)
+  const site = projectionSite(context, sourceFile, name)
   const attributes = attributesFromObjectSchema({
-    site: projectionSite(context, sourceFile, name),
+    site,
     schema: objectSchema,
+    typeNode: node.type,
+  })
+  const methods = methodsFromTypeNode({
+    site,
     typeNode: node.type,
   })
 
@@ -472,7 +494,7 @@ function projectTypeAlias(
       ...(propsComponentName === undefined ? {} : { componentName: propsComponentName }),
     }),
     attributes,
-    methods: [],
+    methods,
   })
   return name
 }
@@ -634,6 +656,10 @@ function typeNodeAttributes(command: TypeNodeAttributesCommand): AttributeMeta[]
   if (ts.isTypeLiteralNode(typeNode)) {
     return typeLiteralAttributes({ site, typeNode })
   }
+  const transparentType = transparentTypeReferenceArgument(typeNode)
+  if (transparentType !== undefined) {
+    return typeNodeAttributes({ site, typeNode: transparentType })
+  }
   if (ts.isIntersectionTypeNode(typeNode)) {
     const attributes: AttributeMeta[] = []
     const seen = new Set<string>()
@@ -649,11 +675,36 @@ function typeNodeAttributes(command: TypeNodeAttributesCommand): AttributeMeta[]
   return []
 }
 
+function methodsFromTypeNode(command: TypeNodeMethodsCommand): MethodMeta[] {
+  const { site, typeNode } = command
+  if (ts.isTypeLiteralNode(typeNode)) {
+    return typeLiteralMethods({ site, typeNode })
+  }
+  const transparentType = transparentTypeReferenceArgument(typeNode)
+  if (transparentType !== undefined) {
+    return methodsFromTypeNode({ site, typeNode: transparentType })
+  }
+  if (ts.isIntersectionTypeNode(typeNode)) {
+    const methods: MethodMeta[] = []
+    const seen = new Set<string>()
+    for (const child of typeNode.types) {
+      for (const method of methodsFromTypeNode({ site, typeNode: child })) {
+        if (seen.has(method.name)) continue
+        seen.add(method.name)
+        methods.push(method)
+      }
+    }
+    return methods
+  }
+  return []
+}
+
 function typeLiteralAttributes(command: TypeLiteralAttributesCommand): AttributeMeta[] {
   const { site, typeNode } = command
   const attributes: AttributeMeta[] = []
   for (const member of typeNode.members) {
     if (!ts.isPropertySignature(member)) continue
+    if (isFunctionPropertySignature(member)) continue
     const memberName = readMemberName(member.name)
     if (memberName === undefined) continue
     attributes.push(projectPropertySignature({
@@ -663,6 +714,43 @@ function typeLiteralAttributes(command: TypeLiteralAttributesCommand): Attribute
     }))
   }
   return attributes
+}
+
+function typeLiteralMethods(command: TypeLiteralMethodsCommand): MethodMeta[] {
+  const { site, typeNode } = command
+  const methods: MethodMeta[] = []
+  for (const member of typeNode.members) {
+    const memberName = readMemberName(member.name)
+    if (memberName === undefined) continue
+    if (ts.isMethodSignature(member)) {
+      methods.push(projectMethodSignature({
+        site,
+        memberName,
+        member,
+      }))
+      continue
+    }
+    if (ts.isPropertySignature(member) && isFunctionPropertySignature(member)) {
+      methods.push(projectFunctionPropertySignature({
+        site,
+        memberName,
+        member,
+        typeNode: member.type,
+      }))
+    }
+  }
+  return methods
+}
+
+function transparentTypeReferenceArgument(typeNode: ts.TypeNode): ts.TypeNode | undefined {
+  if (!ts.isTypeReferenceNode(typeNode)) return undefined
+  const typeName = typeNode.typeName.getText()
+  if (typeName !== 'Readonly') return undefined
+  return typeNode.typeArguments?.[0]
+}
+
+function isFunctionPropertySignature(member: ts.PropertySignature): member is ts.PropertySignature & Readonly<{ type: ts.FunctionTypeNode }> {
+  return member.type !== undefined && ts.isFunctionTypeNode(member.type)
 }
 
 function projectPropertyMember(command: PropertyMemberCommand): AttributeMeta {
@@ -703,6 +791,34 @@ function projectPropertySignature(command: PropertySignatureCommand): AttributeM
       className,
       memberName,
       declarationKind: 'interface',
+    }),
+  }
+}
+
+function projectFunctionPropertySignature(command: FunctionPropertySignatureCommand): MethodMeta {
+  const { site, memberName, member, typeNode } = command
+  const { context, sourceFile, className } = site
+  const line = sourceFile.getLineAndCharacterOfPosition(member.getStart()).line + 1
+  const signatures = context.checker.getTypeAtLocation(member).getCallSignatures()
+  const signature = signatures[0]
+  const returnType = signature === undefined
+    ? context.checker.getTypeFromTypeNode(typeNode.type)
+    : context.checker.getReturnTypeOfSignature(signature)
+  return {
+    name: memberName,
+    signatureText: member.getText(sourceFile).replace(/;$/u, '').trim(),
+    parameterStyle: parameterStyleFromDeclaration(typeNode),
+    parameters: methodParametersFromDeclaration(context.checker, context.repoRoot, typeNode, sourceFile),
+    type: dtsTypeMetaFromTypeNode(context.checker, context.repoRoot, typeNode.type, sourceFile),
+    ...(signature === undefined ? {} : { paramsSchema: paramsSchemaFromSignature(context.checker, signature) }),
+    returnSchema: typeToAiJsonSchema(context.checker, returnType, typeNode.type),
+    jsdoc: readJsDoc(context.checker, member),
+    provenance: createProvenance({
+      file: normalizeRepoPath(sourceFile.fileName, context.repoRoot),
+      line,
+      className,
+      memberName,
+      declarationKind: 'type',
     }),
   }
 }
@@ -785,7 +901,7 @@ function methodSignatureTextFromDeclaration(
 function methodParametersFromDeclaration(
   checker: ts.TypeChecker,
   repoRoot: string,
-  member: ts.MethodDeclaration | ts.MethodSignature | ts.ConstructorDeclaration,
+  member: ts.MethodDeclaration | ts.MethodSignature | ts.ConstructorDeclaration | ts.FunctionTypeNode,
   sourceFile: ts.SourceFile,
 ): readonly MethodParameterMeta[] {
   return member.parameters.map(parameter => parameterMetaFromDeclaration(checker, repoRoot, parameter, sourceFile))
@@ -832,7 +948,7 @@ function defaultValueFromParameter(
 }
 
 function parameterStyleFromDeclaration(
-  member: ts.MethodDeclaration | ts.MethodSignature | ts.ConstructorDeclaration,
+  member: ts.MethodDeclaration | ts.MethodSignature | ts.ConstructorDeclaration | ts.FunctionTypeNode,
 ): MethodParameterStyle {
   const firstParameter = member.parameters[0]
   return firstParameter !== undefined && member.parameters.length === 1 && ts.isObjectBindingPattern(firstParameter.name)

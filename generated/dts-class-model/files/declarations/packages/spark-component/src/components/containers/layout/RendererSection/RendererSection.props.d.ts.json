@@ -60,7 +60,8 @@
           "name": "header",
           "jsdoc": "结构化头部",
           "schema": {
-            "$ref": "../../zones/RendererHeader.types.d.ts.json#/$defs/RHeaderProps"
+            "type": "object",
+            "title": "RHeaderProps"
           },
           "readable": true,
           "writable": false
@@ -205,7 +206,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.589Z",
+  "generatedAt": "2026-06-13T04:00:57.679Z",
   "$defs": {
     "RSectionProps": {
       "type": "object",
@@ -213,7 +214,8 @@
       "description": "RSection Props 的属性契约。",
       "properties": {
         "header": {
-          "$ref": "../../zones/RendererHeader.types.d.ts.json#/$defs/RHeaderProps"
+          "type": "object",
+          "title": "RHeaderProps"
         },
         "title": {
           "type": "string"

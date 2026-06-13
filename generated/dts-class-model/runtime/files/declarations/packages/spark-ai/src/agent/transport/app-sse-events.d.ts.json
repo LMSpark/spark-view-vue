@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/transport/app-sse-events.d.ts",
+  "symbols": [
+    "AiAgentAppSseEventName",
+    "AiAgentAppSseEvent"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentAppSseEventName": {
+      "ref": "spark-class-model://schema/AiAgentAppSseEventName",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentAppSseEventName",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentAppSseEventName"
+      }
+    },
+    "spark-class-model://model/AiAgentAppSseEventName": {
+      "ref": "spark-class-model://model/AiAgentAppSseEventName",
+      "kind": "model",
+      "className": "AiAgentAppSseEventName",
+      "schemaRef": "spark-class-model://schema/AiAgentAppSseEventName",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentAppSseEvent": {
+      "ref": "spark-class-model://schema/AiAgentAppSseEvent",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentAppSseEvent",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentAppSseEvent"
+      }
+    },
+    "spark-class-model://model/AiAgentAppSseEvent": {
+      "ref": "spark-class-model://model/AiAgentAppSseEvent",
+      "kind": "model",
+      "className": "AiAgentAppSseEvent",
+      "schemaRef": "spark-class-model://schema/AiAgentAppSseEvent",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

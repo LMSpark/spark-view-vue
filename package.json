@@ -35,6 +35,7 @@
         "preview": "vite preview --port 5273",
         "test": "vitest",
         "test:run": "vitest run",
+        "test:run:threads": "vitest run --pool=threads --testTimeout=30000 --hookTimeout=30000",
         "test:all": "pnpm run build:packages && pnpm run test:run && pnpm run test:packages:run",
         "verify:arch": "node tools/verify-architecture.mjs",
         "verify:deps": "node tools/verify-dependency-catalog.mjs",

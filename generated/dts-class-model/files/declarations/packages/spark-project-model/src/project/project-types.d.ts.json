@@ -138,7 +138,8 @@
           "name": "fileName",
           "jsdoc": "要写入的页面四文件名。",
           "schema": {
-            "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+            "type": "object",
+            "title": "PageNodeFileName"
           },
           "readable": true,
           "writable": true
@@ -172,7 +173,8 @@
           "name": "navigationRoot",
           "jsdoc": "navigation Root 字段。",
           "schema": {
-            "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectModelData"
+            "type": "object",
+            "title": "ProjectModelData"
           },
           "readable": true,
           "writable": true
@@ -183,7 +185,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+              "type": "object",
+              "title": "ProjectNodeData"
             }
           },
           "readable": true,
@@ -195,7 +198,8 @@
           "schema": {
             "anyOf": [
               {
-                "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+                "type": "object",
+                "title": "ProjectNodeData"
               },
               {
                 "type": "null"
@@ -227,7 +231,8 @@
           "schema": {
             "anyOf": [
               {
-                "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeLocation"
+                "type": "object",
+                "title": "ProjectNodeLocation"
               },
               {
                 "type": "null"
@@ -243,7 +248,8 @@
           "schema": {
             "anyOf": [
               {
-                "$ref": "../navigation/navigation-edit.d.ts.json#/$defs/NavigationNodeDraft"
+                "type": "object",
+                "title": "NavigationNodeDraft"
               },
               {
                 "type": "null"
@@ -259,7 +265,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectPageNodeSummary"
+              "type": "object",
+              "title": "ProjectPageNodeSummary"
             }
           },
           "readable": true,
@@ -631,7 +638,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.844Z",
+  "generatedAt": "2026-06-13T04:00:57.895Z",
   "$defs": {
     "ProjectNavigationDirtyScope": {
       "type": "object",
@@ -657,7 +664,8 @@
           "type": "string"
         },
         "fileName": {
-          "$ref": "../page/page-file.d.ts.json#/$defs/PageNodeFileName"
+          "type": "object",
+          "title": "PageNodeFileName"
         },
         "text": {
           "type": "string"
@@ -670,18 +678,21 @@
       "description": "Project Navigation Projection 的语义模型。",
       "properties": {
         "navigationRoot": {
-          "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectModelData"
+          "type": "object",
+          "title": "ProjectModelData"
         },
         "treeData": {
           "type": "array",
           "items": {
-            "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+            "type": "object",
+            "title": "ProjectNodeData"
           }
         },
         "selectedNode": {
           "anyOf": [
             {
-              "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeData"
+              "type": "object",
+              "title": "ProjectNodeData"
             },
             {
               "type": "null"
@@ -701,7 +712,8 @@
         "navigationLocation": {
           "anyOf": [
             {
-              "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectNodeLocation"
+              "type": "object",
+              "title": "ProjectNodeLocation"
             },
             {
               "type": "null"
@@ -711,7 +723,8 @@
         "navigationDraft": {
           "anyOf": [
             {
-              "$ref": "../navigation/navigation-edit.d.ts.json#/$defs/NavigationNodeDraft"
+              "type": "object",
+              "title": "NavigationNodeDraft"
             },
             {
               "type": "null"
@@ -721,7 +734,8 @@
         "pageFeatures": {
           "type": "array",
           "items": {
-            "$ref": "../navigation/project-node.d.ts.json#/$defs/ProjectPageNodeSummary"
+            "type": "object",
+            "title": "ProjectPageNodeSummary"
           }
         }
       }

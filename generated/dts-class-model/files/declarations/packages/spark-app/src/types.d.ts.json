@@ -451,7 +451,8 @@
           "name": "theme",
           "jsdoc": "主题服务（仅在启用 theme 选项时存在）",
           "schema": {
-            "$ref": "theme/index.d.ts.json#/$defs/ThemeCapability"
+            "type": "object",
+            "title": "ThemeCapability"
           },
           "readable": true,
           "writable": false
@@ -505,7 +506,8 @@
           "name": "auth",
           "jsdoc": "认证配置（可选，不提供则使用 authenticate 函数）",
           "schema": {
-            "$ref": "auth/types.d.ts.json#/$defs/AuthConfig"
+            "type": "object",
+            "title": "AuthConfig"
           },
           "readable": true,
           "writable": false
@@ -523,7 +525,8 @@
           "name": "themeService",
           "jsdoc": "主题服务实例（由 start() 创建并传入，或手动传入）",
           "schema": {
-            "$ref": "theme/index.d.ts.json#/$defs/ThemeCapability"
+            "type": "object",
+            "title": "ThemeCapability"
           },
           "readable": true,
           "writable": false
@@ -736,7 +739,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.535Z",
+  "generatedAt": "2026-06-13T04:00:57.628Z",
   "$defs": {
     "AppEnvironment": {
       "type": "object",
@@ -885,7 +888,8 @@
           "title": "Router"
         },
         "theme": {
-          "$ref": "theme/index.d.ts.json#/$defs/ThemeCapability"
+          "type": "object",
+          "title": "ThemeCapability"
         }
       }
     },
@@ -906,13 +910,15 @@
           "$ref": "#/$defs/AppConfig"
         },
         "auth": {
-          "$ref": "auth/types.d.ts.json#/$defs/AuthConfig"
+          "type": "object",
+          "title": "AuthConfig"
         },
         "mountTarget": {
           "type": "string"
         },
         "themeService": {
-          "$ref": "theme/index.d.ts.json#/$defs/ThemeCapability"
+          "type": "object",
+          "title": "ThemeCapability"
         },
         "beforeMount": {
           "type": "object",

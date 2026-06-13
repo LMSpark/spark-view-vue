@@ -1,0 +1,349 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+  "symbols": [
+    "PageNodeFileName",
+    "PageNodeLoadOptions",
+    "PageContentLoadResult",
+    "PageNodeFileVersionSummary",
+    "PageFileCreateOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PageNodeFileName": {
+      "ref": "spark-class-model://schema/PageNodeFileName",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageNodeFileName",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageNodeFileName"
+      }
+    },
+    "spark-class-model://model/PageNodeFileName": {
+      "ref": "spark-class-model://model/PageNodeFileName",
+      "kind": "model",
+      "className": "PageNodeFileName",
+      "schemaRef": "spark-class-model://schema/PageNodeFileName",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageNodeLoadOptions": {
+      "ref": "spark-class-model://schema/PageNodeLoadOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageNodeLoadOptions",
+        "properties": {
+          "forceReload": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageNodeLoadOptions"
+      }
+    },
+    "spark-class-model://model/PageNodeLoadOptions/attributes/forceReload/0": {
+      "ref": "spark-class-model://model/PageNodeLoadOptions/attributes/forceReload/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageNodeLoadOptions",
+      "name": "forceReload",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageNodeLoadOptions": {
+      "ref": "spark-class-model://model/PageNodeLoadOptions",
+      "kind": "model",
+      "className": "PageNodeLoadOptions",
+      "schemaRef": "spark-class-model://schema/PageNodeLoadOptions",
+      "attributeRefs": [
+        "spark-class-model://model/PageNodeLoadOptions/attributes/forceReload/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageContentLoadResult": {
+      "ref": "spark-class-model://schema/PageContentLoadResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageContentLoadResult",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": true,
+          "error": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "remote"
+            ]
+          },
+          "timestamp": {
+            "type": "number"
+          },
+          "sourceTimestamp": {
+            "type": "string"
+          },
+          "fromCache": {
+            "type": "boolean"
+          },
+          "notModified": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageContentLoadResult"
+      }
+    },
+    "spark-class-model://model/PageContentLoadResult/attributes/success/0": {
+      "ref": "spark-class-model://model/PageContentLoadResult/attributes/success/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContentLoadResult",
+      "name": "success",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageContentLoadResult/attributes/data/1": {
+      "ref": "spark-class-model://model/PageContentLoadResult/attributes/data/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContentLoadResult",
+      "name": "data",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageContentLoadResult/attributes/error/2": {
+      "ref": "spark-class-model://model/PageContentLoadResult/attributes/error/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContentLoadResult",
+      "name": "error",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageContentLoadResult/attributes/reason/3": {
+      "ref": "spark-class-model://model/PageContentLoadResult/attributes/reason/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContentLoadResult",
+      "name": "reason",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/091f9b8572c4f8e8075ce81e10cc094fc5a9c59525b6b23e1b4b3223b8113490": {
+      "ref": "spark-class-model://schema/shared/091f9b8572c4f8e8075ce81e10cc094fc5a9c59525b6b23e1b4b3223b8113490",
+      "kind": "schema",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "remote"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/091f9b8572c4f8e8075ce81e10cc094fc5a9c59525b6b23e1b4b3223b8113490"
+      }
+    },
+    "spark-class-model://model/PageContentLoadResult/attributes/source/4": {
+      "ref": "spark-class-model://model/PageContentLoadResult/attributes/source/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContentLoadResult",
+      "name": "source",
+      "schemaRef": "spark-class-model://schema/shared/091f9b8572c4f8e8075ce81e10cc094fc5a9c59525b6b23e1b4b3223b8113490",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageContentLoadResult/attributes/timestamp/5": {
+      "ref": "spark-class-model://model/PageContentLoadResult/attributes/timestamp/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContentLoadResult",
+      "name": "timestamp",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageContentLoadResult/attributes/sourceTimestamp/6": {
+      "ref": "spark-class-model://model/PageContentLoadResult/attributes/sourceTimestamp/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContentLoadResult",
+      "name": "sourceTimestamp",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageContentLoadResult/attributes/fromCache/7": {
+      "ref": "spark-class-model://model/PageContentLoadResult/attributes/fromCache/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContentLoadResult",
+      "name": "fromCache",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageContentLoadResult/attributes/notModified/8": {
+      "ref": "spark-class-model://model/PageContentLoadResult/attributes/notModified/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContentLoadResult",
+      "name": "notModified",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageContentLoadResult": {
+      "ref": "spark-class-model://model/PageContentLoadResult",
+      "kind": "model",
+      "className": "PageContentLoadResult",
+      "schemaRef": "spark-class-model://schema/PageContentLoadResult",
+      "attributeRefs": [
+        "spark-class-model://model/PageContentLoadResult/attributes/success/0",
+        "spark-class-model://model/PageContentLoadResult/attributes/data/1",
+        "spark-class-model://model/PageContentLoadResult/attributes/error/2",
+        "spark-class-model://model/PageContentLoadResult/attributes/reason/3",
+        "spark-class-model://model/PageContentLoadResult/attributes/source/4",
+        "spark-class-model://model/PageContentLoadResult/attributes/timestamp/5",
+        "spark-class-model://model/PageContentLoadResult/attributes/sourceTimestamp/6",
+        "spark-class-model://model/PageContentLoadResult/attributes/fromCache/7",
+        "spark-class-model://model/PageContentLoadResult/attributes/notModified/8"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageNodeFileVersionSummary": {
+      "ref": "spark-class-model://schema/PageNodeFileVersionSummary",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageNodeFileVersionSummary",
+        "properties": {
+          "version": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "isCurrent": {
+            "type": "boolean"
+          },
+          "modifiedBy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageNodeFileVersionSummary"
+      }
+    },
+    "spark-class-model://model/PageNodeFileVersionSummary/attributes/version/0": {
+      "ref": "spark-class-model://model/PageNodeFileVersionSummary/attributes/version/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageNodeFileVersionSummary",
+      "name": "version",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageNodeFileVersionSummary/attributes/createdAt/1": {
+      "ref": "spark-class-model://model/PageNodeFileVersionSummary/attributes/createdAt/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageNodeFileVersionSummary",
+      "name": "createdAt",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageNodeFileVersionSummary/attributes/isCurrent/2": {
+      "ref": "spark-class-model://model/PageNodeFileVersionSummary/attributes/isCurrent/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageNodeFileVersionSummary",
+      "name": "isCurrent",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageNodeFileVersionSummary/attributes/modifiedBy/3": {
+      "ref": "spark-class-model://model/PageNodeFileVersionSummary/attributes/modifiedBy/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageNodeFileVersionSummary",
+      "name": "modifiedBy",
+      "schemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageNodeFileVersionSummary": {
+      "ref": "spark-class-model://model/PageNodeFileVersionSummary",
+      "kind": "model",
+      "className": "PageNodeFileVersionSummary",
+      "schemaRef": "spark-class-model://schema/PageNodeFileVersionSummary",
+      "attributeRefs": [
+        "spark-class-model://model/PageNodeFileVersionSummary/attributes/version/0",
+        "spark-class-model://model/PageNodeFileVersionSummary/attributes/createdAt/1",
+        "spark-class-model://model/PageNodeFileVersionSummary/attributes/isCurrent/2",
+        "spark-class-model://model/PageNodeFileVersionSummary/attributes/modifiedBy/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageFileCreateOptions": {
+      "ref": "spark-class-model://schema/PageFileCreateOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageFileCreateOptions",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageFileCreateOptions"
+      }
+    },
+    "spark-class-model://model/PageFileCreateOptions/attributes/title/0": {
+      "ref": "spark-class-model://model/PageFileCreateOptions/attributes/title/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageFileCreateOptions",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageFileCreateOptions/attributes/icon/1": {
+      "ref": "spark-class-model://model/PageFileCreateOptions/attributes/icon/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageFileCreateOptions",
+      "name": "icon",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageFileCreateOptions": {
+      "ref": "spark-class-model://model/PageFileCreateOptions",
+      "kind": "model",
+      "className": "PageFileCreateOptions",
+      "schemaRef": "spark-class-model://schema/PageFileCreateOptions",
+      "attributeRefs": [
+        "spark-class-model://model/PageFileCreateOptions/attributes/title/0",
+        "spark-class-model://model/PageFileCreateOptions/attributes/icon/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

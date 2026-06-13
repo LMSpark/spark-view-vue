@@ -37,8 +37,7 @@
             "name": "api",
             "type": {
               "type": "reference",
-              "name": "CrudApi",
-              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              "name": "unknown"
             }
           },
           {
@@ -133,8 +132,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "CrudOperationConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -147,8 +145,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
@@ -186,8 +183,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "CrudOperationConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -200,8 +196,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
@@ -253,8 +248,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "CrudOperationConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -267,8 +261,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
@@ -306,8 +299,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "CrudOperationConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -320,8 +312,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "intrinsic",
@@ -341,8 +332,7 @@
               "name": "params",
               "type": {
                 "type": "reference",
-                "name": "QueryParams",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -352,8 +342,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "CrudOperationConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -366,8 +355,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
@@ -388,16 +376,14 @@
               "name": "request",
               "type": {
                 "type": "reference",
-                "name": "DataSetTransactionRequest",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             },
             {
               "name": "endpoint",
               "type": {
                 "type": "reference",
-                "name": "HttpEndpoint",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -407,8 +393,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "CrudOperationConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -421,8 +406,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
@@ -460,8 +444,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "CrudOperationConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -474,13 +457,11 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "BatchResult",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -513,8 +494,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "CrudOperationConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -527,13 +507,11 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "BatchResult",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -569,8 +547,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "CrudOperationConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -583,13 +560,11 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "BatchResult",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -631,8 +606,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "unknown",
@@ -652,8 +626,7 @@
               "name": "params",
               "type": {
                 "type": "reference",
-                "name": "QueryParams",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -663,8 +636,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "CrudOperationConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -677,8 +649,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "CrudResult",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "reference",
@@ -692,7 +663,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.748Z",
+  "generatedAt": "2026-06-13T04:00:57.808Z",
   "$defs": {
     "CrudService": {
       "type": "object",

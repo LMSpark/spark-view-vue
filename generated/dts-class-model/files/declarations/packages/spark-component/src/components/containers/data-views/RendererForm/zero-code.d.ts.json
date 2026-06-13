@@ -54,7 +54,7 @@
           "name": "resolvedView",
           "jsdoc": "resolved View 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<DataView | null>"
           },
           "readable": true,
@@ -74,7 +74,7 @@
           "name": "nativeFormRef",
           "jsdoc": "native Form Ref 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<unknown>"
           },
           "readable": true,
@@ -94,7 +94,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.552Z",
+  "generatedAt": "2026-06-13T04:00:57.638Z",
   "$defs": {
     "RendererFormZeroCodeOptions": {
       "type": "object",
@@ -106,7 +106,7 @@
           "title": "Readonly<Record<string, unknown>>"
         },
         "resolvedView": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<DataView | null>"
         },
         "formModel": {
@@ -114,7 +114,7 @@
           "title": "Record<string, unknown>"
         },
         "nativeFormRef": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<unknown>"
         },
         "logger": {

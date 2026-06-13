@@ -44,7 +44,8 @@
           "name": "pageRoute",
           "jsdoc": "page Route 字段。",
           "schema": {
-            "$ref": "../../runtime/script-context-types.d.ts.json#/$defs/PageRoute"
+            "type": "object",
+            "title": "PageRoute"
           },
           "readable": true,
           "writable": true
@@ -63,7 +64,8 @@
           "name": "pageService",
           "jsdoc": "page Service 字段。",
           "schema": {
-            "$ref": "../../runtime/app-services.d.ts.json#/$defs/PageServiceCapability"
+            "type": "object",
+            "title": "PageServiceCapability"
           },
           "readable": true,
           "writable": true
@@ -92,7 +94,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.714Z",
+  "generatedAt": "2026-06-13T04:00:57.792Z",
   "$defs": {
     "PageContextDeps": {
       "type": "object",
@@ -104,14 +106,16 @@
           "title": "() => DataSet | null"
         },
         "pageRoute": {
-          "$ref": "../../runtime/script-context-types.d.ts.json#/$defs/PageRoute"
+          "type": "object",
+          "title": "PageRoute"
         },
         "pageContainer": {
           "type": "object",
           "title": "Ref<HTMLElement | null>"
         },
         "pageService": {
-          "$ref": "../../runtime/app-services.d.ts.json#/$defs/PageServiceCapability"
+          "type": "object",
+          "title": "PageServiceCapability"
         },
         "getComponentRegistry": {
           "type": "object",

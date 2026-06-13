@@ -210,7 +210,8 @@
           "name": "path",
           "jsdoc": "从根到此节点的路径",
           "schema": {
-            "$ref": "../core/json-path.d.ts.json#/$defs/JsonPath"
+            "type": "object",
+            "title": "JsonPath"
           },
           "readable": true,
           "writable": false
@@ -412,7 +413,8 @@
           "name": "targetPath",
           "jsdoc": "target Path 路径。",
           "schema": {
-            "$ref": "../core/json-path.d.ts.json#/$defs/JsonPath"
+            "type": "object",
+            "title": "JsonPath"
           },
           "readable": true,
           "writable": true
@@ -481,7 +483,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.822Z",
+  "generatedAt": "2026-06-13T04:00:57.868Z",
   "$defs": {
     "JsonNodeType": {
       "type": "object",
@@ -549,7 +551,8 @@
           "type": "number"
         },
         "path": {
-          "$ref": "../core/json-path.d.ts.json#/$defs/JsonPath"
+          "type": "object",
+          "title": "JsonPath"
         },
         "childCount": {
           "type": "number"
@@ -619,7 +622,8 @@
       "description": "自动填充条目：在 targetPath 指向的对象上合并 entries 键值对。\n- 若 targetPath 处不是 object，跳过\n- 若某 key 已存在且新旧值都是 object，递归一层合并（仅补缺）\n- 若某 key 已存在且不都是 object，跳过（不覆盖）",
       "properties": {
         "targetPath": {
-          "$ref": "../core/json-path.d.ts.json#/$defs/JsonPath"
+          "type": "object",
+          "title": "JsonPath"
         },
         "entries": {
           "type": "object",

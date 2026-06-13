@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/tool-loop-runner.d.ts",
+  "symbols": [
+    "AiAgentToolLoopInput",
+    "AiAgentToolLoopRunner"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentToolLoopInput": {
+      "ref": "spark-class-model://schema/AiAgentToolLoopInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolLoopInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolLoopInput"
+      }
+    },
+    "spark-class-model://model/AiAgentToolLoopInput": {
+      "ref": "spark-class-model://model/AiAgentToolLoopInput",
+      "kind": "model",
+      "className": "AiAgentToolLoopInput",
+      "schemaRef": "spark-class-model://schema/AiAgentToolLoopInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentToolLoopRunner": {
+      "ref": "spark-class-model://schema/AiAgentToolLoopRunner",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentToolLoopRunner",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentToolLoopRunner"
+      }
+    },
+    "spark-class-model://model/AiAgentToolLoopRunner/methods/runToolLoop/0": {
+      "ref": "spark-class-model://model/AiAgentToolLoopRunner/methods/runToolLoop/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentToolLoopRunner",
+      "name": "runToolLoop",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/d3ec17ed5597a5868147c9f2b5c1d70ea38f3327fea1afd1ad0ef6da8b20a2e5",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://schema/shared/d3ec17ed5597a5868147c9f2b5c1d70ea38f3327fea1afd1ad0ef6da8b20a2e5": {
+      "ref": "spark-class-model://schema/shared/d3ec17ed5597a5868147c9f2b5c1d70ea38f3327fea1afd1ad0ef6da8b20a2e5",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "$ref": "spark-class-model://schema/AiAgentToolLoopInput",
+            "title": "AiAgentToolLoopInput<TInput>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d3ec17ed5597a5868147c9f2b5c1d70ea38f3327fea1afd1ad0ef6da8b20a2e5"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolLoopRunner%2Fmethods%2FrunToolLoop%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolLoopInput": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolLoopRunner%2Fmethods%2FrunToolLoop%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolLoopInput",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentToolLoopRunner/methods/runToolLoop/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentToolLoopInput",
+      "targetClassName": "AiAgentToolLoopInput",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-loop/tool-loop-runner.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolLoopInput"
+    },
+    "spark-class-model://model/AiAgentToolLoopRunner": {
+      "ref": "spark-class-model://model/AiAgentToolLoopRunner",
+      "kind": "model",
+      "className": "AiAgentToolLoopRunner",
+      "schemaRef": "spark-class-model://schema/AiAgentToolLoopRunner",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/AiAgentToolLoopRunner/methods/runToolLoop/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolLoopRunner%2Fmethods%2FrunToolLoop%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolLoopInput"
+      ]
+    }
+  }
+}

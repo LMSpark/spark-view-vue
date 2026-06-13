@@ -75,7 +75,7 @@
           "name": "stepConfigs",
           "jsdoc": "step Configs 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<SparkNode[]>"
           },
           "readable": true,
@@ -85,7 +85,7 @@
           "name": "activeStepName",
           "jsdoc": "active Step Name 名称。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<string | number | undefined>"
           },
           "readable": true,
@@ -95,7 +95,7 @@
           "name": "activeStepIndex",
           "jsdoc": "active Step Index 字段。",
           "schema": {
-            "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+            "type": "object",
             "title": "ValueRef<number>"
           },
           "readable": true,
@@ -125,7 +125,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.593Z",
+  "generatedAt": "2026-06-13T04:00:57.683Z",
   "$defs": {
     "StepsEmit": {
       "type": "object",
@@ -141,15 +141,15 @@
           "$ref": "#/$defs/StepsEmit"
         },
         "stepConfigs": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<SparkNode[]>"
         },
         "activeStepName": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<string | number | undefined>"
         },
         "activeStepIndex": {
-          "$ref": "../../../shared-types.d.ts.json#/$defs/ValueRef",
+          "type": "object",
           "title": "ValueRef<number>"
         },
         "getStepName": {

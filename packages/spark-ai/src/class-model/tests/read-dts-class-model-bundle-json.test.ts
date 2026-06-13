@@ -7,14 +7,19 @@ import { describe, expect, it } from 'vitest'
 import {
   DTS_CLASS_MODEL_BUNDLE_PROTOCOL,
   DTS_CLASS_MODEL_BUNDLE_VERSION,
+  DTS_CLASS_MODEL_RUNTIME_PROTOCOL,
+  DTS_CLASS_MODEL_RUNTIME_VERSION,
   DTS_FILE_PROJECTION_VERSION,
 } from '../class-model/dts-bundle-types'
 import { buildDtsClassModelBundle } from '../class-model/build-dts-class-model-bundle'
 import { DtsClassModelBundleLoader } from '../class-model/dts-class-model-bundle-loader'
+import { DtsClassModelRuntimeLoader } from '../class-model/dts-class-model-runtime-loader'
 import { projectDtsFileProjection } from '../class-model/project-from-declarations'
 import { createDtsBundleClassModelKnowledgeProvider } from '../knowledge'
 import {
   readDtsClassModelBundleManifest,
+  readDtsClassModelRuntimeManifest,
+  readDtsClassModelRuntimeShard,
   readDtsFileProjectionDocument,
 } from '../class-model/read-dts-class-model-bundle-json'
 
@@ -380,6 +385,8 @@ describe('readDtsClassModelBundleJson', () => {
         'export class AiAgentRegistry<TInput = unknown> {',
         '  /** Stores a registration for later session resolution. */',
         '  register(registration: AiAgentRegistration<TInput>): void',
+        '  /** Resolves a registration by module id. */',
+        '  get(moduleId: string): AiAgentRegistration<TInput>',
         '}',
       ].join('\n'), 'utf8')
 
@@ -417,6 +424,101 @@ describe('readDtsClassModelBundleJson', () => {
       expect(registerMethod).not.toHaveProperty('paramsSchema')
       expect(registerMethod).not.toHaveProperty('returnSchema')
 
+      const runtimeManifest = readDtsClassModelRuntimeManifest(
+        JSON.parse(readFileSync(result.runtimeManifestPath, 'utf8')) as unknown,
+      )
+      expect(runtimeManifest.schemaVersion).toBe(DTS_CLASS_MODEL_RUNTIME_VERSION)
+      expect(runtimeManifest.protocol).toBe(DTS_CLASS_MODEL_RUNTIME_PROTOCOL)
+      expect(runtimeManifest.classIndex['AiAgentRegistry']).toMatchObject({
+        file: registryEntry.file,
+        modelRef: 'spark-class-model://model/AiAgentRegistry',
+        schemaRef: 'spark-class-model://schema/AiAgentRegistry',
+      })
+      const runtimeRegistryEntry = runtimeManifest.classIndex['AiAgentRegistry']
+      if (runtimeRegistryEntry === undefined) throw new Error('Missing runtime registry entry.')
+      const runtimeRegistryShard = readDtsClassModelRuntimeShard(
+        JSON.parse(readFileSync(resolve(dirname(result.runtimeManifestPath), runtimeRegistryEntry.file), 'utf8')) as unknown,
+      )
+      const runtimeRegistry = runtimeRegistryShard['@refs'][runtimeRegistryEntry.modelRef]
+      if (runtimeRegistry?.kind !== 'model') throw new Error('Missing runtime registry model.')
+      const runtimeRegisterMethod = runtimeRegistry.methodRefs
+        .map(ref => runtimeRegistryShard['@refs'][ref])
+        .find(method => method?.kind === 'method' && method.name === 'register')
+      if (runtimeRegisterMethod?.kind !== 'method') throw new Error('Missing runtime register method.')
+
+      const runtimeLoader = new DtsClassModelRuntimeLoader({
+        manifestUrl: pathToFileURL(result.runtimeManifestPath).href,
+        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+      })
+      const runtimeRegisterParams = await runtimeLoader.ensureRef(runtimeRegisterMethod.paramsSchemaRef)
+      if (runtimeRegisterParams?.kind !== 'schema') throw new Error('Missing runtime register params schema.')
+      expect(runtimeRegisterMethod.paramsSchemaRef).toMatch(/^spark-class-model:\/\/schema\/shared\//)
+      expect(runtimeRegisterParams.schema).toMatchObject({
+        $id: runtimeRegisterMethod.paramsSchemaRef,
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          registration: {
+            $ref: 'spark-class-model://schema/AiAgentRegistration',
+          },
+        },
+      })
+      const runtimeRegisterSchemaClosure = await runtimeLoader.ensureSchemaClosure(runtimeRegisterMethod.paramsSchemaRef)
+      const runtimeRegisterSchemaClosureRefs = runtimeRegisterSchemaClosure.schemas.map(schema => schema.ref)
+      expect(runtimeRegisterSchemaClosure.rootRef).toBe(runtimeRegisterMethod.paramsSchemaRef)
+      expect(runtimeRegisterSchemaClosureRefs).toContain('spark-class-model://schema/AiAgentRegistration')
+      expect(runtimeRegisterSchemaClosureRefs.at(-1)).toBe(runtimeRegisterMethod.paramsSchemaRef)
+      expect(runtimeRegisterSchemaClosure.schemaByRef[runtimeRegisterMethod.paramsSchemaRef]?.kind).toBe('schema')
+      const runtimeRegisterContract = await runtimeLoader.ensureMethodContract({
+        className: 'AiAgentRegistry',
+        methodName: 'register',
+      })
+      expect(runtimeRegisterContract.method.ref).toBe(runtimeRegisterMethod.ref)
+      expect(runtimeRegisterContract.paramsSchema.ref).toBe(runtimeRegisterMethod.paramsSchemaRef)
+      expect(runtimeRegisterContract.paramsSchemaClosure.rootRef).toBe(runtimeRegisterMethod.paramsSchemaRef)
+      expect(runtimeRegisterContract.parameterLinks.map(link => link.targetClassName)).toEqual(['AiAgentRegistration'])
+      expect(runtimeRegisterContract.returnLinks).toEqual([])
+      expect(runtimeRegisterContract.targetModels.map(model => model.className)).toEqual(['AiAgentRegistration'])
+
+      const runtimeGetContract = await runtimeLoader.ensureMethodContract({
+        className: 'AiAgentRegistry',
+        methodName: 'get',
+      })
+      expect(runtimeGetContract.parameterLinks).toEqual([])
+      expect(runtimeGetContract.returnLinks.map(link => link.targetClassName)).toEqual(['AiAgentRegistration'])
+      expect(runtimeGetContract.returnSchema?.schema).toMatchObject({
+        $id: runtimeGetContract.method.returnSchemaRef,
+        $ref: 'spark-class-model://schema/AiAgentRegistration',
+      })
+      expect(runtimeGetContract.returnSchemaClosure?.schemas.map(schema => schema.ref)).toContain(
+        'spark-class-model://schema/AiAgentRegistration',
+      )
+      expect(runtimeRegisterMethod).not.toHaveProperty('signatureText')
+      const runtimeLinks = runtimeRegistry.linkRefs.map(ref => runtimeRegistryShard['@refs'][ref])
+      expect(runtimeLinks).toContainEqual({
+        ref: expect.stringContaining('spark-class-model://link/'),
+        kind: 'link',
+        fromRef: runtimeRegisterMethod.ref,
+        relation: 'method-parameter',
+        targetModelRef: 'spark-class-model://model/AiAgentRegistration',
+        targetClassName: 'AiAgentRegistration',
+        targetFile: result.manifest.files[registrationSourcePath]?.file,
+        targetSchemaRef: 'spark-class-model://schema/AiAgentRegistration',
+      })
+
+      const runtimeRegistrationSchema = await runtimeLoader.ensureRef('spark-class-model://schema/AiAgentRegistration')
+      const runtimeReachable = await runtimeLoader.ensureReachableClosure('AiAgentRegistry')
+
+      expect(runtimeRegistrationSchema).toMatchObject({
+        kind: 'schema',
+        ref: 'spark-class-model://schema/AiAgentRegistration',
+      })
+      expect(runtimeReachable).toEqual(['AiAgentRegistry', 'AiAgentRegistration'])
+      expect(runtimeLoader.buildLoadedModels()).toMatchObject({
+        AiAgentRegistry: { className: 'AiAgentRegistry' },
+        AiAgentRegistration: { className: 'AiAgentRegistration' },
+      })
+
       const loader = new DtsClassModelBundleLoader({
         manifestUrl: pathToFileURL(result.manifestPath).href,
         fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
@@ -430,6 +532,153 @@ describe('readDtsClassModelBundleJson', () => {
         'AiAgentRegistry',
         'AiAgentRegistration',
       ]))
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('pools identical runtime schemas by normalized type shape', async () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-runtime-pool-${String(process.pid)}-${String(Date.now())}`)
+    const sourcePath = 'declarations/packages/spark-ai/src/agent/business/duplicate-input-registry.d.ts'
+    const absolutePath = resolve(tempRoot, sourcePath)
+    const outputDir = resolve(tempRoot, 'generated/dts-class-model')
+    try {
+      mkdirSync(dirname(absolutePath), { recursive: true })
+      writeFileSync(absolutePath, [
+        '/** Registry used to verify runtime schema pooling. */',
+        'export class DuplicateInputRegistry {',
+        '  /** Stores the first duplicated input shape. */',
+        '  first(input: string): void',
+        '  /** Stores the second duplicated input shape. */',
+        '  second(input: string): void',
+        '}',
+      ].join('\n'), 'utf8')
+
+      const result = buildDtsClassModelBundle({
+        repoRoot: tempRoot,
+        rootFiles: [absolutePath],
+        outputDir,
+      })
+      const runtimeManifest = readDtsClassModelRuntimeManifest(
+        JSON.parse(readFileSync(result.runtimeManifestPath, 'utf8')) as unknown,
+      )
+      const runtimeEntry = runtimeManifest.classIndex['DuplicateInputRegistry']
+      if (runtimeEntry === undefined) throw new Error('Missing runtime DuplicateInputRegistry entry.')
+      const runtimeShard = readDtsClassModelRuntimeShard(
+        JSON.parse(readFileSync(resolve(dirname(result.runtimeManifestPath), runtimeEntry.file), 'utf8')) as unknown,
+      )
+      const runtimeModel = runtimeShard['@refs'][runtimeEntry.modelRef]
+      if (runtimeModel?.kind !== 'model') throw new Error('Missing runtime DuplicateInputRegistry model.')
+      const firstMethod = runtimeModel.methodRefs
+        .map(ref => runtimeShard['@refs'][ref])
+        .find(method => method?.kind === 'method' && method.name === 'first')
+      const secondMethod = runtimeModel.methodRefs
+        .map(ref => runtimeShard['@refs'][ref])
+        .find(method => method?.kind === 'method' && method.name === 'second')
+      if (firstMethod?.kind !== 'method') throw new Error('Missing runtime first method.')
+      if (secondMethod?.kind !== 'method') throw new Error('Missing runtime second method.')
+
+      expect(firstMethod.paramsSchemaRef).toBe(secondMethod.paramsSchemaRef)
+      expect(firstMethod.paramsSchemaRef).toMatch(/^spark-class-model:\/\/schema\/shared\//)
+
+      const runtimeLoader = new DtsClassModelRuntimeLoader({
+        manifestUrl: pathToFileURL(result.runtimeManifestPath).href,
+        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+      })
+      const paramsSchema = await runtimeLoader.ensureRef(firstMethod.paramsSchemaRef)
+      if (paramsSchema.kind !== 'schema') throw new Error('Missing pooled params schema.')
+      expect(paramsSchema.schema).toMatchObject({
+        $id: firstMethod.paramsSchemaRef,
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          input: { type: 'string' },
+        },
+      })
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('projects readonly business factory commands with create return links', async () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-business-factory-${String(process.pid)}-${String(Date.now())}`)
+    const registrationSourcePath = 'declarations/packages/spark-ai/src/agent/business/registration-types.d.ts'
+    const hostSourcePath = 'declarations/packages/spark-ai/src/agent/business/ai-host.d.ts'
+    const registrationPath = resolve(tempRoot, registrationSourcePath)
+    const hostPath = resolve(tempRoot, hostSourcePath)
+    const outputDir = resolve(tempRoot, 'generated/dts-class-model')
+    try {
+      mkdirSync(dirname(registrationPath), { recursive: true })
+      writeFileSync(registrationPath, [
+        '/** Business registration created by a host factory. */',
+        'export type AiAgentRegistration = {',
+        '  /** Unique business module id. */',
+        '  moduleId: string',
+        '}',
+      ].join('\n'), 'utf8')
+      writeFileSync(hostPath, [
+        "import type { AiAgentRegistration } from './registration-types'",
+        '/** ensure 命令：延迟创建 registration 的工厂指令。 */',
+        'export type AiAgentHostEnsureCommand = Readonly<{',
+        '  /** Expected module id. */',
+        '  moduleId: string',
+        '  /** Factory that creates the business registration. */',
+        '  create: () => AiAgentRegistration',
+        '}>',
+        '/** Host that accepts business factories. */',
+        'export class AiAgentHost {',
+        '  /** Ensures a business registration exists. */',
+        '  ensure(alias: string, command: AiAgentHostEnsureCommand): AiAgentHost',
+        '}',
+      ].join('\n'), 'utf8')
+
+      const result = buildDtsClassModelBundle({
+        repoRoot: tempRoot,
+        rootFiles: [registrationPath, hostPath],
+        outputDir,
+      })
+      const hostEntry = result.manifest.files[hostSourcePath]
+      if (hostEntry === undefined) throw new Error(`Missing host shard entry: ${hostSourcePath}`)
+      const hostProjection = readDtsFileProjectionDocument(
+        JSON.parse(readFileSync(resolve(outputDir, hostEntry.file), 'utf8')) as unknown,
+      )
+      const commandModel = hostProjection.models['AiAgentHostEnsureCommand']
+      if (commandModel === undefined) throw new Error('Missing AiAgentHostEnsureCommand model.')
+      expect(commandModel.attributes.map(attribute => attribute.name)).toEqual(['moduleId'])
+      expect(commandModel.methods.map(method => method.name)).toEqual(['create'])
+
+      const runtimeLoader = new DtsClassModelRuntimeLoader({
+        manifestUrl: pathToFileURL(result.runtimeManifestPath).href,
+        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+      })
+      const ensureContract = await runtimeLoader.ensureMethodContract({
+        className: 'AiAgentHost',
+        methodName: 'ensure',
+      })
+      expect(ensureContract.parameterLinks.map(link => link.targetClassName)).toEqual(['AiAgentHostEnsureCommand'])
+      expect(ensureContract.returnLinks.map(link => link.targetClassName)).toEqual(['AiAgentHost'])
+      expect(ensureContract.paramsSchemaClosure.schemas.map(schema => schema.ref)).toContain(
+        'spark-class-model://schema/AiAgentHostEnsureCommand',
+      )
+
+      const moduleIdContract = await runtimeLoader.ensureAttributeContract({
+        className: 'AiAgentHostEnsureCommand',
+        attributeName: 'moduleId',
+      })
+      expect(moduleIdContract.valueSchema.schema).toMatchObject({
+        type: 'string',
+      })
+
+      const createContract = await runtimeLoader.ensureMethodContract({
+        className: 'AiAgentHostEnsureCommand',
+        methodName: 'create',
+      })
+      expect(createContract.parameterLinks).toEqual([])
+      expect(createContract.returnLinks.map(link => link.targetClassName)).toEqual(['AiAgentRegistration'])
+      expect(createContract.returnSchemaClosure?.schemas.map(schema => schema.ref)).toContain(
+        'spark-class-model://schema/AiAgentRegistration',
+      )
+      expect(createContract.targetModels.map(model => model.className)).toEqual(['AiAgentRegistration'])
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }
@@ -541,6 +790,54 @@ describe('readDtsClassModelBundleJson', () => {
       })
       expect(edgeDef.properties?.['child']).toEqual({
         $ref: 'tree-node.d.ts.json#/$defs/TreeNode',
+      })
+
+      const runtimeManifest = readDtsClassModelRuntimeManifest(
+        JSON.parse(readFileSync(result.runtimeManifestPath, 'utf8')) as unknown,
+      )
+      const runtimeNodeEntry = runtimeManifest.classIndex['TreeNode']
+      if (runtimeNodeEntry === undefined) throw new Error('Missing runtime TreeNode entry.')
+      const runtimeNodeShard = readDtsClassModelRuntimeShard(
+        JSON.parse(readFileSync(resolve(dirname(result.runtimeManifestPath), runtimeNodeEntry.file), 'utf8')) as unknown,
+      )
+      const runtimeTreeNode = runtimeNodeShard['@refs'][runtimeNodeEntry.modelRef]
+      if (runtimeTreeNode?.kind !== 'model') throw new Error('Missing runtime TreeNode model.')
+      const runtimeEdgesAttribute = runtimeTreeNode.attributeRefs
+        .map(ref => runtimeNodeShard['@refs'][ref])
+        .find(attribute => attribute?.kind === 'attribute' && attribute.name === 'edges')
+      if (runtimeEdgesAttribute?.kind !== 'attribute') throw new Error('Missing runtime TreeNode.edges attribute.')
+
+      const runtimeLoader = new DtsClassModelRuntimeLoader({
+        manifestUrl: pathToFileURL(result.runtimeManifestPath).href,
+        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+      })
+      const runtimeEdgesSchema = await runtimeLoader.ensureRef(runtimeEdgesAttribute.schemaRef)
+      if (runtimeEdgesSchema?.kind !== 'schema') throw new Error('Missing runtime TreeNode.edges schema.')
+      expect(runtimeEdgesAttribute.schemaRef).toMatch(/^spark-class-model:\/\/schema\/shared\//)
+      expect(runtimeEdgesSchema.schema).toEqual({
+        $id: runtimeEdgesAttribute.schemaRef,
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
+        type: 'array',
+        items: {
+          $ref: 'spark-class-model://schema/TreeEdge',
+        },
+      })
+      const runtimeEdgesSchemaClosure = await runtimeLoader.ensureSchemaClosure(runtimeEdgesAttribute.schemaRef)
+      const runtimeEdgesSchemaClosureRefs = runtimeEdgesSchemaClosure.schemas.map(schema => schema.ref)
+      expect(runtimeEdgesSchemaClosure.rootRef).toBe(runtimeEdgesAttribute.schemaRef)
+      expect(runtimeEdgesSchemaClosureRefs).toContain('spark-class-model://schema/TreeEdge')
+      expect(runtimeEdgesSchemaClosureRefs).toContain('spark-class-model://schema/TreeNode')
+      expect(runtimeEdgesSchemaClosureRefs.at(-1)).toBe(runtimeEdgesAttribute.schemaRef)
+      const runtimeTreeNodeLinks = runtimeTreeNode.linkRefs.map(ref => runtimeNodeShard['@refs'][ref])
+      expect(runtimeTreeNodeLinks).toContainEqual({
+        ref: expect.stringContaining('spark-class-model://link/'),
+        kind: 'link',
+        fromRef: runtimeEdgesAttribute.ref,
+        relation: 'attribute',
+        targetModelRef: 'spark-class-model://model/TreeEdge',
+        targetClassName: 'TreeEdge',
+        targetFile: edgeEntry.file,
+        targetSchemaRef: 'spark-class-model://schema/TreeEdge',
       })
 
       const loader = new DtsClassModelBundleLoader({

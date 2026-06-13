@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererTooltip.props.d.ts",
+  "symbols": [
+    "RTooltipProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RTooltipProps": {
+      "ref": "spark-class-model://schema/RTooltipProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RTooltipProps",
+        "properties": {
+          "content": {
+            "type": "string"
+          },
+          "enterable": {
+            "type": "boolean"
+          },
+          "rawContent": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RTooltipProps"
+      }
+    },
+    "spark-class-model://model/RTooltipProps/attributes/content/0": {
+      "ref": "spark-class-model://model/RTooltipProps/attributes/content/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTooltipProps",
+      "name": "content",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTooltipProps/attributes/enterable/1": {
+      "ref": "spark-class-model://model/RTooltipProps/attributes/enterable/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTooltipProps",
+      "name": "enterable",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTooltipProps/attributes/rawContent/2": {
+      "ref": "spark-class-model://model/RTooltipProps/attributes/rawContent/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTooltipProps",
+      "name": "rawContent",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTooltipProps": {
+      "ref": "spark-class-model://model/RTooltipProps",
+      "kind": "model",
+      "className": "RTooltipProps",
+      "schemaRef": "spark-class-model://schema/RTooltipProps",
+      "attributeRefs": [
+        "spark-class-model://model/RTooltipProps/attributes/content/0",
+        "spark-class-model://model/RTooltipProps/attributes/enterable/1",
+        "spark-class-model://model/RTooltipProps/attributes/rawContent/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

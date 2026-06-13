@@ -43,7 +43,8 @@
           "name": "result",
           "jsdoc": "操作结果。",
           "schema": {
-            "$ref": "../navigation/navigation-edit.d.ts.json#/$defs/NavigationNodeDraftApplyResult"
+            "type": "object",
+            "title": "NavigationNodeDraftApplyResult"
           },
           "readable": true,
           "writable": true
@@ -71,8 +72,7 @@
             "name": "options",
             "type": {
               "type": "reference",
-              "name": "ProjectModelInitOptions",
-              "sourcePath": "declarations/packages/spark-project-model/src/project/project-types.d.ts"
+              "name": "unknown"
             }
           }
         ]
@@ -150,15 +150,13 @@
               "name": "root",
               "type": {
                 "type": "reference",
-                "name": "ProjectModelData",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                "name": "unknown"
               }
             }
           ],
           "type": {
             "type": "reference",
-            "name": "ProjectModelData",
-            "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -170,15 +168,13 @@
               "name": "project",
               "type": {
                 "type": "reference",
-                "name": "ProjectInfoInput",
-                "sourcePath": "declarations/packages/spark-project-model/src/project/project-types.d.ts"
+                "name": "unknown"
               }
             }
           ],
           "type": {
             "type": "reference",
-            "name": "ProjectInfo",
-            "sourcePath": "declarations/packages/spark-project-model/src/project/project-types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -192,16 +188,14 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "ProjectNodeData",
-                  "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                  "name": "unknown"
                 }
               }
             }
           ],
           "type": {
             "type": "reference",
-            "name": "ProjectModelData",
-            "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -250,8 +244,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "ProjectNodeLocation",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "literal",
@@ -278,8 +271,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "ConfigPageNode",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/config-page.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "literal",
@@ -297,8 +289,7 @@
               "name": "input",
               "type": {
                 "type": "reference",
-                "name": "NavigationNodeDraft",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/navigation-edit.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -330,8 +321,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "ConfigPageNode",
-            "sourcePath": "declarations/packages/spark-project-model/src/page/config-page.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -361,8 +351,7 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "ProjectPageNodeSummary",
-              "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -391,8 +380,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "ProjectNodeData",
-            "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -424,8 +412,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "ProjectNodeData",
-                    "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "literal",
@@ -440,8 +427,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "ProjectNodeData",
-            "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -462,8 +448,7 @@
             "types": [
               {
                 "type": "reference",
-                "name": "ProjectNodeData",
-                "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+                "name": "unknown"
               },
               {
                 "type": "literal",
@@ -491,15 +476,14 @@
             "type": "array",
             "elementType": {
               "type": "reference",
-              "name": "ProjectNodeData",
-              "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+              "name": "unknown"
             }
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.840Z",
+  "generatedAt": "2026-06-13T04:00:57.888Z",
   "$defs": {
     "ProjectDesignNodeEditResult": {
       "type": "object",
@@ -508,7 +492,8 @@
       "properties": {
         "node": true,
         "result": {
-          "$ref": "../navigation/navigation-edit.d.ts.json#/$defs/NavigationNodeDraftApplyResult"
+          "type": "object",
+          "title": "NavigationNodeDraftApplyResult"
         }
       }
     },

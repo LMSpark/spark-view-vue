@@ -43,10 +43,7 @@
         {
           "name": "sparkProvide",
           "jsdoc": "SPARK 能力提供函数（含 CapabilityTypeMap 类型重载）",
-          "schema": {
-            "type": "object",
-            "title": "UseSparkComponentReturn['sparkProvide']"
-          },
+          "schema": true,
           "readable": true,
           "writable": true
         },
@@ -81,7 +78,8 @@
           "name": "componentRegistry",
           "jsdoc": "页面级组件注册中心（实例 + API）",
           "schema": {
-            "$ref": "../../core/capability-keys.d.ts.json#/$defs/PageComponentRegistry"
+            "type": "object",
+            "title": "PageComponentRegistry"
           },
           "readable": true,
           "writable": true
@@ -90,7 +88,8 @@
           "name": "pageRuntimeServices",
           "jsdoc": "页面运行时服务能力载荷（用于下游注入到 DataSet 等运行时）",
           "schema": {
-            "$ref": "../../runtime/app-services.d.ts.json#/$defs/PageRuntimeServicesCapability"
+            "type": "object",
+            "title": "PageRuntimeServicesCapability"
           },
           "readable": true,
           "writable": true
@@ -109,7 +108,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.722Z",
+  "generatedAt": "2026-06-13T04:00:57.795Z",
   "$defs": {
     "RendererSetupReturn": {
       "type": "object",
@@ -120,10 +119,7 @@
           "type": "object",
           "title": "Router"
         },
-        "sparkProvide": {
-          "type": "object",
-          "title": "UseSparkComponentReturn['sparkProvide']"
-        },
+        "sparkProvide": true,
         "sparkConsume": true,
         "loading": {
           "type": "object",
@@ -134,10 +130,12 @@
           "title": "Ref<string>"
         },
         "componentRegistry": {
-          "$ref": "../../core/capability-keys.d.ts.json#/$defs/PageComponentRegistry"
+          "type": "object",
+          "title": "PageComponentRegistry"
         },
         "pageRuntimeServices": {
-          "$ref": "../../runtime/app-services.d.ts.json#/$defs/PageRuntimeServicesCapability"
+          "type": "object",
+          "title": "PageRuntimeServicesCapability"
         },
         "runLoad": {
           "type": "object",

@@ -54,8 +54,7 @@
             "name": "host",
             "type": {
               "type": "reference",
-              "name": "DataView",
-              "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+              "name": "unknown"
             }
           }
         ]
@@ -117,8 +116,7 @@
               "name": "fn",
               "type": {
                 "type": "reference",
-                "name": "ComputedColumnFn",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -156,8 +154,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "DataRow",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             }
@@ -180,8 +177,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "DataRow",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -193,8 +189,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "DataRow",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             ]
           }
@@ -212,7 +207,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.792Z",
+  "generatedAt": "2026-06-13T04:00:57.837Z",
   "$defs": {
     "ComputedColumnContext": {
       "type": "object",

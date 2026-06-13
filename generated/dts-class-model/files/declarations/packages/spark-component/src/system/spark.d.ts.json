@@ -34,7 +34,8 @@
           "name": "registry",
           "jsdoc": "registry 字段。",
           "schema": {
-            "$ref": "../core/types.d.ts.json#/$defs/ComponentRegistry"
+            "type": "object",
+            "title": "ComponentRegistry"
           },
           "readable": true,
           "writable": true
@@ -53,7 +54,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.733Z",
+  "generatedAt": "2026-06-13T04:00:57.800Z",
   "$defs": {
     "SparkSystem": {
       "type": "object",
@@ -61,7 +62,8 @@
       "description": "Spark.createSystem() 返回的隔离测试系统",
       "properties": {
         "registry": {
-          "$ref": "../core/types.d.ts.json#/$defs/ComponentRegistry"
+          "type": "object",
+          "title": "ComponentRegistry"
         },
         "rootContext": {
           "type": "object",

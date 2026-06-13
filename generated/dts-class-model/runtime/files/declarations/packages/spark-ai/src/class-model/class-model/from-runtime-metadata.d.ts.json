@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/from-runtime-metadata.d.ts",
+  "symbols": [
+    "RuntimeDocumentInput"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RuntimeDocumentInput": {
+      "ref": "spark-class-model://schema/RuntimeDocumentInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RuntimeDocumentInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RuntimeDocumentInput"
+      }
+    },
+    "spark-class-model://model/RuntimeDocumentInput": {
+      "ref": "spark-class-model://model/RuntimeDocumentInput",
+      "kind": "model",
+      "className": "RuntimeDocumentInput",
+      "schemaRef": "spark-class-model://schema/RuntimeDocumentInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

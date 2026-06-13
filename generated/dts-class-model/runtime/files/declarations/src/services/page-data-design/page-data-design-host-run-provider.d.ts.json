@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/src/services/page-data-design/page-data-design-host-run-provider.d.ts",
+  "symbols": [
+    "PageDataDesignHostInput"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PageDataDesignHostInput": {
+      "ref": "spark-class-model://schema/PageDataDesignHostInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDataDesignHostInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDataDesignHostInput"
+      }
+    },
+    "spark-class-model://model/PageDataDesignHostInput": {
+      "ref": "spark-class-model://model/PageDataDesignHostInput",
+      "kind": "model",
+      "className": "PageDataDesignHostInput",
+      "schemaRef": "spark-class-model://schema/PageDataDesignHostInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

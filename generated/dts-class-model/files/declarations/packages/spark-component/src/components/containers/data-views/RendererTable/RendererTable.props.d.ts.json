@@ -133,7 +133,8 @@
           "name": "toolbar",
           "jsdoc": "结构化工具栏\n提示词模板：默认动作 append-row / refresh / delete-current；当表格开启多选（type=selection）时，使用 delete-selected 批量删除已选择行。",
           "schema": {
-            "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+            "type": "object",
+            "title": "RToolbarProps"
           },
           "readable": true,
           "writable": false
@@ -142,7 +143,8 @@
           "name": "filter",
           "jsdoc": "结构化筛选区\n提示词模板：常用字段过滤 + range 过滤；优先复用列字段并保持字段名一致。",
           "schema": {
-            "$ref": "../../zones/RendererFilter.types.d.ts.json#/$defs/RFilterProps"
+            "type": "object",
+            "title": "RFilterProps"
           },
           "readable": true,
           "writable": false
@@ -151,7 +153,8 @@
           "name": "actions",
           "jsdoc": "结构化行动作\n提示词模板：默认动作 message-row / delete-row。",
           "schema": {
-            "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+            "type": "object",
+            "title": "RToolbarProps"
           },
           "readable": true,
           "writable": false
@@ -160,7 +163,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.556Z",
+  "generatedAt": "2026-06-13T04:00:57.641Z",
   "$defs": {
     "RTableProps": {
       "type": "object",
@@ -193,13 +196,16 @@
           "type": "boolean"
         },
         "toolbar": {
-          "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+          "type": "object",
+          "title": "RToolbarProps"
         },
         "filter": {
-          "$ref": "../../zones/RendererFilter.types.d.ts.json#/$defs/RFilterProps"
+          "type": "object",
+          "title": "RFilterProps"
         },
         "actions": {
-          "$ref": "../../layout/RendererToolbar.types.d.ts.json#/$defs/RToolbarProps"
+          "type": "object",
+          "title": "RToolbarProps"
         }
       }
     }

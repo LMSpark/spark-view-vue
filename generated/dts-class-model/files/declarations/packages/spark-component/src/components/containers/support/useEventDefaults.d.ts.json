@@ -102,7 +102,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.617Z",
+  "generatedAt": "2026-06-13T04:00:57.701Z",
   "$defs": {
     "EventDefaultDeclaration": {
       "type": "object",

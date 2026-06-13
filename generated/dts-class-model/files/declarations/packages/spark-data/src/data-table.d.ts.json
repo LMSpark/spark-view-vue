@@ -88,8 +88,7 @@
               "type": "array",
               "elementType": {
                 "type": "reference",
-                "name": "DataColumn",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             },
             "flags": {
@@ -103,7 +102,8 @@
           "name": "dataSet",
           "jsdoc": "所属 DataSet（由 DataSet 在构建时通过 setDataSet 设置，独立使用时为 undefined）",
           "schema": {
-            "$ref": "dataset.d.ts.json#/$defs/DataSet"
+            "type": "object",
+            "title": "DataSet"
           },
           "readable": true,
           "writable": true
@@ -123,7 +123,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "types.d.ts.json#/$defs/DataColumn"
+              "type": "object",
+              "title": "DataColumn"
             }
           },
           "readable": true,
@@ -133,7 +134,8 @@
           "name": "resourceType",
           "jsdoc": "资源类型：描述该表背后真实对应的资源形态。\n例如数据库表、数据库视图、第三方 API、静态数据、字典表、逻辑视图等。\n当前建模约定下，只有 resourceType = 'static-data' 的表才应直接声明 rows；\n其他资源类型默认视为远端数据来源。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/TableResourceType"
+            "type": "object",
+            "title": "TableResourceType"
           },
           "readable": true,
           "writable": true
@@ -151,7 +153,8 @@
           "name": "businessCategory",
           "jsdoc": "业务分类：描述该表在当前业务模型中的角色。\n例如主表、从表、引用表、静态数据表。\n注意：该字段仅用于语义建模，不代替 tableRelations / viewDependencies。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/TableBusinessCategory"
+            "type": "object",
+            "title": "TableBusinessCategory"
           },
           "readable": true,
           "writable": true
@@ -160,7 +163,8 @@
           "name": "api",
           "jsdoc": "远端 CRUD 操作到端点的映射定义。\n语义：描述“每个操作对应哪个接口”。\n这里存放 list/create/retrieve/update/delete/batch/tree 等操作对应的 URL、HTTP 方法及端点级参数。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/CrudApi"
+            "type": "object",
+            "title": "CrudApi"
           },
           "readable": true,
           "writable": true
@@ -169,7 +173,8 @@
           "name": "crudConfig",
           "jsdoc": "CRUD 通用运行策略配置。\n语义：描述“调用端点时应用什么策略”。\n这里存放 timeout、retryCount、validateData、权限跳过、请求/响应转换等与端点无关的运行参数。",
           "schema": {
-            "$ref": "types.d.ts.json#/$defs/CrudOperationConfig"
+            "type": "object",
+            "title": "CrudOperationConfig"
           },
           "readable": true,
           "writable": true
@@ -178,7 +183,8 @@
           "name": "validator",
           "jsdoc": "数据校验器（基于列定义创建）",
           "schema": {
-            "$ref": "validation.d.ts.json#/$defs/DataValidator"
+            "type": "object",
+            "title": "DataValidator"
           },
           "readable": true,
           "writable": true
@@ -189,7 +195,8 @@
           "schema": {
             "type": "array",
             "items": {
-              "$ref": "types.d.ts.json#/$defs/DataRow"
+              "type": "object",
+              "title": "DataRow"
             }
           },
           "readable": true,
@@ -216,8 +223,7 @@
               "name": "ds",
               "type": {
                 "type": "reference",
-                "name": "DataSet",
-                "sourcePath": "declarations/packages/spark-data/src/dataset.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -253,8 +259,7 @@
             "type": "optional",
             "elementType": {
               "type": "reference",
-              "name": "DataView",
-              "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+              "name": "unknown"
             }
           }
         },
@@ -273,8 +278,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "DataView",
-            "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -294,8 +298,7 @@
                           "name": "view",
                           "type": {
                             "type": "reference",
-                            "name": "DataView",
-                            "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+                            "name": "unknown"
                           }
                         }
                       ],
@@ -326,8 +329,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "CrudApi",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "intrinsic",
@@ -355,8 +357,7 @@
               "name": "config",
               "type": {
                 "type": "reference",
-                "name": "CrudOperationConfig",
-                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                "name": "unknown"
               }
             }
           ],
@@ -372,8 +373,7 @@
           "parameters": [],
           "type": {
             "type": "reference",
-            "name": "TableMetadata",
-            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -387,8 +387,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "DataColumn",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             }
@@ -419,8 +418,7 @@
                 "typeArguments": [
                   {
                     "type": "reference",
-                    "name": "DataColumn",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   }
                 ]
               }
@@ -463,8 +461,7 @@
                 "type": "array",
                 "elementType": {
                   "type": "reference",
-                  "name": "DataRow",
-                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  "name": "unknown"
                 }
               }
             }
@@ -489,8 +486,7 @@
           ],
           "type": {
             "type": "reference",
-            "name": "DataView",
-            "sourcePath": "declarations/packages/spark-data/src/data-view.d.ts"
+            "name": "unknown"
           }
         },
         {
@@ -533,8 +529,7 @@
                 "types": [
                   {
                     "type": "reference",
-                    "name": "TableMetadata",
-                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                    "name": "unknown"
                   },
                   {
                     "type": "reference",
@@ -567,7 +562,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.751Z",
+  "generatedAt": "2026-06-13T04:00:57.810Z",
   "$defs": {
     "DataTableAddColumnsResult": {
       "type": "object",
@@ -594,7 +589,8 @@
       "description": "DataTable - 管理单表的结构定义与配置\n说明：管理表结构（columns）、资源语义（resourceType/resourceId/businessCategory）、\n视图集合（DataView）、CRUD 配置（api, crudConfig）；\n其中 `api` 负责定义“各 CRUD 操作映射到哪个端点”，`crudConfig` 负责定义“调用这些端点时采用什么通用运行策略”。\n数据操作由 DataView 负责。",
       "properties": {
         "dataSet": {
-          "$ref": "dataset.d.ts.json#/$defs/DataSet"
+          "type": "object",
+          "title": "DataSet"
         },
         "tableName": {
           "type": "string"
@@ -602,31 +598,38 @@
         "columns": {
           "type": "array",
           "items": {
-            "$ref": "types.d.ts.json#/$defs/DataColumn"
+            "type": "object",
+            "title": "DataColumn"
           }
         },
         "resourceType": {
-          "$ref": "types.d.ts.json#/$defs/TableResourceType"
+          "type": "object",
+          "title": "TableResourceType"
         },
         "resourceId": {
           "type": "string"
         },
         "businessCategory": {
-          "$ref": "types.d.ts.json#/$defs/TableBusinessCategory"
+          "type": "object",
+          "title": "TableBusinessCategory"
         },
         "api": {
-          "$ref": "types.d.ts.json#/$defs/CrudApi"
+          "type": "object",
+          "title": "CrudApi"
         },
         "crudConfig": {
-          "$ref": "types.d.ts.json#/$defs/CrudOperationConfig"
+          "type": "object",
+          "title": "CrudOperationConfig"
         },
         "validator": {
-          "$ref": "validation.d.ts.json#/$defs/DataValidator"
+          "type": "object",
+          "title": "DataValidator"
         },
         "rows": {
           "type": "array",
           "items": {
-            "$ref": "types.d.ts.json#/$defs/DataRow"
+            "type": "object",
+            "title": "DataRow"
           }
         },
         "views": {

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/recovery/class-model-failure-mode-recovery.d.ts",
+  "symbols": [
+    "ClassModelFailureModeRecoveryCommand",
+    "ClassModelFailureModeRecoveryContext"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ClassModelFailureModeRecoveryCommand": {
+      "ref": "spark-class-model://schema/ClassModelFailureModeRecoveryCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelFailureModeRecoveryCommand",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelFailureModeRecoveryCommand"
+      }
+    },
+    "spark-class-model://model/ClassModelFailureModeRecoveryCommand": {
+      "ref": "spark-class-model://model/ClassModelFailureModeRecoveryCommand",
+      "kind": "model",
+      "className": "ClassModelFailureModeRecoveryCommand",
+      "schemaRef": "spark-class-model://schema/ClassModelFailureModeRecoveryCommand",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelFailureModeRecoveryContext": {
+      "ref": "spark-class-model://schema/ClassModelFailureModeRecoveryContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelFailureModeRecoveryContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelFailureModeRecoveryContext"
+      }
+    },
+    "spark-class-model://model/ClassModelFailureModeRecoveryContext": {
+      "ref": "spark-class-model://model/ClassModelFailureModeRecoveryContext",
+      "kind": "model",
+      "className": "ClassModelFailureModeRecoveryContext",
+      "schemaRef": "spark-class-model://schema/ClassModelFailureModeRecoveryContext",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

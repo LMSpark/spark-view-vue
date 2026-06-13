@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts",
+  "symbols": [
+    "EmitRowsChangedFn",
+    "PostMutationFn",
+    "LocalMutationDelegate"
+  ],
+  "@refs": {
+    "spark-class-model://schema/EmitRowsChangedFn": {
+      "ref": "spark-class-model://schema/EmitRowsChangedFn",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "EmitRowsChangedFn",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/EmitRowsChangedFn"
+      }
+    },
+    "spark-class-model://model/EmitRowsChangedFn": {
+      "ref": "spark-class-model://model/EmitRowsChangedFn",
+      "kind": "model",
+      "className": "EmitRowsChangedFn",
+      "schemaRef": "spark-class-model://schema/EmitRowsChangedFn",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PostMutationFn": {
+      "ref": "spark-class-model://schema/PostMutationFn",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PostMutationFn",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PostMutationFn"
+      }
+    },
+    "spark-class-model://model/PostMutationFn": {
+      "ref": "spark-class-model://model/PostMutationFn",
+      "kind": "model",
+      "className": "PostMutationFn",
+      "schemaRef": "spark-class-model://schema/PostMutationFn",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/LocalMutationDelegate": {
+      "ref": "spark-class-model://schema/LocalMutationDelegate",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "LocalMutationDelegate",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/LocalMutationDelegate"
+      }
+    },
+    "spark-class-model://model/LocalMutationDelegate/methods/buildRowIndexMap/0": {
+      "ref": "spark-class-model://model/LocalMutationDelegate/methods/buildRowIndexMap/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/LocalMutationDelegate",
+      "name": "buildRowIndexMap",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/b9c89967d88a95252d631a79ac6fd63be9ecf7717524effc5c7904ad22e9e378",
+      "returnSchemaRef": "spark-class-model://schema/shared/442e2edcadee288f74024ecff070ee0cf860a3d1df1ed6cd31fef228d3ae0ff1"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FbuildRowIndexMap%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FbuildRowIndexMap%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/LocalMutationDelegate/methods/buildRowIndexMap/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/LocalMutationDelegate/methods/updateFromServer/1": {
+      "ref": "spark-class-model://model/LocalMutationDelegate/methods/updateFromServer/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/LocalMutationDelegate",
+      "name": "updateFromServer",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/a3a9d1e56ff7b2281c4c37dac93a4a31329ee271d2fa9986a8e8716835d12ea6"
+    },
+    "spark-class-model://schema/shared/a3a9d1e56ff7b2281c4c37dac93a4a31329ee271d2fa9986a8e8716835d12ea6": {
+      "ref": "spark-class-model://schema/shared/a3a9d1e56ff7b2281c4c37dac93a4a31329ee271d2fa9986a8e8716835d12ea6",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "spark-class-model://schema/DataRow"
+                }
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a3a9d1e56ff7b2281c4c37dac93a4a31329ee271d2fa9986a8e8716835d12ea6"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FupdateFromServer%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FupdateFromServer%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/LocalMutationDelegate/methods/updateFromServer/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/LocalMutationDelegate/methods/appendRow/2": {
+      "ref": "spark-class-model://model/LocalMutationDelegate/methods/appendRow/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/LocalMutationDelegate",
+      "name": "appendRow",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/62c0720f121a1bc7746bb80e7db15f9bc9fbf5e3baaf35ef6ef6223604d1cfe1"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FappendRow%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FappendRow%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/LocalMutationDelegate/methods/appendRow/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/LocalMutationDelegate/methods/updateRowById/3": {
+      "ref": "spark-class-model://model/LocalMutationDelegate/methods/updateRowById/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/LocalMutationDelegate",
+      "name": "updateRowById",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3767123d4d4947ba5c41d0a3ce5cbd2b0400a1f6aab3df9ae976c2e3f70e6c43",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://model/LocalMutationDelegate/methods/deleteRowById/4": {
+      "ref": "spark-class-model://model/LocalMutationDelegate/methods/deleteRowById/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/LocalMutationDelegate",
+      "name": "deleteRowById",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/38050d2692556503c71999c039cd4ae603075a44ab689839c91869ad56b38ba7",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://model/LocalMutationDelegate/methods/replaceRows/5": {
+      "ref": "spark-class-model://model/LocalMutationDelegate/methods/replaceRows/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/LocalMutationDelegate",
+      "name": "replaceRows",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/b9c89967d88a95252d631a79ac6fd63be9ecf7717524effc5c7904ad22e9e378"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FreplaceRows%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FreplaceRows%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/LocalMutationDelegate/methods/replaceRows/5",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/LocalMutationDelegate": {
+      "ref": "spark-class-model://model/LocalMutationDelegate",
+      "kind": "model",
+      "className": "LocalMutationDelegate",
+      "schemaRef": "spark-class-model://schema/LocalMutationDelegate",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/LocalMutationDelegate/methods/buildRowIndexMap/0",
+        "spark-class-model://model/LocalMutationDelegate/methods/updateFromServer/1",
+        "spark-class-model://model/LocalMutationDelegate/methods/appendRow/2",
+        "spark-class-model://model/LocalMutationDelegate/methods/updateRowById/3",
+        "spark-class-model://model/LocalMutationDelegate/methods/deleteRowById/4",
+        "spark-class-model://model/LocalMutationDelegate/methods/replaceRows/5"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FbuildRowIndexMap%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FupdateFromServer%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FappendRow%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FreplaceRows%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow"
+      ]
+    }
+  }
+}

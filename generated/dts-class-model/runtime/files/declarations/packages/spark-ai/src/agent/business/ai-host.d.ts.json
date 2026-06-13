@@ -1,0 +1,690 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts",
+  "symbols": [
+    "CreateAiAgentHostOptions",
+    "AiAgentHostRunResult",
+    "AiAgentHostEntryMap",
+    "AiAgentHostRegistrationInput",
+    "AiAgentHostEnsureCommand",
+    "AiAgentHostRegistrationSummary",
+    "AiAgentHostRegistrationDescription",
+    "AiAgentHostDryRunDiagnostic",
+    "AiAgentHostOrchestrationSummary",
+    "AiAgentHostDryRunResult",
+    "AiAgentHost"
+  ],
+  "@refs": {
+    "spark-class-model://schema/CreateAiAgentHostOptions": {
+      "ref": "spark-class-model://schema/CreateAiAgentHostOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "CreateAiAgentHostOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/CreateAiAgentHostOptions"
+      }
+    },
+    "spark-class-model://model/CreateAiAgentHostOptions": {
+      "ref": "spark-class-model://model/CreateAiAgentHostOptions",
+      "kind": "model",
+      "className": "CreateAiAgentHostOptions",
+      "schemaRef": "spark-class-model://schema/CreateAiAgentHostOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentHostRunResult": {
+      "ref": "spark-class-model://schema/AiAgentHostRunResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentHostRunResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentHostRunResult"
+      }
+    },
+    "spark-class-model://model/AiAgentHostRunResult": {
+      "ref": "spark-class-model://model/AiAgentHostRunResult",
+      "kind": "model",
+      "className": "AiAgentHostRunResult",
+      "schemaRef": "spark-class-model://schema/AiAgentHostRunResult",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentHostEntryMap": {
+      "ref": "spark-class-model://schema/AiAgentHostEntryMap",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentHostEntryMap",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentHostEntryMap"
+      }
+    },
+    "spark-class-model://model/AiAgentHostEntryMap": {
+      "ref": "spark-class-model://model/AiAgentHostEntryMap",
+      "kind": "model",
+      "className": "AiAgentHostEntryMap",
+      "schemaRef": "spark-class-model://schema/AiAgentHostEntryMap",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentHostRegistrationInput": {
+      "ref": "spark-class-model://schema/AiAgentHostRegistrationInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentHostRegistrationInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentHostRegistrationInput"
+      }
+    },
+    "spark-class-model://model/AiAgentHostRegistrationInput": {
+      "ref": "spark-class-model://model/AiAgentHostRegistrationInput",
+      "kind": "model",
+      "className": "AiAgentHostRegistrationInput",
+      "schemaRef": "spark-class-model://schema/AiAgentHostRegistrationInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentHostEnsureCommand": {
+      "ref": "spark-class-model://schema/AiAgentHostEnsureCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentHostEnsureCommand",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentHostEnsureCommand"
+      }
+    },
+    "spark-class-model://model/AiAgentHostEnsureCommand": {
+      "ref": "spark-class-model://model/AiAgentHostEnsureCommand",
+      "kind": "model",
+      "className": "AiAgentHostEnsureCommand",
+      "schemaRef": "spark-class-model://schema/AiAgentHostEnsureCommand",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentHostRegistrationSummary": {
+      "ref": "spark-class-model://schema/AiAgentHostRegistrationSummary",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentHostRegistrationSummary",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentHostRegistrationSummary"
+      }
+    },
+    "spark-class-model://model/AiAgentHostRegistrationSummary": {
+      "ref": "spark-class-model://model/AiAgentHostRegistrationSummary",
+      "kind": "model",
+      "className": "AiAgentHostRegistrationSummary",
+      "schemaRef": "spark-class-model://schema/AiAgentHostRegistrationSummary",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentHostRegistrationDescription": {
+      "ref": "spark-class-model://schema/AiAgentHostRegistrationDescription",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentHostRegistrationDescription",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentHostRegistrationDescription"
+      }
+    },
+    "spark-class-model://model/AiAgentHostRegistrationDescription": {
+      "ref": "spark-class-model://model/AiAgentHostRegistrationDescription",
+      "kind": "model",
+      "className": "AiAgentHostRegistrationDescription",
+      "schemaRef": "spark-class-model://schema/AiAgentHostRegistrationDescription",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentHostDryRunDiagnostic": {
+      "ref": "spark-class-model://schema/AiAgentHostDryRunDiagnostic",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentHostDryRunDiagnostic",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentHostDryRunDiagnostic"
+      }
+    },
+    "spark-class-model://model/AiAgentHostDryRunDiagnostic": {
+      "ref": "spark-class-model://model/AiAgentHostDryRunDiagnostic",
+      "kind": "model",
+      "className": "AiAgentHostDryRunDiagnostic",
+      "schemaRef": "spark-class-model://schema/AiAgentHostDryRunDiagnostic",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentHostOrchestrationSummary": {
+      "ref": "spark-class-model://schema/AiAgentHostOrchestrationSummary",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentHostOrchestrationSummary",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentHostOrchestrationSummary"
+      }
+    },
+    "spark-class-model://model/AiAgentHostOrchestrationSummary": {
+      "ref": "spark-class-model://model/AiAgentHostOrchestrationSummary",
+      "kind": "model",
+      "className": "AiAgentHostOrchestrationSummary",
+      "schemaRef": "spark-class-model://schema/AiAgentHostOrchestrationSummary",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentHostDryRunResult": {
+      "ref": "spark-class-model://schema/AiAgentHostDryRunResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentHostDryRunResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentHostDryRunResult"
+      }
+    },
+    "spark-class-model://model/AiAgentHostDryRunResult": {
+      "ref": "spark-class-model://model/AiAgentHostDryRunResult",
+      "kind": "model",
+      "className": "AiAgentHostDryRunResult",
+      "schemaRef": "spark-class-model://schema/AiAgentHostDryRunResult",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentHost": {
+      "ref": "spark-class-model://schema/AiAgentHost",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentHost",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentHost"
+      }
+    },
+    "spark-class-model://model/AiAgentHost/methods/create/0": {
+      "ref": "spark-class-model://model/AiAgentHost/methods/create/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentHost",
+      "name": "create",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f2cb450796335ca8e315f546fd03887768f189fb07df0acc8750fbd94bc8e714",
+      "returnSchemaRef": "spark-class-model://schema/shared/aa01c5647ec31607d9e4c07c1df9d069439cbaf323cbdd42b9796717236d1f38"
+    },
+    "spark-class-model://schema/shared/f2cb450796335ca8e315f546fd03887768f189fb07df0acc8750fbd94bc8e714": {
+      "ref": "spark-class-model://schema/shared/f2cb450796335ca8e315f546fd03887768f189fb07df0acc8750fbd94bc8e714",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/CreateAiAgentHostOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f2cb450796335ca8e315f546fd03887768f189fb07df0acc8750fbd94bc8e714"
+      }
+    },
+    "spark-class-model://schema/shared/aa01c5647ec31607d9e4c07c1df9d069439cbaf323cbdd42b9796717236d1f38": {
+      "ref": "spark-class-model://schema/shared/aa01c5647ec31607d9e4c07c1df9d069439cbaf323cbdd42b9796717236d1f38",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentHost",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/aa01c5647ec31607d9e4c07c1df9d069439cbaf323cbdd42b9796717236d1f38"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fcreate%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCreateAiAgentHostOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fcreate%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCreateAiAgentHostOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/create/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CreateAiAgentHostOptions",
+      "targetClassName": "CreateAiAgentHostOptions",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CreateAiAgentHostOptions"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fcreate%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fcreate%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/create/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentHost",
+      "targetClassName": "AiAgentHost",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHost"
+    },
+    "spark-class-model://model/AiAgentHost/methods/register/1": {
+      "ref": "spark-class-model://model/AiAgentHost/methods/register/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentHost",
+      "name": "register",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ea288e64653b35e62a623baa9d23a16a847aeaf80272b516648f315e967b2277",
+      "returnSchemaRef": "spark-class-model://schema/shared/315a7c2ee94cb9ff71626bb43110c0f09cab45b35914e0e3853096db0dd6a7e5"
+    },
+    "spark-class-model://schema/shared/ea288e64653b35e62a623baa9d23a16a847aeaf80272b516648f315e967b2277": {
+      "ref": "spark-class-model://schema/shared/ea288e64653b35e62a623baa9d23a16a847aeaf80272b516648f315e967b2277",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "alias": true,
+          "registration": {
+            "$ref": "spark-class-model://schema/AiAgentRegistration",
+            "title": "AiAgentRegistration<TInput>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ea288e64653b35e62a623baa9d23a16a847aeaf80272b516648f315e967b2277"
+      }
+    },
+    "spark-class-model://schema/shared/315a7c2ee94cb9ff71626bb43110c0f09cab45b35914e0e3853096db0dd6a7e5": {
+      "ref": "spark-class-model://schema/shared/315a7c2ee94cb9ff71626bb43110c0f09cab45b35914e0e3853096db0dd6a7e5",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentHost",
+        "title": "AiAgentHost<TEntries & Record<K, AiAgentRegistration<TInput>>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/315a7c2ee94cb9ff71626bb43110c0f09cab45b35914e0e3853096db0dd6a7e5"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fregister%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fregister%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/register/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentHost",
+      "targetClassName": "AiAgentHost",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHost"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fregister%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fregister%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/register/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentRegistration",
+      "targetClassName": "AiAgentRegistration",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/registration-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRegistration"
+    },
+    "spark-class-model://model/AiAgentHost/methods/ensure/2": {
+      "ref": "spark-class-model://model/AiAgentHost/methods/ensure/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentHost",
+      "name": "ensure",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/a5b0b1cd035d877d4d7f6c58d15af40d51cfef2304756d0a5cd1f27b6cd8fea0",
+      "returnSchemaRef": "spark-class-model://schema/shared/315a7c2ee94cb9ff71626bb43110c0f09cab45b35914e0e3853096db0dd6a7e5"
+    },
+    "spark-class-model://schema/shared/a5b0b1cd035d877d4d7f6c58d15af40d51cfef2304756d0a5cd1f27b6cd8fea0": {
+      "ref": "spark-class-model://schema/shared/a5b0b1cd035d877d4d7f6c58d15af40d51cfef2304756d0a5cd1f27b6cd8fea0",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "alias": true,
+          "command": {
+            "$ref": "spark-class-model://schema/AiAgentHostEnsureCommand",
+            "title": "AiAgentHostEnsureCommand<TInput>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a5b0b1cd035d877d4d7f6c58d15af40d51cfef2304756d0a5cd1f27b6cd8fea0"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fensure%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostEnsureCommand": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fensure%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostEnsureCommand",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/ensure/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentHostEnsureCommand",
+      "targetClassName": "AiAgentHostEnsureCommand",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHostEnsureCommand"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fensure%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fensure%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/ensure/2",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentHost",
+      "targetClassName": "AiAgentHost",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHost"
+    },
+    "spark-class-model://model/AiAgentHost/methods/has/3": {
+      "ref": "spark-class-model://model/AiAgentHost/methods/has/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentHost",
+      "name": "has",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/a052fec05c99531aefffee73149df09e9ec0e57fa4a3ed825189660df4f109bc",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://schema/shared/a052fec05c99531aefffee73149df09e9ec0e57fa4a3ed825189660df4f109bc": {
+      "ref": "spark-class-model://schema/shared/a052fec05c99531aefffee73149df09e9ec0e57fa4a3ed825189660df4f109bc",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "alias": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a052fec05c99531aefffee73149df09e9ec0e57fa4a3ed825189660df4f109bc"
+      }
+    },
+    "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553": {
+      "ref": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "kind": "schema",
+      "schema": {
+        "type": "boolean",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+      }
+    },
+    "spark-class-model://model/AiAgentHost/methods/listRegistrations/4": {
+      "ref": "spark-class-model://model/AiAgentHost/methods/listRegistrations/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentHost",
+      "name": "listRegistrations",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22"
+    },
+    "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa": {
+      "ref": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+      }
+    },
+    "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22": {
+      "ref": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22"
+      }
+    },
+    "spark-class-model://model/AiAgentHost/methods/describe/5": {
+      "ref": "spark-class-model://model/AiAgentHost/methods/describe/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentHost",
+      "name": "describe",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/a052fec05c99531aefffee73149df09e9ec0e57fa4a3ed825189660df4f109bc",
+      "returnSchemaRef": "spark-class-model://schema/shared/2ec57bec9e088cb0f263f8a611a9353c1a62e9d2a7efff00449feda93efd136c"
+    },
+    "spark-class-model://schema/shared/2ec57bec9e088cb0f263f8a611a9353c1a62e9d2a7efff00449feda93efd136c": {
+      "ref": "spark-class-model://schema/shared/2ec57bec9e088cb0f263f8a611a9353c1a62e9d2a7efff00449feda93efd136c",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentHostRegistrationDescription",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/2ec57bec9e088cb0f263f8a611a9353c1a62e9d2a7efff00449feda93efd136c"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fdescribe%2F5/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRegistrationDescription": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fdescribe%2F5/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRegistrationDescription",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/describe/5",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentHostRegistrationDescription",
+      "targetClassName": "AiAgentHostRegistrationDescription",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHostRegistrationDescription"
+    },
+    "spark-class-model://model/AiAgentHost/methods/listSessions/6": {
+      "ref": "spark-class-model://model/AiAgentHost/methods/listSessions/6",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentHost",
+      "name": "listSessions",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/a052fec05c99531aefffee73149df09e9ec0e57fa4a3ed825189660df4f109bc",
+      "returnSchemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22"
+    },
+    "spark-class-model://model/AiAgentHost/methods/unregister/7": {
+      "ref": "spark-class-model://model/AiAgentHost/methods/unregister/7",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentHost",
+      "name": "unregister",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/a052fec05c99531aefffee73149df09e9ec0e57fa4a3ed825189660df4f109bc",
+      "returnSchemaRef": "spark-class-model://schema/shared/aa01c5647ec31607d9e4c07c1df9d069439cbaf323cbdd42b9796717236d1f38"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Funregister%2F7/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Funregister%2F7/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/unregister/7",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentHost",
+      "targetClassName": "AiAgentHost",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHost"
+    },
+    "spark-class-model://model/AiAgentHost/methods/dryRun/8": {
+      "ref": "spark-class-model://model/AiAgentHost/methods/dryRun/8",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentHost",
+      "name": "dryRun",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e26f52c2c2857140e4dfca2015ee5e22c2a913387c070790c152e7118d2c203d",
+      "returnSchemaRef": "spark-class-model://schema/shared/e77912e0fa0307e9fdfb362795eb1453f7c6b0a50c908676983f4703f4a42445"
+    },
+    "spark-class-model://schema/shared/e26f52c2c2857140e4dfca2015ee5e22c2a913387c070790c152e7118d2c203d": {
+      "ref": "spark-class-model://schema/shared/e26f52c2c2857140e4dfca2015ee5e22c2a913387c070790c152e7118d2c203d",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "alias": {
+            "type": "string"
+          },
+          "args": true
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e26f52c2c2857140e4dfca2015ee5e22c2a913387c070790c152e7118d2c203d"
+      }
+    },
+    "spark-class-model://schema/shared/e77912e0fa0307e9fdfb362795eb1453f7c6b0a50c908676983f4703f4a42445": {
+      "ref": "spark-class-model://schema/shared/e77912e0fa0307e9fdfb362795eb1453f7c6b0a50c908676983f4703f4a42445",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentHostDryRunResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e77912e0fa0307e9fdfb362795eb1453f7c6b0a50c908676983f4703f4a42445"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2FdryRun%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostDryRunResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2FdryRun%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostDryRunResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/dryRun/8",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentHostDryRunResult",
+      "targetClassName": "AiAgentHostDryRunResult",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHostDryRunResult"
+    },
+    "spark-class-model://model/AiAgentHost/methods/run/9": {
+      "ref": "spark-class-model://model/AiAgentHost/methods/run/9",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentHost",
+      "name": "run",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/1216fa0e0da95b5f21fa75331b25c2543813a232dfaac0e8414c4f0680ff8afc",
+      "returnSchemaRef": "spark-class-model://schema/shared/d0db822e99dcadbd9d35439e3e83061dc21061c49e264934813aa9d71d2b8e6f"
+    },
+    "spark-class-model://schema/shared/1216fa0e0da95b5f21fa75331b25c2543813a232dfaac0e8414c4f0680ff8afc": {
+      "ref": "spark-class-model://schema/shared/1216fa0e0da95b5f21fa75331b25c2543813a232dfaac0e8414c4f0680ff8afc",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "alias": true,
+          "args": {
+            "$ref": "spark-class-model://schema/AiAgentHostRegistrationInput",
+            "title": "AiAgentHostRegistrationInput<TEntries[K]>"
+          },
+          "chat": {
+            "$ref": "spark-class-model://schema/AiAgentTaskChatOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/1216fa0e0da95b5f21fa75331b25c2543813a232dfaac0e8414c4f0680ff8afc"
+      }
+    },
+    "spark-class-model://schema/shared/d0db822e99dcadbd9d35439e3e83061dc21061c49e264934813aa9d71d2b8e6f": {
+      "ref": "spark-class-model://schema/shared/d0db822e99dcadbd9d35439e3e83061dc21061c49e264934813aa9d71d2b8e6f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<AiAgentHostRunResult>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d0db822e99dcadbd9d35439e3e83061dc21061c49e264934813aa9d71d2b8e6f"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F9/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRegistrationInput": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F9/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRegistrationInput",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/run/9",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentHostRegistrationInput",
+      "targetClassName": "AiAgentHostRegistrationInput",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHostRegistrationInput"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F9/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRunResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F9/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRunResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/run/9",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentHostRunResult",
+      "targetClassName": "AiAgentHostRunResult",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHostRunResult"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F9/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F9/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/run/9",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentTaskChatOptions",
+      "targetClassName": "AiAgentTaskChatOptions",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/business-task.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentTaskChatOptions"
+    },
+    "spark-class-model://model/AiAgentHost/methods/run/10": {
+      "ref": "spark-class-model://model/AiAgentHost/methods/run/10",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentHost",
+      "name": "run",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/006d86860e724cf0dd5990ba36f065caa92632c414f71d38436eb5ac8db55d42",
+      "returnSchemaRef": "spark-class-model://schema/shared/d0db822e99dcadbd9d35439e3e83061dc21061c49e264934813aa9d71d2b8e6f"
+    },
+    "spark-class-model://schema/shared/006d86860e724cf0dd5990ba36f065caa92632c414f71d38436eb5ac8db55d42": {
+      "ref": "spark-class-model://schema/shared/006d86860e724cf0dd5990ba36f065caa92632c414f71d38436eb5ac8db55d42",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "alias": {
+            "type": "string"
+          },
+          "args": true,
+          "chat": {
+            "$ref": "spark-class-model://schema/AiAgentTaskChatOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/006d86860e724cf0dd5990ba36f065caa92632c414f71d38436eb5ac8db55d42"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F10/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRunResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F10/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRunResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/run/10",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentHostRunResult",
+      "targetClassName": "AiAgentHostRunResult",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHostRunResult"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F10/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F10/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHost/methods/run/10",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentTaskChatOptions",
+      "targetClassName": "AiAgentTaskChatOptions",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/business-task.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentTaskChatOptions"
+    },
+    "spark-class-model://model/AiAgentHost": {
+      "ref": "spark-class-model://model/AiAgentHost",
+      "kind": "model",
+      "className": "AiAgentHost",
+      "schemaRef": "spark-class-model://schema/AiAgentHost",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/AiAgentHost/methods/create/0",
+        "spark-class-model://model/AiAgentHost/methods/register/1",
+        "spark-class-model://model/AiAgentHost/methods/ensure/2",
+        "spark-class-model://model/AiAgentHost/methods/has/3",
+        "spark-class-model://model/AiAgentHost/methods/listRegistrations/4",
+        "spark-class-model://model/AiAgentHost/methods/describe/5",
+        "spark-class-model://model/AiAgentHost/methods/listSessions/6",
+        "spark-class-model://model/AiAgentHost/methods/unregister/7",
+        "spark-class-model://model/AiAgentHost/methods/dryRun/8",
+        "spark-class-model://model/AiAgentHost/methods/run/9",
+        "spark-class-model://model/AiAgentHost/methods/run/10"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fcreate%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCreateAiAgentHostOptions",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fcreate%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fregister%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fregister%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fensure%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostEnsureCommand",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fensure%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Fdescribe%2F5/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRegistrationDescription",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Funregister%2F7/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2FdryRun%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostDryRunResult",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F9/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRegistrationInput",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F9/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRunResult",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F9/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F10/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRunResult",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost%2Fmethods%2Frun%2F10/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions"
+      ]
+    }
+  }
+}

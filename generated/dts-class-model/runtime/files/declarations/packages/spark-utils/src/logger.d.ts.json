@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-utils/src/logger.d.ts",
+  "symbols": [
+    "LogLevel",
+    "LoggerApi",
+    "LogTransport"
+  ],
+  "@refs": {
+    "spark-class-model://schema/LogLevel": {
+      "ref": "spark-class-model://schema/LogLevel",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "LogLevel",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/LogLevel"
+      }
+    },
+    "spark-class-model://model/LogLevel": {
+      "ref": "spark-class-model://model/LogLevel",
+      "kind": "model",
+      "className": "LogLevel",
+      "schemaRef": "spark-class-model://schema/LogLevel",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/LoggerApi": {
+      "ref": "spark-class-model://schema/LoggerApi",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "LoggerApi",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/LoggerApi"
+      }
+    },
+    "spark-class-model://model/LoggerApi": {
+      "ref": "spark-class-model://model/LoggerApi",
+      "kind": "model",
+      "className": "LoggerApi",
+      "schemaRef": "spark-class-model://schema/LoggerApi",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/LogTransport": {
+      "ref": "spark-class-model://schema/LogTransport",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "LogTransport",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/LogTransport"
+      }
+    },
+    "spark-class-model://model/LogTransport": {
+      "ref": "spark-class-model://model/LogTransport",
+      "kind": "model",
+      "className": "LogTransport",
+      "schemaRef": "spark-class-model://schema/LogTransport",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

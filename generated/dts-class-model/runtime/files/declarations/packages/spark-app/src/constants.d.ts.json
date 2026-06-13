@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-app/src/constants.d.ts",
+  "symbols": [
+    "ErrorCode",
+    "Environment"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ErrorCode": {
+      "ref": "spark-class-model://schema/ErrorCode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ErrorCode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ErrorCode"
+      }
+    },
+    "spark-class-model://model/ErrorCode": {
+      "ref": "spark-class-model://model/ErrorCode",
+      "kind": "model",
+      "className": "ErrorCode",
+      "schemaRef": "spark-class-model://schema/ErrorCode",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/Environment": {
+      "ref": "spark-class-model://schema/Environment",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Environment",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/Environment"
+      }
+    },
+    "spark-class-model://model/Environment": {
+      "ref": "spark-class-model://model/Environment",
+      "kind": "model",
+      "className": "Environment",
+      "schemaRef": "spark-class-model://schema/Environment",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

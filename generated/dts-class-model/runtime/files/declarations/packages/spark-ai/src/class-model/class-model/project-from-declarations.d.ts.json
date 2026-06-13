@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/project-from-declarations.d.ts",
+  "symbols": [
+    "ProjectDtsSourceFileProjectionOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ProjectDtsSourceFileProjectionOptions": {
+      "ref": "spark-class-model://schema/ProjectDtsSourceFileProjectionOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectDtsSourceFileProjectionOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectDtsSourceFileProjectionOptions"
+      }
+    },
+    "spark-class-model://model/ProjectDtsSourceFileProjectionOptions": {
+      "ref": "spark-class-model://model/ProjectDtsSourceFileProjectionOptions",
+      "kind": "model",
+      "className": "ProjectDtsSourceFileProjectionOptions",
+      "schemaRef": "spark-class-model://schema/ProjectDtsSourceFileProjectionOptions",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

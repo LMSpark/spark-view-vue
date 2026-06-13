@@ -171,16 +171,14 @@
               "name": "filename",
               "type": {
                 "type": "reference",
-                "name": "PageNodeFileName",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               }
             },
             {
               "name": "options",
               "type": {
                 "type": "reference",
-                "name": "PageNodeLoadOptions",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts"
+                "name": "unknown"
               },
               "flags": {
                 "isOptional": true
@@ -193,8 +191,7 @@
             "typeArguments": [
               {
                 "type": "reference",
-                "name": "PageContentLoadResult",
-                "sourcePath": "declarations/packages/spark-project-model/src/page/page-file.d.ts",
+                "name": "unknown",
                 "typeArguments": [
                   {
                     "type": "intrinsic",
@@ -277,7 +274,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.826Z",
+  "generatedAt": "2026-06-13T04:00:57.870Z",
   "$defs": {
     "PageContentLoaderOptions": {
       "type": "object",

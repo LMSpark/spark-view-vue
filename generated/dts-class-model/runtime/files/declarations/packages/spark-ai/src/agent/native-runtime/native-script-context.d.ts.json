@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/native-runtime/native-script-context.d.ts",
+  "symbols": [
+    "ScriptCallback",
+    "ScriptActionArg",
+    "AiNativePathContext",
+    "AiApiScriptContextCommand",
+    "ExecuteAiApiActionCommand",
+    "AiApiScriptActionFailure"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ScriptCallback": {
+      "ref": "spark-class-model://schema/ScriptCallback",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ScriptCallback",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ScriptCallback"
+      }
+    },
+    "spark-class-model://model/ScriptCallback": {
+      "ref": "spark-class-model://model/ScriptCallback",
+      "kind": "model",
+      "className": "ScriptCallback",
+      "schemaRef": "spark-class-model://schema/ScriptCallback",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ScriptActionArg": {
+      "ref": "spark-class-model://schema/ScriptActionArg",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ScriptActionArg",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ScriptActionArg"
+      }
+    },
+    "spark-class-model://model/ScriptActionArg": {
+      "ref": "spark-class-model://model/ScriptActionArg",
+      "kind": "model",
+      "className": "ScriptActionArg",
+      "schemaRef": "spark-class-model://schema/ScriptActionArg",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiNativePathContext": {
+      "ref": "spark-class-model://schema/AiNativePathContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiNativePathContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiNativePathContext"
+      }
+    },
+    "spark-class-model://model/AiNativePathContext": {
+      "ref": "spark-class-model://model/AiNativePathContext",
+      "kind": "model",
+      "className": "AiNativePathContext",
+      "schemaRef": "spark-class-model://schema/AiNativePathContext",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiScriptContextCommand": {
+      "ref": "spark-class-model://schema/AiApiScriptContextCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiScriptContextCommand",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiScriptContextCommand"
+      }
+    },
+    "spark-class-model://model/AiApiScriptContextCommand": {
+      "ref": "spark-class-model://model/AiApiScriptContextCommand",
+      "kind": "model",
+      "className": "AiApiScriptContextCommand",
+      "schemaRef": "spark-class-model://schema/AiApiScriptContextCommand",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ExecuteAiApiActionCommand": {
+      "ref": "spark-class-model://schema/ExecuteAiApiActionCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ExecuteAiApiActionCommand",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ExecuteAiApiActionCommand"
+      }
+    },
+    "spark-class-model://model/ExecuteAiApiActionCommand": {
+      "ref": "spark-class-model://model/ExecuteAiApiActionCommand",
+      "kind": "model",
+      "className": "ExecuteAiApiActionCommand",
+      "schemaRef": "spark-class-model://schema/ExecuteAiApiActionCommand",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiApiScriptActionFailure": {
+      "ref": "spark-class-model://schema/AiApiScriptActionFailure",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiApiScriptActionFailure",
+        "properties": {
+          "actionName": {
+            "type": "string"
+          },
+          "result": {
+            "$ref": "spark-class-model://schema/AiAgentToolResult",
+            "title": "AiAgentToolResult<unknown>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiApiScriptActionFailure"
+      }
+    },
+    "spark-class-model://model/AiApiScriptActionFailure/attributes/actionName/0": {
+      "ref": "spark-class-model://model/AiApiScriptActionFailure/attributes/actionName/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiApiScriptActionFailure",
+      "name": "actionName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/e809c07ccc348c03668c22ea4ecf92c9dec74e5a1ebf1949e49c461e2ba78c10": {
+      "ref": "spark-class-model://schema/shared/e809c07ccc348c03668c22ea4ecf92c9dec74e5a1ebf1949e49c461e2ba78c10",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentToolResult",
+        "title": "AiAgentToolResult<unknown>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e809c07ccc348c03668c22ea4ecf92c9dec74e5a1ebf1949e49c461e2ba78c10"
+      }
+    },
+    "spark-class-model://model/AiApiScriptActionFailure/attributes/result/1": {
+      "ref": "spark-class-model://model/AiApiScriptActionFailure/attributes/result/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiApiScriptActionFailure",
+      "name": "result",
+      "schemaRef": "spark-class-model://schema/shared/e809c07ccc348c03668c22ea4ecf92c9dec74e5a1ebf1949e49c461e2ba78c10",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiApiScriptActionFailure%2Fattributes%2Fresult%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiApiScriptActionFailure%2Fattributes%2Fresult%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiApiScriptActionFailure/attributes/result/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentToolResult",
+      "targetClassName": "AiAgentToolResult",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolResult"
+    },
+    "spark-class-model://model/AiApiScriptActionFailure": {
+      "ref": "spark-class-model://model/AiApiScriptActionFailure",
+      "kind": "model",
+      "className": "AiApiScriptActionFailure",
+      "schemaRef": "spark-class-model://schema/AiApiScriptActionFailure",
+      "attributeRefs": [
+        "spark-class-model://model/AiApiScriptActionFailure/attributes/actionName/0",
+        "spark-class-model://model/AiApiScriptActionFailure/attributes/result/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiApiScriptActionFailure%2Fattributes%2Fresult%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolResult"
+      ]
+    }
+  }
+}

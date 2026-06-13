@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/class-model/tools/tool-names.d.ts",
+  "symbols": [
+    "ClassModelToolName"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ClassModelToolName": {
+      "ref": "spark-class-model://schema/ClassModelToolName",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelToolName",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelToolName"
+      }
+    },
+    "spark-class-model://model/ClassModelToolName": {
+      "ref": "spark-class-model://model/ClassModelToolName",
+      "kind": "model",
+      "className": "ClassModelToolName",
+      "schemaRef": "spark-class-model://schema/ClassModelToolName",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

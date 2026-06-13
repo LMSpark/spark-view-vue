@@ -1702,7 +1702,8 @@
           "name": "onAddRow",
           "jsdoc": "新增动作回调。\n常由工具栏“新增”按钮、空态入口或快捷动作触发。",
           "schema": {
-            "$ref": "containers/support/interactionControl.d.ts.json#/$defs/AddRowHandler"
+            "type": "object",
+            "title": "AddRowHandler"
           },
           "readable": true,
           "writable": false
@@ -1711,7 +1712,8 @@
           "name": "onEditRow",
           "jsdoc": "编辑动作回调。\n通常用于编辑当前行、双击行编辑或弹出编辑表单。",
           "schema": {
-            "$ref": "containers/support/interactionControl.d.ts.json#/$defs/EditRowHandler"
+            "type": "object",
+            "title": "EditRowHandler"
           },
           "readable": true,
           "writable": false
@@ -1720,7 +1722,8 @@
           "name": "onRemoveRow",
           "jsdoc": "删除动作回调。\n常用于删除当前行、批量删除所选行，或触发删除确认流程。",
           "schema": {
-            "$ref": "containers/support/interactionControl.d.ts.json#/$defs/RemoveRowHandler"
+            "type": "object",
+            "title": "RemoveRowHandler"
           },
           "readable": true,
           "writable": false
@@ -1745,7 +1748,8 @@
           "name": "onRowClick",
           "jsdoc": "行点击回调。\n用户点击某一行时触发，常用于详情联动、主子表级联或进入编辑态。",
           "schema": {
-            "$ref": "containers/support/interactionControl.d.ts.json#/$defs/RowClickHandler"
+            "type": "object",
+            "title": "RowClickHandler"
           },
           "readable": true,
           "writable": false
@@ -1754,7 +1758,8 @@
           "name": "onSelectionChange",
           "jsdoc": "选中集合变化回调。\n多选表格或勾选容器在选中项增减后触发。",
           "schema": {
-            "$ref": "containers/support/interactionControl.d.ts.json#/$defs/RowSelectionHandler"
+            "type": "object",
+            "title": "RowSelectionHandler"
           },
           "readable": true,
           "writable": false
@@ -1763,7 +1768,8 @@
           "name": "onCurrentChange",
           "jsdoc": "当前行变化回调。\n当前高亮行、焦点行或主选择行切换时触发。",
           "schema": {
-            "$ref": "containers/support/interactionControl.d.ts.json#/$defs/CurrentRowChangeHandler"
+            "type": "object",
+            "title": "CurrentRowChangeHandler"
           },
           "readable": true,
           "writable": false
@@ -1918,7 +1924,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-12T04:27:41.701Z",
+  "generatedAt": "2026-06-13T04:00:57.778Z",
   "$defs": {
     "ValueRef": {
       "type": "object",
@@ -2581,13 +2587,16 @@
       "description": "数据容器 CRUD 事件（统一命名层）。\n为表格、列表等可编辑容器提供统一命名的增删改动作入口。",
       "properties": {
         "onAddRow": {
-          "$ref": "containers/support/interactionControl.d.ts.json#/$defs/AddRowHandler"
+          "type": "object",
+          "title": "AddRowHandler"
         },
         "onEditRow": {
-          "$ref": "containers/support/interactionControl.d.ts.json#/$defs/EditRowHandler"
+          "type": "object",
+          "title": "EditRowHandler"
         },
         "onRemoveRow": {
-          "$ref": "containers/support/interactionControl.d.ts.json#/$defs/RemoveRowHandler"
+          "type": "object",
+          "title": "RemoveRowHandler"
         }
       }
     },
@@ -2597,13 +2606,16 @@
       "description": "行交互事件（统一命名层）。\n用于承接用户对数据行的常见交互行为，并向上层暴露稳定的事件名。",
       "properties": {
         "onRowClick": {
-          "$ref": "containers/support/interactionControl.d.ts.json#/$defs/RowClickHandler"
+          "type": "object",
+          "title": "RowClickHandler"
         },
         "onSelectionChange": {
-          "$ref": "containers/support/interactionControl.d.ts.json#/$defs/RowSelectionHandler"
+          "type": "object",
+          "title": "RowSelectionHandler"
         },
         "onCurrentChange": {
-          "$ref": "containers/support/interactionControl.d.ts.json#/$defs/CurrentRowChangeHandler"
+          "type": "object",
+          "title": "CurrentRowChangeHandler"
         }
       }
     },

@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts",
+  "symbols": [
+    "AiAgentTransportToolSpec",
+    "AiAgentTransportMessage",
+    "AiAgentTransportToolCall",
+    "AiAgentStreamTurnInput",
+    "AiAgentPrepareSessionInput",
+    "AiAgentStreamTurnResult",
+    "AiAgentAppendMessagesInput",
+    "AiAgentAppSseEventSource",
+    "AiAgentTurnCallbacks"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentTransportToolSpec": {
+      "ref": "spark-class-model://schema/AiAgentTransportToolSpec",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentTransportToolSpec",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentTransportToolSpec"
+      }
+    },
+    "spark-class-model://model/AiAgentTransportToolSpec": {
+      "ref": "spark-class-model://model/AiAgentTransportToolSpec",
+      "kind": "model",
+      "className": "AiAgentTransportToolSpec",
+      "schemaRef": "spark-class-model://schema/AiAgentTransportToolSpec",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentTransportMessage": {
+      "ref": "spark-class-model://schema/AiAgentTransportMessage",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentTransportMessage",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentTransportMessage"
+      }
+    },
+    "spark-class-model://model/AiAgentTransportMessage": {
+      "ref": "spark-class-model://model/AiAgentTransportMessage",
+      "kind": "model",
+      "className": "AiAgentTransportMessage",
+      "schemaRef": "spark-class-model://schema/AiAgentTransportMessage",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentTransportToolCall": {
+      "ref": "spark-class-model://schema/AiAgentTransportToolCall",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentTransportToolCall",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentTransportToolCall"
+      }
+    },
+    "spark-class-model://model/AiAgentTransportToolCall": {
+      "ref": "spark-class-model://model/AiAgentTransportToolCall",
+      "kind": "model",
+      "className": "AiAgentTransportToolCall",
+      "schemaRef": "spark-class-model://schema/AiAgentTransportToolCall",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentStreamTurnInput": {
+      "ref": "spark-class-model://schema/AiAgentStreamTurnInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentStreamTurnInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentStreamTurnInput"
+      }
+    },
+    "spark-class-model://model/AiAgentStreamTurnInput": {
+      "ref": "spark-class-model://model/AiAgentStreamTurnInput",
+      "kind": "model",
+      "className": "AiAgentStreamTurnInput",
+      "schemaRef": "spark-class-model://schema/AiAgentStreamTurnInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentPrepareSessionInput": {
+      "ref": "spark-class-model://schema/AiAgentPrepareSessionInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentPrepareSessionInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentPrepareSessionInput"
+      }
+    },
+    "spark-class-model://model/AiAgentPrepareSessionInput": {
+      "ref": "spark-class-model://model/AiAgentPrepareSessionInput",
+      "kind": "model",
+      "className": "AiAgentPrepareSessionInput",
+      "schemaRef": "spark-class-model://schema/AiAgentPrepareSessionInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentStreamTurnResult": {
+      "ref": "spark-class-model://schema/AiAgentStreamTurnResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentStreamTurnResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentStreamTurnResult"
+      }
+    },
+    "spark-class-model://model/AiAgentStreamTurnResult": {
+      "ref": "spark-class-model://model/AiAgentStreamTurnResult",
+      "kind": "model",
+      "className": "AiAgentStreamTurnResult",
+      "schemaRef": "spark-class-model://schema/AiAgentStreamTurnResult",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentAppendMessagesInput": {
+      "ref": "spark-class-model://schema/AiAgentAppendMessagesInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentAppendMessagesInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentAppendMessagesInput"
+      }
+    },
+    "spark-class-model://model/AiAgentAppendMessagesInput": {
+      "ref": "spark-class-model://model/AiAgentAppendMessagesInput",
+      "kind": "model",
+      "className": "AiAgentAppendMessagesInput",
+      "schemaRef": "spark-class-model://schema/AiAgentAppendMessagesInput",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentAppSseEventSource": {
+      "ref": "spark-class-model://schema/AiAgentAppSseEventSource",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentAppSseEventSource",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentAppSseEventSource"
+      }
+    },
+    "spark-class-model://model/AiAgentAppSseEventSource": {
+      "ref": "spark-class-model://model/AiAgentAppSseEventSource",
+      "kind": "model",
+      "className": "AiAgentAppSseEventSource",
+      "schemaRef": "spark-class-model://schema/AiAgentAppSseEventSource",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentTurnCallbacks": {
+      "ref": "spark-class-model://schema/AiAgentTurnCallbacks",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentTurnCallbacks",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentTurnCallbacks"
+      }
+    },
+    "spark-class-model://model/AiAgentTurnCallbacks": {
+      "ref": "spark-class-model://model/AiAgentTurnCallbacks",
+      "kind": "model",
+      "className": "AiAgentTurnCallbacks",
+      "schemaRef": "spark-class-model://schema/AiAgentTurnCallbacks",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

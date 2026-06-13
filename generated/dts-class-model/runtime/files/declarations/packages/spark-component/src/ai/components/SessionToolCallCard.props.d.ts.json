@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "declarations/packages/spark-component/src/ai/components/SessionToolCallCard.props.d.ts",
+  "symbols": [
+    "SessionToolCallCardProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/SessionToolCallCardProps": {
+      "ref": "spark-class-model://schema/SessionToolCallCardProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SessionToolCallCardProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SessionToolCallCardProps"
+      }
+    },
+    "spark-class-model://model/SessionToolCallCardProps": {
+      "ref": "spark-class-model://model/SessionToolCallCardProps",
+      "kind": "model",
+      "className": "SessionToolCallCardProps",
+      "schemaRef": "spark-class-model://schema/SessionToolCallCardProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}
