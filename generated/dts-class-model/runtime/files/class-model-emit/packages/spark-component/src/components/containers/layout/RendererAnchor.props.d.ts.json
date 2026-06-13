@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererAnchor.props.d.ts",
+  "symbols": [
+    "RAnchorProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RAnchorProps": {
+      "ref": "spark-class-model://schema/RAnchorProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RAnchorProps",
+        "properties": {
+          "container": {
+            "type": "string"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "bound": {
+            "type": "number"
+          },
+          "duration": {
+            "type": "number"
+          },
+          "marker": {
+            "type": "boolean"
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "vertical"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "horizontal"
+                ]
+              }
+            ]
+          },
+          "anchorType": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "default"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "underline"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RAnchorProps"
+      }
+    },
+    "spark-class-model://model/RAnchorProps/attributes/container/0": {
+      "ref": "spark-class-model://model/RAnchorProps/attributes/container/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAnchorProps",
+      "name": "container",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RAnchorProps/attributes/offset/1": {
+      "ref": "spark-class-model://model/RAnchorProps/attributes/offset/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAnchorProps",
+      "name": "offset",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RAnchorProps/attributes/bound/2": {
+      "ref": "spark-class-model://model/RAnchorProps/attributes/bound/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAnchorProps",
+      "name": "bound",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RAnchorProps/attributes/duration/3": {
+      "ref": "spark-class-model://model/RAnchorProps/attributes/duration/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAnchorProps",
+      "name": "duration",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RAnchorProps/attributes/marker/4": {
+      "ref": "spark-class-model://model/RAnchorProps/attributes/marker/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAnchorProps",
+      "name": "marker",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/a6131fffe4e4a275abfc6ab0f470bb8caa75731e3f8e82621feb41cd0c79b15f": {
+      "ref": "spark-class-model://schema/shared/a6131fffe4e4a275abfc6ab0f470bb8caa75731e3f8e82621feb41cd0c79b15f",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "vertical"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "horizontal"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a6131fffe4e4a275abfc6ab0f470bb8caa75731e3f8e82621feb41cd0c79b15f"
+      }
+    },
+    "spark-class-model://model/RAnchorProps/attributes/direction/5": {
+      "ref": "spark-class-model://model/RAnchorProps/attributes/direction/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAnchorProps",
+      "name": "direction",
+      "schemaRef": "spark-class-model://schema/shared/a6131fffe4e4a275abfc6ab0f470bb8caa75731e3f8e82621feb41cd0c79b15f",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/3993a33bd210ef4a68c062ca3147bdf4d570a3f9499e84f98d54b4f1b42756a2": {
+      "ref": "spark-class-model://schema/shared/3993a33bd210ef4a68c062ca3147bdf4d570a3f9499e84f98d54b4f1b42756a2",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "default"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "underline"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3993a33bd210ef4a68c062ca3147bdf4d570a3f9499e84f98d54b4f1b42756a2"
+      }
+    },
+    "spark-class-model://model/RAnchorProps/attributes/anchorType/6": {
+      "ref": "spark-class-model://model/RAnchorProps/attributes/anchorType/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RAnchorProps",
+      "name": "anchorType",
+      "schemaRef": "spark-class-model://schema/shared/3993a33bd210ef4a68c062ca3147bdf4d570a3f9499e84f98d54b4f1b42756a2",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RAnchorProps": {
+      "ref": "spark-class-model://model/RAnchorProps",
+      "kind": "model",
+      "className": "RAnchorProps",
+      "schemaRef": "spark-class-model://schema/RAnchorProps",
+      "attributeRefs": [
+        "spark-class-model://model/RAnchorProps/attributes/container/0",
+        "spark-class-model://model/RAnchorProps/attributes/offset/1",
+        "spark-class-model://model/RAnchorProps/attributes/bound/2",
+        "spark-class-model://model/RAnchorProps/attributes/duration/3",
+        "spark-class-model://model/RAnchorProps/attributes/marker/4",
+        "spark-class-model://model/RAnchorProps/attributes/direction/5",
+        "spark-class-model://model/RAnchorProps/attributes/anchorType/6"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

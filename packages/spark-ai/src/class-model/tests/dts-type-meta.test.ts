@@ -11,10 +11,10 @@ describe('DtsTypeMeta TypeDoc extensions (PR-1)', () => {
   it('parses optional, reflection, tuple, and rest discriminators', () => {
     const raw: unknown = {
       schemaVersion: 1,
-      sourcePath: 'declarations/demo.d.ts',
+      sourcePath: 'class-model-emit/demo.d.ts',
       module: {
         name: 'demo',
-        sourcePath: 'declarations/demo.d.ts',
+        sourcePath: 'class-model-emit/demo.d.ts',
         sourceFile: 'packages/demo/src/demo.ts',
         modulePath: 'demo',
         jsdoc: '',
@@ -44,7 +44,7 @@ describe('DtsTypeMeta TypeDoc extensions (PR-1)', () => {
                       type: {
                         type: 'reference',
                         name: 'Tool',
-                        sourcePath: 'declarations/tool.d.ts',
+                        sourcePath: 'class-model-emit/tool.d.ts',
                       },
                     }],
                     type: { type: 'intrinsic', name: 'void' },
@@ -177,10 +177,10 @@ describe('DtsTypeMeta TypeDoc extensions (PR-1)', () => {
   it('derives signatureText on read when bundle omits it (PR-5)', () => {
     const raw: unknown = {
       schemaVersion: 1,
-      sourcePath: 'declarations/demo.d.ts',
+      sourcePath: 'class-model-emit/demo.d.ts',
       module: {
         name: 'demo',
-        sourcePath: 'declarations/demo.d.ts',
+        sourcePath: 'class-model-emit/demo.d.ts',
         sourceFile: 'packages/demo/src/demo.ts',
         modulePath: 'demo',
         jsdoc: '',

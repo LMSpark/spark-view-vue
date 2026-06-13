@@ -12,8 +12,12 @@ import {
   normalizeRepoPath,
   resolveAliasedSymbol,
   declarationNameText,
-  sourceFileFromDeclarationFile,
+  sourceFileFromEmitPath,
 } from './dts-ast-utils'
+import {
+  CLASS_MODEL_EMIT_SOURCE,
+  isClassModelEmitPath,
+} from './class-model-emit-path'
 import {
   cleanJsDocBlock,
   cleanVueModuleComment,
@@ -235,7 +239,7 @@ export function projectDtsSourceFileProjection(
   }
 }
 
-/** 从 declarations/ tsconfig 投影全仓 `.d.ts` → ClassModel 索引。 */
+/** 从 class-model-emit tsconfig 投影全仓内存 `.d.ts` → ClassModel 索引。 */
 export function projectDtsClassModelSurface(
   options: ProjectDtsClassModelSurfaceOptions,
 ): DtsClassModelSurfaceDocument {
@@ -280,7 +284,7 @@ export function projectDtsClassModelSurface(
     if (sourceFile.isDeclarationFile === false) continue
     const normalized = normalizeRepoPath(sourceFile.fileName, repoRoot)
     if (skipVueComponentDts && normalized.endsWith('.vue.d.ts')) continue
-    if (!normalized.startsWith('declarations/')) continue
+    if (!isClassModelEmitPath(normalized)) continue
 
     const contributed: string[] = []
     ts.forEachChild(sourceFile, node => {
@@ -297,7 +301,7 @@ export function projectDtsClassModelSurface(
 
   return {
     schemaVersion: DTS_CLASS_MODEL_SURFACE_VERSION,
-    source: 'declarations',
+    source: CLASS_MODEL_EMIT_SOURCE,
     configPath,
     models: context.models,
     fileIndex: context.fileIndex,
@@ -1119,7 +1123,7 @@ function dtsReferenceTypeMetaFromTypeReferenceNode(
   return {
     type: 'reference',
     name: declarationName ?? symbol?.name ?? node.typeName.getText(sourceFile),
-    ...(sourcePath?.startsWith('declarations/') === true ? { sourcePath } : {}),
+    ...(isClassModelEmitPath(sourcePath) ? { sourcePath } : {}),
     ...(typeArguments === undefined || typeArguments.length === 0 ? {} : { typeArguments }),
   }
 }
@@ -1205,7 +1209,7 @@ function fileIndexMerge(
 
 function createDtsFileModuleSemanticMeta(command: DtsFileModuleSemanticCommand): DtsFileModuleSemanticMeta {
   const { repoRoot, sourceFile, sourcePath, symbols } = command
-  const sourceFilePath = sourceFileFromDeclarationFile(sourcePath)
+  const sourceFilePath = sourceFileFromEmitPath(sourcePath)
   const modulePath = inferModulePath(sourceFilePath)
   const packageName = inferPackageName(sourceFilePath)
   const name = packageName === undefined ? modulePath : `${packageName}:${modulePath}`

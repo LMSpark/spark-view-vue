@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-helpers.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:schema/schema-helpers",
+    "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-helpers.d.ts",
+    "sourceFile": "packages/spark-json-document/src/schema/schema-helpers.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "schema/schema-helpers",
+    "jsdoc": "@module @spark-appworks/spark-json-document:schema/schema-helpers\n职责：提供 JSON Document/schema 处理中的 schema helpers 能力，支撑 schema 标准化、审计和元数据保留。\n边界：只处理 JSON schema/document 结构，不耦合应用页面、Vue 组件或 AI 会话状态。\nAI用途：校验或标准化配置 schema 时，用本模块确认 JSON 文档层的规则来源。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "StringSchemaOptions",
+      "NumberSchemaOptions",
+      "BooleanSchemaOptions",
+      "EnumSchemaOptions",
+      "ObjectSchemaOptions"
+    ]
+  },
+  "symbols": [
+    "StringSchemaOptions",
+    "NumberSchemaOptions",
+    "BooleanSchemaOptions",
+    "EnumSchemaOptions",
+    "ObjectSchemaOptions"
+  ],
+  "models": {
+    "StringSchemaOptions": {
+      "kind": "StringSchemaOptions",
+      "className": "StringSchemaOptions",
+      "jsdoc": "String Schema Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    nullable?: boolean;\n    minLength?: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    nullable?: boolean;\n    minLength?: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-json-document/src/schema/schema-helpers.d.ts",
+        "line": 9,
+        "className": "StringSchemaOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "nullable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "minLength",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "NumberSchemaOptions": {
+      "kind": "NumberSchemaOptions",
+      "className": "NumberSchemaOptions",
+      "jsdoc": "Number Schema Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    nullable?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    nullable?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-json-document/src/schema/schema-helpers.d.ts",
+        "line": 14,
+        "className": "NumberSchemaOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "nullable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "BooleanSchemaOptions": {
+      "kind": "BooleanSchemaOptions",
+      "className": "BooleanSchemaOptions",
+      "jsdoc": "Boolean Schema Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    nullable?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    nullable?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-json-document/src/schema/schema-helpers.d.ts",
+        "line": 18,
+        "className": "BooleanSchemaOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "nullable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "EnumSchemaOptions": {
+      "kind": "EnumSchemaOptions",
+      "className": "EnumSchemaOptions",
+      "jsdoc": "Enum Schema Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    type?: 'string' | 'number';\n    nullable?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    type?: 'string' | 'number';\n    nullable?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-json-document/src/schema/schema-helpers.d.ts",
+        "line": 30,
+        "className": "EnumSchemaOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "type",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "string"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "number"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "nullable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "ObjectSchemaOptions": {
+      "kind": "ObjectSchemaOptions",
+      "className": "ObjectSchemaOptions",
+      "jsdoc": "Object Schema Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    required?: readonly string[];\n    description?: string;\n    additionalProperties?: JsonSchema;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    required?: readonly string[];\n    description?: string;\n    additionalProperties?: JsonSchema;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-json-document/src/schema/schema-helpers.d.ts",
+        "line": 39,
+        "className": "ObjectSchemaOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "required",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "description",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "additionalProperties",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "JsonSchema"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.658Z",
+  "$defs": {
+    "StringSchemaOptions": {
+      "type": "object",
+      "title": "StringSchemaOptions",
+      "description": "String Schema Options 的调用配置。",
+      "properties": {
+        "nullable": {
+          "type": "boolean"
+        },
+        "minLength": {
+          "type": "number"
+        }
+      }
+    },
+    "NumberSchemaOptions": {
+      "type": "object",
+      "title": "NumberSchemaOptions",
+      "description": "Number Schema Options 的调用配置。",
+      "properties": {
+        "nullable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "BooleanSchemaOptions": {
+      "type": "object",
+      "title": "BooleanSchemaOptions",
+      "description": "Boolean Schema Options 的调用配置。",
+      "properties": {
+        "nullable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "EnumSchemaOptions": {
+      "type": "object",
+      "title": "EnumSchemaOptions",
+      "description": "Enum Schema Options 的调用配置。",
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "string"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "number"
+              ]
+            }
+          ]
+        },
+        "nullable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ObjectSchemaOptions": {
+      "type": "object",
+      "title": "ObjectSchemaOptions",
+      "description": "Object Schema Options 的调用配置。",
+      "properties": {
+        "required": {
+          "type": "array"
+        },
+        "description": {
+          "type": "string"
+        },
+        "additionalProperties": {
+          "type": "object",
+          "title": "JsonSchema"
+        }
+      }
+    }
+  }
+}

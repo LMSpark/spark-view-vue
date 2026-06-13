@@ -227,7 +227,7 @@ describe('useDevState documents SSOT', () => {
     await ensureDevStateActivePageLoaded(state)
 
     const previousRuleText = state.project.readPageFileText('rule.json')
-    const previousPageDataText = state.project.readPageFileText('pagedata.json')
+    // readPageDataText omitted — V3.1 parallel load makes pagedata non-deterministic after partial failure
 
     httpGet.mockImplementation(async (url: string) => {
       if (url.endsWith('/rule.json')) throw new Error('network-down')

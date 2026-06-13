@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/src/views/app/dev-system/useDevSystem.d.ts",
+  "symbols": [
+    "DevSystemCtx"
+  ],
+  "@refs": {
+    "spark-class-model://schema/DevSystemCtx": {
+      "ref": "spark-class-model://schema/DevSystemCtx",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DevSystemCtx",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DevSystemCtx"
+      }
+    },
+    "spark-class-model://model/DevSystemCtx": {
+      "ref": "spark-class-model://model/DevSystemCtx",
+      "kind": "model",
+      "className": "DevSystemCtx",
+      "schemaRef": "spark-class-model://schema/DevSystemCtx",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

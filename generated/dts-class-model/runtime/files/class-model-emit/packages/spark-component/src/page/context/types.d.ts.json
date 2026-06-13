@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/page/context/types.d.ts",
+  "symbols": [
+    "PageComponentAccessApi",
+    "PageContext"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PageComponentAccessApi": {
+      "ref": "spark-class-model://schema/PageComponentAccessApi",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageComponentAccessApi",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageComponentAccessApi"
+      }
+    },
+    "spark-class-model://model/PageComponentAccessApi/methods/get/0": {
+      "ref": "spark-class-model://model/PageComponentAccessApi/methods/get/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PageComponentAccessApi",
+      "name": "get",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/edd8801ebbe074ea048de99c2f7a7b3c9620b927eef17e8d19fbf7f74a16ab05",
+      "returnSchemaRef": "spark-class-model://schema/shared/cb8ac78a2a00bc013437d707e2197cc3bcefa6305f3563b6fb38fc6d31962bcb"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageComponentAccessApi%2Fmethods%2Fget%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FPageComponentInstanceEntry": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageComponentAccessApi%2Fmethods%2Fget%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FPageComponentInstanceEntry",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PageComponentAccessApi/methods/get/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/PageComponentInstanceEntry",
+      "targetClassName": "PageComponentInstanceEntry",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/core/capability-keys.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageComponentInstanceEntry"
+    },
+    "spark-class-model://model/PageComponentAccessApi/methods/list/1": {
+      "ref": "spark-class-model://model/PageComponentAccessApi/methods/list/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PageComponentAccessApi",
+      "name": "list",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/a5c626e0cc1057b561891423ad8e5c1ea1985ba2f10385f74e6182d092411998",
+      "returnSchemaRef": "spark-class-model://schema/shared/a78a163b52f0552e72e8d243fdd5e389c7775df6226458fc4f82fb95990d4114"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageComponentAccessApi%2Fmethods%2Flist%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FPageComponentInstanceEntry": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageComponentAccessApi%2Fmethods%2Flist%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FPageComponentInstanceEntry",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PageComponentAccessApi/methods/list/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/PageComponentInstanceEntry",
+      "targetClassName": "PageComponentInstanceEntry",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/core/capability-keys.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageComponentInstanceEntry"
+    },
+    "spark-class-model://model/PageComponentAccessApi/methods/getApi/2": {
+      "ref": "spark-class-model://model/PageComponentAccessApi/methods/getApi/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PageComponentAccessApi",
+      "name": "getApi",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/edd8801ebbe074ea048de99c2f7a7b3c9620b927eef17e8d19fbf7f74a16ab05",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://model/PageComponentAccessApi/methods/getApisByType/3": {
+      "ref": "spark-class-model://model/PageComponentAccessApi/methods/getApisByType/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PageComponentAccessApi",
+      "name": "getApisByType",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/a5c626e0cc1057b561891423ad8e5c1ea1985ba2f10385f74e6182d092411998",
+      "returnSchemaRef": "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6"
+    },
+    "spark-class-model://model/PageComponentAccessApi": {
+      "ref": "spark-class-model://model/PageComponentAccessApi",
+      "kind": "model",
+      "className": "PageComponentAccessApi",
+      "schemaRef": "spark-class-model://schema/PageComponentAccessApi",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/PageComponentAccessApi/methods/get/0",
+        "spark-class-model://model/PageComponentAccessApi/methods/list/1",
+        "spark-class-model://model/PageComponentAccessApi/methods/getApi/2",
+        "spark-class-model://model/PageComponentAccessApi/methods/getApisByType/3"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageComponentAccessApi%2Fmethods%2Fget%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FPageComponentInstanceEntry",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageComponentAccessApi%2Fmethods%2Flist%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FPageComponentInstanceEntry"
+      ]
+    },
+    "spark-class-model://schema/PageContext": {
+      "ref": "spark-class-model://schema/PageContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageContext",
+        "properties": {
+          "$dataSet": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/DataSetContract"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "$components": {
+            "$ref": "spark-class-model://schema/PageComponentAccessApi"
+          },
+          "SparkData": {
+            "type": "object",
+            "title": "typeof SparkData"
+          },
+          "h": {
+            "type": "object",
+            "title": "typeof h"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageContext"
+      }
+    },
+    "spark-class-model://model/PageContext/attributes/%24dataSet/0": {
+      "ref": "spark-class-model://model/PageContext/attributes/%24dataSet/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContext",
+      "name": "$dataSet",
+      "schemaRef": "spark-class-model://schema/shared/084deb2c5e8976ed2b7515fe5fa7c74e5ce1a981ad88193703272922900bfec9",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageContext%2Fattributes%2F%2524dataSet%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSetContract": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageContext%2Fattributes%2F%2524dataSet%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSetContract",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PageContext/attributes/%24dataSet/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataSetContract",
+      "targetClassName": "DataSetContract",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataSetContract"
+    },
+    "spark-class-model://schema/shared/ee182b32fcedece4b6af3f5e71daa2094d9fab4c144168ee80d86ca77485955a": {
+      "ref": "spark-class-model://schema/shared/ee182b32fcedece4b6af3f5e71daa2094d9fab4c144168ee80d86ca77485955a",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/PageComponentAccessApi",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ee182b32fcedece4b6af3f5e71daa2094d9fab4c144168ee80d86ca77485955a"
+      }
+    },
+    "spark-class-model://model/PageContext/attributes/%24components/1": {
+      "ref": "spark-class-model://model/PageContext/attributes/%24components/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContext",
+      "name": "$components",
+      "schemaRef": "spark-class-model://schema/shared/ee182b32fcedece4b6af3f5e71daa2094d9fab4c144168ee80d86ca77485955a",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageContext%2Fattributes%2F%2524components%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FPageComponentAccessApi": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageContext%2Fattributes%2F%2524components%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FPageComponentAccessApi",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PageContext/attributes/%24components/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/PageComponentAccessApi",
+      "targetClassName": "PageComponentAccessApi",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/page/context/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageComponentAccessApi"
+    },
+    "spark-class-model://schema/shared/51c96c00d441263d7471878b2ebfa7d285a767739d2b3751b0d0cd7337e48ed4": {
+      "ref": "spark-class-model://schema/shared/51c96c00d441263d7471878b2ebfa7d285a767739d2b3751b0d0cd7337e48ed4",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "typeof SparkData",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/51c96c00d441263d7471878b2ebfa7d285a767739d2b3751b0d0cd7337e48ed4"
+      }
+    },
+    "spark-class-model://model/PageContext/attributes/SparkData/2": {
+      "ref": "spark-class-model://model/PageContext/attributes/SparkData/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContext",
+      "name": "SparkData",
+      "schemaRef": "spark-class-model://schema/shared/51c96c00d441263d7471878b2ebfa7d285a767739d2b3751b0d0cd7337e48ed4",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/2ed31f54129ed6937c056a92d14d89a9d00203af2f0f528e5edbe2510a832d5a": {
+      "ref": "spark-class-model://schema/shared/2ed31f54129ed6937c056a92d14d89a9d00203af2f0f528e5edbe2510a832d5a",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "typeof h",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/2ed31f54129ed6937c056a92d14d89a9d00203af2f0f528e5edbe2510a832d5a"
+      }
+    },
+    "spark-class-model://model/PageContext/attributes/h/3": {
+      "ref": "spark-class-model://model/PageContext/attributes/h/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageContext",
+      "name": "h",
+      "schemaRef": "spark-class-model://schema/shared/2ed31f54129ed6937c056a92d14d89a9d00203af2f0f528e5edbe2510a832d5a",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageContext/methods/setTimeout/0": {
+      "ref": "spark-class-model://model/PageContext/methods/setTimeout/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PageContext",
+      "name": "setTimeout",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/d4b224f04b86cda28315667b6d10466443391bb667dc7ff5cc11b39ee5e9bd71",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
+    },
+    "spark-class-model://schema/shared/d4b224f04b86cda28315667b6d10466443391bb667dc7ff5cc11b39ee5e9bd71": {
+      "ref": "spark-class-model://schema/shared/d4b224f04b86cda28315667b6d10466443391bb667dc7ff5cc11b39ee5e9bd71",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "handler": {
+            "type": "object",
+            "title": "(...args: unknown[]) => void"
+          },
+          "timeout": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d4b224f04b86cda28315667b6d10466443391bb667dc7ff5cc11b39ee5e9bd71"
+      }
+    },
+    "spark-class-model://model/PageContext/methods/clearTimeout/1": {
+      "ref": "spark-class-model://model/PageContext/methods/clearTimeout/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PageContext",
+      "name": "clearTimeout",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0b4942f12be73ea381f57a35f442321cbe35174e24221eeb6d4d570600207253"
+    },
+    "spark-class-model://schema/shared/0b4942f12be73ea381f57a35f442321cbe35174e24221eeb6d4d570600207253": {
+      "ref": "spark-class-model://schema/shared/0b4942f12be73ea381f57a35f442321cbe35174e24221eeb6d4d570600207253",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/0b4942f12be73ea381f57a35f442321cbe35174e24221eeb6d4d570600207253"
+      }
+    },
+    "spark-class-model://model/PageContext/methods/setInterval/2": {
+      "ref": "spark-class-model://model/PageContext/methods/setInterval/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PageContext",
+      "name": "setInterval",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/d4b224f04b86cda28315667b6d10466443391bb667dc7ff5cc11b39ee5e9bd71",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
+    },
+    "spark-class-model://model/PageContext/methods/clearInterval/3": {
+      "ref": "spark-class-model://model/PageContext/methods/clearInterval/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PageContext",
+      "name": "clearInterval",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0b4942f12be73ea381f57a35f442321cbe35174e24221eeb6d4d570600207253"
+    },
+    "spark-class-model://model/PageContext": {
+      "ref": "spark-class-model://model/PageContext",
+      "kind": "model",
+      "className": "PageContext",
+      "schemaRef": "spark-class-model://schema/PageContext",
+      "attributeRefs": [
+        "spark-class-model://model/PageContext/attributes/%24dataSet/0",
+        "spark-class-model://model/PageContext/attributes/%24components/1",
+        "spark-class-model://model/PageContext/attributes/SparkData/2",
+        "spark-class-model://model/PageContext/attributes/h/3"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/PageContext/methods/setTimeout/0",
+        "spark-class-model://model/PageContext/methods/clearTimeout/1",
+        "spark-class-model://model/PageContext/methods/setInterval/2",
+        "spark-class-model://model/PageContext/methods/clearInterval/3"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageContext%2Fattributes%2F%2524dataSet%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSetContract",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageContext%2Fattributes%2F%2524components%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FPageComponentAccessApi"
+      ]
+    }
+  }
+}

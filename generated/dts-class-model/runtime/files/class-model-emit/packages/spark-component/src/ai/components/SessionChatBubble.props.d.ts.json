@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionChatBubble.props.d.ts",
+  "symbols": [
+    "SessionChatBubbleProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/SessionChatBubbleProps": {
+      "ref": "spark-class-model://schema/SessionChatBubbleProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SessionChatBubbleProps",
+        "properties": {
+          "role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "user"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "assistant"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "system"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              }
+            ]
+          },
+          "content": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "number"
+          },
+          "isTyping": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SessionChatBubbleProps"
+      }
+    },
+    "spark-class-model://schema/shared/5aa383cabcbf4971762f0bd629c2660773189dfe9895439fb7de766396c3642b": {
+      "ref": "spark-class-model://schema/shared/5aa383cabcbf4971762f0bd629c2660773189dfe9895439fb7de766396c3642b",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "user"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "assistant"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "system"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5aa383cabcbf4971762f0bd629c2660773189dfe9895439fb7de766396c3642b"
+      }
+    },
+    "spark-class-model://model/SessionChatBubbleProps/attributes/role/0": {
+      "ref": "spark-class-model://model/SessionChatBubbleProps/attributes/role/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SessionChatBubbleProps",
+      "name": "role",
+      "schemaRef": "spark-class-model://schema/shared/5aa383cabcbf4971762f0bd629c2660773189dfe9895439fb7de766396c3642b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/SessionChatBubbleProps/attributes/content/1": {
+      "ref": "spark-class-model://model/SessionChatBubbleProps/attributes/content/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SessionChatBubbleProps",
+      "name": "content",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/SessionChatBubbleProps/attributes/timestamp/2": {
+      "ref": "spark-class-model://model/SessionChatBubbleProps/attributes/timestamp/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SessionChatBubbleProps",
+      "name": "timestamp",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SessionChatBubbleProps/attributes/isTyping/3": {
+      "ref": "spark-class-model://model/SessionChatBubbleProps/attributes/isTyping/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SessionChatBubbleProps",
+      "name": "isTyping",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SessionChatBubbleProps": {
+      "ref": "spark-class-model://model/SessionChatBubbleProps",
+      "kind": "model",
+      "className": "SessionChatBubbleProps",
+      "schemaRef": "spark-class-model://schema/SessionChatBubbleProps",
+      "attributeRefs": [
+        "spark-class-model://model/SessionChatBubbleProps/attributes/role/0",
+        "spark-class-model://model/SessionChatBubbleProps/attributes/content/1",
+        "spark-class-model://model/SessionChatBubbleProps/attributes/timestamp/2",
+        "spark-class-model://model/SessionChatBubbleProps/attributes/isTyping/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-utils/src/http/Request.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:http/Request",
+    "sourcePath": "class-model-emit/packages/spark-utils/src/http/Request.d.ts",
+    "sourceFile": "packages/spark-utils/src/http/Request.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "http/Request",
+    "jsdoc": "@module @spark-appworks/spark-utils:http/Request\n职责：提供框架无关的 Request 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。\n边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。\nAI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。\n\nRequest — 基于 axios 的 HTTP 客户端\n继承 HttpClientBase（重试/缓存/拦截器/快捷方法），\n仅实现 axios 特有的：配置转换 + 请求执行 + 错误归一化。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "Request"
+    ]
+  },
+  "symbols": [
+    "Request"
+  ],
+  "models": {
+    "Request": {
+      "kind": "Request",
+      "className": "Request",
+      "jsdoc": "Request 的语义模型。",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "HttpClientBase",
+          "targetName": "HttpClientBase"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-utils/src/http/Request.d.ts",
+        "line": 16,
+        "className": "Request",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Request 实例。",
+        "signatureText": "constructor(defaults?: Partial<RequestConfig>)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "defaults",
+            "type": {
+              "type": "reference",
+              "name": "Partial",
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "name": "unknown"
+                }
+              ]
+            },
+            "flags": {
+              "isOptional": true
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "title": "Partial<RequestConfig>"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "executeRequest",
+          "jsdoc": "执行 execute Request 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "config",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "title": "RequestConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<HttpResponse<unknown>>"
+          }
+        },
+        {
+          "name": "normalizeTransportError",
+          "jsdoc": "normalize Transport Error 错误信息。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "err",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "config",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "err": true,
+              "config": {
+                "type": "object",
+                "title": "RequestConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "RequestError"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.903Z",
+  "$defs": {
+    "Request": {
+      "type": "object",
+      "title": "Request",
+      "description": "Request 的语义模型。"
+    }
+  }
+}

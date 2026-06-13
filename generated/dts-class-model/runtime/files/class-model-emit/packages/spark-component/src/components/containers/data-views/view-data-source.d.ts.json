@@ -1,0 +1,568 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts",
+  "symbols": [
+    "DataSourceLoggerLike",
+    "UseContainerDataSourceOptions",
+    "UseContainerDataSourceEffectsOptions",
+    "ContainerDataSourceState"
+  ],
+  "@refs": {
+    "spark-class-model://schema/DataSourceLoggerLike": {
+      "ref": "spark-class-model://schema/DataSourceLoggerLike",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataSourceLoggerLike",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataSourceLoggerLike"
+      }
+    },
+    "spark-class-model://model/DataSourceLoggerLike/methods/warn/0": {
+      "ref": "spark-class-model://model/DataSourceLoggerLike/methods/warn/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DataSourceLoggerLike",
+      "name": "warn",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/231d6d620221bfb92feadbe3f77bf3a4ef9a1775ef990e4da4738ee0852ec9b6"
+    },
+    "spark-class-model://model/DataSourceLoggerLike/methods/error/1": {
+      "ref": "spark-class-model://model/DataSourceLoggerLike/methods/error/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DataSourceLoggerLike",
+      "name": "error",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4efc890a56dffcf80c77d66109dd4560e43015f3ae1cb6d6ddb1becf375ce7e1"
+    },
+    "spark-class-model://schema/shared/4efc890a56dffcf80c77d66109dd4560e43015f3ae1cb6d6ddb1becf375ce7e1": {
+      "ref": "spark-class-model://schema/shared/4efc890a56dffcf80c77d66109dd4560e43015f3ae1cb6d6ddb1becf375ce7e1",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "error": true
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4efc890a56dffcf80c77d66109dd4560e43015f3ae1cb6d6ddb1becf375ce7e1"
+      }
+    },
+    "spark-class-model://model/DataSourceLoggerLike": {
+      "ref": "spark-class-model://model/DataSourceLoggerLike",
+      "kind": "model",
+      "className": "DataSourceLoggerLike",
+      "schemaRef": "spark-class-model://schema/DataSourceLoggerLike",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/DataSourceLoggerLike/methods/warn/0",
+        "spark-class-model://model/DataSourceLoggerLike/methods/error/1"
+      ],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/UseContainerDataSourceOptions": {
+      "ref": "spark-class-model://schema/UseContainerDataSourceOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "UseContainerDataSourceOptions",
+        "properties": {
+          "dataViewKey": {
+            "type": "object",
+            "title": "MaybeRefOrGetter<string | undefined>"
+          },
+          "contextDataMember": {
+            "type": "object",
+            "title": "MaybeRefOrGetter<DataMember | `${DataMember}` | undefined>"
+          },
+          "contextDataField": {
+            "type": "object",
+            "title": "MaybeRefOrGetter<string | undefined>"
+          },
+          "sparkConsume": {
+            "$ref": "spark-class-model://schema/SparkCapabilityConsumer"
+          },
+          "externalDataSource": {
+            "type": "object",
+            "title": "MaybeRefOrGetter<TSource | undefined>"
+          },
+          "inheritedDataSource": {
+            "type": "object",
+            "title": "MaybeRefOrGetter<TSource | null | undefined>"
+          },
+          "logger": {
+            "$ref": "spark-class-model://schema/DataSourceLoggerLike"
+          },
+          "logPrefix": {
+            "type": "string"
+          },
+          "skipEffects": {
+            "type": "boolean"
+          },
+          "skipProvideEffect": {
+            "type": "boolean"
+          },
+          "skipAutoLoadEffect": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/UseContainerDataSourceOptions"
+      }
+    },
+    "spark-class-model://schema/shared/935bf06a95bf2848c8e0099bf9f667c32b88bd94bd40eb0de411dc0809ce03b7": {
+      "ref": "spark-class-model://schema/shared/935bf06a95bf2848c8e0099bf9f667c32b88bd94bd40eb0de411dc0809ce03b7",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MaybeRefOrGetter<string | undefined>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/935bf06a95bf2848c8e0099bf9f667c32b88bd94bd40eb0de411dc0809ce03b7"
+      }
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/attributes/dataViewKey/0": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/attributes/dataViewKey/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "dataViewKey",
+      "schemaRef": "spark-class-model://schema/shared/935bf06a95bf2848c8e0099bf9f667c32b88bd94bd40eb0de411dc0809ce03b7",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/bd500caaa6f9a10c184f694cad5ee9de28a1c60d5bccf43c925281d59981627a": {
+      "ref": "spark-class-model://schema/shared/bd500caaa6f9a10c184f694cad5ee9de28a1c60d5bccf43c925281d59981627a",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MaybeRefOrGetter<DataMember | `${DataMember}` | undefined>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/bd500caaa6f9a10c184f694cad5ee9de28a1c60d5bccf43c925281d59981627a"
+      }
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/attributes/contextDataMember/1": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/attributes/contextDataMember/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "contextDataMember",
+      "schemaRef": "spark-class-model://schema/shared/bd500caaa6f9a10c184f694cad5ee9de28a1c60d5bccf43c925281d59981627a",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/attributes/contextDataField/2": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/attributes/contextDataField/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "contextDataField",
+      "schemaRef": "spark-class-model://schema/shared/935bf06a95bf2848c8e0099bf9f667c32b88bd94bd40eb0de411dc0809ce03b7",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/3506e6d2bc025cadbc7183c77b4c4d9e0d1ea6adf849a38c329ae4f6a8b9c925": {
+      "ref": "spark-class-model://schema/shared/3506e6d2bc025cadbc7183c77b4c4d9e0d1ea6adf849a38c329ae4f6a8b9c925",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/SparkCapabilityConsumer",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3506e6d2bc025cadbc7183c77b4c4d9e0d1ea6adf849a38c329ae4f6a8b9c925"
+      }
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/attributes/sparkConsume/3": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/attributes/sparkConsume/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "sparkConsume",
+      "schemaRef": "spark-class-model://schema/shared/3506e6d2bc025cadbc7183c77b4c4d9e0d1ea6adf849a38c329ae4f6a8b9c925",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseContainerDataSourceOptions%2Fattributes%2FsparkConsume%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkCapabilityConsumer": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseContainerDataSourceOptions%2Fattributes%2FsparkConsume%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkCapabilityConsumer",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UseContainerDataSourceOptions/attributes/sparkConsume/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/SparkCapabilityConsumer",
+      "targetClassName": "SparkCapabilityConsumer",
+      "targetFile": "files/class-model-emit/packages/spark-utils/src/capability/core.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SparkCapabilityConsumer"
+    },
+    "spark-class-model://schema/shared/0c2d7ffab8ae778a03ae01b06a770cdbf4e0c0c04922a3a5fe16900c36e25fb9": {
+      "ref": "spark-class-model://schema/shared/0c2d7ffab8ae778a03ae01b06a770cdbf4e0c0c04922a3a5fe16900c36e25fb9",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MaybeRefOrGetter<TSource | undefined>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/0c2d7ffab8ae778a03ae01b06a770cdbf4e0c0c04922a3a5fe16900c36e25fb9"
+      }
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/attributes/externalDataSource/4": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/attributes/externalDataSource/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "externalDataSource",
+      "schemaRef": "spark-class-model://schema/shared/0c2d7ffab8ae778a03ae01b06a770cdbf4e0c0c04922a3a5fe16900c36e25fb9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/51efc03f2caf82dc468c332ca4802fafaedfb4e37ebb102dd23ffca040c04c29": {
+      "ref": "spark-class-model://schema/shared/51efc03f2caf82dc468c332ca4802fafaedfb4e37ebb102dd23ffca040c04c29",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MaybeRefOrGetter<TSource | null | undefined>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/51efc03f2caf82dc468c332ca4802fafaedfb4e37ebb102dd23ffca040c04c29"
+      }
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/attributes/inheritedDataSource/5": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/attributes/inheritedDataSource/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "inheritedDataSource",
+      "schemaRef": "spark-class-model://schema/shared/51efc03f2caf82dc468c332ca4802fafaedfb4e37ebb102dd23ffca040c04c29",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/5d87c7ce1f32e54eb321bf7b0094d5d9646f1028ec4fbdb951a8e8a087e48762": {
+      "ref": "spark-class-model://schema/shared/5d87c7ce1f32e54eb321bf7b0094d5d9646f1028ec4fbdb951a8e8a087e48762",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DataSourceLoggerLike",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5d87c7ce1f32e54eb321bf7b0094d5d9646f1028ec4fbdb951a8e8a087e48762"
+      }
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/attributes/logger/6": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/attributes/logger/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "logger",
+      "schemaRef": "spark-class-model://schema/shared/5d87c7ce1f32e54eb321bf7b0094d5d9646f1028ec4fbdb951a8e8a087e48762",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseContainerDataSourceOptions%2Fattributes%2Flogger%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSourceLoggerLike": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseContainerDataSourceOptions%2Fattributes%2Flogger%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSourceLoggerLike",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UseContainerDataSourceOptions/attributes/logger/6",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataSourceLoggerLike",
+      "targetClassName": "DataSourceLoggerLike",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataSourceLoggerLike"
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/attributes/logPrefix/7": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/attributes/logPrefix/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "logPrefix",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/attributes/skipEffects/8": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/attributes/skipEffects/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "skipEffects",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/attributes/skipProvideEffect/9": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/attributes/skipProvideEffect/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "skipProvideEffect",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/attributes/skipAutoLoadEffect/10": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/attributes/skipAutoLoadEffect/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "skipAutoLoadEffect",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/methods/mapView/0": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/methods/mapView/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "mapView",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/9a498ca914eaf2c79b97f0fd5687dad6e7c4be7a3d06f6f05465330d9a37a165",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://schema/shared/9a498ca914eaf2c79b97f0fd5687dad6e7c4be7a3d06f6f05465330d9a37a165": {
+      "ref": "spark-class-model://schema/shared/9a498ca914eaf2c79b97f0fd5687dad6e7c4be7a3d06f6f05465330d9a37a165",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "view": {
+            "$ref": "spark-class-model://schema/DataView"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9a498ca914eaf2c79b97f0fd5687dad6e7c4be7a3d06f6f05465330d9a37a165"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseContainerDataSourceOptions%2Fmethods%2FmapView%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseContainerDataSourceOptions%2Fmethods%2FmapView%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UseContainerDataSourceOptions/methods/mapView/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions/methods/provideDataSource/1": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions/methods/provideDataSource/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceOptions",
+      "name": "provideDataSource",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/UseContainerDataSourceOptions": {
+      "ref": "spark-class-model://model/UseContainerDataSourceOptions",
+      "kind": "model",
+      "className": "UseContainerDataSourceOptions",
+      "schemaRef": "spark-class-model://schema/UseContainerDataSourceOptions",
+      "attributeRefs": [
+        "spark-class-model://model/UseContainerDataSourceOptions/attributes/dataViewKey/0",
+        "spark-class-model://model/UseContainerDataSourceOptions/attributes/contextDataMember/1",
+        "spark-class-model://model/UseContainerDataSourceOptions/attributes/contextDataField/2",
+        "spark-class-model://model/UseContainerDataSourceOptions/attributes/sparkConsume/3",
+        "spark-class-model://model/UseContainerDataSourceOptions/attributes/externalDataSource/4",
+        "spark-class-model://model/UseContainerDataSourceOptions/attributes/inheritedDataSource/5",
+        "spark-class-model://model/UseContainerDataSourceOptions/attributes/logger/6",
+        "spark-class-model://model/UseContainerDataSourceOptions/attributes/logPrefix/7",
+        "spark-class-model://model/UseContainerDataSourceOptions/attributes/skipEffects/8",
+        "spark-class-model://model/UseContainerDataSourceOptions/attributes/skipProvideEffect/9",
+        "spark-class-model://model/UseContainerDataSourceOptions/attributes/skipAutoLoadEffect/10"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/UseContainerDataSourceOptions/methods/mapView/0",
+        "spark-class-model://model/UseContainerDataSourceOptions/methods/provideDataSource/1"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseContainerDataSourceOptions%2Fattributes%2FsparkConsume%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkCapabilityConsumer",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseContainerDataSourceOptions%2Fattributes%2Flogger%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSourceLoggerLike",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseContainerDataSourceOptions%2Fmethods%2FmapView%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView"
+      ]
+    },
+    "spark-class-model://schema/UseContainerDataSourceEffectsOptions": {
+      "ref": "spark-class-model://schema/UseContainerDataSourceEffectsOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "UseContainerDataSourceEffectsOptions",
+        "properties": {
+          "resolvedView": {
+            "type": "object",
+            "title": "ComputedRef<TSource | null>"
+          },
+          "diagnostic": {
+            "type": "object",
+            "title": "ComputedRef<DataViewKeyDiagnostic | DataViewMemberDiagnostic | null>"
+          },
+          "logger": {
+            "$ref": "spark-class-model://schema/DataSourceLoggerLike"
+          },
+          "logPrefix": {
+            "type": "string"
+          },
+          "skipProvideEffect": {
+            "type": "boolean"
+          },
+          "skipAutoLoadEffect": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/UseContainerDataSourceEffectsOptions"
+      }
+    },
+    "spark-class-model://schema/shared/7456639572f6e17e80699c73a9fff3faf8f1c6817c36e3ac470e27eb07762f37": {
+      "ref": "spark-class-model://schema/shared/7456639572f6e17e80699c73a9fff3faf8f1c6817c36e3ac470e27eb07762f37",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComputedRef<TSource | null>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7456639572f6e17e80699c73a9fff3faf8f1c6817c36e3ac470e27eb07762f37"
+      }
+    },
+    "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/resolvedView/0": {
+      "ref": "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/resolvedView/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceEffectsOptions",
+      "name": "resolvedView",
+      "schemaRef": "spark-class-model://schema/shared/7456639572f6e17e80699c73a9fff3faf8f1c6817c36e3ac470e27eb07762f37",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/8a40c51b3818e9c0d532c706d75ac96b780ab262ee1d14f3a3d1f60eed91ef97": {
+      "ref": "spark-class-model://schema/shared/8a40c51b3818e9c0d532c706d75ac96b780ab262ee1d14f3a3d1f60eed91ef97",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComputedRef<DataViewKeyDiagnostic | DataViewMemberDiagnostic | null>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8a40c51b3818e9c0d532c706d75ac96b780ab262ee1d14f3a3d1f60eed91ef97"
+      }
+    },
+    "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/diagnostic/1": {
+      "ref": "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/diagnostic/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceEffectsOptions",
+      "name": "diagnostic",
+      "schemaRef": "spark-class-model://schema/shared/8a40c51b3818e9c0d532c706d75ac96b780ab262ee1d14f3a3d1f60eed91ef97",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/logger/2": {
+      "ref": "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/logger/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceEffectsOptions",
+      "name": "logger",
+      "schemaRef": "spark-class-model://schema/shared/5d87c7ce1f32e54eb321bf7b0094d5d9646f1028ec4fbdb951a8e8a087e48762",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseContainerDataSourceEffectsOptions%2Fattributes%2Flogger%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSourceLoggerLike": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseContainerDataSourceEffectsOptions%2Fattributes%2Flogger%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSourceLoggerLike",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/logger/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataSourceLoggerLike",
+      "targetClassName": "DataSourceLoggerLike",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/data-views/view-data-source.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataSourceLoggerLike"
+    },
+    "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/logPrefix/3": {
+      "ref": "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/logPrefix/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceEffectsOptions",
+      "name": "logPrefix",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/skipProvideEffect/4": {
+      "ref": "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/skipProvideEffect/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceEffectsOptions",
+      "name": "skipProvideEffect",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/skipAutoLoadEffect/5": {
+      "ref": "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/skipAutoLoadEffect/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceEffectsOptions",
+      "name": "skipAutoLoadEffect",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UseContainerDataSourceEffectsOptions/methods/provideDataSource/0": {
+      "ref": "spark-class-model://model/UseContainerDataSourceEffectsOptions/methods/provideDataSource/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseContainerDataSourceEffectsOptions",
+      "name": "provideDataSource",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/UseContainerDataSourceEffectsOptions": {
+      "ref": "spark-class-model://model/UseContainerDataSourceEffectsOptions",
+      "kind": "model",
+      "className": "UseContainerDataSourceEffectsOptions",
+      "schemaRef": "spark-class-model://schema/UseContainerDataSourceEffectsOptions",
+      "attributeRefs": [
+        "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/resolvedView/0",
+        "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/diagnostic/1",
+        "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/logger/2",
+        "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/logPrefix/3",
+        "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/skipProvideEffect/4",
+        "spark-class-model://model/UseContainerDataSourceEffectsOptions/attributes/skipAutoLoadEffect/5"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/UseContainerDataSourceEffectsOptions/methods/provideDataSource/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseContainerDataSourceEffectsOptions%2Fattributes%2Flogger%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSourceLoggerLike"
+      ]
+    },
+    "spark-class-model://schema/ContainerDataSourceState": {
+      "ref": "spark-class-model://schema/ContainerDataSourceState",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ContainerDataSourceState",
+        "properties": {
+          "resolvedView": {
+            "type": "object",
+            "title": "ComputedRef<TSource | null>"
+          },
+          "resolvedDataRow": {
+            "type": "object",
+            "title": "ComputedRef<DataRow | null>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ContainerDataSourceState"
+      }
+    },
+    "spark-class-model://model/ContainerDataSourceState/attributes/resolvedView/0": {
+      "ref": "spark-class-model://model/ContainerDataSourceState/attributes/resolvedView/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ContainerDataSourceState",
+      "name": "resolvedView",
+      "schemaRef": "spark-class-model://schema/shared/7456639572f6e17e80699c73a9fff3faf8f1c6817c36e3ac470e27eb07762f37",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/eb8e666130e1c8d0f397e9e5e07cc5bed55e385beb759a4fd83dbc8d37912591": {
+      "ref": "spark-class-model://schema/shared/eb8e666130e1c8d0f397e9e5e07cc5bed55e385beb759a4fd83dbc8d37912591",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComputedRef<DataRow | null>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/eb8e666130e1c8d0f397e9e5e07cc5bed55e385beb759a4fd83dbc8d37912591"
+      }
+    },
+    "spark-class-model://model/ContainerDataSourceState/attributes/resolvedDataRow/1": {
+      "ref": "spark-class-model://model/ContainerDataSourceState/attributes/resolvedDataRow/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ContainerDataSourceState",
+      "name": "resolvedDataRow",
+      "schemaRef": "spark-class-model://schema/shared/eb8e666130e1c8d0f397e9e5e07cc5bed55e385beb759a4fd83dbc8d37912591",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ContainerDataSourceState": {
+      "ref": "spark-class-model://model/ContainerDataSourceState",
+      "kind": "model",
+      "className": "ContainerDataSourceState",
+      "schemaRef": "spark-class-model://schema/ContainerDataSourceState",
+      "attributeRefs": [
+        "spark-class-model://model/ContainerDataSourceState/attributes/resolvedView/0",
+        "spark-class-model://model/ContainerDataSourceState/attributes/resolvedDataRow/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

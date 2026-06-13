@@ -16,17 +16,33 @@
 
 npm 包 (pnpm run build:packages)
   build-packages.mjs → 按依赖拓扑串行构建 packages/* (vite JS + tsc/vue-tsc .d.ts)
+  默认跳过未变更包（dist/.spark-build-stamp.json）；--force 全量重建
 
-ClassModel 全量 (verify:class-model:full)
-  build-packages (utils→…→project-model) → generate:class-model-surface:delete-dts
-  → build-packages (spark-ai) → verify:class-model → typecheck
+日常门禁 (pnpm run verify)
+  typecheck → lint → verify:rules（alias 指向 packages/*/src，无需 dist）
+
+发布/产物门禁 (pnpm run verify:dist)
+  build:packages → typecheck → lint → verify:rules
+
+ClassModel 编译 + 运行时 (generate:class-model-surface)
+  内存 emit .d.ts (tsconfig.class-model-emit.json → src，虚拟键 class-model-emit/)
+  → AST 投影 → generated/dts-class-model/*.json
+  → 浏览器 Worker (Comlink) 按需 fetch manifest/shard
+  → refreshBundle 可触发 --model 增量编译 + loader.reload()
+
+ClassModel 全量门禁 (verify:class-model:full)
+  generate:class-model-surface → verify:class-model → typecheck
+  （读 packages/*/src，无需先 build:packages）
 ```
 
 **关键约定**
 
 - 根 `vite.config.ts` 通过 alias 指向 `packages/*/src`；日常 dev / `build:fe` **不需要**先 `build:packages`。
 - `packages/*/dist` 仅服务 npm 发布与消费者；`publish:packages` 会先跑 `build-packages`。
-- `generated/dts-class-model/` 已入库；`ensure:class-model-bundle` 仅在 manifest 缺失时生成。
+- 编译期 `.d.ts` 仅在内存存在；bundle `sourcePath` 使用虚拟前缀 `class-model-emit/`；产物为 `generated/dts-class-model/**/*.json`。
+- `generated/dts-class-model/` 已入库（编译 SSOT）；`sync:class-model-static` 镜像到 `public/dts-class-model/` 供 Worker fetch。
+- `ensure:class-model-bundle` 在 manifest 缺失时 generate，并始终同步 public 镜像。
+- ClassModel 运行时知识在 Web Worker 内按需加载；编译 refresh 见 `scripts/lib/class-model-knowledge-refresh.mjs`。
 - Java 改动后必须重启 `pnpm run dev`；纯前端走 Vite HMR。
 
 ## 目录内容
@@ -40,7 +56,9 @@ ClassModel 全量 (verify:class-model:full)
 - `migrate-navigation-sub-page.mjs`：legacy `sub-page` 行审计/迁移（Flyway V8）。
 - `migrate-pages-config-cleanup.mjs`：已删 pageId 的 MySQL 清理（Flyway V9）。
 - `verify-model-convergence-offline.mjs`：模型收敛离线验收。
-- ClassModel 编译期入口：`packages/spark-ai/src/class-model/class-model/build-index.ts`（禁止浏览器 import）。
+- `generate-dts-class-model.mjs`：ClassModel 编译（内存 emit → JSON bundle；`--model` 增量）。
+- `lib/class-model-knowledge-refresh.mjs`：Node 宿主 refreshBundle 回调（触发 targeted compile）。
+- ClassModel 编译期 TS API：`packages/spark-ai/src/class-model/class-model/build-index.ts`（禁止浏览器 import）。
 
 ## 放置原则
 

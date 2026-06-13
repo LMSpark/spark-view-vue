@@ -1,0 +1,353 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererList/RendererList.props.d.ts",
+  "symbols": [
+    "RListProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RListProps": {
+      "ref": "spark-class-model://schema/RListProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RListProps",
+        "properties": {
+          "dataSource": {
+            "$ref": "spark-class-model://schema/DataView"
+          },
+          "toolbar": {
+            "$ref": "spark-class-model://schema/RToolbarProps"
+          },
+          "actions": {
+            "$ref": "spark-class-model://schema/RToolbarProps"
+          },
+          "columns": {
+            "type": "number"
+          },
+          "minItemWidth": {
+            "type": "string"
+          },
+          "rowKey": {
+            "type": "string"
+          },
+          "emptyText": {
+            "type": "string"
+          },
+          "itemClass": {
+            "type": "string"
+          },
+          "itemStyle": {
+            "type": "object",
+            "title": "CSSProperties"
+          },
+          "useCard": {
+            "type": "boolean"
+          },
+          "cardShadow": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "always"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "hover"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "never"
+                ]
+              }
+            ]
+          },
+          "itemColSpan": {
+            "type": "number"
+          },
+          "itemRowSpan": {
+            "type": "number"
+          },
+          "onItemClick": {
+            "$ref": "spark-class-model://schema/RowClickHandler"
+          },
+          "listProps": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "showPagination": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RListProps"
+      }
+    },
+    "spark-class-model://model/RListProps/attributes/dataSource/0": {
+      "ref": "spark-class-model://model/RListProps/attributes/dataSource/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "dataSource",
+      "schemaRef": "spark-class-model://schema/shared/26422d000505dc4310895bf07a58f20f12afe485aad929313bf1e59d8fa876c9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRListProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRListProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RListProps/attributes/dataSource/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
+    },
+    "spark-class-model://model/RListProps/attributes/toolbar/1": {
+      "ref": "spark-class-model://model/RListProps/attributes/toolbar/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "toolbar",
+      "schemaRef": "spark-class-model://schema/shared/90ee312d29807b286eddc2cc5030c41559559369c056e076a6d7f62f72cea167",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRListProps%2Fattributes%2Ftoolbar%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRListProps%2Fattributes%2Ftoolbar%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RListProps/attributes/toolbar/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/RToolbarProps",
+      "targetClassName": "RToolbarProps",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/layout/RendererToolbar.types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RToolbarProps"
+    },
+    "spark-class-model://model/RListProps/attributes/actions/2": {
+      "ref": "spark-class-model://model/RListProps/attributes/actions/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "actions",
+      "schemaRef": "spark-class-model://schema/shared/90ee312d29807b286eddc2cc5030c41559559369c056e076a6d7f62f72cea167",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRListProps%2Fattributes%2Factions%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRListProps%2Fattributes%2Factions%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RListProps/attributes/actions/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/RToolbarProps",
+      "targetClassName": "RToolbarProps",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/layout/RendererToolbar.types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RToolbarProps"
+    },
+    "spark-class-model://model/RListProps/attributes/columns/3": {
+      "ref": "spark-class-model://model/RListProps/attributes/columns/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "columns",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RListProps/attributes/minItemWidth/4": {
+      "ref": "spark-class-model://model/RListProps/attributes/minItemWidth/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "minItemWidth",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RListProps/attributes/rowKey/5": {
+      "ref": "spark-class-model://model/RListProps/attributes/rowKey/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "rowKey",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RListProps/attributes/emptyText/6": {
+      "ref": "spark-class-model://model/RListProps/attributes/emptyText/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "emptyText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RListProps/attributes/itemClass/7": {
+      "ref": "spark-class-model://model/RListProps/attributes/itemClass/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "itemClass",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/1859dcab515acd103a9939b6d74840ad0aaf06a95da104d59ae6daa56aaa73f1": {
+      "ref": "spark-class-model://schema/shared/1859dcab515acd103a9939b6d74840ad0aaf06a95da104d59ae6daa56aaa73f1",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "CSSProperties",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/1859dcab515acd103a9939b6d74840ad0aaf06a95da104d59ae6daa56aaa73f1"
+      }
+    },
+    "spark-class-model://model/RListProps/attributes/itemStyle/8": {
+      "ref": "spark-class-model://model/RListProps/attributes/itemStyle/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "itemStyle",
+      "schemaRef": "spark-class-model://schema/shared/1859dcab515acd103a9939b6d74840ad0aaf06a95da104d59ae6daa56aaa73f1",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RListProps/attributes/useCard/9": {
+      "ref": "spark-class-model://model/RListProps/attributes/useCard/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "useCard",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/75a8ac7c5af7cd67d722072434aa632781de409cfe690b73a4d88123e344c3ca": {
+      "ref": "spark-class-model://schema/shared/75a8ac7c5af7cd67d722072434aa632781de409cfe690b73a4d88123e344c3ca",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "always"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "hover"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "never"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/75a8ac7c5af7cd67d722072434aa632781de409cfe690b73a4d88123e344c3ca"
+      }
+    },
+    "spark-class-model://model/RListProps/attributes/cardShadow/10": {
+      "ref": "spark-class-model://model/RListProps/attributes/cardShadow/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "cardShadow",
+      "schemaRef": "spark-class-model://schema/shared/75a8ac7c5af7cd67d722072434aa632781de409cfe690b73a4d88123e344c3ca",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RListProps/attributes/itemColSpan/11": {
+      "ref": "spark-class-model://model/RListProps/attributes/itemColSpan/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "itemColSpan",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RListProps/attributes/itemRowSpan/12": {
+      "ref": "spark-class-model://model/RListProps/attributes/itemRowSpan/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "itemRowSpan",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/dc436f5c915e32f9f8eb9996c5185b3a291dd54fbc00635da4d8459df5c4b6b6": {
+      "ref": "spark-class-model://schema/shared/dc436f5c915e32f9f8eb9996c5185b3a291dd54fbc00635da4d8459df5c4b6b6",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/RowClickHandler",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/dc436f5c915e32f9f8eb9996c5185b3a291dd54fbc00635da4d8459df5c4b6b6"
+      }
+    },
+    "spark-class-model://model/RListProps/attributes/onItemClick/13": {
+      "ref": "spark-class-model://model/RListProps/attributes/onItemClick/13",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "onItemClick",
+      "schemaRef": "spark-class-model://schema/shared/dc436f5c915e32f9f8eb9996c5185b3a291dd54fbc00635da4d8459df5c4b6b6",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRListProps%2Fattributes%2FonItemClick%2F13/attribute/spark-class-model%3A%2F%2Fmodel%2FRowClickHandler": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRListProps%2Fattributes%2FonItemClick%2F13/attribute/spark-class-model%3A%2F%2Fmodel%2FRowClickHandler",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RListProps/attributes/onItemClick/13",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/RowClickHandler",
+      "targetClassName": "RowClickHandler",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RowClickHandler"
+    },
+    "spark-class-model://model/RListProps/attributes/listProps/14": {
+      "ref": "spark-class-model://model/RListProps/attributes/listProps/14",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "listProps",
+      "schemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RListProps/attributes/showPagination/15": {
+      "ref": "spark-class-model://model/RListProps/attributes/showPagination/15",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RListProps",
+      "name": "showPagination",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RListProps": {
+      "ref": "spark-class-model://model/RListProps",
+      "kind": "model",
+      "className": "RListProps",
+      "schemaRef": "spark-class-model://schema/RListProps",
+      "attributeRefs": [
+        "spark-class-model://model/RListProps/attributes/dataSource/0",
+        "spark-class-model://model/RListProps/attributes/toolbar/1",
+        "spark-class-model://model/RListProps/attributes/actions/2",
+        "spark-class-model://model/RListProps/attributes/columns/3",
+        "spark-class-model://model/RListProps/attributes/minItemWidth/4",
+        "spark-class-model://model/RListProps/attributes/rowKey/5",
+        "spark-class-model://model/RListProps/attributes/emptyText/6",
+        "spark-class-model://model/RListProps/attributes/itemClass/7",
+        "spark-class-model://model/RListProps/attributes/itemStyle/8",
+        "spark-class-model://model/RListProps/attributes/useCard/9",
+        "spark-class-model://model/RListProps/attributes/cardShadow/10",
+        "spark-class-model://model/RListProps/attributes/itemColSpan/11",
+        "spark-class-model://model/RListProps/attributes/itemRowSpan/12",
+        "spark-class-model://model/RListProps/attributes/onItemClick/13",
+        "spark-class-model://model/RListProps/attributes/listProps/14",
+        "spark-class-model://model/RListProps/attributes/showPagination/15"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRListProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRListProps%2Fattributes%2Ftoolbar%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRListProps%2Fattributes%2Factions%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRListProps%2Fattributes%2FonItemClick%2F13/attribute/spark-class-model%3A%2F%2Fmodel%2FRowClickHandler"
+      ]
+    }
+  }
+}

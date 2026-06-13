@@ -85,7 +85,7 @@ UI          →  subscribe，读字段 / 调 API
 |--------|--------|
 | **改数据** | 运行时模型实例（public 字段 + 方法） |
 | **懂结构** | 同上 class 的 TS 声明 + JSDoc（直接读源码语义） |
-| **工具侧重静态索引** | `.d.ts` → `generated/dts-class-model/` → 按 **className 按需** `resolveDtsClassModel` |
+| **工具侧重静态索引** | 内存 emit → `generated/dts-class-model/` → Worker 内按 **className** BFS 按需加载 shard |
 
 **没有** 额外 registry、没有约定标签、没有 metadata 第二真源、没有额外 catalog。
 
@@ -131,5 +131,5 @@ SparkNodeTree toJson/fromJson，文件持久化在模型外
 ## 7. 相关文档
 
 - 代码组织与命名：`docs/ai/ai-code-generation-behavior.md`
-- dts-class-model 投影（工具索引，非设计中心）：`packages/spark-ai/src/class-model/class-model/project-from-declarations.ts`
+- dts-class-model 投影（工具索引，非设计中心）：`scripts/generate-dts-class-model.mjs` → `build-dts-class-model-bundle.ts`
 - 协议基类：`packages/spark-utils/src/ai-model.ts`

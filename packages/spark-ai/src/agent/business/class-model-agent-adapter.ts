@@ -567,7 +567,7 @@ function normalizeAgentCompleteSuccessData(raw: unknown, summary: string): AiJso
       completed: true,
       summary,
       ...raw,
-    } as AiJsonValue
+    }
   }
   if (raw === undefined) {
     return {
@@ -669,7 +669,7 @@ function collectAgentCompleteKnowledgeLookups(input: Readonly<{
 function resolveCapabilityActionRefs(
   context: AgentCompleteKnowledgeRecoveryContext,
   capability: string,
-): readonly Readonly<{ kind: string; actionName: string }>[] {
+): ReadonlyArray<Readonly<{ kind: string; actionName: string }>> {
   const parsed = parseCapabilityRef(capability)
   if (parsed !== undefined) return [parsed]
 
@@ -697,7 +697,9 @@ function parseCapabilityRef(value: string): Readonly<{ kind: string; actionName:
   }
 }
 
-function collectMetadataApis(metadata: AiRuntimeApiMetadataJson): readonly AiRuntimeApiMetadataJson['rootApi'][] {
+function collectMetadataApis(
+  metadata: AiRuntimeApiMetadataJson,
+): ReadonlyArray<AiRuntimeApiMetadataJson['rootApi']> {
   return [metadata.rootApi, ...Object.values(metadata.apiRegistry ?? {})]
 }
 

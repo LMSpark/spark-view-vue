@@ -1,0 +1,222 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-app/src/theme/index.d.ts",
+  "symbols": [
+    "ThemeCapability",
+    "ThemeServiceOptions",
+    "ThemeServiceReactive"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ThemeCapability": {
+      "ref": "spark-class-model://schema/ThemeCapability",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ThemeCapability",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ThemeCapability"
+      }
+    },
+    "spark-class-model://model/ThemeCapability/methods/setStorageScope/0": {
+      "ref": "spark-class-model://model/ThemeCapability/methods/setStorageScope/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ThemeCapability",
+      "name": "setStorageScope",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/058ad5d9996ea5e71a2b8fce69bfc27dce48a30ec2f65151748e845848daf2cb"
+    },
+    "spark-class-model://schema/shared/058ad5d9996ea5e71a2b8fce69bfc27dce48a30ec2f65151748e845848daf2cb": {
+      "ref": "spark-class-model://schema/shared/058ad5d9996ea5e71a2b8fce69bfc27dce48a30ec2f65151748e845848daf2cb",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "scopeKey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/058ad5d9996ea5e71a2b8fce69bfc27dce48a30ec2f65151748e845848daf2cb"
+      }
+    },
+    "spark-class-model://model/ThemeCapability": {
+      "ref": "spark-class-model://model/ThemeCapability",
+      "kind": "model",
+      "className": "ThemeCapability",
+      "schemaRef": "spark-class-model://schema/ThemeCapability",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ThemeCapability/methods/setStorageScope/0"
+      ],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ThemeServiceOptions": {
+      "ref": "spark-class-model://schema/ThemeServiceOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ThemeServiceOptions",
+        "properties": {
+          "initialMode": {
+            "$ref": "spark-class-model://schema/ThemeMode"
+          },
+          "storageKey": {
+            "type": "string"
+          },
+          "storageScope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ThemeServiceOptions"
+      }
+    },
+    "spark-class-model://schema/shared/c6665654713c8dbc33be20556e68ffdf428c0de5834042eeea18de3f96773e77": {
+      "ref": "spark-class-model://schema/shared/c6665654713c8dbc33be20556e68ffdf428c0de5834042eeea18de3f96773e77",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ThemeMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c6665654713c8dbc33be20556e68ffdf428c0de5834042eeea18de3f96773e77"
+      }
+    },
+    "spark-class-model://model/ThemeServiceOptions/attributes/initialMode/0": {
+      "ref": "spark-class-model://model/ThemeServiceOptions/attributes/initialMode/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ThemeServiceOptions",
+      "name": "initialMode",
+      "schemaRef": "spark-class-model://schema/shared/c6665654713c8dbc33be20556e68ffdf428c0de5834042eeea18de3f96773e77",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FThemeServiceOptions%2Fattributes%2FinitialMode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FThemeMode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FThemeServiceOptions%2Fattributes%2FinitialMode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FThemeMode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ThemeServiceOptions/attributes/initialMode/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ThemeMode",
+      "targetClassName": "ThemeMode",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/core/capability-keys.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ThemeMode"
+    },
+    "spark-class-model://model/ThemeServiceOptions/attributes/storageKey/1": {
+      "ref": "spark-class-model://model/ThemeServiceOptions/attributes/storageKey/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ThemeServiceOptions",
+      "name": "storageKey",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ThemeServiceOptions/attributes/storageScope/2": {
+      "ref": "spark-class-model://model/ThemeServiceOptions/attributes/storageScope/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ThemeServiceOptions",
+      "name": "storageScope",
+      "schemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ThemeServiceOptions": {
+      "ref": "spark-class-model://model/ThemeServiceOptions",
+      "kind": "model",
+      "className": "ThemeServiceOptions",
+      "schemaRef": "spark-class-model://schema/ThemeServiceOptions",
+      "attributeRefs": [
+        "spark-class-model://model/ThemeServiceOptions/attributes/initialMode/0",
+        "spark-class-model://model/ThemeServiceOptions/attributes/storageKey/1",
+        "spark-class-model://model/ThemeServiceOptions/attributes/storageScope/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FThemeServiceOptions%2Fattributes%2FinitialMode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FThemeMode"
+      ]
+    },
+    "spark-class-model://schema/ThemeServiceReactive": {
+      "ref": "spark-class-model://schema/ThemeServiceReactive",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ThemeServiceReactive",
+        "properties": {
+          "modeRef": {
+            "type": "object",
+            "title": "Ref<ThemeMode>"
+          },
+          "isDarkRef": {
+            "type": "object",
+            "title": "ComputedRef<boolean>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ThemeServiceReactive"
+      }
+    },
+    "spark-class-model://schema/shared/01b10244a685f2fe57c219ae1f23fab7484b3c243d311a83986646899551333d": {
+      "ref": "spark-class-model://schema/shared/01b10244a685f2fe57c219ae1f23fab7484b3c243d311a83986646899551333d",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Ref<ThemeMode>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/01b10244a685f2fe57c219ae1f23fab7484b3c243d311a83986646899551333d"
+      }
+    },
+    "spark-class-model://model/ThemeServiceReactive/attributes/modeRef/0": {
+      "ref": "spark-class-model://model/ThemeServiceReactive/attributes/modeRef/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ThemeServiceReactive",
+      "name": "modeRef",
+      "schemaRef": "spark-class-model://schema/shared/01b10244a685f2fe57c219ae1f23fab7484b3c243d311a83986646899551333d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/0abf104337b2fa89210c77d0b4560f31973ceac5679356801c113b244ba374c1": {
+      "ref": "spark-class-model://schema/shared/0abf104337b2fa89210c77d0b4560f31973ceac5679356801c113b244ba374c1",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComputedRef<boolean>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/0abf104337b2fa89210c77d0b4560f31973ceac5679356801c113b244ba374c1"
+      }
+    },
+    "spark-class-model://model/ThemeServiceReactive/attributes/isDarkRef/1": {
+      "ref": "spark-class-model://model/ThemeServiceReactive/attributes/isDarkRef/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ThemeServiceReactive",
+      "name": "isDarkRef",
+      "schemaRef": "spark-class-model://schema/shared/0abf104337b2fa89210c77d0b4560f31973ceac5679356801c113b244ba374c1",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ThemeServiceReactive": {
+      "ref": "spark-class-model://model/ThemeServiceReactive",
+      "kind": "model",
+      "className": "ThemeServiceReactive",
+      "schemaRef": "spark-class-model://schema/ThemeServiceReactive",
+      "attributeRefs": [
+        "spark-class-model://model/ThemeServiceReactive/attributes/modeRef/0",
+        "spark-class-model://model/ThemeServiceReactive/attributes/isDarkRef/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

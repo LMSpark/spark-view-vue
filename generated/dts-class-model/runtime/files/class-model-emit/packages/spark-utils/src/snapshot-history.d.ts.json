@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-utils/src/snapshot-history.d.ts",
+  "symbols": [
+    "SnapshotHistory"
+  ],
+  "@refs": {
+    "spark-class-model://schema/SnapshotHistory": {
+      "ref": "spark-class-model://schema/SnapshotHistory",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SnapshotHistory",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SnapshotHistory"
+      }
+    },
+    "spark-class-model://model/SnapshotHistory/constructors/0": {
+      "ref": "spark-class-model://model/SnapshotHistory/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/SnapshotHistory",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f4b4c35e3494df911c5c34147767b238d19f5c8d762e17dc6c540477e929284c"
+    },
+    "spark-class-model://schema/shared/f4b4c35e3494df911c5c34147767b238d19f5c8d762e17dc6c540477e929284c": {
+      "ref": "spark-class-model://schema/shared/f4b4c35e3494df911c5c34147767b238d19f5c8d762e17dc6c540477e929284c",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "_limit": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f4b4c35e3494df911c5c34147767b238d19f5c8d762e17dc6c540477e929284c"
+      }
+    },
+    "spark-class-model://model/SnapshotHistory/methods/push/0": {
+      "ref": "spark-class-model://model/SnapshotHistory/methods/push/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/SnapshotHistory",
+      "name": "push",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/1e7eb0e48700dfaea96dc93e4d45d83e2fb13d10a45cd5280dd62a03669cd2f6"
+    },
+    "spark-class-model://schema/shared/1e7eb0e48700dfaea96dc93e4d45d83e2fb13d10a45cd5280dd62a03669cd2f6": {
+      "ref": "spark-class-model://schema/shared/1e7eb0e48700dfaea96dc93e4d45d83e2fb13d10a45cd5280dd62a03669cd2f6",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "snapshot": true
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/1e7eb0e48700dfaea96dc93e4d45d83e2fb13d10a45cd5280dd62a03669cd2f6"
+      }
+    },
+    "spark-class-model://model/SnapshotHistory/methods/undo/1": {
+      "ref": "spark-class-model://model/SnapshotHistory/methods/undo/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/SnapshotHistory",
+      "name": "undo",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://model/SnapshotHistory/methods/redo/2": {
+      "ref": "spark-class-model://model/SnapshotHistory/methods/redo/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/SnapshotHistory",
+      "name": "redo",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://model/SnapshotHistory/methods/clear/3": {
+      "ref": "spark-class-model://model/SnapshotHistory/methods/clear/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/SnapshotHistory",
+      "name": "clear",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/SnapshotHistory": {
+      "ref": "spark-class-model://model/SnapshotHistory",
+      "kind": "model",
+      "className": "SnapshotHistory",
+      "schemaRef": "spark-class-model://schema/SnapshotHistory",
+      "constructorRef": "spark-class-model://model/SnapshotHistory/constructors/0",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/SnapshotHistory/methods/push/0",
+        "spark-class-model://model/SnapshotHistory/methods/undo/1",
+        "spark-class-model://model/SnapshotHistory/methods/redo/2",
+        "spark-class-model://model/SnapshotHistory/methods/clear/3"
+      ],
+      "linkRefs": []
+    }
+  }
+}

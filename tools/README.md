@@ -15,7 +15,7 @@
 
 - `pnpm run verify:arch`：包依赖、跨包相对导入、框架无关包、`spark-ai` 公共 subpath 边界。
 - `pnpm run verify:ai-codegen`：AI 代码生成规则。
-- `pnpm run verify:class-model`：DTS ClassModel 生成、dist 审计与 native 单测门禁。
+- `pnpm run verify:class-model`：DTS ClassModel bundle 存在性、spark-ai lint/typecheck 与关键单测门禁。
 - `pnpm run verify:deps`：基础依赖 catalog 与归属。
 - `pnpm run verify:pages-config`：动态页面配置 manifest 与 pageId 命名。
 - `pnpm run verify:rules`：架构边界、依赖 catalog、pages-config、AI 生成规则、文档治理与 `verify:class-model`；根 `verify` 已接入该入口。

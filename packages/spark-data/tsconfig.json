@@ -9,7 +9,7 @@
     "noEmit": true,
     "paths": {
       "@spark-appworks/spark-data": ["./src/index.ts"],
-      "@spark-appworks/spark-utils": ["../spark-utils/dist/index.d.ts"]
+      "@spark-appworks/spark-utils": ["../spark-utils/src/index.ts"]
     }
   },
   "include": ["src/**/*"],

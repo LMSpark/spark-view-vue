@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldCheckbox.props.d.ts",
+  "symbols": [
+    "RCheckboxProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RCheckboxProps": {
+      "ref": "spark-class-model://schema/RCheckboxProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RCheckboxProps",
+        "properties": {
+          "checkedText": {
+            "type": "string"
+          },
+          "uncheckedText": {
+            "type": "string"
+          },
+          "checkboxText": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RCheckboxProps"
+      }
+    },
+    "spark-class-model://model/RCheckboxProps/attributes/checkedText/0": {
+      "ref": "spark-class-model://model/RCheckboxProps/attributes/checkedText/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RCheckboxProps",
+      "name": "checkedText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RCheckboxProps/attributes/uncheckedText/1": {
+      "ref": "spark-class-model://model/RCheckboxProps/attributes/uncheckedText/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RCheckboxProps",
+      "name": "uncheckedText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RCheckboxProps/attributes/checkboxText/2": {
+      "ref": "spark-class-model://model/RCheckboxProps/attributes/checkboxText/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RCheckboxProps",
+      "name": "checkboxText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RCheckboxProps": {
+      "ref": "spark-class-model://model/RCheckboxProps",
+      "kind": "model",
+      "className": "RCheckboxProps",
+      "schemaRef": "spark-class-model://schema/RCheckboxProps",
+      "attributeRefs": [
+        "spark-class-model://model/RCheckboxProps/attributes/checkedText/0",
+        "spark-class-model://model/RCheckboxProps/attributes/uncheckedText/1",
+        "spark-class-model://model/RCheckboxProps/attributes/checkboxText/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

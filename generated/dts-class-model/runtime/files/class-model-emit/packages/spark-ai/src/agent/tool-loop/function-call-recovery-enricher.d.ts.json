@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/function-call-recovery-enricher.d.ts",
+  "symbols": [
+    "EnrichFunctionCallFailureCommand",
+    "EnrichFunctionCallResultOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/EnrichFunctionCallFailureCommand": {
+      "ref": "spark-class-model://schema/EnrichFunctionCallFailureCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "EnrichFunctionCallFailureCommand",
+        "properties": {
+          "protocolToolName": {
+            "type": "string"
+          },
+          "args": {
+            "type": "object",
+            "title": "AiJsonParams"
+          },
+          "callResult": {
+            "$ref": "spark-class-model://schema/AiAgentFunctionCallFailure"
+          },
+          "moduleInstanceId": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/EnrichFunctionCallFailureCommand"
+      }
+    },
+    "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/protocolToolName/0": {
+      "ref": "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/protocolToolName/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EnrichFunctionCallFailureCommand",
+      "name": "protocolToolName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/args/1": {
+      "ref": "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/args/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EnrichFunctionCallFailureCommand",
+      "name": "args",
+      "schemaRef": "spark-class-model://schema/shared/f2e0885470452f1b4b099253e6e1f3b215ea957857041fc2cdced95d9ec81f90",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/callResult/2": {
+      "ref": "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/callResult/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EnrichFunctionCallFailureCommand",
+      "name": "callResult",
+      "schemaRef": "spark-class-model://schema/shared/9318ef8c90c03af3b0aa5d37fd6e36c8dd19c0f611fcd7770f656d2c80b119ba",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEnrichFunctionCallFailureCommand%2Fattributes%2FcallResult%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentFunctionCallFailure": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEnrichFunctionCallFailureCommand%2Fattributes%2FcallResult%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentFunctionCallFailure",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/callResult/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentFunctionCallFailure",
+      "targetClassName": "AiAgentFunctionCallFailure",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/session/session-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentFunctionCallFailure"
+    },
+    "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/moduleInstanceId/3": {
+      "ref": "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/moduleInstanceId/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EnrichFunctionCallFailureCommand",
+      "name": "moduleInstanceId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/EnrichFunctionCallFailureCommand": {
+      "ref": "spark-class-model://model/EnrichFunctionCallFailureCommand",
+      "kind": "model",
+      "className": "EnrichFunctionCallFailureCommand",
+      "schemaRef": "spark-class-model://schema/EnrichFunctionCallFailureCommand",
+      "attributeRefs": [
+        "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/protocolToolName/0",
+        "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/args/1",
+        "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/callResult/2",
+        "spark-class-model://model/EnrichFunctionCallFailureCommand/attributes/moduleInstanceId/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEnrichFunctionCallFailureCommand%2Fattributes%2FcallResult%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentFunctionCallFailure"
+      ]
+    },
+    "spark-class-model://schema/EnrichFunctionCallResultOptions": {
+      "ref": "spark-class-model://schema/EnrichFunctionCallResultOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "EnrichFunctionCallResultOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/EnrichFunctionCallResultOptions"
+      }
+    },
+    "spark-class-model://model/EnrichFunctionCallResultOptions/methods/enrichRecoveryHints/0": {
+      "ref": "spark-class-model://model/EnrichFunctionCallResultOptions/methods/enrichRecoveryHints/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/EnrichFunctionCallResultOptions",
+      "name": "enrichRecoveryHints",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEnrichFunctionCallResultOptions%2Fmethods%2FenrichRecoveryHints%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FEnrichFunctionCallFailureCommand": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEnrichFunctionCallResultOptions%2Fmethods%2FenrichRecoveryHints%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FEnrichFunctionCallFailureCommand",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/EnrichFunctionCallResultOptions/methods/enrichRecoveryHints/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/EnrichFunctionCallFailureCommand",
+      "targetClassName": "EnrichFunctionCallFailureCommand",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/tool-loop/function-call-recovery-enricher.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/EnrichFunctionCallFailureCommand"
+    },
+    "spark-class-model://model/EnrichFunctionCallResultOptions": {
+      "ref": "spark-class-model://model/EnrichFunctionCallResultOptions",
+      "kind": "model",
+      "className": "EnrichFunctionCallResultOptions",
+      "schemaRef": "spark-class-model://schema/EnrichFunctionCallResultOptions",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/EnrichFunctionCallResultOptions/methods/enrichRecoveryHints/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEnrichFunctionCallResultOptions%2Fmethods%2FenrichRecoveryHints%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FEnrichFunctionCallFailureCommand"
+      ]
+    }
+  }
+}

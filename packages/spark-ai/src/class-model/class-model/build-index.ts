@@ -15,10 +15,18 @@ export {
 } from './project-from-declarations'
 
 export {
+  CLASS_MODEL_EMIT_PREFIX,
+  CLASS_MODEL_EMIT_SOURCE,
+  CLASS_MODEL_EMIT_TSCONFIG,
+  isClassModelEmitPath,
+  sourceFileFromEmitPath,
+  toClassModelEmitPath,
+} from './class-model-emit-path'
+
+export {
   normalizeRepoPath,
   resolveAliasedSymbol,
   declarationNameText,
-  sourceFileFromDeclarationFile,
 } from './dts-ast-utils'
 
 export {

@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-utils/src/script-types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:script-types",
+    "sourcePath": "class-model-emit/packages/spark-utils/src/script-types.d.ts",
+    "sourceFile": "packages/spark-utils/src/script-types.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "script-types",
+    "jsdoc": "@module @spark-appworks/spark-utils:script-types\n职责：提供框架无关的 script types 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。\n边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。\nAI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "FieldRenderConfig",
+      "ComponentInstanceSnapshot",
+      "ContextItem",
+      "ContextSnapshot"
+    ]
+  },
+  "symbols": [
+    "FieldRenderConfig",
+    "ComponentInstanceSnapshot",
+    "ContextItem",
+    "ContextSnapshot"
+  ],
+  "models": {
+    "FieldRenderConfig": {
+      "kind": "FieldRenderConfig",
+      "className": "FieldRenderConfig",
+      "jsdoc": "字段渲染配置（脚本可见）",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** field 字段。 */\n    field: string;\n    /** 是否可见。 */\n    visible?: boolean;\n    /** editable 字段。 */\n    editable?: boolean;\n    /** 展示标签。 */\n    label?: string;\n    /** width 字段。 */\n    width?: number | string;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-utils/src/script-types.d.ts",
+        "line": 14,
+        "className": "FieldRenderConfig",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "field",
+          "jsdoc": "field 字段。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "visible",
+          "jsdoc": "是否可见。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "editable",
+          "jsdoc": "editable 字段。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "label",
+          "jsdoc": "展示标签。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "width",
+          "jsdoc": "width 字段。",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "ComponentInstanceSnapshot": {
+      "kind": "ComponentInstanceSnapshot",
+      "className": "ComponentInstanceSnapshot",
+      "jsdoc": "页面组件实例快照（脚本只读元数据）",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string;\n    /** 类型标识。 */\n    type: string;\n    /** 组件属性集合。 */\n    props?: Record<string, unknown>;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-utils/src/script-types.d.ts",
+        "line": 27,
+        "className": "ComponentInstanceSnapshot",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "jsdoc": "唯一标识。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "type",
+          "jsdoc": "类型标识。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "props",
+          "jsdoc": "组件属性集合。",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "ContextItem": {
+      "kind": "ContextItem",
+      "className": "ContextItem",
+      "jsdoc": "模块上下文选项",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 唯一标识。 */\n    id: string | number;\n    /** 显示标题。 */\n    title: string;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-utils/src/script-types.d.ts",
+        "line": 36,
+        "className": "ContextItem",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "jsdoc": "唯一标识。",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "title",
+          "jsdoc": "显示标题。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "ContextSnapshot": {
+      "kind": "ContextSnapshot",
+      "className": "ContextSnapshot",
+      "jsdoc": "模块级上下文快照",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** selected 字段。 */\n    selected: string | number | null;\n    /** items 字段。 */\n    items: readonly ContextItem[];\n    /** node Id 标识。 */\n    nodeId: string;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-utils/src/script-types.d.ts",
+        "line": 43,
+        "className": "ContextSnapshot",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "selected",
+          "jsdoc": "selected 字段。",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "items",
+          "jsdoc": "items 字段。",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "nodeId",
+          "jsdoc": "node Id 标识。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.921Z",
+  "$defs": {
+    "FieldRenderConfig": {
+      "type": "object",
+      "title": "FieldRenderConfig",
+      "description": "字段渲染配置（脚本可见）",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "editable": {
+          "type": "boolean"
+        },
+        "label": {
+          "type": "string"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    "ComponentInstanceSnapshot": {
+      "type": "object",
+      "title": "ComponentInstanceSnapshot",
+      "description": "页面组件实例快照（脚本只读元数据）",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "props": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    },
+    "ContextItem": {
+      "type": "object",
+      "title": "ContextItem",
+      "description": "模块上下文选项",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "ContextSnapshot": {
+      "type": "object",
+      "title": "ContextSnapshot",
+      "description": "模块级上下文快照",
+      "properties": {
+        "selected": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array"
+        },
+        "nodeId": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

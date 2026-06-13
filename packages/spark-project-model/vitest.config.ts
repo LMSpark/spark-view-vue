@@ -11,7 +11,7 @@ export default defineConfig({
     alias: [
       { find: /^@spark-appworks\/spark-data$/, replacement: resolve(__dirname, '../spark-data/src/index.ts') },
       { find: /^@spark-appworks\/spark-utils$/, replacement: resolve(__dirname, '../spark-utils/src/index.ts') },
-      { find: /^@spark-appworks\/spark-utils\/internal$/, replacement: resolve(__dirname, '../spark-utils/dist/internal/index.js') },
+      { find: /^@spark-appworks\/spark-utils\/internal$/, replacement: resolve(__dirname, '../spark-utils/src/internal/index.ts') },
       { find: /^@spark-appworks\/spark-project-model$/, replacement: resolve(__dirname, './src/index.ts') },
     ],
   },

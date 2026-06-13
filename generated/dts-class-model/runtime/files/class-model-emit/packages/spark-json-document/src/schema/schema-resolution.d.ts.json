@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-resolution.d.ts",
+  "symbols": [
+    "JsonSchemaInfo"
+  ],
+  "@refs": {
+    "spark-class-model://schema/JsonSchemaInfo": {
+      "ref": "spark-class-model://schema/JsonSchemaInfo",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "JsonSchemaInfo",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "enumValues": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/JsonSchemaInfo"
+      }
+    },
+    "spark-class-model://model/JsonSchemaInfo/attributes/title/0": {
+      "ref": "spark-class-model://model/JsonSchemaInfo/attributes/title/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonSchemaInfo",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/JsonSchemaInfo/attributes/description/1": {
+      "ref": "spark-class-model://model/JsonSchemaInfo/attributes/description/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonSchemaInfo",
+      "name": "description",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/JsonSchemaInfo/attributes/required/2": {
+      "ref": "spark-class-model://model/JsonSchemaInfo/attributes/required/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonSchemaInfo",
+      "name": "required",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/JsonSchemaInfo/attributes/enumValues/3": {
+      "ref": "spark-class-model://model/JsonSchemaInfo/attributes/enumValues/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonSchemaInfo",
+      "name": "enumValues",
+      "schemaRef": "spark-class-model://schema/shared/681004346c78d5f384b654c986b4eda8fea28010db3be7da70b19aa0080f3ff9",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/JsonSchemaInfo": {
+      "ref": "spark-class-model://model/JsonSchemaInfo",
+      "kind": "model",
+      "className": "JsonSchemaInfo",
+      "schemaRef": "spark-class-model://schema/JsonSchemaInfo",
+      "attributeRefs": [
+        "spark-class-model://model/JsonSchemaInfo/attributes/title/0",
+        "spark-class-model://model/JsonSchemaInfo/attributes/description/1",
+        "spark-class-model://model/JsonSchemaInfo/attributes/required/2",
+        "spark-class-model://model/JsonSchemaInfo/attributes/enumValues/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

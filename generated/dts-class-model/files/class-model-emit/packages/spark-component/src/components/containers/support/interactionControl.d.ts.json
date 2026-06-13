@@ -1,0 +1,292 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/support/interactionControl",
+    "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/support/interactionControl.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/support/interactionControl",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/support/interactionControl\n职责：维护 @spark-appworks/spark-component 中 components/containers/support/interactionControl 的模块能力，围绕 CancellableControl、InteractionControl、CancelableHandler 等 9 个公开契约 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 components/containers/support/interactionControl 的声明、导出和使用边界时，从本模块开始。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "CancellableControl",
+      "InteractionControl",
+      "CancelableHandler",
+      "RowClickHandler",
+      "RowSelectionHandler",
+      "CurrentRowChangeHandler",
+      "AddRowHandler",
+      "EditRowHandler",
+      "RemoveRowHandler"
+    ]
+  },
+  "symbols": [
+    "CancellableControl",
+    "InteractionControl",
+    "CancelableHandler",
+    "RowClickHandler",
+    "RowSelectionHandler",
+    "CurrentRowChangeHandler",
+    "AddRowHandler",
+    "EditRowHandler",
+    "RemoveRowHandler"
+  ],
+  "models": {
+    "CancellableControl": {
+      "kind": "CancellableControl",
+      "className": "CancellableControl",
+      "jsdoc": "Cancellable Control 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** cancel 字段。 */\n    cancel: boolean;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts",
+        "line": 9,
+        "className": "CancellableControl",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "cancel",
+          "jsdoc": "cancel 字段。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "InteractionControl": {
+      "kind": "InteractionControl",
+      "className": "InteractionControl",
+      "jsdoc": "Interaction Control 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** cancel 字段。 */\n    cancel: boolean;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts",
+        "line": 16,
+        "className": "InteractionControl",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "cancel",
+          "jsdoc": "cancel 字段。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "CancelableHandler": {
+      "kind": "CancelableHandler",
+      "className": "CancelableHandler",
+      "jsdoc": "Cancelable Handler 的回调函数契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    (...args: [...TArgs, InteractionControl]): void | Promise<void>;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts",
+        "line": 21,
+        "className": "CancelableHandler",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "RowClickHandler": {
+      "kind": "RowClickHandler",
+      "className": "RowClickHandler",
+      "jsdoc": "Row Click Handler 的回调函数契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "CancelableHandler<[DataRow, unknown, Event | undefined]>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "CancelableHandler<[DataRow, unknown, Event | undefined]>",
+          "targetName": "CancelableHandler"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts",
+        "line": 27,
+        "className": "RowClickHandler",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "RowSelectionHandler": {
+      "kind": "RowSelectionHandler",
+      "className": "RowSelectionHandler",
+      "jsdoc": "Row Selection Handler 的回调函数契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "CancelableHandler<[DataRow[]]>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "CancelableHandler<[DataRow[]]>",
+          "targetName": "CancelableHandler"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts",
+        "line": 29,
+        "className": "RowSelectionHandler",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "CurrentRowChangeHandler": {
+      "kind": "CurrentRowChangeHandler",
+      "className": "CurrentRowChangeHandler",
+      "jsdoc": "Current Row Change Handler 的回调函数契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "CancelableHandler<[DataRow | null, DataRow | null | undefined]>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "CancelableHandler<[DataRow | null, DataRow | null | undefined]>",
+          "targetName": "CancelableHandler"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts",
+        "line": 31,
+        "className": "CurrentRowChangeHandler",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AddRowHandler": {
+      "kind": "AddRowHandler",
+      "className": "AddRowHandler",
+      "jsdoc": "Add Row Handler 的回调函数契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "CancelableHandler<[Partial<DataRow>]>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "CancelableHandler<[Partial<DataRow>]>",
+          "targetName": "CancelableHandler"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts",
+        "line": 33,
+        "className": "AddRowHandler",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "EditRowHandler": {
+      "kind": "EditRowHandler",
+      "className": "EditRowHandler",
+      "jsdoc": "Edit Row Handler 的回调函数契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "CancelableHandler<[string | number, Partial<DataRow>]>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "CancelableHandler<[string | number, Partial<DataRow>]>",
+          "targetName": "CancelableHandler"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts",
+        "line": 35,
+        "className": "EditRowHandler",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "RemoveRowHandler": {
+      "kind": "RemoveRowHandler",
+      "className": "RemoveRowHandler",
+      "jsdoc": "Remove Row Handler 的回调函数契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "CancelableHandler<[string | number]>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "CancelableHandler<[string | number]>",
+          "targetName": "CancelableHandler"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts",
+        "line": 37,
+        "className": "RemoveRowHandler",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:54.433Z",
+  "$defs": {
+    "CancellableControl": {
+      "type": "object",
+      "title": "CancellableControl",
+      "description": "Cancellable Control 的语义模型。",
+      "properties": {
+        "cancel": {
+          "type": "boolean"
+        }
+      }
+    },
+    "InteractionControl": {
+      "type": "object",
+      "title": "InteractionControl",
+      "description": "Interaction Control 的语义模型。",
+      "properties": {
+        "cancel": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CancelableHandler": {
+      "type": "object",
+      "title": "CancelableHandler",
+      "description": "Cancelable Handler 的回调函数契约。"
+    },
+    "RowClickHandler": {
+      "type": "object",
+      "title": "RowClickHandler",
+      "description": "Row Click Handler 的回调函数契约。"
+    },
+    "RowSelectionHandler": {
+      "type": "object",
+      "title": "RowSelectionHandler",
+      "description": "Row Selection Handler 的回调函数契约。"
+    },
+    "CurrentRowChangeHandler": {
+      "type": "object",
+      "title": "CurrentRowChangeHandler",
+      "description": "Current Row Change Handler 的回调函数契约。"
+    },
+    "AddRowHandler": {
+      "type": "object",
+      "title": "AddRowHandler",
+      "description": "Add Row Handler 的回调函数契约。"
+    },
+    "EditRowHandler": {
+      "type": "object",
+      "title": "EditRowHandler",
+      "description": "Edit Row Handler 的回调函数契约。"
+    },
+    "RemoveRowHandler": {
+      "type": "object",
+      "title": "RemoveRowHandler",
+      "description": "Remove Row Handler 的回调函数契约。"
+    }
+  }
+}

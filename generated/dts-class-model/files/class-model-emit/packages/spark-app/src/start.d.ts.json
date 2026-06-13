@@ -1,0 +1,544 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-app/src/start.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:start",
+    "sourcePath": "class-model-emit/packages/spark-app/src/start.d.ts",
+    "sourceFile": "packages/spark-app/src/start.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "start",
+    "jsdoc": "@module @spark-appworks/spark-app:start\n职责：提供 spark-app 应用壳中的 start 能力，连接路由、导航、认证、插件、页面 UI 或 AI 桥接。\n边界：负责应用层编排，不下沉实现底层数据模型，也不直接改写组件包的渲染协议。\nAI用途：排查页面打开、导航状态、权限上下文或应用侧 AI 接线时，用本模块确认 app 层入口。\n\nSparkApp.start() - 最高层级 API\n完全声明式启动应用，无需手动创建 app/router",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SparkOptions",
+      "PageNodeOptions",
+      "StartOptions"
+    ]
+  },
+  "symbols": [
+    "SparkOptions",
+    "PageNodeOptions",
+    "StartOptions"
+  ],
+  "models": {
+    "SparkOptions": {
+      "kind": "SparkOptions",
+      "className": "SparkOptions",
+      "jsdoc": "SPARK 组件系统配置",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 是否启用 SPARK 组件系统（默认 true） */\n    enabled?: boolean;\n    /**\n     * 是否自动导入并执行编译时组件注册（默认 true）\n     *\n     * SparkApp 会自动导入 virtual:spark-components 并执行注册函数。\n     * 设置为 false 可禁用自动注册（用于自定义注册流程）。\n     */\n    autoRegister?: boolean;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-app/src/start.d.ts",
+        "line": 19,
+        "className": "SparkOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "enabled",
+          "jsdoc": "是否启用 SPARK 组件系统（默认 true）",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "autoRegister",
+          "jsdoc": "是否自动导入并执行编译时组件注册（默认 true）\nSparkApp 会自动导入 virtual:spark-components 并执行注册函数。\n设置为 false 可禁用自动注册（用于自定义注册流程）。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "PageNodeOptions": {
+      "kind": "PageNodeOptions",
+      "className": "PageNodeOptions",
+      "jsdoc": "PageNode 运行配置",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** API 基础路径 */\n    apiBaseUrl: string;\n    /**\n     * 页面配置四文件 API 基础路径。\n     *\n     * apiBaseUrl 保持为通用 HTTP client 基址；四文件加载在多租户项目下使用该 scoped 路径。\n     */\n    pagesConfigBaseUrl?: string | (() => string);\n    /** 请求超时时间 */\n    timeout?: number;\n    /** 动态请求头回调（每次请求时调用，注入租户上下文） */\n    getHeaders?: () => Record<string, string>;\n    /** 认证状态检查（DynamicRouter 据此决定使用远程导航树还是 preAuthNavTree） */\n    isAuthenticated?: () => boolean;\n    /** 页面组件（默认使用 PageRenderer） */\n    pageComponent?: Component;\n    /**\n     * system-page 路径 → Vue 组件映射。\n     * 路由元数据完全由后端 DB 管理，前端只提供组件解析映射。\n     */\n    componentMap?: Record<string, Component>;\n    /**\n     * 租户路径前缀（如 '/t/:tenantId'）。\n     * 设置后，config 页面路由自动加此前缀。\n     */\n    tenantPathPrefix?: string;\n    /**\n     * 导航数据加载函数 — 导航树作为路由的唯一来源。\n     *\n     * 已认证时 DynamicRouter 使用此函数加载远程导航树并派生路由。\n     * refreshRoutes() 返回加载后的导航树供 UI 直接消费。\n     */\n    loadNavigation?: () => Promise<ProjectModelData>;\n    /** 平台工作台导航加载函数；节点路径会注册到 /platform 前缀下。 */\n    loadPlatformNavigation?: () => Promise<ProjectModelData>;\n    /** 是否启用平台工作台导航注册。 */\n    isPlatformNavigationEnabled?: () => boolean;\n    /** 平台工作台路由前缀，默认 /platform。 */\n    platformPathPrefix?: string;\n    /**\n     * 登录前本地导航树 — 未认证时使用的静态导航数据。\n     *\n     * 当用户未登录时，`registerRoutes()` 使用此本地导航树注册路由（如 / 和 /login）。\n     * 登录后 `refreshRoutes()` 会用远程导航树替换。\n     */\n    preAuthNavTree?: ProjectModelData;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-app/src/start.d.ts",
+        "line": 33,
+        "className": "PageNodeOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "apiBaseUrl",
+          "jsdoc": "API 基础路径",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "pagesConfigBaseUrl",
+          "jsdoc": "页面配置四文件 API 基础路径。\napiBaseUrl 保持为通用 HTTP client 基址；四文件加载在多租户项目下使用该 scoped 路径。",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "title": "() => string"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "timeout",
+          "jsdoc": "请求超时时间",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "pageComponent",
+          "jsdoc": "页面组件（默认使用 PageRenderer）",
+          "schema": {
+            "type": "object",
+            "title": "Component"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentMap",
+          "jsdoc": "system-page 路径 → Vue 组件映射。\n路由元数据完全由后端 DB 管理，前端只提供组件解析映射。",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, Component>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "tenantPathPrefix",
+          "jsdoc": "租户路径前缀（如 '/t/:tenantId'）。\n设置后，config 页面路由自动加此前缀。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "platformPathPrefix",
+          "jsdoc": "平台工作台路由前缀，默认 /platform。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "preAuthNavTree",
+          "jsdoc": "登录前本地导航树 — 未认证时使用的静态导航数据。\n当用户未登录时，`registerRoutes()` 使用此本地导航树注册路由（如 / 和 /login）。\n登录后 `refreshRoutes()` 会用远程导航树替换。",
+          "schema": {
+            "type": "object",
+            "title": "ProjectModelData"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "getHeaders",
+          "jsdoc": "动态请求头回调（每次请求时调用，注入租户上下文）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, string>"
+          }
+        },
+        {
+          "name": "isAuthenticated",
+          "jsdoc": "认证状态检查（DynamicRouter 据此决定使用远程导航树还是 preAuthNavTree）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "loadNavigation",
+          "jsdoc": "导航数据加载函数 — 导航树作为路由的唯一来源。\n已认证时 DynamicRouter 使用此函数加载远程导航树并派生路由。\nrefreshRoutes() 返回加载后的导航树供 UI 直接消费。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "ProjectModelData"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectModelData>"
+          }
+        },
+        {
+          "name": "loadPlatformNavigation",
+          "jsdoc": "平台工作台导航加载函数；节点路径会注册到 /platform 前缀下。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "ProjectModelData"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectModelData>"
+          }
+        },
+        {
+          "name": "isPlatformNavigationEnabled",
+          "jsdoc": "是否启用平台工作台导航注册。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        }
+      ]
+    },
+    "StartOptions": {
+      "kind": "StartOptions",
+      "className": "StartOptions",
+      "jsdoc": "启动配置（扩展自 BootstrapOptions）",
+      "shapeKind": "type",
+      "declarationTypeText": "Omit<BootstrapOptions, 'app' | 'router'> & {\n    /** 根组件 */\n    rootComponent: Component;\n    /** 路由模式（默认 'history'） */\n    routerMode?: 'history' | 'hash';\n    /** 挂载点（默认 '#app'） */\n    mountTarget?: string;\n    /** SPARK 组件系统配置 */\n    spark?: SparkOptions;\n    /** PageNode 运行配置 */\n    pageNode?: PageNodeOptions;\n    /** UI 插件列表 */\n    plugins?: Plugin[];\n    /**\n     * CSS 主题配置\n     *\n     * - `true` — 启用主题（默认 auto 跟随系统）\n     * - `ThemeServiceOptions` — 自定义初始模式 / 存储键\n     * - `false` / 不传 — 不启用主题服务\n     */\n    theme?: boolean | ThemeServiceOptions;\n    /** 启动前钩子 */\n    onBeforeStart?: () => void | Promise<void>;\n    /** 启动失败钩子（如果提供，将完全接管错误处理） */\n    onStartError?: (error: Error) => void | Promise<void>;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "Omit<BootstrapOptions, 'app' | 'router'>",
+          "targetName": "Omit"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 根组件 */\n    rootComponent: Component;\n    /** 路由模式（默认 'history'） */\n    routerMode?: 'history' | 'hash';\n    /** 挂载点（默认 '#app'） */\n    mountTarget?: string;\n    /** SPARK 组件系统配置 */\n    spark?: SparkOptions;\n    /** PageNode 运行配置 */\n    pageNode?: PageNodeOptions;\n    /** UI 插件列表 */\n    plugins?: Plugin[];\n    /**\n     * CSS 主题配置\n     *\n     * - `true` — 启用主题（默认 auto 跟随系统）\n     * - `ThemeServiceOptions` — 自定义初始模式 / 存储键\n     * - `false` / 不传 — 不启用主题服务\n     */\n    theme?: boolean | ThemeServiceOptions;\n    /** 启动前钩子 */\n    onBeforeStart?: () => void | Promise<void>;\n    /** 启动失败钩子（如果提供，将完全接管错误处理） */\n    onStartError?: (error: Error) => void | Promise<void>;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-app/src/start.d.ts",
+        "line": 84,
+        "className": "StartOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "rootComponent",
+          "jsdoc": "根组件",
+          "schema": {
+            "type": "object",
+            "title": "Component"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "routerMode",
+          "jsdoc": "路由模式（默认 'history'）",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "history"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "hash"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "mountTarget",
+          "jsdoc": "挂载点（默认 '#app'）",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "spark",
+          "jsdoc": "SPARK 组件系统配置",
+          "schema": {
+            "$ref": "#/$defs/SparkOptions"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "pageNode",
+          "jsdoc": "PageNode 运行配置",
+          "schema": {
+            "$ref": "#/$defs/PageNodeOptions"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "plugins",
+          "jsdoc": "UI 插件列表",
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "Plugin"
+            }
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "theme",
+          "jsdoc": "CSS 主题配置\n- `true` — 启用主题（默认 auto 跟随系统）\n- `ThemeServiceOptions` — 自定义初始模式 / 存储键\n- `false` / 不传 — 不启用主题服务",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "object",
+                "title": "ThemeServiceOptions"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "onBeforeStart",
+          "jsdoc": "启动前钩子",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "onStartError",
+          "jsdoc": "启动失败钩子（如果提供，将完全接管错误处理）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "error",
+              "type": {
+                "type": "reference",
+                "name": "Error"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.824Z",
+  "$defs": {
+    "SparkOptions": {
+      "type": "object",
+      "title": "SparkOptions",
+      "description": "SPARK 组件系统配置",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "autoRegister": {
+          "type": "boolean"
+        }
+      }
+    },
+    "PageNodeOptions": {
+      "type": "object",
+      "title": "PageNodeOptions",
+      "description": "PageNode 运行配置",
+      "properties": {
+        "apiBaseUrl": {
+          "type": "string"
+        },
+        "pagesConfigBaseUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "title": "() => string"
+            }
+          ]
+        },
+        "timeout": {
+          "type": "number"
+        },
+        "pageComponent": {
+          "type": "object",
+          "title": "Component"
+        },
+        "componentMap": {
+          "type": "object",
+          "title": "Record<string, Component>"
+        },
+        "tenantPathPrefix": {
+          "type": "string"
+        },
+        "platformPathPrefix": {
+          "type": "string"
+        },
+        "preAuthNavTree": {
+          "type": "object",
+          "title": "ProjectModelData"
+        }
+      }
+    },
+    "StartOptions": {
+      "type": "object",
+      "title": "StartOptions",
+      "description": "启动配置（扩展自 BootstrapOptions）",
+      "properties": {
+        "rootComponent": {
+          "type": "object",
+          "title": "Component"
+        },
+        "routerMode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "history"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "hash"
+              ]
+            }
+          ]
+        },
+        "mountTarget": {
+          "type": "string"
+        },
+        "spark": {
+          "$ref": "#/$defs/SparkOptions"
+        },
+        "pageNode": {
+          "$ref": "#/$defs/PageNodeOptions"
+        },
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "Plugin"
+          }
+        },
+        "theme": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "title": "ThemeServiceOptions"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

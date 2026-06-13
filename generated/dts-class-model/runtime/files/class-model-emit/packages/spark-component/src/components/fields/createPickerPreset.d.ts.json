@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/createPickerPreset.d.ts",
+  "symbols": [
+    "PickerPresetDefaults"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PickerPresetDefaults": {
+      "ref": "spark-class-model://schema/PickerPresetDefaults",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PickerPresetDefaults",
+        "properties": {
+          "placeholder": {
+            "type": "string"
+          },
+          "buttonText": {
+            "type": "string"
+          },
+          "readonlyButtonText": {
+            "type": "string"
+          },
+          "entityName": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PickerPresetDefaults"
+      }
+    },
+    "spark-class-model://model/PickerPresetDefaults/attributes/placeholder/0": {
+      "ref": "spark-class-model://model/PickerPresetDefaults/attributes/placeholder/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PickerPresetDefaults",
+      "name": "placeholder",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PickerPresetDefaults/attributes/buttonText/1": {
+      "ref": "spark-class-model://model/PickerPresetDefaults/attributes/buttonText/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PickerPresetDefaults",
+      "name": "buttonText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PickerPresetDefaults/attributes/readonlyButtonText/2": {
+      "ref": "spark-class-model://model/PickerPresetDefaults/attributes/readonlyButtonText/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PickerPresetDefaults",
+      "name": "readonlyButtonText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PickerPresetDefaults/attributes/entityName/3": {
+      "ref": "spark-class-model://model/PickerPresetDefaults/attributes/entityName/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PickerPresetDefaults",
+      "name": "entityName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PickerPresetDefaults": {
+      "ref": "spark-class-model://model/PickerPresetDefaults",
+      "kind": "model",
+      "className": "PickerPresetDefaults",
+      "schemaRef": "spark-class-model://schema/PickerPresetDefaults",
+      "attributeRefs": [
+        "spark-class-model://model/PickerPresetDefaults/attributes/placeholder/0",
+        "spark-class-model://model/PickerPresetDefaults/attributes/buttonText/1",
+        "spark-class-model://model/PickerPresetDefaults/attributes/readonlyButtonText/2",
+        "spark-class-model://model/PickerPresetDefaults/attributes/entityName/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

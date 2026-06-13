@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-json-document/src/tree/tree-policy.d.ts",
+  "symbols": [
+    "ResolvedPolicy"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ResolvedPolicy": {
+      "ref": "spark-class-model://schema/ResolvedPolicy",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ResolvedPolicy",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ResolvedPolicy"
+      }
+    },
+    "spark-class-model://model/ResolvedPolicy": {
+      "ref": "spark-class-model://model/ResolvedPolicy",
+      "kind": "model",
+      "className": "ResolvedPolicy",
+      "schemaRef": "spark-class-model://schema/ResolvedPolicy",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

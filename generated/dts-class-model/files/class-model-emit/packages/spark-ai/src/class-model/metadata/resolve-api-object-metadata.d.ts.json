@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/metadata/resolve-api-object-metadata",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/metadata/resolve-api-object-metadata",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/metadata/resolve-api-object-metadata\n职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/resolve-api-object-metadata 的 JsonSchemaObject、ResolveRuntimeApiMetadataJsonOptions语义。\n边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。\nAI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。\n\nResolve compact runtime API metadata (apiRegistry + action result $ref) into inline API trees.\nJSON Schema $ref 默认保留给运行时 AJV + schemaDefs；仅显式 inline 调用方可 inlineSchemaRefs。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "JsonSchemaObject",
+      "ResolveRuntimeApiMetadataJsonOptions"
+    ]
+  },
+  "symbols": [
+    "JsonSchemaObject",
+    "ResolveRuntimeApiMetadataJsonOptions"
+  ],
+  "models": {
+    "JsonSchemaObject": {
+      "kind": "JsonSchemaObject",
+      "className": "JsonSchemaObject",
+      "jsdoc": "Json Schema Object 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<Record<string, unknown>>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<Record<string, unknown>>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.d.ts",
+        "line": 14,
+        "className": "JsonSchemaObject",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ResolveRuntimeApiMetadataJsonOptions": {
+      "kind": "ResolveRuntimeApiMetadataJsonOptions",
+      "className": "ResolveRuntimeApiMetadataJsonOptions",
+      "jsdoc": "Resolve Runtime API Metadata Json Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    schemaDefs?: Readonly<Record<string, JsonSchemaObject>>;\n    /** @default false — true 时在注册前 inline #/$defs/*；false 时留给 AJV 2020 解析。 */\n    inlineSchemaRefs?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    schemaDefs?: Readonly<Record<string, JsonSchemaObject>>;\n    /** @default false — true 时在注册前 inline #/$defs/*；false 时留给 AJV 2020 解析。 */\n    inlineSchemaRefs?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/resolve-api-object-metadata.d.ts",
+        "line": 16,
+        "className": "ResolveRuntimeApiMetadataJsonOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "schemaDefs",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, JsonSchemaObject>>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "inlineSchemaRefs",
+          "jsdoc": "@default false — true 时在注册前 inline #/$defs/*；false 时留给 AJV 2020 解析。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.625Z",
+  "$defs": {
+    "JsonSchemaObject": {
+      "type": "object",
+      "title": "JsonSchemaObject",
+      "description": "Json Schema Object 的语义模型。"
+    },
+    "ResolveRuntimeApiMetadataJsonOptions": {
+      "type": "object",
+      "title": "ResolveRuntimeApiMetadataJsonOptions",
+      "description": "Resolve Runtime API Metadata Json Options 的调用配置。",
+      "properties": {
+        "schemaDefs": {
+          "type": "object",
+          "title": "Readonly<Record<string, JsonSchemaObject>>"
+        },
+        "inlineSchemaRefs": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

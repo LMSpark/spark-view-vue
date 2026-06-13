@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/permission/PermissionResolver.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:permission/PermissionResolver",
+    "sourcePath": "class-model-emit/packages/spark-component/src/permission/PermissionResolver.d.ts",
+    "sourceFile": "packages/spark-component/src/permission/PermissionResolver.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "permission/PermissionResolver",
+    "jsdoc": "@module @spark-appworks/spark-component:permission/PermissionResolver\n职责：提供 Permission Resolver 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\n\n权限动作解析器 — 纯函数集\n统一的动作级权限判断 + 字段权限状态解析。\n合并了动作权限相关的模型/行级判断。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PermissionActionContext",
+      "PermissionActionName",
+      "PermissionAction",
+      "ResolveFieldPermissionStateInput"
+    ]
+  },
+  "symbols": [
+    "PermissionActionContext",
+    "PermissionActionName",
+    "PermissionAction",
+    "ResolveFieldPermissionStateInput"
+  ],
+  "models": {
+    "PermissionActionContext": {
+      "kind": "PermissionActionContext",
+      "className": "PermissionActionContext",
+      "jsdoc": "Permission Action Context 的运行上下文。",
+      "shapeKind": "type",
+      "declarationTypeText": "ScriptPermissionActionContext & {\n    /** permission Mode 字段。 */\n    permissionMode?: NavPermissionMode | undefined;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "ScriptPermissionActionContext",
+          "targetName": "ScriptPermissionActionContext"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** permission Mode 字段。 */\n    permissionMode?: NavPermissionMode | undefined;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/permission/PermissionResolver.d.ts",
+        "line": 18,
+        "className": "PermissionActionContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "permissionMode",
+          "jsdoc": "permission Mode 字段。",
+          "schema": {
+            "type": "object",
+            "title": "NavPermissionMode"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "PermissionActionName": {
+      "kind": "PermissionActionName",
+      "className": "PermissionActionName",
+      "jsdoc": "Permission Action Name 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "'create' | 'import' | 'export' | 'create-child' | 'delete' | 'edit'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'create'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'import'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'export'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'create-child'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'delete'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'edit'"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/permission/PermissionResolver.d.ts",
+        "line": 23,
+        "className": "PermissionActionName",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "PermissionAction": {
+      "kind": "PermissionAction",
+      "className": "PermissionAction",
+      "jsdoc": "Permission Action 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "PermissionActionName | (string & {})",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "PermissionActionName",
+          "targetName": "PermissionActionName"
+        },
+        {
+          "kind": "union",
+          "typeText": "(string & {})"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/permission/PermissionResolver.d.ts",
+        "line": 25,
+        "className": "PermissionAction",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ResolveFieldPermissionStateInput": {
+      "kind": "ResolveFieldPermissionStateInput",
+      "className": "ResolveFieldPermissionStateInput",
+      "jsdoc": "Resolve Field Permission State Input 的输入数据。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    field: string | undefined;\n    row: DataRow | null | undefined;\n    config?: Omit<FieldRenderConfig, 'field'> | undefined;\n    permissionMode?: NavPermissionMode | undefined;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    field: string | undefined;\n    row: DataRow | null | undefined;\n    config?: Omit<FieldRenderConfig, 'field'> | undefined;\n    permissionMode?: NavPermissionMode | undefined;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/permission/PermissionResolver.d.ts",
+        "line": 35,
+        "className": "ResolveFieldPermissionStateInput",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "field",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "row",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "config",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Omit<FieldRenderConfig, 'field'>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "permissionMode",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "NavPermissionMode"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.135Z",
+  "$defs": {
+    "PermissionActionContext": {
+      "type": "object",
+      "title": "PermissionActionContext",
+      "description": "Permission Action Context 的运行上下文。",
+      "properties": {
+        "permissionMode": {
+          "type": "object",
+          "title": "NavPermissionMode"
+        }
+      }
+    },
+    "PermissionActionName": {
+      "type": "object",
+      "title": "PermissionActionName",
+      "description": "Permission Action Name 的语义模型。"
+    },
+    "PermissionAction": {
+      "type": "object",
+      "title": "PermissionAction",
+      "description": "Permission Action 的语义模型。"
+    },
+    "ResolveFieldPermissionStateInput": {
+      "type": "object",
+      "title": "ResolveFieldPermissionStateInput",
+      "description": "Resolve Field Permission State Input 的输入数据。",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "config": {
+          "type": "object",
+          "title": "Omit<FieldRenderConfig, 'field'>"
+        },
+        "permissionMode": {
+          "type": "object",
+          "title": "NavPermissionMode"
+        }
+      }
+    }
+  }
+}

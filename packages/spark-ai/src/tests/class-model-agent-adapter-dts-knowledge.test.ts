@@ -31,7 +31,7 @@ class RuntimeParent {
 describe('ClassModelAgentAdapter DTS knowledge wiring', () => {
   it('creates dynamic DTS knowledge when registration only provides manifest and root class', async () => {
     const tempRoot = resolve(tmpdir(), `spark-agent-dts-knowledge-${String(process.pid)}-${String(Date.now())}`)
-    const sourcePath = 'declarations/packages/spark-ai/src/tests/demo-business.d.ts'
+    const sourcePath = 'class-model-emit/packages/spark-ai/src/tests/demo-business.d.ts'
     const absolutePath = resolve(tempRoot, sourcePath)
     const outputDir = resolve(tempRoot, 'generated/dts-class-model')
     try {
@@ -87,7 +87,7 @@ describe('ClassModelAgentAdapter DTS knowledge wiring', () => {
 
   it('constructs the root module before running DTS-backed child property chains', async () => {
     const tempRoot = resolve(tmpdir(), `spark-agent-dts-constructor-child-${String(process.pid)}-${String(Date.now())}`)
-    const sourcePath = 'declarations/packages/spark-ai/src/tests/runtime-parent.d.ts'
+    const sourcePath = 'class-model-emit/packages/spark-ai/src/tests/runtime-parent.d.ts'
     const absolutePath = resolve(tempRoot, sourcePath)
     const outputDir = resolve(tempRoot, 'generated/dts-class-model')
     try {

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-defs.d.ts",
+  "symbols": [
+    "JsonSchemaLocalDefsExtraction"
+  ],
+  "@refs": {
+    "spark-class-model://schema/JsonSchemaLocalDefsExtraction": {
+      "ref": "spark-class-model://schema/JsonSchemaLocalDefsExtraction",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "JsonSchemaLocalDefsExtraction",
+        "properties": {
+          "schema": true,
+          "defs": {
+            "type": "object",
+            "title": "Readonly<Record<string, JsonSchema>>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/JsonSchemaLocalDefsExtraction"
+      }
+    },
+    "spark-class-model://model/JsonSchemaLocalDefsExtraction/attributes/schema/0": {
+      "ref": "spark-class-model://model/JsonSchemaLocalDefsExtraction/attributes/schema/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonSchemaLocalDefsExtraction",
+      "name": "schema",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/648eeae7e213de6bfb714f93345c97bf8e534426ee368c3d08f8a403719234fc": {
+      "ref": "spark-class-model://schema/shared/648eeae7e213de6bfb714f93345c97bf8e534426ee368c3d08f8a403719234fc",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Readonly<Record<string, JsonSchema>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/648eeae7e213de6bfb714f93345c97bf8e534426ee368c3d08f8a403719234fc"
+      }
+    },
+    "spark-class-model://model/JsonSchemaLocalDefsExtraction/attributes/defs/1": {
+      "ref": "spark-class-model://model/JsonSchemaLocalDefsExtraction/attributes/defs/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonSchemaLocalDefsExtraction",
+      "name": "defs",
+      "schemaRef": "spark-class-model://schema/shared/648eeae7e213de6bfb714f93345c97bf8e534426ee368c3d08f8a403719234fc",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/JsonSchemaLocalDefsExtraction": {
+      "ref": "spark-class-model://model/JsonSchemaLocalDefsExtraction",
+      "kind": "model",
+      "className": "JsonSchemaLocalDefsExtraction",
+      "schemaRef": "spark-class-model://schema/JsonSchemaLocalDefsExtraction",
+      "attributeRefs": [
+        "spark-class-model://model/JsonSchemaLocalDefsExtraction/attributes/schema/0",
+        "spark-class-model://model/JsonSchemaLocalDefsExtraction/attributes/defs/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/project-from-declarations.d.ts",
+  "symbols": [
+    "ProjectDtsSourceFileProjectionOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ProjectDtsSourceFileProjectionOptions": {
+      "ref": "spark-class-model://schema/ProjectDtsSourceFileProjectionOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectDtsSourceFileProjectionOptions",
+        "properties": {
+          "repoRoot": {
+            "type": "string"
+          },
+          "absolutePath": {
+            "type": "string"
+          },
+          "sourceFile": {
+            "type": "object",
+            "title": "ts.SourceFile"
+          },
+          "checker": {
+            "type": "object",
+            "title": "ts.TypeChecker"
+          },
+          "exportedOnly": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectDtsSourceFileProjectionOptions"
+      }
+    },
+    "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/repoRoot/0": {
+      "ref": "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/repoRoot/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectDtsSourceFileProjectionOptions",
+      "name": "repoRoot",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/absolutePath/1": {
+      "ref": "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/absolutePath/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectDtsSourceFileProjectionOptions",
+      "name": "absolutePath",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/9fd4e6b646e1ba279ebb85a668bdb4f0ef19f74ad4e0c878acde6af4288995c3": {
+      "ref": "spark-class-model://schema/shared/9fd4e6b646e1ba279ebb85a668bdb4f0ef19f74ad4e0c878acde6af4288995c3",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ts.SourceFile",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9fd4e6b646e1ba279ebb85a668bdb4f0ef19f74ad4e0c878acde6af4288995c3"
+      }
+    },
+    "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/sourceFile/2": {
+      "ref": "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/sourceFile/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectDtsSourceFileProjectionOptions",
+      "name": "sourceFile",
+      "schemaRef": "spark-class-model://schema/shared/9fd4e6b646e1ba279ebb85a668bdb4f0ef19f74ad4e0c878acde6af4288995c3",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/f51afec5929fca4cf2e90433422db100e2042e5a856189c39fe03b1b80853529": {
+      "ref": "spark-class-model://schema/shared/f51afec5929fca4cf2e90433422db100e2042e5a856189c39fe03b1b80853529",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ts.TypeChecker",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f51afec5929fca4cf2e90433422db100e2042e5a856189c39fe03b1b80853529"
+      }
+    },
+    "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/checker/3": {
+      "ref": "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/checker/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectDtsSourceFileProjectionOptions",
+      "name": "checker",
+      "schemaRef": "spark-class-model://schema/shared/f51afec5929fca4cf2e90433422db100e2042e5a856189c39fe03b1b80853529",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/exportedOnly/4": {
+      "ref": "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/exportedOnly/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectDtsSourceFileProjectionOptions",
+      "name": "exportedOnly",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectDtsSourceFileProjectionOptions": {
+      "ref": "spark-class-model://model/ProjectDtsSourceFileProjectionOptions",
+      "kind": "model",
+      "className": "ProjectDtsSourceFileProjectionOptions",
+      "schemaRef": "spark-class-model://schema/ProjectDtsSourceFileProjectionOptions",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/repoRoot/0",
+        "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/absolutePath/1",
+        "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/sourceFile/2",
+        "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/checker/3",
+        "spark-class-model://model/ProjectDtsSourceFileProjectionOptions/attributes/exportedOnly/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

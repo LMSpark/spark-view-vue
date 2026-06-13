@@ -127,7 +127,7 @@ AiAgentRegistration = {
 flowchart TB
   subgraph L0["L0 编译期 · 知识真源"]
     SRC["TS/Vue 源码 + @module JSDoc"]
-    DTS["declarations/**/*.d.ts"]
+    DTS["内存 .d.ts（emit only，不落盘）"]
     GEN["generate-dts-class-model.mjs"]
     BUNDLE["generated/dts-class-model/<br/>manifest + per-file JSON"]
     SRC --> DTS --> GEN --> BUNDLE
@@ -183,7 +183,7 @@ flowchart TB
 
 | 层 | 名称 | 输入 | 输出 | 核心模块 |
 | -- | ---- | ---- | ---- | -------- |
-| **L0** | 声明投影 | `.ts` 源码 | `manifest.json` + per-file JSON | `project-from-declarations.ts`, `build-dts-class-model-bundle.ts` |
+| **L0** | 声明投影 | `.ts` 源码 | `manifest.json` + per-file JSON | 内存 emit → `build-dts-class-model-bundle.ts` |
 | **L1** | 知识索引 | manifest URL + rootClassName | query / guide 文本 | `DtsClassModelBundleLoader`, `ClassModelKnowledgeService`, Worker |
 | **L2** | 业务工厂 | APP 上下文（editor、manifest） | **业务能力包** Registration | `AiAgentHost.ensure`, `ClassModelAgentAdapter` |
 | **L3** | 工单 + 聊天 | 工单 Input | Task + Session | `createAiAgentTask`, `AiAgentSession` |
@@ -192,20 +192,23 @@ flowchart TB
 
 ---
 
-## 3. L0：`.d.ts` → JSON
+## 3. L0：源码 → JSON（内存 emit，不落盘 `.d.ts`）
 
 ### 3.1 流水线
 
 ```text
-pnpm run generate:declarations          # vue-tsc → declarations/**
-pnpm run generate:class-model-surface     # AST 投影 → generated/dts-class-model/
+pnpm run generate:class-model-surface
+  → emitDeclarationsToMemory(tsconfig.class-model-emit.json → packages/*/src)
+  → buildDtsClassModelBundle(AST 投影)
+  → generated/dts-class-model/manifest.json + files/**/*.d.ts.json
 ```
 
 | 步骤 | 说明 |
 | ---- | ---- |
+| **内存 emit** | `compiler-api` 或 `vue-tsc`；`.d.ts` 仅在内存 Map；bundle 键前缀 `class-model-emit/` |
 | **JSDoc 真源** | 模块级 `@module`（职责/边界/AI用途）、成员 JSDoc、`@param`/`@returns` |
-| **AST 投影** | `project-from-declarations.ts`：class/interface/enum、attributes、methods、TypeDoc 式 type 树 |
-| **Bundle 落盘** | 每 DTS 文件 → 一个 JSON shard；`classIndex[className]` → shard 路径 |
+| **AST 投影** | `build-dts-class-model-bundle.ts`：class/interface/enum、attributes、methods、TypeDoc 式 type 树 |
+| **Bundle 落盘** | 每逻辑 DTS → 一个 JSON shard；`classIndex[className]` → shard 路径 |
 | **语义审计** | `semantic-gaps.json`：弱 JSDoc、断链 relation（不阻断生成） |
 
 ### 3.2 JSON shard 契约（MethodMeta SSOT）
@@ -228,9 +231,9 @@ pnpm run generate:class-model-surface     # AST 投影 → generated/dts-class-m
 
 | 命令 | 用途 |
 | ---- | ---- |
-| `generate:class-model-surface` | 日常重建 bundle |
-| `generate:class-model-surface:delete-dts` | 生成后删除临时 declarations |
-| `verify:class-model:full` | rebuild + lint + typecheck + 关键测试 |
+| `generate:class-model-surface` | 全量重建 JSON bundle |
+| `generate:class-model-surface:model` | 按 root className 增量编译并 merge |
+| `verify:class-model:full` | 全量 generate + lint + typecheck + 关键测试（无需 `build:packages`） |
 
 ---
 

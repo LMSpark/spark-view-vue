@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalPanel.props.d.ts",
+  "symbols": [
+    "AiToolApprovalPanelProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiToolApprovalPanelProps": {
+      "ref": "spark-class-model://schema/AiToolApprovalPanelProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiToolApprovalPanelProps",
+        "properties": {
+          "pending": {
+            "type": "array"
+          },
+          "emptyText": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiToolApprovalPanelProps"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalPanelProps/attributes/pending/0": {
+      "ref": "spark-class-model://model/AiToolApprovalPanelProps/attributes/pending/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiToolApprovalPanelProps",
+      "name": "pending",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiToolApprovalPanelProps/attributes/emptyText/1": {
+      "ref": "spark-class-model://model/AiToolApprovalPanelProps/attributes/emptyText/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiToolApprovalPanelProps",
+      "name": "emptyText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiToolApprovalPanelProps": {
+      "ref": "spark-class-model://model/AiToolApprovalPanelProps",
+      "kind": "model",
+      "className": "AiToolApprovalPanelProps",
+      "schemaRef": "spark-class-model://schema/AiToolApprovalPanelProps",
+      "attributeRefs": [
+        "spark-class-model://model/AiToolApprovalPanelProps/attributes/pending/0",
+        "spark-class-model://model/AiToolApprovalPanelProps/attributes/emptyText/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

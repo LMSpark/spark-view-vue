@@ -1,0 +1,322 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/tool-loop/tool-call-executor",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/tool-loop/tool-call-executor.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/tool-loop/tool-call-executor",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/tool-loop/tool-call-executor\n职责：支撑 Agent tool loop 的 tool call executor 能力，处理工具调用、结果映射、诊断事件或 payload 编解码。\n边界：只服务单次 turn 内的工具循环，不定义业务注册协议，也不直接管理 UI 或持久化页面状态。\nAI用途：排查工具调用为什么继续、完成、失败或被映射成回调事件时，用本模块定位 loop 内部语义。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentToolNameResolver",
+      "AiAgentToolCallExecutionInput",
+      "AiAgentToolCallExecutionOutput",
+      "AiAgentToolCallExecutor"
+    ]
+  },
+  "symbols": [
+    "AiAgentToolNameResolver",
+    "AiAgentToolCallExecutionInput",
+    "AiAgentToolCallExecutionOutput",
+    "AiAgentToolCallExecutor"
+  ],
+  "models": {
+    "AiAgentToolNameResolver": {
+      "kind": "AiAgentToolNameResolver",
+      "className": "AiAgentToolNameResolver",
+      "jsdoc": "从 transport toolName 回查当前 runtime 可执行 toolName。",
+      "shapeKind": "type",
+      "declarationTypeText": "(toolName: string) => string | null",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts",
+        "line": 15,
+        "className": "AiAgentToolNameResolver",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentToolCallExecutionInput": {
+      "kind": "AiAgentToolCallExecutionInput",
+      "className": "AiAgentToolCallExecutionInput",
+      "jsdoc": "工具调用执行的输入参数",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    registration: AiAgentRegistration<TInput>;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    round: number;\n    /** transport toolName → runtime toolName 的解析函数 */\n    resolveToolName: AiAgentToolNameResolver;\n    /** LLM 返回的原始 transport tool_call */\n    call: AiAgentTransportToolCall;\n    request: AiAgentChatRequest;\n    sessionStore: AiAgentSessionStore;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    registration: AiAgentRegistration<TInput>;\n    scope: AiAgentScope;\n    turn: AiAgentTurnMeta;\n    round: number;\n    /** transport toolName → runtime toolName 的解析函数 */\n    resolveToolName: AiAgentToolNameResolver;\n    /** LLM 返回的原始 transport tool_call */\n    call: AiAgentTransportToolCall;\n    request: AiAgentChatRequest;\n    sessionStore: AiAgentSessionStore;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts",
+        "line": 17,
+        "className": "AiAgentToolCallExecutionInput",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "registration",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentRegistration<TInput>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "scope",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentScope"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "turn",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTurnMeta"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "round",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "resolveToolName",
+          "jsdoc": "transport toolName → runtime toolName 的解析函数",
+          "schema": {
+            "$ref": "#/$defs/AiAgentToolNameResolver"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "call",
+          "jsdoc": "LLM 返回的原始 transport tool_call",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTransportToolCall"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "request",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentChatRequest"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "sessionStore",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentSessionStore"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentToolCallExecutionOutput": {
+      "kind": "AiAgentToolCallExecutionOutput",
+      "className": "AiAgentToolCallExecutionOutput",
+      "jsdoc": "工具调用执行的输出",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    /** 发回 LLM 的工具消息（role: 'tool'） */\n    toolMessage: AiAgentTransportMessage;\n    /** 业务生命周期指令（continue / complete / abort） */\n    directive: AiAgentLifecycleDirective;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    /** 发回 LLM 的工具消息（role: 'tool'） */\n    toolMessage: AiAgentTransportMessage;\n    /** 业务生命周期指令（continue / complete / abort） */\n    directive: AiAgentLifecycleDirective;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts",
+        "line": 30,
+        "className": "AiAgentToolCallExecutionOutput",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "toolMessage",
+          "jsdoc": "发回 LLM 的工具消息（role: 'tool'）",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTransportMessage"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "directive",
+          "jsdoc": "业务生命周期指令（continue / complete / abort）",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentLifecycleDirective"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentToolCallExecutor": {
+      "kind": "AiAgentToolCallExecutor",
+      "className": "AiAgentToolCallExecutor",
+      "jsdoc": "Ai Agent Tool Call Executor 的语义模型。",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts",
+        "line": 37,
+        "className": "AiAgentToolCallExecutor",
+        "declarationKind": "class"
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "execute",
+          "jsdoc": "执行单次工具调用。\n返回 null 表示工具无法识别（resolveToolName 返回 null），\n此时错误信息已通过 onDelta 推送给前端，调用方应跳过该调用。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "AiAgentToolCallExecutionInput",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "TInput",
+                    "refersToTypeParameter": true
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "AiAgentToolCallExecutionOutput",
+                    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/tool-call-executor.d.ts"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/AiAgentToolCallExecutionInput",
+                "title": "AiAgentToolCallExecutionInput<TInput>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiAgentToolCallExecutionOutput | null>"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.196Z",
+  "$defs": {
+    "AiAgentToolNameResolver": {
+      "type": "object",
+      "title": "AiAgentToolNameResolver",
+      "description": "从 transport toolName 回查当前 runtime 可执行 toolName。"
+    },
+    "AiAgentToolCallExecutionInput": {
+      "type": "object",
+      "title": "AiAgentToolCallExecutionInput",
+      "description": "工具调用执行的输入参数",
+      "properties": {
+        "registration": {
+          "type": "object",
+          "title": "AiAgentRegistration<TInput>"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "turn": {
+          "type": "object",
+          "title": "AiAgentTurnMeta"
+        },
+        "round": {
+          "type": "number"
+        },
+        "resolveToolName": {
+          "$ref": "#/$defs/AiAgentToolNameResolver"
+        },
+        "call": {
+          "type": "object",
+          "title": "AiAgentTransportToolCall"
+        },
+        "request": {
+          "type": "object",
+          "title": "AiAgentChatRequest"
+        },
+        "sessionStore": {
+          "type": "object",
+          "title": "AiAgentSessionStore"
+        }
+      }
+    },
+    "AiAgentToolCallExecutionOutput": {
+      "type": "object",
+      "title": "AiAgentToolCallExecutionOutput",
+      "description": "工具调用执行的输出",
+      "properties": {
+        "toolMessage": {
+          "type": "object",
+          "title": "AiAgentTransportMessage"
+        },
+        "directive": {
+          "type": "object",
+          "title": "AiAgentLifecycleDirective"
+        }
+      }
+    },
+    "AiAgentToolCallExecutor": {
+      "type": "object",
+      "title": "AiAgentToolCallExecutor",
+      "description": "Ai Agent Tool Call Executor 的语义模型。"
+    }
+  }
+}

@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-app/src/config/loader.d.ts",
+  "symbols": [
+    "ConfigLoader",
+    "TenantResolver"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ConfigLoader": {
+      "ref": "spark-class-model://schema/ConfigLoader",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ConfigLoader",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ConfigLoader"
+      }
+    },
+    "spark-class-model://model/ConfigLoader/methods/getInstance/0": {
+      "ref": "spark-class-model://model/ConfigLoader/methods/getInstance/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ConfigLoader",
+      "name": "getInstance",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/180c315878667e4ef26a0fe800d2fe64971bba06574d611ead0c9e415957cbe0"
+    },
+    "spark-class-model://schema/shared/180c315878667e4ef26a0fe800d2fe64971bba06574d611ead0c9e415957cbe0": {
+      "ref": "spark-class-model://schema/shared/180c315878667e4ef26a0fe800d2fe64971bba06574d611ead0c9e415957cbe0",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ConfigLoader",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/180c315878667e4ef26a0fe800d2fe64971bba06574d611ead0c9e415957cbe0"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FConfigLoader%2Fmethods%2FgetInstance%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FConfigLoader": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FConfigLoader%2Fmethods%2FgetInstance%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FConfigLoader",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ConfigLoader/methods/getInstance/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/ConfigLoader",
+      "targetClassName": "ConfigLoader",
+      "targetFile": "files/class-model-emit/packages/spark-app/src/config/loader.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ConfigLoader"
+    },
+    "spark-class-model://model/ConfigLoader/methods/loadDefaultConfig/1": {
+      "ref": "spark-class-model://model/ConfigLoader/methods/loadDefaultConfig/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ConfigLoader",
+      "name": "loadDefaultConfig",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/883d2a2c15cbe109045ded9d8b7026597d05db02fe44d6f920c574d482daa066"
+    },
+    "spark-class-model://schema/shared/883d2a2c15cbe109045ded9d8b7026597d05db02fe44d6f920c574d482daa066": {
+      "ref": "spark-class-model://schema/shared/883d2a2c15cbe109045ded9d8b7026597d05db02fe44d6f920c574d482daa066",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<AppFullConfig>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/883d2a2c15cbe109045ded9d8b7026597d05db02fe44d6f920c574d482daa066"
+      }
+    },
+    "spark-class-model://model/ConfigLoader/methods/loadTenantConfig/2": {
+      "ref": "spark-class-model://model/ConfigLoader/methods/loadTenantConfig/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ConfigLoader",
+      "name": "loadTenantConfig",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/efc432cb3fb7851319bb3e60d781ef543886cb1f1c238deea791672ee5977cd0",
+      "returnSchemaRef": "spark-class-model://schema/shared/e41d62e44921348bdcd040c26df511bb548506ae31dfadd4f0d131de715dd5ad"
+    },
+    "spark-class-model://schema/shared/efc432cb3fb7851319bb3e60d781ef543886cb1f1c238deea791672ee5977cd0": {
+      "ref": "spark-class-model://schema/shared/efc432cb3fb7851319bb3e60d781ef543886cb1f1c238deea791672ee5977cd0",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/efc432cb3fb7851319bb3e60d781ef543886cb1f1c238deea791672ee5977cd0"
+      }
+    },
+    "spark-class-model://schema/shared/e41d62e44921348bdcd040c26df511bb548506ae31dfadd4f0d131de715dd5ad": {
+      "ref": "spark-class-model://schema/shared/e41d62e44921348bdcd040c26df511bb548506ae31dfadd4f0d131de715dd5ad",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<TenantConfig | null>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e41d62e44921348bdcd040c26df511bb548506ae31dfadd4f0d131de715dd5ad"
+      }
+    },
+    "spark-class-model://model/ConfigLoader/methods/loadConfig/3": {
+      "ref": "spark-class-model://model/ConfigLoader/methods/loadConfig/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ConfigLoader",
+      "name": "loadConfig",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/efc432cb3fb7851319bb3e60d781ef543886cb1f1c238deea791672ee5977cd0",
+      "returnSchemaRef": "spark-class-model://schema/shared/883d2a2c15cbe109045ded9d8b7026597d05db02fe44d6f920c574d482daa066"
+    },
+    "spark-class-model://model/ConfigLoader/methods/clearCache/4": {
+      "ref": "spark-class-model://model/ConfigLoader/methods/clearCache/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ConfigLoader",
+      "name": "clearCache",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/ConfigLoader": {
+      "ref": "spark-class-model://model/ConfigLoader",
+      "kind": "model",
+      "className": "ConfigLoader",
+      "schemaRef": "spark-class-model://schema/ConfigLoader",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ConfigLoader/methods/getInstance/0",
+        "spark-class-model://model/ConfigLoader/methods/loadDefaultConfig/1",
+        "spark-class-model://model/ConfigLoader/methods/loadTenantConfig/2",
+        "spark-class-model://model/ConfigLoader/methods/loadConfig/3",
+        "spark-class-model://model/ConfigLoader/methods/clearCache/4"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FConfigLoader%2Fmethods%2FgetInstance%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FConfigLoader"
+      ]
+    },
+    "spark-class-model://schema/TenantResolver": {
+      "ref": "spark-class-model://schema/TenantResolver",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "TenantResolver",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/TenantResolver"
+      }
+    },
+    "spark-class-model://model/TenantResolver/methods/fromQuery/0": {
+      "ref": "spark-class-model://model/TenantResolver/methods/fromQuery/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/TenantResolver",
+      "name": "fromQuery",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
+    },
+    "spark-class-model://model/TenantResolver/methods/fromSubdomain/1": {
+      "ref": "spark-class-model://model/TenantResolver/methods/fromSubdomain/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/TenantResolver",
+      "name": "fromSubdomain",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
+    },
+    "spark-class-model://model/TenantResolver/methods/fromLocalStorage/2": {
+      "ref": "spark-class-model://model/TenantResolver/methods/fromLocalStorage/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/TenantResolver",
+      "name": "fromLocalStorage",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
+    },
+    "spark-class-model://model/TenantResolver/methods/fromCookie/3": {
+      "ref": "spark-class-model://model/TenantResolver/methods/fromCookie/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/TenantResolver",
+      "name": "fromCookie",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
+    },
+    "spark-class-model://model/TenantResolver/methods/resolve/4": {
+      "ref": "spark-class-model://model/TenantResolver/methods/resolve/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/TenantResolver",
+      "name": "resolve",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
+    },
+    "spark-class-model://model/TenantResolver/methods/save/5": {
+      "ref": "spark-class-model://model/TenantResolver/methods/save/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/TenantResolver",
+      "name": "save",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/efc432cb3fb7851319bb3e60d781ef543886cb1f1c238deea791672ee5977cd0"
+    },
+    "spark-class-model://model/TenantResolver": {
+      "ref": "spark-class-model://model/TenantResolver",
+      "kind": "model",
+      "className": "TenantResolver",
+      "schemaRef": "spark-class-model://schema/TenantResolver",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/TenantResolver/methods/fromQuery/0",
+        "spark-class-model://model/TenantResolver/methods/fromSubdomain/1",
+        "spark-class-model://model/TenantResolver/methods/fromLocalStorage/2",
+        "spark-class-model://model/TenantResolver/methods/fromCookie/3",
+        "spark-class-model://model/TenantResolver/methods/resolve/4",
+        "spark-class-model://model/TenantResolver/methods/save/5"
+      ],
+      "linkRefs": []
+    }
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/app-sse-events.d.ts",
+  "symbols": [
+    "AiAgentAppSseEventName",
+    "AiAgentAppSseEvent"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentAppSseEventName": {
+      "ref": "spark-class-model://schema/AiAgentAppSseEventName",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentAppSseEventName",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentAppSseEventName"
+      }
+    },
+    "spark-class-model://model/AiAgentAppSseEventName": {
+      "ref": "spark-class-model://model/AiAgentAppSseEventName",
+      "kind": "model",
+      "className": "AiAgentAppSseEventName",
+      "schemaRef": "spark-class-model://schema/AiAgentAppSseEventName",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentAppSseEvent": {
+      "ref": "spark-class-model://schema/AiAgentAppSseEvent",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentAppSseEvent",
+        "properties": {
+          "name": {
+            "$ref": "spark-class-model://schema/AiAgentAppSseEventName"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "data": true,
+          "rawData": {
+            "type": "string"
+          },
+          "rawPayload": true,
+          "protocolVersion": {
+            "type": "number"
+          },
+          "context": {
+            "$ref": "spark-class-model://schema/ApiEnvelopeContext"
+          },
+          "event": {
+            "$ref": "spark-class-model://schema/ApiEnvelopeEvent"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentAppSseEvent"
+      }
+    },
+    "spark-class-model://schema/shared/229963c69f1ac1ee273ab734549699cd5e8f88d72e6b0fe5f3c24b80f6a447db": {
+      "ref": "spark-class-model://schema/shared/229963c69f1ac1ee273ab734549699cd5e8f88d72e6b0fe5f3c24b80f6a447db",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentAppSseEventName",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/229963c69f1ac1ee273ab734549699cd5e8f88d72e6b0fe5f3c24b80f6a447db"
+      }
+    },
+    "spark-class-model://model/AiAgentAppSseEvent/attributes/name/0": {
+      "ref": "spark-class-model://model/AiAgentAppSseEvent/attributes/name/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentAppSseEvent",
+      "name": "name",
+      "schemaRef": "spark-class-model://schema/shared/229963c69f1ac1ee273ab734549699cd5e8f88d72e6b0fe5f3c24b80f6a447db",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppSseEvent%2Fattributes%2Fname%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppSseEventName": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppSseEvent%2Fattributes%2Fname%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppSseEventName",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentAppSseEvent/attributes/name/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentAppSseEventName",
+      "targetClassName": "AiAgentAppSseEventName",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/transport/app-sse-events.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentAppSseEventName"
+    },
+    "spark-class-model://model/AiAgentAppSseEvent/attributes/ok/1": {
+      "ref": "spark-class-model://model/AiAgentAppSseEvent/attributes/ok/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentAppSseEvent",
+      "name": "ok",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentAppSseEvent/attributes/data/2": {
+      "ref": "spark-class-model://model/AiAgentAppSseEvent/attributes/data/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentAppSseEvent",
+      "name": "data",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentAppSseEvent/attributes/rawData/3": {
+      "ref": "spark-class-model://model/AiAgentAppSseEvent/attributes/rawData/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentAppSseEvent",
+      "name": "rawData",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentAppSseEvent/attributes/rawPayload/4": {
+      "ref": "spark-class-model://model/AiAgentAppSseEvent/attributes/rawPayload/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentAppSseEvent",
+      "name": "rawPayload",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentAppSseEvent/attributes/protocolVersion/5": {
+      "ref": "spark-class-model://model/AiAgentAppSseEvent/attributes/protocolVersion/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentAppSseEvent",
+      "name": "protocolVersion",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/64548ceafe9aab4d7796870e008d6f500df671e4cce68d21381c972fd24c6f89": {
+      "ref": "spark-class-model://schema/shared/64548ceafe9aab4d7796870e008d6f500df671e4cce68d21381c972fd24c6f89",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ApiEnvelopeContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/64548ceafe9aab4d7796870e008d6f500df671e4cce68d21381c972fd24c6f89"
+      }
+    },
+    "spark-class-model://model/AiAgentAppSseEvent/attributes/context/6": {
+      "ref": "spark-class-model://model/AiAgentAppSseEvent/attributes/context/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentAppSseEvent",
+      "name": "context",
+      "schemaRef": "spark-class-model://schema/shared/64548ceafe9aab4d7796870e008d6f500df671e4cce68d21381c972fd24c6f89",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppSseEvent%2Fattributes%2Fcontext%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FApiEnvelopeContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppSseEvent%2Fattributes%2Fcontext%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FApiEnvelopeContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentAppSseEvent/attributes/context/6",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ApiEnvelopeContext",
+      "targetClassName": "ApiEnvelopeContext",
+      "targetFile": "files/class-model-emit/packages/spark-utils/src/http/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ApiEnvelopeContext"
+    },
+    "spark-class-model://schema/shared/c4804aec1591e911f7f09ea8587c08e329db16bc2eb22ca5b69669c7bb118315": {
+      "ref": "spark-class-model://schema/shared/c4804aec1591e911f7f09ea8587c08e329db16bc2eb22ca5b69669c7bb118315",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ApiEnvelopeEvent",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c4804aec1591e911f7f09ea8587c08e329db16bc2eb22ca5b69669c7bb118315"
+      }
+    },
+    "spark-class-model://model/AiAgentAppSseEvent/attributes/event/7": {
+      "ref": "spark-class-model://model/AiAgentAppSseEvent/attributes/event/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentAppSseEvent",
+      "name": "event",
+      "schemaRef": "spark-class-model://schema/shared/c4804aec1591e911f7f09ea8587c08e329db16bc2eb22ca5b69669c7bb118315",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppSseEvent%2Fattributes%2Fevent%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FApiEnvelopeEvent": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppSseEvent%2Fattributes%2Fevent%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FApiEnvelopeEvent",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentAppSseEvent/attributes/event/7",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ApiEnvelopeEvent",
+      "targetClassName": "ApiEnvelopeEvent",
+      "targetFile": "files/class-model-emit/packages/spark-utils/src/http/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ApiEnvelopeEvent"
+    },
+    "spark-class-model://model/AiAgentAppSseEvent": {
+      "ref": "spark-class-model://model/AiAgentAppSseEvent",
+      "kind": "model",
+      "className": "AiAgentAppSseEvent",
+      "schemaRef": "spark-class-model://schema/AiAgentAppSseEvent",
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentAppSseEvent/attributes/name/0",
+        "spark-class-model://model/AiAgentAppSseEvent/attributes/ok/1",
+        "spark-class-model://model/AiAgentAppSseEvent/attributes/data/2",
+        "spark-class-model://model/AiAgentAppSseEvent/attributes/rawData/3",
+        "spark-class-model://model/AiAgentAppSseEvent/attributes/rawPayload/4",
+        "spark-class-model://model/AiAgentAppSseEvent/attributes/protocolVersion/5",
+        "spark-class-model://model/AiAgentAppSseEvent/attributes/context/6",
+        "spark-class-model://model/AiAgentAppSseEvent/attributes/event/7"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppSseEvent%2Fattributes%2Fname%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppSseEventName",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppSseEvent%2Fattributes%2Fcontext%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FApiEnvelopeContext",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentAppSseEvent%2Fattributes%2Fevent%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FApiEnvelopeEvent"
+      ]
+    }
+  }
+}

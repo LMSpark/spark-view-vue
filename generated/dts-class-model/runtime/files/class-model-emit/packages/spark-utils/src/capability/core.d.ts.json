@@ -1,0 +1,294 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-utils/src/capability/core.d.ts",
+  "symbols": [
+    "CapabilityReader",
+    "CapabilityKey",
+    "CapabilityName",
+    "SparkCapabilityConsumer",
+    "CapabilityTypeMap",
+    "CapabilityContext"
+  ],
+  "@refs": {
+    "spark-class-model://schema/CapabilityReader": {
+      "ref": "spark-class-model://schema/CapabilityReader",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "CapabilityReader",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/CapabilityReader"
+      }
+    },
+    "spark-class-model://model/CapabilityReader": {
+      "ref": "spark-class-model://model/CapabilityReader",
+      "kind": "model",
+      "className": "CapabilityReader",
+      "schemaRef": "spark-class-model://schema/CapabilityReader",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/CapabilityKey": {
+      "ref": "spark-class-model://schema/CapabilityKey",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "CapabilityKey",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "token": true
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/CapabilityKey"
+      }
+    },
+    "spark-class-model://model/CapabilityKey/attributes/name/0": {
+      "ref": "spark-class-model://model/CapabilityKey/attributes/name/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CapabilityKey",
+      "name": "name",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/CapabilityKey/attributes/token/1": {
+      "ref": "spark-class-model://model/CapabilityKey/attributes/token/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CapabilityKey",
+      "name": "token",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/CapabilityKey/constructors/0": {
+      "ref": "spark-class-model://model/CapabilityKey/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/CapabilityKey",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/16ec7b943859468bfed76d839d220808b453cb8b4a0605aea3d8bdd072fe3e68"
+    },
+    "spark-class-model://schema/shared/16ec7b943859468bfed76d839d220808b453cb8b4a0605aea3d8bdd072fe3e68": {
+      "ref": "spark-class-model://schema/shared/16ec7b943859468bfed76d839d220808b453cb8b4a0605aea3d8bdd072fe3e68",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "reader": {
+            "$ref": "spark-class-model://schema/CapabilityReader",
+            "title": "CapabilityReader<T>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/16ec7b943859468bfed76d839d220808b453cb8b4a0605aea3d8bdd072fe3e68"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCapabilityKey%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FCapabilityReader": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCapabilityKey%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FCapabilityReader",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CapabilityKey/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/CapabilityReader",
+      "targetClassName": "CapabilityReader",
+      "targetFile": "files/class-model-emit/packages/spark-utils/src/capability/core.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CapabilityReader"
+    },
+    "spark-class-model://model/CapabilityKey/methods/read/0": {
+      "ref": "spark-class-model://model/CapabilityKey/methods/read/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CapabilityKey",
+      "name": "read",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://model/CapabilityKey/methods/toString/1": {
+      "ref": "spark-class-model://model/CapabilityKey/methods/toString/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CapabilityKey",
+      "name": "toString",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96"
+    },
+    "spark-class-model://model/CapabilityKey": {
+      "ref": "spark-class-model://model/CapabilityKey",
+      "kind": "model",
+      "className": "CapabilityKey",
+      "schemaRef": "spark-class-model://schema/CapabilityKey",
+      "constructorRef": "spark-class-model://model/CapabilityKey/constructors/0",
+      "attributeRefs": [
+        "spark-class-model://model/CapabilityKey/attributes/name/0",
+        "spark-class-model://model/CapabilityKey/attributes/token/1"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/CapabilityKey/methods/read/0",
+        "spark-class-model://model/CapabilityKey/methods/toString/1"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCapabilityKey%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FCapabilityReader"
+      ]
+    },
+    "spark-class-model://schema/CapabilityName": {
+      "ref": "spark-class-model://schema/CapabilityName",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "CapabilityName",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/CapabilityName"
+      }
+    },
+    "spark-class-model://model/CapabilityName": {
+      "ref": "spark-class-model://model/CapabilityName",
+      "kind": "model",
+      "className": "CapabilityName",
+      "schemaRef": "spark-class-model://schema/CapabilityName",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkCapabilityConsumer": {
+      "ref": "spark-class-model://schema/SparkCapabilityConsumer",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkCapabilityConsumer",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkCapabilityConsumer"
+      }
+    },
+    "spark-class-model://model/SparkCapabilityConsumer": {
+      "ref": "spark-class-model://model/SparkCapabilityConsumer",
+      "kind": "model",
+      "className": "SparkCapabilityConsumer",
+      "schemaRef": "spark-class-model://schema/SparkCapabilityConsumer",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/CapabilityTypeMap": {
+      "ref": "spark-class-model://schema/CapabilityTypeMap",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "CapabilityTypeMap",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/CapabilityTypeMap"
+      }
+    },
+    "spark-class-model://model/CapabilityTypeMap": {
+      "ref": "spark-class-model://model/CapabilityTypeMap",
+      "kind": "model",
+      "className": "CapabilityTypeMap",
+      "schemaRef": "spark-class-model://schema/CapabilityTypeMap",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/CapabilityContext": {
+      "ref": "spark-class-model://schema/CapabilityContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "CapabilityContext",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "parent": {
+            "$ref": "spark-class-model://schema/CapabilityContext"
+          },
+          "capabilities": {
+            "type": "object",
+            "title": "Map<CapabilityName, unknown>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/CapabilityContext"
+      }
+    },
+    "spark-class-model://model/CapabilityContext/attributes/id/0": {
+      "ref": "spark-class-model://model/CapabilityContext/attributes/id/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CapabilityContext",
+      "name": "id",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/CapabilityContext/attributes/type/1": {
+      "ref": "spark-class-model://model/CapabilityContext/attributes/type/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CapabilityContext",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/CapabilityContext/attributes/parent/2": {
+      "ref": "spark-class-model://model/CapabilityContext/attributes/parent/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CapabilityContext",
+      "name": "parent",
+      "schemaRef": "spark-class-model://schema/shared/847bba11c938fd42135226be7d37ecca9d911709de29c0d0a075b63153cd9d2f",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext%2Fattributes%2Fparent%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext%2Fattributes%2Fparent%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CapabilityContext/attributes/parent/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/CapabilityContext",
+      "targetClassName": "CapabilityContext",
+      "targetFile": "files/class-model-emit/packages/spark-utils/src/capability/core.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CapabilityContext"
+    },
+    "spark-class-model://schema/shared/9eff5068faa1630970b2301b729600d2cd2549dc03afbb0ca7f9168b853f01ac": {
+      "ref": "spark-class-model://schema/shared/9eff5068faa1630970b2301b729600d2cd2549dc03afbb0ca7f9168b853f01ac",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Map<CapabilityName, unknown>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9eff5068faa1630970b2301b729600d2cd2549dc03afbb0ca7f9168b853f01ac"
+      }
+    },
+    "spark-class-model://model/CapabilityContext/attributes/capabilities/3": {
+      "ref": "spark-class-model://model/CapabilityContext/attributes/capabilities/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CapabilityContext",
+      "name": "capabilities",
+      "schemaRef": "spark-class-model://schema/shared/9eff5068faa1630970b2301b729600d2cd2549dc03afbb0ca7f9168b853f01ac",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/CapabilityContext": {
+      "ref": "spark-class-model://model/CapabilityContext",
+      "kind": "model",
+      "className": "CapabilityContext",
+      "schemaRef": "spark-class-model://schema/CapabilityContext",
+      "attributeRefs": [
+        "spark-class-model://model/CapabilityContext/attributes/id/0",
+        "spark-class-model://model/CapabilityContext/attributes/type/1",
+        "spark-class-model://model/CapabilityContext/attributes/parent/2",
+        "spark-class-model://model/CapabilityContext/attributes/capabilities/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext%2Fattributes%2Fparent%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext"
+      ]
+    }
+  }
+}

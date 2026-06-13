@@ -1,0 +1,392 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/page/actions/executor-helpers.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:page/actions/executor-helpers",
+    "sourcePath": "class-model-emit/packages/spark-component/src/page/actions/executor-helpers.d.ts",
+    "sourceFile": "packages/spark-component/src/page/actions/executor-helpers.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/actions/executor-helpers",
+    "jsdoc": "@module @spark-appworks/spark-component:page/actions/executor-helpers\n职责：提供 executor helpers 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\n\nAction 执行器内部辅助工具集\n按功能分区组织，仅供 action-data.ts 和 action-executor.ts 内部使用：\n1. 值解析工具    — asRecord / readString / readBoolean 等\n2. 文案插值      — interpolate / pickText\n3. 行辅助        — isRowLike / resolveRowId / inferNextRowId / resolveRowLabel / getSelectedRows\n4. 错误处理      — extractErrorMessage\n5. 内置动作 props — readOptionalStringArray / readOptionalMessageType / getActionProps\n6. 消息通知器    — ActionNotifier / createActionNotifier\n7. 统一确认      — confirmIfNeeded\n8. 数据能力解析  — resolveActionDataCapabilities\n9. BuiltinAction 元数据 — BUILTIN_ACTION_META / isBuiltinActionName 等\n10. ActionDescriptor 禁用判断 — isActionDescriptorDisabled",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PickActionTextInput",
+      "ActionNotifier",
+      "ConfirmationInput",
+      "ResolvedActionDataCapabilities",
+      "BuiltinActionName"
+    ]
+  },
+  "symbols": [
+    "PickActionTextInput",
+    "ActionNotifier",
+    "ConfirmationInput",
+    "ResolvedActionDataCapabilities",
+    "BuiltinActionName"
+  ],
+  "models": {
+    "PickActionTextInput": {
+      "kind": "PickActionTextInput",
+      "className": "PickActionTextInput",
+      "jsdoc": "Pick Action Text Input 的输入数据。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** decorator 字段。 */\n    decorator: ActionUiDecorator | undefined;\n    /** 定位键。 */\n    key: keyof ActionUiDecorator;\n    /** fallback 字段。 */\n    fallback: string;\n    /** vars 字段。 */\n    vars?: Record<string, string | number | undefined>;\n    /** 当前行数据。 */\n    row?: DataRow | null;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/page/actions/executor-helpers.d.ts",
+        "line": 38,
+        "className": "PickActionTextInput",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "decorator",
+          "jsdoc": "decorator 字段。",
+          "schema": {
+            "type": "object",
+            "title": "ActionUiDecorator"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "key",
+          "jsdoc": "定位键。",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "fallback",
+          "jsdoc": "fallback 字段。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "vars",
+          "jsdoc": "vars 字段。",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, string | number | undefined>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "row",
+          "jsdoc": "当前行数据。",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "ActionNotifier": {
+      "kind": "ActionNotifier",
+      "className": "ActionNotifier",
+      "jsdoc": "动作执行通知接口（由 createActionNotifier 创建）。\n- `notify`：受 `silent` 控制，静默模式下吞掉非 error 消息\n- `notifyError`：始终展示 error（无视 silent），用于运行时异常",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 发送成功/警告/info 类型消息；`silent=true` 时静默忽略 */\n    notify(type: PageMessageType, message: string): void;\n    /** 发送 error 消息（无视 silent，始终展示） */\n    notifyError(message: string): void;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/page/actions/executor-helpers.d.ts",
+        "line": 119,
+        "className": "ActionNotifier",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "notify",
+          "jsdoc": "发送成功/警告/info 类型消息；`silent=true` 时静默忽略",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "type",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "object",
+                "title": "PageMessageType"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "notifyError",
+          "jsdoc": "发送 error 消息（无视 silent，始终展示）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
+    },
+    "ConfirmationInput": {
+      "kind": "ConfirmationInput",
+      "className": "ConfirmationInput",
+      "jsdoc": "统一确认弹窗：返回 true 表示用户确认或无需确认（直通）。\n直通条件（跳过弹窗）：\n- `pageService` 不可用\n- `confirmMessage` 显式设为 `''`（有意取消确认）\n- `confirmMessage` 未设置且 `fallbackMessage` 为空字符串\n`fallbackMessage` 为内置默认确认语（如\"确认删除 XX 吗？\"），由调用方构造。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    fallbackMessage: string;\n    fallbackTitle: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    fallbackMessage: string;\n    fallbackTitle: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/page/actions/executor-helpers.d.ts",
+        "line": 136,
+        "className": "ConfirmationInput",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "fallbackMessage",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "fallbackTitle",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "ResolvedActionDataCapabilities": {
+      "kind": "ResolvedActionDataCapabilities",
+      "className": "ResolvedActionDataCapabilities",
+      "jsdoc": "数据能力解析结果：执行器从此结构中读取操作目标。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 解析到的目标 DataView；未就绪时为 null */\n    dataSource: DataView | null;\n    /** DataView 当前行（currentRow）；无当前行时为 null */\n    currentRow: DataRow | null;\n    /** DataView 当前选中行列表（快照副本） */\n    selectedRows: DataRow[];\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/page/actions/executor-helpers.d.ts",
+        "line": 144,
+        "className": "ResolvedActionDataCapabilities",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "dataSource",
+          "jsdoc": "解析到的目标 DataView；未就绪时为 null",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "currentRow",
+          "jsdoc": "DataView 当前行（currentRow）；无当前行时为 null",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "selectedRows",
+          "jsdoc": "DataView 当前选中行列表（快照副本）",
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "DataRow"
+            }
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "BuiltinActionName": {
+      "kind": "BuiltinActionName",
+      "className": "BuiltinActionName",
+      "jsdoc": "Builtin Action Name 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "keyof typeof BUILTIN_ACTION_META",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/page/actions/executor-helpers.d.ts",
+        "line": 216,
+        "className": "BuiltinActionName",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.079Z",
+  "$defs": {
+    "PickActionTextInput": {
+      "type": "object",
+      "title": "PickActionTextInput",
+      "description": "Pick Action Text Input 的输入数据。",
+      "properties": {
+        "decorator": {
+          "type": "object",
+          "title": "ActionUiDecorator"
+        },
+        "key": true,
+        "fallback": {
+          "type": "string"
+        },
+        "vars": {
+          "type": "object",
+          "title": "Record<string, string | number | undefined>"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ActionNotifier": {
+      "type": "object",
+      "title": "ActionNotifier",
+      "description": "动作执行通知接口（由 createActionNotifier 创建）。\n- `notify`：受 `silent` 控制，静默模式下吞掉非 error 消息\n- `notifyError`：始终展示 error（无视 silent），用于运行时异常"
+    },
+    "ConfirmationInput": {
+      "type": "object",
+      "title": "ConfirmationInput",
+      "description": "统一确认弹窗：返回 true 表示用户确认或无需确认（直通）。\n直通条件（跳过弹窗）：\n- `pageService` 不可用\n- `confirmMessage` 显式设为 `''`（有意取消确认）\n- `confirmMessage` 未设置且 `fallbackMessage` 为空字符串\n`fallbackMessage` 为内置默认确认语（如\"确认删除 XX 吗？\"），由调用方构造。",
+      "properties": {
+        "fallbackMessage": {
+          "type": "string"
+        },
+        "fallbackTitle": {
+          "type": "string"
+        }
+      }
+    },
+    "ResolvedActionDataCapabilities": {
+      "type": "object",
+      "title": "ResolvedActionDataCapabilities",
+      "description": "数据能力解析结果：执行器从此结构中读取操作目标。",
+      "properties": {
+        "dataSource": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataView"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currentRow": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selectedRows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "DataRow"
+          }
+        }
+      }
+    },
+    "BuiltinActionName": {
+      "type": "object",
+      "title": "BuiltinActionName",
+      "description": "Builtin Action Name 的语义模型。"
+    }
+  }
+}

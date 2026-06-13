@@ -1,0 +1,319 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-app/src/navigation/nav-types.d.ts",
+  "symbols": [
+    "NavigationContext"
+  ],
+  "@refs": {
+    "spark-class-model://schema/NavigationContext": {
+      "ref": "spark-class-model://schema/NavigationContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavigationContext",
+        "properties": {
+          "activePath": {
+            "type": "object",
+            "title": "ComputedRef<ProjectNodeData[]>"
+          },
+          "regionItems": {
+            "type": "object",
+            "title": "ComputedRef<RegionItems>"
+          },
+          "regionVisibility": {
+            "type": "object",
+            "title": "ComputedRef<RegionVisibility>"
+          },
+          "moduleContext": {
+            "type": "object",
+            "title": "ComputedRef<NavContextState | null>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavigationContext"
+      }
+    },
+    "spark-class-model://schema/shared/170932294dc7faf586a500ed8286e3413d1fd9b7c105ce795a2ee84489f324eb": {
+      "ref": "spark-class-model://schema/shared/170932294dc7faf586a500ed8286e3413d1fd9b7c105ce795a2ee84489f324eb",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComputedRef<ProjectNodeData[]>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/170932294dc7faf586a500ed8286e3413d1fd9b7c105ce795a2ee84489f324eb"
+      }
+    },
+    "spark-class-model://model/NavigationContext/attributes/activePath/0": {
+      "ref": "spark-class-model://model/NavigationContext/attributes/activePath/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavigationContext",
+      "name": "activePath",
+      "schemaRef": "spark-class-model://schema/shared/170932294dc7faf586a500ed8286e3413d1fd9b7c105ce795a2ee84489f324eb",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/060300f22962c8d8d945b89458fa9f471e44c5a602c89569be5b7408f165ec9f": {
+      "ref": "spark-class-model://schema/shared/060300f22962c8d8d945b89458fa9f471e44c5a602c89569be5b7408f165ec9f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComputedRef<RegionItems>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/060300f22962c8d8d945b89458fa9f471e44c5a602c89569be5b7408f165ec9f"
+      }
+    },
+    "spark-class-model://model/NavigationContext/attributes/regionItems/1": {
+      "ref": "spark-class-model://model/NavigationContext/attributes/regionItems/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavigationContext",
+      "name": "regionItems",
+      "schemaRef": "spark-class-model://schema/shared/060300f22962c8d8d945b89458fa9f471e44c5a602c89569be5b7408f165ec9f",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/f63d487e2ee300cb1820d978a88c83a3a891ecce4d846dc3f4634fef1a753590": {
+      "ref": "spark-class-model://schema/shared/f63d487e2ee300cb1820d978a88c83a3a891ecce4d846dc3f4634fef1a753590",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComputedRef<RegionVisibility>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f63d487e2ee300cb1820d978a88c83a3a891ecce4d846dc3f4634fef1a753590"
+      }
+    },
+    "spark-class-model://model/NavigationContext/attributes/regionVisibility/2": {
+      "ref": "spark-class-model://model/NavigationContext/attributes/regionVisibility/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavigationContext",
+      "name": "regionVisibility",
+      "schemaRef": "spark-class-model://schema/shared/f63d487e2ee300cb1820d978a88c83a3a891ecce4d846dc3f4634fef1a753590",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/de4c8698267ab2081584f1c9491e2aa9a356c3d62225f82bee5edab41e0dba55": {
+      "ref": "spark-class-model://schema/shared/de4c8698267ab2081584f1c9491e2aa9a356c3d62225f82bee5edab41e0dba55",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComputedRef<NavContextState | null>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/de4c8698267ab2081584f1c9491e2aa9a356c3d62225f82bee5edab41e0dba55"
+      }
+    },
+    "spark-class-model://model/NavigationContext/attributes/moduleContext/3": {
+      "ref": "spark-class-model://model/NavigationContext/attributes/moduleContext/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavigationContext",
+      "name": "moduleContext",
+      "schemaRef": "spark-class-model://schema/shared/de4c8698267ab2081584f1c9491e2aa9a356c3d62225f82bee5edab41e0dba55",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NavigationContext/methods/navigateTo/0": {
+      "ref": "spark-class-model://model/NavigationContext/methods/navigateTo/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationContext",
+      "name": "navigateTo",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/c2d2935a1ef4170f28476133562912205a8cee44b8a4f58d86d32955b1c2832b"
+    },
+    "spark-class-model://schema/shared/c2d2935a1ef4170f28476133562912205a8cee44b8a4f58d86d32955b1c2832b": {
+      "ref": "spark-class-model://schema/shared/c2d2935a1ef4170f28476133562912205a8cee44b8a4f58d86d32955b1c2832b",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "node": {
+            "$ref": "spark-class-model://schema/ProjectNodeData"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c2d2935a1ef4170f28476133562912205a8cee44b8a4f58d86d32955b1c2832b"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationContext%2Fmethods%2FnavigateTo%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationContext%2Fmethods%2FnavigateTo%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavigationContext/methods/navigateTo/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://model/NavigationContext/methods/navigateToPath/1": {
+      "ref": "spark-class-model://model/NavigationContext/methods/navigateToPath/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationContext",
+      "name": "navigateToPath",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/110ddc737285e46fe294bca5d93a0c8162ba734f6c77ec12df5966c5dd1c8934"
+    },
+    "spark-class-model://schema/shared/110ddc737285e46fe294bca5d93a0c8162ba734f6c77ec12df5966c5dd1c8934": {
+      "ref": "spark-class-model://schema/shared/110ddc737285e46fe294bca5d93a0c8162ba734f6c77ec12df5966c5dd1c8934",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/110ddc737285e46fe294bca5d93a0c8162ba734f6c77ec12df5966c5dd1c8934"
+      }
+    },
+    "spark-class-model://model/NavigationContext/methods/setContextValue/2": {
+      "ref": "spark-class-model://model/NavigationContext/methods/setContextValue/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationContext",
+      "name": "setContextValue",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/59fd16ed5faf35781361d9a36a724805c536f737ebd91e7a3e47610840707704"
+    },
+    "spark-class-model://schema/shared/59fd16ed5faf35781361d9a36a724805c536f737ebd91e7a3e47610840707704": {
+      "ref": "spark-class-model://schema/shared/59fd16ed5faf35781361d9a36a724805c536f737ebd91e7a3e47610840707704",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/59fd16ed5faf35781361d9a36a724805c536f737ebd91e7a3e47610840707704"
+      }
+    },
+    "spark-class-model://model/NavigationContext/methods/isNodeActive/3": {
+      "ref": "spark-class-model://model/NavigationContext/methods/isNodeActive/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationContext",
+      "name": "isNodeActive",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/c2d2935a1ef4170f28476133562912205a8cee44b8a4f58d86d32955b1c2832b",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationContext%2Fmethods%2FisNodeActive%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationContext%2Fmethods%2FisNodeActive%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavigationContext/methods/isNodeActive/3",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://model/NavigationContext/methods/getBadge/4": {
+      "ref": "spark-class-model://model/NavigationContext/methods/getBadge/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationContext",
+      "name": "getBadge",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963",
+      "returnSchemaRef": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8"
+    },
+    "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963": {
+      "ref": "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "nodeId": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963"
+      }
+    },
+    "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8": {
+      "ref": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8"
+      }
+    },
+    "spark-class-model://model/NavigationContext/methods/setBadge/5": {
+      "ref": "spark-class-model://model/NavigationContext/methods/setBadge/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationContext",
+      "name": "setBadge",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0e9c1b9d81b509a32446f2ee78d2ec295d484d2ea57bf4fbc45ffc301db0a3a6"
+    },
+    "spark-class-model://schema/shared/0e9c1b9d81b509a32446f2ee78d2ec295d484d2ea57bf4fbc45ffc301db0a3a6": {
+      "ref": "spark-class-model://schema/shared/0e9c1b9d81b509a32446f2ee78d2ec295d484d2ea57bf4fbc45ffc301db0a3a6",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "nodeId": {
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/0e9c1b9d81b509a32446f2ee78d2ec295d484d2ea57bf4fbc45ffc301db0a3a6"
+      }
+    },
+    "spark-class-model://model/NavigationContext": {
+      "ref": "spark-class-model://model/NavigationContext",
+      "kind": "model",
+      "className": "NavigationContext",
+      "schemaRef": "spark-class-model://schema/NavigationContext",
+      "attributeRefs": [
+        "spark-class-model://model/NavigationContext/attributes/activePath/0",
+        "spark-class-model://model/NavigationContext/attributes/regionItems/1",
+        "spark-class-model://model/NavigationContext/attributes/regionVisibility/2",
+        "spark-class-model://model/NavigationContext/attributes/moduleContext/3"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/NavigationContext/methods/navigateTo/0",
+        "spark-class-model://model/NavigationContext/methods/navigateToPath/1",
+        "spark-class-model://model/NavigationContext/methods/setContextValue/2",
+        "spark-class-model://model/NavigationContext/methods/isNodeActive/3",
+        "spark-class-model://model/NavigationContext/methods/getBadge/4",
+        "spark-class-model://model/NavigationContext/methods/setBadge/5"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationContext%2Fmethods%2FnavigateTo%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationContext%2Fmethods%2FisNodeActive%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData"
+      ]
+    }
+  }
+}

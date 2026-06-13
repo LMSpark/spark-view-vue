@@ -55,7 +55,8 @@ feat(spark-data): add createDataView factory
 
 ## 其他约定
 
-- 提交前请运行 `pnpm run verify`（会执行 typecheck + lint + verify:arch）
+- 提交前请运行 `pnpm run verify`（typecheck + lint + verify:rules；不预构建 packages dist）
+- 发布 npm 包或验证 dist 产物前运行 `pnpm run verify:dist`（含 `build:packages`）
 - 对于 Breaking Change，请在 PR 标题或正文中明确标注并在 CHANGELOG 中记录
 
 感谢你的贡献 — 任何问题请先在 Issue 中讨论。

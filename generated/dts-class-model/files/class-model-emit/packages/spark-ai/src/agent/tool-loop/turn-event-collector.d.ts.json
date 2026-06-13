@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/turn-event-collector.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/tool-loop/turn-event-collector",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/turn-event-collector.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/tool-loop/turn-event-collector.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/tool-loop/turn-event-collector",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/tool-loop/turn-event-collector\n职责：支撑 Agent tool loop 的 turn event collector 能力，处理工具调用、结果映射、诊断事件或 payload 编解码。\n边界：只服务单次 turn 内的工具循环，不定义业务注册协议，也不直接管理 UI 或持久化页面状态。\nAI用途：排查工具调用为什么继续、完成、失败或被映射成回调事件时，用本模块定位 loop 内部语义。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "TurnEventCollectorInput",
+      "TurnEventCollector"
+    ]
+  },
+  "symbols": [
+    "TurnEventCollectorInput",
+    "TurnEventCollector"
+  ],
+  "models": {
+    "TurnEventCollectorInput": {
+      "kind": "TurnEventCollectorInput",
+      "className": "TurnEventCollectorInput",
+      "jsdoc": "收集器的构造输入",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    input: AiAgentStreamTurnInput;\n    source: AiAgentAppSseEventSource;\n    /** 绝对上限：整轮 turn 最长等待时间。 */\n    timeoutMs?: number;\n    /** 空闲上限：连续无 SSE 帧超过该毫秒则 fail-fast。 */\n    idleTimeoutMs?: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    input: AiAgentStreamTurnInput;\n    source: AiAgentAppSseEventSource;\n    /** 绝对上限：整轮 turn 最长等待时间。 */\n    timeoutMs?: number;\n    /** 空闲上限：连续无 SSE 帧超过该毫秒则 fail-fast。 */\n    idleTimeoutMs?: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/turn-event-collector.d.ts",
+        "line": 9,
+        "className": "TurnEventCollectorInput",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "input",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentStreamTurnInput"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "source",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentAppSseEventSource"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "timeoutMs",
+          "jsdoc": "绝对上限：整轮 turn 最长等待时间。",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "idleTimeoutMs",
+          "jsdoc": "空闲上限：连续无 SSE 帧超过该毫秒则 fail-fast。",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "TurnEventCollector": {
+      "kind": "TurnEventCollector",
+      "className": "TurnEventCollector",
+      "jsdoc": "AI turn 事件收集器接口",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    result: Promise<AiAgentStreamTurnResult>;\n    close(): void;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    result: Promise<AiAgentStreamTurnResult>;\n    close(): void;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/turn-event-collector.d.ts",
+        "line": 18,
+        "className": "TurnEventCollector",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "result",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Promise<AiAgentStreamTurnResult>"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "close",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.222Z",
+  "$defs": {
+    "TurnEventCollectorInput": {
+      "type": "object",
+      "title": "TurnEventCollectorInput",
+      "description": "收集器的构造输入",
+      "properties": {
+        "input": {
+          "type": "object",
+          "title": "AiAgentStreamTurnInput"
+        },
+        "source": {
+          "type": "object",
+          "title": "AiAgentAppSseEventSource"
+        },
+        "timeoutMs": {
+          "type": "number"
+        },
+        "idleTimeoutMs": {
+          "type": "number"
+        }
+      }
+    },
+    "TurnEventCollector": {
+      "type": "object",
+      "title": "TurnEventCollector",
+      "description": "AI turn 事件收集器接口",
+      "properties": {
+        "result": {
+          "type": "object",
+          "title": "Promise<AiAgentStreamTurnResult>"
+        }
+      }
+    }
+  }
+}

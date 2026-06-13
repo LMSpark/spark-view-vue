@@ -2,27 +2,28 @@
 
 ## 当前主线
 
-spark-ai 的 AI 知识面只来自 TypeScript 声明：
+spark-ai 的 AI 知识面只来自 TypeScript 声明，编译期**不在磁盘落盘 `.d.ts`**：
 
 ```text
 源码 class + JSDoc
-  -> vue-tsc 生成 declarations/**/*.d.ts
-  -> scripts/generate-dts-class-model.mjs
-  -> generated/dts-class-model/manifest.json
-  -> Web Worker 按 className 加载对应 JSON
+  -> generate-dts-class-model.mjs（内存 emit .d.ts，compiler-api / vue-tsc）
+  -> buildDtsClassModelBundle（AST 投影，一次性写出 JSON shard）
+  -> generated/dts-class-model/manifest.json + files/**/*.d.ts.json
+  -> 运行时 Web Worker（Comlink）按 className 按需 fetch shard
 ```
 
-没有额外 registry、没有额外 catalog、没有约定标签。`.d.ts` 是编译期知识边界，运行时实例是执行边界。
+没有额外 registry、没有额外 catalog、没有约定标签。`.d.ts` 只在编译期内存中存在；bundle 内 `sourcePath` 使用虚拟前缀 `class-model-emit/`（非磁盘目录）。
 
-## 运行时
+## 运行时（主线程 / Worker）
 
-| 模块 | 职责 |
-|---|---|
-| `ClassModelRuntime` | 暴露并校验七个工具，路由到 knowledge provider 或 script executor |
-| `ClassModelKnowledgeService` | 把已加载的 DTS class-model JSON 投影成 query / guide 文本 |
-| `DtsClassModelBundleLoader` | 按 root className 加载可达 class JSON |
-| `WorkerClassModelKnowledgeProvider` | 在浏览器 Worker 中按需加载 DTS JSON，避免主线程塞入全量知识 |
-| `ClassModelAgentAdapter` | 把业务实例、knowledge provider 和 runtime 接入 ToolLoop |
+| 模块 | 线程 | 职责 |
+|---|---|---|
+| `WorkerClassModelKnowledgeProvider` | 主线程 | Comlink 客户端；只传 manifest URL 与查询参数 |
+| `worker-knowledge-handler` | Web Worker | Comlink 服务端；持有 `DtsBundleClassModelKnowledgeService` |
+| `DtsClassModelBundleLoader` | Worker 内 | `fetch(manifest)` → BFS 按需加载 shard JSON，缓存于 Map |
+| `ClassModelKnowledgeService` | Worker 内 | 已加载 surface → query / guide 文本 |
+| `ClassModelRuntime` | 主线程 | 七个工具闭集；路由到 knowledge provider 或 script executor |
+| `ClassModelAgentAdapter` | 主线程 | 业务实例 + ToolLoop 接入 |
 
 ## 工具闭集
 
@@ -42,14 +43,13 @@ spark-ai 的 AI 知识面只来自 TypeScript 声明：
 
 ```bash
 pnpm run generate:class-model-surface
-pnpm run generate:class-model-surface:delete-dts
 pnpm run generate:class-model-surface:model -- ProjectModel
 ```
 
-第二个命令会在生成 JSON 后删除临时 `.d.ts`，用于审核完成后的编译流水线。
-第三个命令用于领域模型迭代：按 root className 定位已有 bundle 中的声明文件，只重建该模型的 DTS 依赖闭包，并把 shard/manifest/runtime/refIndex 合并回 `generated/dts-class-model`。也可以直接使用 `--source packages/.../model.ts` 指定源文件。
+- 全量：`generate:class-model-surface`
+- 增量：按 root className 定位 bundle 中 emit 闭包，merge 回 `generated/dts-class-model`
 
-动态加载可以和编译整合，但编译属于宿主能力：`DtsBundleClassModelKnowledgeService.refresh()` 只调用注入的 `refreshBundle` 并清空 loader 缓存；Node 宿主可用 `scripts/lib/class-model-knowledge-refresh.mjs` 创建 refresh callback。Worker 是 browser/node 共用隔离层，只承载 refresh/reload 协议，不内置浏览器 HTTP 或具体编译实现。
+动态编译与运行时加载已整合：`DtsBundleClassModelKnowledgeService.refresh()` 调用宿主注入的 `refreshBundle`（Node 可用 `scripts/lib/class-model-knowledge-refresh.mjs` 触发 `--model` 增量编译），再 `loader.reload()` 清空 Worker 内缓存。Worker 是 browser/node 共用隔离层，只承载 refresh/reload 协议，不内置 HTTP 或具体编译实现。
 
 ## 业务接入
 

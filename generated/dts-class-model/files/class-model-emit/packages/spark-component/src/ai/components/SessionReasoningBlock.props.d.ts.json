@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionReasoningBlock.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/SessionReasoningBlock.props",
+    "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionReasoningBlock.props.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/SessionReasoningBlock.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/SessionReasoningBlock.props",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/SessionReasoningBlock.props\n职责：维护 @spark-appworks/spark-component 中 ai/components/SessionReasoningBlock.props 的模块能力，围绕 SessionReasoningBlockProps 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 ai/components/SessionReasoningBlock.props 的声明、导出和使用边界时，从本模块开始。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SessionReasoningBlockProps"
+    ]
+  },
+  "symbols": [
+    "SessionReasoningBlockProps"
+  ],
+  "models": {
+    "SessionReasoningBlockProps": {
+      "kind": "SessionReasoningBlockProps",
+      "className": "SessionReasoningBlockProps",
+      "jsdoc": "Session Reasoning Block Props 的属性契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    text: string;\n    collapsed?: boolean;\n    isActive?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    text: string;\n    collapsed?: boolean;\n    isActive?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/ai/components/SessionReasoningBlock.props.d.ts",
+        "line": 8,
+        "className": "SessionReasoningBlockProps",
+        "declarationKind": "type",
+        "componentName": "SessionReasoningBlock"
+      },
+      "attributes": [
+        {
+          "name": "text",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "collapsed",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "isActive",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.870Z",
+  "$defs": {
+    "SessionReasoningBlockProps": {
+      "type": "object",
+      "title": "SessionReasoningBlockProps",
+      "description": "Session Reasoning Block Props 的属性契约。",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "collapsed": {
+          "type": "boolean"
+        },
+        "isActive": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

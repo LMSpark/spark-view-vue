@@ -1,0 +1,413 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/src/services/auth.d.ts",
+  "symbols": [
+    "AuthUser",
+    "PlatformAdminUserLike",
+    "LoginParams",
+    "RegisterParams",
+    "RegisterTenantParams"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AuthUser": {
+      "ref": "spark-class-model://schema/AuthUser",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AuthUser",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "defaultProjectId": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AuthUser"
+      }
+    },
+    "spark-class-model://model/AuthUser/attributes/userId/0": {
+      "ref": "spark-class-model://model/AuthUser/attributes/userId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AuthUser",
+      "name": "userId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AuthUser/attributes/username/1": {
+      "ref": "spark-class-model://model/AuthUser/attributes/username/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AuthUser",
+      "name": "username",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AuthUser/attributes/displayName/2": {
+      "ref": "spark-class-model://model/AuthUser/attributes/displayName/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AuthUser",
+      "name": "displayName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AuthUser/attributes/email/3": {
+      "ref": "spark-class-model://model/AuthUser/attributes/email/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AuthUser",
+      "name": "email",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AuthUser/attributes/avatar/4": {
+      "ref": "spark-class-model://model/AuthUser/attributes/avatar/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AuthUser",
+      "name": "avatar",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AuthUser/attributes/roles/5": {
+      "ref": "spark-class-model://model/AuthUser/attributes/roles/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AuthUser",
+      "name": "roles",
+      "schemaRef": "spark-class-model://schema/shared/681004346c78d5f384b654c986b4eda8fea28010db3be7da70b19aa0080f3ff9",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AuthUser/attributes/tenantId/6": {
+      "ref": "spark-class-model://model/AuthUser/attributes/tenantId/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AuthUser",
+      "name": "tenantId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AuthUser/attributes/defaultProjectId/7": {
+      "ref": "spark-class-model://model/AuthUser/attributes/defaultProjectId/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AuthUser",
+      "name": "defaultProjectId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AuthUser": {
+      "ref": "spark-class-model://model/AuthUser",
+      "kind": "model",
+      "className": "AuthUser",
+      "schemaRef": "spark-class-model://schema/AuthUser",
+      "attributeRefs": [
+        "spark-class-model://model/AuthUser/attributes/userId/0",
+        "spark-class-model://model/AuthUser/attributes/username/1",
+        "spark-class-model://model/AuthUser/attributes/displayName/2",
+        "spark-class-model://model/AuthUser/attributes/email/3",
+        "spark-class-model://model/AuthUser/attributes/avatar/4",
+        "spark-class-model://model/AuthUser/attributes/roles/5",
+        "spark-class-model://model/AuthUser/attributes/tenantId/6",
+        "spark-class-model://model/AuthUser/attributes/defaultProjectId/7"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PlatformAdminUserLike": {
+      "ref": "spark-class-model://schema/PlatformAdminUserLike",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PlatformAdminUserLike",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PlatformAdminUserLike"
+      }
+    },
+    "spark-class-model://model/PlatformAdminUserLike/attributes/tenantId/0": {
+      "ref": "spark-class-model://model/PlatformAdminUserLike/attributes/tenantId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PlatformAdminUserLike",
+      "name": "tenantId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PlatformAdminUserLike/attributes/roles/1": {
+      "ref": "spark-class-model://model/PlatformAdminUserLike/attributes/roles/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PlatformAdminUserLike",
+      "name": "roles",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PlatformAdminUserLike": {
+      "ref": "spark-class-model://model/PlatformAdminUserLike",
+      "kind": "model",
+      "className": "PlatformAdminUserLike",
+      "schemaRef": "spark-class-model://schema/PlatformAdminUserLike",
+      "attributeRefs": [
+        "spark-class-model://model/PlatformAdminUserLike/attributes/tenantId/0",
+        "spark-class-model://model/PlatformAdminUserLike/attributes/roles/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/LoginParams": {
+      "ref": "spark-class-model://schema/LoginParams",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "LoginParams",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/LoginParams"
+      }
+    },
+    "spark-class-model://model/LoginParams/attributes/tenantId/0": {
+      "ref": "spark-class-model://model/LoginParams/attributes/tenantId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/LoginParams",
+      "name": "tenantId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/LoginParams/attributes/username/1": {
+      "ref": "spark-class-model://model/LoginParams/attributes/username/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/LoginParams",
+      "name": "username",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/LoginParams/attributes/password/2": {
+      "ref": "spark-class-model://model/LoginParams/attributes/password/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/LoginParams",
+      "name": "password",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/LoginParams": {
+      "ref": "spark-class-model://model/LoginParams",
+      "kind": "model",
+      "className": "LoginParams",
+      "schemaRef": "spark-class-model://schema/LoginParams",
+      "attributeRefs": [
+        "spark-class-model://model/LoginParams/attributes/tenantId/0",
+        "spark-class-model://model/LoginParams/attributes/username/1",
+        "spark-class-model://model/LoginParams/attributes/password/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/RegisterParams": {
+      "ref": "spark-class-model://schema/RegisterParams",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RegisterParams",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RegisterParams"
+      }
+    },
+    "spark-class-model://model/RegisterParams/attributes/tenantId/0": {
+      "ref": "spark-class-model://model/RegisterParams/attributes/tenantId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegisterParams",
+      "name": "tenantId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RegisterParams/attributes/username/1": {
+      "ref": "spark-class-model://model/RegisterParams/attributes/username/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegisterParams",
+      "name": "username",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RegisterParams/attributes/password/2": {
+      "ref": "spark-class-model://model/RegisterParams/attributes/password/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegisterParams",
+      "name": "password",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RegisterParams/attributes/displayName/3": {
+      "ref": "spark-class-model://model/RegisterParams/attributes/displayName/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegisterParams",
+      "name": "displayName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RegisterParams/attributes/email/4": {
+      "ref": "spark-class-model://model/RegisterParams/attributes/email/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegisterParams",
+      "name": "email",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RegisterParams": {
+      "ref": "spark-class-model://model/RegisterParams",
+      "kind": "model",
+      "className": "RegisterParams",
+      "schemaRef": "spark-class-model://schema/RegisterParams",
+      "attributeRefs": [
+        "spark-class-model://model/RegisterParams/attributes/tenantId/0",
+        "spark-class-model://model/RegisterParams/attributes/username/1",
+        "spark-class-model://model/RegisterParams/attributes/password/2",
+        "spark-class-model://model/RegisterParams/attributes/displayName/3",
+        "spark-class-model://model/RegisterParams/attributes/email/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/RegisterTenantParams": {
+      "ref": "spark-class-model://schema/RegisterTenantParams",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RegisterTenantParams",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "tenantName": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RegisterTenantParams"
+      }
+    },
+    "spark-class-model://model/RegisterTenantParams/attributes/tenantId/0": {
+      "ref": "spark-class-model://model/RegisterTenantParams/attributes/tenantId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegisterTenantParams",
+      "name": "tenantId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RegisterTenantParams/attributes/tenantName/1": {
+      "ref": "spark-class-model://model/RegisterTenantParams/attributes/tenantName/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegisterTenantParams",
+      "name": "tenantName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RegisterTenantParams/attributes/username/2": {
+      "ref": "spark-class-model://model/RegisterTenantParams/attributes/username/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegisterTenantParams",
+      "name": "username",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RegisterTenantParams/attributes/password/3": {
+      "ref": "spark-class-model://model/RegisterTenantParams/attributes/password/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegisterTenantParams",
+      "name": "password",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RegisterTenantParams": {
+      "ref": "spark-class-model://model/RegisterTenantParams",
+      "kind": "model",
+      "className": "RegisterTenantParams",
+      "schemaRef": "spark-class-model://schema/RegisterTenantParams",
+      "attributeRefs": [
+        "spark-class-model://model/RegisterTenantParams/attributes/tenantId/0",
+        "spark-class-model://model/RegisterTenantParams/attributes/tenantName/1",
+        "spark-class-model://model/RegisterTenantParams/attributes/username/2",
+        "spark-class-model://model/RegisterTenantParams/attributes/password/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

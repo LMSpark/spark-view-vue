@@ -1,0 +1,805 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/composables/useFileFieldState.d.ts",
+  "symbols": [
+    "UploadBrowseFieldStateOptions",
+    "FileBrowserFieldStateOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/UploadBrowseFieldStateOptions": {
+      "ref": "spark-class-model://schema/UploadBrowseFieldStateOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "UploadBrowseFieldStateOptions",
+        "properties": {
+          "displayLabel": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<string>"
+          },
+          "fieldName": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<string>"
+          },
+          "currentRawStringValue": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<string>"
+          },
+          "isCurrentFieldEditable": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<boolean>"
+          },
+          "hasBrowseCapability": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<boolean>"
+          },
+          "hasUploadCapability": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<boolean>"
+          },
+          "primaryAction": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<'upload' | 'browse'>"
+          },
+          "buttonText": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>"
+          },
+          "readonlyButtonText": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>"
+          },
+          "canClear": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>"
+          },
+          "action": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<NonNullable<SparkFileUploadActionProps['action']>>"
+          },
+          "accept": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<NonNullable<SparkFileFieldProps['accept']>>"
+          },
+          "multiple": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<NonNullable<SparkFilePickerFieldProps['multiple']>>"
+          },
+          "separator": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<NonNullable<SparkFileFieldProps['separator']>>"
+          },
+          "browseWritesValue": {
+            "type": "boolean"
+          },
+          "getBrowseValue": {
+            "type": "object",
+            "title": "(file: PageSelectedFile) => string"
+          },
+          "getUploadValue": {
+            "type": "object",
+            "title": "(file: PageUploadedFile) => string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/UploadBrowseFieldStateOptions"
+      }
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/displayLabel/0": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/displayLabel/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "displayLabel",
+      "schemaRef": "spark-class-model://schema/shared/7e99c2d0dd5869a7ee4e0075932684a6a8c1690f7b1a2f85aa3c36a9ce441c68",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FdisplayLabel%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FdisplayLabel%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/displayLabel/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/fieldName/1": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/fieldName/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "fieldName",
+      "schemaRef": "spark-class-model://schema/shared/7e99c2d0dd5869a7ee4e0075932684a6a8c1690f7b1a2f85aa3c36a9ce441c68",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FfieldName%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FfieldName%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/fieldName/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/currentRawStringValue/2": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/currentRawStringValue/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "currentRawStringValue",
+      "schemaRef": "spark-class-model://schema/shared/7e99c2d0dd5869a7ee4e0075932684a6a8c1690f7b1a2f85aa3c36a9ce441c68",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FcurrentRawStringValue%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FcurrentRawStringValue%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/currentRawStringValue/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/isCurrentFieldEditable/3": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/isCurrentFieldEditable/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "isCurrentFieldEditable",
+      "schemaRef": "spark-class-model://schema/shared/a3307797b1530af23dcbaec6dce6588485e55730cf77881d2c3e0568eab67f46",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FisCurrentFieldEditable%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FisCurrentFieldEditable%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/isCurrentFieldEditable/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/hasBrowseCapability/4": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/hasBrowseCapability/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "hasBrowseCapability",
+      "schemaRef": "spark-class-model://schema/shared/a3307797b1530af23dcbaec6dce6588485e55730cf77881d2c3e0568eab67f46",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FhasBrowseCapability%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FhasBrowseCapability%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/hasBrowseCapability/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/hasUploadCapability/5": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/hasUploadCapability/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "hasUploadCapability",
+      "schemaRef": "spark-class-model://schema/shared/a3307797b1530af23dcbaec6dce6588485e55730cf77881d2c3e0568eab67f46",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FhasUploadCapability%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FhasUploadCapability%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/hasUploadCapability/5",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://schema/shared/79c0ed14eb69b887ff34e4697f09503554cccb356ec280c9ad81253998c29387": {
+      "ref": "spark-class-model://schema/shared/79c0ed14eb69b887ff34e4697f09503554cccb356ec280c9ad81253998c29387",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ValueRef",
+        "title": "ValueRef<'upload' | 'browse'>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/79c0ed14eb69b887ff34e4697f09503554cccb356ec280c9ad81253998c29387"
+      }
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/primaryAction/6": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/primaryAction/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "primaryAction",
+      "schemaRef": "spark-class-model://schema/shared/79c0ed14eb69b887ff34e4697f09503554cccb356ec280c9ad81253998c29387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FprimaryAction%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FprimaryAction%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/primaryAction/6",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/buttonText/7": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/buttonText/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "buttonText",
+      "schemaRef": "spark-class-model://schema/shared/4228e07a7be9d6099bc64885c0180e6a8526be911cc8eae619bfbdb632b15b26",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FbuttonText%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FbuttonText%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/buttonText/7",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/readonlyButtonText/8": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/readonlyButtonText/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "readonlyButtonText",
+      "schemaRef": "spark-class-model://schema/shared/0f411a0404d33238b285f4bb4cb4de0e40aae56c1d61ce08f16dd140ef447c84",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FreadonlyButtonText%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FreadonlyButtonText%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/readonlyButtonText/8",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/canClear/9": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/canClear/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "canClear",
+      "schemaRef": "spark-class-model://schema/shared/1b4a6dda945a295f3c6ed615a2f0ae34d4ba681f7af79cf1e09606fb7ad29e16",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FcanClear%2F9/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FcanClear%2F9/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/canClear/9",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://schema/shared/82ee9859f32b15df47eb46b46452263d492a31c7d83737e54df5c0e5473499d7": {
+      "ref": "spark-class-model://schema/shared/82ee9859f32b15df47eb46b46452263d492a31c7d83737e54df5c0e5473499d7",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ValueRef",
+        "title": "ValueRef<NonNullable<SparkFileUploadActionProps['action']>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/82ee9859f32b15df47eb46b46452263d492a31c7d83737e54df5c0e5473499d7"
+      }
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/action/10": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/action/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "action",
+      "schemaRef": "spark-class-model://schema/shared/82ee9859f32b15df47eb46b46452263d492a31c7d83737e54df5c0e5473499d7",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2Faction%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2Faction%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/action/10",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://schema/shared/8969a6d28d6d501e631d1b42bd6d385f614404c75588bfc81090cb2c9ad77737": {
+      "ref": "spark-class-model://schema/shared/8969a6d28d6d501e631d1b42bd6d385f614404c75588bfc81090cb2c9ad77737",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ValueRef",
+        "title": "ValueRef<NonNullable<SparkFileFieldProps['accept']>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8969a6d28d6d501e631d1b42bd6d385f614404c75588bfc81090cb2c9ad77737"
+      }
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/accept/11": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/accept/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "accept",
+      "schemaRef": "spark-class-model://schema/shared/8969a6d28d6d501e631d1b42bd6d385f614404c75588bfc81090cb2c9ad77737",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2Faccept%2F11/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2Faccept%2F11/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/accept/11",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://schema/shared/96fae5df1f63fbb4fbf46ee84675aeaded80a41dd8c06c4cc5c8ae24773dbda6": {
+      "ref": "spark-class-model://schema/shared/96fae5df1f63fbb4fbf46ee84675aeaded80a41dd8c06c4cc5c8ae24773dbda6",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ValueRef",
+        "title": "ValueRef<NonNullable<SparkFilePickerFieldProps['multiple']>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/96fae5df1f63fbb4fbf46ee84675aeaded80a41dd8c06c4cc5c8ae24773dbda6"
+      }
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/multiple/12": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/multiple/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "multiple",
+      "schemaRef": "spark-class-model://schema/shared/96fae5df1f63fbb4fbf46ee84675aeaded80a41dd8c06c4cc5c8ae24773dbda6",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2Fmultiple%2F12/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2Fmultiple%2F12/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/multiple/12",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://schema/shared/a644aa8fefe93f288ba4a727bd574027a80321604b0e387ca31bc70dc3d9fdc2": {
+      "ref": "spark-class-model://schema/shared/a644aa8fefe93f288ba4a727bd574027a80321604b0e387ca31bc70dc3d9fdc2",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ValueRef",
+        "title": "ValueRef<NonNullable<SparkFileFieldProps['separator']>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a644aa8fefe93f288ba4a727bd574027a80321604b0e387ca31bc70dc3d9fdc2"
+      }
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/separator/13": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/separator/13",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "separator",
+      "schemaRef": "spark-class-model://schema/shared/a644aa8fefe93f288ba4a727bd574027a80321604b0e387ca31bc70dc3d9fdc2",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2Fseparator%2F13/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2Fseparator%2F13/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/separator/13",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/browseWritesValue/14": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/browseWritesValue/14",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "browseWritesValue",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/a467a2fb8d89667fefd3588a07890e143515e0153865242b84bf76afb6edb292": {
+      "ref": "spark-class-model://schema/shared/a467a2fb8d89667fefd3588a07890e143515e0153865242b84bf76afb6edb292",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(file: PageSelectedFile) => string",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a467a2fb8d89667fefd3588a07890e143515e0153865242b84bf76afb6edb292"
+      }
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/getBrowseValue/15": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/getBrowseValue/15",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "getBrowseValue",
+      "schemaRef": "spark-class-model://schema/shared/a467a2fb8d89667fefd3588a07890e143515e0153865242b84bf76afb6edb292",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/c40ed9588bb25a7ee99b7b6ed81ef03f26ab18dc7bd8ead415d288cef1cec428": {
+      "ref": "spark-class-model://schema/shared/c40ed9588bb25a7ee99b7b6ed81ef03f26ab18dc7bd8ead415d288cef1cec428",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(file: PageUploadedFile) => string",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c40ed9588bb25a7ee99b7b6ed81ef03f26ab18dc7bd8ead415d288cef1cec428"
+      }
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/getUploadValue/16": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/getUploadValue/16",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "getUploadValue",
+      "schemaRef": "spark-class-model://schema/shared/c40ed9588bb25a7ee99b7b6ed81ef03f26ab18dc7bd8ead415d288cef1cec428",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/methods/browseFiles/0": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/methods/browseFiles/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "browseFiles",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/cc433b9929a1657135eebaa95fc21a2353efa0ceb1f9738cf7014d3d8a573e58",
+      "returnSchemaRef": "spark-class-model://schema/shared/96bac97e28eeb44ffebd1cb0e04647132a323fcf8f1d97027dc65d260c94a120"
+    },
+    "spark-class-model://schema/shared/96bac97e28eeb44ffebd1cb0e04647132a323fcf8f1d97027dc65d260c94a120": {
+      "ref": "spark-class-model://schema/shared/96bac97e28eeb44ffebd1cb0e04647132a323fcf8f1d97027dc65d260c94a120",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<PageSelectedFile[]>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/96bac97e28eeb44ffebd1cb0e04647132a323fcf8f1d97027dc65d260c94a120"
+      }
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/methods/uploadFiles/1": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/methods/uploadFiles/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "uploadFiles",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/cc433b9929a1657135eebaa95fc21a2353efa0ceb1f9738cf7014d3d8a573e58",
+      "returnSchemaRef": "spark-class-model://schema/shared/82effc13a6c6090822349122ddaee6e6bf5db98d2166a07d67ea541eefce2ebe"
+    },
+    "spark-class-model://schema/shared/82effc13a6c6090822349122ddaee6e6bf5db98d2166a07d67ea541eefce2ebe": {
+      "ref": "spark-class-model://schema/shared/82effc13a6c6090822349122ddaee6e6bf5db98d2166a07d67ea541eefce2ebe",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<PageUploadedFile[]>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/82effc13a6c6090822349122ddaee6e6bf5db98d2166a07d67ea541eefce2ebe"
+      }
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions/methods/updateValue/2": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions/methods/updateValue/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "name": "updateValue",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/670a1e80f5fbc27041a0d8c43ab32938d273e1e95683f60b0068f19a84d0227c",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://schema/shared/670a1e80f5fbc27041a0d8c43ab32938d273e1e95683f60b0068f19a84d0227c": {
+      "ref": "spark-class-model://schema/shared/670a1e80f5fbc27041a0d8c43ab32938d273e1e95683f60b0068f19a84d0227c",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/670a1e80f5fbc27041a0d8c43ab32938d273e1e95683f60b0068f19a84d0227c"
+      }
+    },
+    "spark-class-model://model/UploadBrowseFieldStateOptions": {
+      "ref": "spark-class-model://model/UploadBrowseFieldStateOptions",
+      "kind": "model",
+      "className": "UploadBrowseFieldStateOptions",
+      "schemaRef": "spark-class-model://schema/UploadBrowseFieldStateOptions",
+      "attributeRefs": [
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/displayLabel/0",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/fieldName/1",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/currentRawStringValue/2",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/isCurrentFieldEditable/3",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/hasBrowseCapability/4",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/hasUploadCapability/5",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/primaryAction/6",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/buttonText/7",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/readonlyButtonText/8",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/canClear/9",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/action/10",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/accept/11",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/multiple/12",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/separator/13",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/browseWritesValue/14",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/getBrowseValue/15",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/attributes/getUploadValue/16"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/UploadBrowseFieldStateOptions/methods/browseFiles/0",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/methods/uploadFiles/1",
+        "spark-class-model://model/UploadBrowseFieldStateOptions/methods/updateValue/2"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FdisplayLabel%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FfieldName%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FcurrentRawStringValue%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FisCurrentFieldEditable%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FhasBrowseCapability%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FhasUploadCapability%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FprimaryAction%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FbuttonText%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FreadonlyButtonText%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2FcanClear%2F9/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2Faction%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2Faccept%2F11/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2Fmultiple%2F12/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUploadBrowseFieldStateOptions%2Fattributes%2Fseparator%2F13/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef"
+      ]
+    },
+    "spark-class-model://schema/FileBrowserFieldStateOptions": {
+      "ref": "spark-class-model://schema/FileBrowserFieldStateOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "FileBrowserFieldStateOptions",
+        "properties": {
+          "displayLabel": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<string>"
+          },
+          "currentRawStringValue": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<string>"
+          },
+          "isCurrentFieldEditable": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<boolean>"
+          },
+          "hasBrowseCapability": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<boolean>"
+          },
+          "accept": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<NonNullable<SparkFileFieldProps['accept']>>"
+          },
+          "multiple": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<NonNullable<SparkFilePickerFieldProps['multiple']>>"
+          },
+          "separator": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<NonNullable<SparkFileFieldProps['separator']>>"
+          },
+          "canClear": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/FileBrowserFieldStateOptions"
+      }
+    },
+    "spark-class-model://model/FileBrowserFieldStateOptions/attributes/displayLabel/0": {
+      "ref": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/displayLabel/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileBrowserFieldStateOptions",
+      "name": "displayLabel",
+      "schemaRef": "spark-class-model://schema/shared/7e99c2d0dd5869a7ee4e0075932684a6a8c1690f7b1a2f85aa3c36a9ce441c68",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FdisplayLabel%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FdisplayLabel%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/displayLabel/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/FileBrowserFieldStateOptions/attributes/currentRawStringValue/1": {
+      "ref": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/currentRawStringValue/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileBrowserFieldStateOptions",
+      "name": "currentRawStringValue",
+      "schemaRef": "spark-class-model://schema/shared/7e99c2d0dd5869a7ee4e0075932684a6a8c1690f7b1a2f85aa3c36a9ce441c68",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FcurrentRawStringValue%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FcurrentRawStringValue%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/currentRawStringValue/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/FileBrowserFieldStateOptions/attributes/isCurrentFieldEditable/2": {
+      "ref": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/isCurrentFieldEditable/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileBrowserFieldStateOptions",
+      "name": "isCurrentFieldEditable",
+      "schemaRef": "spark-class-model://schema/shared/a3307797b1530af23dcbaec6dce6588485e55730cf77881d2c3e0568eab67f46",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FisCurrentFieldEditable%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FisCurrentFieldEditable%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/isCurrentFieldEditable/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/FileBrowserFieldStateOptions/attributes/hasBrowseCapability/3": {
+      "ref": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/hasBrowseCapability/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileBrowserFieldStateOptions",
+      "name": "hasBrowseCapability",
+      "schemaRef": "spark-class-model://schema/shared/a3307797b1530af23dcbaec6dce6588485e55730cf77881d2c3e0568eab67f46",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FhasBrowseCapability%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FhasBrowseCapability%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/hasBrowseCapability/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/FileBrowserFieldStateOptions/attributes/accept/4": {
+      "ref": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/accept/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileBrowserFieldStateOptions",
+      "name": "accept",
+      "schemaRef": "spark-class-model://schema/shared/8969a6d28d6d501e631d1b42bd6d385f614404c75588bfc81090cb2c9ad77737",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2Faccept%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2Faccept%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/accept/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/FileBrowserFieldStateOptions/attributes/multiple/5": {
+      "ref": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/multiple/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileBrowserFieldStateOptions",
+      "name": "multiple",
+      "schemaRef": "spark-class-model://schema/shared/96fae5df1f63fbb4fbf46ee84675aeaded80a41dd8c06c4cc5c8ae24773dbda6",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2Fmultiple%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2Fmultiple%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/multiple/5",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/FileBrowserFieldStateOptions/attributes/separator/6": {
+      "ref": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/separator/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileBrowserFieldStateOptions",
+      "name": "separator",
+      "schemaRef": "spark-class-model://schema/shared/a644aa8fefe93f288ba4a727bd574027a80321604b0e387ca31bc70dc3d9fdc2",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2Fseparator%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2Fseparator%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/separator/6",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/FileBrowserFieldStateOptions/attributes/canClear/7": {
+      "ref": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/canClear/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileBrowserFieldStateOptions",
+      "name": "canClear",
+      "schemaRef": "spark-class-model://schema/shared/1b4a6dda945a295f3c6ed615a2f0ae34d4ba681f7af79cf1e09606fb7ad29e16",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FcanClear%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FcanClear%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/FileBrowserFieldStateOptions/attributes/canClear/7",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/FileBrowserFieldStateOptions/methods/browseFiles/0": {
+      "ref": "spark-class-model://model/FileBrowserFieldStateOptions/methods/browseFiles/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/FileBrowserFieldStateOptions",
+      "name": "browseFiles",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/cc433b9929a1657135eebaa95fc21a2353efa0ceb1f9738cf7014d3d8a573e58",
+      "returnSchemaRef": "spark-class-model://schema/shared/96bac97e28eeb44ffebd1cb0e04647132a323fcf8f1d97027dc65d260c94a120"
+    },
+    "spark-class-model://model/FileBrowserFieldStateOptions/methods/updateValue/1": {
+      "ref": "spark-class-model://model/FileBrowserFieldStateOptions/methods/updateValue/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/FileBrowserFieldStateOptions",
+      "name": "updateValue",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/670a1e80f5fbc27041a0d8c43ab32938d273e1e95683f60b0068f19a84d0227c",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://model/FileBrowserFieldStateOptions": {
+      "ref": "spark-class-model://model/FileBrowserFieldStateOptions",
+      "kind": "model",
+      "className": "FileBrowserFieldStateOptions",
+      "schemaRef": "spark-class-model://schema/FileBrowserFieldStateOptions",
+      "attributeRefs": [
+        "spark-class-model://model/FileBrowserFieldStateOptions/attributes/displayLabel/0",
+        "spark-class-model://model/FileBrowserFieldStateOptions/attributes/currentRawStringValue/1",
+        "spark-class-model://model/FileBrowserFieldStateOptions/attributes/isCurrentFieldEditable/2",
+        "spark-class-model://model/FileBrowserFieldStateOptions/attributes/hasBrowseCapability/3",
+        "spark-class-model://model/FileBrowserFieldStateOptions/attributes/accept/4",
+        "spark-class-model://model/FileBrowserFieldStateOptions/attributes/multiple/5",
+        "spark-class-model://model/FileBrowserFieldStateOptions/attributes/separator/6",
+        "spark-class-model://model/FileBrowserFieldStateOptions/attributes/canClear/7"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/FileBrowserFieldStateOptions/methods/browseFiles/0",
+        "spark-class-model://model/FileBrowserFieldStateOptions/methods/updateValue/1"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FdisplayLabel%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FcurrentRawStringValue%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FisCurrentFieldEditable%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FhasBrowseCapability%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2Faccept%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2Fmultiple%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2Fseparator%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileBrowserFieldStateOptions%2Fattributes%2FcanClear%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef"
+      ]
+    }
+  }
+}

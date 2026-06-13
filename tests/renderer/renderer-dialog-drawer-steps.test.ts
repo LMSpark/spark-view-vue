@@ -9,7 +9,7 @@ import {
   isSparkNode,
   useSparkComponent,
 } from '@spark-appworks/spark-component'
-import type { SparkNode, SparkNodeChildren } from '@spark-appworks/spark-component'
+import type { SparkNodeChildren } from '@spark-appworks/spark-component'
 import { defineCapability, isRecord } from '@spark-appworks/spark-utils'
 import RendererStepItem from '../../packages/spark-component/src/components/containers/layout/RendererStepItem.vue'
 import RendererToolbar from '../../packages/spark-component/src/components/containers/layout/RendererToolbar.vue'

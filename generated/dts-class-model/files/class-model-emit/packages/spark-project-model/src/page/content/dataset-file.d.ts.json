@@ -1,0 +1,341 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-project-model/src/page/content/dataset-file.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:page/content/dataset-file",
+    "sourcePath": "class-model-emit/packages/spark-project-model/src/page/content/dataset-file.d.ts",
+    "sourceFile": "packages/spark-project-model/src/page/content/dataset-file.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "page/content/dataset-file",
+    "jsdoc": "@module @spark-appworks/spark-project-model:page/content/dataset-file\n职责：提供项目模型和页面配置域中的 dataset file 能力，支撑 navigation、page content、project session 或远程 IO。\n边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。\nAI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。\n\nPageDataSetFile——pagedata.json 的内存模型，负责 DataSet 的读写与撤销重做。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageDataSetFile"
+    ]
+  },
+  "symbols": [
+    "PageDataSetFile"
+  ],
+  "models": {
+    "PageDataSetFile": {
+      "kind": "PageDataSetFile",
+      "className": "PageDataSetFile",
+      "jsdoc": "Page Data Set File 的语义模型。",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-project-model/src/page/content/dataset-file.d.ts",
+        "line": 12,
+        "className": "PageDataSetFile",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Page Data Set File 实例。",
+        "signatureText": "constructor(\n    /** 页面 ID，用作 DataSet 名称和 pagedata.json 解析上下文。 */\n    pageId: string)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "pageId",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "pageId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [
+        {
+          "name": "pageId",
+          "jsdoc": "页面 ID，用作 DataSet 名称和 pagedata.json 解析上下文。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "value",
+          "jsdoc": "当前值。",
+          "schema": {
+            "type": "object",
+            "title": "DataSet"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "getText",
+          "jsdoc": "get Text 文本。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "setText",
+          "jsdoc": "set Text 文本。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "text",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "loadText",
+          "jsdoc": "load Text 文本。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "text",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "markSaved",
+          "jsdoc": "执行 mark Saved 操作。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "getTool",
+          "jsdoc": "读取 Tool。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "DataSetCrudTool"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataSetCrudTool"
+          }
+        },
+        {
+          "name": "replaceTool",
+          "jsdoc": "执行 replace Tool 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tool",
+              "type": {
+                "type": "reference",
+                "name": "DataSetCrudTool"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tool": {
+                "type": "object",
+                "title": "DataSetCrudTool"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "editTool",
+          "jsdoc": "执行 edit Tool 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "run",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "tool",
+                          "type": {
+                            "type": "reference",
+                            "name": "DataSetCrudTool"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "union",
+                        "types": [
+                          {
+                            "type": "intrinsic",
+                            "name": "void"
+                          },
+                          {
+                            "type": "reference",
+                            "name": "Promise",
+                            "typeArguments": [
+                              {
+                                "type": "intrinsic",
+                                "name": "void"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "run": {
+                "type": "object",
+                "title": "(tool: DataSetCrudTool) => void | Promise<void>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "undo",
+          "jsdoc": "执行 undo 操作。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "redo",
+          "jsdoc": "执行 redo 操作。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.775Z",
+  "$defs": {
+    "PageDataSetFile": {
+      "type": "object",
+      "title": "PageDataSetFile",
+      "description": "Page Data Set File 的语义模型。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object",
+          "title": "DataSet"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,547 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts",
+  "symbols": [
+    "AiAgentOrchestrationPlan",
+    "AiAgentInputContract",
+    "AiAgentTaskChatOptions",
+    "AiAgentTaskRegistry",
+    "AiAgentTask"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentOrchestrationPlan": {
+      "ref": "spark-class-model://schema/AiAgentOrchestrationPlan",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentOrchestrationPlan",
+        "properties": {
+          "userMessage": {
+            "type": "string"
+          },
+          "systemPrompt": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "readonlySteps": {
+            "type": "array"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentOrchestrationPlan"
+      }
+    },
+    "spark-class-model://model/AiAgentOrchestrationPlan/attributes/userMessage/0": {
+      "ref": "spark-class-model://model/AiAgentOrchestrationPlan/attributes/userMessage/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentOrchestrationPlan",
+      "name": "userMessage",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentOrchestrationPlan/attributes/systemPrompt/1": {
+      "ref": "spark-class-model://model/AiAgentOrchestrationPlan/attributes/systemPrompt/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentOrchestrationPlan",
+      "name": "systemPrompt",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentOrchestrationPlan/attributes/title/2": {
+      "ref": "spark-class-model://model/AiAgentOrchestrationPlan/attributes/title/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentOrchestrationPlan",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentOrchestrationPlan/attributes/readonlySteps/3": {
+      "ref": "spark-class-model://model/AiAgentOrchestrationPlan/attributes/readonlySteps/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentOrchestrationPlan",
+      "name": "readonlySteps",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentOrchestrationPlan": {
+      "ref": "spark-class-model://model/AiAgentOrchestrationPlan",
+      "kind": "model",
+      "className": "AiAgentOrchestrationPlan",
+      "schemaRef": "spark-class-model://schema/AiAgentOrchestrationPlan",
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentOrchestrationPlan/attributes/userMessage/0",
+        "spark-class-model://model/AiAgentOrchestrationPlan/attributes/systemPrompt/1",
+        "spark-class-model://model/AiAgentOrchestrationPlan/attributes/title/2",
+        "spark-class-model://model/AiAgentOrchestrationPlan/attributes/readonlySteps/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentInputContract": {
+      "ref": "spark-class-model://schema/AiAgentInputContract",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentInputContract",
+        "properties": {
+          "paramsSchema": {
+            "type": "object",
+            "title": "AiJsonSchemaObject"
+          },
+          "identityField": true
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentInputContract"
+      }
+    },
+    "spark-class-model://model/AiAgentInputContract/attributes/paramsSchema/0": {
+      "ref": "spark-class-model://model/AiAgentInputContract/attributes/paramsSchema/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentInputContract",
+      "name": "paramsSchema",
+      "schemaRef": "spark-class-model://schema/shared/630ef4fd9abed7c21e25329bcefe988d20d60599b876addb03cec8fad64223f5",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentInputContract/attributes/identityField/1": {
+      "ref": "spark-class-model://model/AiAgentInputContract/attributes/identityField/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentInputContract",
+      "name": "identityField",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentInputContract/methods/normalize/0": {
+      "ref": "spark-class-model://model/AiAgentInputContract/methods/normalize/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentInputContract",
+      "name": "normalize",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/8a9962e74f1a3ecfc808748e7386f54cccf206ddf6227a5f4e8249532ab71fc6",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://schema/shared/8a9962e74f1a3ecfc808748e7386f54cccf206ddf6227a5f4e8249532ab71fc6": {
+      "ref": "spark-class-model://schema/shared/8a9962e74f1a3ecfc808748e7386f54cccf206ddf6227a5f4e8249532ab71fc6",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "title": "AiJsonParams"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8a9962e74f1a3ecfc808748e7386f54cccf206ddf6227a5f4e8249532ab71fc6"
+      }
+    },
+    "spark-class-model://model/AiAgentInputContract/methods/toScope/1": {
+      "ref": "spark-class-model://model/AiAgentInputContract/methods/toScope/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentInputContract",
+      "name": "toScope",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/bcb9d1e07ef8474986cfd93e0b8c139977bd0d3af838989ddabab93e064a3a05",
+      "returnSchemaRef": "spark-class-model://schema/shared/1c911dd7805c7049f82bfc443b39e62fbd70b599c0e21f9aced23d9d37088e45"
+    },
+    "spark-class-model://schema/shared/bcb9d1e07ef8474986cfd93e0b8c139977bd0d3af838989ddabab93e064a3a05": {
+      "ref": "spark-class-model://schema/shared/bcb9d1e07ef8474986cfd93e0b8c139977bd0d3af838989ddabab93e064a3a05",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "normalizedInput": true
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/bcb9d1e07ef8474986cfd93e0b8c139977bd0d3af838989ddabab93e064a3a05"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentInputContract%2Fmethods%2FtoScope%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentInputContract%2Fmethods%2FtoScope%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentInputContract/methods/toScope/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentScope",
+      "targetClassName": "AiAgentScope",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentScope"
+    },
+    "spark-class-model://model/AiAgentInputContract/methods/toOrchestration/2": {
+      "ref": "spark-class-model://model/AiAgentInputContract/methods/toOrchestration/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentInputContract",
+      "name": "toOrchestration",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/bcb9d1e07ef8474986cfd93e0b8c139977bd0d3af838989ddabab93e064a3a05",
+      "returnSchemaRef": "spark-class-model://schema/shared/1948376f15aa63801cfbad3e477e614fbb2097eb720609495a85cc93d320542e"
+    },
+    "spark-class-model://schema/shared/1948376f15aa63801cfbad3e477e614fbb2097eb720609495a85cc93d320542e": {
+      "ref": "spark-class-model://schema/shared/1948376f15aa63801cfbad3e477e614fbb2097eb720609495a85cc93d320542e",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentOrchestrationPlan",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/1948376f15aa63801cfbad3e477e614fbb2097eb720609495a85cc93d320542e"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentInputContract%2Fmethods%2FtoOrchestration%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentOrchestrationPlan": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentInputContract%2Fmethods%2FtoOrchestration%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentOrchestrationPlan",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentInputContract/methods/toOrchestration/2",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentOrchestrationPlan",
+      "targetClassName": "AiAgentOrchestrationPlan",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentOrchestrationPlan"
+    },
+    "spark-class-model://model/AiAgentInputContract": {
+      "ref": "spark-class-model://model/AiAgentInputContract",
+      "kind": "model",
+      "className": "AiAgentInputContract",
+      "schemaRef": "spark-class-model://schema/AiAgentInputContract",
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentInputContract/attributes/paramsSchema/0",
+        "spark-class-model://model/AiAgentInputContract/attributes/identityField/1"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/AiAgentInputContract/methods/normalize/0",
+        "spark-class-model://model/AiAgentInputContract/methods/toScope/1",
+        "spark-class-model://model/AiAgentInputContract/methods/toOrchestration/2"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentInputContract%2Fmethods%2FtoScope%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentInputContract%2Fmethods%2FtoOrchestration%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentOrchestrationPlan"
+      ]
+    },
+    "spark-class-model://schema/AiAgentTaskChatOptions": {
+      "ref": "spark-class-model://schema/AiAgentTaskChatOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentTaskChatOptions",
+        "properties": {
+          "systemPrompt": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentTaskChatOptions"
+      }
+    },
+    "spark-class-model://model/AiAgentTaskChatOptions/attributes/systemPrompt/0": {
+      "ref": "spark-class-model://model/AiAgentTaskChatOptions/attributes/systemPrompt/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentTaskChatOptions",
+      "name": "systemPrompt",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentTaskChatOptions": {
+      "ref": "spark-class-model://model/AiAgentTaskChatOptions",
+      "kind": "model",
+      "className": "AiAgentTaskChatOptions",
+      "schemaRef": "spark-class-model://schema/AiAgentTaskChatOptions",
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentTaskChatOptions/attributes/systemPrompt/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentTaskRegistry": {
+      "ref": "spark-class-model://schema/AiAgentTaskRegistry",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentTaskRegistry",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentTaskRegistry"
+      }
+    },
+    "spark-class-model://model/AiAgentTaskRegistry/methods/get/0": {
+      "ref": "spark-class-model://model/AiAgentTaskRegistry/methods/get/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentTaskRegistry",
+      "name": "get",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/7c81b607b46d8fd85466bc881902e060fc6a51799d5a02784ecdc0faf3d26ba0",
+      "returnSchemaRef": "spark-class-model://schema/shared/670efbe61ac7a80a990322e748af43249d111c5f5dde6682f8ad50f11b10248f"
+    },
+    "spark-class-model://schema/shared/7c81b607b46d8fd85466bc881902e060fc6a51799d5a02784ecdc0faf3d26ba0": {
+      "ref": "spark-class-model://schema/shared/7c81b607b46d8fd85466bc881902e060fc6a51799d5a02784ecdc0faf3d26ba0",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "kindID": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7c81b607b46d8fd85466bc881902e060fc6a51799d5a02784ecdc0faf3d26ba0"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskRegistry%2Fmethods%2Fget%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskRegistry%2Fmethods%2Fget%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentTaskRegistry/methods/get/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentRegistration",
+      "targetClassName": "AiAgentRegistration",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRegistration"
+    },
+    "spark-class-model://model/AiAgentTaskRegistry": {
+      "ref": "spark-class-model://model/AiAgentTaskRegistry",
+      "kind": "model",
+      "className": "AiAgentTaskRegistry",
+      "schemaRef": "spark-class-model://schema/AiAgentTaskRegistry",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/AiAgentTaskRegistry/methods/get/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskRegistry%2Fmethods%2Fget%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration"
+      ]
+    },
+    "spark-class-model://schema/AiAgentTask": {
+      "ref": "spark-class-model://schema/AiAgentTask",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentTask",
+        "properties": {
+          "kindID": {
+            "type": "string"
+          },
+          "normalizedInput": true,
+          "scope": {
+            "$ref": "spark-class-model://schema/AiAgentScope"
+          },
+          "orchestration": {
+            "$ref": "spark-class-model://schema/AiAgentOrchestrationPlan"
+          },
+          "target": {
+            "$ref": "spark-class-model://schema/AiAgentTarget"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentTask"
+      }
+    },
+    "spark-class-model://model/AiAgentTask/attributes/kindID/0": {
+      "ref": "spark-class-model://model/AiAgentTask/attributes/kindID/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentTask",
+      "name": "kindID",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentTask/attributes/normalizedInput/1": {
+      "ref": "spark-class-model://model/AiAgentTask/attributes/normalizedInput/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentTask",
+      "name": "normalizedInput",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentTask/attributes/scope/2": {
+      "ref": "spark-class-model://model/AiAgentTask/attributes/scope/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentTask",
+      "name": "scope",
+      "schemaRef": "spark-class-model://schema/shared/1c911dd7805c7049f82bfc443b39e62fbd70b599c0e21f9aced23d9d37088e45",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fattributes%2Fscope%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fattributes%2Fscope%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentTask/attributes/scope/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentScope",
+      "targetClassName": "AiAgentScope",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentScope"
+    },
+    "spark-class-model://model/AiAgentTask/attributes/orchestration/3": {
+      "ref": "spark-class-model://model/AiAgentTask/attributes/orchestration/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentTask",
+      "name": "orchestration",
+      "schemaRef": "spark-class-model://schema/shared/1948376f15aa63801cfbad3e477e614fbb2097eb720609495a85cc93d320542e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fattributes%2Forchestration%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentOrchestrationPlan": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fattributes%2Forchestration%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentOrchestrationPlan",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentTask/attributes/orchestration/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentOrchestrationPlan",
+      "targetClassName": "AiAgentOrchestrationPlan",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentOrchestrationPlan"
+    },
+    "spark-class-model://model/AiAgentTask/attributes/target/4": {
+      "ref": "spark-class-model://model/AiAgentTask/attributes/target/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentTask",
+      "name": "target",
+      "schemaRef": "spark-class-model://schema/shared/c1ecdc1d7ea2fa8de7e083ed4548b9859782e068a54482dd0698089447bdde95",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fattributes%2Ftarget%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTarget": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fattributes%2Ftarget%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTarget",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentTask/attributes/target/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentTarget",
+      "targetClassName": "AiAgentTarget",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentTarget"
+    },
+    "spark-class-model://model/AiAgentTask/constructors/0": {
+      "ref": "spark-class-model://model/AiAgentTask/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/AiAgentTask",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/d2b0fc157f2e162da1b658479181123db5dfca2980676d3328c92e40270f3144"
+    },
+    "spark-class-model://schema/shared/d2b0fc157f2e162da1b658479181123db5dfca2980676d3328c92e40270f3144": {
+      "ref": "spark-class-model://schema/shared/d2b0fc157f2e162da1b658479181123db5dfca2980676d3328c92e40270f3144",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "kindID": {
+            "type": "string"
+          },
+          "normalizedInput": true,
+          "scope": {
+            "$ref": "spark-class-model://schema/AiAgentScope"
+          },
+          "orchestration": {
+            "$ref": "spark-class-model://schema/AiAgentOrchestrationPlan"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d2b0fc157f2e162da1b658479181123db5dfca2980676d3328c92e40270f3144"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentOrchestrationPlan": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentOrchestrationPlan",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentTask/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentOrchestrationPlan",
+      "targetClassName": "AiAgentOrchestrationPlan",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentOrchestrationPlan"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentTask/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentScope",
+      "targetClassName": "AiAgentScope",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentScope"
+    },
+    "spark-class-model://model/AiAgentTask/methods/toChatRequest/0": {
+      "ref": "spark-class-model://model/AiAgentTask/methods/toChatRequest/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentTask",
+      "name": "toChatRequest",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/72cdbbf3ed56b13a6e167dbc6038a53b7547b6faf13a57c0980a36e18ac5af13",
+      "returnSchemaRef": "spark-class-model://schema/shared/ed4c6e8c559c7595805bf13be21e340631dc7e810dfa55d1a5581d476f1691db"
+    },
+    "spark-class-model://schema/shared/72cdbbf3ed56b13a6e167dbc6038a53b7547b6faf13a57c0980a36e18ac5af13": {
+      "ref": "spark-class-model://schema/shared/72cdbbf3ed56b13a6e167dbc6038a53b7547b6faf13a57c0980a36e18ac5af13",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/AiAgentTaskChatOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/72cdbbf3ed56b13a6e167dbc6038a53b7547b6faf13a57c0980a36e18ac5af13"
+      }
+    },
+    "spark-class-model://schema/shared/ed4c6e8c559c7595805bf13be21e340631dc7e810dfa55d1a5581d476f1691db": {
+      "ref": "spark-class-model://schema/shared/ed4c6e8c559c7595805bf13be21e340631dc7e810dfa55d1a5581d476f1691db",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentChatRequest",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ed4c6e8c559c7595805bf13be21e340631dc7e810dfa55d1a5581d476f1691db"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fmethods%2FtoChatRequest%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fmethods%2FtoChatRequest%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentTask/methods/toChatRequest/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentTaskChatOptions",
+      "targetClassName": "AiAgentTaskChatOptions",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentTaskChatOptions"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fmethods%2FtoChatRequest%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentChatRequest": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fmethods%2FtoChatRequest%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentChatRequest",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentTask/methods/toChatRequest/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentChatRequest",
+      "targetClassName": "AiAgentChatRequest",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/chat/chat-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentChatRequest"
+    },
+    "spark-class-model://model/AiAgentTask": {
+      "ref": "spark-class-model://model/AiAgentTask",
+      "kind": "model",
+      "className": "AiAgentTask",
+      "schemaRef": "spark-class-model://schema/AiAgentTask",
+      "constructorRef": "spark-class-model://model/AiAgentTask/constructors/0",
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentTask/attributes/kindID/0",
+        "spark-class-model://model/AiAgentTask/attributes/normalizedInput/1",
+        "spark-class-model://model/AiAgentTask/attributes/scope/2",
+        "spark-class-model://model/AiAgentTask/attributes/orchestration/3",
+        "spark-class-model://model/AiAgentTask/attributes/target/4"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/AiAgentTask/methods/toChatRequest/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fattributes%2Fscope%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fattributes%2Forchestration%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentOrchestrationPlan",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fattributes%2Ftarget%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTarget",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentOrchestrationPlan",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fmethods%2FtoChatRequest%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask%2Fmethods%2FtoChatRequest%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentChatRequest"
+      ]
+    }
+  }
+}

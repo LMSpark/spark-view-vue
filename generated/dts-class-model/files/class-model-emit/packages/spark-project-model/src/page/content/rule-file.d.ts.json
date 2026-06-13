@@ -1,0 +1,341 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-project-model/src/page/content/rule-file.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:page/content/rule-file",
+    "sourcePath": "class-model-emit/packages/spark-project-model/src/page/content/rule-file.d.ts",
+    "sourceFile": "packages/spark-project-model/src/page/content/rule-file.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "page/content/rule-file",
+    "jsdoc": "@module @spark-appworks/spark-project-model:page/content/rule-file\n职责：提供项目模型层 rule-file 能力，围绕 PageRuleFile 处理导航、页面文件、配置内容、工作区或远端 IO 契约。\n边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。\nAI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 page/content/rule-file。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "PageRuleFile"
+    ]
+  },
+  "symbols": [
+    "PageRuleFile"
+  ],
+  "models": {
+    "PageRuleFile": {
+      "kind": "PageRuleFile",
+      "className": "PageRuleFile",
+      "jsdoc": "Page Rule File 的语义模型。",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-project-model/src/page/content/rule-file.d.ts",
+        "line": 3,
+        "className": "PageRuleFile",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Page Rule File 实例。",
+        "signatureText": "constructor(\n    /** 页面 ID，用于标识当前 rule.json 所属页面。 */\n    pageId: string)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "pageId",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "pageId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [
+        {
+          "name": "pageId",
+          "jsdoc": "页面 ID，用于标识当前 rule.json 所属页面。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "tree",
+          "jsdoc": "tree 字段。",
+          "schema": {
+            "type": "object",
+            "title": "SparkNodeTreeModel"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "getText",
+          "jsdoc": "get Text 文本。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "setText",
+          "jsdoc": "set Text 文本。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "text",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "loadText",
+          "jsdoc": "load Text 文本。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "text",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "markSaved",
+          "jsdoc": "执行 mark Saved 操作。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "getTree",
+          "jsdoc": "读取 Tree。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "SparkNodeTree"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "SparkNodeTreeModel"
+          }
+        },
+        {
+          "name": "replaceTree",
+          "jsdoc": "执行 replace Tree 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tree",
+              "type": {
+                "type": "reference",
+                "name": "SparkNodeTree"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tree": {
+                "type": "object",
+                "title": "SparkNodeTreeModel"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "editTree",
+          "jsdoc": "执行 edit Tree 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "run",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "tree",
+                          "type": {
+                            "type": "reference",
+                            "name": "SparkNodeTree"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "union",
+                        "types": [
+                          {
+                            "type": "intrinsic",
+                            "name": "void"
+                          },
+                          {
+                            "type": "reference",
+                            "name": "Promise",
+                            "typeArguments": [
+                              {
+                                "type": "intrinsic",
+                                "name": "void"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "run": {
+                "type": "object",
+                "title": "(tree: SparkNodeTreeModel) => void | Promise<void>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "undo",
+          "jsdoc": "执行 undo 操作。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "redo",
+          "jsdoc": "执行 redo 操作。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.778Z",
+  "$defs": {
+    "PageRuleFile": {
+      "type": "object",
+      "title": "PageRuleFile",
+      "description": "Page Rule File 的语义模型。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "tree": {
+          "type": "object",
+          "title": "SparkNodeTreeModel"
+        }
+      }
+    }
+  }
+}

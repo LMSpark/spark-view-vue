@@ -1,0 +1,2428 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/shared-types.d.ts",
+  "symbols": [
+    "ValueRef",
+    "SparkNodeProps",
+    "SparkTitleContentProps",
+    "SparkDataDisplayProps",
+    "SparkFieldSemanticProps",
+    "SparkPrimaryActionTextProps",
+    "SparkReadonlyActionTextProps",
+    "SparkMultilineRowsProps",
+    "SparkMultilineFieldProps",
+    "SparkNumericMaxProps",
+    "SparkNumericBoundsProps",
+    "SparkMaxNumericFieldProps",
+    "SparkBoundedFieldProps",
+    "SparkRangeNumericFieldProps",
+    "SparkFileFieldProps",
+    "SparkFileUploadActionProps",
+    "SparkUploadFieldProps",
+    "SparkFilePickerFieldProps",
+    "SparkTemporalPickerProps",
+    "SparkRangeFilterProps",
+    "SparkRangeTemporalFieldProps",
+    "SparkOptionButtonStyleProps",
+    "SparkHierarchicalSelectionProps",
+    "SparkOptionValueMode",
+    "SparkOptionFieldProps",
+    "SparkButtonOptionFieldProps",
+    "SparkHierarchicalOptionFieldProps",
+    "SparkOptionSourceProps",
+    "SparkFloatingLayerProps",
+    "SparkGridLayoutProps",
+    "SparkTableModelProps",
+    "SparkCrudEventProps",
+    "SparkRowInteractionEventProps",
+    "SparkCrudDataContainerProps",
+    "SparkInteractiveDataContainerProps",
+    "SparkVisibilityEventProps",
+    "SparkVisibilityContainerProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ValueRef": {
+      "ref": "spark-class-model://schema/ValueRef",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ValueRef",
+        "properties": {
+          "value": true
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ValueRef"
+      }
+    },
+    "spark-class-model://model/ValueRef/attributes/value/0": {
+      "ref": "spark-class-model://model/ValueRef/attributes/value/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ValueRef",
+      "name": "value",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ValueRef": {
+      "ref": "spark-class-model://model/ValueRef",
+      "kind": "model",
+      "className": "ValueRef",
+      "schemaRef": "spark-class-model://schema/ValueRef",
+      "attributeRefs": [
+        "spark-class-model://model/ValueRef/attributes/value/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkNodeProps": {
+      "ref": "spark-class-model://schema/SparkNodeProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkNodeProps",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "children": {
+            "$ref": "spark-class-model://schema/SparkNodeChildren"
+          },
+          "permissionDeniedMode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "disable"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "hide"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkNodeProps"
+      }
+    },
+    "spark-class-model://model/SparkNodeProps/attributes/type/0": {
+      "ref": "spark-class-model://model/SparkNodeProps/attributes/type/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkNodeProps",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkNodeProps/attributes/id/1": {
+      "ref": "spark-class-model://model/SparkNodeProps/attributes/id/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkNodeProps",
+      "name": "id",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkNodeProps/attributes/children/2": {
+      "ref": "spark-class-model://model/SparkNodeProps/attributes/children/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkNodeProps",
+      "name": "children",
+      "schemaRef": "spark-class-model://schema/shared/dff8d3204c950961e8ab627b2fafac7182029d193cc20b0fc11c244e5a8f60b6",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkNodeProps%2Fattributes%2Fchildren%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkNodeChildren": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkNodeProps%2Fattributes%2Fchildren%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkNodeChildren",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkNodeProps/attributes/children/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/SparkNodeChildren",
+      "targetClassName": "SparkNodeChildren",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/node-tree/spark-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SparkNodeChildren"
+    },
+    "spark-class-model://schema/shared/c70824f15f46f5e9964eb40935f17ce5b718abedb84f2a3fb4767d36b352015e": {
+      "ref": "spark-class-model://schema/shared/c70824f15f46f5e9964eb40935f17ce5b718abedb84f2a3fb4767d36b352015e",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "disable"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "hide"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c70824f15f46f5e9964eb40935f17ce5b718abedb84f2a3fb4767d36b352015e"
+      }
+    },
+    "spark-class-model://model/SparkNodeProps/attributes/permissionDeniedMode/3": {
+      "ref": "spark-class-model://model/SparkNodeProps/attributes/permissionDeniedMode/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkNodeProps",
+      "name": "permissionDeniedMode",
+      "schemaRef": "spark-class-model://schema/shared/c70824f15f46f5e9964eb40935f17ce5b718abedb84f2a3fb4767d36b352015e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkNodeProps": {
+      "ref": "spark-class-model://model/SparkNodeProps",
+      "kind": "model",
+      "className": "SparkNodeProps",
+      "schemaRef": "spark-class-model://schema/SparkNodeProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkNodeProps/attributes/type/0",
+        "spark-class-model://model/SparkNodeProps/attributes/id/1",
+        "spark-class-model://model/SparkNodeProps/attributes/children/2",
+        "spark-class-model://model/SparkNodeProps/attributes/permissionDeniedMode/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkNodeProps%2Fattributes%2Fchildren%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkNodeChildren"
+      ]
+    },
+    "spark-class-model://schema/SparkTitleContentProps": {
+      "ref": "spark-class-model://schema/SparkTitleContentProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkTitleContentProps",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkTitleContentProps"
+      }
+    },
+    "spark-class-model://model/SparkTitleContentProps/attributes/title/0": {
+      "ref": "spark-class-model://model/SparkTitleContentProps/attributes/title/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTitleContentProps",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkTitleContentProps/attributes/content/1": {
+      "ref": "spark-class-model://model/SparkTitleContentProps/attributes/content/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTitleContentProps",
+      "name": "content",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkTitleContentProps": {
+      "ref": "spark-class-model://model/SparkTitleContentProps",
+      "kind": "model",
+      "className": "SparkTitleContentProps",
+      "schemaRef": "spark-class-model://schema/SparkTitleContentProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkTitleContentProps/attributes/title/0",
+        "spark-class-model://model/SparkTitleContentProps/attributes/content/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkDataDisplayProps": {
+      "ref": "spark-class-model://schema/SparkDataDisplayProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkDataDisplayProps",
+        "properties": {
+          "value": true,
+          "dataViewKey": {
+            "type": "string"
+          },
+          "dataMember": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/DataMember"
+              },
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "dataField": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkDataDisplayProps"
+      }
+    },
+    "spark-class-model://model/SparkDataDisplayProps/attributes/value/0": {
+      "ref": "spark-class-model://model/SparkDataDisplayProps/attributes/value/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkDataDisplayProps",
+      "name": "value",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkDataDisplayProps/attributes/dataViewKey/1": {
+      "ref": "spark-class-model://model/SparkDataDisplayProps/attributes/dataViewKey/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkDataDisplayProps",
+      "name": "dataViewKey",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkDataDisplayProps/attributes/dataMember/2": {
+      "ref": "spark-class-model://model/SparkDataDisplayProps/attributes/dataMember/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkDataDisplayProps",
+      "name": "dataMember",
+      "schemaRef": "spark-class-model://schema/shared/4603c1669031d67c761d0d7d1f6503d91703c9a98f2b29aaf267d9aceed7dd6e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkDataDisplayProps%2Fattributes%2FdataMember%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkDataDisplayProps%2Fattributes%2FdataMember%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkDataDisplayProps/attributes/dataMember/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataMember",
+      "targetClassName": "DataMember",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/core/data-view-key.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataMember"
+    },
+    "spark-class-model://model/SparkDataDisplayProps/attributes/dataField/3": {
+      "ref": "spark-class-model://model/SparkDataDisplayProps/attributes/dataField/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkDataDisplayProps",
+      "name": "dataField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkDataDisplayProps/attributes/field/4": {
+      "ref": "spark-class-model://model/SparkDataDisplayProps/attributes/field/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkDataDisplayProps",
+      "name": "field",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkDataDisplayProps": {
+      "ref": "spark-class-model://model/SparkDataDisplayProps",
+      "kind": "model",
+      "className": "SparkDataDisplayProps",
+      "schemaRef": "spark-class-model://schema/SparkDataDisplayProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkDataDisplayProps/attributes/value/0",
+        "spark-class-model://model/SparkDataDisplayProps/attributes/dataViewKey/1",
+        "spark-class-model://model/SparkDataDisplayProps/attributes/dataMember/2",
+        "spark-class-model://model/SparkDataDisplayProps/attributes/dataField/3",
+        "spark-class-model://model/SparkDataDisplayProps/attributes/field/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkDataDisplayProps%2Fattributes%2FdataMember%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember"
+      ]
+    },
+    "spark-class-model://schema/SparkFieldSemanticProps": {
+      "ref": "spark-class-model://schema/SparkFieldSemanticProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkFieldSemanticProps",
+        "properties": {
+          "width": {
+            "type": "number"
+          },
+          "resizable": {
+            "type": "boolean"
+          },
+          "clearable": {
+            "type": "boolean"
+          },
+          "modelValue": true,
+          "value": true,
+          "field": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "readonly": {
+            "type": "boolean"
+          },
+          "placeholder": {
+            "type": "string"
+          },
+          "titleAlign": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "left"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "center"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "right"
+                ]
+              }
+            ]
+          },
+          "valueAlign": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "left"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "center"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "right"
+                ]
+              }
+            ]
+          },
+          "headerCellClassName": {
+            "type": "string"
+          },
+          "cellClassName": {
+            "type": "string"
+          },
+          "titleClassName": {
+            "type": "string"
+          },
+          "valueClassName": {
+            "type": "string"
+          },
+          "sortable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "custom"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkFieldSemanticProps"
+      }
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/width/0": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/width/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "width",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/resizable/1": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/resizable/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "resizable",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/clearable/2": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/clearable/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "clearable",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/modelValue/3": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/modelValue/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "modelValue",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/value/4": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/value/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "value",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/field/5": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/field/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "field",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/label/6": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/label/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "label",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/readonly/7": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/readonly/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "readonly",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/placeholder/8": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/placeholder/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "placeholder",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/titleAlign/9": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/titleAlign/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "titleAlign",
+      "schemaRef": "spark-class-model://schema/shared/7446fb11c6c1bd8d33f1924a373f628059d1cbbefe229efb5327ad791d5e7c9e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/valueAlign/10": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/valueAlign/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "valueAlign",
+      "schemaRef": "spark-class-model://schema/shared/7446fb11c6c1bd8d33f1924a373f628059d1cbbefe229efb5327ad791d5e7c9e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/headerCellClassName/11": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/headerCellClassName/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "headerCellClassName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/cellClassName/12": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/cellClassName/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "cellClassName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/titleClassName/13": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/titleClassName/13",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "titleClassName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/valueClassName/14": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/valueClassName/14",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "valueClassName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/sortable/15": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/sortable/15",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "sortable",
+      "schemaRef": "spark-class-model://schema/shared/81ea73977bc136e64b7305cfecebd208b7e59ddd3547d85d47b5ebd911e96651",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/methods/onChange/0": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/methods/onChange/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "onChange",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://model/SparkFieldSemanticProps": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps",
+      "kind": "model",
+      "className": "SparkFieldSemanticProps",
+      "schemaRef": "spark-class-model://schema/SparkFieldSemanticProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/width/0",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/resizable/1",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/clearable/2",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/modelValue/3",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/value/4",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/field/5",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/label/6",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/readonly/7",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/placeholder/8",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/titleAlign/9",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/valueAlign/10",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/headerCellClassName/11",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/cellClassName/12",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/titleClassName/13",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/valueClassName/14",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/sortable/15"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/SparkFieldSemanticProps/methods/onChange/0"
+      ],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkPrimaryActionTextProps": {
+      "ref": "spark-class-model://schema/SparkPrimaryActionTextProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkPrimaryActionTextProps",
+        "properties": {
+          "buttonText": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkPrimaryActionTextProps"
+      }
+    },
+    "spark-class-model://model/SparkPrimaryActionTextProps/attributes/buttonText/0": {
+      "ref": "spark-class-model://model/SparkPrimaryActionTextProps/attributes/buttonText/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkPrimaryActionTextProps",
+      "name": "buttonText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkPrimaryActionTextProps": {
+      "ref": "spark-class-model://model/SparkPrimaryActionTextProps",
+      "kind": "model",
+      "className": "SparkPrimaryActionTextProps",
+      "schemaRef": "spark-class-model://schema/SparkPrimaryActionTextProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkPrimaryActionTextProps/attributes/buttonText/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkReadonlyActionTextProps": {
+      "ref": "spark-class-model://schema/SparkReadonlyActionTextProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkReadonlyActionTextProps",
+        "properties": {
+          "readonlyButtonText": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkReadonlyActionTextProps"
+      }
+    },
+    "spark-class-model://model/SparkReadonlyActionTextProps/attributes/readonlyButtonText/0": {
+      "ref": "spark-class-model://model/SparkReadonlyActionTextProps/attributes/readonlyButtonText/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkReadonlyActionTextProps",
+      "name": "readonlyButtonText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkReadonlyActionTextProps": {
+      "ref": "spark-class-model://model/SparkReadonlyActionTextProps",
+      "kind": "model",
+      "className": "SparkReadonlyActionTextProps",
+      "schemaRef": "spark-class-model://schema/SparkReadonlyActionTextProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkReadonlyActionTextProps/attributes/readonlyButtonText/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkMultilineRowsProps": {
+      "ref": "spark-class-model://schema/SparkMultilineRowsProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkMultilineRowsProps",
+        "properties": {
+          "rows": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkMultilineRowsProps"
+      }
+    },
+    "spark-class-model://model/SparkMultilineRowsProps/attributes/rows/0": {
+      "ref": "spark-class-model://model/SparkMultilineRowsProps/attributes/rows/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkMultilineRowsProps",
+      "name": "rows",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkMultilineRowsProps": {
+      "ref": "spark-class-model://model/SparkMultilineRowsProps",
+      "kind": "model",
+      "className": "SparkMultilineRowsProps",
+      "schemaRef": "spark-class-model://schema/SparkMultilineRowsProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkMultilineRowsProps/attributes/rows/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkMultilineFieldProps": {
+      "ref": "spark-class-model://schema/SparkMultilineFieldProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkMultilineFieldProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkMultilineFieldProps"
+      }
+    },
+    "spark-class-model://model/SparkMultilineFieldProps": {
+      "ref": "spark-class-model://model/SparkMultilineFieldProps",
+      "kind": "model",
+      "className": "SparkMultilineFieldProps",
+      "schemaRef": "spark-class-model://schema/SparkMultilineFieldProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkNumericMaxProps": {
+      "ref": "spark-class-model://schema/SparkNumericMaxProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkNumericMaxProps",
+        "properties": {
+          "max": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkNumericMaxProps"
+      }
+    },
+    "spark-class-model://model/SparkNumericMaxProps/attributes/max/0": {
+      "ref": "spark-class-model://model/SparkNumericMaxProps/attributes/max/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkNumericMaxProps",
+      "name": "max",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkNumericMaxProps": {
+      "ref": "spark-class-model://model/SparkNumericMaxProps",
+      "kind": "model",
+      "className": "SparkNumericMaxProps",
+      "schemaRef": "spark-class-model://schema/SparkNumericMaxProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkNumericMaxProps/attributes/max/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkNumericBoundsProps": {
+      "ref": "spark-class-model://schema/SparkNumericBoundsProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkNumericBoundsProps",
+        "properties": {
+          "min": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkNumericBoundsProps"
+      }
+    },
+    "spark-class-model://model/SparkNumericBoundsProps/attributes/min/0": {
+      "ref": "spark-class-model://model/SparkNumericBoundsProps/attributes/min/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkNumericBoundsProps",
+      "name": "min",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkNumericBoundsProps": {
+      "ref": "spark-class-model://model/SparkNumericBoundsProps",
+      "kind": "model",
+      "className": "SparkNumericBoundsProps",
+      "schemaRef": "spark-class-model://schema/SparkNumericBoundsProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkNumericBoundsProps/attributes/min/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkMaxNumericFieldProps": {
+      "ref": "spark-class-model://schema/SparkMaxNumericFieldProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkMaxNumericFieldProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkMaxNumericFieldProps"
+      }
+    },
+    "spark-class-model://model/SparkMaxNumericFieldProps": {
+      "ref": "spark-class-model://model/SparkMaxNumericFieldProps",
+      "kind": "model",
+      "className": "SparkMaxNumericFieldProps",
+      "schemaRef": "spark-class-model://schema/SparkMaxNumericFieldProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkBoundedFieldProps": {
+      "ref": "spark-class-model://schema/SparkBoundedFieldProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkBoundedFieldProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkBoundedFieldProps"
+      }
+    },
+    "spark-class-model://model/SparkBoundedFieldProps": {
+      "ref": "spark-class-model://model/SparkBoundedFieldProps",
+      "kind": "model",
+      "className": "SparkBoundedFieldProps",
+      "schemaRef": "spark-class-model://schema/SparkBoundedFieldProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkRangeNumericFieldProps": {
+      "ref": "spark-class-model://schema/SparkRangeNumericFieldProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkRangeNumericFieldProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkRangeNumericFieldProps"
+      }
+    },
+    "spark-class-model://model/SparkRangeNumericFieldProps": {
+      "ref": "spark-class-model://model/SparkRangeNumericFieldProps",
+      "kind": "model",
+      "className": "SparkRangeNumericFieldProps",
+      "schemaRef": "spark-class-model://schema/SparkRangeNumericFieldProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkFileFieldProps": {
+      "ref": "spark-class-model://schema/SparkFileFieldProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkFileFieldProps",
+        "properties": {
+          "accept": {
+            "type": "string"
+          },
+          "separator": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkFileFieldProps"
+      }
+    },
+    "spark-class-model://model/SparkFileFieldProps/attributes/accept/0": {
+      "ref": "spark-class-model://model/SparkFileFieldProps/attributes/accept/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFileFieldProps",
+      "name": "accept",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFileFieldProps/attributes/separator/1": {
+      "ref": "spark-class-model://model/SparkFileFieldProps/attributes/separator/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFileFieldProps",
+      "name": "separator",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFileFieldProps": {
+      "ref": "spark-class-model://model/SparkFileFieldProps",
+      "kind": "model",
+      "className": "SparkFileFieldProps",
+      "schemaRef": "spark-class-model://schema/SparkFileFieldProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkFileFieldProps/attributes/accept/0",
+        "spark-class-model://model/SparkFileFieldProps/attributes/separator/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkFileUploadActionProps": {
+      "ref": "spark-class-model://schema/SparkFileUploadActionProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkFileUploadActionProps",
+        "properties": {
+          "action": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkFileUploadActionProps"
+      }
+    },
+    "spark-class-model://model/SparkFileUploadActionProps/attributes/action/0": {
+      "ref": "spark-class-model://model/SparkFileUploadActionProps/attributes/action/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFileUploadActionProps",
+      "name": "action",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFileUploadActionProps": {
+      "ref": "spark-class-model://model/SparkFileUploadActionProps",
+      "kind": "model",
+      "className": "SparkFileUploadActionProps",
+      "schemaRef": "spark-class-model://schema/SparkFileUploadActionProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkFileUploadActionProps/attributes/action/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkUploadFieldProps": {
+      "ref": "spark-class-model://schema/SparkUploadFieldProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkUploadFieldProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkUploadFieldProps"
+      }
+    },
+    "spark-class-model://model/SparkUploadFieldProps": {
+      "ref": "spark-class-model://model/SparkUploadFieldProps",
+      "kind": "model",
+      "className": "SparkUploadFieldProps",
+      "schemaRef": "spark-class-model://schema/SparkUploadFieldProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkFilePickerFieldProps": {
+      "ref": "spark-class-model://schema/SparkFilePickerFieldProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkFilePickerFieldProps",
+        "properties": {
+          "multiple": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkFilePickerFieldProps"
+      }
+    },
+    "spark-class-model://model/SparkFilePickerFieldProps/attributes/multiple/0": {
+      "ref": "spark-class-model://model/SparkFilePickerFieldProps/attributes/multiple/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFilePickerFieldProps",
+      "name": "multiple",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFilePickerFieldProps": {
+      "ref": "spark-class-model://model/SparkFilePickerFieldProps",
+      "kind": "model",
+      "className": "SparkFilePickerFieldProps",
+      "schemaRef": "spark-class-model://schema/SparkFilePickerFieldProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkFilePickerFieldProps/attributes/multiple/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkTemporalPickerProps": {
+      "ref": "spark-class-model://schema/SparkTemporalPickerProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkTemporalPickerProps",
+        "properties": {
+          "format": {
+            "type": "string"
+          },
+          "startPlaceholder": {
+            "type": "string"
+          },
+          "endPlaceholder": {
+            "type": "string"
+          },
+          "rangeSeparator": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkTemporalPickerProps"
+      }
+    },
+    "spark-class-model://model/SparkTemporalPickerProps/attributes/format/0": {
+      "ref": "spark-class-model://model/SparkTemporalPickerProps/attributes/format/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTemporalPickerProps",
+      "name": "format",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkTemporalPickerProps/attributes/startPlaceholder/1": {
+      "ref": "spark-class-model://model/SparkTemporalPickerProps/attributes/startPlaceholder/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTemporalPickerProps",
+      "name": "startPlaceholder",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkTemporalPickerProps/attributes/endPlaceholder/2": {
+      "ref": "spark-class-model://model/SparkTemporalPickerProps/attributes/endPlaceholder/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTemporalPickerProps",
+      "name": "endPlaceholder",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkTemporalPickerProps/attributes/rangeSeparator/3": {
+      "ref": "spark-class-model://model/SparkTemporalPickerProps/attributes/rangeSeparator/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTemporalPickerProps",
+      "name": "rangeSeparator",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkTemporalPickerProps": {
+      "ref": "spark-class-model://model/SparkTemporalPickerProps",
+      "kind": "model",
+      "className": "SparkTemporalPickerProps",
+      "schemaRef": "spark-class-model://schema/SparkTemporalPickerProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkTemporalPickerProps/attributes/format/0",
+        "spark-class-model://model/SparkTemporalPickerProps/attributes/startPlaceholder/1",
+        "spark-class-model://model/SparkTemporalPickerProps/attributes/endPlaceholder/2",
+        "spark-class-model://model/SparkTemporalPickerProps/attributes/rangeSeparator/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkRangeFilterProps": {
+      "ref": "spark-class-model://schema/SparkRangeFilterProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkRangeFilterProps",
+        "properties": {
+          "filterMode": {
+            "type": "string",
+            "enum": [
+              "range"
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkRangeFilterProps"
+      }
+    },
+    "spark-class-model://schema/shared/7e8284cbbfb1f7d834ba44314f1ce43c30397d38bc2e1a3534242a53bc064ffa": {
+      "ref": "spark-class-model://schema/shared/7e8284cbbfb1f7d834ba44314f1ce43c30397d38bc2e1a3534242a53bc064ffa",
+      "kind": "schema",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "range"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7e8284cbbfb1f7d834ba44314f1ce43c30397d38bc2e1a3534242a53bc064ffa"
+      }
+    },
+    "spark-class-model://model/SparkRangeFilterProps/attributes/filterMode/0": {
+      "ref": "spark-class-model://model/SparkRangeFilterProps/attributes/filterMode/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkRangeFilterProps",
+      "name": "filterMode",
+      "schemaRef": "spark-class-model://schema/shared/7e8284cbbfb1f7d834ba44314f1ce43c30397d38bc2e1a3534242a53bc064ffa",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkRangeFilterProps": {
+      "ref": "spark-class-model://model/SparkRangeFilterProps",
+      "kind": "model",
+      "className": "SparkRangeFilterProps",
+      "schemaRef": "spark-class-model://schema/SparkRangeFilterProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkRangeFilterProps/attributes/filterMode/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkRangeTemporalFieldProps": {
+      "ref": "spark-class-model://schema/SparkRangeTemporalFieldProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkRangeTemporalFieldProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkRangeTemporalFieldProps"
+      }
+    },
+    "spark-class-model://model/SparkRangeTemporalFieldProps": {
+      "ref": "spark-class-model://model/SparkRangeTemporalFieldProps",
+      "kind": "model",
+      "className": "SparkRangeTemporalFieldProps",
+      "schemaRef": "spark-class-model://schema/SparkRangeTemporalFieldProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkOptionButtonStyleProps": {
+      "ref": "spark-class-model://schema/SparkOptionButtonStyleProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkOptionButtonStyleProps",
+        "properties": {
+          "buttonStyle": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkOptionButtonStyleProps"
+      }
+    },
+    "spark-class-model://model/SparkOptionButtonStyleProps/attributes/buttonStyle/0": {
+      "ref": "spark-class-model://model/SparkOptionButtonStyleProps/attributes/buttonStyle/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionButtonStyleProps",
+      "name": "buttonStyle",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkOptionButtonStyleProps": {
+      "ref": "spark-class-model://model/SparkOptionButtonStyleProps",
+      "kind": "model",
+      "className": "SparkOptionButtonStyleProps",
+      "schemaRef": "spark-class-model://schema/SparkOptionButtonStyleProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkOptionButtonStyleProps/attributes/buttonStyle/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkHierarchicalSelectionProps": {
+      "ref": "spark-class-model://schema/SparkHierarchicalSelectionProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkHierarchicalSelectionProps",
+        "properties": {
+          "checkStrictly": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkHierarchicalSelectionProps"
+      }
+    },
+    "spark-class-model://model/SparkHierarchicalSelectionProps/attributes/checkStrictly/0": {
+      "ref": "spark-class-model://model/SparkHierarchicalSelectionProps/attributes/checkStrictly/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkHierarchicalSelectionProps",
+      "name": "checkStrictly",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkHierarchicalSelectionProps": {
+      "ref": "spark-class-model://model/SparkHierarchicalSelectionProps",
+      "kind": "model",
+      "className": "SparkHierarchicalSelectionProps",
+      "schemaRef": "spark-class-model://schema/SparkHierarchicalSelectionProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkHierarchicalSelectionProps/attributes/checkStrictly/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkOptionValueMode": {
+      "ref": "spark-class-model://schema/SparkOptionValueMode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkOptionValueMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkOptionValueMode"
+      }
+    },
+    "spark-class-model://model/SparkOptionValueMode": {
+      "ref": "spark-class-model://model/SparkOptionValueMode",
+      "kind": "model",
+      "className": "SparkOptionValueMode",
+      "schemaRef": "spark-class-model://schema/SparkOptionValueMode",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkOptionFieldProps": {
+      "ref": "spark-class-model://schema/SparkOptionFieldProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkOptionFieldProps",
+        "properties": {
+          "dataSource": {
+            "$ref": "spark-class-model://schema/DataView"
+          },
+          "optionDataViewKey": {
+            "type": "string"
+          },
+          "optionDataMember": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/DataMember"
+              },
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "optionDataField": {
+            "type": "string"
+          },
+          "valueSeparator": {
+            "type": "string"
+          },
+          "valueMode": {
+            "$ref": "spark-class-model://schema/SparkOptionValueMode"
+          },
+          "textSeparator": {
+            "type": "string"
+          },
+          "textStorageField": {
+            "type": "string"
+          },
+          "filterable": {
+            "type": "boolean"
+          },
+          "multiple": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkOptionFieldProps"
+      }
+    },
+    "spark-class-model://model/SparkOptionFieldProps/attributes/dataSource/0": {
+      "ref": "spark-class-model://model/SparkOptionFieldProps/attributes/dataSource/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionFieldProps",
+      "name": "dataSource",
+      "schemaRef": "spark-class-model://schema/shared/26422d000505dc4310895bf07a58f20f12afe485aad929313bf1e59d8fa876c9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkOptionFieldProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkOptionFieldProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkOptionFieldProps/attributes/dataSource/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
+    },
+    "spark-class-model://model/SparkOptionFieldProps/attributes/optionDataViewKey/1": {
+      "ref": "spark-class-model://model/SparkOptionFieldProps/attributes/optionDataViewKey/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionFieldProps",
+      "name": "optionDataViewKey",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkOptionFieldProps/attributes/optionDataMember/2": {
+      "ref": "spark-class-model://model/SparkOptionFieldProps/attributes/optionDataMember/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionFieldProps",
+      "name": "optionDataMember",
+      "schemaRef": "spark-class-model://schema/shared/4603c1669031d67c761d0d7d1f6503d91703c9a98f2b29aaf267d9aceed7dd6e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkOptionFieldProps%2Fattributes%2FoptionDataMember%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkOptionFieldProps%2Fattributes%2FoptionDataMember%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkOptionFieldProps/attributes/optionDataMember/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataMember",
+      "targetClassName": "DataMember",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/core/data-view-key.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataMember"
+    },
+    "spark-class-model://model/SparkOptionFieldProps/attributes/optionDataField/3": {
+      "ref": "spark-class-model://model/SparkOptionFieldProps/attributes/optionDataField/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionFieldProps",
+      "name": "optionDataField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkOptionFieldProps/attributes/valueSeparator/4": {
+      "ref": "spark-class-model://model/SparkOptionFieldProps/attributes/valueSeparator/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionFieldProps",
+      "name": "valueSeparator",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/64b5a300462786f786ee45727b928f2c868574231e590ac0200558905cca267d": {
+      "ref": "spark-class-model://schema/shared/64b5a300462786f786ee45727b928f2c868574231e590ac0200558905cca267d",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/SparkOptionValueMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/64b5a300462786f786ee45727b928f2c868574231e590ac0200558905cca267d"
+      }
+    },
+    "spark-class-model://model/SparkOptionFieldProps/attributes/valueMode/5": {
+      "ref": "spark-class-model://model/SparkOptionFieldProps/attributes/valueMode/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionFieldProps",
+      "name": "valueMode",
+      "schemaRef": "spark-class-model://schema/shared/64b5a300462786f786ee45727b928f2c868574231e590ac0200558905cca267d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkOptionFieldProps%2Fattributes%2FvalueMode%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkOptionValueMode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkOptionFieldProps%2Fattributes%2FvalueMode%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkOptionValueMode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkOptionFieldProps/attributes/valueMode/5",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/SparkOptionValueMode",
+      "targetClassName": "SparkOptionValueMode",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SparkOptionValueMode"
+    },
+    "spark-class-model://model/SparkOptionFieldProps/attributes/textSeparator/6": {
+      "ref": "spark-class-model://model/SparkOptionFieldProps/attributes/textSeparator/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionFieldProps",
+      "name": "textSeparator",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkOptionFieldProps/attributes/textStorageField/7": {
+      "ref": "spark-class-model://model/SparkOptionFieldProps/attributes/textStorageField/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionFieldProps",
+      "name": "textStorageField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkOptionFieldProps/attributes/filterable/8": {
+      "ref": "spark-class-model://model/SparkOptionFieldProps/attributes/filterable/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionFieldProps",
+      "name": "filterable",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkOptionFieldProps/attributes/multiple/9": {
+      "ref": "spark-class-model://model/SparkOptionFieldProps/attributes/multiple/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionFieldProps",
+      "name": "multiple",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkOptionFieldProps": {
+      "ref": "spark-class-model://model/SparkOptionFieldProps",
+      "kind": "model",
+      "className": "SparkOptionFieldProps",
+      "schemaRef": "spark-class-model://schema/SparkOptionFieldProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkOptionFieldProps/attributes/dataSource/0",
+        "spark-class-model://model/SparkOptionFieldProps/attributes/optionDataViewKey/1",
+        "spark-class-model://model/SparkOptionFieldProps/attributes/optionDataMember/2",
+        "spark-class-model://model/SparkOptionFieldProps/attributes/optionDataField/3",
+        "spark-class-model://model/SparkOptionFieldProps/attributes/valueSeparator/4",
+        "spark-class-model://model/SparkOptionFieldProps/attributes/valueMode/5",
+        "spark-class-model://model/SparkOptionFieldProps/attributes/textSeparator/6",
+        "spark-class-model://model/SparkOptionFieldProps/attributes/textStorageField/7",
+        "spark-class-model://model/SparkOptionFieldProps/attributes/filterable/8",
+        "spark-class-model://model/SparkOptionFieldProps/attributes/multiple/9"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkOptionFieldProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkOptionFieldProps%2Fattributes%2FoptionDataMember%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkOptionFieldProps%2Fattributes%2FvalueMode%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkOptionValueMode"
+      ]
+    },
+    "spark-class-model://schema/SparkButtonOptionFieldProps": {
+      "ref": "spark-class-model://schema/SparkButtonOptionFieldProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkButtonOptionFieldProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkButtonOptionFieldProps"
+      }
+    },
+    "spark-class-model://model/SparkButtonOptionFieldProps": {
+      "ref": "spark-class-model://model/SparkButtonOptionFieldProps",
+      "kind": "model",
+      "className": "SparkButtonOptionFieldProps",
+      "schemaRef": "spark-class-model://schema/SparkButtonOptionFieldProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkHierarchicalOptionFieldProps": {
+      "ref": "spark-class-model://schema/SparkHierarchicalOptionFieldProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkHierarchicalOptionFieldProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkHierarchicalOptionFieldProps"
+      }
+    },
+    "spark-class-model://model/SparkHierarchicalOptionFieldProps": {
+      "ref": "spark-class-model://model/SparkHierarchicalOptionFieldProps",
+      "kind": "model",
+      "className": "SparkHierarchicalOptionFieldProps",
+      "schemaRef": "spark-class-model://schema/SparkHierarchicalOptionFieldProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkOptionSourceProps": {
+      "ref": "spark-class-model://schema/SparkOptionSourceProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkOptionSourceProps",
+        "properties": {
+          "options": {
+            "type": "array",
+            "items": true
+          },
+          "optionLabelField": {
+            "type": "string"
+          },
+          "optionValueField": {
+            "type": "string"
+          },
+          "optionDisabledField": {
+            "type": "string"
+          },
+          "optionChildrenField": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkOptionSourceProps"
+      }
+    },
+    "spark-class-model://model/SparkOptionSourceProps/attributes/options/0": {
+      "ref": "spark-class-model://model/SparkOptionSourceProps/attributes/options/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionSourceProps",
+      "name": "options",
+      "schemaRef": "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkOptionSourceProps/attributes/optionLabelField/1": {
+      "ref": "spark-class-model://model/SparkOptionSourceProps/attributes/optionLabelField/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionSourceProps",
+      "name": "optionLabelField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkOptionSourceProps/attributes/optionValueField/2": {
+      "ref": "spark-class-model://model/SparkOptionSourceProps/attributes/optionValueField/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionSourceProps",
+      "name": "optionValueField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkOptionSourceProps/attributes/optionDisabledField/3": {
+      "ref": "spark-class-model://model/SparkOptionSourceProps/attributes/optionDisabledField/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionSourceProps",
+      "name": "optionDisabledField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkOptionSourceProps/attributes/optionChildrenField/4": {
+      "ref": "spark-class-model://model/SparkOptionSourceProps/attributes/optionChildrenField/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkOptionSourceProps",
+      "name": "optionChildrenField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkOptionSourceProps": {
+      "ref": "spark-class-model://model/SparkOptionSourceProps",
+      "kind": "model",
+      "className": "SparkOptionSourceProps",
+      "schemaRef": "spark-class-model://schema/SparkOptionSourceProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkOptionSourceProps/attributes/options/0",
+        "spark-class-model://model/SparkOptionSourceProps/attributes/optionLabelField/1",
+        "spark-class-model://model/SparkOptionSourceProps/attributes/optionValueField/2",
+        "spark-class-model://model/SparkOptionSourceProps/attributes/optionDisabledField/3",
+        "spark-class-model://model/SparkOptionSourceProps/attributes/optionChildrenField/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkFloatingLayerProps": {
+      "ref": "spark-class-model://schema/SparkFloatingLayerProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkFloatingLayerProps",
+        "properties": {
+          "placement": {
+            "type": "string"
+          },
+          "effect": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "dark"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "light"
+                ]
+              }
+            ]
+          },
+          "offset": {
+            "type": "number"
+          },
+          "showAfter": {
+            "type": "number"
+          },
+          "hideAfter": {
+            "type": "number"
+          },
+          "showArrow": {
+            "type": "boolean"
+          },
+          "popperClass": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkFloatingLayerProps"
+      }
+    },
+    "spark-class-model://model/SparkFloatingLayerProps/attributes/placement/0": {
+      "ref": "spark-class-model://model/SparkFloatingLayerProps/attributes/placement/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFloatingLayerProps",
+      "name": "placement",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/80cc7bd0ed42f0774193a032409bc27975fe37c917d7cf7a01419f92c29e1a20": {
+      "ref": "spark-class-model://schema/shared/80cc7bd0ed42f0774193a032409bc27975fe37c917d7cf7a01419f92c29e1a20",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "dark"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "light"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/80cc7bd0ed42f0774193a032409bc27975fe37c917d7cf7a01419f92c29e1a20"
+      }
+    },
+    "spark-class-model://model/SparkFloatingLayerProps/attributes/effect/1": {
+      "ref": "spark-class-model://model/SparkFloatingLayerProps/attributes/effect/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFloatingLayerProps",
+      "name": "effect",
+      "schemaRef": "spark-class-model://schema/shared/80cc7bd0ed42f0774193a032409bc27975fe37c917d7cf7a01419f92c29e1a20",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFloatingLayerProps/attributes/offset/2": {
+      "ref": "spark-class-model://model/SparkFloatingLayerProps/attributes/offset/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFloatingLayerProps",
+      "name": "offset",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFloatingLayerProps/attributes/showAfter/3": {
+      "ref": "spark-class-model://model/SparkFloatingLayerProps/attributes/showAfter/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFloatingLayerProps",
+      "name": "showAfter",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFloatingLayerProps/attributes/hideAfter/4": {
+      "ref": "spark-class-model://model/SparkFloatingLayerProps/attributes/hideAfter/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFloatingLayerProps",
+      "name": "hideAfter",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFloatingLayerProps/attributes/showArrow/5": {
+      "ref": "spark-class-model://model/SparkFloatingLayerProps/attributes/showArrow/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFloatingLayerProps",
+      "name": "showArrow",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFloatingLayerProps/attributes/popperClass/6": {
+      "ref": "spark-class-model://model/SparkFloatingLayerProps/attributes/popperClass/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkFloatingLayerProps",
+      "name": "popperClass",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkFloatingLayerProps": {
+      "ref": "spark-class-model://model/SparkFloatingLayerProps",
+      "kind": "model",
+      "className": "SparkFloatingLayerProps",
+      "schemaRef": "spark-class-model://schema/SparkFloatingLayerProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkFloatingLayerProps/attributes/placement/0",
+        "spark-class-model://model/SparkFloatingLayerProps/attributes/effect/1",
+        "spark-class-model://model/SparkFloatingLayerProps/attributes/offset/2",
+        "spark-class-model://model/SparkFloatingLayerProps/attributes/showAfter/3",
+        "spark-class-model://model/SparkFloatingLayerProps/attributes/hideAfter/4",
+        "spark-class-model://model/SparkFloatingLayerProps/attributes/showArrow/5",
+        "spark-class-model://model/SparkFloatingLayerProps/attributes/popperClass/6"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkGridLayoutProps": {
+      "ref": "spark-class-model://schema/SparkGridLayoutProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkGridLayoutProps",
+        "properties": {
+          "gridColumns": {
+            "type": "number"
+          },
+          "gridGap": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "gridAutoRows": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkGridLayoutProps"
+      }
+    },
+    "spark-class-model://model/SparkGridLayoutProps/attributes/gridColumns/0": {
+      "ref": "spark-class-model://model/SparkGridLayoutProps/attributes/gridColumns/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkGridLayoutProps",
+      "name": "gridColumns",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkGridLayoutProps/attributes/gridGap/1": {
+      "ref": "spark-class-model://model/SparkGridLayoutProps/attributes/gridGap/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkGridLayoutProps",
+      "name": "gridGap",
+      "schemaRef": "spark-class-model://schema/shared/0f65693df6033a7e1dbae6098ff89cd34ca0ddcb320b3294e5e121a68504d4df",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkGridLayoutProps/attributes/gridAutoRows/2": {
+      "ref": "spark-class-model://model/SparkGridLayoutProps/attributes/gridAutoRows/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkGridLayoutProps",
+      "name": "gridAutoRows",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkGridLayoutProps": {
+      "ref": "spark-class-model://model/SparkGridLayoutProps",
+      "kind": "model",
+      "className": "SparkGridLayoutProps",
+      "schemaRef": "spark-class-model://schema/SparkGridLayoutProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkGridLayoutProps/attributes/gridColumns/0",
+        "spark-class-model://model/SparkGridLayoutProps/attributes/gridGap/1",
+        "spark-class-model://model/SparkGridLayoutProps/attributes/gridAutoRows/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkTableModelProps": {
+      "ref": "spark-class-model://schema/SparkTableModelProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkTableModelProps",
+        "properties": {
+          "dataSource": {
+            "$ref": "spark-class-model://schema/DataView"
+          },
+          "dataViewKey": {
+            "type": "string"
+          },
+          "dataMember": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/DataMember"
+              },
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "dataField": {
+            "type": "string"
+          },
+          "showDataViewMeta": {
+            "type": "boolean"
+          },
+          "showAggregateSummary": {
+            "type": "boolean"
+          },
+          "showSelectionSummary": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkTableModelProps"
+      }
+    },
+    "spark-class-model://model/SparkTableModelProps/attributes/dataSource/0": {
+      "ref": "spark-class-model://model/SparkTableModelProps/attributes/dataSource/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTableModelProps",
+      "name": "dataSource",
+      "schemaRef": "spark-class-model://schema/shared/26422d000505dc4310895bf07a58f20f12afe485aad929313bf1e59d8fa876c9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkTableModelProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkTableModelProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkTableModelProps/attributes/dataSource/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
+    },
+    "spark-class-model://model/SparkTableModelProps/attributes/dataViewKey/1": {
+      "ref": "spark-class-model://model/SparkTableModelProps/attributes/dataViewKey/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTableModelProps",
+      "name": "dataViewKey",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkTableModelProps/attributes/dataMember/2": {
+      "ref": "spark-class-model://model/SparkTableModelProps/attributes/dataMember/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTableModelProps",
+      "name": "dataMember",
+      "schemaRef": "spark-class-model://schema/shared/4603c1669031d67c761d0d7d1f6503d91703c9a98f2b29aaf267d9aceed7dd6e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkTableModelProps%2Fattributes%2FdataMember%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkTableModelProps%2Fattributes%2FdataMember%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkTableModelProps/attributes/dataMember/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataMember",
+      "targetClassName": "DataMember",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/core/data-view-key.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataMember"
+    },
+    "spark-class-model://model/SparkTableModelProps/attributes/dataField/3": {
+      "ref": "spark-class-model://model/SparkTableModelProps/attributes/dataField/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTableModelProps",
+      "name": "dataField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkTableModelProps/attributes/showDataViewMeta/4": {
+      "ref": "spark-class-model://model/SparkTableModelProps/attributes/showDataViewMeta/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTableModelProps",
+      "name": "showDataViewMeta",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkTableModelProps/attributes/showAggregateSummary/5": {
+      "ref": "spark-class-model://model/SparkTableModelProps/attributes/showAggregateSummary/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTableModelProps",
+      "name": "showAggregateSummary",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkTableModelProps/attributes/showSelectionSummary/6": {
+      "ref": "spark-class-model://model/SparkTableModelProps/attributes/showSelectionSummary/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkTableModelProps",
+      "name": "showSelectionSummary",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkTableModelProps": {
+      "ref": "spark-class-model://model/SparkTableModelProps",
+      "kind": "model",
+      "className": "SparkTableModelProps",
+      "schemaRef": "spark-class-model://schema/SparkTableModelProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkTableModelProps/attributes/dataSource/0",
+        "spark-class-model://model/SparkTableModelProps/attributes/dataViewKey/1",
+        "spark-class-model://model/SparkTableModelProps/attributes/dataMember/2",
+        "spark-class-model://model/SparkTableModelProps/attributes/dataField/3",
+        "spark-class-model://model/SparkTableModelProps/attributes/showDataViewMeta/4",
+        "spark-class-model://model/SparkTableModelProps/attributes/showAggregateSummary/5",
+        "spark-class-model://model/SparkTableModelProps/attributes/showSelectionSummary/6"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkTableModelProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkTableModelProps%2Fattributes%2FdataMember%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember"
+      ]
+    },
+    "spark-class-model://schema/SparkCrudEventProps": {
+      "ref": "spark-class-model://schema/SparkCrudEventProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkCrudEventProps",
+        "properties": {
+          "onAddRow": {
+            "$ref": "spark-class-model://schema/AddRowHandler"
+          },
+          "onEditRow": {
+            "$ref": "spark-class-model://schema/EditRowHandler"
+          },
+          "onRemoveRow": {
+            "$ref": "spark-class-model://schema/RemoveRowHandler"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkCrudEventProps"
+      }
+    },
+    "spark-class-model://schema/shared/e62b61de87194ed3ec3fde27839da37f4a5f7f954674bc96f1ba175d96b97267": {
+      "ref": "spark-class-model://schema/shared/e62b61de87194ed3ec3fde27839da37f4a5f7f954674bc96f1ba175d96b97267",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AddRowHandler",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e62b61de87194ed3ec3fde27839da37f4a5f7f954674bc96f1ba175d96b97267"
+      }
+    },
+    "spark-class-model://model/SparkCrudEventProps/attributes/onAddRow/0": {
+      "ref": "spark-class-model://model/SparkCrudEventProps/attributes/onAddRow/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkCrudEventProps",
+      "name": "onAddRow",
+      "schemaRef": "spark-class-model://schema/shared/e62b61de87194ed3ec3fde27839da37f4a5f7f954674bc96f1ba175d96b97267",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkCrudEventProps%2Fattributes%2FonAddRow%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAddRowHandler": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkCrudEventProps%2Fattributes%2FonAddRow%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAddRowHandler",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkCrudEventProps/attributes/onAddRow/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AddRowHandler",
+      "targetClassName": "AddRowHandler",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AddRowHandler"
+    },
+    "spark-class-model://schema/shared/01be9ad09a7217b9cee4118ee4f6a00ab8b9735c2f182bc4c5c7788b110414f1": {
+      "ref": "spark-class-model://schema/shared/01be9ad09a7217b9cee4118ee4f6a00ab8b9735c2f182bc4c5c7788b110414f1",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/EditRowHandler",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/01be9ad09a7217b9cee4118ee4f6a00ab8b9735c2f182bc4c5c7788b110414f1"
+      }
+    },
+    "spark-class-model://model/SparkCrudEventProps/attributes/onEditRow/1": {
+      "ref": "spark-class-model://model/SparkCrudEventProps/attributes/onEditRow/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkCrudEventProps",
+      "name": "onEditRow",
+      "schemaRef": "spark-class-model://schema/shared/01be9ad09a7217b9cee4118ee4f6a00ab8b9735c2f182bc4c5c7788b110414f1",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkCrudEventProps%2Fattributes%2FonEditRow%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FEditRowHandler": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkCrudEventProps%2Fattributes%2FonEditRow%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FEditRowHandler",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkCrudEventProps/attributes/onEditRow/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/EditRowHandler",
+      "targetClassName": "EditRowHandler",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/EditRowHandler"
+    },
+    "spark-class-model://schema/shared/7ef2dc6e86b442786ecbc9ffe65e67749a90f05aec3f93a448e03a19e2657995": {
+      "ref": "spark-class-model://schema/shared/7ef2dc6e86b442786ecbc9ffe65e67749a90f05aec3f93a448e03a19e2657995",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/RemoveRowHandler",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7ef2dc6e86b442786ecbc9ffe65e67749a90f05aec3f93a448e03a19e2657995"
+      }
+    },
+    "spark-class-model://model/SparkCrudEventProps/attributes/onRemoveRow/2": {
+      "ref": "spark-class-model://model/SparkCrudEventProps/attributes/onRemoveRow/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkCrudEventProps",
+      "name": "onRemoveRow",
+      "schemaRef": "spark-class-model://schema/shared/7ef2dc6e86b442786ecbc9ffe65e67749a90f05aec3f93a448e03a19e2657995",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkCrudEventProps%2Fattributes%2FonRemoveRow%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FRemoveRowHandler": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkCrudEventProps%2Fattributes%2FonRemoveRow%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FRemoveRowHandler",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkCrudEventProps/attributes/onRemoveRow/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/RemoveRowHandler",
+      "targetClassName": "RemoveRowHandler",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RemoveRowHandler"
+    },
+    "spark-class-model://model/SparkCrudEventProps": {
+      "ref": "spark-class-model://model/SparkCrudEventProps",
+      "kind": "model",
+      "className": "SparkCrudEventProps",
+      "schemaRef": "spark-class-model://schema/SparkCrudEventProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkCrudEventProps/attributes/onAddRow/0",
+        "spark-class-model://model/SparkCrudEventProps/attributes/onEditRow/1",
+        "spark-class-model://model/SparkCrudEventProps/attributes/onRemoveRow/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkCrudEventProps%2Fattributes%2FonAddRow%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAddRowHandler",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkCrudEventProps%2Fattributes%2FonEditRow%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FEditRowHandler",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkCrudEventProps%2Fattributes%2FonRemoveRow%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FRemoveRowHandler"
+      ]
+    },
+    "spark-class-model://schema/SparkRowInteractionEventProps": {
+      "ref": "spark-class-model://schema/SparkRowInteractionEventProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkRowInteractionEventProps",
+        "properties": {
+          "onRowClick": {
+            "$ref": "spark-class-model://schema/RowClickHandler"
+          },
+          "onSelectionChange": {
+            "$ref": "spark-class-model://schema/RowSelectionHandler"
+          },
+          "onCurrentChange": {
+            "$ref": "spark-class-model://schema/CurrentRowChangeHandler"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkRowInteractionEventProps"
+      }
+    },
+    "spark-class-model://model/SparkRowInteractionEventProps/attributes/onRowClick/0": {
+      "ref": "spark-class-model://model/SparkRowInteractionEventProps/attributes/onRowClick/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkRowInteractionEventProps",
+      "name": "onRowClick",
+      "schemaRef": "spark-class-model://schema/shared/dc436f5c915e32f9f8eb9996c5185b3a291dd54fbc00635da4d8459df5c4b6b6",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkRowInteractionEventProps%2Fattributes%2FonRowClick%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FRowClickHandler": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkRowInteractionEventProps%2Fattributes%2FonRowClick%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FRowClickHandler",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkRowInteractionEventProps/attributes/onRowClick/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/RowClickHandler",
+      "targetClassName": "RowClickHandler",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RowClickHandler"
+    },
+    "spark-class-model://schema/shared/f3428e770a604c34efa60f2b3bab21d0cfe1822cc8338bbe0be0b79ed6169b0b": {
+      "ref": "spark-class-model://schema/shared/f3428e770a604c34efa60f2b3bab21d0cfe1822cc8338bbe0be0b79ed6169b0b",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/RowSelectionHandler",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f3428e770a604c34efa60f2b3bab21d0cfe1822cc8338bbe0be0b79ed6169b0b"
+      }
+    },
+    "spark-class-model://model/SparkRowInteractionEventProps/attributes/onSelectionChange/1": {
+      "ref": "spark-class-model://model/SparkRowInteractionEventProps/attributes/onSelectionChange/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkRowInteractionEventProps",
+      "name": "onSelectionChange",
+      "schemaRef": "spark-class-model://schema/shared/f3428e770a604c34efa60f2b3bab21d0cfe1822cc8338bbe0be0b79ed6169b0b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkRowInteractionEventProps%2Fattributes%2FonSelectionChange%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRowSelectionHandler": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkRowInteractionEventProps%2Fattributes%2FonSelectionChange%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRowSelectionHandler",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkRowInteractionEventProps/attributes/onSelectionChange/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/RowSelectionHandler",
+      "targetClassName": "RowSelectionHandler",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RowSelectionHandler"
+    },
+    "spark-class-model://schema/shared/7186a272b9ef7c1b3e784aadefc712cab28c0c9ed772da5cfdcc592a5233ad10": {
+      "ref": "spark-class-model://schema/shared/7186a272b9ef7c1b3e784aadefc712cab28c0c9ed772da5cfdcc592a5233ad10",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/CurrentRowChangeHandler",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7186a272b9ef7c1b3e784aadefc712cab28c0c9ed772da5cfdcc592a5233ad10"
+      }
+    },
+    "spark-class-model://model/SparkRowInteractionEventProps/attributes/onCurrentChange/2": {
+      "ref": "spark-class-model://model/SparkRowInteractionEventProps/attributes/onCurrentChange/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkRowInteractionEventProps",
+      "name": "onCurrentChange",
+      "schemaRef": "spark-class-model://schema/shared/7186a272b9ef7c1b3e784aadefc712cab28c0c9ed772da5cfdcc592a5233ad10",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkRowInteractionEventProps%2Fattributes%2FonCurrentChange%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FCurrentRowChangeHandler": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkRowInteractionEventProps%2Fattributes%2FonCurrentChange%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FCurrentRowChangeHandler",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkRowInteractionEventProps/attributes/onCurrentChange/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/CurrentRowChangeHandler",
+      "targetClassName": "CurrentRowChangeHandler",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/support/interactionControl.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CurrentRowChangeHandler"
+    },
+    "spark-class-model://model/SparkRowInteractionEventProps": {
+      "ref": "spark-class-model://model/SparkRowInteractionEventProps",
+      "kind": "model",
+      "className": "SparkRowInteractionEventProps",
+      "schemaRef": "spark-class-model://schema/SparkRowInteractionEventProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkRowInteractionEventProps/attributes/onRowClick/0",
+        "spark-class-model://model/SparkRowInteractionEventProps/attributes/onSelectionChange/1",
+        "spark-class-model://model/SparkRowInteractionEventProps/attributes/onCurrentChange/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkRowInteractionEventProps%2Fattributes%2FonRowClick%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FRowClickHandler",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkRowInteractionEventProps%2Fattributes%2FonSelectionChange%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRowSelectionHandler",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkRowInteractionEventProps%2Fattributes%2FonCurrentChange%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FCurrentRowChangeHandler"
+      ]
+    },
+    "spark-class-model://schema/SparkCrudDataContainerProps": {
+      "ref": "spark-class-model://schema/SparkCrudDataContainerProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkCrudDataContainerProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkCrudDataContainerProps"
+      }
+    },
+    "spark-class-model://model/SparkCrudDataContainerProps": {
+      "ref": "spark-class-model://model/SparkCrudDataContainerProps",
+      "kind": "model",
+      "className": "SparkCrudDataContainerProps",
+      "schemaRef": "spark-class-model://schema/SparkCrudDataContainerProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkInteractiveDataContainerProps": {
+      "ref": "spark-class-model://schema/SparkInteractiveDataContainerProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkInteractiveDataContainerProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkInteractiveDataContainerProps"
+      }
+    },
+    "spark-class-model://model/SparkInteractiveDataContainerProps": {
+      "ref": "spark-class-model://model/SparkInteractiveDataContainerProps",
+      "kind": "model",
+      "className": "SparkInteractiveDataContainerProps",
+      "schemaRef": "spark-class-model://schema/SparkInteractiveDataContainerProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkVisibilityEventProps": {
+      "ref": "spark-class-model://schema/SparkVisibilityEventProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkVisibilityEventProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkVisibilityEventProps"
+      }
+    },
+    "spark-class-model://model/SparkVisibilityEventProps/methods/onOpen/0": {
+      "ref": "spark-class-model://model/SparkVisibilityEventProps/methods/onOpen/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/SparkVisibilityEventProps",
+      "name": "onOpen",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/SparkVisibilityEventProps/methods/onClose/1": {
+      "ref": "spark-class-model://model/SparkVisibilityEventProps/methods/onClose/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/SparkVisibilityEventProps",
+      "name": "onClose",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/SparkVisibilityEventProps/methods/onOpened/2": {
+      "ref": "spark-class-model://model/SparkVisibilityEventProps/methods/onOpened/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/SparkVisibilityEventProps",
+      "name": "onOpened",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/SparkVisibilityEventProps/methods/onClosed/3": {
+      "ref": "spark-class-model://model/SparkVisibilityEventProps/methods/onClosed/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/SparkVisibilityEventProps",
+      "name": "onClosed",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/SparkVisibilityEventProps": {
+      "ref": "spark-class-model://model/SparkVisibilityEventProps",
+      "kind": "model",
+      "className": "SparkVisibilityEventProps",
+      "schemaRef": "spark-class-model://schema/SparkVisibilityEventProps",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/SparkVisibilityEventProps/methods/onOpen/0",
+        "spark-class-model://model/SparkVisibilityEventProps/methods/onClose/1",
+        "spark-class-model://model/SparkVisibilityEventProps/methods/onOpened/2",
+        "spark-class-model://model/SparkVisibilityEventProps/methods/onClosed/3"
+      ],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/SparkVisibilityContainerProps": {
+      "ref": "spark-class-model://schema/SparkVisibilityContainerProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SparkVisibilityContainerProps",
+        "properties": {
+          "value": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SparkVisibilityContainerProps"
+      }
+    },
+    "spark-class-model://model/SparkVisibilityContainerProps/attributes/value/0": {
+      "ref": "spark-class-model://model/SparkVisibilityContainerProps/attributes/value/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SparkVisibilityContainerProps",
+      "name": "value",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SparkVisibilityContainerProps": {
+      "ref": "spark-class-model://model/SparkVisibilityContainerProps",
+      "kind": "model",
+      "className": "SparkVisibilityContainerProps",
+      "schemaRef": "spark-class-model://schema/SparkVisibilityContainerProps",
+      "attributeRefs": [
+        "spark-class-model://model/SparkVisibilityContainerProps/attributes/value/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

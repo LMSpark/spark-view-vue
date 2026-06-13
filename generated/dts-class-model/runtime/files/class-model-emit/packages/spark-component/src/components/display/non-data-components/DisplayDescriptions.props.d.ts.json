@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/display/non-data-components/DisplayDescriptions.props.d.ts",
+  "symbols": [
+    "RDescriptionsProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RDescriptionsProps": {
+      "ref": "spark-class-model://schema/RDescriptionsProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RDescriptionsProps",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "extra": {
+            "type": "string"
+          },
+          "border": {
+            "type": "boolean"
+          },
+          "column": {
+            "type": "number"
+          },
+          "direction": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "horizontal"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "vertical"
+                ]
+              }
+            ]
+          },
+          "descriptionsSize": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "large"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "default"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "small"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RDescriptionsProps"
+      }
+    },
+    "spark-class-model://model/RDescriptionsProps/attributes/title/0": {
+      "ref": "spark-class-model://model/RDescriptionsProps/attributes/title/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDescriptionsProps",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDescriptionsProps/attributes/extra/1": {
+      "ref": "spark-class-model://model/RDescriptionsProps/attributes/extra/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDescriptionsProps",
+      "name": "extra",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDescriptionsProps/attributes/border/2": {
+      "ref": "spark-class-model://model/RDescriptionsProps/attributes/border/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDescriptionsProps",
+      "name": "border",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDescriptionsProps/attributes/column/3": {
+      "ref": "spark-class-model://model/RDescriptionsProps/attributes/column/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDescriptionsProps",
+      "name": "column",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDescriptionsProps/attributes/direction/4": {
+      "ref": "spark-class-model://model/RDescriptionsProps/attributes/direction/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDescriptionsProps",
+      "name": "direction",
+      "schemaRef": "spark-class-model://schema/shared/1743163f650a55fd7431c3ad9e73fc86ef6fc66564f7f980eee8e41726578c9b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDescriptionsProps/attributes/descriptionsSize/5": {
+      "ref": "spark-class-model://model/RDescriptionsProps/attributes/descriptionsSize/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDescriptionsProps",
+      "name": "descriptionsSize",
+      "schemaRef": "spark-class-model://schema/shared/b3967b006397ba2048babc68ea79f9ee037cb6634b989906402097608573139f",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDescriptionsProps": {
+      "ref": "spark-class-model://model/RDescriptionsProps",
+      "kind": "model",
+      "className": "RDescriptionsProps",
+      "schemaRef": "spark-class-model://schema/RDescriptionsProps",
+      "attributeRefs": [
+        "spark-class-model://model/RDescriptionsProps/attributes/title/0",
+        "spark-class-model://model/RDescriptionsProps/attributes/extra/1",
+        "spark-class-model://model/RDescriptionsProps/attributes/border/2",
+        "spark-class-model://model/RDescriptionsProps/attributes/column/3",
+        "spark-class-model://model/RDescriptionsProps/attributes/direction/4",
+        "spark-class-model://model/RDescriptionsProps/attributes/descriptionsSize/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

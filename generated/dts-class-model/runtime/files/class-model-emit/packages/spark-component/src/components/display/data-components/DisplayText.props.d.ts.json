@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/display/data-components/DisplayText.props.d.ts",
+  "symbols": [
+    "RTextDisplayProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RTextDisplayProps": {
+      "ref": "spark-class-model://schema/RTextDisplayProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RTextDisplayProps",
+        "properties": {
+          "tag": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "suffix": {
+            "type": "string"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "number"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "currency"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "percent"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "date"
+                ]
+              }
+            ]
+          },
+          "precision": {
+            "type": "number"
+          },
+          "placeholder": {
+            "type": "string"
+          },
+          "textClass": {
+            "type": "string"
+          },
+          "textStyle": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RTextDisplayProps"
+      }
+    },
+    "spark-class-model://model/RTextDisplayProps/attributes/tag/0": {
+      "ref": "spark-class-model://model/RTextDisplayProps/attributes/tag/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTextDisplayProps",
+      "name": "tag",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTextDisplayProps/attributes/prefix/1": {
+      "ref": "spark-class-model://model/RTextDisplayProps/attributes/prefix/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTextDisplayProps",
+      "name": "prefix",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTextDisplayProps/attributes/suffix/2": {
+      "ref": "spark-class-model://model/RTextDisplayProps/attributes/suffix/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTextDisplayProps",
+      "name": "suffix",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/6e69635923194cc8e072def570d06da8eabc5e5b2f991011149035fff6f92963": {
+      "ref": "spark-class-model://schema/shared/6e69635923194cc8e072def570d06da8eabc5e5b2f991011149035fff6f92963",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "number"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "currency"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "percent"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "date"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6e69635923194cc8e072def570d06da8eabc5e5b2f991011149035fff6f92963"
+      }
+    },
+    "spark-class-model://model/RTextDisplayProps/attributes/format/3": {
+      "ref": "spark-class-model://model/RTextDisplayProps/attributes/format/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTextDisplayProps",
+      "name": "format",
+      "schemaRef": "spark-class-model://schema/shared/6e69635923194cc8e072def570d06da8eabc5e5b2f991011149035fff6f92963",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTextDisplayProps/attributes/precision/4": {
+      "ref": "spark-class-model://model/RTextDisplayProps/attributes/precision/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTextDisplayProps",
+      "name": "precision",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTextDisplayProps/attributes/placeholder/5": {
+      "ref": "spark-class-model://model/RTextDisplayProps/attributes/placeholder/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTextDisplayProps",
+      "name": "placeholder",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTextDisplayProps/attributes/textClass/6": {
+      "ref": "spark-class-model://model/RTextDisplayProps/attributes/textClass/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTextDisplayProps",
+      "name": "textClass",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTextDisplayProps/attributes/textStyle/7": {
+      "ref": "spark-class-model://model/RTextDisplayProps/attributes/textStyle/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTextDisplayProps",
+      "name": "textStyle",
+      "schemaRef": "spark-class-model://schema/shared/856997992200a592b94530dfa27026ec7f0c2f0d2af7df90be503a0829c04dd5",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTextDisplayProps": {
+      "ref": "spark-class-model://model/RTextDisplayProps",
+      "kind": "model",
+      "className": "RTextDisplayProps",
+      "schemaRef": "spark-class-model://schema/RTextDisplayProps",
+      "attributeRefs": [
+        "spark-class-model://model/RTextDisplayProps/attributes/tag/0",
+        "spark-class-model://model/RTextDisplayProps/attributes/prefix/1",
+        "spark-class-model://model/RTextDisplayProps/attributes/suffix/2",
+        "spark-class-model://model/RTextDisplayProps/attributes/format/3",
+        "spark-class-model://model/RTextDisplayProps/attributes/precision/4",
+        "spark-class-model://model/RTextDisplayProps/attributes/placeholder/5",
+        "spark-class-model://model/RTextDisplayProps/attributes/textClass/6",
+        "spark-class-model://model/RTextDisplayProps/attributes/textStyle/7"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

@@ -1,0 +1,797 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/business/registration-types",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/business/registration-types.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/business/registration-types",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/registration-types\n职责：定义 AI 业务注册合约，包括业务描述、输入契约、工具运行时、会话存储和生命周期钩子。\n边界：只提供 registration 数据结构，不负责注册表存储、Host alias 映射或 session 执行。\nAI用途：新增业务入口或生成注册代码时，用本模块确认 registration 必填字段和可扩展能力。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentToolLoopNudgeReason",
+      "AiAgentToolLoopNudgeContext",
+      "AiAgentRegistrationOptions",
+      "AiAgentRegistration"
+    ]
+  },
+  "symbols": [
+    "AiAgentToolLoopNudgeReason",
+    "AiAgentToolLoopNudgeContext",
+    "AiAgentRegistrationOptions",
+    "AiAgentRegistration"
+  ],
+  "models": {
+    "AiAgentToolLoopNudgeReason": {
+      "kind": "AiAgentToolLoopNudgeReason",
+      "className": "AiAgentToolLoopNudgeReason",
+      "jsdoc": "Ai Agent Tool Loop Nudge Reason 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "'plan_without_tool' | 'execution_phase' | 'model_script_retry'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'plan_without_tool'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'execution_phase'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'model_script_retry'"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts",
+        "line": 15,
+        "className": "AiAgentToolLoopNudgeReason",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentToolLoopNudgeContext": {
+      "kind": "AiAgentToolLoopNudgeContext",
+      "className": "AiAgentToolLoopNudgeContext",
+      "jsdoc": "Ai Agent Tool Loop Nudge Context 的运行上下文。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    reason: AiAgentToolLoopNudgeReason;\n    moduleInstanceId: string;\n    runtimeContext: AiAgentRuntimeContext;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    reason: AiAgentToolLoopNudgeReason;\n    moduleInstanceId: string;\n    runtimeContext: AiAgentRuntimeContext;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts",
+        "line": 17,
+        "className": "AiAgentToolLoopNudgeContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "reason",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentToolLoopNudgeReason"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleInstanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "runtimeContext",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentRuntimeContext"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentRegistrationOptions": {
+      "kind": "AiAgentRegistrationOptions",
+      "className": "AiAgentRegistrationOptions",
+      "jsdoc": "Ai Agent Registration Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    /** 业务模块唯一标识，对应注册 runtime 的根业务 ID */\n    moduleId: string;\n    /** 面向 LLM 的业务名称，出现在系统提示中 */\n    name: string;\n    /** 面向 LLM 的业务描述，说明该业务能做什么 */\n    description: string;\n    /** ClassModel 工具运行时——承载工具闭集、知识快照和脚本执行 */\n    runtime: AiAgentToolRuntime;\n    /** 注册化输入契约；新任务入口用它校验输入、定位实例并生成 LLM 编排规则 */\n    inputContract?: AiAgentInputContract<TInput>;\n    /** 会话历史持久化存储；必须显式注入，registry 不再自动创建默认 store。 */\n    sessionStore: AiAgentSessionStore;\n    /**\n     * 动态系统提示生成器——每次会话轮次开始前调用，返回值拼接到 LLM 系统消息末尾。\n     * 可用于注入当前上下文相关的指引（如当前页面、当前数据源等）。\n     */\n    systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined;\n    /**\n     * 工具调用前置处理器——runtime.executeTool 前触发。\n     * 典型用途：人工审批、权限策略、只读/危险操作拦截。reject/abort 不会执行 runtime 工具。\n     */\n    beforeFunctionCall?: (options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    /**\n     * 工具调用后置处理器——LLM 每次完成工具调用后触发。\n     * 接收本次调用的上下文（工具名称、参数、返回值），返回生命周期指令。\n     * 典型用途：校验结果、追加后续提示、标记步骤完成。\n     */\n    afterFunctionCall?: (options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    /** 会话启动回调——AiAgentBusiness.createSession() 时调用一次 */\n    onStartSession?: (context: AiAgentRuntimeContext) => void | Promise<void>;\n    /**\n     * 业务实例结束回调——AiAgentBusiness.endInstance() 时调用。\n     * context 提供当前运行时上下文，directive 携带结束指令。\n     */\n    onEndBusinessInstance?: (context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    /**\n     * 模块实例释放回调——业务实例被清理时调用。\n     * 用于释放外部系统持有的资源（如关闭 WebSocket、清理临时文件等）。\n     */\n    releaseModuleInstance?: (moduleInstanceId: string) => void;\n    /** tool-loop 回合纠偏：业务 SOP 由 app 层注入，内核只保留协议级 nudge。 */\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    /** 视为“已进入执行阶段”的工具名；默认仅 model_script。 */\n    executionToolNames?: ReadonlySet<string>;\n    /** 扩展 plan-without-tool 检测关键词（小写匹配）。 */\n    planWithoutToolMarkers?: readonly string[];\n    /** FC 失败恢复：业务域补充 RECOVERY_HINT。 */\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    /** 业务模块唯一标识，对应注册 runtime 的根业务 ID */\n    moduleId: string;\n    /** 面向 LLM 的业务名称，出现在系统提示中 */\n    name: string;\n    /** 面向 LLM 的业务描述，说明该业务能做什么 */\n    description: string;\n    /** ClassModel 工具运行时——承载工具闭集、知识快照和脚本执行 */\n    runtime: AiAgentToolRuntime;\n    /** 注册化输入契约；新任务入口用它校验输入、定位实例并生成 LLM 编排规则 */\n    inputContract?: AiAgentInputContract<TInput>;\n    /** 会话历史持久化存储；必须显式注入，registry 不再自动创建默认 store。 */\n    sessionStore: AiAgentSessionStore;\n    /**\n     * 动态系统提示生成器——每次会话轮次开始前调用，返回值拼接到 LLM 系统消息末尾。\n     * 可用于注入当前上下文相关的指引（如当前页面、当前数据源等）。\n     */\n    systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined;\n    /**\n     * 工具调用前置处理器——runtime.executeTool 前触发。\n     * 典型用途：人工审批、权限策略、只读/危险操作拦截。reject/abort 不会执行 runtime 工具。\n     */\n    beforeFunctionCall?: (options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>;\n    /**\n     * 工具调用后置处理器——LLM 每次完成工具调用后触发。\n     * 接收本次调用的上下文（工具名称、参数、返回值），返回生命周期指令。\n     * 典型用途：校验结果、追加后续提示、标记步骤完成。\n     */\n    afterFunctionCall?: (options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>;\n    /** 会话启动回调——AiAgentBusiness.createSession() 时调用一次 */\n    onStartSession?: (context: AiAgentRuntimeContext) => void | Promise<void>;\n    /**\n     * 业务实例结束回调——AiAgentBusiness.endInstance() 时调用。\n     * context 提供当前运行时上下文，directive 携带结束指令。\n     */\n    onEndBusinessInstance?: (context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>;\n    /**\n     * 模块实例释放回调——业务实例被清理时调用。\n     * 用于释放外部系统持有的资源（如关闭 WebSocket、清理临时文件等）。\n     */\n    releaseModuleInstance?: (moduleInstanceId: string) => void;\n    /** tool-loop 回合纠偏：业务 SOP 由 app 层注入，内核只保留协议级 nudge。 */\n    toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined;\n    /** 视为“已进入执行阶段”的工具名；默认仅 model_script。 */\n    executionToolNames?: ReadonlySet<string>;\n    /** 扩展 plan-without-tool 检测关键词（小写匹配）。 */\n    planWithoutToolMarkers?: readonly string[];\n    /** FC 失败恢复：业务域补充 RECOVERY_HINT。 */\n    enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts",
+        "line": 23,
+        "className": "AiAgentRegistrationOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "moduleId",
+          "jsdoc": "业务模块唯一标识，对应注册 runtime 的根业务 ID",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "name",
+          "jsdoc": "面向 LLM 的业务名称，出现在系统提示中",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "description",
+          "jsdoc": "面向 LLM 的业务描述，说明该业务能做什么",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "runtime",
+          "jsdoc": "ClassModel 工具运行时——承载工具闭集、知识快照和脚本执行",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentToolRuntime"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "inputContract",
+          "jsdoc": "注册化输入契约；新任务入口用它校验输入、定位实例并生成 LLM 编排规则",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentInputContract<TInput>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "sessionStore",
+          "jsdoc": "会话历史持久化存储；必须显式注入，registry 不再自动创建默认 store。",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentSessionStore"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "executionToolNames",
+          "jsdoc": "视为“已进入执行阶段”的工具名；默认仅 model_script。",
+          "schema": {
+            "type": "object",
+            "title": "ReadonlySet<string>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "planWithoutToolMarkers",
+          "jsdoc": "扩展 plan-without-tool 检测关键词（小写匹配）。",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "systemPrompt",
+          "jsdoc": "动态系统提示生成器——每次会话轮次开始前调用，返回值拼接到 LLM 系统消息末尾。\n可用于注入当前上下文相关的指引（如当前页面、当前数据源等）。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "beforeFunctionCall",
+          "jsdoc": "工具调用前置处理器——runtime.executeTool 前触发。\n典型用途：人工审批、权限策略、只读/危险操作拦截。reject/abort 不会执行 runtime 工具。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "AiAgentBeforeFunctionCallDirective"
+              },
+              {
+                "type": "object",
+                "title": "Promise<AiAgentBeforeFunctionCallDirective>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "afterFunctionCall",
+          "jsdoc": "工具调用后置处理器——LLM 每次完成工具调用后触发。\n接收本次调用的上下文（工具名称、参数、返回值），返回生命周期指令。\n典型用途：校验结果、追加后续提示、标记步骤完成。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "AiAgentLifecycleDirective"
+              },
+              {
+                "type": "object",
+                "title": "Promise<AiAgentLifecycleDirective>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "onStartSession",
+          "jsdoc": "会话启动回调——AiAgentBusiness.createSession() 时调用一次",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "onEndBusinessInstance",
+          "jsdoc": "业务实例结束回调——AiAgentBusiness.endInstance() 时调用。\ncontext 提供当前运行时上下文，directive 携带结束指令。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "directive",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "releaseModuleInstance",
+          "jsdoc": "模块实例释放回调——业务实例被清理时调用。\n用于释放外部系统持有的资源（如关闭 WebSocket、清理临时文件等）。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "moduleInstanceId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "toolLoopNudge",
+          "jsdoc": "tool-loop 回合纠偏：业务 SOP 由 app 层注入，内核只保留协议级 nudge。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "AiAgentToolLoopNudgeContext",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "enrichRecoveryHints",
+          "jsdoc": "FC 失败恢复：业务域补充 RECOVERY_HINT。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "command",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "unknown",
+            "name": "readonly string[]"
+          },
+          "returnSchema": {
+            "type": "array"
+          }
+        }
+      ]
+    },
+    "AiAgentRegistration": {
+      "kind": "AiAgentRegistration",
+      "className": "AiAgentRegistration",
+      "jsdoc": "Ai Agent Registration 的语义模型。",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts",
+        "line": 74,
+        "className": "AiAgentRegistration",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Ai Agent Registration 实例。",
+        "signatureText": "constructor(options: AiAgentRegistrationOptions<TInput>)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "options",
+            "type": {
+              "type": "reference",
+              "name": "AiAgentRegistrationOptions",
+              "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts",
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "name": "TInput",
+                  "refersToTypeParameter": true
+                }
+              ]
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/AiAgentRegistrationOptions",
+              "title": "AiAgentRegistrationOptions<TInput>"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [
+        {
+          "name": "moduleId",
+          "jsdoc": "module Id 标识。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "name",
+          "jsdoc": "显示或业务名称。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "description",
+          "jsdoc": "description 字段。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "runtime",
+          "jsdoc": "工具运行时——工具调用时从中读取知识并执行 model_script",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentToolRuntime"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "inputContract",
+          "jsdoc": "kindID 的注册化输入契约；由 host.run[alias]() 的内部 task 创建使用",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentInputContract<TInput>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "sessionStore",
+          "jsdoc": "会话历史持久化存储",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentSessionStore"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "systemPrompt",
+          "jsdoc": "系统提示注入",
+          "schema": {
+            "type": "object",
+            "title": "(context: AiAgentRuntimeContext) => string | undefined"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "beforeFunctionCall",
+          "jsdoc": "工具调用前处理",
+          "schema": {
+            "type": "object",
+            "title": "(options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "afterFunctionCall",
+          "jsdoc": "工具调用后处理",
+          "schema": {
+            "type": "object",
+            "title": "(options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "onStartSession",
+          "jsdoc": "会话启动",
+          "schema": {
+            "type": "object",
+            "title": "(context: AiAgentRuntimeContext) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "onEndBusinessInstance",
+          "jsdoc": "业务实例结束",
+          "schema": {
+            "type": "object",
+            "title": "(context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "releaseModuleInstance",
+          "jsdoc": "资源释放",
+          "schema": {
+            "type": "object",
+            "title": "(moduleInstanceId: string) => void"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "toolLoopNudge",
+          "jsdoc": "tool-loop 业务纠偏",
+          "schema": {
+            "type": "object",
+            "title": "(context: AiAgentToolLoopNudgeContext) => string | undefined"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "executionToolNames",
+          "jsdoc": "execution Tool Names 字段。",
+          "schema": {
+            "type": "object",
+            "title": "ReadonlySet<string>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "planWithoutToolMarkers",
+          "jsdoc": "plan Without Tool Markers 字段。",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "enrichRecoveryHints",
+          "jsdoc": "enrich Recovery Hints 回调。",
+          "schema": {
+            "type": "object",
+            "title": "(command: EnrichFunctionCallFailureCommand) => readonly string[]"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.076Z",
+  "$defs": {
+    "AiAgentToolLoopNudgeReason": {
+      "type": "object",
+      "title": "AiAgentToolLoopNudgeReason",
+      "description": "Ai Agent Tool Loop Nudge Reason 的语义模型。"
+    },
+    "AiAgentToolLoopNudgeContext": {
+      "type": "object",
+      "title": "AiAgentToolLoopNudgeContext",
+      "description": "Ai Agent Tool Loop Nudge Context 的运行上下文。",
+      "properties": {
+        "reason": {
+          "$ref": "#/$defs/AiAgentToolLoopNudgeReason"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        },
+        "runtimeContext": {
+          "type": "object",
+          "title": "AiAgentRuntimeContext"
+        }
+      }
+    },
+    "AiAgentRegistrationOptions": {
+      "type": "object",
+      "title": "AiAgentRegistrationOptions",
+      "description": "Ai Agent Registration Options 的调用配置。",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "runtime": {
+          "type": "object",
+          "title": "AiAgentToolRuntime"
+        },
+        "inputContract": {
+          "type": "object",
+          "title": "AiAgentInputContract<TInput>"
+        },
+        "sessionStore": {
+          "type": "object",
+          "title": "AiAgentSessionStore"
+        },
+        "executionToolNames": {
+          "type": "object",
+          "title": "ReadonlySet<string>"
+        },
+        "planWithoutToolMarkers": {
+          "type": "array"
+        }
+      }
+    },
+    "AiAgentRegistration": {
+      "type": "object",
+      "title": "AiAgentRegistration",
+      "description": "Ai Agent Registration 的语义模型。",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "runtime": {
+          "type": "object",
+          "title": "AiAgentToolRuntime"
+        },
+        "inputContract": {
+          "type": "object",
+          "title": "AiAgentInputContract<TInput>"
+        },
+        "sessionStore": {
+          "type": "object",
+          "title": "AiAgentSessionStore"
+        },
+        "systemPrompt": {
+          "type": "object",
+          "title": "(context: AiAgentRuntimeContext) => string | undefined"
+        },
+        "beforeFunctionCall": {
+          "type": "object",
+          "title": "(options: AiAgentBeforeFunctionCallOptions) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>"
+        },
+        "afterFunctionCall": {
+          "type": "object",
+          "title": "(options: AiAgentAfterFunctionCallOptions) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>"
+        },
+        "onStartSession": {
+          "type": "object",
+          "title": "(context: AiAgentRuntimeContext) => void | Promise<void>"
+        },
+        "onEndBusinessInstance": {
+          "type": "object",
+          "title": "(context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => void | Promise<void>"
+        },
+        "releaseModuleInstance": {
+          "type": "object",
+          "title": "(moduleInstanceId: string) => void"
+        },
+        "toolLoopNudge": {
+          "type": "object",
+          "title": "(context: AiAgentToolLoopNudgeContext) => string | undefined"
+        },
+        "executionToolNames": {
+          "type": "object",
+          "title": "ReadonlySet<string>"
+        },
+        "planWithoutToolMarkers": {
+          "type": "array"
+        },
+        "enrichRecoveryHints": {
+          "type": "object",
+          "title": "(command: EnrichFunctionCallFailureCommand) => readonly string[]"
+        }
+      }
+    }
+  }
+}

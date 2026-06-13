@@ -1,0 +1,1343 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/tool-runtime/tool-runtime-types",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/tool-runtime/tool-runtime-types",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/tool-runtime/tool-runtime-types\n职责：定义 AI 工具运行时的工具规格、校验等级、执行结果、知识投影和 inspect 报告等核心类型。\n边界：只声明工具运行协议，不实现具体工具、不控制 LLM 循环，也不处理传输层 SSE。\nAI用途：新增或诊断工具时，用本模块确认 tool spec、tool result 和 runtime host context 的语义。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentToolCheckLevel",
+      "AiAgentToolCheck",
+      "AiAgentToolResultOptions",
+      "AiAgentToolResult",
+      "AiAgentToolSpec",
+      "AiAgentRuntimeHostContext",
+      "AiAgentToolRuntimeKnowledgeProjection",
+      "AiAgentToolRuntimeInspectFinding",
+      "AiAgentToolRuntimeInspectReport",
+      "AiAgentToolRuntime"
+    ]
+  },
+  "symbols": [
+    "AiAgentToolCheckLevel",
+    "AiAgentToolCheck",
+    "AiAgentToolResultOptions",
+    "AiAgentToolResult",
+    "AiAgentToolSpec",
+    "AiAgentRuntimeHostContext",
+    "AiAgentToolRuntimeKnowledgeProjection",
+    "AiAgentToolRuntimeInspectFinding",
+    "AiAgentToolRuntimeInspectReport",
+    "AiAgentToolRuntime"
+  ],
+  "models": {
+    "AiAgentToolCheckLevel": {
+      "kind": "AiAgentToolCheckLevel",
+      "className": "AiAgentToolCheckLevel",
+      "jsdoc": "Ai Agent Tool Check Level 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "'error' | 'warn' | 'info'",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "'error'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'warn'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'info'"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+        "line": 9,
+        "className": "AiAgentToolCheckLevel",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiAgentToolCheck": {
+      "kind": "AiAgentToolCheck",
+      "className": "AiAgentToolCheck",
+      "jsdoc": "Ai Agent Tool Check 的语义模型。",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+        "line": 11,
+        "className": "AiAgentToolCheck",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Ai Agent Tool Check 实例。",
+        "signatureText": "constructor(\n    /** 检查等级：error 会阻断，warn/info 用于提示。 */\n    level: AiAgentToolCheckLevel, \n    /** 稳定检查码，供 UI 和恢复提示识别问题类型。 */\n    code: string, \n    /** 面向用户或日志的检查说明。 */\n    message: string, \n    /** 可选修复提示。 */\n    hint?: string | undefined)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "level",
+            "type": {
+              "type": "reference",
+              "name": "AiAgentToolCheckLevel",
+              "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+            }
+          },
+          {
+            "name": "code",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          {
+            "name": "message",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          {
+            "name": "hint",
+            "type": {
+              "type": "optional",
+              "elementType": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            "flags": {
+              "isOptional": true
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "$ref": "#/$defs/AiAgentToolCheckLevel"
+            },
+            "code": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            },
+            "hint": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [
+        {
+          "name": "level",
+          "jsdoc": "检查等级：error 会阻断，warn/info 用于提示。",
+          "schema": {
+            "$ref": "#/$defs/AiAgentToolCheckLevel"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "code",
+          "jsdoc": "稳定检查码，供 UI 和恢复提示识别问题类型。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "message",
+          "jsdoc": "面向用户或日志的检查说明。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "hint",
+          "jsdoc": "可选修复提示。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "error",
+          "jsdoc": "错误对象或错误信息。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "code",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "hint",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentToolCheck",
+            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "hint": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolCheck"
+          }
+        },
+        {
+          "name": "warn",
+          "jsdoc": "执行 warn 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "code",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "hint",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentToolCheck",
+            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "hint": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolCheck"
+          }
+        },
+        {
+          "name": "info",
+          "jsdoc": "执行 info 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "code",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "hint",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentToolCheck",
+            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "hint": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolCheck"
+          }
+        }
+      ]
+    },
+    "AiAgentToolResultOptions": {
+      "kind": "AiAgentToolResultOptions",
+      "className": "AiAgentToolResultOptions",
+      "jsdoc": "Ai Agent Tool Result Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ok: boolean;\n    data?: TData;\n    checks?: readonly AiAgentToolCheck[];\n    state?: Record<string, unknown>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    ok: boolean;\n    data?: TData;\n    checks?: readonly AiAgentToolCheck[];\n    state?: Record<string, unknown>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+        "line": 38,
+        "className": "AiAgentToolResultOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "ok",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "data",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "checks",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "state",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentToolResult": {
+      "kind": "AiAgentToolResult",
+      "className": "AiAgentToolResult",
+      "jsdoc": "Ai Agent Tool Result 的返回结果。",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+        "line": 45,
+        "className": "AiAgentToolResult",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Ai Agent Tool Result 实例。",
+        "signatureText": "constructor(options: AiAgentToolResultOptions<TData>)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "options",
+            "type": {
+              "type": "reference",
+              "name": "AiAgentToolResultOptions",
+              "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "name": "TData",
+                  "refersToTypeParameter": true
+                }
+              ]
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/AiAgentToolResultOptions",
+              "title": "AiAgentToolResultOptions<TData>"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [
+        {
+          "name": "ok",
+          "jsdoc": "ok 字段。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "data",
+          "jsdoc": "业务数据载荷。",
+          "schema": true,
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "checks",
+          "jsdoc": "checks 字段。",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "state",
+          "jsdoc": "当前运行状态。",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "ok",
+          "jsdoc": "构造成功的工具执行结果。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "data",
+              "type": {
+                "type": "reference",
+                "name": "TData",
+                "refersToTypeParameter": true
+              },
+              "flags": {
+                "isOptional": true
+              }
+            },
+            {
+              "name": "checks",
+              "type": {
+                "type": "unknown",
+                "name": "readonly AiAgentToolCheck[]"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            },
+            {
+              "name": "state",
+              "type": {
+                "type": "reference",
+                "name": "Record",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                ]
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentToolResult",
+            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "TData",
+                "refersToTypeParameter": true
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": true,
+              "checks": {
+                "type": "array"
+              },
+              "state": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolResult",
+            "title": "AiAgentToolResult<TData>"
+          }
+        },
+        {
+          "name": "fail",
+          "jsdoc": "执行 fail 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "checks",
+              "type": {
+                "type": "unknown",
+                "name": "readonly AiAgentToolCheck[]"
+              }
+            },
+            {
+              "name": "state",
+              "type": {
+                "type": "reference",
+                "name": "Record",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                ]
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentToolResult",
+            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "never"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "checks": {
+                "type": "array"
+              },
+              "state": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolResult",
+            "title": "AiAgentToolResult<never>"
+          }
+        },
+        {
+          "name": "failCode",
+          "jsdoc": "执行 fail Code 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "code",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "hint",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentToolResult",
+            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "never"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "hint": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolResult",
+            "title": "AiAgentToolResult<never>"
+          }
+        },
+        {
+          "name": "passthroughFailure",
+          "jsdoc": "执行 passthrough Failure 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "result",
+              "type": {
+                "type": "reference",
+                "name": "AiAgentToolResult",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentToolResult",
+            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "never"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "result": {
+                "$ref": "#/$defs/AiAgentToolResult",
+                "title": "AiAgentToolResult<unknown>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolResult",
+            "title": "AiAgentToolResult<never>"
+          }
+        }
+      ]
+    },
+    "AiAgentToolSpec": {
+      "kind": "AiAgentToolSpec",
+      "className": "AiAgentToolSpec",
+      "jsdoc": "Ai Agent Tool Spec 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        readonly strict?: boolean;\n    };\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n        readonly strict?: boolean;\n    };\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+        "line": 66,
+        "className": "AiAgentToolSpec",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "type",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "function"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "function",
+          "jsdoc": "",
+          "schema": {
+            "type": "object"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentRuntimeHostContext": {
+      "kind": "AiAgentRuntimeHostContext",
+      "className": "AiAgentRuntimeHostContext",
+      "jsdoc": "Ai Agent Runtime Host Context 的运行上下文。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    moduleId: string;\n    moduleInstanceId: string;\n    instanceId: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+        "line": 76,
+        "className": "AiAgentRuntimeHostContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "moduleId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleInstanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "instanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentToolRuntimeKnowledgeProjection": {
+      "kind": "AiAgentToolRuntimeKnowledgeProjection",
+      "className": "AiAgentToolRuntimeKnowledgeProjection",
+      "jsdoc": "Ai Agent Tool Runtime Knowledge Projection 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    promptSnapshot: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    promptSnapshot: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+        "line": 82,
+        "className": "AiAgentToolRuntimeKnowledgeProjection",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "promptSnapshot",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentToolRuntimeInspectFinding": {
+      "kind": "AiAgentToolRuntimeInspectFinding",
+      "className": "AiAgentToolRuntimeInspectFinding",
+      "jsdoc": "Ai Agent Tool Runtime Inspect Finding 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    fix?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    fix?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+        "line": 86,
+        "className": "AiAgentToolRuntimeInspectFinding",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "level",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warn"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "code",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "message",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "fix",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentToolRuntimeInspectReport": {
+      "kind": "AiAgentToolRuntimeInspectReport",
+      "className": "AiAgentToolRuntimeInspectReport",
+      "jsdoc": "Ai Agent Tool Runtime Inspect Report 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    status: 'ok' | 'warning' | 'error';\n    rootKinds: readonly string[];\n    moduleCount: number;\n    findings: readonly AiAgentToolRuntimeInspectFinding[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    status: 'ok' | 'warning' | 'error';\n    rootKinds: readonly string[];\n    moduleCount: number;\n    findings: readonly AiAgentToolRuntimeInspectFinding[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+        "line": 93,
+        "className": "AiAgentToolRuntimeInspectReport",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ok"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warning"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rootKinds",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "findings",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentToolRuntime": {
+      "kind": "AiAgentToolRuntime",
+      "className": "AiAgentToolRuntime",
+      "jsdoc": "Ai Agent Tool Runtime 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    getTools(): readonly AiAgentToolSpec[];\n    executeTool(toolName: string, args: AiJsonParams, host: AiAgentRuntimeHostContext): Promise<AiAgentToolResult<AiJsonValue>>;\n    projectKnowledge(): AiAgentToolRuntimeKnowledgeProjection;\n    inspect(): AiAgentToolRuntimeInspectReport;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    getTools(): readonly AiAgentToolSpec[];\n    executeTool(toolName: string, args: AiJsonParams, host: AiAgentRuntimeHostContext): Promise<AiAgentToolResult<AiJsonValue>>;\n    projectKnowledge(): AiAgentToolRuntimeKnowledgeProjection;\n    inspect(): AiAgentToolRuntimeInspectReport;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+        "line": 100,
+        "className": "AiAgentToolRuntime",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "getTools",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "unknown",
+            "name": "readonly AiAgentToolSpec[]"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array"
+          }
+        },
+        {
+          "name": "executeTool",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "toolName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "args",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "host",
+              "type": {
+                "type": "reference",
+                "name": "AiAgentRuntimeHostContext",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "AiAgentToolResult",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "toolName": {
+                "type": "string"
+              },
+              "args": {
+                "type": "object",
+                "title": "AiJsonParams"
+              },
+              "host": {
+                "$ref": "#/$defs/AiAgentRuntimeHostContext"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiAgentToolResult<AiJsonValue>>"
+          }
+        },
+        {
+          "name": "projectKnowledge",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentToolRuntimeKnowledgeProjection",
+            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolRuntimeKnowledgeProjection"
+          }
+        },
+        {
+          "name": "inspect",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentToolRuntimeInspectReport",
+            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolRuntimeInspectReport"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.237Z",
+  "$defs": {
+    "AiAgentToolCheckLevel": {
+      "type": "object",
+      "title": "AiAgentToolCheckLevel",
+      "description": "Ai Agent Tool Check Level 的语义模型。"
+    },
+    "AiAgentToolCheck": {
+      "type": "object",
+      "title": "AiAgentToolCheck",
+      "description": "Ai Agent Tool Check 的语义模型。",
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/AiAgentToolCheckLevel"
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentToolResultOptions": {
+      "type": "object",
+      "title": "AiAgentToolResultOptions",
+      "description": "Ai Agent Tool Result Options 的调用配置。",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": true,
+        "checks": {
+          "type": "array"
+        },
+        "state": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    },
+    "AiAgentToolResult": {
+      "type": "object",
+      "title": "AiAgentToolResult",
+      "description": "Ai Agent Tool Result 的返回结果。",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": true,
+        "checks": {
+          "type": "array"
+        },
+        "state": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
+    },
+    "AiAgentToolSpec": {
+      "type": "object",
+      "title": "AiAgentToolSpec",
+      "description": "Ai Agent Tool Spec 的语义模型。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "function"
+          ]
+        },
+        "function": {
+          "type": "object"
+        }
+      }
+    },
+    "AiAgentRuntimeHostContext": {
+      "type": "object",
+      "title": "AiAgentRuntimeHostContext",
+      "description": "Ai Agent Runtime Host Context 的运行上下文。",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentToolRuntimeKnowledgeProjection": {
+      "type": "object",
+      "title": "AiAgentToolRuntimeKnowledgeProjection",
+      "description": "Ai Agent Tool Runtime Knowledge Projection 的语义模型。",
+      "properties": {
+        "promptSnapshot": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentToolRuntimeInspectFinding": {
+      "type": "object",
+      "title": "AiAgentToolRuntimeInspectFinding",
+      "description": "Ai Agent Tool Runtime Inspect Finding 的语义模型。",
+      "properties": {
+        "level": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warn"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            }
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentToolRuntimeInspectReport": {
+      "type": "object",
+      "title": "AiAgentToolRuntimeInspectReport",
+      "description": "Ai Agent Tool Runtime Inspect Report 的语义模型。",
+      "properties": {
+        "status": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "ok"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            }
+          ]
+        },
+        "rootKinds": {
+          "type": "array"
+        },
+        "moduleCount": {
+          "type": "number"
+        },
+        "findings": {
+          "type": "array"
+        }
+      }
+    },
+    "AiAgentToolRuntime": {
+      "type": "object",
+      "title": "AiAgentToolRuntime",
+      "description": "Ai Agent Tool Runtime 的语义模型。"
+    }
+  }
+}

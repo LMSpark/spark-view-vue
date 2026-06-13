@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererStepItem.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererStepItem",
+    "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererStepItem.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererStepItem.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererStepItem",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererStepItem\n职责：实现 RendererStepItem（r-step-item）的 Vue 渲染入口，把配置 props、数据上下文和事件桥接成用户可见的组件界面。\n边界：负责 container/layout-container 的视图组合与事件转发，不定义跨组件数据模型，也不替代 zero-code 行为 API。\nAI用途：需要理解 renderer step item 的实际渲染结构、slot/toolbar/状态呈现或事件触发点时，优先查看本模块。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "Props"
+    ],
+    "componentName": "RendererStepItem",
+    "componentType": "r-step-item",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "Props"
+  ],
+  "models": {
+    "Props": {
+      "kind": "Props",
+      "className": "Props",
+      "jsdoc": "r-steps 内部步骤项属性，兼容步骤头部和步骤内容区。",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 步骤标题 */\n    title?: string;\n    /** 步骤描述文本 */\n    description?: string;\n    /** 步骤状态 */\n    status?: string;\n    /** 是否禁用 */\n    disabled?: boolean;\n    /** 步骤体自定义 class */\n    bodyClass?: string;\n    /** CSS Grid 列数 */\n    gridColumns?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 在父容器中的位置序号 */\n    index: number;\n    /** 渲染模式：步骤头部或内容区 */\n    mode: 'header' | 'content';\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 步骤标题 */\n    title?: string;\n    /** 步骤描述文本 */\n    description?: string;\n    /** 步骤状态 */\n    status?: string;\n    /** 是否禁用 */\n    disabled?: boolean;\n    /** 步骤体自定义 class */\n    bodyClass?: string;\n    /** CSS Grid 列数 */\n    gridColumns?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 在父容器中的位置序号 */\n    index: number;\n    /** 渲染模式：步骤头部或内容区 */\n    mode: 'header' | 'content';\n}"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererStepItem.vue.d.ts",
+        "line": 3,
+        "className": "Props",
+        "declarationKind": "type",
+        "componentName": "RendererStepItem",
+        "componentType": "r-step-item",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "title",
+          "jsdoc": "步骤标题",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "description",
+          "jsdoc": "步骤描述文本",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "status",
+          "jsdoc": "步骤状态",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "disabled",
+          "jsdoc": "是否禁用",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "bodyClass",
+          "jsdoc": "步骤体自定义 class",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "gridColumns",
+          "jsdoc": "CSS Grid 列数",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "gridAutoRows",
+          "jsdoc": "栅格行高",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "gridGap",
+          "jsdoc": "栅格间距",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "index",
+          "jsdoc": "在父容器中的位置序号",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "mode",
+          "jsdoc": "渲染模式：步骤头部或内容区",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "header"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "content"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:54.277Z",
+  "$defs": {
+    "Props": {
+      "type": "object",
+      "title": "Props",
+      "description": "r-steps 内部步骤项属性，兼容步骤头部和步骤内容区。",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "bodyClass": {
+          "type": "string"
+        },
+        "gridColumns": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "gridAutoRows": {
+          "type": "string"
+        },
+        "gridGap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "index": {
+          "type": "number"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "header"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "content"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

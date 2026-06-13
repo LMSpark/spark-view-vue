@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/data-views/RendererVirtualCard/zero-code",
+    "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/data-views/RendererVirtualCard/zero-code",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/data-views/RendererVirtualCard/zero-code\n职责：封装 RendererVirtualCard（r-virtual-card）的 zero-code 行为层，向配置动作和脚本暴露稳定的组件操作 API。\n边界：只编排 table-level/data-view-container 的运行时能力、原生组件引用和事件控制，不声明视觉 props，也不持久化业务数据。\nAI用途：当动作、脚本或 ClassModel 需要调用 renderer virtual card 的选择、刷新、编辑、分页或树/表操作时，使用本模块确认 API 语义。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RendererVirtualCardZeroCodeOptions"
+    ],
+    "componentName": "RendererVirtualCard",
+    "componentType": "r-virtual-card",
+    "componentLevel": "table-level",
+    "componentLayer": "data-view-container",
+    "componentDirectory": "containers/data-views"
+  },
+  "symbols": [
+    "RendererVirtualCardZeroCodeOptions"
+  ],
+  "models": {
+    "RendererVirtualCardZeroCodeOptions": {
+      "kind": "RendererVirtualCardZeroCodeOptions",
+      "className": "RendererVirtualCardZeroCodeOptions",
+      "jsdoc": "创建 r-virtual-card zero-code API 和事件派发桥接所需的运行时输入。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** r-virtual-card 的组件属性集合，包含事件回调和配置透传。 */\n    props: Readonly<Record<string, unknown>>;\n    /** 当前解析出的 DataView。 */\n    resolvedView: ValueRef<DataView | null>;\n    /** 当前可见或缓存中的卡片行数据。 */\n    rows: ValueRef<readonly DataRow[]>;\n    /** 已缓存的页码集合。 */\n    cachedPages: ValueRef<readonly number[]>;\n    /** 正在加载的页码集合。 */\n    pendingPages: ValueRef<readonly number[]>;\n    /** 当前视口附近需要渲染的页码集合。 */\n    visiblePages: ValueRef<readonly number[]>;\n    /** 当前滚动位置对应的页码。 */\n    currentPage: ValueRef<number>;\n    /** 当前数据集总页数。 */\n    totalPages: ValueRef<number>;\n    /** 滚动进度文本。 */\n    progressText: ValueRef<string>;\n    /** 当前虚拟分页加载策略说明。 */\n    loadPolicyText: ValueRef<string>;\n    /** 最近一次滚轮跳页状态说明。 */\n    wheelStatusText: ValueRef<string>;\n    /** 滚动到指定页并触发必要加载。 */\n    scrollToPage: (page: number) => Promise<void>;\n    /** 清空分页缓存并重新加载当前页。 */\n    clearCache: () => void;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
+        "line": 11,
+        "className": "RendererVirtualCardZeroCodeOptions",
+        "declarationKind": "type",
+        "componentName": "RendererVirtualCard",
+        "componentType": "r-virtual-card",
+        "componentLevel": "table-level",
+        "componentLayer": "data-view-container",
+        "componentDirectory": "containers/data-views"
+      },
+      "attributes": [
+        {
+          "name": "props",
+          "jsdoc": "r-virtual-card 的组件属性集合，包含事件回调和配置透传。",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, unknown>>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "resolvedView",
+          "jsdoc": "当前解析出的 DataView。",
+          "schema": {
+            "type": "object",
+            "title": "ValueRef<DataView | null>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rows",
+          "jsdoc": "当前可见或缓存中的卡片行数据。",
+          "schema": {
+            "type": "object",
+            "title": "ValueRef<readonly DataRow[]>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "cachedPages",
+          "jsdoc": "已缓存的页码集合。",
+          "schema": {
+            "type": "object",
+            "title": "ValueRef<readonly number[]>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "pendingPages",
+          "jsdoc": "正在加载的页码集合。",
+          "schema": {
+            "type": "object",
+            "title": "ValueRef<readonly number[]>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "visiblePages",
+          "jsdoc": "当前视口附近需要渲染的页码集合。",
+          "schema": {
+            "type": "object",
+            "title": "ValueRef<readonly number[]>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "currentPage",
+          "jsdoc": "当前滚动位置对应的页码。",
+          "schema": {
+            "type": "object",
+            "title": "ValueRef<number>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "totalPages",
+          "jsdoc": "当前数据集总页数。",
+          "schema": {
+            "type": "object",
+            "title": "ValueRef<number>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "progressText",
+          "jsdoc": "滚动进度文本。",
+          "schema": {
+            "type": "object",
+            "title": "ValueRef<string>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "loadPolicyText",
+          "jsdoc": "当前虚拟分页加载策略说明。",
+          "schema": {
+            "type": "object",
+            "title": "ValueRef<string>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "wheelStatusText",
+          "jsdoc": "最近一次滚轮跳页状态说明。",
+          "schema": {
+            "type": "object",
+            "title": "ValueRef<string>"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "scrollToPage",
+          "jsdoc": "滚动到指定页并触发必要加载。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "page",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "clearCache",
+          "jsdoc": "清空分页缓存并重新加载当前页。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:54.094Z",
+  "$defs": {
+    "RendererVirtualCardZeroCodeOptions": {
+      "type": "object",
+      "title": "RendererVirtualCardZeroCodeOptions",
+      "description": "创建 r-virtual-card zero-code API 和事件派发桥接所需的运行时输入。",
+      "properties": {
+        "props": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        },
+        "resolvedView": {
+          "type": "object",
+          "title": "ValueRef<DataView | null>"
+        },
+        "rows": {
+          "type": "object",
+          "title": "ValueRef<readonly DataRow[]>"
+        },
+        "cachedPages": {
+          "type": "object",
+          "title": "ValueRef<readonly number[]>"
+        },
+        "pendingPages": {
+          "type": "object",
+          "title": "ValueRef<readonly number[]>"
+        },
+        "visiblePages": {
+          "type": "object",
+          "title": "ValueRef<readonly number[]>"
+        },
+        "currentPage": {
+          "type": "object",
+          "title": "ValueRef<number>"
+        },
+        "totalPages": {
+          "type": "object",
+          "title": "ValueRef<number>"
+        },
+        "progressText": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        },
+        "loadPolicyText": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        },
+        "wheelStatusText": {
+          "type": "object",
+          "title": "ValueRef<string>"
+        }
+      }
+    }
+  }
+}

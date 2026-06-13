@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldDate.props.d.ts",
+  "symbols": [
+    "DatePickerType",
+    "RDateProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/DatePickerType": {
+      "ref": "spark-class-model://schema/DatePickerType",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DatePickerType",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DatePickerType"
+      }
+    },
+    "spark-class-model://model/DatePickerType": {
+      "ref": "spark-class-model://model/DatePickerType",
+      "kind": "model",
+      "className": "DatePickerType",
+      "schemaRef": "spark-class-model://schema/DatePickerType",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/RDateProps": {
+      "ref": "spark-class-model://schema/RDateProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RDateProps",
+        "properties": {
+          "dateType": {
+            "$ref": "spark-class-model://schema/DatePickerType"
+          },
+          "valueFormat": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RDateProps"
+      }
+    },
+    "spark-class-model://schema/shared/774d4cefe31d2d71f8fcc729cd7865bff17fadcca8bbf1b91116e23258d07523": {
+      "ref": "spark-class-model://schema/shared/774d4cefe31d2d71f8fcc729cd7865bff17fadcca8bbf1b91116e23258d07523",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DatePickerType",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/774d4cefe31d2d71f8fcc729cd7865bff17fadcca8bbf1b91116e23258d07523"
+      }
+    },
+    "spark-class-model://model/RDateProps/attributes/dateType/0": {
+      "ref": "spark-class-model://model/RDateProps/attributes/dateType/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDateProps",
+      "name": "dateType",
+      "schemaRef": "spark-class-model://schema/shared/774d4cefe31d2d71f8fcc729cd7865bff17fadcca8bbf1b91116e23258d07523",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRDateProps%2Fattributes%2FdateType%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDatePickerType": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRDateProps%2Fattributes%2FdateType%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDatePickerType",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RDateProps/attributes/dateType/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DatePickerType",
+      "targetClassName": "DatePickerType",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/fields/data-components/FieldDate.props.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DatePickerType"
+    },
+    "spark-class-model://model/RDateProps/attributes/valueFormat/1": {
+      "ref": "spark-class-model://model/RDateProps/attributes/valueFormat/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RDateProps",
+      "name": "valueFormat",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RDateProps": {
+      "ref": "spark-class-model://model/RDateProps",
+      "kind": "model",
+      "className": "RDateProps",
+      "schemaRef": "spark-class-model://schema/RDateProps",
+      "attributeRefs": [
+        "spark-class-model://model/RDateProps/attributes/dateType/0",
+        "spark-class-model://model/RDateProps/attributes/valueFormat/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRDateProps%2Fattributes%2FdateType%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDatePickerType"
+      ]
+    }
+  }
+}

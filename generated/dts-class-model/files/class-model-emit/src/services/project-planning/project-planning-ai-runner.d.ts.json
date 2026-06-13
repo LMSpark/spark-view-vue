@@ -1,0 +1,375 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/src/services/project-planning/project-planning-ai-runner.d.ts",
+  "module": {
+    "name": "app:services/project-planning/project-planning-ai-runner",
+    "sourcePath": "class-model-emit/src/services/project-planning/project-planning-ai-runner.d.ts",
+    "sourceFile": "src/services/project-planning/project-planning-ai-runner.ts",
+    "packageName": "app",
+    "modulePath": "services/project-planning/project-planning-ai-runner",
+    "jsdoc": "@module app:services/project-planning-ai-runner\n职责：提供应用层 projectPlanning 的 project-planning-ai-runner 能力，围绕 ProjectPlanningAiRunOptions、ProjectPlanningAiRunEvents、ProjectPlanningAiRunCommand 等 4 个公开契约 编排项目需求、导航规划和 AI 业务注册。\n边界：只停留在项目规划阶段，不生成页面 rule/pagedata/script/template，也不越界进入 pageDesign。\nAI用途：规划模块/页面概要或排查项目策划 Agent 时，用本模块理解 services/project-planning-ai-runner。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "ProjectPlanningAiRunOptions",
+      "ProjectPlanningAiRunEvents",
+      "ProjectPlanningAiRunCommand",
+      "ProjectPlanningAiRunResult"
+    ]
+  },
+  "symbols": [
+    "ProjectPlanningAiRunOptions",
+    "ProjectPlanningAiRunEvents",
+    "ProjectPlanningAiRunCommand",
+    "ProjectPlanningAiRunResult"
+  ],
+  "models": {
+    "ProjectPlanningAiRunOptions": {
+      "kind": "ProjectPlanningAiRunOptions",
+      "className": "ProjectPlanningAiRunOptions",
+      "jsdoc": "Project Planning Ai Run Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "ResolveScopedProjectPlanningRunInputOptions & Readonly<{\n    /** 自动化/headless 可在 run 结束后保存 navigation；默认 false。 */\n    saveNavigationAfterRun?: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "ResolveScopedProjectPlanningRunInputOptions",
+          "targetName": "ResolveScopedProjectPlanningRunInputOptions"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "Readonly<{\n    /** 自动化/headless 可在 run 结束后保存 navigation；默认 false。 */\n    saveNavigationAfterRun?: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/src/services/project-planning/project-planning-ai-runner.d.ts",
+        "line": 7,
+        "className": "ProjectPlanningAiRunOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "saveNavigationAfterRun",
+          "jsdoc": "自动化/headless 可在 run 结束后保存 navigation；默认 false。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "ProjectPlanningAiRunEvents": {
+      "kind": "ProjectPlanningAiRunEvents",
+      "className": "ProjectPlanningAiRunEvents",
+      "jsdoc": "Project Planning Ai Run Events 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    onToolCall?: (record: AiAgentToolCallRecord) => void;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    onToolCall?: (record: AiAgentToolCallRecord) => void;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/src/services/project-planning/project-planning-ai-runner.d.ts",
+        "line": 12,
+        "className": "ProjectPlanningAiRunEvents",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "onToolCall",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "record",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "returnSchema": true
+        }
+      ]
+    },
+    "ProjectPlanningAiRunCommand": {
+      "kind": "ProjectPlanningAiRunCommand",
+      "className": "ProjectPlanningAiRunCommand",
+      "jsdoc": "Project Planning Ai Run Command 的命令参数。",
+      "shapeKind": "type",
+      "declarationTypeText": "ProjectPlanningAiRunOptions & Readonly<{\n    editor: ProjectWorkspace;\n    consumeCapability?: SparkCapabilityConsumer | null;\n    /** 测试或编排层可直接注入 Host，跳过 capability 查找。 */\n    host?: AiAgentHost;\n    events?: ProjectPlanningAiRunEvents;\n    trace?: AiRunTraceSink;\n    adapter?: AiRunAdapterState;\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    onAbort?: AiRunAbortHandler;\n    /** 默认使用 requirement 作为 user turn 文本。 */\n    userMessage?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "ProjectPlanningAiRunOptions",
+          "targetName": "ProjectPlanningAiRunOptions"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "Readonly<{\n    editor: ProjectWorkspace;\n    consumeCapability?: SparkCapabilityConsumer | null;\n    /** 测试或编排层可直接注入 Host，跳过 capability 查找。 */\n    host?: AiAgentHost;\n    events?: ProjectPlanningAiRunEvents;\n    trace?: AiRunTraceSink;\n    adapter?: AiRunAdapterState;\n    beforeFunctionCall?: AiRunBeforeFunctionCall;\n    onAbort?: AiRunAbortHandler;\n    /** 默认使用 requirement 作为 user turn 文本。 */\n    userMessage?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/src/services/project-planning/project-planning-ai-runner.d.ts",
+        "line": 16,
+        "className": "ProjectPlanningAiRunCommand",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "editor",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ProjectWorkspace"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "consumeCapability",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "SparkCapabilityConsumer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "host",
+          "jsdoc": "测试或编排层可直接注入 Host，跳过 capability 查找。",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentHost"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "events",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ProjectPlanningAiRunEvents"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "trace",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiRunTraceSink"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "adapter",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiRunAdapterState"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "beforeFunctionCall",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiRunBeforeFunctionCall"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "onAbort",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiRunAbortHandler"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "userMessage",
+          "jsdoc": "默认使用 requirement 作为 user turn 文本。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "ProjectPlanningAiRunResult": {
+      "kind": "ProjectPlanningAiRunResult",
+      "className": "ProjectPlanningAiRunResult",
+      "jsdoc": "Project Planning Ai Run Result 的返回结果。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    sawToolCall: boolean;\n    input: ProjectPlanningAgentInput;\n    navigationDirty: boolean;\n    savedNavigation: boolean;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    sawToolCall: boolean;\n    input: ProjectPlanningAgentInput;\n    navigationDirty: boolean;\n    savedNavigation: boolean;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/src/services/project-planning/project-planning-ai-runner.d.ts",
+        "line": 30,
+        "className": "ProjectPlanningAiRunResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "sawToolCall",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "input",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ProjectPlanningAgentInput"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "navigationDirty",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "savedNavigation",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:56.052Z",
+  "$defs": {
+    "ProjectPlanningAiRunOptions": {
+      "type": "object",
+      "title": "ProjectPlanningAiRunOptions",
+      "description": "Project Planning Ai Run Options 的调用配置。",
+      "properties": {
+        "saveNavigationAfterRun": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ProjectPlanningAiRunEvents": {
+      "type": "object",
+      "title": "ProjectPlanningAiRunEvents",
+      "description": "Project Planning Ai Run Events 的语义模型。"
+    },
+    "ProjectPlanningAiRunCommand": {
+      "type": "object",
+      "title": "ProjectPlanningAiRunCommand",
+      "description": "Project Planning Ai Run Command 的命令参数。",
+      "properties": {
+        "editor": {
+          "type": "object",
+          "title": "ProjectWorkspace"
+        },
+        "consumeCapability": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "SparkCapabilityConsumer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "host": {
+          "type": "object",
+          "title": "AiAgentHost"
+        },
+        "events": {
+          "$ref": "#/$defs/ProjectPlanningAiRunEvents"
+        },
+        "trace": {
+          "type": "object",
+          "title": "AiRunTraceSink"
+        },
+        "adapter": {
+          "type": "object",
+          "title": "AiRunAdapterState"
+        },
+        "beforeFunctionCall": {
+          "type": "object",
+          "title": "AiRunBeforeFunctionCall"
+        },
+        "onAbort": {
+          "type": "object",
+          "title": "AiRunAbortHandler"
+        },
+        "userMessage": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectPlanningAiRunResult": {
+      "type": "object",
+      "title": "ProjectPlanningAiRunResult",
+      "description": "Project Planning Ai Run Result 的返回结果。",
+      "properties": {
+        "sawToolCall": {
+          "type": "boolean"
+        },
+        "input": {
+          "type": "object",
+          "title": "ProjectPlanningAgentInput"
+        },
+        "navigationDirty": {
+          "type": "boolean"
+        },
+        "savedNavigation": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

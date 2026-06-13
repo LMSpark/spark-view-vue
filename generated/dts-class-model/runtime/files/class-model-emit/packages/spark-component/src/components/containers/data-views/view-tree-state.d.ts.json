@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/view-tree-state.d.ts",
+  "symbols": [
+    "RendererTreeViewState",
+    "TreeTableRowsInput",
+    "RendererTreeViewStateOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RendererTreeViewState": {
+      "ref": "spark-class-model://schema/RendererTreeViewState",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RendererTreeViewState",
+        "properties": {
+          "treeData": {
+            "type": "object",
+            "title": "ComputedRef<TreeNode[]>"
+          },
+          "treeIdField": {
+            "type": "object",
+            "title": "ComputedRef<string>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RendererTreeViewState"
+      }
+    },
+    "spark-class-model://schema/shared/4a427331e667dfe66b86f7ebdd747e949d0043f692300caa5cdda0208bb732cf": {
+      "ref": "spark-class-model://schema/shared/4a427331e667dfe66b86f7ebdd747e949d0043f692300caa5cdda0208bb732cf",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComputedRef<TreeNode[]>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4a427331e667dfe66b86f7ebdd747e949d0043f692300caa5cdda0208bb732cf"
+      }
+    },
+    "spark-class-model://model/RendererTreeViewState/attributes/treeData/0": {
+      "ref": "spark-class-model://model/RendererTreeViewState/attributes/treeData/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererTreeViewState",
+      "name": "treeData",
+      "schemaRef": "spark-class-model://schema/shared/4a427331e667dfe66b86f7ebdd747e949d0043f692300caa5cdda0208bb732cf",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RendererTreeViewState/attributes/treeIdField/1": {
+      "ref": "spark-class-model://model/RendererTreeViewState/attributes/treeIdField/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererTreeViewState",
+      "name": "treeIdField",
+      "schemaRef": "spark-class-model://schema/shared/93a87cd0b132c4f9435df0871622505c9b567f9d957f416049ada73ecc2e777d",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RendererTreeViewState": {
+      "ref": "spark-class-model://model/RendererTreeViewState",
+      "kind": "model",
+      "className": "RendererTreeViewState",
+      "schemaRef": "spark-class-model://schema/RendererTreeViewState",
+      "attributeRefs": [
+        "spark-class-model://model/RendererTreeViewState/attributes/treeData/0",
+        "spark-class-model://model/RendererTreeViewState/attributes/treeIdField/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/TreeTableRowsInput": {
+      "ref": "spark-class-model://schema/TreeTableRowsInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "TreeTableRowsInput",
+        "properties": {
+          "view": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/DataView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rows": {
+            "type": "array"
+          },
+          "treeConfig": {
+            "$ref": "spark-class-model://schema/TreeConfig"
+          },
+          "primaryKey": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/TreeTableRowsInput"
+      }
+    },
+    "spark-class-model://model/TreeTableRowsInput/attributes/view/0": {
+      "ref": "spark-class-model://model/TreeTableRowsInput/attributes/view/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeTableRowsInput",
+      "name": "view",
+      "schemaRef": "spark-class-model://schema/shared/de198bbc656283f2c9813b1de32a14906b73742a8dcad13d3d0d4dc61fb90390",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeTableRowsInput%2Fattributes%2Fview%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeTableRowsInput%2Fattributes%2Fview%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/TreeTableRowsInput/attributes/view/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
+    },
+    "spark-class-model://model/TreeTableRowsInput/attributes/rows/1": {
+      "ref": "spark-class-model://model/TreeTableRowsInput/attributes/rows/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeTableRowsInput",
+      "name": "rows",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/fa748c8449becd6d9fda8ae16d02d9aaf05f84295c1e6c7e0ceaa39245bae2f9": {
+      "ref": "spark-class-model://schema/shared/fa748c8449becd6d9fda8ae16d02d9aaf05f84295c1e6c7e0ceaa39245bae2f9",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/TreeConfig",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/fa748c8449becd6d9fda8ae16d02d9aaf05f84295c1e6c7e0ceaa39245bae2f9"
+      }
+    },
+    "spark-class-model://model/TreeTableRowsInput/attributes/treeConfig/2": {
+      "ref": "spark-class-model://model/TreeTableRowsInput/attributes/treeConfig/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeTableRowsInput",
+      "name": "treeConfig",
+      "schemaRef": "spark-class-model://schema/shared/fa748c8449becd6d9fda8ae16d02d9aaf05f84295c1e6c7e0ceaa39245bae2f9",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeTableRowsInput%2Fattributes%2FtreeConfig%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FTreeConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeTableRowsInput%2Fattributes%2FtreeConfig%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FTreeConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/TreeTableRowsInput/attributes/treeConfig/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/TreeConfig",
+      "targetClassName": "TreeConfig",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/TreeConfig"
+    },
+    "spark-class-model://model/TreeTableRowsInput/attributes/primaryKey/3": {
+      "ref": "spark-class-model://model/TreeTableRowsInput/attributes/primaryKey/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TreeTableRowsInput",
+      "name": "primaryKey",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/TreeTableRowsInput": {
+      "ref": "spark-class-model://model/TreeTableRowsInput",
+      "kind": "model",
+      "className": "TreeTableRowsInput",
+      "schemaRef": "spark-class-model://schema/TreeTableRowsInput",
+      "attributeRefs": [
+        "spark-class-model://model/TreeTableRowsInput/attributes/view/0",
+        "spark-class-model://model/TreeTableRowsInput/attributes/rows/1",
+        "spark-class-model://model/TreeTableRowsInput/attributes/treeConfig/2",
+        "spark-class-model://model/TreeTableRowsInput/attributes/primaryKey/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeTableRowsInput%2Fattributes%2Fview%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeTableRowsInput%2Fattributes%2FtreeConfig%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FTreeConfig"
+      ]
+    },
+    "spark-class-model://schema/RendererTreeViewStateOptions": {
+      "ref": "spark-class-model://schema/RendererTreeViewStateOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RendererTreeViewStateOptions",
+        "properties": {
+          "dataState": {
+            "$ref": "spark-class-model://schema/DataViewState"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RendererTreeViewStateOptions"
+      }
+    },
+    "spark-class-model://schema/shared/f91266dea357ad51aabe2d97cf317f28bef6da76263b13d619c450d76cf7b519": {
+      "ref": "spark-class-model://schema/shared/f91266dea357ad51aabe2d97cf317f28bef6da76263b13d619c450d76cf7b519",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DataViewState",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f91266dea357ad51aabe2d97cf317f28bef6da76263b13d619c450d76cf7b519"
+      }
+    },
+    "spark-class-model://model/RendererTreeViewStateOptions/attributes/dataState/0": {
+      "ref": "spark-class-model://model/RendererTreeViewStateOptions/attributes/dataState/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererTreeViewStateOptions",
+      "name": "dataState",
+      "schemaRef": "spark-class-model://schema/shared/f91266dea357ad51aabe2d97cf317f28bef6da76263b13d619c450d76cf7b519",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeViewStateOptions%2Fattributes%2FdataState%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewState": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeViewStateOptions%2Fattributes%2FdataState%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewState",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererTreeViewStateOptions/attributes/dataState/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataViewState",
+      "targetClassName": "DataViewState",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/data-views/view-runtime-state.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataViewState"
+    },
+    "spark-class-model://model/RendererTreeViewStateOptions": {
+      "ref": "spark-class-model://model/RendererTreeViewStateOptions",
+      "kind": "model",
+      "className": "RendererTreeViewStateOptions",
+      "schemaRef": "spark-class-model://schema/RendererTreeViewStateOptions",
+      "attributeRefs": [
+        "spark-class-model://model/RendererTreeViewStateOptions/attributes/dataState/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeViewStateOptions%2Fattributes%2FdataState%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataViewState"
+      ]
+    }
+  }
+}

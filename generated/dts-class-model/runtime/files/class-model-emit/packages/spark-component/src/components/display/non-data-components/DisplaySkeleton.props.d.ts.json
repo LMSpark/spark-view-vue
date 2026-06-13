@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/display/non-data-components/DisplaySkeleton.props.d.ts",
+  "symbols": [
+    "RSkeletonProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RSkeletonProps": {
+      "ref": "spark-class-model://schema/RSkeletonProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RSkeletonProps",
+        "properties": {
+          "rows": {
+            "type": "number"
+          },
+          "count": {
+            "type": "number"
+          },
+          "loading": {
+            "type": "boolean"
+          },
+          "animated": {
+            "type": "boolean"
+          },
+          "throttle": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RSkeletonProps"
+      }
+    },
+    "spark-class-model://model/RSkeletonProps/attributes/rows/0": {
+      "ref": "spark-class-model://model/RSkeletonProps/attributes/rows/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSkeletonProps",
+      "name": "rows",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSkeletonProps/attributes/count/1": {
+      "ref": "spark-class-model://model/RSkeletonProps/attributes/count/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSkeletonProps",
+      "name": "count",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSkeletonProps/attributes/loading/2": {
+      "ref": "spark-class-model://model/RSkeletonProps/attributes/loading/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSkeletonProps",
+      "name": "loading",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSkeletonProps/attributes/animated/3": {
+      "ref": "spark-class-model://model/RSkeletonProps/attributes/animated/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSkeletonProps",
+      "name": "animated",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSkeletonProps/attributes/throttle/4": {
+      "ref": "spark-class-model://model/RSkeletonProps/attributes/throttle/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSkeletonProps",
+      "name": "throttle",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSkeletonProps": {
+      "ref": "spark-class-model://model/RSkeletonProps",
+      "kind": "model",
+      "className": "RSkeletonProps",
+      "schemaRef": "spark-class-model://schema/RSkeletonProps",
+      "attributeRefs": [
+        "spark-class-model://model/RSkeletonProps/attributes/rows/0",
+        "spark-class-model://model/RSkeletonProps/attributes/count/1",
+        "spark-class-model://model/RSkeletonProps/attributes/loading/2",
+        "spark-class-model://model/RSkeletonProps/attributes/animated/3",
+        "spark-class-model://model/RSkeletonProps/attributes/throttle/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

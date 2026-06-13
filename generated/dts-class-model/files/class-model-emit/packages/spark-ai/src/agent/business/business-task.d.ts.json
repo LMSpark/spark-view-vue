@@ -1,0 +1,541 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/business/business-task",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/business/business-task.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/business/business-task",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/business-task\n职责：把业务输入转换成 AiAgentTask，生成 target、scope、用户消息、系统提示和 orchestration plan。\n边界：只负责 task 构造和输入契约执行，不管理 Host 注册表、不保存 session，也不执行模型调用。\nAI用途：需要理解 pageDesign/projectPlanning 等业务输入如何变成 Agent 请求时，用本模块核对字段流向。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentOrchestrationPlan",
+      "AiAgentInputContract",
+      "AiAgentTaskChatOptions",
+      "AiAgentTaskRegistry",
+      "AiAgentTask"
+    ]
+  },
+  "symbols": [
+    "AiAgentOrchestrationPlan",
+    "AiAgentInputContract",
+    "AiAgentTaskChatOptions",
+    "AiAgentTaskRegistry",
+    "AiAgentTask"
+  ],
+  "models": {
+    "AiAgentOrchestrationPlan": {
+      "kind": "AiAgentOrchestrationPlan",
+      "className": "AiAgentOrchestrationPlan",
+      "jsdoc": "编排计划：LLM 对话的 userMessage、systemPrompt 和可选标题/步骤",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    userMessage: string;\n    systemPrompt: string;\n    title?: string;\n    readonlySteps?: readonly string[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    userMessage: string;\n    systemPrompt: string;\n    title?: string;\n    readonlySteps?: readonly string[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts",
+        "line": 12,
+        "className": "AiAgentOrchestrationPlan",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "userMessage",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "systemPrompt",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "title",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "readonlySteps",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentInputContract": {
+      "kind": "AiAgentInputContract",
+      "className": "AiAgentInputContract",
+      "jsdoc": "输入契约：定义一种业务 Task 的输入 schema、归一化函数、scope 和编排生成",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    paramsSchema: AiJsonSchemaObject;\n    identityField: keyof TInput & string;\n    normalize(input: AiJsonParams): TInput;\n    toScope(normalizedInput: TInput): AiAgentScope;\n    toOrchestration(normalizedInput: TInput): AiAgentOrchestrationPlan;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    paramsSchema: AiJsonSchemaObject;\n    identityField: keyof TInput & string;\n    normalize(input: AiJsonParams): TInput;\n    toScope(normalizedInput: TInput): AiAgentScope;\n    toOrchestration(normalizedInput: TInput): AiAgentOrchestrationPlan;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts",
+        "line": 19,
+        "className": "AiAgentInputContract",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "paramsSchema",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchemaObject"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "identityField",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "normalize",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "TInput",
+            "refersToTypeParameter": true
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "AiJsonParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "toScope",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "normalizedInput",
+              "type": {
+                "type": "reference",
+                "name": "TInput",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "normalizedInput": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentScope"
+          }
+        },
+        {
+          "name": "toOrchestration",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "normalizedInput",
+              "type": {
+                "type": "reference",
+                "name": "TInput",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentOrchestrationPlan",
+            "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "normalizedInput": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentOrchestrationPlan"
+          }
+        }
+      ]
+    },
+    "AiAgentTaskChatOptions": {
+      "kind": "AiAgentTaskChatOptions",
+      "className": "AiAgentTaskChatOptions",
+      "jsdoc": "Chat 请求选项（剔除 historyMsgs 和 systemPrompt，由 Task 内部生成）",
+      "shapeKind": "type",
+      "declarationTypeText": "Omit<AiAgentChatRequest, 'historyMsgs' | 'systemPrompt'> & Readonly<{\n    systemPrompt?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "Omit<AiAgentChatRequest, 'historyMsgs' | 'systemPrompt'>",
+          "targetName": "Omit"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "Readonly<{\n    systemPrompt?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts",
+        "line": 27,
+        "className": "AiAgentTaskChatOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "systemPrompt",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentTaskRegistry": {
+      "kind": "AiAgentTaskRegistry",
+      "className": "AiAgentTaskRegistry",
+      "jsdoc": "任务注册表查找接口",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    get(kindID: string): AiAgentRegistration<TInput> | undefined;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    get(kindID: string): AiAgentRegistration<TInput> | undefined;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts",
+        "line": 31,
+        "className": "AiAgentTaskRegistry",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "get",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "kindID",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown",
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "name": "TInput",
+                  "refersToTypeParameter": true
+                }
+              ]
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "kindID": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentRegistration<TInput>"
+          }
+        }
+      ]
+    },
+    "AiAgentTask": {
+      "kind": "AiAgentTask",
+      "className": "AiAgentTask",
+      "jsdoc": "可执行的 Agent Task。\n持有归一化输入、scope 和编排计划。通过 toChatRequest 生成\n标准 LLM 对话请求，自动拼接业务 systemPrompt + 编排 systemPrompt。",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts",
+        "line": 40,
+        "className": "AiAgentTask",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Ai Agent Task 实例。",
+        "signatureText": "constructor(\n    /** 注册业务 kind ID，用于查找对应 input contract 和 registration。 */\n    kindID: string, \n    /** 通过 input contract normalize 后的任务输入。 */\n    normalizedInput: TInput, \n    /** 当前任务的业务作用域，贯穿 session 和 tool loop。 */\n    scope: AiAgentScope, \n    /** 当前任务生成 LLM 请求时使用的编排计划。 */\n    orchestration: AiAgentOrchestrationPlan)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "kindID",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          {
+            "name": "normalizedInput",
+            "type": {
+              "type": "reference",
+              "name": "TInput",
+              "refersToTypeParameter": true
+            }
+          },
+          {
+            "name": "scope",
+            "type": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          {
+            "name": "orchestration",
+            "type": {
+              "type": "reference",
+              "name": "AiAgentOrchestrationPlan",
+              "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts"
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "kindID": {
+              "type": "string"
+            },
+            "normalizedInput": true,
+            "scope": {
+              "type": "object",
+              "title": "AiAgentScope"
+            },
+            "orchestration": {
+              "$ref": "#/$defs/AiAgentOrchestrationPlan"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [
+        {
+          "name": "kindID",
+          "jsdoc": "注册业务 kind ID，用于查找对应 input contract 和 registration。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "normalizedInput",
+          "jsdoc": "通过 input contract normalize 后的任务输入。",
+          "schema": true,
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "scope",
+          "jsdoc": "当前任务的业务作用域，贯穿 session 和 tool loop。",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentScope"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "orchestration",
+          "jsdoc": "当前任务生成 LLM 请求时使用的编排计划。",
+          "schema": {
+            "$ref": "#/$defs/AiAgentOrchestrationPlan"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "target",
+          "jsdoc": "目标对象。",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTarget"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "toChatRequest",
+          "jsdoc": "生成标准 LLM 对话请求，自动拼接多层 systemPrompt",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "AiAgentTaskChatOptions",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "$ref": "#/$defs/AiAgentTaskChatOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentChatRequest"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.009Z",
+  "$defs": {
+    "AiAgentOrchestrationPlan": {
+      "type": "object",
+      "title": "AiAgentOrchestrationPlan",
+      "description": "编排计划：LLM 对话的 userMessage、systemPrompt 和可选标题/步骤",
+      "properties": {
+        "userMessage": {
+          "type": "string"
+        },
+        "systemPrompt": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "readonlySteps": {
+          "type": "array"
+        }
+      }
+    },
+    "AiAgentInputContract": {
+      "type": "object",
+      "title": "AiAgentInputContract",
+      "description": "输入契约：定义一种业务 Task 的输入 schema、归一化函数、scope 和编排生成",
+      "properties": {
+        "paramsSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "identityField": true
+      }
+    },
+    "AiAgentTaskChatOptions": {
+      "type": "object",
+      "title": "AiAgentTaskChatOptions",
+      "description": "Chat 请求选项（剔除 historyMsgs 和 systemPrompt，由 Task 内部生成）",
+      "properties": {
+        "systemPrompt": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentTaskRegistry": {
+      "type": "object",
+      "title": "AiAgentTaskRegistry",
+      "description": "任务注册表查找接口"
+    },
+    "AiAgentTask": {
+      "type": "object",
+      "title": "AiAgentTask",
+      "description": "可执行的 Agent Task。\n持有归一化输入、scope 和编排计划。通过 toChatRequest 生成\n标准 LLM 对话请求，自动拼接业务 systemPrompt + 编排 systemPrompt。",
+      "properties": {
+        "kindID": {
+          "type": "string"
+        },
+        "normalizedInput": true,
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "orchestration": {
+          "$ref": "#/$defs/AiAgentOrchestrationPlan"
+        },
+        "target": {
+          "type": "object",
+          "title": "AiAgentTarget"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/tools/class-model-tool-specs.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/tools/class-model-tool-specs",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/tools/class-model-tool-specs.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/tools/class-model-tool-specs.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/tools/class-model-tool-specs",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/tools/class-model-tool-specs\n职责：维护 DTS ClassModel 知识链路中的 class-model-tool-specs 能力，围绕 ClassModelToolSpec 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/tools/class-model-tool-specs 这一段如何生成、加载或投影时，用本模块定位职责。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ClassModelToolSpec"
+    ]
+  },
+  "symbols": [
+    "ClassModelToolSpec"
+  ],
+  "models": {
+    "ClassModelToolSpec": {
+      "kind": "ClassModelToolSpec",
+      "className": "ClassModelToolSpec",
+      "jsdoc": "Class Model Tool Spec 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n    };\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    type: 'function';\n    function: {\n        readonly name: string;\n        readonly description: string;\n        readonly parameters: AiJsonSchemaObject;\n    };\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/tools/class-model-tool-specs.d.ts",
+        "line": 9,
+        "className": "ClassModelToolSpec",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "type",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "function"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "function",
+          "jsdoc": "",
+          "schema": {
+            "type": "object"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.660Z",
+  "$defs": {
+    "ClassModelToolSpec": {
+      "type": "object",
+      "title": "ClassModelToolSpec",
+      "description": "Class Model Tool Spec 的语义模型。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "function"
+          ]
+        },
+        "function": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

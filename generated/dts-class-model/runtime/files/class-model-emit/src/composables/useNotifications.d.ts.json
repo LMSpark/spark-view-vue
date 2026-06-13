@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/src/composables/useNotifications.d.ts",
+  "symbols": [
+    "NotificationItem"
+  ],
+  "@refs": {
+    "spark-class-model://schema/NotificationItem": {
+      "ref": "spark-class-model://schema/NotificationItem",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NotificationItem",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "time": {
+            "type": "number"
+          },
+          "read": {
+            "type": "boolean"
+          },
+          "remoteId": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "actionUrl": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NotificationItem"
+      }
+    },
+    "spark-class-model://model/NotificationItem/attributes/id/0": {
+      "ref": "spark-class-model://model/NotificationItem/attributes/id/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NotificationItem",
+      "name": "id",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NotificationItem/attributes/title/1": {
+      "ref": "spark-class-model://model/NotificationItem/attributes/title/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NotificationItem",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NotificationItem/attributes/message/2": {
+      "ref": "spark-class-model://model/NotificationItem/attributes/message/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NotificationItem",
+      "name": "message",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NotificationItem/attributes/time/3": {
+      "ref": "spark-class-model://model/NotificationItem/attributes/time/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NotificationItem",
+      "name": "time",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NotificationItem/attributes/read/4": {
+      "ref": "spark-class-model://model/NotificationItem/attributes/read/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NotificationItem",
+      "name": "read",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NotificationItem/attributes/remoteId/5": {
+      "ref": "spark-class-model://model/NotificationItem/attributes/remoteId/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NotificationItem",
+      "name": "remoteId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/NotificationItem/attributes/level/6": {
+      "ref": "spark-class-model://model/NotificationItem/attributes/level/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NotificationItem",
+      "name": "level",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/NotificationItem/attributes/category/7": {
+      "ref": "spark-class-model://model/NotificationItem/attributes/category/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NotificationItem",
+      "name": "category",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/NotificationItem/attributes/source/8": {
+      "ref": "spark-class-model://model/NotificationItem/attributes/source/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NotificationItem",
+      "name": "source",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/NotificationItem/attributes/actionUrl/9": {
+      "ref": "spark-class-model://model/NotificationItem/attributes/actionUrl/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NotificationItem",
+      "name": "actionUrl",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/NotificationItem": {
+      "ref": "spark-class-model://model/NotificationItem",
+      "kind": "model",
+      "className": "NotificationItem",
+      "schemaRef": "spark-class-model://schema/NotificationItem",
+      "attributeRefs": [
+        "spark-class-model://model/NotificationItem/attributes/id/0",
+        "spark-class-model://model/NotificationItem/attributes/title/1",
+        "spark-class-model://model/NotificationItem/attributes/message/2",
+        "spark-class-model://model/NotificationItem/attributes/time/3",
+        "spark-class-model://model/NotificationItem/attributes/read/4",
+        "spark-class-model://model/NotificationItem/attributes/remoteId/5",
+        "spark-class-model://model/NotificationItem/attributes/level/6",
+        "spark-class-model://model/NotificationItem/attributes/category/7",
+        "spark-class-model://model/NotificationItem/attributes/source/8",
+        "spark-class-model://model/NotificationItem/attributes/actionUrl/9"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

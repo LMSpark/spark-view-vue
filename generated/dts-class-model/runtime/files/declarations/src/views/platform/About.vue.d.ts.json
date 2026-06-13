@@ -1,7 +1,0 @@
-{
-  "schemaVersion": 1,
-  "protocol": "spark-appworks.dts-class-model.runtime",
-  "sourcePath": "declarations/src/views/platform/About.vue.d.ts",
-  "symbols": [],
-  "@refs": {}
-}

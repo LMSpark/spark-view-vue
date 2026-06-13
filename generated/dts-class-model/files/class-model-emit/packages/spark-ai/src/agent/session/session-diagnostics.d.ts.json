@@ -1,0 +1,438 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/session/session-diagnostics",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/session/session-diagnostics.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/session/session-diagnostics",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/session/session-diagnostics\n职责：定义或实现 Agent 会话存储、诊断和运行轨迹中的 session diagnostics 能力。\n边界：只维护 session 层状态和观测数据，不生成业务输入契约，也不直接执行工具 runtime。\nAI用途：追踪会话记录、诊断事件或 run trace 时，用本模块确认 session 数据如何保存和读取。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentSessionSummary",
+      "AiAgentSessionTranscriptEntry",
+      "AiAgentSessionTranscriptOptions"
+    ]
+  },
+  "symbols": [
+    "AiAgentSessionSummary",
+    "AiAgentSessionTranscriptEntry",
+    "AiAgentSessionTranscriptOptions"
+  ],
+  "models": {
+    "AiAgentSessionSummary": {
+      "kind": "AiAgentSessionSummary",
+      "className": "AiAgentSessionSummary",
+      "jsdoc": "Ai Agent Session Summary 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    status: string | null;\n    historyCount: number;\n    messageCount: number;\n    toolCallCount: number;\n    failedToolCallCount: number;\n    functionNames: readonly string[];\n    lastAssistantText: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    status: string | null;\n    historyCount: number;\n    messageCount: number;\n    toolCallCount: number;\n    failedToolCallCount: number;\n    functionNames: readonly string[];\n    lastAssistantText: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
+        "line": 9,
+        "className": "AiAgentSessionSummary",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "historyCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "messageCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "toolCallCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "failedToolCallCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "functionNames",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "lastAssistantText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentSessionTranscriptEntry": {
+      "kind": "AiAgentSessionTranscriptEntry",
+      "className": "AiAgentSessionTranscriptEntry",
+      "jsdoc": "Ai Agent Session Transcript Entry 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    seq: number | null;\n    id: string;\n    timestamp: string | null;\n    kind: 'message' | 'functionCall' | 'unknown';\n    direction: string;\n    role?: string;\n    source?: string;\n    toolName?: string;\n    status?: string;\n    content?: string;\n    args?: string;\n    result?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    seq: number | null;\n    id: string;\n    timestamp: string | null;\n    kind: 'message' | 'functionCall' | 'unknown';\n    direction: string;\n    role?: string;\n    source?: string;\n    toolName?: string;\n    status?: string;\n    content?: string;\n    args?: string;\n    result?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
+        "line": 19,
+        "className": "AiAgentSessionTranscriptEntry",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "seq",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "id",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "timestamp",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "message"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "functionCall"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "unknown"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "direction",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "role",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "source",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "toolName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "content",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "args",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "result",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiAgentSessionTranscriptOptions": {
+      "kind": "AiAgentSessionTranscriptOptions",
+      "className": "AiAgentSessionTranscriptOptions",
+      "jsdoc": "Ai Agent Session Transcript Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    contentLimit?: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    contentLimit?: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/session/session-diagnostics.d.ts",
+        "line": 34,
+        "className": "AiAgentSessionTranscriptOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "contentLimit",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.136Z",
+  "$defs": {
+    "AiAgentSessionSummary": {
+      "type": "object",
+      "title": "AiAgentSessionSummary",
+      "description": "Ai Agent Session Summary 的语义模型。",
+      "properties": {
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "historyCount": {
+          "type": "number"
+        },
+        "messageCount": {
+          "type": "number"
+        },
+        "toolCallCount": {
+          "type": "number"
+        },
+        "failedToolCallCount": {
+          "type": "number"
+        },
+        "functionNames": {
+          "type": "array"
+        },
+        "lastAssistantText": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentSessionTranscriptEntry": {
+      "type": "object",
+      "title": "AiAgentSessionTranscriptEntry",
+      "description": "Ai Agent Session Transcript Entry 的语义模型。",
+      "properties": {
+        "seq": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "timestamp": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "message"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "functionCall"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "unknown"
+              ]
+            }
+          ]
+        },
+        "direction": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "toolName": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "args": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string"
+        }
+      }
+    },
+    "AiAgentSessionTranscriptOptions": {
+      "type": "object",
+      "title": "AiAgentSessionTranscriptOptions",
+      "description": "Ai Agent Session Transcript Options 的调用配置。",
+      "properties": {
+        "contentLimit": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

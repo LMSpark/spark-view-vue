@@ -1,0 +1,442 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-project-model/src/io/navigation-client.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:io/navigation-client",
+    "sourcePath": "class-model-emit/packages/spark-project-model/src/io/navigation-client.d.ts",
+    "sourceFile": "packages/spark-project-model/src/io/navigation-client.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "io/navigation-client",
+    "jsdoc": "@module @spark-appworks/spark-project-model:io/navigation-client\n职责：提供项目模型层 navigation-client 能力，围绕 NavigationClientOptions、LinkProbeResult、NavigationClient 处理导航、页面文件、配置内容、工作区或远端 IO 契约。\n边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。\nAI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 io/navigation-client。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "NavigationClientOptions",
+      "LinkProbeResult",
+      "NavigationClient"
+    ]
+  },
+  "symbols": [
+    "NavigationClientOptions",
+    "LinkProbeResult",
+    "NavigationClient"
+  ],
+  "models": {
+    "NavigationClientOptions": {
+      "kind": "NavigationClientOptions",
+      "className": "NavigationClientOptions",
+      "jsdoc": "Navigation Client Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** get Navigation Api 回调。 */\n    getNavigationApi: () => string;\n    /** http 字段。 */\n    http: HttpClientBase;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-project-model/src/io/navigation-client.d.ts",
+        "line": 11,
+        "className": "NavigationClientOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "http",
+          "jsdoc": "http 字段。",
+          "schema": {
+            "type": "object",
+            "title": "HttpClientBase"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "getNavigationApi",
+          "jsdoc": "get Navigation Api 回调。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "LinkProbeResult": {
+      "kind": "LinkProbeResult",
+      "className": "LinkProbeResult",
+      "jsdoc": "Link Probe Result 的返回结果。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** embeddable 字段。 */\n    embeddable: boolean;\n    /** reason 字段。 */\n    reason: string;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-project-model/src/io/navigation-client.d.ts",
+        "line": 18,
+        "className": "LinkProbeResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "embeddable",
+          "jsdoc": "embeddable 字段。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "reason",
+          "jsdoc": "reason 字段。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "NavigationClient": {
+      "kind": "NavigationClient",
+      "className": "NavigationClient",
+      "jsdoc": "Navigation Client 的语义模型。",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-project-model/src/io/navigation-client.d.ts",
+        "line": 25,
+        "className": "NavigationClient",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Navigation Client 实例。",
+        "signatureText": "constructor(options: NavigationClientOptions)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "options",
+            "type": {
+              "type": "reference",
+              "name": "NavigationClientOptions",
+              "sourcePath": "class-model-emit/packages/spark-project-model/src/io/navigation-client.d.ts"
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/NavigationClientOptions"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "loadRoot",
+          "jsdoc": "加载 Root。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectModelData>"
+          }
+        },
+        {
+          "name": "addNode",
+          "jsdoc": "执行 add Node 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "params",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        parentId?: string | null;\n        node: ProjectNodeData;\n        index?: number;\n    }"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectNodeData>"
+          }
+        },
+        {
+          "name": "updateNode",
+          "jsdoc": "执行 update Node 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "patch",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "patch": {
+                "type": "object",
+                "title": "NavigationNodePatch"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectNodeData>"
+          }
+        },
+        {
+          "name": "deleteNode",
+          "jsdoc": "删除 Node。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectNodeData | null>"
+          }
+        },
+        {
+          "name": "moveNode",
+          "jsdoc": "执行 move Node 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "newParentId",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "index",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "newParentId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectNodeData>"
+          }
+        },
+        {
+          "name": "probeLink",
+          "jsdoc": "执行 probe Link 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "url",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "LinkProbeResult",
+                "sourcePath": "class-model-emit/packages/spark-project-model/src/io/navigation-client.d.ts"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<LinkProbeResult>"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.709Z",
+  "$defs": {
+    "NavigationClientOptions": {
+      "type": "object",
+      "title": "NavigationClientOptions",
+      "description": "Navigation Client Options 的调用配置。",
+      "properties": {
+        "http": {
+          "type": "object",
+          "title": "HttpClientBase"
+        }
+      }
+    },
+    "LinkProbeResult": {
+      "type": "object",
+      "title": "LinkProbeResult",
+      "description": "Link Probe Result 的返回结果。",
+      "properties": {
+        "embeddable": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "NavigationClient": {
+      "type": "object",
+      "title": "NavigationClient",
+      "description": "Navigation Client 的语义模型。"
+    }
+  }
+}

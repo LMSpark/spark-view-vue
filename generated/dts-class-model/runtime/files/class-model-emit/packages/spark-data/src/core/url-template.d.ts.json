@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-data/src/core/url-template.d.ts",
+  "symbols": [
+    "ResolvedUrl"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ResolvedUrl": {
+      "ref": "spark-class-model://schema/ResolvedUrl",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ResolvedUrl",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "rest": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ResolvedUrl"
+      }
+    },
+    "spark-class-model://model/ResolvedUrl/attributes/url/0": {
+      "ref": "spark-class-model://model/ResolvedUrl/attributes/url/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedUrl",
+      "name": "url",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ResolvedUrl/attributes/rest/1": {
+      "ref": "spark-class-model://model/ResolvedUrl/attributes/rest/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ResolvedUrl",
+      "name": "rest",
+      "schemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ResolvedUrl": {
+      "ref": "spark-class-model://model/ResolvedUrl",
+      "kind": "model",
+      "className": "ResolvedUrl",
+      "schemaRef": "spark-class-model://schema/ResolvedUrl",
+      "attributeRefs": [
+        "spark-class-model://model/ResolvedUrl/attributes/url/0",
+        "spark-class-model://model/ResolvedUrl/attributes/rest/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-data/src/metadata.d.ts",
+  "symbols": [
+    "TableMetadataLike"
+  ],
+  "@refs": {
+    "spark-class-model://schema/TableMetadataLike": {
+      "ref": "spark-class-model://schema/TableMetadataLike",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "TableMetadataLike",
+        "properties": {
+          "tableName": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/TableMetadataLike"
+      }
+    },
+    "spark-class-model://model/TableMetadataLike/attributes/tableName/0": {
+      "ref": "spark-class-model://model/TableMetadataLike/attributes/tableName/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/TableMetadataLike",
+      "name": "tableName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/TableMetadataLike": {
+      "ref": "spark-class-model://model/TableMetadataLike",
+      "kind": "model",
+      "className": "TableMetadataLike",
+      "schemaRef": "spark-class-model://schema/TableMetadataLike",
+      "attributeRefs": [
+        "spark-class-model://model/TableMetadataLike/attributes/tableName/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

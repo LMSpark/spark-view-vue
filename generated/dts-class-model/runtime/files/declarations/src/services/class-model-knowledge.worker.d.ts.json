@@ -1,7 +1,0 @@
-{
-  "schemaVersion": 1,
-  "protocol": "spark-appworks.dts-class-model.runtime",
-  "sourcePath": "declarations/src/services/class-model-knowledge.worker.d.ts",
-  "symbols": [],
-  "@refs": {}
-}

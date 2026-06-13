@@ -30,7 +30,7 @@ import type { RTextareaProps } from '../../packages/spark-component/src/componen
 import type { RTreeSelectProps } from '../../packages/spark-component/src/components/fields/data-components/FieldTreeSelect.props'
 import type { RUploadProps } from '../../packages/spark-component/src/components/fields/data-components/FieldUpload.props'
 
-function assertExtends<TValue extends TExpected, TExpected>(): void {}
+function assertExtends<_TValue extends TExpected, TExpected>(): void {}
 
 describe('field shared prop contracts', () => {
   it('keeps the shared contract assertions in typecheck scope', () => {

@@ -27,7 +27,6 @@ export function createDtsClassModelBundleRefreshFunction(options = {}) {
         'tsx',
         '--no-cache',
         scriptPath,
-        '--delete-declarations',
         '--model',
         targetClassName,
       ], {

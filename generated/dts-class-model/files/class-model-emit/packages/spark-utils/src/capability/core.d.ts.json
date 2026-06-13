@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-utils/src/capability/core.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-utils:capability/core",
+    "sourcePath": "class-model-emit/packages/spark-utils/src/capability/core.d.ts",
+    "sourceFile": "packages/spark-utils/src/capability/core.ts",
+    "packageName": "@spark-appworks/spark-utils",
+    "modulePath": "capability/core",
+    "jsdoc": "@module @spark-appworks/spark-utils:capability/core\n职责：提供框架无关的 core 基础工具能力，支撑日志、HTTP、capability、克隆或快照等通用场景。\n边界：必须保持纯 TypeScript 基础层，不依赖 Vue、spark-data、spark-component 或应用运行时。\nAI用途：需要复用底层工具或判断包边界是否被破坏时，用本模块确认最底层能力语义。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "CapabilityReader",
+      "CapabilityKey",
+      "CapabilityName",
+      "SparkCapabilityConsumer",
+      "CapabilityTypeMap",
+      "CapabilityContext"
+    ]
+  },
+  "symbols": [
+    "CapabilityReader",
+    "CapabilityKey",
+    "CapabilityName",
+    "SparkCapabilityConsumer",
+    "CapabilityTypeMap",
+    "CapabilityContext"
+  ],
+  "models": {
+    "CapabilityReader": {
+      "kind": "CapabilityReader",
+      "className": "CapabilityReader",
+      "jsdoc": "能力值读取器：把运行时 unknown 显式校验为能力类型。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    (value: unknown): value is T;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-utils/src/capability/core.d.ts",
+        "line": 14,
+        "className": "CapabilityReader",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "CapabilityKey": {
+      "kind": "CapabilityKey",
+      "className": "CapabilityKey",
+      "jsdoc": "带运行时校验的能力键。",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-utils/src/capability/core.d.ts",
+        "line": 18,
+        "className": "CapabilityKey",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Capability Key 实例。",
+        "signatureText": "constructor(\n    /** 能力键的全局唯一名称，会用于 Symbol.for(name)。 */\n    name: string, reader: CapabilityReader<T>)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "name",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          {
+            "name": "reader",
+            "type": {
+              "type": "reference",
+              "name": "CapabilityReader",
+              "sourcePath": "class-model-emit/packages/spark-utils/src/capability/core.d.ts",
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "name": "T",
+                  "refersToTypeParameter": true
+                }
+              ]
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "reader": {
+              "$ref": "#/$defs/CapabilityReader",
+              "title": "CapabilityReader<T>"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [
+        {
+          "name": "name",
+          "jsdoc": "能力键的全局唯一名称，会用于 Symbol.for(name)。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "token",
+          "jsdoc": "token 字段。",
+          "schema": true,
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "read",
+          "jsdoc": "执行 read 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "toString",
+          "jsdoc": "执行 to String 操作。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "CapabilityName": {
+      "kind": "CapabilityName",
+      "className": "CapabilityName",
+      "jsdoc": "未具体化类型的能力名（用于 Map 的 key）。",
+      "shapeKind": "type",
+      "declarationTypeText": "CapabilityKey<unknown>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "CapabilityKey<unknown>",
+          "targetName": "CapabilityKey"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-utils/src/capability/core.d.ts",
+        "line": 34,
+        "className": "CapabilityName",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "SparkCapabilityConsumer": {
+      "kind": "SparkCapabilityConsumer",
+      "className": "SparkCapabilityConsumer",
+      "jsdoc": "能力消费函数签名：给定键返回实现或 null。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    <T>(name: CapabilityKey<T>): T | null;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-utils/src/capability/core.d.ts",
+        "line": 36,
+        "className": "SparkCapabilityConsumer",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "CapabilityTypeMap": {
+      "kind": "CapabilityTypeMap",
+      "className": "CapabilityTypeMap",
+      "jsdoc": "能力类型映射表（模块增强入口）。\n各包通过 TypeScript module augmentation 扩展此映射，实现编译期的能力类型安全。\n扩展此接口，实现编译期的能力类型安全。",
+      "shapeKind": "interface",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-utils/src/capability/core.d.ts",
+        "line": 45,
+        "className": "CapabilityTypeMap",
+        "declarationKind": "interface"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "CapabilityContext": {
+      "kind": "CapabilityContext",
+      "className": "CapabilityContext",
+      "jsdoc": "能力树节点：持有本地能力 Map，以及指向父节点的可选链。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前能力上下文节点 ID，用于调试、日志和父子链定位。 */\n    id: string;\n    /** 当前上下文类型，例如 renderer/component/page，用于区分能力节点来源。 */\n    type: string;\n    /** 父级能力上下文；消费能力时会沿此链向上查找。 */\n    parent?: CapabilityContext;\n    /** 当前节点本地提供的能力实现表，key 为 CapabilityKey。 */\n    capabilities: Map<CapabilityName, unknown>;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-utils/src/capability/core.d.ts",
+        "line": 48,
+        "className": "CapabilityContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "jsdoc": "当前能力上下文节点 ID，用于调试、日志和父子链定位。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "type",
+          "jsdoc": "当前上下文类型，例如 renderer/component/page，用于区分能力节点来源。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "parent",
+          "jsdoc": "父级能力上下文；消费能力时会沿此链向上查找。",
+          "schema": {
+            "$ref": "#/$defs/CapabilityContext"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "capabilities",
+          "jsdoc": "当前节点本地提供的能力实现表，key 为 CapabilityKey。",
+          "schema": {
+            "type": "object",
+            "title": "Map<CapabilityName, unknown>"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.856Z",
+  "$defs": {
+    "CapabilityReader": {
+      "type": "object",
+      "title": "CapabilityReader",
+      "description": "能力值读取器：把运行时 unknown 显式校验为能力类型。"
+    },
+    "CapabilityKey": {
+      "type": "object",
+      "title": "CapabilityKey",
+      "description": "带运行时校验的能力键。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "token": true
+      }
+    },
+    "CapabilityName": {
+      "type": "object",
+      "title": "CapabilityName",
+      "description": "未具体化类型的能力名（用于 Map 的 key）。"
+    },
+    "SparkCapabilityConsumer": {
+      "type": "object",
+      "title": "SparkCapabilityConsumer",
+      "description": "能力消费函数签名：给定键返回实现或 null。"
+    },
+    "CapabilityTypeMap": {
+      "type": "object",
+      "title": "CapabilityTypeMap",
+      "description": "能力类型映射表（模块增强入口）。\n各包通过 TypeScript module augmentation 扩展此映射，实现编译期的能力类型安全。\n扩展此接口，实现编译期的能力类型安全。"
+    },
+    "CapabilityContext": {
+      "type": "object",
+      "title": "CapabilityContext",
+      "description": "能力树节点：持有本地能力 Map，以及指向父节点的可选链。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "parent": {
+          "$ref": "#/$defs/CapabilityContext"
+        },
+        "capabilities": {
+          "type": "object",
+          "title": "Map<CapabilityName, unknown>"
+        }
+      }
+    }
+  }
+}

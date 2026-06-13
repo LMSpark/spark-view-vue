@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.props.d.ts",
+  "symbols": [
+    "RTreeNodeSummaryProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RTreeNodeSummaryProps": {
+      "ref": "spark-class-model://schema/RTreeNodeSummaryProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RTreeNodeSummaryProps",
+        "properties": {
+          "nameField": {
+            "type": "string"
+          },
+          "typeField": {
+            "type": "string"
+          },
+          "statusField": {
+            "type": "string"
+          },
+          "ownerField": {
+            "type": "string"
+          },
+          "metaField": {
+            "type": "string"
+          },
+          "extraField": {
+            "type": "string"
+          },
+          "showType": {
+            "type": "boolean"
+          },
+          "showStatus": {
+            "type": "boolean"
+          },
+          "showOwner": {
+            "type": "boolean"
+          },
+          "showMeta": {
+            "type": "boolean"
+          },
+          "showExtra": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RTreeNodeSummaryProps"
+      }
+    },
+    "spark-class-model://model/RTreeNodeSummaryProps/attributes/nameField/0": {
+      "ref": "spark-class-model://model/RTreeNodeSummaryProps/attributes/nameField/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeNodeSummaryProps",
+      "name": "nameField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeNodeSummaryProps/attributes/typeField/1": {
+      "ref": "spark-class-model://model/RTreeNodeSummaryProps/attributes/typeField/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeNodeSummaryProps",
+      "name": "typeField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeNodeSummaryProps/attributes/statusField/2": {
+      "ref": "spark-class-model://model/RTreeNodeSummaryProps/attributes/statusField/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeNodeSummaryProps",
+      "name": "statusField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeNodeSummaryProps/attributes/ownerField/3": {
+      "ref": "spark-class-model://model/RTreeNodeSummaryProps/attributes/ownerField/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeNodeSummaryProps",
+      "name": "ownerField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeNodeSummaryProps/attributes/metaField/4": {
+      "ref": "spark-class-model://model/RTreeNodeSummaryProps/attributes/metaField/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeNodeSummaryProps",
+      "name": "metaField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeNodeSummaryProps/attributes/extraField/5": {
+      "ref": "spark-class-model://model/RTreeNodeSummaryProps/attributes/extraField/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeNodeSummaryProps",
+      "name": "extraField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeNodeSummaryProps/attributes/showType/6": {
+      "ref": "spark-class-model://model/RTreeNodeSummaryProps/attributes/showType/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeNodeSummaryProps",
+      "name": "showType",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeNodeSummaryProps/attributes/showStatus/7": {
+      "ref": "spark-class-model://model/RTreeNodeSummaryProps/attributes/showStatus/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeNodeSummaryProps",
+      "name": "showStatus",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeNodeSummaryProps/attributes/showOwner/8": {
+      "ref": "spark-class-model://model/RTreeNodeSummaryProps/attributes/showOwner/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeNodeSummaryProps",
+      "name": "showOwner",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeNodeSummaryProps/attributes/showMeta/9": {
+      "ref": "spark-class-model://model/RTreeNodeSummaryProps/attributes/showMeta/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeNodeSummaryProps",
+      "name": "showMeta",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeNodeSummaryProps/attributes/showExtra/10": {
+      "ref": "spark-class-model://model/RTreeNodeSummaryProps/attributes/showExtra/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RTreeNodeSummaryProps",
+      "name": "showExtra",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RTreeNodeSummaryProps": {
+      "ref": "spark-class-model://model/RTreeNodeSummaryProps",
+      "kind": "model",
+      "className": "RTreeNodeSummaryProps",
+      "schemaRef": "spark-class-model://schema/RTreeNodeSummaryProps",
+      "attributeRefs": [
+        "spark-class-model://model/RTreeNodeSummaryProps/attributes/nameField/0",
+        "spark-class-model://model/RTreeNodeSummaryProps/attributes/typeField/1",
+        "spark-class-model://model/RTreeNodeSummaryProps/attributes/statusField/2",
+        "spark-class-model://model/RTreeNodeSummaryProps/attributes/ownerField/3",
+        "spark-class-model://model/RTreeNodeSummaryProps/attributes/metaField/4",
+        "spark-class-model://model/RTreeNodeSummaryProps/attributes/extraField/5",
+        "spark-class-model://model/RTreeNodeSummaryProps/attributes/showType/6",
+        "spark-class-model://model/RTreeNodeSummaryProps/attributes/showStatus/7",
+        "spark-class-model://model/RTreeNodeSummaryProps/attributes/showOwner/8",
+        "spark-class-model://model/RTreeNodeSummaryProps/attributes/showMeta/9",
+        "spark-class-model://model/RTreeNodeSummaryProps/attributes/showExtra/10"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

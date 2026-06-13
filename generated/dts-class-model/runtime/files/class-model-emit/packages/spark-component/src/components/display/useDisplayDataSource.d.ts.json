@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/display/useDisplayDataSource.d.ts",
+  "symbols": [
+    "DisplayDataProps",
+    "UseDisplayDataSourceReturn"
+  ],
+  "@refs": {
+    "spark-class-model://schema/DisplayDataProps": {
+      "ref": "spark-class-model://schema/DisplayDataProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DisplayDataProps",
+        "properties": {
+          "dataViewKey": {
+            "type": "string"
+          },
+          "dataMember": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/DataMember"
+              },
+              {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "dataField": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "value": true
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DisplayDataProps"
+      }
+    },
+    "spark-class-model://model/DisplayDataProps/attributes/dataViewKey/0": {
+      "ref": "spark-class-model://model/DisplayDataProps/attributes/dataViewKey/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DisplayDataProps",
+      "name": "dataViewKey",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DisplayDataProps/attributes/dataMember/1": {
+      "ref": "spark-class-model://model/DisplayDataProps/attributes/dataMember/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DisplayDataProps",
+      "name": "dataMember",
+      "schemaRef": "spark-class-model://schema/shared/4603c1669031d67c761d0d7d1f6503d91703c9a98f2b29aaf267d9aceed7dd6e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDisplayDataProps%2Fattributes%2FdataMember%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDisplayDataProps%2Fattributes%2FdataMember%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DisplayDataProps/attributes/dataMember/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataMember",
+      "targetClassName": "DataMember",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/core/data-view-key.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataMember"
+    },
+    "spark-class-model://model/DisplayDataProps/attributes/dataField/2": {
+      "ref": "spark-class-model://model/DisplayDataProps/attributes/dataField/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DisplayDataProps",
+      "name": "dataField",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DisplayDataProps/attributes/field/3": {
+      "ref": "spark-class-model://model/DisplayDataProps/attributes/field/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DisplayDataProps",
+      "name": "field",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DisplayDataProps/attributes/value/4": {
+      "ref": "spark-class-model://model/DisplayDataProps/attributes/value/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DisplayDataProps",
+      "name": "value",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/DisplayDataProps": {
+      "ref": "spark-class-model://model/DisplayDataProps",
+      "kind": "model",
+      "className": "DisplayDataProps",
+      "schemaRef": "spark-class-model://schema/DisplayDataProps",
+      "attributeRefs": [
+        "spark-class-model://model/DisplayDataProps/attributes/dataViewKey/0",
+        "spark-class-model://model/DisplayDataProps/attributes/dataMember/1",
+        "spark-class-model://model/DisplayDataProps/attributes/dataField/2",
+        "spark-class-model://model/DisplayDataProps/attributes/field/3",
+        "spark-class-model://model/DisplayDataProps/attributes/value/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDisplayDataProps%2Fattributes%2FdataMember%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataMember"
+      ]
+    },
+    "spark-class-model://schema/UseDisplayDataSourceReturn": {
+      "ref": "spark-class-model://schema/UseDisplayDataSourceReturn",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "UseDisplayDataSourceReturn",
+        "properties": {
+          "resolvedValue": {
+            "type": "object",
+            "title": "ComputedRef<unknown>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/UseDisplayDataSourceReturn"
+      }
+    },
+    "spark-class-model://schema/shared/af488497a4a3499df99b246de1ceb2a02b0f77f8dd36911e5fecd52e6e047c3a": {
+      "ref": "spark-class-model://schema/shared/af488497a4a3499df99b246de1ceb2a02b0f77f8dd36911e5fecd52e6e047c3a",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComputedRef<unknown>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/af488497a4a3499df99b246de1ceb2a02b0f77f8dd36911e5fecd52e6e047c3a"
+      }
+    },
+    "spark-class-model://model/UseDisplayDataSourceReturn/attributes/resolvedValue/0": {
+      "ref": "spark-class-model://model/UseDisplayDataSourceReturn/attributes/resolvedValue/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/UseDisplayDataSourceReturn",
+      "name": "resolvedValue",
+      "schemaRef": "spark-class-model://schema/shared/af488497a4a3499df99b246de1ceb2a02b0f77f8dd36911e5fecd52e6e047c3a",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/UseDisplayDataSourceReturn": {
+      "ref": "spark-class-model://model/UseDisplayDataSourceReturn",
+      "kind": "model",
+      "className": "UseDisplayDataSourceReturn",
+      "schemaRef": "spark-class-model://schema/UseDisplayDataSourceReturn",
+      "attributeRefs": [
+        "spark-class-model://model/UseDisplayDataSourceReturn/attributes/resolvedValue/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

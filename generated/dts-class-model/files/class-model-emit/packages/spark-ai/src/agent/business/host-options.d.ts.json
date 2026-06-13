@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/host-options.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/business/host-options",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/host-options.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/business/host-options.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/business/host-options",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/host-options\n职责：定义 AiAgentHost 的配置契约，描述模型客户端、工具审批、会话存储、诊断和业务注册所需的宿主依赖。\n边界：只声明 Host 启动参数，不实现 ToolLoop、不管理 UI，也不定义具体业务输入。\nAI用途：接入或排查 AI Host 初始化时，用本模块确认哪些依赖必须由应用层注入。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentOptions"
+    ]
+  },
+  "symbols": [
+    "AiAgentOptions"
+  ],
+  "models": {
+    "AiAgentOptions": {
+      "kind": "AiAgentOptions",
+      "className": "AiAgentOptions",
+      "jsdoc": "Ai Agent Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    registry: {\n        get(moduleId: string): AiAgentRegistration<TInput> | undefined;\n    };\n    turnCallbacks: AiAgentTurnCallbacks;\n    maxToolRounds?: number;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/business/host-options.d.ts",
+        "line": 11,
+        "className": "AiAgentOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "registry",
+          "jsdoc": "",
+          "schema": {
+            "type": "object"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "turnCallbacks",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTurnCallbacks"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "maxToolRounds",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.056Z",
+  "$defs": {
+    "AiAgentOptions": {
+      "type": "object",
+      "title": "AiAgentOptions",
+      "description": "Ai Agent Options 的调用配置。",
+      "properties": {
+        "registry": {
+          "type": "object"
+        },
+        "turnCallbacks": {
+          "type": "object",
+          "title": "AiAgentTurnCallbacks"
+        },
+        "maxToolRounds": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,389 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-app/src/router/dynamic.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-app:router/dynamic",
+    "sourcePath": "class-model-emit/packages/spark-app/src/router/dynamic.d.ts",
+    "sourceFile": "packages/spark-app/src/router/dynamic.ts",
+    "packageName": "@spark-appworks/spark-app",
+    "modulePath": "router/dynamic",
+    "jsdoc": "@module @spark-appworks/spark-app:router/dynamic\n职责：提供 spark-app 应用壳中的 dynamic 能力，连接路由、导航、认证、插件、页面 UI 或 AI 桥接。\n边界：负责应用层编排，不下沉实现底层数据模型，也不直接改写组件包的渲染协议。\nAI用途：排查页面打开、导航状态、权限上下文或应用侧 AI 接线时，用本模块确认 app 层入口。\n\n动态路由注册器 - 支持 SPA 动态路由\n动态路由属于应用引导层（spark-app），页面节点能力来自 spark-project-model。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "DynamicRouterOptions",
+      "DynamicRouter"
+    ]
+  },
+  "symbols": [
+    "DynamicRouterOptions",
+    "DynamicRouter"
+  ],
+  "models": {
+    "DynamicRouterOptions": {
+      "kind": "DynamicRouterOptions",
+      "className": "DynamicRouterOptions",
+      "jsdoc": "动态路由注册选项",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** Vue Router 实例 */\n    router: Router;\n    /** 配置页四文件加载器 */\n    pageContentLoader: PageContentLoader;\n    /**\n     * 动态页面组件（必需）\n     * 用于渲染配置化页面\n     *\n     * @example\n     * ```typescript\n     * import { PageRenderer } from '@spark-appworks/spark-component'\n     * const options = { router, pageContentLoader, pageComponent: PageRenderer }\n     * ```\n     */\n    pageComponent: Component;\n    /**\n     * system-page 路径 → Vue 组件映射。\n     * 导航节点 nodeKind='system-page' 时，使用此映射解析组件。\n     */\n    componentMap?: Record<string, Component>;\n    /**\n     * 租户路径前缀（如 '/t/:tenantId'）。\n     * 设置后，config 页面路由自动加此前缀，使所有业务路由统一在租户 URL 下。\n     * system-page 路由不受影响（DB 中已含完整路径）。\n     */\n    tenantPathPrefix?: string;\n    /**\n     * 导航数据加载函数 — 导航树作为路由的唯一来源。\n     *\n     * 已认证时 `registerRoutes()` 使用此函数加载远程导航树并派生路由。\n     * 返回的 ProjectModelData 对象同时用于 UI 渲染（侧栏/顶栏菜单）。\n     */\n    loadNavigation?: (() => Promise<ProjectModelData>) | undefined;\n    /**\n     * 平台工作台导航加载函数。\n     *\n     * 返回的节点 path 仍保持相对形态（如 /dashboard、/tenants），\n     * 注册路由时统一映射到 platformPathPrefix 下（默认 /platform）。\n     */\n    loadPlatformNavigation?: (() => Promise<ProjectModelData>) | undefined;\n    /** 平台工作台路由前缀（默认 /platform）。 */\n    platformPathPrefix?: string | undefined;\n    /** 是否注册平台工作台导航。通常仅 platform_admin 返回 true。 */\n    isPlatformNavigationEnabled?: (() => boolean) | undefined;\n    /**\n     * 登录前本地导航树 — 未认证时使用的静态导航数据。\n     *\n     * 当 `registerRoutes()` 在未登录状态调用时（无法调用 loadNavigation），\n     * 使用此本地导航树注册路由（如 / 和 /login）。\n     * 登录后 `refreshRoutes()` 会用远程导航树替换。\n     */\n    preAuthNavTree?: ProjectModelData | undefined;\n    /**\n     * 认证状态检查回调。\n     *\n     * `registerRoutes()` 在运行时通过此回调判断当前状态：\n     * - 已登录 → 使用 `loadNavigation` 加载远程导航树\n     * - 未登录 → 使用 `preAuthNavTree` 本地导航树\n     */\n    isAuthenticated?: (() => boolean) | undefined;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-app/src/router/dynamic.d.ts",
+        "line": 19,
+        "className": "DynamicRouterOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "router",
+          "jsdoc": "Vue Router 实例",
+          "schema": {
+            "type": "object",
+            "title": "Router"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "pageContentLoader",
+          "jsdoc": "配置页四文件加载器",
+          "schema": {
+            "type": "object",
+            "title": "PageContentLoader"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "pageComponent",
+          "jsdoc": "动态页面组件（必需）\n用于渲染配置化页面\n@example ```typescript\nimport { PageRenderer } from '@spark-appworks/spark-component'\nconst options = { router, pageContentLoader, pageComponent: PageRenderer }\n```",
+          "schema": {
+            "type": "object",
+            "title": "Component"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "componentMap",
+          "jsdoc": "system-page 路径 → Vue 组件映射。\n导航节点 nodeKind='system-page' 时，使用此映射解析组件。",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, Component>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "tenantPathPrefix",
+          "jsdoc": "租户路径前缀（如 '/t/:tenantId'）。\n设置后，config 页面路由自动加此前缀，使所有业务路由统一在租户 URL 下。\nsystem-page 路由不受影响（DB 中已含完整路径）。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "loadNavigation",
+          "jsdoc": "导航数据加载函数 — 导航树作为路由的唯一来源。\n已认证时 `registerRoutes()` 使用此函数加载远程导航树并派生路由。\n返回的 ProjectModelData 对象同时用于 UI 渲染（侧栏/顶栏菜单）。",
+          "schema": {
+            "type": "object",
+            "title": "() => Promise<ProjectModelData>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "loadPlatformNavigation",
+          "jsdoc": "平台工作台导航加载函数。\n返回的节点 path 仍保持相对形态（如 /dashboard、/tenants），\n注册路由时统一映射到 platformPathPrefix 下（默认 /platform）。",
+          "schema": {
+            "type": "object",
+            "title": "() => Promise<ProjectModelData>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "platformPathPrefix",
+          "jsdoc": "平台工作台路由前缀（默认 /platform）。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "isPlatformNavigationEnabled",
+          "jsdoc": "是否注册平台工作台导航。通常仅 platform_admin 返回 true。",
+          "schema": {
+            "type": "object",
+            "title": "() => boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "preAuthNavTree",
+          "jsdoc": "登录前本地导航树 — 未认证时使用的静态导航数据。\n当 `registerRoutes()` 在未登录状态调用时（无法调用 loadNavigation），\n使用此本地导航树注册路由（如 / 和 /login）。\n登录后 `refreshRoutes()` 会用远程导航树替换。",
+          "schema": {
+            "type": "object",
+            "title": "ProjectModelData"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "isAuthenticated",
+          "jsdoc": "认证状态检查回调。\n`registerRoutes()` 在运行时通过此回调判断当前状态：\n- 已登录 → 使用 `loadNavigation` 加载远程导航树\n- 未登录 → 使用 `preAuthNavTree` 本地导航树",
+          "schema": {
+            "type": "object",
+            "title": "() => boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "DynamicRouter": {
+      "kind": "DynamicRouter",
+      "className": "DynamicRouter",
+      "jsdoc": "动态路由管理器",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-app/src/router/dynamic.d.ts",
+        "line": 84,
+        "className": "DynamicRouter",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Dynamic Router 实例。",
+        "signatureText": "constructor(options: DynamicRouterOptions)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "options",
+            "type": {
+              "type": "reference",
+              "name": "DynamicRouterOptions",
+              "sourcePath": "class-model-emit/packages/spark-app/src/router/dynamic.d.ts"
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/DynamicRouterOptions"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "registerRoutes",
+          "jsdoc": "注册所有路由（从导航树派生）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "removeRoute",
+          "jsdoc": "移除路由",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "name",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "refreshRoutes",
+          "jsdoc": "刷新路由（重新加载导航树，保留静态组件映射），返回加载后的导航树",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "ProjectModelData"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectModelData | null>"
+          }
+        },
+        {
+          "name": "getNavTree",
+          "jsdoc": "获取已加载的导航树（导航模式下可用）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "ProjectModelData"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ProjectModelData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "getRegisteredRoutes",
+          "jsdoc": "获取已注册路由列表",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.814Z",
+  "$defs": {
+    "DynamicRouterOptions": {
+      "type": "object",
+      "title": "DynamicRouterOptions",
+      "description": "动态路由注册选项",
+      "properties": {
+        "router": {
+          "type": "object",
+          "title": "Router"
+        },
+        "pageContentLoader": {
+          "type": "object",
+          "title": "PageContentLoader"
+        },
+        "pageComponent": {
+          "type": "object",
+          "title": "Component"
+        },
+        "componentMap": {
+          "type": "object",
+          "title": "Record<string, Component>"
+        },
+        "tenantPathPrefix": {
+          "type": "string"
+        },
+        "loadNavigation": {
+          "type": "object",
+          "title": "() => Promise<ProjectModelData>"
+        },
+        "loadPlatformNavigation": {
+          "type": "object",
+          "title": "() => Promise<ProjectModelData>"
+        },
+        "platformPathPrefix": {
+          "type": "string"
+        },
+        "isPlatformNavigationEnabled": {
+          "type": "object",
+          "title": "() => boolean"
+        },
+        "preAuthNavTree": {
+          "type": "object",
+          "title": "ProjectModelData"
+        },
+        "isAuthenticated": {
+          "type": "object",
+          "title": "() => boolean"
+        }
+      }
+    },
+    "DynamicRouter": {
+      "type": "object",
+      "title": "DynamicRouter",
+      "description": "动态路由管理器"
+    }
+  }
+}

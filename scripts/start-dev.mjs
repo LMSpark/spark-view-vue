@@ -264,6 +264,15 @@ try {
 }
 
 console.log(`\n✅ Java 后端就绪: ${BACKEND_URL}`)
+
+const syncResult = spawnSync(process.execPath, ['scripts/sync-class-model-static.mjs'], {
+  cwd: ROOT_DIR,
+  stdio: 'inherit',
+})
+if (syncResult.status !== 0) {
+  process.exit(syncResult.status ?? 1)
+}
+
 console.log(`🚀 启动 Vite 前端...\n`)
 
 const DEFAULT_FE_PORT = 5273

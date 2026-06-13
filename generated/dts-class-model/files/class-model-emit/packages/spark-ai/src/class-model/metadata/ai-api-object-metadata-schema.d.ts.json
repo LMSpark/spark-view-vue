@@ -1,0 +1,1092 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/metadata/ai-api-object-metadata-schema",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/metadata/ai-api-object-metadata-schema",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/metadata/ai-api-object-metadata-schema\n职责：维护 @spark-appworks/spark-ai 中 class-model/metadata/ai-api-object-metadata-schema 的 AiApiActionFailureMode、AiApiActionExample、AiApiActionAntiExample 等 11 个公开类型语义。\n边界：只服务 spark-ai 包内部的 Agent/ClassModel 能力，不直接耦合应用页面或 Vue 组件。\nAI用途：定位 spark-ai 公共 API、运行时协议或知识索引字段时，用本模块作为语义入口。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiApiActionFailureMode",
+      "AiApiActionExample",
+      "AiApiActionAntiExample",
+      "AiApiJsDocMetadata",
+      "AiApiSourceProvenanceMetadata",
+      "AiApiObjectMetadata",
+      "AiApiConstructorMetadata",
+      "AiApiAttributeMetadata",
+      "AiApiActionMetadata",
+      "AiApiResultApiRef",
+      "AiRuntimeApiMetadataJson"
+    ]
+  },
+  "symbols": [
+    "AiApiActionFailureMode",
+    "AiApiActionExample",
+    "AiApiActionAntiExample",
+    "AiApiJsDocMetadata",
+    "AiApiSourceProvenanceMetadata",
+    "AiApiObjectMetadata",
+    "AiApiConstructorMetadata",
+    "AiApiAttributeMetadata",
+    "AiApiActionMetadata",
+    "AiApiResultApiRef",
+    "AiRuntimeApiMetadataJson"
+  ],
+  "models": {
+    "AiApiActionFailureMode": {
+      "kind": "AiApiActionFailureMode",
+      "className": "AiApiActionFailureMode",
+      "jsdoc": "Ai Api Action Failure Mode 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    /** 错误码（LLM 可见，用于识别失败类型）。 */\n    code: string;\n    /** 发生条件（自然语言描述何时触发此错误）。 */\n    when: string;\n    /** 修复建议（LLM 在失败后可参考的恢复步骤）。 */\n    fix: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    /** 错误码（LLM 可见，用于识别失败类型）。 */\n    code: string;\n    /** 发生条件（自然语言描述何时触发此错误）。 */\n    when: string;\n    /** 修复建议（LLM 在失败后可参考的恢复步骤）。 */\n    fix: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+        "line": 9,
+        "className": "AiApiActionFailureMode",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "code",
+          "jsdoc": "错误码（LLM 可见，用于识别失败类型）。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "when",
+          "jsdoc": "发生条件（自然语言描述何时触发此错误）。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "fix",
+          "jsdoc": "修复建议（LLM 在失败后可参考的恢复步骤）。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "AiApiActionExample": {
+      "kind": "AiApiActionExample",
+      "className": "AiApiActionExample",
+      "jsdoc": "Ai Api Action Example 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    /** 用户输入示例，可用于判断触发条件。 */\n    user?: string;\n    /** 示例意图说明。 */\n    intent?: string;\n    /** 业务 action 参数示例。 */\n    args?: AiJsonValue;\n    /** 完整调用示例，通常展示 model_script 对象链或 tool arguments。 */\n    call?: AiJsonValue;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    /** 用户输入示例，可用于判断触发条件。 */\n    user?: string;\n    /** 示例意图说明。 */\n    intent?: string;\n    /** 业务 action 参数示例。 */\n    args?: AiJsonValue;\n    /** 完整调用示例，通常展示 model_script 对象链或 tool arguments。 */\n    call?: AiJsonValue;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+        "line": 18,
+        "className": "AiApiActionExample",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "user",
+          "jsdoc": "用户输入示例，可用于判断触发条件。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "intent",
+          "jsdoc": "示例意图说明。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "args",
+          "jsdoc": "业务 action 参数示例。",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonValue"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "call",
+          "jsdoc": "完整调用示例，通常展示 model_script 对象链或 tool arguments。",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonValue"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiApiActionAntiExample": {
+      "kind": "AiApiActionAntiExample",
+      "className": "AiApiActionAntiExample",
+      "jsdoc": "Ai Api Action Anti Example 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    /** 用户输入或场景示例。 */\n    user?: string;\n    /** 不应调用该 action 的原因。 */\n    reason: string;\n    /** 容易误传的参数示例。 */\n    args?: AiJsonValue;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    /** 用户输入或场景示例。 */\n    user?: string;\n    /** 不应调用该 action 的原因。 */\n    reason: string;\n    /** 容易误传的参数示例。 */\n    args?: AiJsonValue;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+        "line": 29,
+        "className": "AiApiActionAntiExample",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "user",
+          "jsdoc": "用户输入或场景示例。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "reason",
+          "jsdoc": "不应调用该 action 的原因。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "args",
+          "jsdoc": "容易误传的参数示例。",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonValue"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiApiJsDocMetadata": {
+      "kind": "AiApiJsDocMetadata",
+      "className": "AiApiJsDocMetadata",
+      "jsdoc": "从源码 JSDoc 原样拷贝的语义块；源码 JSDoc 是 SSOT，generated JSON 只是缓存快照。",
+      "shapeKind": "type",
+      "declarationTypeText": "string",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+        "line": 38,
+        "className": "AiApiJsDocMetadata",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiApiSourceProvenanceMetadata": {
+      "kind": "AiApiSourceProvenanceMetadata",
+      "className": "AiApiSourceProvenanceMetadata",
+      "jsdoc": "反射来源；file/line 指向源码声明，typeEntryFile 仅记录可能的 .d.ts 类型入口。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    file: string;\n    line: number;\n    className: string;\n    memberName?: string;\n    typeEntryFile?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+        "line": 40,
+        "className": "AiApiSourceProvenanceMetadata",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "file",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "line",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "className",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "memberName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "typeEntryFile",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiApiObjectMetadata": {
+      "kind": "AiApiObjectMetadata",
+      "className": "AiApiObjectMetadata",
+      "jsdoc": "API 对象元数据（根对象或 action 返回的嵌套对象）。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    kind: string;\n    name: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    constructorSignature?: AiApiConstructorMetadata;\n    actions: readonly AiApiActionMetadata[];\n    attributes?: readonly AiApiAttributeMetadata[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    kind: string;\n    name: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    constructorSignature?: AiApiConstructorMetadata;\n    actions: readonly AiApiActionMetadata[];\n    attributes?: readonly AiApiAttributeMetadata[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+        "line": 48,
+        "className": "AiApiObjectMetadata",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "name",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "description",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "jsdoc",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiApiJsDocMetadata"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "provenance",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "constructorSignature",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiApiConstructorMetadata"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "actions",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "attributes",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiApiConstructorMetadata": {
+      "kind": "AiApiConstructorMetadata",
+      "className": "AiApiConstructorMetadata",
+      "jsdoc": "API 对象构造函数元数据。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    paramsSchema: AiJsonSchemaObject;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    paramsSchema: AiJsonSchemaObject;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+        "line": 59,
+        "className": "AiApiConstructorMetadata",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "description",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "jsdoc",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiApiJsDocMetadata"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "provenance",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "paramsSchema",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchemaObject"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "AiApiAttributeMetadata": {
+      "kind": "AiApiAttributeMetadata",
+      "className": "AiApiAttributeMetadata",
+      "jsdoc": "API 属性元数据。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    name: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    /** 子 API kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */\n    api?: AiApiObjectMetadata;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    name: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    schema: AiJsonSchema;\n    readable: boolean;\n    writable: boolean;\n    /** 子 API kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */\n    api?: AiApiObjectMetadata;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+        "line": 66,
+        "className": "AiApiAttributeMetadata",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "name",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "description",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "jsdoc",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiApiJsDocMetadata"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "provenance",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "schema",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchema"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "readable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "writable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "api",
+          "jsdoc": "子 API kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。",
+          "schema": {
+            "$ref": "#/$defs/AiApiObjectMetadata"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiApiActionMetadata": {
+      "kind": "AiApiActionMetadata",
+      "className": "AiApiActionMetadata",
+      "jsdoc": "API action 元数据。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    name: string;\n    methodName: string;\n    signatureText?: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    paramsSchema: AiJsonSchemaObject;\n    takesContext?: boolean;\n    resultSchema?: AiJsonSchema;\n    resultApis?: readonly AiApiResultApiRef[];\n    usageRules?: readonly string[];\n    requiredBeforeCall?: readonly string[];\n    failureModes?: readonly AiApiActionFailureMode[];\n    /** 单参数示例；多示例场景优先 examples。 */\n    example?: AiJsonValue;\n    examples?: readonly AiApiActionExample[];\n    antiExamples?: readonly AiApiActionAntiExample[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    name: string;\n    methodName: string;\n    signatureText?: string;\n    description: string;\n    jsdoc?: AiApiJsDocMetadata;\n    provenance?: AiApiSourceProvenanceMetadata;\n    paramsSchema: AiJsonSchemaObject;\n    takesContext?: boolean;\n    resultSchema?: AiJsonSchema;\n    resultApis?: readonly AiApiResultApiRef[];\n    usageRules?: readonly string[];\n    requiredBeforeCall?: readonly string[];\n    failureModes?: readonly AiApiActionFailureMode[];\n    /** 单参数示例；多示例场景优先 examples。 */\n    example?: AiJsonValue;\n    examples?: readonly AiApiActionExample[];\n    antiExamples?: readonly AiApiActionAntiExample[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+        "line": 78,
+        "className": "AiApiActionMetadata",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "name",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "methodName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "signatureText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "description",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "jsdoc",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiApiJsDocMetadata"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "provenance",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "paramsSchema",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchemaObject"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "takesContext",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "resultSchema",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchema"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "resultApis",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "usageRules",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "requiredBeforeCall",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "failureModes",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "example",
+          "jsdoc": "单参数示例；多示例场景优先 examples。",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonValue"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "examples",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "antiExamples",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiApiResultApiRef": {
+      "kind": "AiApiResultApiRef",
+      "className": "AiApiResultApiRef",
+      "jsdoc": "action 返回值中的 API-bearing 对象引用（runtime 紧凑格式用 $ref，解析后为 api）。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */\n    resultPath: readonly string[];\n    api?: AiApiObjectMetadata;\n    /** 紧凑 runtime JSON：指向 apiRegistry 中的 API kind。 */\n    $ref?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */\n    resultPath: readonly string[];\n    api?: AiApiObjectMetadata;\n    /** 紧凑 runtime JSON：指向 apiRegistry 中的 API kind。 */\n    $ref?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+        "line": 98,
+        "className": "AiApiResultApiRef",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "resultPath",
+          "jsdoc": "从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "api",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiApiObjectMetadata"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "$ref",
+          "jsdoc": "紧凑 runtime JSON：指向 apiRegistry 中的 API kind。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiRuntimeApiMetadataJson": {
+      "kind": "AiRuntimeApiMetadataJson",
+      "className": "AiRuntimeApiMetadataJson",
+      "jsdoc": "运行时 API 元数据：由 DTS ClassModel 或显式注册入口投影出脚本可执行的 API surface。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    schemaVersion: 1 | 2;\n    rootApi: AiApiObjectMetadata;\n    /** schemaVersion=2 时：按 kind 去重后的 action 返回 API 注册表。 */\n    apiRegistry?: Readonly<Record<string, AiApiObjectMetadata>>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    schemaVersion: 1 | 2;\n    rootApi: AiApiObjectMetadata;\n    /** schemaVersion=2 时：按 kind 去重后的 action 返回 API 注册表。 */\n    apiRegistry?: Readonly<Record<string, AiApiObjectMetadata>>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts",
+        "line": 106,
+        "className": "AiRuntimeApiMetadataJson",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "schemaVersion",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "number",
+                "enum": [
+                  1
+                ]
+              },
+              {
+                "type": "number",
+                "enum": [
+                  2
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rootApi",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiApiObjectMetadata"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "apiRegistry",
+          "jsdoc": "schemaVersion=2 时：按 kind 去重后的 action 返回 API 注册表。",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, AiApiObjectMetadata>>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.620Z",
+  "$defs": {
+    "AiApiActionFailureMode": {
+      "type": "object",
+      "title": "AiApiActionFailureMode",
+      "description": "Ai Api Action Failure Mode 的语义模型。",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "when": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        }
+      }
+    },
+    "AiApiActionExample": {
+      "type": "object",
+      "title": "AiApiActionExample",
+      "description": "Ai Api Action Example 的语义模型。",
+      "properties": {
+        "user": {
+          "type": "string"
+        },
+        "intent": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "AiJsonValue"
+        },
+        "call": {
+          "type": "object",
+          "title": "AiJsonValue"
+        }
+      }
+    },
+    "AiApiActionAntiExample": {
+      "type": "object",
+      "title": "AiApiActionAntiExample",
+      "description": "Ai Api Action Anti Example 的语义模型。",
+      "properties": {
+        "user": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "AiJsonValue"
+        }
+      }
+    },
+    "AiApiJsDocMetadata": {
+      "type": "object",
+      "title": "AiApiJsDocMetadata",
+      "description": "从源码 JSDoc 原样拷贝的语义块；源码 JSDoc 是 SSOT，generated JSON 只是缓存快照。"
+    },
+    "AiApiSourceProvenanceMetadata": {
+      "type": "object",
+      "title": "AiApiSourceProvenanceMetadata",
+      "description": "反射来源；file/line 指向源码声明，typeEntryFile 仅记录可能的 .d.ts 类型入口。",
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "number"
+        },
+        "className": {
+          "type": "string"
+        },
+        "memberName": {
+          "type": "string"
+        },
+        "typeEntryFile": {
+          "type": "string"
+        }
+      }
+    },
+    "AiApiObjectMetadata": {
+      "type": "object",
+      "title": "AiApiObjectMetadata",
+      "description": "API 对象元数据（根对象或 action 返回的嵌套对象）。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/AiApiJsDocMetadata"
+        },
+        "provenance": {
+          "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
+        },
+        "constructorSignature": {
+          "$ref": "#/$defs/AiApiConstructorMetadata"
+        },
+        "actions": {
+          "type": "array"
+        },
+        "attributes": {
+          "type": "array"
+        }
+      }
+    },
+    "AiApiConstructorMetadata": {
+      "type": "object",
+      "title": "AiApiConstructorMetadata",
+      "description": "API 对象构造函数元数据。",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/AiApiJsDocMetadata"
+        },
+        "provenance": {
+          "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
+        },
+        "paramsSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        }
+      }
+    },
+    "AiApiAttributeMetadata": {
+      "type": "object",
+      "title": "AiApiAttributeMetadata",
+      "description": "API 属性元数据。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/AiApiJsDocMetadata"
+        },
+        "provenance": {
+          "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
+        },
+        "schema": {
+          "type": "object",
+          "title": "AiJsonSchema"
+        },
+        "readable": {
+          "type": "boolean"
+        },
+        "writable": {
+          "type": "boolean"
+        },
+        "api": {
+          "$ref": "#/$defs/AiApiObjectMetadata"
+        }
+      }
+    },
+    "AiApiActionMetadata": {
+      "type": "object",
+      "title": "AiApiActionMetadata",
+      "description": "API action 元数据。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "methodName": {
+          "type": "string"
+        },
+        "signatureText": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/AiApiJsDocMetadata"
+        },
+        "provenance": {
+          "$ref": "#/$defs/AiApiSourceProvenanceMetadata"
+        },
+        "paramsSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "takesContext": {
+          "type": "boolean"
+        },
+        "resultSchema": {
+          "type": "object",
+          "title": "AiJsonSchema"
+        },
+        "resultApis": {
+          "type": "array"
+        },
+        "usageRules": {
+          "type": "array"
+        },
+        "requiredBeforeCall": {
+          "type": "array"
+        },
+        "failureModes": {
+          "type": "array"
+        },
+        "example": {
+          "type": "object",
+          "title": "AiJsonValue"
+        },
+        "examples": {
+          "type": "array"
+        },
+        "antiExamples": {
+          "type": "array"
+        }
+      }
+    },
+    "AiApiResultApiRef": {
+      "type": "object",
+      "title": "AiApiResultApiRef",
+      "description": "action 返回值中的 API-bearing 对象引用（runtime 紧凑格式用 $ref，解析后为 api）。",
+      "properties": {
+        "resultPath": {
+          "type": "array"
+        },
+        "api": {
+          "$ref": "#/$defs/AiApiObjectMetadata"
+        },
+        "$ref": {
+          "type": "string"
+        }
+      }
+    },
+    "AiRuntimeApiMetadataJson": {
+      "type": "object",
+      "title": "AiRuntimeApiMetadataJson",
+      "description": "运行时 API 元数据：由 DTS ClassModel 或显式注册入口投影出脚本可执行的 API surface。",
+      "properties": {
+        "schemaVersion": {
+          "anyOf": [
+            {
+              "type": "number",
+              "enum": [
+                1
+              ]
+            },
+            {
+              "type": "number",
+              "enum": [
+                2
+              ]
+            }
+          ]
+        },
+        "rootApi": {
+          "$ref": "#/$defs/AiApiObjectMetadata"
+        },
+        "apiRegistry": {
+          "type": "object",
+          "title": "Readonly<Record<string, AiApiObjectMetadata>>"
+        }
+      }
+    }
+  }
+}

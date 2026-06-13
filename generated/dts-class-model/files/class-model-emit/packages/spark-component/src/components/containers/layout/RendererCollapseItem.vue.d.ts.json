@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererCollapseItem",
+    "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererCollapseItem",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererCollapseItem\n职责：实现 RendererCollapseItem（r-collapse-item）的 Vue 渲染入口，把配置 props、数据上下文和事件桥接成用户可见的组件界面。\n边界：负责 container/layout-container 的视图组合与事件转发，不定义跨组件数据模型，也不替代 zero-code 行为 API。\nAI用途：需要理解 renderer collapse item 的实际渲染结构、slot/toolbar/状态呈现或事件触发点时，优先查看本模块。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "Props"
+    ],
+    "componentName": "RendererCollapseItem",
+    "componentType": "r-collapse-item",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "Props"
+  ],
+  "models": {
+    "Props": {
+      "kind": "Props",
+      "className": "Props",
+      "jsdoc": "r-collapse-item 内部面板项属性，继承 SparkNode 通用节点属性。",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 面板唯一标识 */\n    name?: string | number;\n    /** 面板标题 */\n    title?: string;\n    /** 是否禁用 */\n    disabled?: boolean;\n    /** 面板体自定义 class */\n    bodyClass?: string;\n    /** CSS Grid 列数 */\n    gridColumns?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 在父容器中的位置序号 */\n    index: number;\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 面板唯一标识 */\n    name?: string | number;\n    /** 面板标题 */\n    title?: string;\n    /** 是否禁用 */\n    disabled?: boolean;\n    /** 面板体自定义 class */\n    bodyClass?: string;\n    /** CSS Grid 列数 */\n    gridColumns?: number | string;\n    /** 栅格行高 */\n    gridAutoRows?: string;\n    /** 栅格间距 */\n    gridGap?: number | string;\n    /** 在父容器中的位置序号 */\n    index: number;\n}"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue.d.ts",
+        "line": 3,
+        "className": "Props",
+        "declarationKind": "type",
+        "componentName": "RendererCollapseItem",
+        "componentType": "r-collapse-item",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "name",
+          "jsdoc": "面板唯一标识",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "title",
+          "jsdoc": "面板标题",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "disabled",
+          "jsdoc": "是否禁用",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "bodyClass",
+          "jsdoc": "面板体自定义 class",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "gridColumns",
+          "jsdoc": "CSS Grid 列数",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "gridAutoRows",
+          "jsdoc": "栅格行高",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "gridGap",
+          "jsdoc": "栅格间距",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "index",
+          "jsdoc": "在父容器中的位置序号",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:54.181Z",
+  "$defs": {
+    "Props": {
+      "type": "object",
+      "title": "Props",
+      "description": "r-collapse-item 内部面板项属性，继承 SparkNode 通用节点属性。",
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "bodyClass": {
+          "type": "string"
+        },
+        "gridColumns": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "gridAutoRows": {
+          "type": "string"
+        },
+        "gridGap": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "index": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

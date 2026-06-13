@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/business/host-options.d.ts",
+  "symbols": [
+    "AiAgentOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentOptions": {
+      "ref": "spark-class-model://schema/AiAgentOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentOptions",
+        "properties": {
+          "registry": {
+            "type": "object"
+          },
+          "turnCallbacks": {
+            "$ref": "spark-class-model://schema/AiAgentTurnCallbacks"
+          },
+          "maxToolRounds": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentOptions"
+      }
+    },
+    "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0": {
+      "ref": "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0"
+      }
+    },
+    "spark-class-model://model/AiAgentOptions/attributes/registry/0": {
+      "ref": "spark-class-model://model/AiAgentOptions/attributes/registry/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentOptions",
+      "name": "registry",
+      "schemaRef": "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentOptions/attributes/turnCallbacks/1": {
+      "ref": "spark-class-model://model/AiAgentOptions/attributes/turnCallbacks/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentOptions",
+      "name": "turnCallbacks",
+      "schemaRef": "spark-class-model://schema/shared/8e5aae409a3ccb3f257a7ccd65acb977601f68500a943f3a5776db38d644cc45",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentOptions%2Fattributes%2FturnCallbacks%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTurnCallbacks": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentOptions%2Fattributes%2FturnCallbacks%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTurnCallbacks",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentOptions/attributes/turnCallbacks/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentTurnCallbacks",
+      "targetClassName": "AiAgentTurnCallbacks",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/transport/transport-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentTurnCallbacks"
+    },
+    "spark-class-model://model/AiAgentOptions/attributes/maxToolRounds/2": {
+      "ref": "spark-class-model://model/AiAgentOptions/attributes/maxToolRounds/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentOptions",
+      "name": "maxToolRounds",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentOptions": {
+      "ref": "spark-class-model://model/AiAgentOptions",
+      "kind": "model",
+      "className": "AiAgentOptions",
+      "schemaRef": "spark-class-model://schema/AiAgentOptions",
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentOptions/attributes/registry/0",
+        "spark-class-model://model/AiAgentOptions/attributes/turnCallbacks/1",
+        "spark-class-model://model/AiAgentOptions/attributes/maxToolRounds/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentOptions%2Fattributes%2FturnCallbacks%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTurnCallbacks"
+      ]
+    }
+  }
+}

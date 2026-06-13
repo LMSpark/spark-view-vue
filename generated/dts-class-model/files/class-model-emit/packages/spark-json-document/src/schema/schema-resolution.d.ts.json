@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-resolution.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-json-document:schema/schema-resolution",
+    "sourcePath": "class-model-emit/packages/spark-json-document/src/schema/schema-resolution.d.ts",
+    "sourceFile": "packages/spark-json-document/src/schema/schema-resolution.ts",
+    "packageName": "@spark-appworks/spark-json-document",
+    "modulePath": "schema/schema-resolution",
+    "jsdoc": "@module @spark-appworks/spark-json-document:schema/schema-resolution\n职责：提供 JSON Document/schema 处理中的 schema resolution 能力，支撑 schema 标准化、审计和元数据保留。\n边界：只处理 JSON schema/document 结构，不耦合应用页面、Vue 组件或 AI 会话状态。\nAI用途：校验或标准化配置 schema 时，用本模块确认 JSON 文档层的规则来源。\n\n═══════════════════════════════════════════════════════════════\nschema/schema-resolution.ts — JSON Schema 路径解析\n═══════════════════════════════════════════════════════════════\n根据 JsonPath 在 JSON Schema 中解析对应节点的元信息（title/description/required/enum）。\n支持 $ref 解析、oneOf 分支选择、items/properties/additionalProperties 导航。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "JsonSchemaInfo"
+    ]
+  },
+  "symbols": [
+    "JsonSchemaInfo"
+  ],
+  "models": {
+    "JsonSchemaInfo": {
+      "kind": "JsonSchemaInfo",
+      "className": "JsonSchemaInfo",
+      "jsdoc": "Schema 路径解析结果",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 显示标题。 */\n    title: string;\n    /** description 字段。 */\n    description: string;\n    /** 是否必填。 */\n    required: boolean;\n    /** enum Values 字段。 */\n    enumValues: string[];\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-json-document/src/schema/schema-resolution.d.ts",
+        "line": 17,
+        "className": "JsonSchemaInfo",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "title",
+          "jsdoc": "显示标题。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "description",
+          "jsdoc": "description 字段。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "required",
+          "jsdoc": "是否必填。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "enumValues",
+          "jsdoc": "enum Values 字段。",
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.658Z",
+  "$defs": {
+    "JsonSchemaInfo": {
+      "type": "object",
+      "title": "JsonSchemaInfo",
+      "description": "Schema 路径解析结果",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "enumValues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

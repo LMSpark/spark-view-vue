@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumb.props.d.ts",
+  "symbols": [
+    "RBreadcrumbProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RBreadcrumbProps": {
+      "ref": "spark-class-model://schema/RBreadcrumbProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RBreadcrumbProps",
+        "properties": {
+          "separator": {
+            "type": "string"
+          },
+          "separatorIcon": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RBreadcrumbProps"
+      }
+    },
+    "spark-class-model://model/RBreadcrumbProps/attributes/separator/0": {
+      "ref": "spark-class-model://model/RBreadcrumbProps/attributes/separator/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RBreadcrumbProps",
+      "name": "separator",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RBreadcrumbProps/attributes/separatorIcon/1": {
+      "ref": "spark-class-model://model/RBreadcrumbProps/attributes/separatorIcon/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RBreadcrumbProps",
+      "name": "separatorIcon",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RBreadcrumbProps": {
+      "ref": "spark-class-model://model/RBreadcrumbProps",
+      "kind": "model",
+      "className": "RBreadcrumbProps",
+      "schemaRef": "spark-class-model://schema/RBreadcrumbProps",
+      "attributeRefs": [
+        "spark-class-model://model/RBreadcrumbProps/attributes/separator/0",
+        "spark-class-model://model/RBreadcrumbProps/attributes/separatorIcon/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

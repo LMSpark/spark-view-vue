@@ -14,7 +14,7 @@ import type {
 
 /** Class Model Knowledge Worker Init Input 的输入数据。 */
 export type ClassModelKnowledgeWorkerInitInput = Readonly<{
-  /** declarations 分片 class-model manifest.json。 */
+  /** ClassModel bundle 分片 manifest.json。 */
   dtsClassModelManifestUrl: string
   /** 业务根 className；DTS 模型里 kind 与 className 同值。 */
   rootClassName: string

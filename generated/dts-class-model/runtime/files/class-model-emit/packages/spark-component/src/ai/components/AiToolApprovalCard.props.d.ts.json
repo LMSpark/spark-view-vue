@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalCard.props.d.ts",
+  "symbols": [
+    "AiToolApprovalCardProps",
+    "AiToolApprovalCardEmits"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiToolApprovalCardProps": {
+      "ref": "spark-class-model://schema/AiToolApprovalCardProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiToolApprovalCardProps",
+        "properties": {
+          "request": {
+            "$ref": "spark-class-model://schema/ToolApprovalDisplayItem"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiToolApprovalCardProps"
+      }
+    },
+    "spark-class-model://schema/shared/fbd70e5a4d90a3ed886681eadd122ac217cacd4961ccef640fd16115b2039555": {
+      "ref": "spark-class-model://schema/shared/fbd70e5a4d90a3ed886681eadd122ac217cacd4961ccef640fd16115b2039555",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ToolApprovalDisplayItem",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/fbd70e5a4d90a3ed886681eadd122ac217cacd4961ccef640fd16115b2039555"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalCardProps/attributes/request/0": {
+      "ref": "spark-class-model://model/AiToolApprovalCardProps/attributes/request/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiToolApprovalCardProps",
+      "name": "request",
+      "schemaRef": "spark-class-model://schema/shared/fbd70e5a4d90a3ed886681eadd122ac217cacd4961ccef640fd16115b2039555",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiToolApprovalCardProps%2Fattributes%2Frequest%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FToolApprovalDisplayItem": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiToolApprovalCardProps%2Fattributes%2Frequest%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FToolApprovalDisplayItem",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiToolApprovalCardProps/attributes/request/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ToolApprovalDisplayItem",
+      "targetClassName": "ToolApprovalDisplayItem",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/ai/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ToolApprovalDisplayItem"
+    },
+    "spark-class-model://model/AiToolApprovalCardProps": {
+      "ref": "spark-class-model://model/AiToolApprovalCardProps",
+      "kind": "model",
+      "className": "AiToolApprovalCardProps",
+      "schemaRef": "spark-class-model://schema/AiToolApprovalCardProps",
+      "attributeRefs": [
+        "spark-class-model://model/AiToolApprovalCardProps/attributes/request/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiToolApprovalCardProps%2Fattributes%2Frequest%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FToolApprovalDisplayItem"
+      ]
+    },
+    "spark-class-model://schema/AiToolApprovalCardEmits": {
+      "ref": "spark-class-model://schema/AiToolApprovalCardEmits",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiToolApprovalCardEmits",
+        "properties": {
+          "allow": {
+            "type": "array"
+          },
+          "reject": {
+            "type": "array"
+          },
+          "abort": {
+            "type": "array"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiToolApprovalCardEmits"
+      }
+    },
+    "spark-class-model://model/AiToolApprovalCardEmits/attributes/allow/0": {
+      "ref": "spark-class-model://model/AiToolApprovalCardEmits/attributes/allow/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiToolApprovalCardEmits",
+      "name": "allow",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiToolApprovalCardEmits/attributes/reject/1": {
+      "ref": "spark-class-model://model/AiToolApprovalCardEmits/attributes/reject/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiToolApprovalCardEmits",
+      "name": "reject",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiToolApprovalCardEmits/attributes/abort/2": {
+      "ref": "spark-class-model://model/AiToolApprovalCardEmits/attributes/abort/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiToolApprovalCardEmits",
+      "name": "abort",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiToolApprovalCardEmits": {
+      "ref": "spark-class-model://model/AiToolApprovalCardEmits",
+      "kind": "model",
+      "className": "AiToolApprovalCardEmits",
+      "schemaRef": "spark-class-model://schema/AiToolApprovalCardEmits",
+      "attributeRefs": [
+        "spark-class-model://model/AiToolApprovalCardEmits/attributes/allow/0",
+        "spark-class-model://model/AiToolApprovalCardEmits/attributes/reject/1",
+        "spark-class-model://model/AiToolApprovalCardEmits/attributes/abort/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

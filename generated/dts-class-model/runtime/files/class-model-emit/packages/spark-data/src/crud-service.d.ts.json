@@ -1,0 +1,599 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-data/src/crud-service.d.ts",
+  "symbols": [
+    "CrudService"
+  ],
+  "@refs": {
+    "spark-class-model://schema/CrudService": {
+      "ref": "spark-class-model://schema/CrudService",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "CrudService",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/CrudService"
+      }
+    },
+    "spark-class-model://model/CrudService/constructors/0": {
+      "ref": "spark-class-model://model/CrudService/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/985204ca818be471e8659d3b46815c2925b357a1d9e07150ed0fa86abb090a05"
+    },
+    "spark-class-model://schema/shared/985204ca818be471e8659d3b46815c2925b357a1d9e07150ed0fa86abb090a05": {
+      "ref": "spark-class-model://schema/shared/985204ca818be471e8659d3b46815c2925b357a1d9e07150ed0fa86abb090a05",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "api": {
+            "$ref": "spark-class-model://schema/CrudApi"
+          },
+          "httpConfigOrClient": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "Partial<RequestConfig>"
+              },
+              {
+                "$ref": "spark-class-model://schema/HttpClientBase"
+              }
+            ]
+          },
+          "endpointContextProvider": {
+            "type": "object",
+            "title": "() => Record<string, unknown>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/985204ca818be471e8659d3b46815c2925b357a1d9e07150ed0fa86abb090a05"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudApi": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudApi",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/CrudApi",
+      "targetClassName": "CrudApi",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudApi"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/HttpClientBase",
+      "targetClassName": "HttpClientBase",
+      "targetFile": "files/class-model-emit/packages/spark-utils/src/http/HttpClientBase.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/HttpClientBase"
+    },
+    "spark-class-model://model/CrudService/methods/getHttpClient/0": {
+      "ref": "spark-class-model://model/CrudService/methods/getHttpClient/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "name": "getHttpClient",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b387385f7becdde0a4fbc954709e1cc37cf1f2e3513804cf7cc1183c19849636"
+    },
+    "spark-class-model://schema/shared/b387385f7becdde0a4fbc954709e1cc37cf1f2e3513804cf7cc1183c19849636": {
+      "ref": "spark-class-model://schema/shared/b387385f7becdde0a4fbc954709e1cc37cf1f2e3513804cf7cc1183c19849636",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/HttpClientBase",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b387385f7becdde0a4fbc954709e1cc37cf1f2e3513804cf7cc1183c19849636"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FgetHttpClient%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FgetHttpClient%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/getHttpClient/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/HttpClientBase",
+      "targetClassName": "HttpClientBase",
+      "targetFile": "files/class-model-emit/packages/spark-utils/src/http/HttpClientBase.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/HttpClientBase"
+    },
+    "spark-class-model://model/CrudService/methods/create/1": {
+      "ref": "spark-class-model://model/CrudService/methods/create/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "name": "create",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/7e79ad9bfa97b235c3bc061cbc20862b05367de003566ff4ed479c68a1ead8fe",
+      "returnSchemaRef": "spark-class-model://schema/shared/2e8d85d399eeb7e5730dc062550ffcf8900a0060fd9e8162953101a1aa4bf52a"
+    },
+    "spark-class-model://schema/shared/7e79ad9bfa97b235c3bc061cbc20862b05367de003566ff4ed479c68a1ead8fe": {
+      "ref": "spark-class-model://schema/shared/7e79ad9bfa97b235c3bc061cbc20862b05367de003566ff4ed479c68a1ead8fe",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "title": "Partial<T>"
+          },
+          "config": {
+            "$ref": "spark-class-model://schema/CrudOperationConfig"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7e79ad9bfa97b235c3bc061cbc20862b05367de003566ff4ed479c68a1ead8fe"
+      }
+    },
+    "spark-class-model://schema/shared/2e8d85d399eeb7e5730dc062550ffcf8900a0060fd9e8162953101a1aa4bf52a": {
+      "ref": "spark-class-model://schema/shared/2e8d85d399eeb7e5730dc062550ffcf8900a0060fd9e8162953101a1aa4bf52a",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<CrudResult<T>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/2e8d85d399eeb7e5730dc062550ffcf8900a0060fd9e8162953101a1aa4bf52a"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fcreate%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fcreate%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/create/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CrudOperationConfig",
+      "targetClassName": "CrudOperationConfig",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudOperationConfig"
+    },
+    "spark-class-model://model/CrudService/methods/retrieve/2": {
+      "ref": "spark-class-model://model/CrudService/methods/retrieve/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "name": "retrieve",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/58f75f679ff497e9c772b15340e0cd64fc34a379d78f908e6e0c662e4dfd340f",
+      "returnSchemaRef": "spark-class-model://schema/shared/2e8d85d399eeb7e5730dc062550ffcf8900a0060fd9e8162953101a1aa4bf52a"
+    },
+    "spark-class-model://schema/shared/58f75f679ff497e9c772b15340e0cd64fc34a379d78f908e6e0c662e4dfd340f": {
+      "ref": "spark-class-model://schema/shared/58f75f679ff497e9c772b15340e0cd64fc34a379d78f908e6e0c662e4dfd340f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pk": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "config": {
+            "$ref": "spark-class-model://schema/CrudOperationConfig"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/58f75f679ff497e9c772b15340e0cd64fc34a379d78f908e6e0c662e4dfd340f"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fretrieve%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fretrieve%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/retrieve/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CrudOperationConfig",
+      "targetClassName": "CrudOperationConfig",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudOperationConfig"
+    },
+    "spark-class-model://model/CrudService/methods/update/3": {
+      "ref": "spark-class-model://model/CrudService/methods/update/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "name": "update",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/d6e4909401fb8172ea030321cfea88e8a06dc085094eba34be0da9e4c5ee59bc",
+      "returnSchemaRef": "spark-class-model://schema/shared/2e8d85d399eeb7e5730dc062550ffcf8900a0060fd9e8162953101a1aa4bf52a"
+    },
+    "spark-class-model://schema/shared/d6e4909401fb8172ea030321cfea88e8a06dc085094eba34be0da9e4c5ee59bc": {
+      "ref": "spark-class-model://schema/shared/d6e4909401fb8172ea030321cfea88e8a06dc085094eba34be0da9e4c5ee59bc",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pk": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "data": {
+            "type": "object",
+            "title": "Partial<T>"
+          },
+          "config": {
+            "$ref": "spark-class-model://schema/CrudOperationConfig"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d6e4909401fb8172ea030321cfea88e8a06dc085094eba34be0da9e4c5ee59bc"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fupdate%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fupdate%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/update/3",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CrudOperationConfig",
+      "targetClassName": "CrudOperationConfig",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudOperationConfig"
+    },
+    "spark-class-model://model/CrudService/methods/delete/4": {
+      "ref": "spark-class-model://model/CrudService/methods/delete/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "name": "delete",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/58f75f679ff497e9c772b15340e0cd64fc34a379d78f908e6e0c662e4dfd340f",
+      "returnSchemaRef": "spark-class-model://schema/shared/539594c61030f4f2b26346c333a461e8e7494d367d874227214e839ae9fa79c2"
+    },
+    "spark-class-model://schema/shared/539594c61030f4f2b26346c333a461e8e7494d367d874227214e839ae9fa79c2": {
+      "ref": "spark-class-model://schema/shared/539594c61030f4f2b26346c333a461e8e7494d367d874227214e839ae9fa79c2",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<CrudResult<boolean>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/539594c61030f4f2b26346c333a461e8e7494d367d874227214e839ae9fa79c2"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fdelete%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fdelete%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/delete/4",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CrudOperationConfig",
+      "targetClassName": "CrudOperationConfig",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudOperationConfig"
+    },
+    "spark-class-model://model/CrudService/methods/list/5": {
+      "ref": "spark-class-model://model/CrudService/methods/list/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "name": "list",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ea7d16f25f7d27278bf888b059e81924f46892423b676fa9e88755d54b7e217a",
+      "returnSchemaRef": "spark-class-model://schema/shared/2e8d85d399eeb7e5730dc062550ffcf8900a0060fd9e8162953101a1aa4bf52a"
+    },
+    "spark-class-model://schema/shared/ea7d16f25f7d27278bf888b059e81924f46892423b676fa9e88755d54b7e217a": {
+      "ref": "spark-class-model://schema/shared/ea7d16f25f7d27278bf888b059e81924f46892423b676fa9e88755d54b7e217a",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "params": {
+            "$ref": "spark-class-model://schema/QueryParams"
+          },
+          "config": {
+            "$ref": "spark-class-model://schema/CrudOperationConfig"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ea7d16f25f7d27278bf888b059e81924f46892423b676fa9e88755d54b7e217a"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Flist%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FQueryParams": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Flist%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FQueryParams",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/list/5",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/QueryParams",
+      "targetClassName": "QueryParams",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/QueryParams"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Flist%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Flist%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/list/5",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CrudOperationConfig",
+      "targetClassName": "CrudOperationConfig",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudOperationConfig"
+    },
+    "spark-class-model://model/CrudService/methods/executeTransaction/6": {
+      "ref": "spark-class-model://model/CrudService/methods/executeTransaction/6",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "name": "executeTransaction",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/1e1ff417c6f2c41ed446d2d41ac1c3c127311e62ccd99811d994a8eda3f0d7fa",
+      "returnSchemaRef": "spark-class-model://schema/shared/2e8d85d399eeb7e5730dc062550ffcf8900a0060fd9e8162953101a1aa4bf52a"
+    },
+    "spark-class-model://schema/shared/1e1ff417c6f2c41ed446d2d41ac1c3c127311e62ccd99811d994a8eda3f0d7fa": {
+      "ref": "spark-class-model://schema/shared/1e1ff417c6f2c41ed446d2d41ac1c3c127311e62ccd99811d994a8eda3f0d7fa",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "request": {
+            "$ref": "spark-class-model://schema/DataSetTransactionRequest"
+          },
+          "endpoint": {
+            "$ref": "spark-class-model://schema/HttpEndpoint"
+          },
+          "config": {
+            "$ref": "spark-class-model://schema/CrudOperationConfig"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/1e1ff417c6f2c41ed446d2d41ac1c3c127311e62ccd99811d994a8eda3f0d7fa"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexecuteTransaction%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSetTransactionRequest": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexecuteTransaction%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSetTransactionRequest",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/executeTransaction/6",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataSetTransactionRequest",
+      "targetClassName": "DataSetTransactionRequest",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataSetTransactionRequest"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexecuteTransaction%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpEndpoint": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexecuteTransaction%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpEndpoint",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/executeTransaction/6",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/HttpEndpoint",
+      "targetClassName": "HttpEndpoint",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/HttpEndpoint"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexecuteTransaction%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexecuteTransaction%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/executeTransaction/6",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CrudOperationConfig",
+      "targetClassName": "CrudOperationConfig",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudOperationConfig"
+    },
+    "spark-class-model://model/CrudService/methods/batchCreate/7": {
+      "ref": "spark-class-model://model/CrudService/methods/batchCreate/7",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "name": "batchCreate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/b5b3d6d3158705b633ef7161854dde80f88876522fb65e1e67f4826e27b2d126",
+      "returnSchemaRef": "spark-class-model://schema/shared/4245a3bbeeebe1c1618f73d2e68998a650a37f2ea6031328cd4d7097a41eef41"
+    },
+    "spark-class-model://schema/shared/b5b3d6d3158705b633ef7161854dde80f88876522fb65e1e67f4826e27b2d126": {
+      "ref": "spark-class-model://schema/shared/b5b3d6d3158705b633ef7161854dde80f88876522fb65e1e67f4826e27b2d126",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "Partial<T>"
+            }
+          },
+          "config": {
+            "$ref": "spark-class-model://schema/CrudOperationConfig"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b5b3d6d3158705b633ef7161854dde80f88876522fb65e1e67f4826e27b2d126"
+      }
+    },
+    "spark-class-model://schema/shared/4245a3bbeeebe1c1618f73d2e68998a650a37f2ea6031328cd4d7097a41eef41": {
+      "ref": "spark-class-model://schema/shared/4245a3bbeeebe1c1618f73d2e68998a650a37f2ea6031328cd4d7097a41eef41",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<CrudResult<BatchResult>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4245a3bbeeebe1c1618f73d2e68998a650a37f2ea6031328cd4d7097a41eef41"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FbatchCreate%2F7/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FbatchCreate%2F7/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/batchCreate/7",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CrudOperationConfig",
+      "targetClassName": "CrudOperationConfig",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudOperationConfig"
+    },
+    "spark-class-model://model/CrudService/methods/batchUpdate/8": {
+      "ref": "spark-class-model://model/CrudService/methods/batchUpdate/8",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "name": "batchUpdate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/b5b3d6d3158705b633ef7161854dde80f88876522fb65e1e67f4826e27b2d126",
+      "returnSchemaRef": "spark-class-model://schema/shared/4245a3bbeeebe1c1618f73d2e68998a650a37f2ea6031328cd4d7097a41eef41"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FbatchUpdate%2F8/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FbatchUpdate%2F8/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/batchUpdate/8",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CrudOperationConfig",
+      "targetClassName": "CrudOperationConfig",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudOperationConfig"
+    },
+    "spark-class-model://model/CrudService/methods/batchDelete/9": {
+      "ref": "spark-class-model://model/CrudService/methods/batchDelete/9",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "name": "batchDelete",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99eb735562bb11cc86a26939349498ab1ce850febaf3c6c72b3e559b771abb41",
+      "returnSchemaRef": "spark-class-model://schema/shared/4245a3bbeeebe1c1618f73d2e68998a650a37f2ea6031328cd4d7097a41eef41"
+    },
+    "spark-class-model://schema/shared/99eb735562bb11cc86a26939349498ab1ce850febaf3c6c72b3e559b771abb41": {
+      "ref": "spark-class-model://schema/shared/99eb735562bb11cc86a26939349498ab1ce850febaf3c6c72b3e559b771abb41",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "Record<string, unknown>"
+            }
+          },
+          "config": {
+            "$ref": "spark-class-model://schema/CrudOperationConfig"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/99eb735562bb11cc86a26939349498ab1ce850febaf3c6c72b3e559b771abb41"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FbatchDelete%2F9/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FbatchDelete%2F9/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/batchDelete/9",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CrudOperationConfig",
+      "targetClassName": "CrudOperationConfig",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudOperationConfig"
+    },
+    "spark-class-model://model/CrudService/methods/importData/10": {
+      "ref": "spark-class-model://model/CrudService/methods/importData/10",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "name": "importData",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/768bf23b7eba37c5ea44e589451b1254f04b6f8094bcaede24c86f55086a25c0",
+      "returnSchemaRef": "spark-class-model://schema/shared/68ccaddc6b00a0c53a173895bb2a972b731a34607835102737cce7003a499d75"
+    },
+    "spark-class-model://schema/shared/768bf23b7eba37c5ea44e589451b1254f04b6f8094bcaede24c86f55086a25c0": {
+      "ref": "spark-class-model://schema/shared/768bf23b7eba37c5ea44e589451b1254f04b6f8094bcaede24c86f55086a25c0",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "object",
+            "title": "File"
+          },
+          "config": {
+            "type": "object",
+            "title": "Partial<RequestConfig>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/768bf23b7eba37c5ea44e589451b1254f04b6f8094bcaede24c86f55086a25c0"
+      }
+    },
+    "spark-class-model://schema/shared/68ccaddc6b00a0c53a173895bb2a972b731a34607835102737cce7003a499d75": {
+      "ref": "spark-class-model://schema/shared/68ccaddc6b00a0c53a173895bb2a972b731a34607835102737cce7003a499d75",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<CrudResult<{\n        imported: number;\n        failed: number;\n    }>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/68ccaddc6b00a0c53a173895bb2a972b731a34607835102737cce7003a499d75"
+      }
+    },
+    "spark-class-model://model/CrudService/methods/exportData/11": {
+      "ref": "spark-class-model://model/CrudService/methods/exportData/11",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "name": "exportData",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ea7d16f25f7d27278bf888b059e81924f46892423b676fa9e88755d54b7e217a",
+      "returnSchemaRef": "spark-class-model://schema/shared/f6c714aa012929ff4255bc3d4d195e58a29715bb42d94eb8fa6d55b7a5895b0f"
+    },
+    "spark-class-model://schema/shared/f6c714aa012929ff4255bc3d4d195e58a29715bb42d94eb8fa6d55b7a5895b0f": {
+      "ref": "spark-class-model://schema/shared/f6c714aa012929ff4255bc3d4d195e58a29715bb42d94eb8fa6d55b7a5895b0f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<CrudResult<Blob>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f6c714aa012929ff4255bc3d4d195e58a29715bb42d94eb8fa6d55b7a5895b0f"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexportData%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FQueryParams": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexportData%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FQueryParams",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/exportData/11",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/QueryParams",
+      "targetClassName": "QueryParams",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/QueryParams"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexportData%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexportData%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/methods/exportData/11",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CrudOperationConfig",
+      "targetClassName": "CrudOperationConfig",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudOperationConfig"
+    },
+    "spark-class-model://model/CrudService": {
+      "ref": "spark-class-model://model/CrudService",
+      "kind": "model",
+      "className": "CrudService",
+      "schemaRef": "spark-class-model://schema/CrudService",
+      "constructorRef": "spark-class-model://model/CrudService/constructors/0",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/CrudService/methods/getHttpClient/0",
+        "spark-class-model://model/CrudService/methods/create/1",
+        "spark-class-model://model/CrudService/methods/retrieve/2",
+        "spark-class-model://model/CrudService/methods/update/3",
+        "spark-class-model://model/CrudService/methods/delete/4",
+        "spark-class-model://model/CrudService/methods/list/5",
+        "spark-class-model://model/CrudService/methods/executeTransaction/6",
+        "spark-class-model://model/CrudService/methods/batchCreate/7",
+        "spark-class-model://model/CrudService/methods/batchUpdate/8",
+        "spark-class-model://model/CrudService/methods/batchDelete/9",
+        "spark-class-model://model/CrudService/methods/importData/10",
+        "spark-class-model://model/CrudService/methods/exportData/11"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudApi",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FgetHttpClient%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fcreate%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fretrieve%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fupdate%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fdelete%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Flist%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FQueryParams",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Flist%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexecuteTransaction%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSetTransactionRequest",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexecuteTransaction%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpEndpoint",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexecuteTransaction%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FbatchCreate%2F7/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FbatchUpdate%2F8/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FbatchDelete%2F9/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexportData%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FQueryParams",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FexportData%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig"
+      ]
+    }
+  }
+}

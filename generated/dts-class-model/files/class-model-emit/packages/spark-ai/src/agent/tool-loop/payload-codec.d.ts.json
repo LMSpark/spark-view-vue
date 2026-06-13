@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/tool-loop/payload-codec",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/tool-loop/payload-codec.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/tool-loop/payload-codec",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/tool-loop/payload-codec\n职责：支撑 Agent tool loop 的 payload codec 能力，处理工具调用、结果映射、诊断事件或 payload 编解码。\n边界：只服务单次 turn 内的工具循环，不定义业务注册协议，也不直接管理 UI 或持久化页面状态。\nAI用途：排查工具调用为什么继续、完成、失败或被映射成回调事件时，用本模块定位 loop 内部语义。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ToolArgsParseError"
+    ]
+  },
+  "symbols": [
+    "ToolArgsParseError"
+  ],
+  "models": {
+    "ToolArgsParseError": {
+      "kind": "ToolArgsParseError",
+      "className": "ToolArgsParseError",
+      "jsdoc": "Tool Args Parse Error 的错误信息。",
+      "shapeKind": "class",
+      "declarationRelations": [
+        {
+          "kind": "extends",
+          "typeText": "Error",
+          "targetName": "Error"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/tool-loop/payload-codec.d.ts",
+        "line": 11,
+        "className": "ToolArgsParseError",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Tool Args Parse Error 实例。",
+        "signatureText": "constructor(\n    /** 参数解析失败的稳定错误码。 */\n    code: 'TOOL_ARGS_INVALID_JSON' | 'TOOL_ARGS_NOT_OBJECT', message: string, \n    /** LLM 返回的原始 function.arguments 字符串。 */\n    raw: string)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "code",
+            "type": {
+              "type": "union",
+              "types": [
+                {
+                  "type": "literal",
+                  "value": "TOOL_ARGS_INVALID_JSON"
+                },
+                {
+                  "type": "literal",
+                  "value": "TOOL_ARGS_NOT_OBJECT"
+                }
+              ]
+            }
+          },
+          {
+            "name": "message",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          {
+            "name": "raw",
+            "type": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "TOOL_ARGS_INVALID_JSON"
+                  ]
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "TOOL_ARGS_NOT_OBJECT"
+                  ]
+                }
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "raw": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [
+        {
+          "name": "code",
+          "jsdoc": "参数解析失败的稳定错误码。",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "TOOL_ARGS_INVALID_JSON"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "TOOL_ARGS_NOT_OBJECT"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "raw",
+          "jsdoc": "LLM 返回的原始 function.arguments 字符串。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.186Z",
+  "$defs": {
+    "ToolArgsParseError": {
+      "type": "object",
+      "title": "ToolArgsParseError",
+      "description": "Tool Args Parse Error 的错误信息。",
+      "properties": {
+        "code": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "TOOL_ARGS_INVALID_JSON"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "TOOL_ARGS_NOT_OBJECT"
+              ]
+            }
+          ]
+        },
+        "raw": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

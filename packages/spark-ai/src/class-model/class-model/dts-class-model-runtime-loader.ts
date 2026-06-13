@@ -332,7 +332,7 @@ export class DtsClassModelRuntimeLoader {
     }
     await this.ensureFile(entry.file)
     const ref = this.loadedRefs.get(entry.modelRef)
-    if (ref === undefined || ref.kind !== 'model') {
+    if (ref?.kind !== 'model') {
       throw new Error(`DTS class-model runtime shard did not provide className "${item.className}".`)
     }
     return ref

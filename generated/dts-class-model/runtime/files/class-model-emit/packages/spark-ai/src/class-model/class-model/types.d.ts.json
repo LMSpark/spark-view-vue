@@ -1,0 +1,1580 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts",
+  "symbols": [
+    "ClassModelDocument",
+    "SourceProvenanceMeta",
+    "ComponentClassModelLevel",
+    "ComponentClassModelLayer",
+    "ClassModelDeclarationRelationKind",
+    "ClassModelDeclarationRelation",
+    "ClassModel",
+    "JsDocMeta",
+    "ConstructorMeta",
+    "AttributeMeta",
+    "MethodParameterStyle",
+    "DtsTypeMeta",
+    "DtsReflectionSignature",
+    "DtsReflectionTypeMeta",
+    "MethodParameterMeta",
+    "MethodMeta"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ClassModelDocument": {
+      "ref": "spark-class-model://schema/ClassModelDocument",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelDocument",
+        "properties": {
+          "schemaVersion": {
+            "type": "number"
+          },
+          "rootKind": {
+            "type": "string"
+          },
+          "module": {
+            "$ref": "spark-class-model://schema/AiRuntimeApiMetadataJson"
+          },
+          "$defs": {
+            "type": "object",
+            "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelDocument"
+      }
+    },
+    "spark-class-model://model/ClassModelDocument/attributes/schemaVersion/0": {
+      "ref": "spark-class-model://model/ClassModelDocument/attributes/schemaVersion/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModelDocument",
+      "name": "schemaVersion",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ClassModelDocument/attributes/rootKind/1": {
+      "ref": "spark-class-model://model/ClassModelDocument/attributes/rootKind/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModelDocument",
+      "name": "rootKind",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ClassModelDocument/attributes/module/2": {
+      "ref": "spark-class-model://model/ClassModelDocument/attributes/module/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModelDocument",
+      "name": "module",
+      "schemaRef": "spark-class-model://schema/shared/64f092d14bdbc6e0d1c9c21c72ceae4137080b03be000962465af2c375826ea7",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelDocument%2Fattributes%2Fmodule%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRuntimeApiMetadataJson": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelDocument%2Fattributes%2Fmodule%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRuntimeApiMetadataJson",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ClassModelDocument/attributes/module/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiRuntimeApiMetadataJson",
+      "targetClassName": "AiRuntimeApiMetadataJson",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRuntimeApiMetadataJson"
+    },
+    "spark-class-model://model/ClassModelDocument/attributes/%24defs/3": {
+      "ref": "spark-class-model://model/ClassModelDocument/attributes/%24defs/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModelDocument",
+      "name": "$defs",
+      "schemaRef": "spark-class-model://schema/shared/baba72fd9bdcba9c4483a00099d0a4bea41ea99c42bd24a041092c86dd2a1472",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ClassModelDocument": {
+      "ref": "spark-class-model://model/ClassModelDocument",
+      "kind": "model",
+      "className": "ClassModelDocument",
+      "schemaRef": "spark-class-model://schema/ClassModelDocument",
+      "attributeRefs": [
+        "spark-class-model://model/ClassModelDocument/attributes/schemaVersion/0",
+        "spark-class-model://model/ClassModelDocument/attributes/rootKind/1",
+        "spark-class-model://model/ClassModelDocument/attributes/module/2",
+        "spark-class-model://model/ClassModelDocument/attributes/%24defs/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelDocument%2Fattributes%2Fmodule%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRuntimeApiMetadataJson"
+      ]
+    },
+    "spark-class-model://schema/SourceProvenanceMeta": {
+      "ref": "spark-class-model://schema/SourceProvenanceMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SourceProvenanceMeta",
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": "number"
+          },
+          "className": {
+            "type": "string"
+          },
+          "memberName": {
+            "type": "string"
+          },
+          "typeEntryFile": {
+            "type": "string"
+          },
+          "componentName": {
+            "type": "string"
+          },
+          "componentType": {
+            "type": "string"
+          },
+          "componentLevel": {
+            "$ref": "spark-class-model://schema/ComponentClassModelLevel"
+          },
+          "componentLayer": {
+            "$ref": "spark-class-model://schema/ComponentClassModelLayer"
+          },
+          "componentDirectory": {
+            "type": "string"
+          },
+          "declarationKind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "class"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "interface"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "type"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "enum"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "function"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "const"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "component"
+                ]
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SourceProvenanceMeta"
+      }
+    },
+    "spark-class-model://model/SourceProvenanceMeta/attributes/file/0": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta/attributes/file/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SourceProvenanceMeta",
+      "name": "file",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/SourceProvenanceMeta/attributes/line/1": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta/attributes/line/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SourceProvenanceMeta",
+      "name": "line",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/SourceProvenanceMeta/attributes/className/2": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta/attributes/className/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SourceProvenanceMeta",
+      "name": "className",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/SourceProvenanceMeta/attributes/memberName/3": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta/attributes/memberName/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SourceProvenanceMeta",
+      "name": "memberName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SourceProvenanceMeta/attributes/typeEntryFile/4": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta/attributes/typeEntryFile/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SourceProvenanceMeta",
+      "name": "typeEntryFile",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SourceProvenanceMeta/attributes/componentName/5": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta/attributes/componentName/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SourceProvenanceMeta",
+      "name": "componentName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SourceProvenanceMeta/attributes/componentType/6": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta/attributes/componentType/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SourceProvenanceMeta",
+      "name": "componentType",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SourceProvenanceMeta/attributes/componentLevel/7": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta/attributes/componentLevel/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SourceProvenanceMeta",
+      "name": "componentLevel",
+      "schemaRef": "spark-class-model://schema/shared/e7c880d8d955c0f3e045c2397edc266499062a1f5a401a4a087168565091a857",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta%2Fattributes%2FcomponentLevel%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FComponentClassModelLevel": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta%2Fattributes%2FcomponentLevel%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FComponentClassModelLevel",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SourceProvenanceMeta/attributes/componentLevel/7",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ComponentClassModelLevel",
+      "targetClassName": "ComponentClassModelLevel",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ComponentClassModelLevel"
+    },
+    "spark-class-model://model/SourceProvenanceMeta/attributes/componentLayer/8": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta/attributes/componentLayer/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SourceProvenanceMeta",
+      "name": "componentLayer",
+      "schemaRef": "spark-class-model://schema/shared/c60b0cbd3e6f9378c009b8483d4f8681a09846a317e12de1b34a472d14006c05",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta%2Fattributes%2FcomponentLayer%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FComponentClassModelLayer": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta%2Fattributes%2FcomponentLayer%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FComponentClassModelLayer",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SourceProvenanceMeta/attributes/componentLayer/8",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ComponentClassModelLayer",
+      "targetClassName": "ComponentClassModelLayer",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ComponentClassModelLayer"
+    },
+    "spark-class-model://model/SourceProvenanceMeta/attributes/componentDirectory/9": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta/attributes/componentDirectory/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SourceProvenanceMeta",
+      "name": "componentDirectory",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/2dee6b4201c05448749ef1887226145d171ebb11eb0b76cdc52b1913ebc6a061": {
+      "ref": "spark-class-model://schema/shared/2dee6b4201c05448749ef1887226145d171ebb11eb0b76cdc52b1913ebc6a061",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "class"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "interface"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "type"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "enum"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "function"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "const"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "component"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/2dee6b4201c05448749ef1887226145d171ebb11eb0b76cdc52b1913ebc6a061"
+      }
+    },
+    "spark-class-model://model/SourceProvenanceMeta/attributes/declarationKind/10": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta/attributes/declarationKind/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SourceProvenanceMeta",
+      "name": "declarationKind",
+      "schemaRef": "spark-class-model://schema/shared/2dee6b4201c05448749ef1887226145d171ebb11eb0b76cdc52b1913ebc6a061",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SourceProvenanceMeta": {
+      "ref": "spark-class-model://model/SourceProvenanceMeta",
+      "kind": "model",
+      "className": "SourceProvenanceMeta",
+      "schemaRef": "spark-class-model://schema/SourceProvenanceMeta",
+      "attributeRefs": [
+        "spark-class-model://model/SourceProvenanceMeta/attributes/file/0",
+        "spark-class-model://model/SourceProvenanceMeta/attributes/line/1",
+        "spark-class-model://model/SourceProvenanceMeta/attributes/className/2",
+        "spark-class-model://model/SourceProvenanceMeta/attributes/memberName/3",
+        "spark-class-model://model/SourceProvenanceMeta/attributes/typeEntryFile/4",
+        "spark-class-model://model/SourceProvenanceMeta/attributes/componentName/5",
+        "spark-class-model://model/SourceProvenanceMeta/attributes/componentType/6",
+        "spark-class-model://model/SourceProvenanceMeta/attributes/componentLevel/7",
+        "spark-class-model://model/SourceProvenanceMeta/attributes/componentLayer/8",
+        "spark-class-model://model/SourceProvenanceMeta/attributes/componentDirectory/9",
+        "spark-class-model://model/SourceProvenanceMeta/attributes/declarationKind/10"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta%2Fattributes%2FcomponentLevel%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FComponentClassModelLevel",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta%2Fattributes%2FcomponentLayer%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FComponentClassModelLayer"
+      ]
+    },
+    "spark-class-model://schema/ComponentClassModelLevel": {
+      "ref": "spark-class-model://schema/ComponentClassModelLevel",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComponentClassModelLevel",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ComponentClassModelLevel"
+      }
+    },
+    "spark-class-model://model/ComponentClassModelLevel": {
+      "ref": "spark-class-model://model/ComponentClassModelLevel",
+      "kind": "model",
+      "className": "ComponentClassModelLevel",
+      "schemaRef": "spark-class-model://schema/ComponentClassModelLevel",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ComponentClassModelLayer": {
+      "ref": "spark-class-model://schema/ComponentClassModelLayer",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComponentClassModelLayer",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ComponentClassModelLayer"
+      }
+    },
+    "spark-class-model://model/ComponentClassModelLayer": {
+      "ref": "spark-class-model://model/ComponentClassModelLayer",
+      "kind": "model",
+      "className": "ComponentClassModelLayer",
+      "schemaRef": "spark-class-model://schema/ComponentClassModelLayer",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelDeclarationRelationKind": {
+      "ref": "spark-class-model://schema/ClassModelDeclarationRelationKind",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelDeclarationRelationKind",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelDeclarationRelationKind"
+      }
+    },
+    "spark-class-model://model/ClassModelDeclarationRelationKind": {
+      "ref": "spark-class-model://model/ClassModelDeclarationRelationKind",
+      "kind": "model",
+      "className": "ClassModelDeclarationRelationKind",
+      "schemaRef": "spark-class-model://schema/ClassModelDeclarationRelationKind",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ClassModelDeclarationRelation": {
+      "ref": "spark-class-model://schema/ClassModelDeclarationRelation",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModelDeclarationRelation",
+        "properties": {
+          "kind": {
+            "$ref": "spark-class-model://schema/ClassModelDeclarationRelationKind"
+          },
+          "typeText": {
+            "type": "string"
+          },
+          "targetName": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModelDeclarationRelation"
+      }
+    },
+    "spark-class-model://schema/shared/a9c2a8148b633eca0bab1976d7c1185e26728727311c6cc9f80f54b1da1dc59d": {
+      "ref": "spark-class-model://schema/shared/a9c2a8148b633eca0bab1976d7c1185e26728727311c6cc9f80f54b1da1dc59d",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ClassModelDeclarationRelationKind",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a9c2a8148b633eca0bab1976d7c1185e26728727311c6cc9f80f54b1da1dc59d"
+      }
+    },
+    "spark-class-model://model/ClassModelDeclarationRelation/attributes/kind/0": {
+      "ref": "spark-class-model://model/ClassModelDeclarationRelation/attributes/kind/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModelDeclarationRelation",
+      "name": "kind",
+      "schemaRef": "spark-class-model://schema/shared/a9c2a8148b633eca0bab1976d7c1185e26728727311c6cc9f80f54b1da1dc59d",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelDeclarationRelation%2Fattributes%2Fkind%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FClassModelDeclarationRelationKind": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelDeclarationRelation%2Fattributes%2Fkind%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FClassModelDeclarationRelationKind",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ClassModelDeclarationRelation/attributes/kind/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ClassModelDeclarationRelationKind",
+      "targetClassName": "ClassModelDeclarationRelationKind",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ClassModelDeclarationRelationKind"
+    },
+    "spark-class-model://model/ClassModelDeclarationRelation/attributes/typeText/1": {
+      "ref": "spark-class-model://model/ClassModelDeclarationRelation/attributes/typeText/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModelDeclarationRelation",
+      "name": "typeText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ClassModelDeclarationRelation/attributes/targetName/2": {
+      "ref": "spark-class-model://model/ClassModelDeclarationRelation/attributes/targetName/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModelDeclarationRelation",
+      "name": "targetName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ClassModelDeclarationRelation": {
+      "ref": "spark-class-model://model/ClassModelDeclarationRelation",
+      "kind": "model",
+      "className": "ClassModelDeclarationRelation",
+      "schemaRef": "spark-class-model://schema/ClassModelDeclarationRelation",
+      "attributeRefs": [
+        "spark-class-model://model/ClassModelDeclarationRelation/attributes/kind/0",
+        "spark-class-model://model/ClassModelDeclarationRelation/attributes/typeText/1",
+        "spark-class-model://model/ClassModelDeclarationRelation/attributes/targetName/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelDeclarationRelation%2Fattributes%2Fkind%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FClassModelDeclarationRelationKind"
+      ]
+    },
+    "spark-class-model://schema/ClassModel": {
+      "ref": "spark-class-model://schema/ClassModel",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ClassModel",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "className": {
+            "type": "string"
+          },
+          "jsdoc": {
+            "$ref": "spark-class-model://schema/JsDocMeta"
+          },
+          "declarationTypeText": {
+            "type": "string"
+          },
+          "declarationRelations": {
+            "type": "array"
+          },
+          "shapeKind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "class"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "interface"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "type"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "enum"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "function"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "const"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "component"
+                ]
+              }
+            ]
+          },
+          "provenance": {
+            "$ref": "spark-class-model://schema/SourceProvenanceMeta"
+          },
+          "constructorMeta": {
+            "$ref": "spark-class-model://schema/ConstructorMeta"
+          },
+          "attributes": {
+            "type": "array"
+          },
+          "methods": {
+            "type": "array"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ClassModel"
+      }
+    },
+    "spark-class-model://model/ClassModel/attributes/kind/0": {
+      "ref": "spark-class-model://model/ClassModel/attributes/kind/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModel",
+      "name": "kind",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ClassModel/attributes/className/1": {
+      "ref": "spark-class-model://model/ClassModel/attributes/className/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModel",
+      "name": "className",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/da92725ea7085d1494dbf2e53747475e6a3fa9aec1c77c5ef4ae5c5077bd4c89": {
+      "ref": "spark-class-model://schema/shared/da92725ea7085d1494dbf2e53747475e6a3fa9aec1c77c5ef4ae5c5077bd4c89",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/JsDocMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/da92725ea7085d1494dbf2e53747475e6a3fa9aec1c77c5ef4ae5c5077bd4c89"
+      }
+    },
+    "spark-class-model://model/ClassModel/attributes/jsdoc/2": {
+      "ref": "spark-class-model://model/ClassModel/attributes/jsdoc/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModel",
+      "name": "jsdoc",
+      "schemaRef": "spark-class-model://schema/shared/da92725ea7085d1494dbf2e53747475e6a3fa9aec1c77c5ef4ae5c5077bd4c89",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModel%2Fattributes%2Fjsdoc%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FJsDocMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModel%2Fattributes%2Fjsdoc%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FJsDocMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ClassModel/attributes/jsdoc/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/JsDocMeta",
+      "targetClassName": "JsDocMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsDocMeta"
+    },
+    "spark-class-model://model/ClassModel/attributes/declarationTypeText/3": {
+      "ref": "spark-class-model://model/ClassModel/attributes/declarationTypeText/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModel",
+      "name": "declarationTypeText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ClassModel/attributes/declarationRelations/4": {
+      "ref": "spark-class-model://model/ClassModel/attributes/declarationRelations/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModel",
+      "name": "declarationRelations",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ClassModel/attributes/shapeKind/5": {
+      "ref": "spark-class-model://model/ClassModel/attributes/shapeKind/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModel",
+      "name": "shapeKind",
+      "schemaRef": "spark-class-model://schema/shared/2dee6b4201c05448749ef1887226145d171ebb11eb0b76cdc52b1913ebc6a061",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/5f8d32507e5f1aa70bbfe74669df76474c02e0156f9a428d2f1f8d3fca95e59d": {
+      "ref": "spark-class-model://schema/shared/5f8d32507e5f1aa70bbfe74669df76474c02e0156f9a428d2f1f8d3fca95e59d",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/SourceProvenanceMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5f8d32507e5f1aa70bbfe74669df76474c02e0156f9a428d2f1f8d3fca95e59d"
+      }
+    },
+    "spark-class-model://model/ClassModel/attributes/provenance/6": {
+      "ref": "spark-class-model://model/ClassModel/attributes/provenance/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModel",
+      "name": "provenance",
+      "schemaRef": "spark-class-model://schema/shared/5f8d32507e5f1aa70bbfe74669df76474c02e0156f9a428d2f1f8d3fca95e59d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModel%2Fattributes%2Fprovenance%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModel%2Fattributes%2Fprovenance%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ClassModel/attributes/provenance/6",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/SourceProvenanceMeta",
+      "targetClassName": "SourceProvenanceMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SourceProvenanceMeta"
+    },
+    "spark-class-model://schema/shared/adbaaade222fd634d68a1bfefa2ae1ed61508388cf2a9fb62f93f04cd2e7c526": {
+      "ref": "spark-class-model://schema/shared/adbaaade222fd634d68a1bfefa2ae1ed61508388cf2a9fb62f93f04cd2e7c526",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ConstructorMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/adbaaade222fd634d68a1bfefa2ae1ed61508388cf2a9fb62f93f04cd2e7c526"
+      }
+    },
+    "spark-class-model://model/ClassModel/attributes/constructorMeta/7": {
+      "ref": "spark-class-model://model/ClassModel/attributes/constructorMeta/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModel",
+      "name": "constructorMeta",
+      "schemaRef": "spark-class-model://schema/shared/adbaaade222fd634d68a1bfefa2ae1ed61508388cf2a9fb62f93f04cd2e7c526",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModel%2Fattributes%2FconstructorMeta%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FConstructorMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModel%2Fattributes%2FconstructorMeta%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FConstructorMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ClassModel/attributes/constructorMeta/7",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ConstructorMeta",
+      "targetClassName": "ConstructorMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ConstructorMeta"
+    },
+    "spark-class-model://model/ClassModel/attributes/attributes/8": {
+      "ref": "spark-class-model://model/ClassModel/attributes/attributes/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModel",
+      "name": "attributes",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ClassModel/attributes/methods/9": {
+      "ref": "spark-class-model://model/ClassModel/attributes/methods/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ClassModel",
+      "name": "methods",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ClassModel": {
+      "ref": "spark-class-model://model/ClassModel",
+      "kind": "model",
+      "className": "ClassModel",
+      "schemaRef": "spark-class-model://schema/ClassModel",
+      "attributeRefs": [
+        "spark-class-model://model/ClassModel/attributes/kind/0",
+        "spark-class-model://model/ClassModel/attributes/className/1",
+        "spark-class-model://model/ClassModel/attributes/jsdoc/2",
+        "spark-class-model://model/ClassModel/attributes/declarationTypeText/3",
+        "spark-class-model://model/ClassModel/attributes/declarationRelations/4",
+        "spark-class-model://model/ClassModel/attributes/shapeKind/5",
+        "spark-class-model://model/ClassModel/attributes/provenance/6",
+        "spark-class-model://model/ClassModel/attributes/constructorMeta/7",
+        "spark-class-model://model/ClassModel/attributes/attributes/8",
+        "spark-class-model://model/ClassModel/attributes/methods/9"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModel%2Fattributes%2Fjsdoc%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FJsDocMeta",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModel%2Fattributes%2Fprovenance%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModel%2Fattributes%2FconstructorMeta%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FConstructorMeta"
+      ]
+    },
+    "spark-class-model://schema/JsDocMeta": {
+      "ref": "spark-class-model://schema/JsDocMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "JsDocMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/JsDocMeta"
+      }
+    },
+    "spark-class-model://model/JsDocMeta": {
+      "ref": "spark-class-model://model/JsDocMeta",
+      "kind": "model",
+      "className": "JsDocMeta",
+      "schemaRef": "spark-class-model://schema/JsDocMeta",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ConstructorMeta": {
+      "ref": "spark-class-model://schema/ConstructorMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ConstructorMeta",
+        "properties": {
+          "signatureText": {
+            "type": "string"
+          },
+          "parameterStyle": {
+            "$ref": "spark-class-model://schema/MethodParameterStyle"
+          },
+          "parameters": {
+            "type": "array"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "title": "AiJsonSchemaObject"
+          },
+          "jsdoc": {
+            "$ref": "spark-class-model://schema/JsDocMeta"
+          },
+          "provenance": {
+            "$ref": "spark-class-model://schema/SourceProvenanceMeta"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ConstructorMeta"
+      }
+    },
+    "spark-class-model://model/ConstructorMeta/attributes/signatureText/0": {
+      "ref": "spark-class-model://model/ConstructorMeta/attributes/signatureText/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ConstructorMeta",
+      "name": "signatureText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ConstructorMeta/attributes/parameterStyle/1": {
+      "ref": "spark-class-model://model/ConstructorMeta/attributes/parameterStyle/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ConstructorMeta",
+      "name": "parameterStyle",
+      "schemaRef": "spark-class-model://schema/shared/1bfcfa9d66b7c36e568248bd54b4377e5e4b46d7d9e47f5d260e985b25ccf12e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FConstructorMeta%2Fattributes%2FparameterStyle%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FMethodParameterStyle": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FConstructorMeta%2Fattributes%2FparameterStyle%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FMethodParameterStyle",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ConstructorMeta/attributes/parameterStyle/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/MethodParameterStyle",
+      "targetClassName": "MethodParameterStyle",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/MethodParameterStyle"
+    },
+    "spark-class-model://model/ConstructorMeta/attributes/parameters/2": {
+      "ref": "spark-class-model://model/ConstructorMeta/attributes/parameters/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ConstructorMeta",
+      "name": "parameters",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ConstructorMeta/attributes/paramsSchema/3": {
+      "ref": "spark-class-model://model/ConstructorMeta/attributes/paramsSchema/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ConstructorMeta",
+      "name": "paramsSchema",
+      "schemaRef": "spark-class-model://schema/shared/630ef4fd9abed7c21e25329bcefe988d20d60599b876addb03cec8fad64223f5",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ConstructorMeta/attributes/jsdoc/4": {
+      "ref": "spark-class-model://model/ConstructorMeta/attributes/jsdoc/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ConstructorMeta",
+      "name": "jsdoc",
+      "schemaRef": "spark-class-model://schema/shared/da92725ea7085d1494dbf2e53747475e6a3fa9aec1c77c5ef4ae5c5077bd4c89",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FConstructorMeta%2Fattributes%2Fjsdoc%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FJsDocMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FConstructorMeta%2Fattributes%2Fjsdoc%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FJsDocMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ConstructorMeta/attributes/jsdoc/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/JsDocMeta",
+      "targetClassName": "JsDocMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsDocMeta"
+    },
+    "spark-class-model://model/ConstructorMeta/attributes/provenance/5": {
+      "ref": "spark-class-model://model/ConstructorMeta/attributes/provenance/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ConstructorMeta",
+      "name": "provenance",
+      "schemaRef": "spark-class-model://schema/shared/5f8d32507e5f1aa70bbfe74669df76474c02e0156f9a428d2f1f8d3fca95e59d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FConstructorMeta%2Fattributes%2Fprovenance%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FConstructorMeta%2Fattributes%2Fprovenance%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ConstructorMeta/attributes/provenance/5",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/SourceProvenanceMeta",
+      "targetClassName": "SourceProvenanceMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SourceProvenanceMeta"
+    },
+    "spark-class-model://model/ConstructorMeta": {
+      "ref": "spark-class-model://model/ConstructorMeta",
+      "kind": "model",
+      "className": "ConstructorMeta",
+      "schemaRef": "spark-class-model://schema/ConstructorMeta",
+      "attributeRefs": [
+        "spark-class-model://model/ConstructorMeta/attributes/signatureText/0",
+        "spark-class-model://model/ConstructorMeta/attributes/parameterStyle/1",
+        "spark-class-model://model/ConstructorMeta/attributes/parameters/2",
+        "spark-class-model://model/ConstructorMeta/attributes/paramsSchema/3",
+        "spark-class-model://model/ConstructorMeta/attributes/jsdoc/4",
+        "spark-class-model://model/ConstructorMeta/attributes/provenance/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FConstructorMeta%2Fattributes%2FparameterStyle%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FMethodParameterStyle",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FConstructorMeta%2Fattributes%2Fjsdoc%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FJsDocMeta",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FConstructorMeta%2Fattributes%2Fprovenance%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta"
+      ]
+    },
+    "spark-class-model://schema/AttributeMeta": {
+      "ref": "spark-class-model://schema/AttributeMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AttributeMeta",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchema"
+          },
+          "readable": {
+            "type": "boolean"
+          },
+          "writable": {
+            "type": "boolean"
+          },
+          "jsdoc": {
+            "$ref": "spark-class-model://schema/JsDocMeta"
+          },
+          "provenance": {
+            "$ref": "spark-class-model://schema/SourceProvenanceMeta"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AttributeMeta"
+      }
+    },
+    "spark-class-model://model/AttributeMeta/attributes/name/0": {
+      "ref": "spark-class-model://model/AttributeMeta/attributes/name/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AttributeMeta",
+      "name": "name",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AttributeMeta/attributes/schema/1": {
+      "ref": "spark-class-model://model/AttributeMeta/attributes/schema/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AttributeMeta",
+      "name": "schema",
+      "schemaRef": "spark-class-model://schema/shared/31afd376c5b2be23351bf3887e1f88a7e5163704b6acc99153381233c65e9dd9",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AttributeMeta/attributes/readable/2": {
+      "ref": "spark-class-model://model/AttributeMeta/attributes/readable/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AttributeMeta",
+      "name": "readable",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AttributeMeta/attributes/writable/3": {
+      "ref": "spark-class-model://model/AttributeMeta/attributes/writable/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AttributeMeta",
+      "name": "writable",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AttributeMeta/attributes/jsdoc/4": {
+      "ref": "spark-class-model://model/AttributeMeta/attributes/jsdoc/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AttributeMeta",
+      "name": "jsdoc",
+      "schemaRef": "spark-class-model://schema/shared/da92725ea7085d1494dbf2e53747475e6a3fa9aec1c77c5ef4ae5c5077bd4c89",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAttributeMeta%2Fattributes%2Fjsdoc%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FJsDocMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAttributeMeta%2Fattributes%2Fjsdoc%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FJsDocMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AttributeMeta/attributes/jsdoc/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/JsDocMeta",
+      "targetClassName": "JsDocMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsDocMeta"
+    },
+    "spark-class-model://model/AttributeMeta/attributes/provenance/5": {
+      "ref": "spark-class-model://model/AttributeMeta/attributes/provenance/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AttributeMeta",
+      "name": "provenance",
+      "schemaRef": "spark-class-model://schema/shared/5f8d32507e5f1aa70bbfe74669df76474c02e0156f9a428d2f1f8d3fca95e59d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAttributeMeta%2Fattributes%2Fprovenance%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAttributeMeta%2Fattributes%2Fprovenance%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AttributeMeta/attributes/provenance/5",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/SourceProvenanceMeta",
+      "targetClassName": "SourceProvenanceMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SourceProvenanceMeta"
+    },
+    "spark-class-model://model/AttributeMeta": {
+      "ref": "spark-class-model://model/AttributeMeta",
+      "kind": "model",
+      "className": "AttributeMeta",
+      "schemaRef": "spark-class-model://schema/AttributeMeta",
+      "attributeRefs": [
+        "spark-class-model://model/AttributeMeta/attributes/name/0",
+        "spark-class-model://model/AttributeMeta/attributes/schema/1",
+        "spark-class-model://model/AttributeMeta/attributes/readable/2",
+        "spark-class-model://model/AttributeMeta/attributes/writable/3",
+        "spark-class-model://model/AttributeMeta/attributes/jsdoc/4",
+        "spark-class-model://model/AttributeMeta/attributes/provenance/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAttributeMeta%2Fattributes%2Fjsdoc%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FJsDocMeta",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAttributeMeta%2Fattributes%2Fprovenance%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta"
+      ]
+    },
+    "spark-class-model://schema/MethodParameterStyle": {
+      "ref": "spark-class-model://schema/MethodParameterStyle",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MethodParameterStyle",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/MethodParameterStyle"
+      }
+    },
+    "spark-class-model://model/MethodParameterStyle": {
+      "ref": "spark-class-model://model/MethodParameterStyle",
+      "kind": "model",
+      "className": "MethodParameterStyle",
+      "schemaRef": "spark-class-model://schema/MethodParameterStyle",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsTypeMeta": {
+      "ref": "spark-class-model://schema/DtsTypeMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsTypeMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsTypeMeta"
+      }
+    },
+    "spark-class-model://model/DtsTypeMeta": {
+      "ref": "spark-class-model://model/DtsTypeMeta",
+      "kind": "model",
+      "className": "DtsTypeMeta",
+      "schemaRef": "spark-class-model://schema/DtsTypeMeta",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DtsReflectionSignature": {
+      "ref": "spark-class-model://schema/DtsReflectionSignature",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsReflectionSignature",
+        "properties": {
+          "parameters": {
+            "type": "array"
+          },
+          "type": {
+            "$ref": "spark-class-model://schema/DtsTypeMeta"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsReflectionSignature"
+      }
+    },
+    "spark-class-model://model/DtsReflectionSignature/attributes/parameters/0": {
+      "ref": "spark-class-model://model/DtsReflectionSignature/attributes/parameters/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DtsReflectionSignature",
+      "name": "parameters",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/aa22a08ae65303b458fcce61f374d072c9a6a541b00b6c5ffc2597fec7697b1c": {
+      "ref": "spark-class-model://schema/shared/aa22a08ae65303b458fcce61f374d072c9a6a541b00b6c5ffc2597fec7697b1c",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DtsTypeMeta",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/aa22a08ae65303b458fcce61f374d072c9a6a541b00b6c5ffc2597fec7697b1c"
+      }
+    },
+    "spark-class-model://model/DtsReflectionSignature/attributes/type/1": {
+      "ref": "spark-class-model://model/DtsReflectionSignature/attributes/type/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DtsReflectionSignature",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/aa22a08ae65303b458fcce61f374d072c9a6a541b00b6c5ffc2597fec7697b1c",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsReflectionSignature%2Fattributes%2Ftype%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsTypeMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsReflectionSignature%2Fattributes%2Ftype%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsTypeMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DtsReflectionSignature/attributes/type/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DtsTypeMeta",
+      "targetClassName": "DtsTypeMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DtsTypeMeta"
+    },
+    "spark-class-model://model/DtsReflectionSignature": {
+      "ref": "spark-class-model://model/DtsReflectionSignature",
+      "kind": "model",
+      "className": "DtsReflectionSignature",
+      "schemaRef": "spark-class-model://schema/DtsReflectionSignature",
+      "attributeRefs": [
+        "spark-class-model://model/DtsReflectionSignature/attributes/parameters/0",
+        "spark-class-model://model/DtsReflectionSignature/attributes/type/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsReflectionSignature%2Fattributes%2Ftype%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsTypeMeta"
+      ]
+    },
+    "spark-class-model://schema/DtsReflectionTypeMeta": {
+      "ref": "spark-class-model://schema/DtsReflectionTypeMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DtsReflectionTypeMeta",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "reflection"
+            ]
+          },
+          "declaration": {
+            "type": "object",
+            "title": "Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DtsReflectionTypeMeta"
+      }
+    },
+    "spark-class-model://schema/shared/9230c9c20de2caa0261a78158f52d961879d4f4466f46585b1b9b740ff921cbf": {
+      "ref": "spark-class-model://schema/shared/9230c9c20de2caa0261a78158f52d961879d4f4466f46585b1b9b740ff921cbf",
+      "kind": "schema",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "reflection"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9230c9c20de2caa0261a78158f52d961879d4f4466f46585b1b9b740ff921cbf"
+      }
+    },
+    "spark-class-model://model/DtsReflectionTypeMeta/attributes/type/0": {
+      "ref": "spark-class-model://model/DtsReflectionTypeMeta/attributes/type/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DtsReflectionTypeMeta",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/9230c9c20de2caa0261a78158f52d961879d4f4466f46585b1b9b740ff921cbf",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/814becab963fd136203ea9e7437ae0092938a26c95d7febc2c66a1231337d255": {
+      "ref": "spark-class-model://schema/shared/814becab963fd136203ea9e7437ae0092938a26c95d7febc2c66a1231337d255",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/814becab963fd136203ea9e7437ae0092938a26c95d7febc2c66a1231337d255"
+      }
+    },
+    "spark-class-model://model/DtsReflectionTypeMeta/attributes/declaration/1": {
+      "ref": "spark-class-model://model/DtsReflectionTypeMeta/attributes/declaration/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DtsReflectionTypeMeta",
+      "name": "declaration",
+      "schemaRef": "spark-class-model://schema/shared/814becab963fd136203ea9e7437ae0092938a26c95d7febc2c66a1231337d255",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DtsReflectionTypeMeta": {
+      "ref": "spark-class-model://model/DtsReflectionTypeMeta",
+      "kind": "model",
+      "className": "DtsReflectionTypeMeta",
+      "schemaRef": "spark-class-model://schema/DtsReflectionTypeMeta",
+      "attributeRefs": [
+        "spark-class-model://model/DtsReflectionTypeMeta/attributes/type/0",
+        "spark-class-model://model/DtsReflectionTypeMeta/attributes/declaration/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/MethodParameterMeta": {
+      "ref": "spark-class-model://schema/MethodParameterMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MethodParameterMeta",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "spark-class-model://schema/DtsTypeMeta"
+          },
+          "flags": {
+            "type": "object",
+            "title": "Readonly<{\n        isOptional?: boolean;\n    }>"
+          },
+          "defaultValue": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/MethodParameterMeta"
+      }
+    },
+    "spark-class-model://model/MethodParameterMeta/attributes/name/0": {
+      "ref": "spark-class-model://model/MethodParameterMeta/attributes/name/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodParameterMeta",
+      "name": "name",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/MethodParameterMeta/attributes/type/1": {
+      "ref": "spark-class-model://model/MethodParameterMeta/attributes/type/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodParameterMeta",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/aa22a08ae65303b458fcce61f374d072c9a6a541b00b6c5ffc2597fec7697b1c",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodParameterMeta%2Fattributes%2Ftype%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsTypeMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodParameterMeta%2Fattributes%2Ftype%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsTypeMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/MethodParameterMeta/attributes/type/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DtsTypeMeta",
+      "targetClassName": "DtsTypeMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DtsTypeMeta"
+    },
+    "spark-class-model://schema/shared/7784ac6ad2ddf7c763e8e0adbb27a431bfce303c34ae6f454045f29c891db011": {
+      "ref": "spark-class-model://schema/shared/7784ac6ad2ddf7c763e8e0adbb27a431bfce303c34ae6f454045f29c891db011",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Readonly<{\n        isOptional?: boolean;\n    }>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7784ac6ad2ddf7c763e8e0adbb27a431bfce303c34ae6f454045f29c891db011"
+      }
+    },
+    "spark-class-model://model/MethodParameterMeta/attributes/flags/2": {
+      "ref": "spark-class-model://model/MethodParameterMeta/attributes/flags/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodParameterMeta",
+      "name": "flags",
+      "schemaRef": "spark-class-model://schema/shared/7784ac6ad2ddf7c763e8e0adbb27a431bfce303c34ae6f454045f29c891db011",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/81d0397840966389d7630dc56ed5038be8bf231120d1c52be38f565faac0f723": {
+      "ref": "spark-class-model://schema/shared/81d0397840966389d7630dc56ed5038be8bf231120d1c52be38f565faac0f723",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/81d0397840966389d7630dc56ed5038be8bf231120d1c52be38f565faac0f723"
+      }
+    },
+    "spark-class-model://model/MethodParameterMeta/attributes/defaultValue/3": {
+      "ref": "spark-class-model://model/MethodParameterMeta/attributes/defaultValue/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodParameterMeta",
+      "name": "defaultValue",
+      "schemaRef": "spark-class-model://schema/shared/81d0397840966389d7630dc56ed5038be8bf231120d1c52be38f565faac0f723",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/MethodParameterMeta": {
+      "ref": "spark-class-model://model/MethodParameterMeta",
+      "kind": "model",
+      "className": "MethodParameterMeta",
+      "schemaRef": "spark-class-model://schema/MethodParameterMeta",
+      "attributeRefs": [
+        "spark-class-model://model/MethodParameterMeta/attributes/name/0",
+        "spark-class-model://model/MethodParameterMeta/attributes/type/1",
+        "spark-class-model://model/MethodParameterMeta/attributes/flags/2",
+        "spark-class-model://model/MethodParameterMeta/attributes/defaultValue/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodParameterMeta%2Fattributes%2Ftype%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsTypeMeta"
+      ]
+    },
+    "spark-class-model://schema/MethodMeta": {
+      "ref": "spark-class-model://schema/MethodMeta",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "MethodMeta",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "signatureText": {
+            "type": "string"
+          },
+          "parameterStyle": {
+            "$ref": "spark-class-model://schema/MethodParameterStyle"
+          },
+          "parameters": {
+            "type": "array"
+          },
+          "type": {
+            "$ref": "spark-class-model://schema/DtsTypeMeta"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "title": "AiJsonSchemaObject"
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiJsonSchema"
+          },
+          "takesContext": {
+            "type": "boolean"
+          },
+          "jsdoc": {
+            "$ref": "spark-class-model://schema/JsDocMeta"
+          },
+          "provenance": {
+            "$ref": "spark-class-model://schema/SourceProvenanceMeta"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/MethodMeta"
+      }
+    },
+    "spark-class-model://model/MethodMeta/attributes/name/0": {
+      "ref": "spark-class-model://model/MethodMeta/attributes/name/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodMeta",
+      "name": "name",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/MethodMeta/attributes/signatureText/1": {
+      "ref": "spark-class-model://model/MethodMeta/attributes/signatureText/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodMeta",
+      "name": "signatureText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/MethodMeta/attributes/parameterStyle/2": {
+      "ref": "spark-class-model://model/MethodMeta/attributes/parameterStyle/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodMeta",
+      "name": "parameterStyle",
+      "schemaRef": "spark-class-model://schema/shared/1bfcfa9d66b7c36e568248bd54b4377e5e4b46d7d9e47f5d260e985b25ccf12e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodMeta%2Fattributes%2FparameterStyle%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FMethodParameterStyle": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodMeta%2Fattributes%2FparameterStyle%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FMethodParameterStyle",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/MethodMeta/attributes/parameterStyle/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/MethodParameterStyle",
+      "targetClassName": "MethodParameterStyle",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/MethodParameterStyle"
+    },
+    "spark-class-model://model/MethodMeta/attributes/parameters/3": {
+      "ref": "spark-class-model://model/MethodMeta/attributes/parameters/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodMeta",
+      "name": "parameters",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/MethodMeta/attributes/type/4": {
+      "ref": "spark-class-model://model/MethodMeta/attributes/type/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodMeta",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/aa22a08ae65303b458fcce61f374d072c9a6a541b00b6c5ffc2597fec7697b1c",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodMeta%2Fattributes%2Ftype%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsTypeMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodMeta%2Fattributes%2Ftype%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsTypeMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/MethodMeta/attributes/type/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DtsTypeMeta",
+      "targetClassName": "DtsTypeMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DtsTypeMeta"
+    },
+    "spark-class-model://model/MethodMeta/attributes/paramsSchema/5": {
+      "ref": "spark-class-model://model/MethodMeta/attributes/paramsSchema/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodMeta",
+      "name": "paramsSchema",
+      "schemaRef": "spark-class-model://schema/shared/630ef4fd9abed7c21e25329bcefe988d20d60599b876addb03cec8fad64223f5",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/MethodMeta/attributes/returnSchema/6": {
+      "ref": "spark-class-model://model/MethodMeta/attributes/returnSchema/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodMeta",
+      "name": "returnSchema",
+      "schemaRef": "spark-class-model://schema/shared/31afd376c5b2be23351bf3887e1f88a7e5163704b6acc99153381233c65e9dd9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/MethodMeta/attributes/takesContext/7": {
+      "ref": "spark-class-model://model/MethodMeta/attributes/takesContext/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodMeta",
+      "name": "takesContext",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/MethodMeta/attributes/jsdoc/8": {
+      "ref": "spark-class-model://model/MethodMeta/attributes/jsdoc/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodMeta",
+      "name": "jsdoc",
+      "schemaRef": "spark-class-model://schema/shared/da92725ea7085d1494dbf2e53747475e6a3fa9aec1c77c5ef4ae5c5077bd4c89",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodMeta%2Fattributes%2Fjsdoc%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FJsDocMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodMeta%2Fattributes%2Fjsdoc%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FJsDocMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/MethodMeta/attributes/jsdoc/8",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/JsDocMeta",
+      "targetClassName": "JsDocMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsDocMeta"
+    },
+    "spark-class-model://model/MethodMeta/attributes/provenance/9": {
+      "ref": "spark-class-model://model/MethodMeta/attributes/provenance/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/MethodMeta",
+      "name": "provenance",
+      "schemaRef": "spark-class-model://schema/shared/5f8d32507e5f1aa70bbfe74669df76474c02e0156f9a428d2f1f8d3fca95e59d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodMeta%2Fattributes%2Fprovenance%2F9/attribute/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodMeta%2Fattributes%2Fprovenance%2F9/attribute/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/MethodMeta/attributes/provenance/9",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/SourceProvenanceMeta",
+      "targetClassName": "SourceProvenanceMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SourceProvenanceMeta"
+    },
+    "spark-class-model://model/MethodMeta": {
+      "ref": "spark-class-model://model/MethodMeta",
+      "kind": "model",
+      "className": "MethodMeta",
+      "schemaRef": "spark-class-model://schema/MethodMeta",
+      "attributeRefs": [
+        "spark-class-model://model/MethodMeta/attributes/name/0",
+        "spark-class-model://model/MethodMeta/attributes/signatureText/1",
+        "spark-class-model://model/MethodMeta/attributes/parameterStyle/2",
+        "spark-class-model://model/MethodMeta/attributes/parameters/3",
+        "spark-class-model://model/MethodMeta/attributes/type/4",
+        "spark-class-model://model/MethodMeta/attributes/paramsSchema/5",
+        "spark-class-model://model/MethodMeta/attributes/returnSchema/6",
+        "spark-class-model://model/MethodMeta/attributes/takesContext/7",
+        "spark-class-model://model/MethodMeta/attributes/jsdoc/8",
+        "spark-class-model://model/MethodMeta/attributes/provenance/9"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodMeta%2Fattributes%2FparameterStyle%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FMethodParameterStyle",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodMeta%2Fattributes%2Ftype%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsTypeMeta",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodMeta%2Fattributes%2Fjsdoc%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FJsDocMeta",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FMethodMeta%2Fattributes%2Fprovenance%2F9/attribute/spark-class-model%3A%2F%2Fmodel%2FSourceProvenanceMeta"
+      ]
+    }
+  }
+}

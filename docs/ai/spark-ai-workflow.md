@@ -9,7 +9,7 @@
 | **Java** (`spark-ai-server`) | 持久化 session、代理 LLM、SSE / Host Run |
 | **Host** (`createAiAgentHost`) | 注册业务、`run` → ToolLoop |
 | **ClassModelRuntime** | 7 工具闭集、`executeTool` 路由 |
-| **Worker 知识** | lazy 查 DTS ClassModel JSON |
+| **Worker 知识** | Web Worker（Comlink）内 lazy fetch JSON shard；主线程不加载全量 manifest |
 | **pageDesign 业务** | `ProjectModel` 注册、闸门、四文件内存编辑 |
 
 ## 一次 turn（最短路径）
@@ -53,6 +53,21 @@ model_query → model_class_guide / model_attribute_guide / model_action_guide �
 - **参数表会生长**：`attribute.api` 指向子 model kind，每深入一层才暴露下一层字段与约束（代码：`class-model/class-model/model-projection.ts` 的 `listAttributeReachableKinds` / `projectClassModelForGuide`，可达才投影）。
 - **收敛 = 探索到底**，不是填满一张预设表：属性链 BFS 走到叶子、当前层 required 已补全、无新 `attribute.api` 子 kind 待问，即可进入生产。
 - `human_question` 的 `missingFacts` / `candidateOptions` 参数承载「当前层还缺什么」，是渐进澄清的接口锚点（见 [`../../packages/spark-ai/ARCHITECTURE.md`](../../packages/spark-ai/ARCHITECTURE.md) 工具闭集表）。
+
+## 编译与运行时加载
+
+```text
+编译（pnpm run generate:class-model-surface）
+  src + JSDoc → 内存 emit .d.ts → AST 投影 → generated/dts-class-model/*.json
+
+运行时（浏览器）
+  主线程 WorkerClassModelKnowledgeProvider
+    → Comlink → Worker DtsClassModelBundleLoader
+    → fetch(manifest) → ensureReachableClosure(root) → 按需 fetch shard
+```
+
+- 编译 refresh：`DtsBundleClassModelKnowledgeService.refresh()` + 宿主 `refreshBundle`（Node 见 `scripts/lib/class-model-knowledge-refresh.mjs`）
+- bundle 内 `sourcePath` 使用虚拟前缀 `class-model-emit/`（非磁盘目录）
 
 ## 生成物
 

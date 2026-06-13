@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-turn.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/transport/transport-turn",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/transport/transport-turn.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/transport/transport-turn.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/transport/transport-turn",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/transport/transport-turn\n职责：定义 Agent transport 层的 transport turn 协议，把 session/tool-loop 事件投影为应用可消费事件。\n边界：只描述传输事件和回调契约，不实现业务注册、不保存会话，也不渲染 UI。\nAI用途：对齐 SSE、turn callback 或前端事件消费字段时，用本模块确认传输边界。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiAgentTransportTurn"
+    ]
+  },
+  "symbols": [
+    "AiAgentTransportTurn"
+  ],
+  "models": {
+    "AiAgentTransportTurn": {
+      "kind": "AiAgentTransportTurn",
+      "className": "AiAgentTransportTurn",
+      "jsdoc": "Turn 标识结构：含 turnId（唯一 ID）、turnKey（业务键）、可选 streamKey（流式键）",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    turnId: string;\n    turnKey: string;\n    streamKey?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    turnId: string;\n    turnKey: string;\n    streamKey?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/transport/transport-turn.d.ts",
+        "line": 9,
+        "className": "AiAgentTransportTurn",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "turnId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "turnKey",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "streamKey",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.245Z",
+  "$defs": {
+    "AiAgentTransportTurn": {
+      "type": "object",
+      "title": "AiAgentTransportTurn",
+      "description": "Turn 标识结构：含 turnId（唯一 ID）、turnKey（业务键）、可选 streamKey（流式键）",
+      "properties": {
+        "turnId": {
+          "type": "string"
+        },
+        "turnKey": {
+          "type": "string"
+        },
+        "streamKey": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

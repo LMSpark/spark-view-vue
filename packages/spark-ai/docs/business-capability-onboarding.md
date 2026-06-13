@@ -20,10 +20,11 @@
 - [ ] 公开 mutator；子 model 经 public 属性可达
 - [ ] 确定 `identityField` 语义（→ `businessInstanceId`）
 
-### B · 知识（编译）
+### B · 知识（编译 + 运行时）
 
-- [ ] `pnpm run generate:class-model-surface`
+- [ ] `pnpm run generate:class-model-surface`（内存 emit，产物为 JSON，不落盘 `.d.ts`）
 - [ ] 迭代单个领域模型时可用 `pnpm run generate:class-model-surface:model -- RootClassName`
+- [ ] 浏览器侧 `WorkerClassModelKnowledgeProvider` + manifest URL 已接线
 - [ ] `classIndex[RootClass]` 存在
 - [ ] `semantic-gaps.json` 可接受
 - [ ] mutator 回调 ref 闭包可达

@@ -32,7 +32,7 @@ describe('readDtsClassModelBundleJson', () => {
   it('parses generated manifest with structural validation', () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-manifest-${String(process.pid)}-${String(Date.now())}`)
     try {
-      const sourcePath = 'declarations/packages/spark-utils/src/ai-model.d.ts'
+      const sourcePath = 'class-model-emit/packages/spark-utils/src/ai-model.d.ts'
       const absolutePath = resolve(tempRoot, sourcePath)
       const outputDir = resolve(tempRoot, 'generated/dts-class-model')
       mkdirSync(dirname(absolutePath), { recursive: true })
@@ -73,7 +73,7 @@ describe('readDtsClassModelBundleJson', () => {
   it('parses a generated per-file projection shard', () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-shard-${String(process.pid)}-${String(Date.now())}`)
     try {
-      const sourcePath = 'declarations/packages/spark-utils/src/ai-model.d.ts'
+      const sourcePath = 'class-model-emit/packages/spark-utils/src/ai-model.d.ts'
       const absolutePath = resolve(tempRoot, sourcePath)
       const outputDir = resolve(tempRoot, 'generated/dts-class-model')
       mkdirSync(dirname(absolutePath), { recursive: true })
@@ -184,7 +184,7 @@ describe('readDtsClassModelBundleJson', () => {
   it('classifies spark component declarations from dts paths', () => {
     const cases = [
       {
-        sourcePath: 'declarations/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts',
+        sourcePath: 'class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.props.d.ts',
         declaration: 'export type RTableProps = { dataViewKey?: string }',
         className: 'RTableProps',
         expected: {
@@ -196,7 +196,7 @@ describe('readDtsClassModelBundleJson', () => {
         },
       },
       {
-        sourcePath: 'declarations/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts',
+        sourcePath: 'class-model-emit/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts',
         declaration: 'export type RSectionProps = { title?: string }',
         className: 'RSectionProps',
         expected: {
@@ -208,7 +208,7 @@ describe('readDtsClassModelBundleJson', () => {
         },
       },
       {
-        sourcePath: 'declarations/packages/spark-component/src/components/fields/data-components/FieldText.props.d.ts',
+        sourcePath: 'class-model-emit/packages/spark-component/src/components/fields/data-components/FieldText.props.d.ts',
         declaration: 'export type RTextProps = { field?: string }',
         className: 'RTextProps',
         expected: {
@@ -238,7 +238,7 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('captures module-level leading jsdoc before imports', () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-module-${String(process.pid)}-${String(Date.now())}`)
-    const sourcePath = 'declarations/packages/spark-project-model/src/project/project-workspace.d.ts'
+    const sourcePath = 'class-model-emit/packages/spark-project-model/src/project/project-workspace.d.ts'
     const absolutePath = resolve(tempRoot, sourcePath)
     try {
       mkdirSync(dirname(absolutePath), { recursive: true })
@@ -268,7 +268,7 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('normalizes class member jsdoc without raw comment delimiters', () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-member-jsdoc-${String(process.pid)}-${String(Date.now())}`)
-    const sourcePath = 'declarations/packages/spark-ai/src/agent/business/demo-registry.d.ts'
+    const sourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/demo-registry.d.ts'
     const absolutePath = resolve(tempRoot, sourcePath)
     try {
       mkdirSync(dirname(absolutePath), { recursive: true })
@@ -302,7 +302,7 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('captures module-level source file comments when dts cannot carry them', () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-source-module-${String(process.pid)}-${String(Date.now())}`)
-    const sourcePath = 'declarations/packages/spark-component/src/components/containers/layout/RendererButton.vue.d.ts'
+    const sourcePath = 'class-model-emit/packages/spark-component/src/components/containers/layout/RendererButton.vue.d.ts'
     const absolutePath = resolve(tempRoot, sourcePath)
     const vueSourcePath = resolve(tempRoot, 'packages/spark-component/src/components/containers/layout/RendererButton.vue')
     try {
@@ -334,7 +334,7 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('preserves raw declaration relations from dts syntax', () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-relations-${String(process.pid)}-${String(Date.now())}`)
-    const sourcePath = 'declarations/packages/spark-component/src/components/fields/data-components/FieldText.props.d.ts'
+    const sourcePath = 'class-model-emit/packages/spark-component/src/components/fields/data-components/FieldText.props.d.ts'
     const absolutePath = resolve(tempRoot, sourcePath)
     try {
       mkdirSync(dirname(absolutePath), { recursive: true })
@@ -375,8 +375,8 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('resolves cross-file dts refs through the bundle loader', async () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-cross-ref-${String(process.pid)}-${String(Date.now())}`)
-    const registrationSourcePath = 'declarations/packages/spark-ai/src/agent/business/registration-types.d.ts'
-    const registrySourcePath = 'declarations/packages/spark-ai/src/agent/business/business-registry.d.ts'
+    const registrationSourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts'
+    const registrySourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/business-registry.d.ts'
     const registrationPath = resolve(tempRoot, registrationSourcePath)
     const registryPath = resolve(tempRoot, registrySourcePath)
     const outputDir = resolve(tempRoot, 'generated/dts-class-model')
@@ -559,7 +559,7 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('pools identical runtime schemas by normalized type shape', async () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-runtime-pool-${String(process.pid)}-${String(Date.now())}`)
-    const sourcePath = 'declarations/packages/spark-ai/src/agent/business/duplicate-input-registry.d.ts'
+    const sourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/duplicate-input-registry.d.ts'
     const absolutePath = resolve(tempRoot, sourcePath)
     const outputDir = resolve(tempRoot, 'generated/dts-class-model')
     try {
@@ -622,8 +622,8 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('extracts constructors into runtime refs and knowledge surface', async () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-constructor-${String(process.pid)}-${String(Date.now())}`)
-    const optionsSourcePath = 'declarations/packages/spark-ai/src/agent/business/widget-options.d.ts'
-    const widgetSourcePath = 'declarations/packages/spark-ai/src/agent/business/widget.d.ts'
+    const optionsSourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/widget-options.d.ts'
+    const widgetSourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/widget.d.ts'
     const optionsPath = resolve(tempRoot, optionsSourcePath)
     const widgetPath = resolve(tempRoot, widgetSourcePath)
     const outputDir = resolve(tempRoot, 'generated/dts-class-model')
@@ -715,8 +715,8 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('projects readonly business factory commands with create return links', async () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-business-factory-${String(process.pid)}-${String(Date.now())}`)
-    const registrationSourcePath = 'declarations/packages/spark-ai/src/agent/business/registration-types.d.ts'
-    const hostSourcePath = 'declarations/packages/spark-ai/src/agent/business/ai-host.d.ts'
+    const registrationSourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts'
+    const hostSourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts'
     const registrationPath = resolve(tempRoot, registrationSourcePath)
     const hostPath = resolve(tempRoot, hostSourcePath)
     const outputDir = resolve(tempRoot, 'generated/dts-class-model')
@@ -799,7 +799,7 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('creates a DTS bundle knowledge provider from manifest/root/fetchJson', async () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-knowledge-${String(process.pid)}-${String(Date.now())}`)
-    const sourcePath = 'declarations/packages/spark-ai/src/agent/business/business-registry.d.ts'
+    const sourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/business-registry.d.ts'
     const absolutePath = resolve(tempRoot, sourcePath)
     const outputDir = resolve(tempRoot, 'generated/dts-class-model')
     try {
@@ -847,7 +847,7 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('reloads DTS bundle knowledge after host refresh rebuilds the bundle', async () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-refresh-${String(process.pid)}-${String(Date.now())}`)
-    const sourcePath = 'declarations/packages/spark-ai/src/refresh/refresh-model.d.ts'
+    const sourcePath = 'class-model-emit/packages/spark-ai/src/refresh/refresh-model.d.ts'
     const absolutePath = resolve(tempRoot, sourcePath)
     const outputDir = resolve(tempRoot, 'generated/dts-class-model')
     try {
@@ -900,8 +900,8 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('resolves recursive dts ref closures without looping', async () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-recursive-ref-${String(process.pid)}-${String(Date.now())}`)
-    const nodeSourcePath = 'declarations/packages/spark-data/src/node-tree/tree-node.d.ts'
-    const edgeSourcePath = 'declarations/packages/spark-data/src/node-tree/tree-edge.d.ts'
+    const nodeSourcePath = 'class-model-emit/packages/spark-data/src/node-tree/tree-node.d.ts'
+    const edgeSourcePath = 'class-model-emit/packages/spark-data/src/node-tree/tree-edge.d.ts'
     const nodePath = resolve(tempRoot, nodeSourcePath)
     const edgePath = resolve(tempRoot, edgeSourcePath)
     const outputDir = resolve(tempRoot, 'generated/dts-class-model')
@@ -1024,7 +1024,7 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('writes semantic gap logs for declarations missing jsdoc', () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-log-${String(process.pid)}-${String(Date.now())}`)
-    const sourcePath = 'declarations/packages/spark-component/src/components/fields/data-components/FieldText.props.d.ts'
+    const sourcePath = 'class-model-emit/packages/spark-component/src/components/fields/data-components/FieldText.props.d.ts'
     const absolutePath = resolve(tempRoot, sourcePath)
     const outputDir = resolve(tempRoot, 'generated/dts-class-model')
     try {
@@ -1108,10 +1108,10 @@ describe('readDtsClassModelBundleJson', () => {
   it('rejects projection missing required class model fields', () => {
     expect(() => readDtsFileProjectionDocument({
       schemaVersion: DTS_FILE_PROJECTION_VERSION,
-      sourcePath: 'declarations/x.d.ts',
+      sourcePath: 'class-model-emit/x.d.ts',
       module: {
         name: 'workspace:x',
-        sourcePath: 'declarations/x.d.ts',
+        sourcePath: 'class-model-emit/x.d.ts',
         sourceFile: 'x.ts',
         modulePath: 'x',
         jsdoc: 'Test module.',
@@ -1129,10 +1129,10 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('projects optional return types and reflection callback parameters (PR-2)', () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-pr2-${String(process.pid)}-${String(Date.now())}`)
-    const registrationSourcePath = 'declarations/packages/spark-ai/src/agent/business/registration-types.d.ts'
-    const registrySourcePath = 'declarations/packages/spark-ai/src/agent/business/business-registry.d.ts'
-    const toolSourcePath = 'declarations/packages/spark-ai/src/tools/data-set-crud-tool.d.ts'
-    const configPageSourcePath = 'declarations/packages/spark-project-model/src/page/config-page.d.ts'
+    const registrationSourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/registration-types.d.ts'
+    const registrySourcePath = 'class-model-emit/packages/spark-ai/src/agent/business/business-registry.d.ts'
+    const toolSourcePath = 'class-model-emit/packages/spark-ai/src/tools/data-set-crud-tool.d.ts'
+    const configPageSourcePath = 'class-model-emit/packages/spark-project-model/src/page/config-page.d.ts'
     const registrationPath = resolve(tempRoot, registrationSourcePath)
     const registryPath = resolve(tempRoot, registrySourcePath)
     const toolPath = resolve(tempRoot, toolSourcePath)
@@ -1216,8 +1216,8 @@ describe('readDtsClassModelBundleJson', () => {
 
   it('follows reflection callback refs in bundle loader closure (PR-3)', async () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-pr3-${String(process.pid)}-${String(Date.now())}`)
-    const toolSourcePath = 'declarations/packages/spark-ai/src/tools/data-set-crud-tool.d.ts'
-    const configPageSourcePath = 'declarations/packages/spark-project-model/src/page/config-page.d.ts'
+    const toolSourcePath = 'class-model-emit/packages/spark-ai/src/tools/data-set-crud-tool.d.ts'
+    const configPageSourcePath = 'class-model-emit/packages/spark-project-model/src/page/config-page.d.ts'
     const toolPath = resolve(tempRoot, toolSourcePath)
     const configPagePath = resolve(tempRoot, configPageSourcePath)
     const outputDir = resolve(tempRoot, 'generated/dts-class-model')

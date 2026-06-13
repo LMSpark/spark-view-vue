@@ -1,16 +1,25 @@
 import { defineConfig } from 'vite'
-import { resolve } from 'node:path'
+import { isAbsolute, resolve } from 'node:path'
 
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'SparkJsonDocument',
+      entry: {
+        index: resolve(__dirname, 'src/index.ts'),
+        'schema/index': resolve(__dirname, 'src/schema/index.ts'),
+        'tree/index': resolve(__dirname, 'src/tree/index.ts'),
+      },
       formats: ['es'],
-      fileName: () => 'index.js',
     },
+    emptyOutDir: true,
     rollupOptions: {
-      external: /^@spark-appworks\//,
+      external: (id) => !id.startsWith('.') && !id.startsWith('\0') && !isAbsolute(id),
+      output: {
+        preserveModules: true,
+        preserveModulesRoot: 'src',
+        dir: 'dist',
+        entryFileNames: '[name].js',
+      },
     },
   },
 })

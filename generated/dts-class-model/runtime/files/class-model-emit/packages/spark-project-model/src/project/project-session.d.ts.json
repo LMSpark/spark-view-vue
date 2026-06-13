@@ -1,0 +1,470 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-project-model/src/project/project-session.d.ts",
+  "symbols": [
+    "ProjectSessionState",
+    "ProjectSessionOwner",
+    "ProjectSession"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ProjectSessionState": {
+      "ref": "spark-class-model://schema/ProjectSessionState",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectSessionState",
+        "properties": {
+          "selectedNodeId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "activePageId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "navigationDirty": {
+            "type": "boolean"
+          },
+          "navigationDirtyScope": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/ProjectNavigationDirtyScope"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectSessionState"
+      }
+    },
+    "spark-class-model://model/ProjectSessionState/attributes/selectedNodeId/0": {
+      "ref": "spark-class-model://model/ProjectSessionState/attributes/selectedNodeId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectSessionState",
+      "name": "selectedNodeId",
+      "schemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectSessionState/attributes/activePageId/1": {
+      "ref": "spark-class-model://model/ProjectSessionState/attributes/activePageId/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectSessionState",
+      "name": "activePageId",
+      "schemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectSessionState/attributes/navigationDirty/2": {
+      "ref": "spark-class-model://model/ProjectSessionState/attributes/navigationDirty/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectSessionState",
+      "name": "navigationDirty",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/3b7d8d54bfef808a622cff3295c9eff884dfd57657c4153f00c9f76a6f2c1725": {
+      "ref": "spark-class-model://schema/shared/3b7d8d54bfef808a622cff3295c9eff884dfd57657c4153f00c9f76a6f2c1725",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/ProjectNavigationDirtyScope"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3b7d8d54bfef808a622cff3295c9eff884dfd57657c4153f00c9f76a6f2c1725"
+      }
+    },
+    "spark-class-model://model/ProjectSessionState/attributes/navigationDirtyScope/3": {
+      "ref": "spark-class-model://model/ProjectSessionState/attributes/navigationDirtyScope/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectSessionState",
+      "name": "navigationDirtyScope",
+      "schemaRef": "spark-class-model://schema/shared/3b7d8d54bfef808a622cff3295c9eff884dfd57657c4153f00c9f76a6f2c1725",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSessionState%2Fattributes%2FnavigationDirtyScope%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNavigationDirtyScope": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSessionState%2Fattributes%2FnavigationDirtyScope%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNavigationDirtyScope",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectSessionState/attributes/navigationDirtyScope/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectNavigationDirtyScope",
+      "targetClassName": "ProjectNavigationDirtyScope",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/project/project-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNavigationDirtyScope"
+    },
+    "spark-class-model://model/ProjectSessionState": {
+      "ref": "spark-class-model://model/ProjectSessionState",
+      "kind": "model",
+      "className": "ProjectSessionState",
+      "schemaRef": "spark-class-model://schema/ProjectSessionState",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectSessionState/attributes/selectedNodeId/0",
+        "spark-class-model://model/ProjectSessionState/attributes/activePageId/1",
+        "spark-class-model://model/ProjectSessionState/attributes/navigationDirty/2",
+        "spark-class-model://model/ProjectSessionState/attributes/navigationDirtyScope/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSessionState%2Fattributes%2FnavigationDirtyScope%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNavigationDirtyScope"
+      ]
+    },
+    "spark-class-model://schema/ProjectSessionOwner": {
+      "ref": "spark-class-model://schema/ProjectSessionOwner",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectSessionOwner",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectSessionOwner"
+      }
+    },
+    "spark-class-model://model/ProjectSessionOwner/methods/findNodeById/0": {
+      "ref": "spark-class-model://model/ProjectSessionOwner/methods/findNodeById/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectSessionOwner",
+      "name": "findNodeById",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963",
+      "returnSchemaRef": "spark-class-model://schema/shared/a7679616faaaa5d30ce0d447be0f0a240e1f6cf124e7623c927b71a400bbafd1"
+    },
+    "spark-class-model://schema/shared/a7679616faaaa5d30ce0d447be0f0a240e1f6cf124e7623c927b71a400bbafd1": {
+      "ref": "spark-class-model://schema/shared/a7679616faaaa5d30ce0d447be0f0a240e1f6cf124e7623c927b71a400bbafd1",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/ProjectNode"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a7679616faaaa5d30ce0d447be0f0a240e1f6cf124e7623c927b71a400bbafd1"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSessionOwner%2Fmethods%2FfindNodeById%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSessionOwner%2Fmethods%2FfindNodeById%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectSessionOwner/methods/findNodeById/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/ProjectNode",
+      "targetClassName": "ProjectNode",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNode"
+    },
+    "spark-class-model://model/ProjectSessionOwner/methods/findConfigPageByPageId/1": {
+      "ref": "spark-class-model://model/ProjectSessionOwner/methods/findConfigPageByPageId/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectSessionOwner",
+      "name": "findConfigPageByPageId",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/920ba8f7230adf63702bca64a491021e112f332cb7d717e06a17001d30598ca6",
+      "returnSchemaRef": "spark-class-model://schema/shared/da7dd7ad30f075770d3411b314682351d926410912143b9eb69c38cd7649d3a1"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSessionOwner%2Fmethods%2FfindConfigPageByPageId%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FConfigPageNode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSessionOwner%2Fmethods%2FfindConfigPageByPageId%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FConfigPageNode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectSessionOwner/methods/findConfigPageByPageId/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/ConfigPageNode",
+      "targetClassName": "ConfigPageNode",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/page/config-page.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ConfigPageNode"
+    },
+    "spark-class-model://model/ProjectSessionOwner": {
+      "ref": "spark-class-model://model/ProjectSessionOwner",
+      "kind": "model",
+      "className": "ProjectSessionOwner",
+      "schemaRef": "spark-class-model://schema/ProjectSessionOwner",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ProjectSessionOwner/methods/findNodeById/0",
+        "spark-class-model://model/ProjectSessionOwner/methods/findConfigPageByPageId/1"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSessionOwner%2Fmethods%2FfindNodeById%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNode",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSessionOwner%2Fmethods%2FfindConfigPageByPageId%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FConfigPageNode"
+      ]
+    },
+    "spark-class-model://schema/ProjectSession": {
+      "ref": "spark-class-model://schema/ProjectSession",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectSession",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectSession"
+      }
+    },
+    "spark-class-model://model/ProjectSession/constructors/0": {
+      "ref": "spark-class-model://model/ProjectSession/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/ProjectSession",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/04d6cdbb1ccc1a9670fbae55ad30eb4855d88723ca22b3e4fcb60580bdd03f83"
+    },
+    "spark-class-model://schema/shared/04d6cdbb1ccc1a9670fbae55ad30eb4855d88723ca22b3e4fcb60580bdd03f83": {
+      "ref": "spark-class-model://schema/shared/04d6cdbb1ccc1a9670fbae55ad30eb4855d88723ca22b3e4fcb60580bdd03f83",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "$ref": "spark-class-model://schema/ProjectSessionOwner"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/04d6cdbb1ccc1a9670fbae55ad30eb4855d88723ca22b3e4fcb60580bdd03f83"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectSessionOwner": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectSessionOwner",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectSession/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/ProjectSessionOwner",
+      "targetClassName": "ProjectSessionOwner",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/project/project-session.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectSessionOwner"
+    },
+    "spark-class-model://model/ProjectSession/methods/setNavigationDraft/0": {
+      "ref": "spark-class-model://model/ProjectSession/methods/setNavigationDraft/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectSession",
+      "name": "setNavigationDraft",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f91c216d5b38eb63423d86f359b05ae42d8c56c1818bc06abfb7f476133a6b43"
+    },
+    "spark-class-model://schema/shared/f91c216d5b38eb63423d86f359b05ae42d8c56c1818bc06abfb7f476133a6b43": {
+      "ref": "spark-class-model://schema/shared/f91c216d5b38eb63423d86f359b05ae42d8c56c1818bc06abfb7f476133a6b43",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "draft": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/NavigationNodeDraft"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f91c216d5b38eb63423d86f359b05ae42d8c56c1818bc06abfb7f476133a6b43"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fmethods%2FsetNavigationDraft%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationNodeDraft": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fmethods%2FsetNavigationDraft%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationNodeDraft",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectSession/methods/setNavigationDraft/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/NavigationNodeDraft",
+      "targetClassName": "NavigationNodeDraft",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/navigation-edit.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavigationNodeDraft"
+    },
+    "spark-class-model://model/ProjectSession/methods/beginNavigationDraft/1": {
+      "ref": "spark-class-model://model/ProjectSession/methods/beginNavigationDraft/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectSession",
+      "name": "beginNavigationDraft",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/90877dd8f500f4ce54609d91cdd71a1ce4f37d8bb638c340eceaf80ba408c622",
+      "returnSchemaRef": "spark-class-model://schema/shared/b862ace0621e2b7cd5bdac9704403c0ccb5fa101e095d68b9b87af1a60e4b8b9"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fmethods%2FbeginNavigationDraft%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationNodeDraft": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fmethods%2FbeginNavigationDraft%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationNodeDraft",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectSession/methods/beginNavigationDraft/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/NavigationNodeDraft",
+      "targetClassName": "NavigationNodeDraft",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/navigation-edit.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavigationNodeDraft"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fmethods%2FbeginNavigationDraft%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FNavigationNodeDraft": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fmethods%2FbeginNavigationDraft%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FNavigationNodeDraft",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectSession/methods/beginNavigationDraft/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/NavigationNodeDraft",
+      "targetClassName": "NavigationNodeDraft",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/navigation-edit.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavigationNodeDraft"
+    },
+    "spark-class-model://model/ProjectSession/methods/discardNavigationDraft/2": {
+      "ref": "spark-class-model://model/ProjectSession/methods/discardNavigationDraft/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectSession",
+      "name": "discardNavigationDraft",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/ProjectSession/methods/markNavigationDirty/3": {
+      "ref": "spark-class-model://model/ProjectSession/methods/markNavigationDirty/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectSession",
+      "name": "markNavigationDirty",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/17f3aeff9f399980a5542a8185663a0c68b8b4f72746dcfd5bf22a003d7bb74b"
+    },
+    "spark-class-model://schema/shared/17f3aeff9f399980a5542a8185663a0c68b8b4f72746dcfd5bf22a003d7bb74b": {
+      "ref": "spark-class-model://schema/shared/17f3aeff9f399980a5542a8185663a0c68b8b4f72746dcfd5bf22a003d7bb74b",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "$ref": "spark-class-model://schema/ProjectNavigationDirtyScope"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/17f3aeff9f399980a5542a8185663a0c68b8b4f72746dcfd5bf22a003d7bb74b"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fmethods%2FmarkNavigationDirty%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNavigationDirtyScope": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fmethods%2FmarkNavigationDirty%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNavigationDirtyScope",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectSession/methods/markNavigationDirty/3",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/ProjectNavigationDirtyScope",
+      "targetClassName": "ProjectNavigationDirtyScope",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/project/project-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNavigationDirtyScope"
+    },
+    "spark-class-model://model/ProjectSession/methods/markNavigationClean/4": {
+      "ref": "spark-class-model://model/ProjectSession/methods/markNavigationClean/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectSession",
+      "name": "markNavigationClean",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/ProjectSession/methods/setSelectedNodeId/5": {
+      "ref": "spark-class-model://model/ProjectSession/methods/setSelectedNodeId/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectSession",
+      "name": "setSelectedNodeId",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4ff17e44d7cea499a23a9ef4a999f98ebfda5cd7c66da7af67694f308c65b71e"
+    },
+    "spark-class-model://schema/shared/4ff17e44d7cea499a23a9ef4a999f98ebfda5cd7c66da7af67694f308c65b71e": {
+      "ref": "spark-class-model://schema/shared/4ff17e44d7cea499a23a9ef4a999f98ebfda5cd7c66da7af67694f308c65b71e",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "nodeId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "options": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4ff17e44d7cea499a23a9ef4a999f98ebfda5cd7c66da7af67694f308c65b71e"
+      }
+    },
+    "spark-class-model://model/ProjectSession/methods/setActivePageId/6": {
+      "ref": "spark-class-model://model/ProjectSession/methods/setActivePageId/6",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectSession",
+      "name": "setActivePageId",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f1ca9af184ee466ef5a12fed65edab195c052aaff68e9fcbaca4ff5f3781c93a"
+    },
+    "spark-class-model://schema/shared/f1ca9af184ee466ef5a12fed65edab195c052aaff68e9fcbaca4ff5f3781c93a": {
+      "ref": "spark-class-model://schema/shared/f1ca9af184ee466ef5a12fed65edab195c052aaff68e9fcbaca4ff5f3781c93a",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f1ca9af184ee466ef5a12fed65edab195c052aaff68e9fcbaca4ff5f3781c93a"
+      }
+    },
+    "spark-class-model://model/ProjectSession/methods/syncWithModel/7": {
+      "ref": "spark-class-model://model/ProjectSession/methods/syncWithModel/7",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectSession",
+      "name": "syncWithModel",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/ProjectSession": {
+      "ref": "spark-class-model://model/ProjectSession",
+      "kind": "model",
+      "className": "ProjectSession",
+      "schemaRef": "spark-class-model://schema/ProjectSession",
+      "constructorRef": "spark-class-model://model/ProjectSession/constructors/0",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ProjectSession/methods/setNavigationDraft/0",
+        "spark-class-model://model/ProjectSession/methods/beginNavigationDraft/1",
+        "spark-class-model://model/ProjectSession/methods/discardNavigationDraft/2",
+        "spark-class-model://model/ProjectSession/methods/markNavigationDirty/3",
+        "spark-class-model://model/ProjectSession/methods/markNavigationClean/4",
+        "spark-class-model://model/ProjectSession/methods/setSelectedNodeId/5",
+        "spark-class-model://model/ProjectSession/methods/setActivePageId/6",
+        "spark-class-model://model/ProjectSession/methods/syncWithModel/7"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectSessionOwner",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fmethods%2FsetNavigationDraft%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationNodeDraft",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fmethods%2FbeginNavigationDraft%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationNodeDraft",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fmethods%2FbeginNavigationDraft%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FNavigationNodeDraft",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectSession%2Fmethods%2FmarkNavigationDirty%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNavigationDirtyScope"
+      ]
+    }
+  }
+}

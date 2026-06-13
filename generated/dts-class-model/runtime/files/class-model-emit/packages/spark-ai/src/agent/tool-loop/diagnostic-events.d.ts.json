@@ -1,0 +1,284 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/tool-loop/diagnostic-events.d.ts",
+  "symbols": [
+    "AiAgentDiagnosticEventInput",
+    "ToolResultEventInput"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiAgentDiagnosticEventInput": {
+      "ref": "spark-class-model://schema/AiAgentDiagnosticEventInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentDiagnosticEventInput",
+        "properties": {
+          "request": {
+            "$ref": "spark-class-model://schema/AiAgentChatRequest"
+          },
+          "scope": {
+            "$ref": "spark-class-model://schema/AiAgentScope"
+          },
+          "turn": {
+            "$ref": "spark-class-model://schema/AiAgentTurnMeta"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "llm-request"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "llm-append"
+                ]
+              }
+            ]
+          },
+          "data": true
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentDiagnosticEventInput"
+      }
+    },
+    "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/request/0": {
+      "ref": "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/request/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentDiagnosticEventInput",
+      "name": "request",
+      "schemaRef": "spark-class-model://schema/shared/ed4c6e8c559c7595805bf13be21e340631dc7e810dfa55d1a5581d476f1691db",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentDiagnosticEventInput%2Fattributes%2Frequest%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentChatRequest": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentDiagnosticEventInput%2Fattributes%2Frequest%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentChatRequest",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/request/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentChatRequest",
+      "targetClassName": "AiAgentChatRequest",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/chat/chat-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentChatRequest"
+    },
+    "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/scope/1": {
+      "ref": "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/scope/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentDiagnosticEventInput",
+      "name": "scope",
+      "schemaRef": "spark-class-model://schema/shared/1c911dd7805c7049f82bfc443b39e62fbd70b599c0e21f9aced23d9d37088e45",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentDiagnosticEventInput%2Fattributes%2Fscope%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentDiagnosticEventInput%2Fattributes%2Fscope%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/scope/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentScope",
+      "targetClassName": "AiAgentScope",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentScope"
+    },
+    "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/turn/2": {
+      "ref": "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/turn/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentDiagnosticEventInput",
+      "name": "turn",
+      "schemaRef": "spark-class-model://schema/shared/b8000eb3a660a9fc0f394d8b165f43b916dbc66c4d0200065840ca7dd645d842",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentDiagnosticEventInput%2Fattributes%2Fturn%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTurnMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentDiagnosticEventInput%2Fattributes%2Fturn%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTurnMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/turn/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentTurnMeta",
+      "targetClassName": "AiAgentTurnMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/chat/chat-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentTurnMeta"
+    },
+    "spark-class-model://schema/shared/49ecb95088338c8bf0dbe1a700def24171f8b4ffa23042f190e0fa43d44ec01b": {
+      "ref": "spark-class-model://schema/shared/49ecb95088338c8bf0dbe1a700def24171f8b4ffa23042f190e0fa43d44ec01b",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "llm-request"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "llm-append"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/49ecb95088338c8bf0dbe1a700def24171f8b4ffa23042f190e0fa43d44ec01b"
+      }
+    },
+    "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/type/3": {
+      "ref": "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/type/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentDiagnosticEventInput",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/49ecb95088338c8bf0dbe1a700def24171f8b4ffa23042f190e0fa43d44ec01b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/data/4": {
+      "ref": "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/data/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentDiagnosticEventInput",
+      "name": "data",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentDiagnosticEventInput": {
+      "ref": "spark-class-model://model/AiAgentDiagnosticEventInput",
+      "kind": "model",
+      "className": "AiAgentDiagnosticEventInput",
+      "schemaRef": "spark-class-model://schema/AiAgentDiagnosticEventInput",
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/request/0",
+        "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/scope/1",
+        "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/turn/2",
+        "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/type/3",
+        "spark-class-model://model/AiAgentDiagnosticEventInput/attributes/data/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentDiagnosticEventInput%2Fattributes%2Frequest%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentChatRequest",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentDiagnosticEventInput%2Fattributes%2Fscope%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentDiagnosticEventInput%2Fattributes%2Fturn%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTurnMeta"
+      ]
+    },
+    "spark-class-model://schema/ToolResultEventInput": {
+      "ref": "spark-class-model://schema/ToolResultEventInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ToolResultEventInput",
+        "properties": {
+          "request": {
+            "$ref": "spark-class-model://schema/AiAgentChatRequest"
+          },
+          "scope": {
+            "$ref": "spark-class-model://schema/AiAgentScope"
+          },
+          "turn": {
+            "$ref": "spark-class-model://schema/AiAgentTurnMeta"
+          },
+          "eventModuleId": {
+            "type": "string"
+          },
+          "data": true
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ToolResultEventInput"
+      }
+    },
+    "spark-class-model://model/ToolResultEventInput/attributes/request/0": {
+      "ref": "spark-class-model://model/ToolResultEventInput/attributes/request/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ToolResultEventInput",
+      "name": "request",
+      "schemaRef": "spark-class-model://schema/shared/ed4c6e8c559c7595805bf13be21e340631dc7e810dfa55d1a5581d476f1691db",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FToolResultEventInput%2Fattributes%2Frequest%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentChatRequest": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FToolResultEventInput%2Fattributes%2Frequest%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentChatRequest",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ToolResultEventInput/attributes/request/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentChatRequest",
+      "targetClassName": "AiAgentChatRequest",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/chat/chat-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentChatRequest"
+    },
+    "spark-class-model://model/ToolResultEventInput/attributes/scope/1": {
+      "ref": "spark-class-model://model/ToolResultEventInput/attributes/scope/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ToolResultEventInput",
+      "name": "scope",
+      "schemaRef": "spark-class-model://schema/shared/1c911dd7805c7049f82bfc443b39e62fbd70b599c0e21f9aced23d9d37088e45",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FToolResultEventInput%2Fattributes%2Fscope%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FToolResultEventInput%2Fattributes%2Fscope%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ToolResultEventInput/attributes/scope/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentScope",
+      "targetClassName": "AiAgentScope",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/scope-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentScope"
+    },
+    "spark-class-model://model/ToolResultEventInput/attributes/turn/2": {
+      "ref": "spark-class-model://model/ToolResultEventInput/attributes/turn/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ToolResultEventInput",
+      "name": "turn",
+      "schemaRef": "spark-class-model://schema/shared/b8000eb3a660a9fc0f394d8b165f43b916dbc66c4d0200065840ca7dd645d842",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FToolResultEventInput%2Fattributes%2Fturn%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTurnMeta": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FToolResultEventInput%2Fattributes%2Fturn%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTurnMeta",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ToolResultEventInput/attributes/turn/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentTurnMeta",
+      "targetClassName": "AiAgentTurnMeta",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/chat/chat-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentTurnMeta"
+    },
+    "spark-class-model://model/ToolResultEventInput/attributes/eventModuleId/3": {
+      "ref": "spark-class-model://model/ToolResultEventInput/attributes/eventModuleId/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ToolResultEventInput",
+      "name": "eventModuleId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ToolResultEventInput/attributes/data/4": {
+      "ref": "spark-class-model://model/ToolResultEventInput/attributes/data/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ToolResultEventInput",
+      "name": "data",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ToolResultEventInput": {
+      "ref": "spark-class-model://model/ToolResultEventInput",
+      "kind": "model",
+      "className": "ToolResultEventInput",
+      "schemaRef": "spark-class-model://schema/ToolResultEventInput",
+      "attributeRefs": [
+        "spark-class-model://model/ToolResultEventInput/attributes/request/0",
+        "spark-class-model://model/ToolResultEventInput/attributes/scope/1",
+        "spark-class-model://model/ToolResultEventInput/attributes/turn/2",
+        "spark-class-model://model/ToolResultEventInput/attributes/eventModuleId/3",
+        "spark-class-model://model/ToolResultEventInput/attributes/data/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FToolResultEventInput%2Fattributes%2Frequest%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentChatRequest",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FToolResultEventInput%2Fattributes%2Fscope%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentScope",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FToolResultEventInput%2Fattributes%2Fturn%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTurnMeta"
+      ]
+    }
+  }
+}

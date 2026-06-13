@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/src/components/ModuleContextBadge.vue.d.ts",
+  "module": {
+    "name": "app:components/ModuleContextBadge",
+    "sourcePath": "class-model-emit/src/components/ModuleContextBadge.vue.d.ts",
+    "sourceFile": "src/components/ModuleContextBadge.vue",
+    "packageName": "app",
+    "modulePath": "components/ModuleContextBadge",
+    "jsdoc": "@module app:components/ModuleContextBadge\n职责：提供主应用 ModuleContextBadge 能力，围绕 Props 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 components/ModuleContextBadge。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "Props"
+    ]
+  },
+  "symbols": [
+    "Props"
+  ],
+  "models": {
+    "Props": {
+      "kind": "Props",
+      "className": "Props",
+      "jsdoc": "模块上下文徽标属性，描述当前配置摘要和空态文本。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前模块上下文配置对象。 */\n    config?: SparkNode;\n    /** 徽标前置标签文本。 */\n    label?: string;\n    /** 配置为空时展示的文本。 */\n    emptyText?: string;\n}",
+      "provenance": {
+        "file": "class-model-emit/src/components/ModuleContextBadge.vue.d.ts",
+        "line": 3,
+        "className": "Props",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "config",
+          "jsdoc": "当前模块上下文配置对象。",
+          "schema": {
+            "type": "object",
+            "title": "SparkNode"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "label",
+          "jsdoc": "徽标前置标签文本。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "emptyText",
+          "jsdoc": "配置为空时展示的文本。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.928Z",
+  "$defs": {
+    "Props": {
+      "type": "object",
+      "title": "Props",
+      "description": "模块上下文徽标属性，描述当前配置摘要和空态文本。",
+      "properties": {
+        "config": {
+          "type": "object",
+          "title": "SparkNode"
+        },
+        "label": {
+          "type": "string"
+        },
+        "emptyText": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

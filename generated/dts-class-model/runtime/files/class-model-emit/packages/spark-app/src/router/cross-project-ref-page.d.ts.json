@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-app/src/router/cross-project-ref-page.d.ts",
+  "symbols": [
+    "CrossProjectRefPageRouteProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/CrossProjectRefPageRouteProps": {
+      "ref": "spark-class-model://schema/CrossProjectRefPageRouteProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "CrossProjectRefPageRouteProps",
+        "properties": {
+          "pageContentLoader": {
+            "$ref": "spark-class-model://schema/PageContentLoader"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "hostProjectId": {
+            "type": "string"
+          },
+          "routePath": {
+            "type": "string"
+          },
+          "routeMeta": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/CrossProjectRefPageRouteProps"
+      }
+    },
+    "spark-class-model://schema/shared/e9de7bfe37d15223cafe4fa0fa7bff10956a0730e437c723c63a058999ea9f8c": {
+      "ref": "spark-class-model://schema/shared/e9de7bfe37d15223cafe4fa0fa7bff10956a0730e437c723c63a058999ea9f8c",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/PageContentLoader",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e9de7bfe37d15223cafe4fa0fa7bff10956a0730e437c723c63a058999ea9f8c"
+      }
+    },
+    "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/pageContentLoader/0": {
+      "ref": "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/pageContentLoader/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CrossProjectRefPageRouteProps",
+      "name": "pageContentLoader",
+      "schemaRef": "spark-class-model://schema/shared/e9de7bfe37d15223cafe4fa0fa7bff10956a0730e437c723c63a058999ea9f8c",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrossProjectRefPageRouteProps%2Fattributes%2FpageContentLoader%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FPageContentLoader": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrossProjectRefPageRouteProps%2Fattributes%2FpageContentLoader%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FPageContentLoader",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/pageContentLoader/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/PageContentLoader",
+      "targetClassName": "PageContentLoader",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/io/page-content-loader.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageContentLoader"
+    },
+    "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/tenantId/1": {
+      "ref": "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/tenantId/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CrossProjectRefPageRouteProps",
+      "name": "tenantId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/hostProjectId/2": {
+      "ref": "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/hostProjectId/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CrossProjectRefPageRouteProps",
+      "name": "hostProjectId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/routePath/3": {
+      "ref": "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/routePath/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CrossProjectRefPageRouteProps",
+      "name": "routePath",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/routeMeta/4": {
+      "ref": "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/routeMeta/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CrossProjectRefPageRouteProps",
+      "name": "routeMeta",
+      "schemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/CrossProjectRefPageRouteProps": {
+      "ref": "spark-class-model://model/CrossProjectRefPageRouteProps",
+      "kind": "model",
+      "className": "CrossProjectRefPageRouteProps",
+      "schemaRef": "spark-class-model://schema/CrossProjectRefPageRouteProps",
+      "attributeRefs": [
+        "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/pageContentLoader/0",
+        "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/tenantId/1",
+        "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/hostProjectId/2",
+        "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/routePath/3",
+        "spark-class-model://model/CrossProjectRefPageRouteProps/attributes/routeMeta/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrossProjectRefPageRouteProps%2Fattributes%2FpageContentLoader%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FPageContentLoader"
+      ]
+    }
+  }
+}

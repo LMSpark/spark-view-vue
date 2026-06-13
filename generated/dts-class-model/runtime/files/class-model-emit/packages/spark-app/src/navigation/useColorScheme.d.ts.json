@@ -1,0 +1,695 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-app/src/navigation/useColorScheme.d.ts",
+  "symbols": [
+    "PrimaryPreset",
+    "NavColorSet",
+    "NavPreset",
+    "StyleColorSet",
+    "StylePreset"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PrimaryPreset": {
+      "ref": "spark-class-model://schema/PrimaryPreset",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PrimaryPreset",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PrimaryPreset"
+      }
+    },
+    "spark-class-model://model/PrimaryPreset/attributes/name/0": {
+      "ref": "spark-class-model://model/PrimaryPreset/attributes/name/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PrimaryPreset",
+      "name": "name",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PrimaryPreset/attributes/color/1": {
+      "ref": "spark-class-model://model/PrimaryPreset/attributes/color/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PrimaryPreset",
+      "name": "color",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PrimaryPreset": {
+      "ref": "spark-class-model://model/PrimaryPreset",
+      "kind": "model",
+      "className": "PrimaryPreset",
+      "schemaRef": "spark-class-model://schema/PrimaryPreset",
+      "attributeRefs": [
+        "spark-class-model://model/PrimaryPreset/attributes/name/0",
+        "spark-class-model://model/PrimaryPreset/attributes/color/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NavColorSet": {
+      "ref": "spark-class-model://schema/NavColorSet",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavColorSet",
+        "properties": {
+          "headerBg": {
+            "type": "string"
+          },
+          "sidebarBg": {
+            "type": "string"
+          },
+          "textColor": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavColorSet"
+      }
+    },
+    "spark-class-model://model/NavColorSet/attributes/headerBg/0": {
+      "ref": "spark-class-model://model/NavColorSet/attributes/headerBg/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavColorSet",
+      "name": "headerBg",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NavColorSet/attributes/sidebarBg/1": {
+      "ref": "spark-class-model://model/NavColorSet/attributes/sidebarBg/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavColorSet",
+      "name": "sidebarBg",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NavColorSet/attributes/textColor/2": {
+      "ref": "spark-class-model://model/NavColorSet/attributes/textColor/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavColorSet",
+      "name": "textColor",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NavColorSet": {
+      "ref": "spark-class-model://model/NavColorSet",
+      "kind": "model",
+      "className": "NavColorSet",
+      "schemaRef": "spark-class-model://schema/NavColorSet",
+      "attributeRefs": [
+        "spark-class-model://model/NavColorSet/attributes/headerBg/0",
+        "spark-class-model://model/NavColorSet/attributes/sidebarBg/1",
+        "spark-class-model://model/NavColorSet/attributes/textColor/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NavPreset": {
+      "ref": "spark-class-model://schema/NavPreset",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavPreset",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "light": {
+            "$ref": "spark-class-model://schema/NavColorSet"
+          },
+          "dark": {
+            "$ref": "spark-class-model://schema/NavColorSet"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavPreset"
+      }
+    },
+    "spark-class-model://model/NavPreset/attributes/name/0": {
+      "ref": "spark-class-model://model/NavPreset/attributes/name/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavPreset",
+      "name": "name",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NavPreset/attributes/color/1": {
+      "ref": "spark-class-model://model/NavPreset/attributes/color/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavPreset",
+      "name": "color",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/fbf31b5939d7dedd961e6a62614cbc14c30242fe513ba0e89bf1d52f57ca3cb4": {
+      "ref": "spark-class-model://schema/shared/fbf31b5939d7dedd961e6a62614cbc14c30242fe513ba0e89bf1d52f57ca3cb4",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/NavColorSet",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/fbf31b5939d7dedd961e6a62614cbc14c30242fe513ba0e89bf1d52f57ca3cb4"
+      }
+    },
+    "spark-class-model://model/NavPreset/attributes/light/2": {
+      "ref": "spark-class-model://model/NavPreset/attributes/light/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavPreset",
+      "name": "light",
+      "schemaRef": "spark-class-model://schema/shared/fbf31b5939d7dedd961e6a62614cbc14c30242fe513ba0e89bf1d52f57ca3cb4",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavPreset%2Fattributes%2Flight%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FNavColorSet": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavPreset%2Fattributes%2Flight%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FNavColorSet",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavPreset/attributes/light/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavColorSet",
+      "targetClassName": "NavColorSet",
+      "targetFile": "files/class-model-emit/packages/spark-app/src/navigation/useColorScheme.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavColorSet"
+    },
+    "spark-class-model://model/NavPreset/attributes/dark/3": {
+      "ref": "spark-class-model://model/NavPreset/attributes/dark/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavPreset",
+      "name": "dark",
+      "schemaRef": "spark-class-model://schema/shared/fbf31b5939d7dedd961e6a62614cbc14c30242fe513ba0e89bf1d52f57ca3cb4",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavPreset%2Fattributes%2Fdark%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FNavColorSet": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavPreset%2Fattributes%2Fdark%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FNavColorSet",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavPreset/attributes/dark/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavColorSet",
+      "targetClassName": "NavColorSet",
+      "targetFile": "files/class-model-emit/packages/spark-app/src/navigation/useColorScheme.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavColorSet"
+    },
+    "spark-class-model://model/NavPreset": {
+      "ref": "spark-class-model://model/NavPreset",
+      "kind": "model",
+      "className": "NavPreset",
+      "schemaRef": "spark-class-model://schema/NavPreset",
+      "attributeRefs": [
+        "spark-class-model://model/NavPreset/attributes/name/0",
+        "spark-class-model://model/NavPreset/attributes/color/1",
+        "spark-class-model://model/NavPreset/attributes/light/2",
+        "spark-class-model://model/NavPreset/attributes/dark/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavPreset%2Fattributes%2Flight%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FNavColorSet",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavPreset%2Fattributes%2Fdark%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FNavColorSet"
+      ]
+    },
+    "spark-class-model://schema/StyleColorSet": {
+      "ref": "spark-class-model://schema/StyleColorSet",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "StyleColorSet",
+        "properties": {
+          "bg": {
+            "type": "string"
+          },
+          "page": {
+            "type": "string"
+          },
+          "overlay": {
+            "type": "string"
+          },
+          "soft": {
+            "type": "string"
+          },
+          "sunken": {
+            "type": "string"
+          },
+          "hover": {
+            "type": "string"
+          },
+          "selected": {
+            "type": "string"
+          },
+          "textPrimary": {
+            "type": "string"
+          },
+          "textRegular": {
+            "type": "string"
+          },
+          "textSecondary": {
+            "type": "string"
+          },
+          "textPlaceholder": {
+            "type": "string"
+          },
+          "border": {
+            "type": "string"
+          },
+          "borderLight": {
+            "type": "string"
+          },
+          "divider": {
+            "type": "string"
+          },
+          "chromeBorder": {
+            "type": "string"
+          },
+          "controlBg": {
+            "type": "string"
+          },
+          "controlBorder": {
+            "type": "string"
+          },
+          "controlBorderHover": {
+            "type": "string"
+          },
+          "shadow": {
+            "type": "string"
+          },
+          "shadowLight": {
+            "type": "string"
+          },
+          "shadowPanel": {
+            "type": "string"
+          },
+          "scrollbarThumb": {
+            "type": "string"
+          },
+          "scrollbarThumbHover": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/StyleColorSet"
+      }
+    },
+    "spark-class-model://model/StyleColorSet/attributes/bg/0": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/bg/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "bg",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/page/1": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/page/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "page",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/overlay/2": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/overlay/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "overlay",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/soft/3": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/soft/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "soft",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/sunken/4": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/sunken/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "sunken",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/hover/5": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/hover/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "hover",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/selected/6": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/selected/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "selected",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/textPrimary/7": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/textPrimary/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "textPrimary",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/textRegular/8": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/textRegular/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "textRegular",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/textSecondary/9": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/textSecondary/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "textSecondary",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/textPlaceholder/10": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/textPlaceholder/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "textPlaceholder",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/border/11": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/border/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "border",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/borderLight/12": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/borderLight/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "borderLight",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/divider/13": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/divider/13",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "divider",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/chromeBorder/14": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/chromeBorder/14",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "chromeBorder",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/controlBg/15": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/controlBg/15",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "controlBg",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/controlBorder/16": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/controlBorder/16",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "controlBorder",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/controlBorderHover/17": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/controlBorderHover/17",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "controlBorderHover",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/shadow/18": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/shadow/18",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "shadow",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/shadowLight/19": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/shadowLight/19",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "shadowLight",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/shadowPanel/20": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/shadowPanel/20",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "shadowPanel",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/scrollbarThumb/21": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/scrollbarThumb/21",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "scrollbarThumb",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet/attributes/scrollbarThumbHover/22": {
+      "ref": "spark-class-model://model/StyleColorSet/attributes/scrollbarThumbHover/22",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StyleColorSet",
+      "name": "scrollbarThumbHover",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StyleColorSet": {
+      "ref": "spark-class-model://model/StyleColorSet",
+      "kind": "model",
+      "className": "StyleColorSet",
+      "schemaRef": "spark-class-model://schema/StyleColorSet",
+      "attributeRefs": [
+        "spark-class-model://model/StyleColorSet/attributes/bg/0",
+        "spark-class-model://model/StyleColorSet/attributes/page/1",
+        "spark-class-model://model/StyleColorSet/attributes/overlay/2",
+        "spark-class-model://model/StyleColorSet/attributes/soft/3",
+        "spark-class-model://model/StyleColorSet/attributes/sunken/4",
+        "spark-class-model://model/StyleColorSet/attributes/hover/5",
+        "spark-class-model://model/StyleColorSet/attributes/selected/6",
+        "spark-class-model://model/StyleColorSet/attributes/textPrimary/7",
+        "spark-class-model://model/StyleColorSet/attributes/textRegular/8",
+        "spark-class-model://model/StyleColorSet/attributes/textSecondary/9",
+        "spark-class-model://model/StyleColorSet/attributes/textPlaceholder/10",
+        "spark-class-model://model/StyleColorSet/attributes/border/11",
+        "spark-class-model://model/StyleColorSet/attributes/borderLight/12",
+        "spark-class-model://model/StyleColorSet/attributes/divider/13",
+        "spark-class-model://model/StyleColorSet/attributes/chromeBorder/14",
+        "spark-class-model://model/StyleColorSet/attributes/controlBg/15",
+        "spark-class-model://model/StyleColorSet/attributes/controlBorder/16",
+        "spark-class-model://model/StyleColorSet/attributes/controlBorderHover/17",
+        "spark-class-model://model/StyleColorSet/attributes/shadow/18",
+        "spark-class-model://model/StyleColorSet/attributes/shadowLight/19",
+        "spark-class-model://model/StyleColorSet/attributes/shadowPanel/20",
+        "spark-class-model://model/StyleColorSet/attributes/scrollbarThumb/21",
+        "spark-class-model://model/StyleColorSet/attributes/scrollbarThumbHover/22"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/StylePreset": {
+      "ref": "spark-class-model://schema/StylePreset",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "StylePreset",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "primaryColor": {
+            "type": "string"
+          },
+          "navIndex": {
+            "type": "number"
+          },
+          "light": {
+            "$ref": "spark-class-model://schema/StyleColorSet"
+          },
+          "dark": {
+            "$ref": "spark-class-model://schema/StyleColorSet"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/StylePreset"
+      }
+    },
+    "spark-class-model://model/StylePreset/attributes/name/0": {
+      "ref": "spark-class-model://model/StylePreset/attributes/name/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StylePreset",
+      "name": "name",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StylePreset/attributes/description/1": {
+      "ref": "spark-class-model://model/StylePreset/attributes/description/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StylePreset",
+      "name": "description",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StylePreset/attributes/icon/2": {
+      "ref": "spark-class-model://model/StylePreset/attributes/icon/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StylePreset",
+      "name": "icon",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StylePreset/attributes/primaryColor/3": {
+      "ref": "spark-class-model://model/StylePreset/attributes/primaryColor/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StylePreset",
+      "name": "primaryColor",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/StylePreset/attributes/navIndex/4": {
+      "ref": "spark-class-model://model/StylePreset/attributes/navIndex/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StylePreset",
+      "name": "navIndex",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/576bf1821900128926d17032a71e8c733ae6f86c86eb9289e03ea6989f1eefdf": {
+      "ref": "spark-class-model://schema/shared/576bf1821900128926d17032a71e8c733ae6f86c86eb9289e03ea6989f1eefdf",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/StyleColorSet",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/576bf1821900128926d17032a71e8c733ae6f86c86eb9289e03ea6989f1eefdf"
+      }
+    },
+    "spark-class-model://model/StylePreset/attributes/light/5": {
+      "ref": "spark-class-model://model/StylePreset/attributes/light/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StylePreset",
+      "name": "light",
+      "schemaRef": "spark-class-model://schema/shared/576bf1821900128926d17032a71e8c733ae6f86c86eb9289e03ea6989f1eefdf",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStylePreset%2Fattributes%2Flight%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FStyleColorSet": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStylePreset%2Fattributes%2Flight%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FStyleColorSet",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/StylePreset/attributes/light/5",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/StyleColorSet",
+      "targetClassName": "StyleColorSet",
+      "targetFile": "files/class-model-emit/packages/spark-app/src/navigation/useColorScheme.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/StyleColorSet"
+    },
+    "spark-class-model://model/StylePreset/attributes/dark/6": {
+      "ref": "spark-class-model://model/StylePreset/attributes/dark/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/StylePreset",
+      "name": "dark",
+      "schemaRef": "spark-class-model://schema/shared/576bf1821900128926d17032a71e8c733ae6f86c86eb9289e03ea6989f1eefdf",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStylePreset%2Fattributes%2Fdark%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FStyleColorSet": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStylePreset%2Fattributes%2Fdark%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FStyleColorSet",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/StylePreset/attributes/dark/6",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/StyleColorSet",
+      "targetClassName": "StyleColorSet",
+      "targetFile": "files/class-model-emit/packages/spark-app/src/navigation/useColorScheme.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/StyleColorSet"
+    },
+    "spark-class-model://model/StylePreset": {
+      "ref": "spark-class-model://model/StylePreset",
+      "kind": "model",
+      "className": "StylePreset",
+      "schemaRef": "spark-class-model://schema/StylePreset",
+      "attributeRefs": [
+        "spark-class-model://model/StylePreset/attributes/name/0",
+        "spark-class-model://model/StylePreset/attributes/description/1",
+        "spark-class-model://model/StylePreset/attributes/icon/2",
+        "spark-class-model://model/StylePreset/attributes/primaryColor/3",
+        "spark-class-model://model/StylePreset/attributes/navIndex/4",
+        "spark-class-model://model/StylePreset/attributes/light/5",
+        "spark-class-model://model/StylePreset/attributes/dark/6"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStylePreset%2Fattributes%2Flight%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FStyleColorSet",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FStylePreset%2Fattributes%2Fdark%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FStyleColorSet"
+      ]
+    }
+  }
+}

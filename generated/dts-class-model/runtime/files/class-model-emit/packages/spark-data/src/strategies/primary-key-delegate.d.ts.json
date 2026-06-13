@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-data/src/strategies/primary-key-delegate.d.ts",
+  "symbols": [
+    "PrimaryKeyDelegate"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PrimaryKeyDelegate": {
+      "ref": "spark-class-model://schema/PrimaryKeyDelegate",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PrimaryKeyDelegate",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PrimaryKeyDelegate"
+      }
+    },
+    "spark-class-model://model/PrimaryKeyDelegate/constructors/0": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3ae6e45a6ff86ecd7e89eafba60a72f26fc83710fad91580348628ca834f84ff"
+    },
+    "spark-class-model://schema/shared/3ae6e45a6ff86ecd7e89eafba60a72f26fc83710fad91580348628ca834f84ff": {
+      "ref": "spark-class-model://schema/shared/3ae6e45a6ff86ecd7e89eafba60a72f26fc83710fad91580348628ca834f84ff",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "_getColumns": {
+            "type": "object",
+            "title": "() => DataColumn[]"
+          },
+          "_getColumnMap": {
+            "type": "object",
+            "title": "() => Map<string, DataColumn> | undefined"
+          },
+          "_getRows": {
+            "type": "object",
+            "title": "() => DataRow[]"
+          },
+          "_registerComputed": {
+            "type": "object",
+            "title": "(name: string, fn: (row: DataRow) => unknown) => void"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3ae6e45a6ff86ecd7e89eafba60a72f26fc83710fad91580348628ca834f84ff"
+      }
+    },
+    "spark-class-model://model/PrimaryKeyDelegate/methods/ensurePkColumn/0": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/methods/ensurePkColumn/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "name": "ensurePkColumn",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/PrimaryKeyDelegate/methods/getPkColumnMeta/1": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/methods/getPkColumnMeta/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "name": "getPkColumnMeta",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/25c79fc4745297251d7d7e317c40be6893bf3ddcc832d4fc467bd3e1c88fbc08"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgetPkColumnMeta%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FDataColumn": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgetPkColumnMeta%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FDataColumn",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PrimaryKeyDelegate/methods/getPkColumnMeta/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DataColumn",
+      "targetClassName": "DataColumn",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataColumn"
+    },
+    "spark-class-model://model/PrimaryKeyDelegate/methods/resetPrimaryKey/2": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/methods/resetPrimaryKey/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "name": "resetPrimaryKey",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/PrimaryKeyDelegate/methods/getPkKey/3": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/methods/getPkKey/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "name": "getPkKey",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/62c0720f121a1bc7746bb80e7db15f9bc9fbf5e3baaf35ef6ef6223604d1cfe1",
+      "returnSchemaRef": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgetPkKey%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgetPkKey%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PrimaryKeyDelegate/methods/getPkKey/3",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/PrimaryKeyDelegate/methods/buildServerPk/4": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/methods/buildServerPk/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "name": "buildServerPk",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/62c0720f121a1bc7746bb80e7db15f9bc9fbf5e3baaf35ef6ef6223604d1cfe1",
+      "returnSchemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FbuildServerPk%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FbuildServerPk%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PrimaryKeyDelegate/methods/buildServerPk/4",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/PrimaryKeyDelegate/methods/isSamePrimaryKey/5": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/methods/isSamePrimaryKey/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "name": "isSamePrimaryKey",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/79b6d8fb1e2cfdf8bc6c75182494fa8a1376110580e99a77ab064cf2d2089d4d",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://schema/shared/79b6d8fb1e2cfdf8bc6c75182494fa8a1376110580e99a77ab064cf2d2089d4d": {
+      "ref": "spark-class-model://schema/shared/79b6d8fb1e2cfdf8bc6c75182494fa8a1376110580e99a77ab064cf2d2089d4d",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "row1": {
+            "$ref": "spark-class-model://schema/DataRow"
+          },
+          "row2": {
+            "$ref": "spark-class-model://schema/DataRow"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/79b6d8fb1e2cfdf8bc6c75182494fa8a1376110580e99a77ab064cf2d2089d4d"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FisSamePrimaryKey%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FisSamePrimaryKey%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PrimaryKeyDelegate/methods/isSamePrimaryKey/5",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/PrimaryKeyDelegate/methods/setPrimaryKeyGenerator/6": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/methods/setPrimaryKeyGenerator/6",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "name": "setPrimaryKeyGenerator",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4bcac39ea966f7a3e536a5cd36d865539a9750e65ecafdacad23f5b14a64a74d"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FsetPrimaryKeyGenerator%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGeneratorConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FsetPrimaryKeyGenerator%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGeneratorConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PrimaryKeyDelegate/methods/setPrimaryKeyGenerator/6",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/PrimaryKeyGeneratorConfig",
+      "targetClassName": "PrimaryKeyGeneratorConfig",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/core/primary-key-generator.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PrimaryKeyGeneratorConfig"
+    },
+    "spark-class-model://model/PrimaryKeyDelegate/methods/removePrimaryKeyGenerator/7": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/methods/removePrimaryKeyGenerator/7",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "name": "removePrimaryKeyGenerator",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/PrimaryKeyDelegate/methods/generatePrimaryKey/8": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/methods/generatePrimaryKey/8",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "name": "generatePrimaryKey",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3f1057775891587e4d83ec31fbdcd8859bcd3d56303b2dcf336ac6f30a536c87",
+      "returnSchemaRef": "spark-class-model://schema/shared/d6da516bf1ead8be0d121529135c994dc180abc194ff65cda45b488c54e1f495"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgeneratePrimaryKey%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgeneratePrimaryKey%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PrimaryKeyDelegate/methods/generatePrimaryKey/8",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/PrimaryKeyDelegate/methods/ensurePrimaryKey/9": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/methods/ensurePrimaryKey/9",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "name": "ensurePrimaryKey",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3f1057775891587e4d83ec31fbdcd8859bcd3d56303b2dcf336ac6f30a536c87",
+      "returnSchemaRef": "spark-class-model://schema/shared/d6da516bf1ead8be0d121529135c994dc180abc194ff65cda45b488c54e1f495"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FensurePrimaryKey%2F9/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FensurePrimaryKey%2F9/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PrimaryKeyDelegate/methods/ensurePrimaryKey/9",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/PrimaryKeyDelegate/methods/getPrimaryKeyGeneratorConfig/10": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/methods/getPrimaryKeyGeneratorConfig/10",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "name": "getPrimaryKeyGeneratorConfig",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/fc73b35f57ac89bb29f58bd3f456fc8b993a6f05dc6136c2d294a17512918e2a"
+    },
+    "spark-class-model://model/PrimaryKeyDelegate": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate",
+      "kind": "model",
+      "className": "PrimaryKeyDelegate",
+      "schemaRef": "spark-class-model://schema/PrimaryKeyDelegate",
+      "constructorRef": "spark-class-model://model/PrimaryKeyDelegate/constructors/0",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/PrimaryKeyDelegate/methods/ensurePkColumn/0",
+        "spark-class-model://model/PrimaryKeyDelegate/methods/getPkColumnMeta/1",
+        "spark-class-model://model/PrimaryKeyDelegate/methods/resetPrimaryKey/2",
+        "spark-class-model://model/PrimaryKeyDelegate/methods/getPkKey/3",
+        "spark-class-model://model/PrimaryKeyDelegate/methods/buildServerPk/4",
+        "spark-class-model://model/PrimaryKeyDelegate/methods/isSamePrimaryKey/5",
+        "spark-class-model://model/PrimaryKeyDelegate/methods/setPrimaryKeyGenerator/6",
+        "spark-class-model://model/PrimaryKeyDelegate/methods/removePrimaryKeyGenerator/7",
+        "spark-class-model://model/PrimaryKeyDelegate/methods/generatePrimaryKey/8",
+        "spark-class-model://model/PrimaryKeyDelegate/methods/ensurePrimaryKey/9",
+        "spark-class-model://model/PrimaryKeyDelegate/methods/getPrimaryKeyGeneratorConfig/10"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgetPkColumnMeta%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FDataColumn",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgetPkKey%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FbuildServerPk%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FisSamePrimaryKey%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FsetPrimaryKeyGenerator%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGeneratorConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgeneratePrimaryKey%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FensurePrimaryKey%2F9/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow"
+      ]
+    }
+  }
+}

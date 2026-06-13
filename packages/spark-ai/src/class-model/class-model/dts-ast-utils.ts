@@ -8,6 +8,15 @@ import { relative, resolve } from 'node:path'
 
 import ts from 'typescript'
 
+export {
+  CLASS_MODEL_EMIT_PREFIX,
+  CLASS_MODEL_EMIT_SOURCE,
+  CLASS_MODEL_EMIT_TSCONFIG,
+  isClassModelEmitPath,
+  sourceFileFromEmitPath,
+  toClassModelEmitPath,
+} from './class-model-emit-path'
+
 /** 将绝对路径归一化为相对于 repoRoot 的 POSIX 风格路径。 */
 export function normalizeRepoPath(absolutePath: string, repoRoot: string): string {
   return relative(resolve(repoRoot), resolve(absolutePath)).replace(/\\/g, '/')
@@ -23,14 +32,4 @@ export function resolveAliasedSymbol(checker: ts.TypeChecker, symbol: ts.Symbol 
 export function declarationNameText(declaration: ts.Declaration): string | undefined {
   const name = (declaration as ts.Declaration & { name?: ts.Node }).name
   return name !== undefined && ts.isIdentifier(name) ? name.text : undefined
-}
-
-/** 将 declarations/ 下的 .d.ts 路径还原为对应的源文件路径。 */
-export function sourceFileFromDeclarationFile(declarationFile: string): string {
-  const sourcePath = declarationFile.startsWith('declarations/')
-    ? declarationFile.slice('declarations/'.length)
-    : declarationFile
-  if (sourcePath.endsWith('.vue.d.ts')) return sourcePath.slice(0, -'.d.ts'.length)
-  if (sourcePath.endsWith('.d.ts')) return `${sourcePath.slice(0, -'.d.ts'.length)}.ts`
-  return sourcePath
 }

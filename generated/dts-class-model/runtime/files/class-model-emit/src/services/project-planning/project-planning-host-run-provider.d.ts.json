@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/src/services/project-planning/project-planning-host-run-provider.d.ts",
+  "symbols": [
+    "ProjectPlanningDeliveryContext"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ProjectPlanningDeliveryContext": {
+      "ref": "spark-class-model://schema/ProjectPlanningDeliveryContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningDeliveryContext",
+        "properties": {
+          "editor": {
+            "$ref": "spark-class-model://schema/ProjectWorkspace"
+          },
+          "saveNavigationAfterRun": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningDeliveryContext"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningDeliveryContext/attributes/editor/0": {
+      "ref": "spark-class-model://model/ProjectPlanningDeliveryContext/attributes/editor/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningDeliveryContext",
+      "name": "editor",
+      "schemaRef": "spark-class-model://schema/shared/ef10943126212788e1c2f243df0dda7361aca2db3d35222f9f4c485829c545f9",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningDeliveryContext%2Fattributes%2Feditor%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectWorkspace": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningDeliveryContext%2Fattributes%2Feditor%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectWorkspace",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPlanningDeliveryContext/attributes/editor/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectWorkspace",
+      "targetClassName": "ProjectWorkspace",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/project/project-workspace.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectWorkspace"
+    },
+    "spark-class-model://model/ProjectPlanningDeliveryContext/attributes/saveNavigationAfterRun/1": {
+      "ref": "spark-class-model://model/ProjectPlanningDeliveryContext/attributes/saveNavigationAfterRun/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningDeliveryContext",
+      "name": "saveNavigationAfterRun",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectPlanningDeliveryContext": {
+      "ref": "spark-class-model://model/ProjectPlanningDeliveryContext",
+      "kind": "model",
+      "className": "ProjectPlanningDeliveryContext",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningDeliveryContext",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectPlanningDeliveryContext/attributes/editor/0",
+        "spark-class-model://model/ProjectPlanningDeliveryContext/attributes/saveNavigationAfterRun/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningDeliveryContext%2Fattributes%2Feditor%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectWorkspace"
+      ]
+    }
+  }
+}

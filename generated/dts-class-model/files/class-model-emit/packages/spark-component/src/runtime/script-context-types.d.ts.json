@@ -1,0 +1,1501 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/runtime/script-context-types.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:runtime/script-context-types",
+    "sourcePath": "class-model-emit/packages/spark-component/src/runtime/script-context-types.d.ts",
+    "sourceFile": "packages/spark-component/src/runtime/script-context-types.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "runtime/script-context-types",
+    "jsdoc": "@module @spark-appworks/spark-component:runtime/script-context-types\n职责：提供 script context types 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\n\nSPARK 页面沙箱上下文类型\n=====================================================\n## 设计意图：跨前端框架的业务脚本层\n`script.js` 沙箱的核心目标是**让业务逻辑与具体前端框架解耦**：\n- 业务脚本只能看到此文件定义的**框架无关抽象接口**（`$page / $route / $dataSet`）\n- 底层实现（Vue Router / Element Plus）由**渲染层**注入，脚本不感知\n- 同一份 `script.js` 理论上可在任何实现了 `ScriptContext` 的渲染层上运行\n这是 `$page` 替代 `ElMessage`、`$route` 替代 Vue Router 的根本原因——**接口是契约，实现可替换**。\n## 约束\n- ✅ 与前端框架完全无关：无 Vue / Element Plus / Vue Router 依赖\n- ✅ 可独立测试：不依赖任何渲染层或 DOM 框架\n- ✅ 稳定边界：变更此文件需同步更新脚本文档\n⚠️ **禁止将此文件改名为 `script-api.ts`**，脚本沙箱契约依赖当前模块边界。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageRoute",
+      "ScriptContext",
+      "PermissionApiInScript",
+      "PageComponentAccessInScript"
+    ]
+  },
+  "symbols": [
+    "PageRoute",
+    "ScriptContext",
+    "PermissionApiInScript",
+    "PageComponentAccessInScript"
+  ],
+  "models": {
+    "PageRoute": {
+      "kind": "PageRoute",
+      "className": "PageRoute",
+      "jsdoc": "框架无关的路由信息快照。\n替代 Vue Router 的 `RouteLocationNormalizedLoaded`，业务脚本通过 `$route` 访问，\n无 Vue Router 依赖。\n@example ```js\n// script.js\nconst orderId = $route.params.id\nconst tab = $route.query.tab\n```",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 当前路径，如 `/users/123` */\n    path: string;\n    /** 含 search/hash 的完整 URL，如 `/users/123?tab=info#detail` */\n    fullPath: string;\n    /** 路由名称（若有） */\n    name: string | null | symbol;\n    /** 路径参数，如 `{ id: '123' }` */\n    params: Record<string, string | string[]>;\n    /** Query 参数，如 `{ tab: 'info' }` */\n    query: Record<string, string | string[] | null>;\n    /** Hash 片段，如 `#detail` */\n    hash: string;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/runtime/script-context-types.d.ts",
+        "line": 44,
+        "className": "PageRoute",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "path",
+          "jsdoc": "当前路径，如 `/users/123`",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "fullPath",
+          "jsdoc": "含 search/hash 的完整 URL，如 `/users/123?tab=info#detail`",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "name",
+          "jsdoc": "路由名称（若有）",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "params",
+          "jsdoc": "路径参数，如 `{ id: '123' }`",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, string | string[]>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "query",
+          "jsdoc": "Query 参数，如 `{ tab: 'info' }`",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, string | string[] | null>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "hash",
+          "jsdoc": "Hash 片段，如 `#detail`",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "ScriptContext": {
+      "kind": "ScriptContext",
+      "className": "ScriptContext",
+      "jsdoc": "业务脚本沙箱上下文 — 完整 API 契约。\n此接口是 `script.js` 可访问的所有变量的类型声明。\n脚本在 `with (__ctx)` 沙箱内执行，所有变量均通过此接口注入。\n**稳定 API（核心框架契约）**：\n- `$route` — 路由快照（只读，不依赖 Vue Router）\n- `$el` — 当前页面容器元素\n- `$query` / `$queryAll` — DOM 查询（谨慎使用）\n- `$refreshData` — 刷新数据（可选指定表名）\n- `$page` — UI 交互服务（消息 / 确认 / 导航）\n**渲染层附加（非核心契约，实现层注入）**：\n- `$dataSet` — DataSet 实例（由渲染层以具体类型注入，不在此契约层定义）\n- `permission` — 权限 helper 命名空间（字段/动作权限判断）\n- `SparkData` — SPARK 数据工具命名空间（在 ScriptContext 外单独注入）\n- `h` — Vue 渲染函数（仅供 Render* 渲染函数，非业务逻辑）\n@example ```js\n// script.js（沙箱内所有变量直接可用，无需 this.xxx）\n\n// 读取路由参数\nconst id = $route.params.id\n\n// UI 交互（框架无关）\nawait $page.showConfirm('是否确认提交？')\n$page.showMessage('保存成功', 'success')\n$page.navigate('/orders')\n```",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /**\n     * 页面级组件访问 API。\n     *\n     * 可用于按组件 id / type 获取实例快照与容器组件暴露的包装 API。\n     */\n    $components: PageComponentAccessInScript;\n    /**\n     * 当前路由快照（底层 Vue Router 实现，只读，framework-agnostic）。\n     * 通过代理实时反映当前路由，但接口类型不依赖 Vue Router。\n     */\n    $route: PageRoute;\n    /** 当前页面容器 DOM 元素（可用于 focus、scroll 等操作） */\n    $el: () => HTMLElement | null;\n    /** 通过 CSS 选择器查询页面内单个元素 */\n    $query: (selector: string) => HTMLElement | null;\n    /** 通过 CSS 选择器查询页面内所有匹配元素 */\n    $queryAll: (selector: string) => NodeListOf<Element>;\n    /**\n     * 刷新数据——重新触发指定 DataView 的远端加载接口。\n     * @param key 可选视图键；格式为 `'tableName'`（等同 `'tableName@default'`）\n     *            或 `'tableName@viewId'`（指定具体视图）。\n     *            省略则刷新页面内所有有远端加载接口的 DataView。\n     */\n    $refreshData: (key?: string) => Promise<void>;\n    /**\n     * UI 交互服务（框架无关，替代 ElMessage / ElMessageBox）。\n     *\n     * ✅ 推荐：所有消息提示、确认框、输入框、导航均通过此接口调用。\n     *\n     * 类型直接来自 page-config 的 runtime service contract，渲染层注入对应实现。\n     */\n    $page: PageServiceCapability;\n    /**\n     * 权限 helper 命名空间。\n     *\n     * 由渲染层注入，结构上对齐组件层公开的 `permission` API，\n     * 可用于动作权限判断、字段权限状态解析与字段显示格式化。\n     */\n    permission: PermissionApiInScript;\n    /**\n     * 脚本日志接口（已桥接到框架 Logger 传输链）。\n     *\n     * 在 script.js 中调用 `console.log/info/warn/error/debug`，\n     * 会同时进入浏览器控制台与统一日志采集（AI 面板可见）。\n     */\n    console: Pick<Console, 'log' | 'info' | 'warn' | 'error' | 'debug'>;\n    /**\n     * 模块级上下文（导航系统注入，当前模块无上下文时为 `null`）。\n     *\n     * 提供当前模块选择器的选中值和可选项，脚本可据此实现按项目/租户/环境加载数据等逻辑。\n     *\n     * @example\n     * ```js\n     * // script.js\n     * const projectId = $moduleContext?.selected\n     * if (projectId) {\n     *   view?.loadFromServer({ projectId })\n     * }\n     * ```\n     */\n    $moduleContext: ContextSnapshot | null;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/runtime/script-context-types.d.ts",
+        "line": 90,
+        "className": "ScriptContext",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "$components",
+          "jsdoc": "页面级组件访问 API。\n可用于按组件 id / type 获取实例快照与容器组件暴露的包装 API。",
+          "schema": {
+            "$ref": "#/$defs/PageComponentAccessInScript"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "$route",
+          "jsdoc": "当前路由快照（底层 Vue Router 实现，只读，framework-agnostic）。\n通过代理实时反映当前路由，但接口类型不依赖 Vue Router。",
+          "schema": {
+            "$ref": "#/$defs/PageRoute"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "$page",
+          "jsdoc": "UI 交互服务（框架无关，替代 ElMessage / ElMessageBox）。\n✅ 推荐：所有消息提示、确认框、输入框、导航均通过此接口调用。\n类型直接来自 page-config 的 runtime service contract，渲染层注入对应实现。",
+          "schema": {
+            "type": "object",
+            "title": "PageServiceCapability"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "permission",
+          "jsdoc": "权限 helper 命名空间。\n由渲染层注入，结构上对齐组件层公开的 `permission` API，\n可用于动作权限判断、字段权限状态解析与字段显示格式化。",
+          "schema": {
+            "$ref": "#/$defs/PermissionApiInScript"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "console",
+          "jsdoc": "脚本日志接口（已桥接到框架 Logger 传输链）。\n在 script.js 中调用 `console.log/info/warn/error/debug`，\n会同时进入浏览器控制台与统一日志采集（AI 面板可见）。",
+          "schema": {
+            "type": "object",
+            "title": "Pick<Console, 'log' | 'info' | 'warn' | 'error' | 'debug'>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "$moduleContext",
+          "jsdoc": "模块级上下文（导航系统注入，当前模块无上下文时为 `null`）。\n提供当前模块选择器的选中值和可选项，脚本可据此实现按项目/租户/环境加载数据等逻辑。\n@example ```js\n// script.js\nconst projectId = $moduleContext?.selected\nif (projectId) {\n  view?.loadFromServer({ projectId })\n}\n```",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ContextSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "$el",
+          "jsdoc": "当前页面容器 DOM 元素（可用于 focus、scroll 等操作）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "HTMLElement"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "HTMLElement"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "$query",
+          "jsdoc": "通过 CSS 选择器查询页面内单个元素",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "selector",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "HTMLElement"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "HTMLElement"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "$queryAll",
+          "jsdoc": "通过 CSS 选择器查询页面内所有匹配元素",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "selector",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "NodeListOf",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "Element"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "NodeListOf<Element>"
+          }
+        },
+        {
+          "name": "$refreshData",
+          "jsdoc": "刷新数据——重新触发指定 DataView 的远端加载接口。\n@param key 可选视图键；格式为 `'tableName'`（等同 `'tableName@default'`）\n或 `'tableName@viewId'`（指定具体视图）。\n省略则刷新页面内所有有远端加载接口的 DataView。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "key",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        }
+      ]
+    },
+    "PermissionApiInScript": {
+      "kind": "PermissionApiInScript",
+      "className": "PermissionApiInScript",
+      "jsdoc": "沙箱权限 API — 纯函数集，无类/工厂/单例。\n所有函数可选接受 `permissionMode` 参数（脚本通常省略）。\n函数直接来自组件层 `permission/` 模块导出。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    isPermittedAction(action: string | undefined, context: PermissionActionContext): boolean;\n    isModelScopedPermAction(action: string | undefined): boolean;\n    isRowScopedPermAction(action: string | undefined): boolean;\n    canCreate(modelPermission?: ModelPermission): boolean;\n    canImport(modelPermission?: ModelPermission): boolean;\n    canExport(modelPermission?: ModelPermission): boolean;\n    canDelete(row: DataRow): boolean;\n    canCreateChild(row: DataRow): boolean;\n    canEdit(row: DataRow): boolean;\n    isFieldVisible(field: string, row: DataRow): boolean;\n    isFieldEditable(field: string, row: DataRow): boolean;\n    getFieldVisibility(field: string, row: DataRow): FieldVisibility;\n    resolveFieldPermissionState(field: string | undefined, row: DataRow | null | undefined, config?: Omit<FieldRenderConfig, 'field'>): FieldRenderState | null;\n    computeFieldState(config: FieldRenderConfig, row: DataRow): FieldRenderState;\n    filterDeletableRows(rows: DataRow[]): DataRow[];\n    filterEditableRows(rows: DataRow[]): DataRow[];\n    filterFields(row: DataRow): Record<string, unknown>;\n    getEditableFields(row: DataRow, allFields: string[]): string[];\n    getVisibleFields(row: DataRow, allFields: string[]): string[];\n    filterDisplayableFields(row: DataRow): DataRow;\n    extractModelPermission(dataSource: {\n        _modelPerm?: ModelPermission;\n    } | null | undefined): ModelPermission | undefined;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/runtime/script-context-types.d.ts",
+        "line": 158,
+        "className": "PermissionApiInScript",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "isPermittedAction",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "action",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            },
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "PermissionActionContext"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string"
+              },
+              "context": {
+                "type": "object",
+                "title": "PermissionActionContext"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "isModelScopedPermAction",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "action",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "isRowScopedPermAction",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "action",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canCreate",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "modelPermission",
+              "type": {
+                "type": "reference",
+                "name": "ModelPermission"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "modelPermission": {
+                "type": "object",
+                "title": "ModelPermission"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canImport",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "modelPermission",
+              "type": {
+                "type": "reference",
+                "name": "ModelPermission"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "modelPermission": {
+                "type": "object",
+                "title": "ModelPermission"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canExport",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "modelPermission",
+              "type": {
+                "type": "reference",
+                "name": "ModelPermission"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "modelPermission": {
+                "type": "object",
+                "title": "ModelPermission"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canDelete",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canCreateChild",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canEdit",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "isFieldVisible",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "field",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "isFieldEditable",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "field",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "getFieldVisibility",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "field",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "FieldVisibility"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "FieldVisibility"
+          }
+        },
+        {
+          "name": "resolveFieldPermissionState",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "field",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            },
+            {
+              "name": "row",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "undefined"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "config",
+              "type": {
+                "type": "reference",
+                "name": "Omit",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  },
+                  {
+                    "type": "literal",
+                    "value": "field"
+                  }
+                ]
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "FieldRenderState"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "row": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "DataRow"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "config": {
+                "type": "object",
+                "title": "Omit<FieldRenderConfig, 'field'>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "FieldRenderState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "computeFieldState",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "config",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "FieldRenderState"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "title": "FieldRenderConfig"
+              },
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "FieldRenderState"
+          }
+        },
+        {
+          "name": "filterDeletableRows",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rows",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "DataRow"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "DataRow"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "DataRow"
+            }
+          }
+        },
+        {
+          "name": "filterEditableRows",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rows",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "DataRow"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "DataRow"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "DataRow"
+            }
+          }
+        },
+        {
+          "name": "filterFields",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        {
+          "name": "getEditableFields",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            },
+            {
+              "name": "allFields",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              },
+              "allFields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "name": "getVisibleFields",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            },
+            {
+              "name": "allFields",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              },
+              "allFields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "name": "filterDisplayableFields",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "DataRow"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataRow"
+          }
+        },
+        {
+          "name": "extractModelPermission",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "dataSource",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "unknown",
+                    "name": "{\n        _modelPerm?: ModelPermission;\n    }"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "undefined"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "ModelPermission"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "dataSource": {
+                "anyOf": [
+                  {
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ModelPermission"
+          }
+        }
+      ]
+    },
+    "PageComponentAccessInScript": {
+      "kind": "PageComponentAccessInScript",
+      "className": "PageComponentAccessInScript",
+      "jsdoc": "页面级组件访问 API（脚本可用）",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 按组件 id 获取实例快照（只读元数据，不返回组件 API 对象） */\n    get(id: string): ComponentInstanceSnapshot | null;\n    /** 列出页面组件实例（可按 type 过滤，只读元数据） */\n    list(type?: string): ComponentInstanceSnapshot[];\n    /** 按组件 id 获取组件暴露 API（运行时实现可返回任意结构） */\n    getApi<T = unknown>(id: string): T | null;\n    /** 按 type 获取同类组件 API 列表 */\n    getApisByType<T = unknown>(type: string): T[];\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/runtime/script-context-types.d.ts",
+        "line": 184,
+        "className": "PageComponentAccessInScript",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "get",
+          "jsdoc": "按组件 id 获取实例快照（只读元数据，不返回组件 API 对象）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ComponentInstanceSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "list",
+          "jsdoc": "列出页面组件实例（可按 type 过滤，只读元数据）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "type",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "ComponentInstanceSnapshot"
+            }
+          }
+        },
+        {
+          "name": "getApi",
+          "jsdoc": "按组件 id 获取组件暴露 API（运行时实现可返回任意结构）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "getApisByType",
+          "jsdoc": "按 type 获取同类组件 API 列表",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "type",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "T",
+              "refersToTypeParameter": true
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": true
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.165Z",
+  "$defs": {
+    "PageRoute": {
+      "type": "object",
+      "title": "PageRoute",
+      "description": "框架无关的路由信息快照。\n替代 Vue Router 的 `RouteLocationNormalizedLoaded`，业务脚本通过 `$route` 访问，\n无 Vue Router 依赖。\n@example ```js\n// script.js\nconst orderId = $route.params.id\nconst tab = $route.query.tab\n```",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "fullPath": {
+          "type": "string"
+        },
+        "name": true,
+        "params": {
+          "type": "object",
+          "title": "Record<string, string | string[]>"
+        },
+        "query": {
+          "type": "object",
+          "title": "Record<string, string | string[] | null>"
+        },
+        "hash": {
+          "type": "string"
+        }
+      }
+    },
+    "ScriptContext": {
+      "type": "object",
+      "title": "ScriptContext",
+      "description": "业务脚本沙箱上下文 — 完整 API 契约。\n此接口是 `script.js` 可访问的所有变量的类型声明。\n脚本在 `with (__ctx)` 沙箱内执行，所有变量均通过此接口注入。\n**稳定 API（核心框架契约）**：\n- `$route` — 路由快照（只读，不依赖 Vue Router）\n- `$el` — 当前页面容器元素\n- `$query` / `$queryAll` — DOM 查询（谨慎使用）\n- `$refreshData` — 刷新数据（可选指定表名）\n- `$page` — UI 交互服务（消息 / 确认 / 导航）\n**渲染层附加（非核心契约，实现层注入）**：\n- `$dataSet` — DataSet 实例（由渲染层以具体类型注入，不在此契约层定义）\n- `permission` — 权限 helper 命名空间（字段/动作权限判断）\n- `SparkData` — SPARK 数据工具命名空间（在 ScriptContext 外单独注入）\n- `h` — Vue 渲染函数（仅供 Render* 渲染函数，非业务逻辑）\n@example ```js\n// script.js（沙箱内所有变量直接可用，无需 this.xxx）\n\n// 读取路由参数\nconst id = $route.params.id\n\n// UI 交互（框架无关）\nawait $page.showConfirm('是否确认提交？')\n$page.showMessage('保存成功', 'success')\n$page.navigate('/orders')\n```",
+      "properties": {
+        "$components": {
+          "$ref": "#/$defs/PageComponentAccessInScript"
+        },
+        "$route": {
+          "$ref": "#/$defs/PageRoute"
+        },
+        "$page": {
+          "type": "object",
+          "title": "PageServiceCapability"
+        },
+        "permission": {
+          "$ref": "#/$defs/PermissionApiInScript"
+        },
+        "console": {
+          "type": "object",
+          "title": "Pick<Console, 'log' | 'info' | 'warn' | 'error' | 'debug'>"
+        },
+        "$moduleContext": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "ContextSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "PermissionApiInScript": {
+      "type": "object",
+      "title": "PermissionApiInScript",
+      "description": "沙箱权限 API — 纯函数集，无类/工厂/单例。\n所有函数可选接受 `permissionMode` 参数（脚本通常省略）。\n函数直接来自组件层 `permission/` 模块导出。"
+    },
+    "PageComponentAccessInScript": {
+      "type": "object",
+      "title": "PageComponentAccessInScript",
+      "description": "页面级组件访问 API（脚本可用）"
+    }
+  }
+}

@@ -13,7 +13,7 @@
 
 ## 当前口径
 
-- DTS ClassModel 由 `.d.ts`、源码注释和 TypeScript 类型生成，不维护手写目录、参数说明或 runtime 路线图。
+- DTS ClassModel 由源码 + JSDoc 经**内存 emit** 投影为 JSON bundle（`generated/dts-class-model/`），不维护手写目录、参数说明或 runtime 路线图；运行时由 Web Worker 按需加载 shard。
 - 后端 AI 只负责 LLM 通信、APP SSE 通信、会话记录落库和查询。
 - 页面设计业务只能通过 `spark-project-model` 的项目模型和 PageNode 子模型沉淀事实。
 - 生成代码必须服从：理念 > 逻辑 > AI 生成代码规则 > SSOT || SOLID > 该删则删 || 该合则合 || 该拆则拆 > 迁移便利。

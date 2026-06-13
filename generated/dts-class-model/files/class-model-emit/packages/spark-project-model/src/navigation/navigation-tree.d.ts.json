@@ -1,0 +1,307 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-project-model/src/navigation/navigation-tree.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:navigation/navigation-tree",
+    "sourcePath": "class-model-emit/packages/spark-project-model/src/navigation/navigation-tree.d.ts",
+    "sourceFile": "packages/spark-project-model/src/navigation/navigation-tree.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "navigation/navigation-tree",
+    "jsdoc": "@module @spark-appworks/spark-project-model:navigation/navigation-tree\n职责：提供项目模型层 navigation-tree 能力，围绕 NormalizeNavRootInput、BuildProjectPageSummariesOptions、TreeNodeLike 处理导航、页面文件、配置内容、工作区或远端 IO 契约。\n边界：只表达项目/页面配置领域模型，不直接渲染组件，也不绕过 pageDesign 四文件链路。\nAI用途：规划导航、读写 page files 或理解 ProjectModel/ProjectWorkspace 行为时，用本模块定位 navigation/navigation-tree。",
+    "jsdocSource": "source-file-jsdoc",
+    "symbols": [
+      "NormalizeNavRootInput",
+      "BuildProjectPageSummariesOptions",
+      "TreeNodeLike"
+    ]
+  },
+  "symbols": [
+    "NormalizeNavRootInput",
+    "BuildProjectPageSummariesOptions",
+    "TreeNodeLike"
+  ],
+  "models": {
+    "NormalizeNavRootInput": {
+      "kind": "NormalizeNavRootInput",
+      "className": "NormalizeNavRootInput",
+      "jsdoc": "Normalize Nav Root Input 的输入数据。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 唯一标识。 */\n    id?: string | undefined;\n    /** 显示标题。 */\n    title?: string | undefined;\n    /** child Placement 字段。 */\n    childPlacement?: string | undefined;\n    /** 子节点集合。 */\n    children?: ProjectNodeData[] | undefined;\n    /** icon 字段。 */\n    icon?: string | undefined;\n    /** description 字段。 */\n    description?: string | undefined;\n    /** planning Attachment Ref 字段。 */\n    planningAttachmentRef?: string | undefined;\n    /** version 字段。 */\n    version?: string | undefined;\n    /** node Kind 字段。 */\n    nodeKind?: 'module' | 'system-directory' | undefined;\n    /** home Path 路径。 */\n    homePath?: string | undefined;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-project-model/src/navigation/navigation-tree.d.ts",
+        "line": 11,
+        "className": "NormalizeNavRootInput",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "jsdoc": "唯一标识。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "title",
+          "jsdoc": "显示标题。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "childPlacement",
+          "jsdoc": "child Placement 字段。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "children",
+          "jsdoc": "子节点集合。",
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "ProjectNodeData"
+            }
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "icon",
+          "jsdoc": "icon 字段。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "description",
+          "jsdoc": "description 字段。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "planningAttachmentRef",
+          "jsdoc": "planning Attachment Ref 字段。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "version",
+          "jsdoc": "version 字段。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "nodeKind",
+          "jsdoc": "node Kind 字段。",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "module"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "system-directory"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "homePath",
+          "jsdoc": "home Path 路径。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "BuildProjectPageSummariesOptions": {
+      "kind": "BuildProjectPageSummariesOptions",
+      "className": "BuildProjectPageSummariesOptions",
+      "jsdoc": "Build Project Page Summaries Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** description Context 字段。 */\n    descriptionContext?: readonly ProjectDescriptionContext[];\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-project-model/src/navigation/navigation-tree.d.ts",
+        "line": 47,
+        "className": "BuildProjectPageSummariesOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "descriptionContext",
+          "jsdoc": "description Context 字段。",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "TreeNodeLike": {
+      "kind": "TreeNodeLike",
+      "className": "TreeNodeLike",
+      "jsdoc": "树节点最小接口——避免循环依赖",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 唯一标识。 */\n    readonly id: string;\n    /** pid 字段。 */\n    readonly pid: string;\n    toNodeData(): ProjectNodeData;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-project-model/src/navigation/navigation-tree.d.ts",
+        "line": 57,
+        "className": "TreeNodeLike",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "id",
+          "jsdoc": "唯一标识。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "pid",
+          "jsdoc": "pid 字段。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "toNodeData",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectNodeData"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.750Z",
+  "$defs": {
+    "NormalizeNavRootInput": {
+      "type": "object",
+      "title": "NormalizeNavRootInput",
+      "description": "Normalize Nav Root Input 的输入数据。",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "childPlacement": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "ProjectNodeData"
+          }
+        },
+        "icon": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "module"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "system-directory"
+              ]
+            }
+          ]
+        },
+        "homePath": {
+          "type": "string"
+        }
+      }
+    },
+    "BuildProjectPageSummariesOptions": {
+      "type": "object",
+      "title": "BuildProjectPageSummariesOptions",
+      "description": "Build Project Page Summaries Options 的调用配置。",
+      "properties": {
+        "descriptionContext": {
+          "type": "array"
+        }
+      }
+    },
+    "TreeNodeLike": {
+      "type": "object",
+      "title": "TreeNodeLike",
+      "description": "树节点最小接口——避免循环依赖",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "pid": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

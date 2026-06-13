@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/src/services/ai/ai-host-run-bridge.d.ts",
+  "symbols": [
+    "AiHostRunTarget",
+    "AiHostRunPrepare",
+    "AiHostRunBridgeOptions",
+    "AiHostRunBridge"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiHostRunTarget": {
+      "ref": "spark-class-model://schema/AiHostRunTarget",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiHostRunTarget",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiHostRunTarget"
+      }
+    },
+    "spark-class-model://model/AiHostRunTarget/methods/has/0": {
+      "ref": "spark-class-model://model/AiHostRunTarget/methods/has/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiHostRunTarget",
+      "name": "has",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/a052fec05c99531aefffee73149df09e9ec0e57fa4a3ed825189660df4f109bc",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://model/AiHostRunTarget/methods/dryRun/1": {
+      "ref": "spark-class-model://model/AiHostRunTarget/methods/dryRun/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiHostRunTarget",
+      "name": "dryRun",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e26f52c2c2857140e4dfca2015ee5e22c2a913387c070790c152e7118d2c203d",
+      "returnSchemaRef": "spark-class-model://schema/shared/e77912e0fa0307e9fdfb362795eb1453f7c6b0a50c908676983f4703f4a42445"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiHostRunTarget%2Fmethods%2FdryRun%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostDryRunResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiHostRunTarget%2Fmethods%2FdryRun%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostDryRunResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiHostRunTarget/methods/dryRun/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentHostDryRunResult",
+      "targetClassName": "AiAgentHostDryRunResult",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHostDryRunResult"
+    },
+    "spark-class-model://model/AiHostRunTarget/methods/run/2": {
+      "ref": "spark-class-model://model/AiHostRunTarget/methods/run/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiHostRunTarget",
+      "name": "run",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4e0bd4550de23985cc8b1c8f16c283c54ad2deececd27924869e3da1bfa46e9f",
+      "returnSchemaRef": "spark-class-model://schema/shared/d0db822e99dcadbd9d35439e3e83061dc21061c49e264934813aa9d71d2b8e6f"
+    },
+    "spark-class-model://schema/shared/4e0bd4550de23985cc8b1c8f16c283c54ad2deececd27924869e3da1bfa46e9f": {
+      "ref": "spark-class-model://schema/shared/4e0bd4550de23985cc8b1c8f16c283c54ad2deececd27924869e3da1bfa46e9f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "alias": {
+            "type": "string"
+          },
+          "args": {
+            "type": "object",
+            "title": "AiJsonParams"
+          },
+          "chat": {
+            "$ref": "spark-class-model://schema/AiAgentTaskChatOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4e0bd4550de23985cc8b1c8f16c283c54ad2deececd27924869e3da1bfa46e9f"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiHostRunTarget%2Fmethods%2Frun%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiHostRunTarget%2Fmethods%2Frun%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiHostRunTarget/methods/run/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentTaskChatOptions",
+      "targetClassName": "AiAgentTaskChatOptions",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/business-task.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentTaskChatOptions"
+    },
+    "spark-class-model://model/AiHostRunTarget": {
+      "ref": "spark-class-model://model/AiHostRunTarget",
+      "kind": "model",
+      "className": "AiHostRunTarget",
+      "schemaRef": "spark-class-model://schema/AiHostRunTarget",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/AiHostRunTarget/methods/has/0",
+        "spark-class-model://model/AiHostRunTarget/methods/dryRun/1",
+        "spark-class-model://model/AiHostRunTarget/methods/run/2"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiHostRunTarget%2Fmethods%2FdryRun%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostDryRunResult",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiHostRunTarget%2Fmethods%2Frun%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions"
+      ]
+    },
+    "spark-class-model://schema/AiHostRunPrepare": {
+      "ref": "spark-class-model://schema/AiHostRunPrepare",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiHostRunPrepare",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiHostRunPrepare"
+      }
+    },
+    "spark-class-model://model/AiHostRunPrepare": {
+      "ref": "spark-class-model://model/AiHostRunPrepare",
+      "kind": "model",
+      "className": "AiHostRunPrepare",
+      "schemaRef": "spark-class-model://schema/AiHostRunPrepare",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiHostRunBridgeOptions": {
+      "ref": "spark-class-model://schema/AiHostRunBridgeOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiHostRunBridgeOptions",
+        "properties": {
+          "host": true,
+          "prepareRun": {
+            "$ref": "spark-class-model://schema/AiHostRunPrepare",
+            "title": "AiHostRunPrepare<THost>"
+          },
+          "defaultTimeoutMs": {
+            "type": "number"
+          },
+          "maxParallelRuns": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiHostRunBridgeOptions"
+      }
+    },
+    "spark-class-model://model/AiHostRunBridgeOptions/attributes/host/0": {
+      "ref": "spark-class-model://model/AiHostRunBridgeOptions/attributes/host/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunBridgeOptions",
+      "name": "host",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/3700c846c7621d5dfb44eec7cb8b1cc12985a1f5973a4d1281815259ac77d1e6": {
+      "ref": "spark-class-model://schema/shared/3700c846c7621d5dfb44eec7cb8b1cc12985a1f5973a4d1281815259ac77d1e6",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiHostRunPrepare",
+        "title": "AiHostRunPrepare<THost>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3700c846c7621d5dfb44eec7cb8b1cc12985a1f5973a4d1281815259ac77d1e6"
+      }
+    },
+    "spark-class-model://model/AiHostRunBridgeOptions/attributes/prepareRun/1": {
+      "ref": "spark-class-model://model/AiHostRunBridgeOptions/attributes/prepareRun/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunBridgeOptions",
+      "name": "prepareRun",
+      "schemaRef": "spark-class-model://schema/shared/3700c846c7621d5dfb44eec7cb8b1cc12985a1f5973a4d1281815259ac77d1e6",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiHostRunBridgeOptions%2Fattributes%2FprepareRun%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiHostRunPrepare": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiHostRunBridgeOptions%2Fattributes%2FprepareRun%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiHostRunPrepare",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiHostRunBridgeOptions/attributes/prepareRun/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiHostRunPrepare",
+      "targetClassName": "AiHostRunPrepare",
+      "targetFile": "files/class-model-emit/src/services/ai/ai-host-run-bridge.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiHostRunPrepare"
+    },
+    "spark-class-model://model/AiHostRunBridgeOptions/attributes/defaultTimeoutMs/2": {
+      "ref": "spark-class-model://model/AiHostRunBridgeOptions/attributes/defaultTimeoutMs/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunBridgeOptions",
+      "name": "defaultTimeoutMs",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunBridgeOptions/attributes/maxParallelRuns/3": {
+      "ref": "spark-class-model://model/AiHostRunBridgeOptions/attributes/maxParallelRuns/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiHostRunBridgeOptions",
+      "name": "maxParallelRuns",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiHostRunBridgeOptions": {
+      "ref": "spark-class-model://model/AiHostRunBridgeOptions",
+      "kind": "model",
+      "className": "AiHostRunBridgeOptions",
+      "schemaRef": "spark-class-model://schema/AiHostRunBridgeOptions",
+      "attributeRefs": [
+        "spark-class-model://model/AiHostRunBridgeOptions/attributes/host/0",
+        "spark-class-model://model/AiHostRunBridgeOptions/attributes/prepareRun/1",
+        "spark-class-model://model/AiHostRunBridgeOptions/attributes/defaultTimeoutMs/2",
+        "spark-class-model://model/AiHostRunBridgeOptions/attributes/maxParallelRuns/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiHostRunBridgeOptions%2Fattributes%2FprepareRun%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiHostRunPrepare"
+      ]
+    },
+    "spark-class-model://schema/AiHostRunBridge": {
+      "ref": "spark-class-model://schema/AiHostRunBridge",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiHostRunBridge",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiHostRunBridge"
+      }
+    },
+    "spark-class-model://model/AiHostRunBridge/methods/start/0": {
+      "ref": "spark-class-model://model/AiHostRunBridge/methods/start/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiHostRunBridge",
+      "name": "start",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839"
+    },
+    "spark-class-model://model/AiHostRunBridge": {
+      "ref": "spark-class-model://model/AiHostRunBridge",
+      "kind": "model",
+      "className": "AiHostRunBridge",
+      "schemaRef": "spark-class-model://schema/AiHostRunBridge",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/AiHostRunBridge/methods/start/0"
+      ],
+      "linkRefs": []
+    }
+  }
+}

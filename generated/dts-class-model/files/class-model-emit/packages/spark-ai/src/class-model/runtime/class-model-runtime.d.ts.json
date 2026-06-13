@@ -1,0 +1,557 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/runtime/class-model-runtime",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/runtime/class-model-runtime.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/runtime/class-model-runtime",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/runtime/class-model-runtime\n职责：维护 DTS ClassModel 知识链路中的 class-model-runtime 能力，围绕 ClassModelScriptCommand、ClassModelRuntimeOptions、ClassModelToolArgs 等 8 个公开契约 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/runtime/class-model-runtime 这一段如何生成、加载或投影时，用本模块定位职责。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ClassModelScriptCommand",
+      "ClassModelRuntimeOptions",
+      "ClassModelToolArgs",
+      "ClassModelToolResult",
+      "ClassModelToolCheck",
+      "ClassModelScriptExecutorResult",
+      "ClassModelScriptExecutor",
+      "ClassModelRuntime"
+    ]
+  },
+  "symbols": [
+    "ClassModelScriptCommand",
+    "ClassModelRuntimeOptions",
+    "ClassModelToolArgs",
+    "ClassModelToolResult",
+    "ClassModelToolCheck",
+    "ClassModelScriptExecutorResult",
+    "ClassModelScriptExecutor",
+    "ClassModelRuntime"
+  ],
+  "models": {
+    "ClassModelScriptCommand": {
+      "kind": "ClassModelScriptCommand",
+      "className": "ClassModelScriptCommand",
+      "jsdoc": "Class Model Script Command 的命令参数。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    script: string;\n    host?: unknown;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    script: string;\n    host?: unknown;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts",
+        "line": 12,
+        "className": "ClassModelScriptCommand",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "script",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "host",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "ClassModelRuntimeOptions": {
+      "kind": "ClassModelRuntimeOptions",
+      "className": "ClassModelRuntimeOptions",
+      "jsdoc": "Class Model Runtime Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    document?: ClassModelDocument;\n    knowledge?: ClassModelKnowledgeProvider;\n    scriptExecutor: ClassModelScriptExecutor;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    document?: ClassModelDocument;\n    knowledge?: ClassModelKnowledgeProvider;\n    scriptExecutor: ClassModelScriptExecutor;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts",
+        "line": 17,
+        "className": "ClassModelRuntimeOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "document",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ClassModelDocument"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "knowledge",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ClassModelKnowledgeProvider"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "scriptExecutor",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ClassModelScriptExecutor"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "ClassModelToolArgs": {
+      "kind": "ClassModelToolArgs",
+      "className": "ClassModelToolArgs",
+      "jsdoc": "Class Model Tool Args 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<Record<string, AiJsonValue>>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<Record<string, AiJsonValue>>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts",
+        "line": 23,
+        "className": "ClassModelToolArgs",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ClassModelToolResult": {
+      "kind": "ClassModelToolResult",
+      "className": "ClassModelToolResult",
+      "jsdoc": "Class Model Tool Result 的返回结果。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ok: boolean;\n    data?: AiJsonValue;\n    checks?: readonly ClassModelToolCheck[];\n    state?: Readonly<Record<string, unknown>>;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    ok: boolean;\n    data?: AiJsonValue;\n    checks?: readonly ClassModelToolCheck[];\n    state?: Readonly<Record<string, unknown>>;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts",
+        "line": 26,
+        "className": "ClassModelToolResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "ok",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "data",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonValue"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "checks",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "state",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, unknown>>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "ClassModelToolCheck": {
+      "kind": "ClassModelToolCheck",
+      "className": "ClassModelToolCheck",
+      "jsdoc": "Class Model Tool Check 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    level: 'error' | 'warn' | 'info';\n    code: string;\n    message: string;\n    hint?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts",
+        "line": 33,
+        "className": "ClassModelToolCheck",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "level",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warn"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "code",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "message",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "hint",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "ClassModelScriptExecutorResult": {
+      "kind": "ClassModelScriptExecutorResult",
+      "className": "ClassModelScriptExecutorResult",
+      "jsdoc": "Class Model Script Executor Result 的返回结果。",
+      "shapeKind": "type",
+      "declarationTypeText": "AiJsonValue | ClassModelToolResult",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "AiJsonValue",
+          "targetName": "AiJsonValue"
+        },
+        {
+          "kind": "union",
+          "typeText": "ClassModelToolResult",
+          "targetName": "ClassModelToolResult"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts",
+        "line": 40,
+        "className": "ClassModelScriptExecutorResult",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ClassModelScriptExecutor": {
+      "kind": "ClassModelScriptExecutor",
+      "className": "ClassModelScriptExecutor",
+      "jsdoc": "Class Model Script Executor 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "(command: ClassModelScriptCommand) => ClassModelScriptExecutorResult | Promise<ClassModelScriptExecutorResult>",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts",
+        "line": 42,
+        "className": "ClassModelScriptExecutor",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "ClassModelRuntime": {
+      "kind": "ClassModelRuntime",
+      "className": "ClassModelRuntime",
+      "jsdoc": "ClassModel tool runtime。\n这是 ClassModel 的运行时投影，唯一执行入口由 scriptExecutor 承接。\nruntime 主要负责执行：暴露 7 个 OpenAI tools、校验参数、调度脚本执行器。\nClassModel 查询、索引和 guide 投影属于 knowledge 边界，可替换成 Web Worker provider。",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts",
+        "line": 50,
+        "className": "ClassModelRuntime",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Class Model Runtime 实例。",
+        "signatureText": "constructor(options: ClassModelRuntimeOptions)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "options",
+            "type": {
+              "type": "reference",
+              "name": "ClassModelRuntimeOptions",
+              "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts"
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/ClassModelRuntimeOptions"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "getTools",
+          "jsdoc": "读取 Tools。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "unknown",
+            "name": "readonly ClassModelToolSpec[]"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array"
+          }
+        },
+        {
+          "name": "executeTool",
+          "jsdoc": "执行 execute Tool 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "toolName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "rawArgs",
+              "type": {
+                "type": "reference",
+                "name": "ClassModelToolArgs",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts"
+              }
+            },
+            {
+              "name": "host",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "ClassModelToolResult",
+                "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "toolName": {
+                "type": "string"
+              },
+              "rawArgs": {
+                "$ref": "#/$defs/ClassModelToolArgs"
+              },
+              "host": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ClassModelToolResult>"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.656Z",
+  "$defs": {
+    "ClassModelScriptCommand": {
+      "type": "object",
+      "title": "ClassModelScriptCommand",
+      "description": "Class Model Script Command 的命令参数。",
+      "properties": {
+        "script": {
+          "type": "string"
+        },
+        "host": true
+      }
+    },
+    "ClassModelRuntimeOptions": {
+      "type": "object",
+      "title": "ClassModelRuntimeOptions",
+      "description": "Class Model Runtime Options 的调用配置。",
+      "properties": {
+        "document": {
+          "type": "object",
+          "title": "ClassModelDocument"
+        },
+        "knowledge": {
+          "type": "object",
+          "title": "ClassModelKnowledgeProvider"
+        },
+        "scriptExecutor": {
+          "$ref": "#/$defs/ClassModelScriptExecutor"
+        }
+      }
+    },
+    "ClassModelToolArgs": {
+      "type": "object",
+      "title": "ClassModelToolArgs",
+      "description": "Class Model Tool Args 的语义模型。"
+    },
+    "ClassModelToolResult": {
+      "type": "object",
+      "title": "ClassModelToolResult",
+      "description": "Class Model Tool Result 的返回结果。",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "type": "object",
+          "title": "AiJsonValue"
+        },
+        "checks": {
+          "type": "array"
+        },
+        "state": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        }
+      }
+    },
+    "ClassModelToolCheck": {
+      "type": "object",
+      "title": "ClassModelToolCheck",
+      "description": "Class Model Tool Check 的语义模型。",
+      "properties": {
+        "level": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warn"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            }
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        }
+      }
+    },
+    "ClassModelScriptExecutorResult": {
+      "type": "object",
+      "title": "ClassModelScriptExecutorResult",
+      "description": "Class Model Script Executor Result 的返回结果。"
+    },
+    "ClassModelScriptExecutor": {
+      "type": "object",
+      "title": "ClassModelScriptExecutor",
+      "description": "Class Model Script Executor 的语义模型。"
+    },
+    "ClassModelRuntime": {
+      "type": "object",
+      "title": "ClassModelRuntime",
+      "description": "ClassModel tool runtime。\n这是 ClassModel 的运行时投影，唯一执行入口由 scriptExecutor 承接。\nruntime 主要负责执行：暴露 7 个 OpenAI tools、校验参数、调度脚本执行器。\nClassModel 查询、索引和 guide 投影属于 knowledge 边界，可替换成 Web Worker provider。"
+    }
+  }
+}

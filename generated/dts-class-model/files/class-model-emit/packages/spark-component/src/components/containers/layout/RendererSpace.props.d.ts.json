@@ -1,0 +1,230 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererSpace.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererSpace.props",
+    "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererSpace.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererSpace.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererSpace.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererSpace.props\n职责：定义 RendererSpace（r-space）的配置属性契约，把页面 JSON 中的字段、数据绑定、显示选项和交互开关约束成可生成的类型。\n边界：只描述 container/layout-container 组件的声明式配置，不读取 DataSet、不触发运行时事件，也不直接渲染 DOM。\nAI用途：生成或修订页面配置时，用本模块判断 renderer space 允许哪些 props、哪些字段属于数据绑定，避免把运行时 API 写进配置。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RSpaceProps"
+    ],
+    "componentName": "RendererSpace",
+    "componentType": "r-space",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "RSpaceProps"
+  ],
+  "models": {
+    "RSpaceProps": {
+      "kind": "RSpaceProps",
+      "className": "RSpaceProps",
+      "jsdoc": "RSpace Props 的属性契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 主轴方向 */\n    direction?: 'horizontal' | 'vertical';\n    /** 间距 */\n    size?: number | string;\n    /** 是否自动换行 */\n    wrap?: boolean;\n    /** 是否填充父容器 */\n    fill?: boolean;\n    /** 交叉轴对齐方式 */\n    alignment?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline';\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 主轴方向 */\n    direction?: 'horizontal' | 'vertical';\n    /** 间距 */\n    size?: number | string;\n    /** 是否自动换行 */\n    wrap?: boolean;\n    /** 是否填充父容器 */\n    fill?: boolean;\n    /** 交叉轴对齐方式 */\n    alignment?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline';\n}"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererSpace.props.d.ts",
+        "line": 9,
+        "className": "RSpaceProps",
+        "declarationKind": "type",
+        "componentName": "RendererSpace",
+        "componentType": "r-space",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "direction",
+          "jsdoc": "主轴方向",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "horizontal"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "vertical"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "size",
+          "jsdoc": "间距",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "wrap",
+          "jsdoc": "是否自动换行",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "fill",
+          "jsdoc": "是否填充父容器",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "alignment",
+          "jsdoc": "交叉轴对齐方式",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "stretch"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "center"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "flex-start"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "flex-end"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "baseline"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:54.273Z",
+  "$defs": {
+    "RSpaceProps": {
+      "type": "object",
+      "title": "RSpaceProps",
+      "description": "RSpace Props 的属性契约。",
+      "properties": {
+        "direction": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "horizontal"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "vertical"
+              ]
+            }
+          ]
+        },
+        "size": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "wrap": {
+          "type": "boolean"
+        },
+        "fill": {
+          "type": "boolean"
+        },
+        "alignment": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "stretch"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "center"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "flex-start"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "flex-end"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "baseline"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

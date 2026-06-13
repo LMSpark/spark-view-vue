@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-emit-path.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/class-model/class-model-emit-path",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-emit-path.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/class-model/class-model-emit-path",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/class-model-emit-path\nClassModel 编译期内存 emit 的虚拟路径约定（非磁盘目录）。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": []
+  },
+  "symbols": [],
+  "models": {},
+  "generatedAt": "2026-06-13T22:23:53.283Z"
+}

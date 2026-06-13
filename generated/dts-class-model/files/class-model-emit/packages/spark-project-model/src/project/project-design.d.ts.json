@@ -1,0 +1,761 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-project-model/src/project/project-design.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-project-model:project/project-design",
+    "sourcePath": "class-model-emit/packages/spark-project-model/src/project/project-design.d.ts",
+    "sourceFile": "packages/spark-project-model/src/project/project-design.ts",
+    "packageName": "@spark-appworks/spark-project-model",
+    "modulePath": "project/project-design",
+    "jsdoc": "@module @spark-appworks/spark-project-model:project/project-design\n职责：提供项目模型和页面配置域中的 project design 能力，支撑 navigation、page content、project session 或远程 IO。\n边界：只描述配置和项目结构，不渲染 Vue 组件，也不直接操作 spark-data 运行态。\nAI用途：读取、生成或同步项目页面配置时，用本模块确认项目模型字段和 IO 边界。\n\nProjectDesign — 项目设计内容：元数据 + 节点树 + 配置页 Map。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "ProjectDesignNodeEditResult",
+      "ProjectDesign"
+    ]
+  },
+  "symbols": [
+    "ProjectDesignNodeEditResult",
+    "ProjectDesign"
+  ],
+  "models": {
+    "ProjectDesignNodeEditResult": {
+      "kind": "ProjectDesignNodeEditResult",
+      "className": "ProjectDesignNodeEditResult",
+      "jsdoc": "Project Design Node Edit Result 的返回结果。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** node 字段。 */\n    node: TNode;\n    /** 操作结果。 */\n    result: NavigationNodeDraftApplyResult;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-project-model/src/project/project-design.d.ts",
+        "line": 16,
+        "className": "ProjectDesignNodeEditResult",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "node",
+          "jsdoc": "node 字段。",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "result",
+          "jsdoc": "操作结果。",
+          "schema": {
+            "type": "object",
+            "title": "NavigationNodeDraftApplyResult"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    },
+    "ProjectDesign": {
+      "kind": "ProjectDesign",
+      "className": "ProjectDesign",
+      "jsdoc": "项目设计根：项目元数据、导航节点树与配置页缓存。",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-project-model/src/project/project-design.d.ts",
+        "line": 25,
+        "className": "ProjectDesign",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建 Project Design 实例。",
+        "signatureText": "constructor(options: ProjectModelInitOptions)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "options",
+            "type": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "type": "object",
+              "title": "ProjectModelInitOptions"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "getChildNodes",
+          "jsdoc": "读取 Child Nodes。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "nodeId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "TNode",
+              "refersToTypeParameter": true
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": true
+          }
+        },
+        {
+          "name": "forEachNode",
+          "jsdoc": "执行 for Each Node 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "callback",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "node",
+                          "type": {
+                            "type": "reference",
+                            "name": "TNode",
+                            "refersToTypeParameter": true
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "callback": {
+                "type": "object",
+                "title": "(node: TNode) => void"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "replaceNavigationRoot",
+          "jsdoc": "执行 replace Navigation Root 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "root",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "root": {
+                "type": "object",
+                "title": "ProjectModelData"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectModelData"
+          }
+        },
+        {
+          "name": "replaceProjectInfo",
+          "jsdoc": "执行 replace Project Info 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "project",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "project": {
+                "type": "object",
+                "title": "ProjectInfoInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectInfo"
+          }
+        },
+        {
+          "name": "replaceNavigationChildren",
+          "jsdoc": "执行 replace Navigation Children 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "children",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "unknown"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "children": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "ProjectNodeData"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectModelData"
+          }
+        },
+        {
+          "name": "findNodeById",
+          "jsdoc": "find Node By Id 标识。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "nodeId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "TNode",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "findNodeLocation",
+          "jsdoc": "执行 find Node Location 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "nodeId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ProjectNodeLocation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "findConfigPageByPageId",
+          "jsdoc": "find Config Page By Page Id 标识。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "pageId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ConfigPageNode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "applyNavigationNodeEdit",
+          "jsdoc": "执行 apply Navigation Node Edit 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "ProjectDesignNodeEditResult",
+            "sourcePath": "class-model-emit/packages/spark-project-model/src/project/project-design.d.ts",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "TNode",
+                "refersToTypeParameter": true
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "NavigationNodeDraft"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/ProjectDesignNodeEditResult",
+            "title": "ProjectDesignNodeEditResult<TNode>"
+          }
+        },
+        {
+          "name": "openPageDesign",
+          "jsdoc": "执行 open Page Design 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "pageId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ConfigPageNode"
+          }
+        },
+        {
+          "name": "closePageDesign",
+          "jsdoc": "执行 close Page Design 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "pageId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "readPlanningProjection",
+          "jsdoc": "读取策划轴投影：各 page/sub-page 的 description 与 descriptionContext。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "ProjectPageNodeSummary"
+            }
+          }
+        },
+        {
+          "name": "addRootModule",
+          "jsdoc": "执行 add Root Module 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "createId",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "string"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "createId": {
+                "type": "object",
+                "title": "() => string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectNodeData"
+          }
+        },
+        {
+          "name": "addChildPage",
+          "jsdoc": "执行 add Child Page 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "createId",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "string"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "parent",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "createId": {
+                "type": "object",
+                "title": "() => string"
+              },
+              "parent": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "ProjectNodeData"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectNodeData"
+          }
+        },
+        {
+          "name": "removeNode",
+          "jsdoc": "删除 Node。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "nodeId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ProjectNodeData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "refreshNavRefs",
+          "jsdoc": "执行 refresh Nav Refs 操作。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "toTree",
+          "jsdoc": "执行 to Tree 操作。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "ProjectNodeData"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.794Z",
+  "$defs": {
+    "ProjectDesignNodeEditResult": {
+      "type": "object",
+      "title": "ProjectDesignNodeEditResult",
+      "description": "Project Design Node Edit Result 的返回结果。",
+      "properties": {
+        "node": true,
+        "result": {
+          "type": "object",
+          "title": "NavigationNodeDraftApplyResult"
+        }
+      }
+    },
+    "ProjectDesign": {
+      "type": "object",
+      "title": "ProjectDesign",
+      "description": "项目设计根：项目元数据、导航节点树与配置页缓存。"
+    }
+  }
+}

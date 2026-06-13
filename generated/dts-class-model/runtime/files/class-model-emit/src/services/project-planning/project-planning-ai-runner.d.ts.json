@@ -1,0 +1,416 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/src/services/project-planning/project-planning-ai-runner.d.ts",
+  "symbols": [
+    "ProjectPlanningAiRunOptions",
+    "ProjectPlanningAiRunEvents",
+    "ProjectPlanningAiRunCommand",
+    "ProjectPlanningAiRunResult"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ProjectPlanningAiRunOptions": {
+      "ref": "spark-class-model://schema/ProjectPlanningAiRunOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningAiRunOptions",
+        "properties": {
+          "saveNavigationAfterRun": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningAiRunOptions"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningAiRunOptions/attributes/saveNavigationAfterRun/0": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunOptions/attributes/saveNavigationAfterRun/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunOptions",
+      "name": "saveNavigationAfterRun",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectPlanningAiRunOptions": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunOptions",
+      "kind": "model",
+      "className": "ProjectPlanningAiRunOptions",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningAiRunOptions",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectPlanningAiRunOptions/attributes/saveNavigationAfterRun/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectPlanningAiRunEvents": {
+      "ref": "spark-class-model://schema/ProjectPlanningAiRunEvents",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningAiRunEvents",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningAiRunEvents"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningAiRunEvents/methods/onToolCall/0": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunEvents/methods/onToolCall/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunEvents",
+      "name": "onToolCall",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/ProjectPlanningAiRunEvents": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunEvents",
+      "kind": "model",
+      "className": "ProjectPlanningAiRunEvents",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningAiRunEvents",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ProjectPlanningAiRunEvents/methods/onToolCall/0"
+      ],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectPlanningAiRunCommand": {
+      "ref": "spark-class-model://schema/ProjectPlanningAiRunCommand",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningAiRunCommand",
+        "properties": {
+          "editor": {
+            "$ref": "spark-class-model://schema/ProjectWorkspace"
+          },
+          "consumeCapability": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/SparkCapabilityConsumer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "host": {
+            "$ref": "spark-class-model://schema/AiAgentHost"
+          },
+          "events": {
+            "$ref": "spark-class-model://schema/ProjectPlanningAiRunEvents"
+          },
+          "trace": {
+            "$ref": "spark-class-model://schema/AiRunTraceSink"
+          },
+          "adapter": {
+            "$ref": "spark-class-model://schema/AiRunAdapterState"
+          },
+          "beforeFunctionCall": {
+            "$ref": "spark-class-model://schema/AiRunBeforeFunctionCall"
+          },
+          "onAbort": {
+            "$ref": "spark-class-model://schema/AiRunAbortHandler"
+          },
+          "userMessage": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningAiRunCommand"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/editor/0": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/editor/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunCommand",
+      "name": "editor",
+      "schemaRef": "spark-class-model://schema/shared/ef10943126212788e1c2f243df0dda7361aca2db3d35222f9f4c485829c545f9",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Feditor%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectWorkspace": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Feditor%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectWorkspace",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/editor/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectWorkspace",
+      "targetClassName": "ProjectWorkspace",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/project/project-workspace.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectWorkspace"
+    },
+    "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/consumeCapability/1": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/consumeCapability/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunCommand",
+      "name": "consumeCapability",
+      "schemaRef": "spark-class-model://schema/shared/2cb064eb69a8fe60945ddf1176f6dedf1cc9320ceb6b91dd7605a46afefba3ab",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2FconsumeCapability%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkCapabilityConsumer": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2FconsumeCapability%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkCapabilityConsumer",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/consumeCapability/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/SparkCapabilityConsumer",
+      "targetClassName": "SparkCapabilityConsumer",
+      "targetFile": "files/class-model-emit/packages/spark-utils/src/capability/core.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SparkCapabilityConsumer"
+    },
+    "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/host/2": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/host/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunCommand",
+      "name": "host",
+      "schemaRef": "spark-class-model://schema/shared/aa01c5647ec31607d9e4c07c1df9d069439cbaf323cbdd42b9796717236d1f38",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Fhost%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Fhost%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/host/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentHost",
+      "targetClassName": "AiAgentHost",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentHost"
+    },
+    "spark-class-model://schema/shared/497fcde72a3fdad006b9bc12c498046d0f1943b5480d640b8b800da427781ff2": {
+      "ref": "spark-class-model://schema/shared/497fcde72a3fdad006b9bc12c498046d0f1943b5480d640b8b800da427781ff2",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ProjectPlanningAiRunEvents",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/497fcde72a3fdad006b9bc12c498046d0f1943b5480d640b8b800da427781ff2"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/events/3": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/events/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunCommand",
+      "name": "events",
+      "schemaRef": "spark-class-model://schema/shared/497fcde72a3fdad006b9bc12c498046d0f1943b5480d640b8b800da427781ff2",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Fevents%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunEvents": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Fevents%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunEvents",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/events/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectPlanningAiRunEvents",
+      "targetClassName": "ProjectPlanningAiRunEvents",
+      "targetFile": "files/class-model-emit/src/services/project-planning/project-planning-ai-runner.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectPlanningAiRunEvents"
+    },
+    "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/trace/4": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/trace/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunCommand",
+      "name": "trace",
+      "schemaRef": "spark-class-model://schema/shared/8a2d9c40878cb427f3bbd62dc6e184bd0f05587c318bc9629a47c7c0f04a7464",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Ftrace%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunTraceSink": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Ftrace%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunTraceSink",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/trace/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiRunTraceSink",
+      "targetClassName": "AiRunTraceSink",
+      "targetFile": "files/class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRunTraceSink"
+    },
+    "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/adapter/5": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/adapter/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunCommand",
+      "name": "adapter",
+      "schemaRef": "spark-class-model://schema/shared/19cbcfd682e62763a5f3840d1b0cb20244c3657d3d63ebf015464e8085a81033",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Fadapter%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterState": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Fadapter%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterState",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/adapter/5",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiRunAdapterState",
+      "targetClassName": "AiRunAdapterState",
+      "targetFile": "files/class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRunAdapterState"
+    },
+    "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/beforeFunctionCall/6": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/beforeFunctionCall/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunCommand",
+      "name": "beforeFunctionCall",
+      "schemaRef": "spark-class-model://schema/shared/6460d6d7d851fb2b7d77d63432b4cd2ff52b4cba68edd38f87c9ee927fe6bb73",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2FbeforeFunctionCall%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunBeforeFunctionCall": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2FbeforeFunctionCall%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunBeforeFunctionCall",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/beforeFunctionCall/6",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiRunBeforeFunctionCall",
+      "targetClassName": "AiRunBeforeFunctionCall",
+      "targetFile": "files/class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRunBeforeFunctionCall"
+    },
+    "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/onAbort/7": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/onAbort/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunCommand",
+      "name": "onAbort",
+      "schemaRef": "spark-class-model://schema/shared/096a6245fdec93e09666d7fd400464052fdd407b1aae6c8c0d6b051cb719b579",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2FonAbort%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunAbortHandler": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2FonAbort%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunAbortHandler",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/onAbort/7",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiRunAbortHandler",
+      "targetClassName": "AiRunAbortHandler",
+      "targetFile": "files/class-model-emit/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRunAbortHandler"
+    },
+    "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/userMessage/8": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/userMessage/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunCommand",
+      "name": "userMessage",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectPlanningAiRunCommand": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunCommand",
+      "kind": "model",
+      "className": "ProjectPlanningAiRunCommand",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningAiRunCommand",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/editor/0",
+        "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/consumeCapability/1",
+        "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/host/2",
+        "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/events/3",
+        "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/trace/4",
+        "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/adapter/5",
+        "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/beforeFunctionCall/6",
+        "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/onAbort/7",
+        "spark-class-model://model/ProjectPlanningAiRunCommand/attributes/userMessage/8"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Feditor%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectWorkspace",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2FconsumeCapability%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkCapabilityConsumer",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Fhost%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentHost",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Fevents%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunEvents",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Ftrace%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunTraceSink",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2Fadapter%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterState",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2FbeforeFunctionCall%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunBeforeFunctionCall",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunCommand%2Fattributes%2FonAbort%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunAbortHandler"
+      ]
+    },
+    "spark-class-model://schema/ProjectPlanningAiRunResult": {
+      "ref": "spark-class-model://schema/ProjectPlanningAiRunResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningAiRunResult",
+        "properties": {
+          "sawToolCall": {
+            "type": "boolean"
+          },
+          "input": {
+            "$ref": "spark-class-model://schema/ProjectPlanningAgentInput"
+          },
+          "navigationDirty": {
+            "type": "boolean"
+          },
+          "savedNavigation": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningAiRunResult"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningAiRunResult/attributes/sawToolCall/0": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunResult/attributes/sawToolCall/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunResult",
+      "name": "sawToolCall",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/3f201bb2de4c73b4ff345b876994d37de9d14661fb35566953cade0471f219d8": {
+      "ref": "spark-class-model://schema/shared/3f201bb2de4c73b4ff345b876994d37de9d14661fb35566953cade0471f219d8",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ProjectPlanningAgentInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3f201bb2de4c73b4ff345b876994d37de9d14661fb35566953cade0471f219d8"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningAiRunResult/attributes/input/1": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunResult/attributes/input/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunResult",
+      "name": "input",
+      "schemaRef": "spark-class-model://schema/shared/3f201bb2de4c73b4ff345b876994d37de9d14661fb35566953cade0471f219d8",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunResult%2Fattributes%2Finput%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAgentInput": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunResult%2Fattributes%2Finput%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAgentInput",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPlanningAiRunResult/attributes/input/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectPlanningAgentInput",
+      "targetClassName": "ProjectPlanningAgentInput",
+      "targetFile": "files/class-model-emit/src/services/project-planning/project-planning-business.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectPlanningAgentInput"
+    },
+    "spark-class-model://model/ProjectPlanningAiRunResult/attributes/navigationDirty/2": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunResult/attributes/navigationDirty/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunResult",
+      "name": "navigationDirty",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectPlanningAiRunResult/attributes/savedNavigation/3": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunResult/attributes/savedNavigation/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningAiRunResult",
+      "name": "savedNavigation",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectPlanningAiRunResult": {
+      "ref": "spark-class-model://model/ProjectPlanningAiRunResult",
+      "kind": "model",
+      "className": "ProjectPlanningAiRunResult",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningAiRunResult",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectPlanningAiRunResult/attributes/sawToolCall/0",
+        "spark-class-model://model/ProjectPlanningAiRunResult/attributes/input/1",
+        "spark-class-model://model/ProjectPlanningAiRunResult/attributes/navigationDirty/2",
+        "spark-class-model://model/ProjectPlanningAiRunResult/attributes/savedNavigation/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAiRunResult%2Fattributes%2Finput%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectPlanningAgentInput"
+      ]
+    }
+  }
+}

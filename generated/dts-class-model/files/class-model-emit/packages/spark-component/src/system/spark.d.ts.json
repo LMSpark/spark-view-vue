@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/system/spark.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:system/spark",
+    "sourcePath": "class-model-emit/packages/spark-component/src/system/spark.d.ts",
+    "sourceFile": "packages/spark-component/src/system/spark.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "system/spark",
+    "jsdoc": "@module @spark-appworks/spark-component:system/spark\n职责：提供 spark 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\n\nSPARK 命名空间 — 统一 API 入口\n- `Spark.register(type, component)` — 注册单个已解析组件\n- `Spark.registerAll(components)` — 批量注册已解析组件\n- `Spark.createPlugin()` — 创建 Vue 插件\n- `Spark.createRegistry()` — 创建隔离注册表\n- `Spark.createSystem()` — 创建测试用隔离系统",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SparkSystem"
+    ]
+  },
+  "symbols": [
+    "SparkSystem"
+  ],
+  "models": {
+    "SparkSystem": {
+      "kind": "SparkSystem",
+      "className": "SparkSystem",
+      "jsdoc": "Spark.createSystem() 返回的隔离测试系统",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** registry 字段。 */\n    registry: ComponentRegistry;\n    /** root Context 字段。 */\n    rootContext: CapabilityContext;\n    createContext(config: Partial<CapabilityContext> & {\n        type: string;\n    }, parent?: CapabilityContext): CapabilityContext;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/system/spark.d.ts",
+        "line": 19,
+        "className": "SparkSystem",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "registry",
+          "jsdoc": "registry 字段。",
+          "schema": {
+            "type": "object",
+            "title": "ComponentRegistry"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rootContext",
+          "jsdoc": "root Context 字段。",
+          "schema": {
+            "type": "object",
+            "title": "CapabilityContext"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "createContext",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "config",
+              "type": {
+                "type": "intersection",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "Partial",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "unknown"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "unknown",
+                    "name": "{\n        type: string;\n    }"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "parent",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": true,
+              "parent": {
+                "type": "object",
+                "title": "CapabilityContext"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "CapabilityContext"
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.170Z",
+  "$defs": {
+    "SparkSystem": {
+      "type": "object",
+      "title": "SparkSystem",
+      "description": "Spark.createSystem() 返回的隔离测试系统",
+      "properties": {
+        "registry": {
+          "type": "object",
+          "title": "ComponentRegistry"
+        },
+        "rootContext": {
+          "type": "object",
+          "title": "CapabilityContext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-runner.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:agent/native-runtime/native-script-runner",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-runner.d.ts",
+    "sourceFile": "packages/spark-ai/src/agent/native-runtime/native-script-runner.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "agent/native-runtime/native-script-runner",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/native-runtime/native-script-runner\n职责：执行 native script 命令，连接 schema defs、脚本上下文和运行结果，让 ClassModel 脚本在本地安全落地。\n边界：负责受控执行和结果包装，不负责 LLM 对话、不决定工具选择，也不保存会话。\nAI用途：排查 model_script 执行失败、参数 schema 或返回值映射时，用本模块定位运行链路。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiNativeRuntimeSchemaDefs",
+      "AiNativeScriptContextCommand",
+      "AiNativeScriptRunCommand"
+    ]
+  },
+  "symbols": [
+    "AiNativeRuntimeSchemaDefs",
+    "AiNativeScriptContextCommand",
+    "AiNativeScriptRunCommand"
+  ],
+  "models": {
+    "AiNativeRuntimeSchemaDefs": {
+      "kind": "AiNativeRuntimeSchemaDefs",
+      "className": "AiNativeRuntimeSchemaDefs",
+      "jsdoc": "Ai Native Runtime Schema Defs 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<Record<string, AiJsonSchema>>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<Record<string, AiJsonSchema>>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-runner.d.ts",
+        "line": 12,
+        "className": "AiNativeRuntimeSchemaDefs",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
+    "AiNativeScriptContextCommand": {
+      "kind": "AiNativeScriptContextCommand",
+      "className": "AiNativeScriptContextCommand",
+      "jsdoc": "Ai Native Script Context Command 的命令参数。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    instance: TInstance;\n    metadata: AiRuntimeApiMetadataJson;\n    host?: AiAgentRuntimeHostContext;\n    schemaDefs?: AiNativeRuntimeSchemaDefs;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    instance: TInstance;\n    metadata: AiRuntimeApiMetadataJson;\n    host?: AiAgentRuntimeHostContext;\n    schemaDefs?: AiNativeRuntimeSchemaDefs;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-runner.d.ts",
+        "line": 14,
+        "className": "AiNativeScriptContextCommand",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "instance",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "metadata",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiRuntimeApiMetadataJson"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "host",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentRuntimeHostContext"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "schemaDefs",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiNativeRuntimeSchemaDefs"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "AiNativeScriptRunCommand": {
+      "kind": "AiNativeScriptRunCommand",
+      "className": "AiNativeScriptRunCommand",
+      "jsdoc": "Ai Native Script Run Command 的命令参数。",
+      "shapeKind": "type",
+      "declarationTypeText": "AiNativeScriptContextCommand<TInstance> & Readonly<{\n    script: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "AiNativeScriptContextCommand<TInstance>",
+          "targetName": "AiNativeScriptContextCommand"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "Readonly<{\n    script: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/agent/native-runtime/native-script-runner.d.ts",
+        "line": 21,
+        "className": "AiNativeScriptRunCommand",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "script",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.123Z",
+  "$defs": {
+    "AiNativeRuntimeSchemaDefs": {
+      "type": "object",
+      "title": "AiNativeRuntimeSchemaDefs",
+      "description": "Ai Native Runtime Schema Defs 的语义模型。"
+    },
+    "AiNativeScriptContextCommand": {
+      "type": "object",
+      "title": "AiNativeScriptContextCommand",
+      "description": "Ai Native Script Context Command 的命令参数。",
+      "properties": {
+        "instance": true,
+        "metadata": {
+          "type": "object",
+          "title": "AiRuntimeApiMetadataJson"
+        },
+        "host": {
+          "type": "object",
+          "title": "AiAgentRuntimeHostContext"
+        },
+        "schemaDefs": {
+          "$ref": "#/$defs/AiNativeRuntimeSchemaDefs"
+        }
+      }
+    },
+    "AiNativeScriptRunCommand": {
+      "type": "object",
+      "title": "AiNativeScriptRunCommand",
+      "description": "Ai Native Script Run Command 的命令参数。",
+      "properties": {
+        "script": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

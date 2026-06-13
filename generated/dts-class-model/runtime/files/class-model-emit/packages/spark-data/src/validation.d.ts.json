@@ -1,0 +1,472 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-data/src/validation.d.ts",
+  "symbols": [
+    "ValidationError",
+    "ValidationResult",
+    "RowValidator",
+    "DataSchema",
+    "DataValidator"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ValidationError": {
+      "ref": "spark-class-model://schema/ValidationError",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ValidationError",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "value": true
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ValidationError"
+      }
+    },
+    "spark-class-model://model/ValidationError/attributes/field/0": {
+      "ref": "spark-class-model://model/ValidationError/attributes/field/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ValidationError",
+      "name": "field",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ValidationError/attributes/message/1": {
+      "ref": "spark-class-model://model/ValidationError/attributes/message/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ValidationError",
+      "name": "message",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ValidationError/attributes/code/2": {
+      "ref": "spark-class-model://model/ValidationError/attributes/code/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ValidationError",
+      "name": "code",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ValidationError/attributes/value/3": {
+      "ref": "spark-class-model://model/ValidationError/attributes/value/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ValidationError",
+      "name": "value",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ValidationError": {
+      "ref": "spark-class-model://model/ValidationError",
+      "kind": "model",
+      "className": "ValidationError",
+      "schemaRef": "spark-class-model://schema/ValidationError",
+      "attributeRefs": [
+        "spark-class-model://model/ValidationError/attributes/field/0",
+        "spark-class-model://model/ValidationError/attributes/message/1",
+        "spark-class-model://model/ValidationError/attributes/code/2",
+        "spark-class-model://model/ValidationError/attributes/value/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ValidationResult": {
+      "ref": "spark-class-model://schema/ValidationResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ValidationResult",
+        "properties": {
+          "valid": {
+            "type": "boolean"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/ValidationError"
+            }
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ValidationResult"
+      }
+    },
+    "spark-class-model://model/ValidationResult/attributes/valid/0": {
+      "ref": "spark-class-model://model/ValidationResult/attributes/valid/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ValidationResult",
+      "name": "valid",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/e4f133916db0ce8886ce9342ba025e344ed28bcccca4246fd7cebca368dbf045": {
+      "ref": "spark-class-model://schema/shared/e4f133916db0ce8886ce9342ba025e344ed28bcccca4246fd7cebca368dbf045",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "spark-class-model://schema/ValidationError"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e4f133916db0ce8886ce9342ba025e344ed28bcccca4246fd7cebca368dbf045"
+      }
+    },
+    "spark-class-model://model/ValidationResult/attributes/errors/1": {
+      "ref": "spark-class-model://model/ValidationResult/attributes/errors/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ValidationResult",
+      "name": "errors",
+      "schemaRef": "spark-class-model://schema/shared/e4f133916db0ce8886ce9342ba025e344ed28bcccca4246fd7cebca368dbf045",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FValidationResult%2Fattributes%2Ferrors%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValidationError": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FValidationResult%2Fattributes%2Ferrors%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValidationError",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ValidationResult/attributes/errors/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValidationError",
+      "targetClassName": "ValidationError",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/validation.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValidationError"
+    },
+    "spark-class-model://model/ValidationResult": {
+      "ref": "spark-class-model://model/ValidationResult",
+      "kind": "model",
+      "className": "ValidationResult",
+      "schemaRef": "spark-class-model://schema/ValidationResult",
+      "attributeRefs": [
+        "spark-class-model://model/ValidationResult/attributes/valid/0",
+        "spark-class-model://model/ValidationResult/attributes/errors/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FValidationResult%2Fattributes%2Ferrors%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValidationError"
+      ]
+    },
+    "spark-class-model://schema/RowValidator": {
+      "ref": "spark-class-model://schema/RowValidator",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RowValidator",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RowValidator"
+      }
+    },
+    "spark-class-model://model/RowValidator": {
+      "ref": "spark-class-model://model/RowValidator",
+      "kind": "model",
+      "className": "RowValidator",
+      "schemaRef": "spark-class-model://schema/RowValidator",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/DataSchema": {
+      "ref": "spark-class-model://schema/DataSchema",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataSchema",
+        "properties": {
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/DataColumn"
+            }
+          },
+          "validate": {
+            "$ref": "spark-class-model://schema/RowValidator"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataSchema"
+      }
+    },
+    "spark-class-model://model/DataSchema/attributes/columns/0": {
+      "ref": "spark-class-model://model/DataSchema/attributes/columns/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataSchema",
+      "name": "columns",
+      "schemaRef": "spark-class-model://schema/shared/663525f504a471cb5c4b6f425406cffeb1fc45fa1f8d78a1698be3759dd6f7bf",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSchema%2Fattributes%2Fcolumns%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataColumn": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSchema%2Fattributes%2Fcolumns%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataColumn",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataSchema/attributes/columns/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataColumn",
+      "targetClassName": "DataColumn",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataColumn"
+    },
+    "spark-class-model://schema/shared/bc1005275d3d76324fd6a953815276c6526e89a3dd0d28c337a0d168f7f50bc8": {
+      "ref": "spark-class-model://schema/shared/bc1005275d3d76324fd6a953815276c6526e89a3dd0d28c337a0d168f7f50bc8",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/RowValidator",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/bc1005275d3d76324fd6a953815276c6526e89a3dd0d28c337a0d168f7f50bc8"
+      }
+    },
+    "spark-class-model://model/DataSchema/attributes/validate/1": {
+      "ref": "spark-class-model://model/DataSchema/attributes/validate/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DataSchema",
+      "name": "validate",
+      "schemaRef": "spark-class-model://schema/shared/bc1005275d3d76324fd6a953815276c6526e89a3dd0d28c337a0d168f7f50bc8",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSchema%2Fattributes%2Fvalidate%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRowValidator": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSchema%2Fattributes%2Fvalidate%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRowValidator",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataSchema/attributes/validate/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/RowValidator",
+      "targetClassName": "RowValidator",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/validation.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RowValidator"
+    },
+    "spark-class-model://model/DataSchema": {
+      "ref": "spark-class-model://model/DataSchema",
+      "kind": "model",
+      "className": "DataSchema",
+      "schemaRef": "spark-class-model://schema/DataSchema",
+      "attributeRefs": [
+        "spark-class-model://model/DataSchema/attributes/columns/0",
+        "spark-class-model://model/DataSchema/attributes/validate/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSchema%2Fattributes%2Fcolumns%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataColumn",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSchema%2Fattributes%2Fvalidate%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRowValidator"
+      ]
+    },
+    "spark-class-model://schema/DataValidator": {
+      "ref": "spark-class-model://schema/DataValidator",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "DataValidator",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/DataValidator"
+      }
+    },
+    "spark-class-model://model/DataValidator/constructors/0": {
+      "ref": "spark-class-model://model/DataValidator/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/DataValidator",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e9f773165cc665f36bfc39a3933e922215a6afa703369b27637c5c87a42dee93"
+    },
+    "spark-class-model://schema/shared/e9f773165cc665f36bfc39a3933e922215a6afa703369b27637c5c87a42dee93": {
+      "ref": "spark-class-model://schema/shared/e9f773165cc665f36bfc39a3933e922215a6afa703369b27637c5c87a42dee93",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "$ref": "spark-class-model://schema/DataSchema"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e9f773165cc665f36bfc39a3933e922215a6afa703369b27637c5c87a42dee93"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSchema": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSchema",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataValidator/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/DataSchema",
+      "targetClassName": "DataSchema",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/validation.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataSchema"
+    },
+    "spark-class-model://model/DataValidator/methods/validate/0": {
+      "ref": "spark-class-model://model/DataValidator/methods/validate/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DataValidator",
+      "name": "validate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/62c0720f121a1bc7746bb80e7db15f9bc9fbf5e3baaf35ef6ef6223604d1cfe1",
+      "returnSchemaRef": "spark-class-model://schema/shared/7bddf2bafbbb2f1de11b23c9bc2b2a69cec0b94f17bbcb744002d0bb6f9514bd"
+    },
+    "spark-class-model://schema/shared/7bddf2bafbbb2f1de11b23c9bc2b2a69cec0b94f17bbcb744002d0bb6f9514bd": {
+      "ref": "spark-class-model://schema/shared/7bddf2bafbbb2f1de11b23c9bc2b2a69cec0b94f17bbcb744002d0bb6f9514bd",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ValidationResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7bddf2bafbbb2f1de11b23c9bc2b2a69cec0b94f17bbcb744002d0bb6f9514bd"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2Fvalidate%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FValidationResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2Fvalidate%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FValidationResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataValidator/methods/validate/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/ValidationResult",
+      "targetClassName": "ValidationResult",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/validation.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValidationResult"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2Fvalidate%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2Fvalidate%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataValidator/methods/validate/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/DataValidator/methods/validateBatch/1": {
+      "ref": "spark-class-model://model/DataValidator/methods/validateBatch/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DataValidator",
+      "name": "validateBatch",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/b9c89967d88a95252d631a79ac6fd63be9ecf7717524effc5c7904ad22e9e378",
+      "returnSchemaRef": "spark-class-model://schema/shared/4a8b3153fd89f579a357d1bd92f677232bb028ded9dbc4bed24a4ec51e518c5e"
+    },
+    "spark-class-model://schema/shared/4a8b3153fd89f579a357d1bd92f677232bb028ded9dbc4bed24a4ec51e518c5e": {
+      "ref": "spark-class-model://schema/shared/4a8b3153fd89f579a357d1bd92f677232bb028ded9dbc4bed24a4ec51e518c5e",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "spark-class-model://schema/ValidationResult"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4a8b3153fd89f579a357d1bd92f677232bb028ded9dbc4bed24a4ec51e518c5e"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FvalidateBatch%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FValidationResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FvalidateBatch%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FValidationResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataValidator/methods/validateBatch/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/ValidationResult",
+      "targetClassName": "ValidationResult",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/validation.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValidationResult"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FvalidateBatch%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FvalidateBatch%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataValidator/methods/validateBatch/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/DataValidator/methods/isValid/2": {
+      "ref": "spark-class-model://model/DataValidator/methods/isValid/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DataValidator",
+      "name": "isValid",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/62c0720f121a1bc7746bb80e7db15f9bc9fbf5e3baaf35ef6ef6223604d1cfe1",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FisValid%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FisValid%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataValidator/methods/isValid/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/DataValidator/methods/getFirstError/3": {
+      "ref": "spark-class-model://model/DataValidator/methods/getFirstError/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DataValidator",
+      "name": "getFirstError",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/62c0720f121a1bc7746bb80e7db15f9bc9fbf5e3baaf35ef6ef6223604d1cfe1",
+      "returnSchemaRef": "spark-class-model://schema/shared/c558f941fbbfb4b57612dc78edf03768b95d5bac2efbd3b98f6632bd825e4b2a"
+    },
+    "spark-class-model://schema/shared/c558f941fbbfb4b57612dc78edf03768b95d5bac2efbd3b98f6632bd825e4b2a": {
+      "ref": "spark-class-model://schema/shared/c558f941fbbfb4b57612dc78edf03768b95d5bac2efbd3b98f6632bd825e4b2a",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/ValidationError"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c558f941fbbfb4b57612dc78edf03768b95d5bac2efbd3b98f6632bd825e4b2a"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FgetFirstError%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FValidationError": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FgetFirstError%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FValidationError",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataValidator/methods/getFirstError/3",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/ValidationError",
+      "targetClassName": "ValidationError",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/validation.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValidationError"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FgetFirstError%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FgetFirstError%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataValidator/methods/getFirstError/3",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/class-model-emit/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/DataValidator": {
+      "ref": "spark-class-model://model/DataValidator",
+      "kind": "model",
+      "className": "DataValidator",
+      "schemaRef": "spark-class-model://schema/DataValidator",
+      "constructorRef": "spark-class-model://model/DataValidator/constructors/0",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/DataValidator/methods/validate/0",
+        "spark-class-model://model/DataValidator/methods/validateBatch/1",
+        "spark-class-model://model/DataValidator/methods/isValid/2",
+        "spark-class-model://model/DataValidator/methods/getFirstError/3"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSchema",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2Fvalidate%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FValidationResult",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2Fvalidate%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FvalidateBatch%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FValidationResult",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FvalidateBatch%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FisValid%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FgetFirstError%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FValidationError",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FgetFirstError%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow"
+      ]
+    }
+  }
+}

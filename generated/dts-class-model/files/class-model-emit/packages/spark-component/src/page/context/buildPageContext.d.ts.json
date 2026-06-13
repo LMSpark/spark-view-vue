@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/page/context/buildPageContext.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:page/context/buildPageContext",
+    "sourcePath": "class-model-emit/packages/spark-component/src/page/context/buildPageContext.d.ts",
+    "sourceFile": "packages/spark-component/src/page/context/buildPageContext.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "page/context/buildPageContext",
+    "jsdoc": "@module @spark-appworks/spark-component:page/context/buildPageContext\n职责：提供 build Page Context 在 spark-component 渲染体系中的辅助能力，连接配置、上下文和组件运行时。\n边界：只服务 component-runtime，不绕过 DataViewKey/DataSet 管线，也不承担应用路由职责。\nAI用途：排查组件配置、运行态上下文或渲染注册关系时，用本模块确认局部语义。\n\n脚本沙箱上下文（PageContext）构建工厂\n构建传入 `with (__ctx)` 沙箱的完整上下文对象。\n$dataSet 使用 getter，保证脚本每次访问都拿到最新值。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "PageContextDeps"
+    ]
+  },
+  "symbols": [
+    "PageContextDeps"
+  ],
+  "models": {
+    "PageContextDeps": {
+      "kind": "PageContextDeps",
+      "className": "PageContextDeps",
+      "jsdoc": "buildPageContext 所需的依赖引用",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** DataSet getter（闭包引用，每次调用返回最新值） */\n    getDataSet: () => DataSet | null;\n    /** page Route 字段。 */\n    pageRoute: PageRoute;\n    /** page Container 字段。 */\n    pageContainer: Ref<HTMLElement | null>;\n    /** page Service 字段。 */\n    pageService: PageServiceCapability;\n    /** 页面级组件注册中心 getter（可选） */\n    getComponentRegistry?: () => PageComponentRegistry | null;\n    /** 模块上下文 getter（可选，每次调用返回最新快照） */\n    getModuleContext?: () => ModuleContext | null;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/page/context/buildPageContext.d.ts",
+        "line": 20,
+        "className": "PageContextDeps",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "pageRoute",
+          "jsdoc": "page Route 字段。",
+          "schema": {
+            "type": "object",
+            "title": "PageRoute"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "pageContainer",
+          "jsdoc": "page Container 字段。",
+          "schema": {
+            "type": "object",
+            "title": "Ref<HTMLElement | null>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "pageService",
+          "jsdoc": "page Service 字段。",
+          "schema": {
+            "type": "object",
+            "title": "PageServiceCapability"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "getDataSet",
+          "jsdoc": "DataSet getter（闭包引用，每次调用返回最新值）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "DataSet"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataSet"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "getComponentRegistry",
+          "jsdoc": "页面级组件注册中心 getter（可选）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "PageComponentRegistry"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "getModuleContext",
+          "jsdoc": "模块上下文 getter（可选，每次调用返回最新快照）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ModuleContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.082Z",
+  "$defs": {
+    "PageContextDeps": {
+      "type": "object",
+      "title": "PageContextDeps",
+      "description": "buildPageContext 所需的依赖引用",
+      "properties": {
+        "pageRoute": {
+          "type": "object",
+          "title": "PageRoute"
+        },
+        "pageContainer": {
+          "type": "object",
+          "title": "Ref<HTMLElement | null>"
+        },
+        "pageService": {
+          "type": "object",
+          "title": "PageServiceCapability"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionStreamView.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/SessionStreamView.props",
+    "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionStreamView.props.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/SessionStreamView.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/SessionStreamView.props",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/SessionStreamView.props\n职责：维护 @spark-appworks/spark-component 中 ai/components/SessionStreamView.props 的模块能力，围绕 SessionStreamViewProps 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 ai/components/SessionStreamView.props 的声明、导出和使用边界时，从本模块开始。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SessionStreamViewProps"
+    ]
+  },
+  "symbols": [
+    "SessionStreamViewProps"
+  ],
+  "models": {
+    "SessionStreamViewProps": {
+      "kind": "SessionStreamViewProps",
+      "className": "SessionStreamViewProps",
+      "jsdoc": "Session Stream View Props 的属性契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    emptyText?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    entries: readonly StreamDisplayEntry[];\n    isStreaming: boolean;\n    isReasoning: boolean;\n    emptyText?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/ai/components/SessionStreamView.props.d.ts",
+        "line": 9,
+        "className": "SessionStreamViewProps",
+        "declarationKind": "type",
+        "componentName": "SessionStreamView"
+      },
+      "attributes": [
+        {
+          "name": "entries",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "isStreaming",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "isReasoning",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "emptyText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.875Z",
+  "$defs": {
+    "SessionStreamViewProps": {
+      "type": "object",
+      "title": "SessionStreamViewProps",
+      "description": "Session Stream View Props 的属性契约。",
+      "properties": {
+        "entries": {
+          "type": "array"
+        },
+        "isStreaming": {
+          "type": "boolean"
+        },
+        "isReasoning": {
+          "type": "boolean"
+        },
+        "emptyText": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

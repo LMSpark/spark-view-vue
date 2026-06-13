@@ -12,7 +12,7 @@ import type {
   AiAgentToolCallRecord,
   AiAgentTurnCallbacks,
 } from '@spark-appworks/spark-ai/agent'
-import { AI_AGENT_HOST, createAiAgentHost } from '@spark-appworks/spark-ai/agent'
+import { createAiAgentHost } from '@spark-appworks/spark-ai/agent'
 import { HttpClientBase, type HttpResponse, type RequestConfig, type SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
 import { runProjectPlanningAiSession } from '@/services/project-planning/project-planning-ai-runner'
 

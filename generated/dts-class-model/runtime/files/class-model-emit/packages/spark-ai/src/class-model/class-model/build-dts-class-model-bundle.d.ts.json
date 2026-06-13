@@ -1,0 +1,464 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
+  "symbols": [
+    "BuildDtsClassModelBundleProgressPhase",
+    "BuildDtsClassModelBundleProgress",
+    "BuildDtsClassModelBundleOptions",
+    "BuildDtsClassModelBundleResult"
+  ],
+  "@refs": {
+    "spark-class-model://schema/BuildDtsClassModelBundleProgressPhase": {
+      "ref": "spark-class-model://schema/BuildDtsClassModelBundleProgressPhase",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "BuildDtsClassModelBundleProgressPhase",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/BuildDtsClassModelBundleProgressPhase"
+      }
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleProgressPhase": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleProgressPhase",
+      "kind": "model",
+      "className": "BuildDtsClassModelBundleProgressPhase",
+      "schemaRef": "spark-class-model://schema/BuildDtsClassModelBundleProgressPhase",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/BuildDtsClassModelBundleProgress": {
+      "ref": "spark-class-model://schema/BuildDtsClassModelBundleProgress",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "BuildDtsClassModelBundleProgress",
+        "properties": {
+          "phase": {
+            "$ref": "spark-class-model://schema/BuildDtsClassModelBundleProgressPhase"
+          },
+          "current": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "sourcePath": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/BuildDtsClassModelBundleProgress"
+      }
+    },
+    "spark-class-model://schema/shared/4682144f70d8e8ac31d1c431f0bafb91cec3a403353022231f54f1181459555c": {
+      "ref": "spark-class-model://schema/shared/4682144f70d8e8ac31d1c431f0bafb91cec3a403353022231f54f1181459555c",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/BuildDtsClassModelBundleProgressPhase",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4682144f70d8e8ac31d1c431f0bafb91cec3a403353022231f54f1181459555c"
+      }
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/phase/0": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/phase/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleProgress",
+      "name": "phase",
+      "schemaRef": "spark-class-model://schema/shared/4682144f70d8e8ac31d1c431f0bafb91cec3a403353022231f54f1181459555c",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleProgress%2Fattributes%2Fphase%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleProgressPhase": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleProgress%2Fattributes%2Fphase%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleProgressPhase",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/phase/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/BuildDtsClassModelBundleProgressPhase",
+      "targetClassName": "BuildDtsClassModelBundleProgressPhase",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/BuildDtsClassModelBundleProgressPhase"
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/current/1": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/current/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleProgress",
+      "name": "current",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/total/2": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/total/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleProgress",
+      "name": "total",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/sourcePath/3": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/sourcePath/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleProgress",
+      "name": "sourcePath",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleProgress": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleProgress",
+      "kind": "model",
+      "className": "BuildDtsClassModelBundleProgress",
+      "schemaRef": "spark-class-model://schema/BuildDtsClassModelBundleProgress",
+      "attributeRefs": [
+        "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/phase/0",
+        "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/current/1",
+        "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/total/2",
+        "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/sourcePath/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleProgress%2Fattributes%2Fphase%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleProgressPhase"
+      ]
+    },
+    "spark-class-model://schema/BuildDtsClassModelBundleOptions": {
+      "ref": "spark-class-model://schema/BuildDtsClassModelBundleOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "BuildDtsClassModelBundleOptions",
+        "properties": {
+          "repoRoot": {
+            "type": "string"
+          },
+          "rootFiles": {
+            "type": "array"
+          },
+          "outputDir": {
+            "type": "string"
+          },
+          "compilerHost": {
+            "type": "object",
+            "title": "ts.CompilerHost"
+          },
+          "exportedOnly": {
+            "type": "boolean"
+          },
+          "runtimeClassIndexBase": {
+            "type": "object",
+            "title": "Readonly<Record<string, DtsClassModelRuntimeClassEntry>>"
+          },
+          "progressInterval": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/BuildDtsClassModelBundleOptions"
+      }
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/repoRoot/0": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/repoRoot/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleOptions",
+      "name": "repoRoot",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/rootFiles/1": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/rootFiles/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleOptions",
+      "name": "rootFiles",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/outputDir/2": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/outputDir/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleOptions",
+      "name": "outputDir",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/da35c92226f0ce3be7bc52fc56bc9a1afc4baaa0f8acfd2c8e8fbf6d29a22850": {
+      "ref": "spark-class-model://schema/shared/da35c92226f0ce3be7bc52fc56bc9a1afc4baaa0f8acfd2c8e8fbf6d29a22850",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ts.CompilerHost",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/da35c92226f0ce3be7bc52fc56bc9a1afc4baaa0f8acfd2c8e8fbf6d29a22850"
+      }
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/compilerHost/3": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/compilerHost/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleOptions",
+      "name": "compilerHost",
+      "schemaRef": "spark-class-model://schema/shared/da35c92226f0ce3be7bc52fc56bc9a1afc4baaa0f8acfd2c8e8fbf6d29a22850",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/exportedOnly/4": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/exportedOnly/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleOptions",
+      "name": "exportedOnly",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/3c7a8888ca975b08e03743dec34d491a876cba72ebc7a4cdb0aaa35e927444cc": {
+      "ref": "spark-class-model://schema/shared/3c7a8888ca975b08e03743dec34d491a876cba72ebc7a4cdb0aaa35e927444cc",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Readonly<Record<string, DtsClassModelRuntimeClassEntry>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3c7a8888ca975b08e03743dec34d491a876cba72ebc7a4cdb0aaa35e927444cc"
+      }
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/runtimeClassIndexBase/5": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/runtimeClassIndexBase/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleOptions",
+      "name": "runtimeClassIndexBase",
+      "schemaRef": "spark-class-model://schema/shared/3c7a8888ca975b08e03743dec34d491a876cba72ebc7a4cdb0aaa35e927444cc",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/progressInterval/6": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/progressInterval/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleOptions",
+      "name": "progressInterval",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleOptions/methods/onProgress/0": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/methods/onProgress/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleOptions",
+      "name": "onProgress",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleOptions%2Fmethods%2FonProgress%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleProgress": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleOptions%2Fmethods%2FonProgress%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleProgress",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/BuildDtsClassModelBundleOptions/methods/onProgress/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/BuildDtsClassModelBundleProgress",
+      "targetClassName": "BuildDtsClassModelBundleProgress",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/BuildDtsClassModelBundleProgress"
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleOptions": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions",
+      "kind": "model",
+      "className": "BuildDtsClassModelBundleOptions",
+      "schemaRef": "spark-class-model://schema/BuildDtsClassModelBundleOptions",
+      "attributeRefs": [
+        "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/repoRoot/0",
+        "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/rootFiles/1",
+        "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/outputDir/2",
+        "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/compilerHost/3",
+        "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/exportedOnly/4",
+        "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/runtimeClassIndexBase/5",
+        "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/progressInterval/6"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/BuildDtsClassModelBundleOptions/methods/onProgress/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleOptions%2Fmethods%2FonProgress%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleProgress"
+      ]
+    },
+    "spark-class-model://schema/BuildDtsClassModelBundleResult": {
+      "ref": "spark-class-model://schema/BuildDtsClassModelBundleResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "BuildDtsClassModelBundleResult",
+        "properties": {
+          "manifest": {
+            "$ref": "spark-class-model://schema/DtsClassModelBundleManifest"
+          },
+          "manifestPath": {
+            "type": "string"
+          },
+          "runtimeManifest": {
+            "$ref": "spark-class-model://schema/DtsClassModelRuntimeManifest"
+          },
+          "runtimeManifestPath": {
+            "type": "string"
+          },
+          "semanticLogPath": {
+            "type": "string"
+          },
+          "semanticLogJsonPath": {
+            "type": "string"
+          },
+          "semanticGapCount": {
+            "type": "number"
+          },
+          "fileCount": {
+            "type": "number"
+          },
+          "modelCount": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/BuildDtsClassModelBundleResult"
+      }
+    },
+    "spark-class-model://schema/shared/6ec1b8869dd1df51cc22dbe81c270dd45eb4a1348c82c6dad567ef3c830aa902": {
+      "ref": "spark-class-model://schema/shared/6ec1b8869dd1df51cc22dbe81c270dd45eb4a1348c82c6dad567ef3c830aa902",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DtsClassModelBundleManifest",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6ec1b8869dd1df51cc22dbe81c270dd45eb4a1348c82c6dad567ef3c830aa902"
+      }
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/manifest/0": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/manifest/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleResult",
+      "name": "manifest",
+      "schemaRef": "spark-class-model://schema/shared/6ec1b8869dd1df51cc22dbe81c270dd45eb4a1348c82c6dad567ef3c830aa902",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleResult%2Fattributes%2Fmanifest%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelBundleManifest": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleResult%2Fattributes%2Fmanifest%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelBundleManifest",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/manifest/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DtsClassModelBundleManifest",
+      "targetClassName": "DtsClassModelBundleManifest",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DtsClassModelBundleManifest"
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/manifestPath/1": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/manifestPath/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleResult",
+      "name": "manifestPath",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/495929ae64ff2ed7cf0c99ed26cfc353ad0fdcf473c71648fa89c5a5b9efb0bd": {
+      "ref": "spark-class-model://schema/shared/495929ae64ff2ed7cf0c99ed26cfc353ad0fdcf473c71648fa89c5a5b9efb0bd",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DtsClassModelRuntimeManifest",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/495929ae64ff2ed7cf0c99ed26cfc353ad0fdcf473c71648fa89c5a5b9efb0bd"
+      }
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/runtimeManifest/2": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/runtimeManifest/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleResult",
+      "name": "runtimeManifest",
+      "schemaRef": "spark-class-model://schema/shared/495929ae64ff2ed7cf0c99ed26cfc353ad0fdcf473c71648fa89c5a5b9efb0bd",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleResult%2Fattributes%2FruntimeManifest%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeManifest": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleResult%2Fattributes%2FruntimeManifest%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeManifest",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/runtimeManifest/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DtsClassModelRuntimeManifest",
+      "targetClassName": "DtsClassModelRuntimeManifest",
+      "targetFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DtsClassModelRuntimeManifest"
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/runtimeManifestPath/3": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/runtimeManifestPath/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleResult",
+      "name": "runtimeManifestPath",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/semanticLogPath/4": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/semanticLogPath/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleResult",
+      "name": "semanticLogPath",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/semanticLogJsonPath/5": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/semanticLogJsonPath/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleResult",
+      "name": "semanticLogJsonPath",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/semanticGapCount/6": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/semanticGapCount/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleResult",
+      "name": "semanticGapCount",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/fileCount/7": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/fileCount/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleResult",
+      "name": "fileCount",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/modelCount/8": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/modelCount/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleResult",
+      "name": "modelCount",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleResult": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleResult",
+      "kind": "model",
+      "className": "BuildDtsClassModelBundleResult",
+      "schemaRef": "spark-class-model://schema/BuildDtsClassModelBundleResult",
+      "attributeRefs": [
+        "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/manifest/0",
+        "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/manifestPath/1",
+        "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/runtimeManifest/2",
+        "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/runtimeManifestPath/3",
+        "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/semanticLogPath/4",
+        "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/semanticLogJsonPath/5",
+        "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/semanticGapCount/6",
+        "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/fileCount/7",
+        "spark-class-model://model/BuildDtsClassModelBundleResult/attributes/modelCount/8"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleResult%2Fattributes%2Fmanifest%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelBundleManifest",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleResult%2Fattributes%2FruntimeManifest%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeManifest"
+      ]
+    }
+  }
+}

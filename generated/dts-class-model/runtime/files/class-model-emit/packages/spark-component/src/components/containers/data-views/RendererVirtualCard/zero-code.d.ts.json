@@ -1,0 +1,337 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererVirtualCard/zero-code.d.ts",
+  "symbols": [
+    "RendererVirtualCardZeroCodeOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RendererVirtualCardZeroCodeOptions": {
+      "ref": "spark-class-model://schema/RendererVirtualCardZeroCodeOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RendererVirtualCardZeroCodeOptions",
+        "properties": {
+          "props": {
+            "type": "object",
+            "title": "Readonly<Record<string, unknown>>"
+          },
+          "resolvedView": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<DataView | null>"
+          },
+          "rows": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<readonly DataRow[]>"
+          },
+          "cachedPages": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<readonly number[]>"
+          },
+          "pendingPages": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<readonly number[]>"
+          },
+          "visiblePages": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<readonly number[]>"
+          },
+          "currentPage": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<number>"
+          },
+          "totalPages": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<number>"
+          },
+          "progressText": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<string>"
+          },
+          "loadPolicyText": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<string>"
+          },
+          "wheelStatusText": {
+            "$ref": "spark-class-model://schema/ValueRef",
+            "title": "ValueRef<string>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RendererVirtualCardZeroCodeOptions"
+      }
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/props/0": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/props/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "props",
+      "schemaRef": "spark-class-model://schema/shared/7e24edd51995779c3b1a78931005f9ef5f4a1c17858ac1180842204a4e6fd48a",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/resolvedView/1": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/resolvedView/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "resolvedView",
+      "schemaRef": "spark-class-model://schema/shared/044137c9b189837ff781f0cc522bbaff0a09c5464a9c20767e2e24c7644e63b4",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FresolvedView%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FresolvedView%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/resolvedView/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/rows/2": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/rows/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "rows",
+      "schemaRef": "spark-class-model://schema/shared/29cfd60b050882ac10086397e38b09ef8521cfc07209a823e3588b653d8279d3",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2Frows%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2Frows%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/rows/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://schema/shared/9b294df5da538978cf3a0ea366d4cc6310cebc3715e8ec88a627e537ddc78f77": {
+      "ref": "spark-class-model://schema/shared/9b294df5da538978cf3a0ea366d4cc6310cebc3715e8ec88a627e537ddc78f77",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ValueRef",
+        "title": "ValueRef<readonly number[]>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9b294df5da538978cf3a0ea366d4cc6310cebc3715e8ec88a627e537ddc78f77"
+      }
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/cachedPages/3": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/cachedPages/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "cachedPages",
+      "schemaRef": "spark-class-model://schema/shared/9b294df5da538978cf3a0ea366d4cc6310cebc3715e8ec88a627e537ddc78f77",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FcachedPages%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FcachedPages%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/cachedPages/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/pendingPages/4": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/pendingPages/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "pendingPages",
+      "schemaRef": "spark-class-model://schema/shared/9b294df5da538978cf3a0ea366d4cc6310cebc3715e8ec88a627e537ddc78f77",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FpendingPages%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FpendingPages%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/pendingPages/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/visiblePages/5": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/visiblePages/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "visiblePages",
+      "schemaRef": "spark-class-model://schema/shared/9b294df5da538978cf3a0ea366d4cc6310cebc3715e8ec88a627e537ddc78f77",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FvisiblePages%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FvisiblePages%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/visiblePages/5",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://schema/shared/668d78b2d9443eb90dffa2c81777c4594cc51be145f1e21240251c4ea8904d7c": {
+      "ref": "spark-class-model://schema/shared/668d78b2d9443eb90dffa2c81777c4594cc51be145f1e21240251c4ea8904d7c",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ValueRef",
+        "title": "ValueRef<number>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/668d78b2d9443eb90dffa2c81777c4594cc51be145f1e21240251c4ea8904d7c"
+      }
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/currentPage/6": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/currentPage/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "currentPage",
+      "schemaRef": "spark-class-model://schema/shared/668d78b2d9443eb90dffa2c81777c4594cc51be145f1e21240251c4ea8904d7c",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FcurrentPage%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FcurrentPage%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/currentPage/6",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/totalPages/7": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/totalPages/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "totalPages",
+      "schemaRef": "spark-class-model://schema/shared/668d78b2d9443eb90dffa2c81777c4594cc51be145f1e21240251c4ea8904d7c",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FtotalPages%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FtotalPages%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/totalPages/7",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/progressText/8": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/progressText/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "progressText",
+      "schemaRef": "spark-class-model://schema/shared/7e99c2d0dd5869a7ee4e0075932684a6a8c1690f7b1a2f85aa3c36a9ce441c68",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FprogressText%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FprogressText%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/progressText/8",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/loadPolicyText/9": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/loadPolicyText/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "loadPolicyText",
+      "schemaRef": "spark-class-model://schema/shared/7e99c2d0dd5869a7ee4e0075932684a6a8c1690f7b1a2f85aa3c36a9ce441c68",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FloadPolicyText%2F9/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FloadPolicyText%2F9/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/loadPolicyText/9",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/wheelStatusText/10": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/wheelStatusText/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "wheelStatusText",
+      "schemaRef": "spark-class-model://schema/shared/7e99c2d0dd5869a7ee4e0075932684a6a8c1690f7b1a2f85aa3c36a9ce441c68",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FwheelStatusText%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FwheelStatusText%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/wheelStatusText/10",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ValueRef",
+      "targetClassName": "ValueRef",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/shared-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ValueRef"
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/methods/scrollToPage/0": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/methods/scrollToPage/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "scrollToPage",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/17cca34214f2289596985f4b14900413ca1efacc45c24678839a262102ac403e",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/methods/clearCache/1": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/methods/clearCache/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "name": "clearCache",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
+      "kind": "model",
+      "className": "RendererVirtualCardZeroCodeOptions",
+      "schemaRef": "spark-class-model://schema/RendererVirtualCardZeroCodeOptions",
+      "attributeRefs": [
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/props/0",
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/resolvedView/1",
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/rows/2",
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/cachedPages/3",
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/pendingPages/4",
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/visiblePages/5",
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/currentPage/6",
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/totalPages/7",
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/progressText/8",
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/loadPolicyText/9",
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/wheelStatusText/10"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/methods/scrollToPage/0",
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/methods/clearCache/1"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FresolvedView%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2Frows%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FcachedPages%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FpendingPages%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FvisiblePages%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FcurrentPage%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FtotalPages%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FprogressText%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FloadPolicyText%2F9/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FwheelStatusText%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef"
+      ]
+    }
+  }
+}

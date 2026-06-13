@@ -1,0 +1,2326 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts",
+  "symbols": [
+    "ChildPlacement",
+    "NavNodeKind",
+    "NavPermissionMode",
+    "ProjectNodeFamily",
+    "ProjectDescriptionContext",
+    "NavContextItem",
+    "NavContextConfig",
+    "ProjectNodeData",
+    "ProjectNodeNavigationPatch",
+    "ProjectNodeLocation",
+    "ProjectModelData",
+    "RegionItems",
+    "RegionVisibility",
+    "NavContextState",
+    "ProjectPageSurface",
+    "ProjectPageNodeSummary",
+    "ProjectNodeModelOptions",
+    "ProjectNode"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ChildPlacement": {
+      "ref": "spark-class-model://schema/ChildPlacement",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ChildPlacement",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ChildPlacement"
+      }
+    },
+    "spark-class-model://model/ChildPlacement": {
+      "ref": "spark-class-model://model/ChildPlacement",
+      "kind": "model",
+      "className": "ChildPlacement",
+      "schemaRef": "spark-class-model://schema/ChildPlacement",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NavNodeKind": {
+      "ref": "spark-class-model://schema/NavNodeKind",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavNodeKind",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavNodeKind"
+      }
+    },
+    "spark-class-model://model/NavNodeKind": {
+      "ref": "spark-class-model://model/NavNodeKind",
+      "kind": "model",
+      "className": "NavNodeKind",
+      "schemaRef": "spark-class-model://schema/NavNodeKind",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NavPermissionMode": {
+      "ref": "spark-class-model://schema/NavPermissionMode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavPermissionMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavPermissionMode"
+      }
+    },
+    "spark-class-model://model/NavPermissionMode": {
+      "ref": "spark-class-model://model/NavPermissionMode",
+      "kind": "model",
+      "className": "NavPermissionMode",
+      "schemaRef": "spark-class-model://schema/NavPermissionMode",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectNodeFamily": {
+      "ref": "spark-class-model://schema/ProjectNodeFamily",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectNodeFamily",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectNodeFamily"
+      }
+    },
+    "spark-class-model://model/ProjectNodeFamily": {
+      "ref": "spark-class-model://model/ProjectNodeFamily",
+      "kind": "model",
+      "className": "ProjectNodeFamily",
+      "schemaRef": "spark-class-model://schema/ProjectNodeFamily",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectDescriptionContext": {
+      "ref": "spark-class-model://schema/ProjectDescriptionContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectDescriptionContext",
+        "properties": {
+          "nodeId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "nodeKind": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectDescriptionContext"
+      }
+    },
+    "spark-class-model://model/ProjectDescriptionContext/attributes/nodeId/0": {
+      "ref": "spark-class-model://model/ProjectDescriptionContext/attributes/nodeId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectDescriptionContext",
+      "name": "nodeId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectDescriptionContext/attributes/title/1": {
+      "ref": "spark-class-model://model/ProjectDescriptionContext/attributes/title/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectDescriptionContext",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectDescriptionContext/attributes/nodeKind/2": {
+      "ref": "spark-class-model://model/ProjectDescriptionContext/attributes/nodeKind/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectDescriptionContext",
+      "name": "nodeKind",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectDescriptionContext/attributes/description/3": {
+      "ref": "spark-class-model://model/ProjectDescriptionContext/attributes/description/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectDescriptionContext",
+      "name": "description",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectDescriptionContext": {
+      "ref": "spark-class-model://model/ProjectDescriptionContext",
+      "kind": "model",
+      "className": "ProjectDescriptionContext",
+      "schemaRef": "spark-class-model://schema/ProjectDescriptionContext",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectDescriptionContext/attributes/nodeId/0",
+        "spark-class-model://model/ProjectDescriptionContext/attributes/title/1",
+        "spark-class-model://model/ProjectDescriptionContext/attributes/nodeKind/2",
+        "spark-class-model://model/ProjectDescriptionContext/attributes/description/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NavContextItem": {
+      "ref": "spark-class-model://schema/NavContextItem",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavContextItem",
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavContextItem"
+      }
+    },
+    "spark-class-model://model/NavContextItem/attributes/id/0": {
+      "ref": "spark-class-model://model/NavContextItem/attributes/id/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavContextItem",
+      "name": "id",
+      "schemaRef": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NavContextItem/attributes/title/1": {
+      "ref": "spark-class-model://model/NavContextItem/attributes/title/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavContextItem",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NavContextItem": {
+      "ref": "spark-class-model://model/NavContextItem",
+      "kind": "model",
+      "className": "NavContextItem",
+      "schemaRef": "spark-class-model://schema/NavContextItem",
+      "attributeRefs": [
+        "spark-class-model://model/NavContextItem/attributes/id/0",
+        "spark-class-model://model/NavContextItem/attributes/title/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NavContextConfig": {
+      "ref": "spark-class-model://schema/NavContextConfig",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavContextConfig",
+        "properties": {
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "spark-class-model://schema/NavContextItem"
+                }
+              }
+            ]
+          },
+          "placeholder": {
+            "type": "string"
+          },
+          "defaultValue": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "paramName": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavContextConfig"
+      }
+    },
+    "spark-class-model://schema/shared/2718ee401b79e96b0e065b8fa7e46aaa08cee9d84c3a2477ffe3324f3296b589": {
+      "ref": "spark-class-model://schema/shared/2718ee401b79e96b0e065b8fa7e46aaa08cee9d84c3a2477ffe3324f3296b589",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/NavContextItem"
+            }
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/2718ee401b79e96b0e065b8fa7e46aaa08cee9d84c3a2477ffe3324f3296b589"
+      }
+    },
+    "spark-class-model://model/NavContextConfig/attributes/source/0": {
+      "ref": "spark-class-model://model/NavContextConfig/attributes/source/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavContextConfig",
+      "name": "source",
+      "schemaRef": "spark-class-model://schema/shared/2718ee401b79e96b0e065b8fa7e46aaa08cee9d84c3a2477ffe3324f3296b589",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavContextConfig%2Fattributes%2Fsource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextItem": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavContextConfig%2Fattributes%2Fsource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextItem",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavContextConfig/attributes/source/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavContextItem",
+      "targetClassName": "NavContextItem",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavContextItem"
+    },
+    "spark-class-model://model/NavContextConfig/attributes/placeholder/1": {
+      "ref": "spark-class-model://model/NavContextConfig/attributes/placeholder/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavContextConfig",
+      "name": "placeholder",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/NavContextConfig/attributes/defaultValue/2": {
+      "ref": "spark-class-model://model/NavContextConfig/attributes/defaultValue/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavContextConfig",
+      "name": "defaultValue",
+      "schemaRef": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/NavContextConfig/attributes/paramName/3": {
+      "ref": "spark-class-model://model/NavContextConfig/attributes/paramName/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavContextConfig",
+      "name": "paramName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/NavContextConfig": {
+      "ref": "spark-class-model://model/NavContextConfig",
+      "kind": "model",
+      "className": "NavContextConfig",
+      "schemaRef": "spark-class-model://schema/NavContextConfig",
+      "attributeRefs": [
+        "spark-class-model://model/NavContextConfig/attributes/source/0",
+        "spark-class-model://model/NavContextConfig/attributes/placeholder/1",
+        "spark-class-model://model/NavContextConfig/attributes/defaultValue/2",
+        "spark-class-model://model/NavContextConfig/attributes/paramName/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavContextConfig%2Fattributes%2Fsource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextItem"
+      ]
+    },
+    "spark-class-model://schema/ProjectNodeData": {
+      "ref": "spark-class-model://schema/ProjectNodeData",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectNodeData",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "planningAttachmentRef": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "nodeKind": {
+            "$ref": "spark-class-model://schema/NavNodeKind"
+          },
+          "childPlacement": {
+            "$ref": "spark-class-model://schema/ChildPlacement"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "spark-class-model://schema/NavContextItem"
+                }
+              },
+              {
+                "$ref": "spark-class-model://schema/NavContextConfig"
+              }
+            ]
+          },
+          "order": {
+            "type": "number"
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "dividerAfter": {
+            "type": "boolean"
+          },
+          "permissionMode": {
+            "$ref": "spark-class-model://schema/NavPermissionMode"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/ProjectNodeData"
+            }
+          },
+          "path": {
+            "type": "string"
+          },
+          "linkTarget": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "iframe"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "new-tab"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "self"
+                ]
+              }
+            ]
+          },
+          "redirect": {
+            "type": "string"
+          },
+          "refId": {
+            "type": "string"
+          },
+          "refPath": {
+            "type": "string"
+          },
+          "refProjectId": {
+            "type": "string"
+          },
+          "refBroken": {
+            "type": "boolean"
+          },
+          "implGate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "closed"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "open"
+                ]
+              }
+            ]
+          },
+          "upstreamContractsSatisfied": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectNodeData"
+      }
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/id/0": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/id/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "id",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/title/1": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/title/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/description/2": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/description/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "description",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/planningAttachmentRef/3": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/planningAttachmentRef/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "planningAttachmentRef",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/version/4": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/version/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "version",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/icon/5": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/icon/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "icon",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/nodeKind/6": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/nodeKind/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "nodeKind",
+      "schemaRef": "spark-class-model://schema/shared/2e08f2623ffa90adf309f2e07f11a6d63773a6c34346719a9924d9f8f1563f0c",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2FnodeKind%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FNavNodeKind": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2FnodeKind%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FNavNodeKind",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeData/attributes/nodeKind/6",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavNodeKind",
+      "targetClassName": "NavNodeKind",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavNodeKind"
+    },
+    "spark-class-model://schema/shared/ca0316d378a2a371b825f311627a1379c969bf49fee02444c88702d68d1c78a9": {
+      "ref": "spark-class-model://schema/shared/ca0316d378a2a371b825f311627a1379c969bf49fee02444c88702d68d1c78a9",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ChildPlacement",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ca0316d378a2a371b825f311627a1379c969bf49fee02444c88702d68d1c78a9"
+      }
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/childPlacement/7": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/childPlacement/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "childPlacement",
+      "schemaRef": "spark-class-model://schema/shared/ca0316d378a2a371b825f311627a1379c969bf49fee02444c88702d68d1c78a9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2FchildPlacement%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FChildPlacement": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2FchildPlacement%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FChildPlacement",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeData/attributes/childPlacement/7",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ChildPlacement",
+      "targetClassName": "ChildPlacement",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ChildPlacement"
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/context/8": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/context/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "context",
+      "schemaRef": "spark-class-model://schema/shared/9fb4d8f3d950c7917965f5034307e9689e022262f10eef23825be22dfd4ab044",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2Fcontext%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextItem": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2Fcontext%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextItem",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeData/attributes/context/8",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavContextItem",
+      "targetClassName": "NavContextItem",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavContextItem"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2Fcontext%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2Fcontext%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeData/attributes/context/8",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavContextConfig",
+      "targetClassName": "NavContextConfig",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavContextConfig"
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/order/9": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/order/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "order",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/hidden/10": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/hidden/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "hidden",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/disabled/11": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/disabled/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "disabled",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/dividerAfter/12": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/dividerAfter/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "dividerAfter",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/permissionMode/13": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/permissionMode/13",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "permissionMode",
+      "schemaRef": "spark-class-model://schema/shared/6c664c963c95f879c064e3b015b81359d40f5af9003d4756ed912d17aa6572d4",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2FpermissionMode%2F13/attribute/spark-class-model%3A%2F%2Fmodel%2FNavPermissionMode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2FpermissionMode%2F13/attribute/spark-class-model%3A%2F%2Fmodel%2FNavPermissionMode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeData/attributes/permissionMode/13",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavPermissionMode",
+      "targetClassName": "NavPermissionMode",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavPermissionMode"
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/children/14": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/children/14",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "children",
+      "schemaRef": "spark-class-model://schema/shared/7ba31981e52c3381a0561bc7138051d555ffd813c0c6b785c212b12e086cd99f",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2Fchildren%2F14/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2Fchildren%2F14/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeData/attributes/children/14",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/path/15": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/path/15",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "path",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/eea0f2ac61252056fdc62b07664edcbbbb8e90e36ec38d92eee3932a3971766e": {
+      "ref": "spark-class-model://schema/shared/eea0f2ac61252056fdc62b07664edcbbbb8e90e36ec38d92eee3932a3971766e",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "iframe"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "new-tab"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "self"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/eea0f2ac61252056fdc62b07664edcbbbb8e90e36ec38d92eee3932a3971766e"
+      }
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/linkTarget/16": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/linkTarget/16",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "linkTarget",
+      "schemaRef": "spark-class-model://schema/shared/eea0f2ac61252056fdc62b07664edcbbbb8e90e36ec38d92eee3932a3971766e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/redirect/17": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/redirect/17",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "redirect",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/refId/18": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/refId/18",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "refId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/refPath/19": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/refPath/19",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "refPath",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/refProjectId/20": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/refProjectId/20",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "refProjectId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/refBroken/21": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/refBroken/21",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "refBroken",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/fb5c25a6bb0546dbb1afc45aceb9bdedbe00e386435017718590eb694ef7c377": {
+      "ref": "spark-class-model://schema/shared/fb5c25a6bb0546dbb1afc45aceb9bdedbe00e386435017718590eb694ef7c377",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "closed"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "open"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/fb5c25a6bb0546dbb1afc45aceb9bdedbe00e386435017718590eb694ef7c377"
+      }
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/implGate/22": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/implGate/22",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "implGate",
+      "schemaRef": "spark-class-model://schema/shared/fb5c25a6bb0546dbb1afc45aceb9bdedbe00e386435017718590eb694ef7c377",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData/attributes/upstreamContractsSatisfied/23": {
+      "ref": "spark-class-model://model/ProjectNodeData/attributes/upstreamContractsSatisfied/23",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeData",
+      "name": "upstreamContractsSatisfied",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeData": {
+      "ref": "spark-class-model://model/ProjectNodeData",
+      "kind": "model",
+      "className": "ProjectNodeData",
+      "schemaRef": "spark-class-model://schema/ProjectNodeData",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectNodeData/attributes/id/0",
+        "spark-class-model://model/ProjectNodeData/attributes/title/1",
+        "spark-class-model://model/ProjectNodeData/attributes/description/2",
+        "spark-class-model://model/ProjectNodeData/attributes/planningAttachmentRef/3",
+        "spark-class-model://model/ProjectNodeData/attributes/version/4",
+        "spark-class-model://model/ProjectNodeData/attributes/icon/5",
+        "spark-class-model://model/ProjectNodeData/attributes/nodeKind/6",
+        "spark-class-model://model/ProjectNodeData/attributes/childPlacement/7",
+        "spark-class-model://model/ProjectNodeData/attributes/context/8",
+        "spark-class-model://model/ProjectNodeData/attributes/order/9",
+        "spark-class-model://model/ProjectNodeData/attributes/hidden/10",
+        "spark-class-model://model/ProjectNodeData/attributes/disabled/11",
+        "spark-class-model://model/ProjectNodeData/attributes/dividerAfter/12",
+        "spark-class-model://model/ProjectNodeData/attributes/permissionMode/13",
+        "spark-class-model://model/ProjectNodeData/attributes/children/14",
+        "spark-class-model://model/ProjectNodeData/attributes/path/15",
+        "spark-class-model://model/ProjectNodeData/attributes/linkTarget/16",
+        "spark-class-model://model/ProjectNodeData/attributes/redirect/17",
+        "spark-class-model://model/ProjectNodeData/attributes/refId/18",
+        "spark-class-model://model/ProjectNodeData/attributes/refPath/19",
+        "spark-class-model://model/ProjectNodeData/attributes/refProjectId/20",
+        "spark-class-model://model/ProjectNodeData/attributes/refBroken/21",
+        "spark-class-model://model/ProjectNodeData/attributes/implGate/22",
+        "spark-class-model://model/ProjectNodeData/attributes/upstreamContractsSatisfied/23"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2FnodeKind%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FNavNodeKind",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2FchildPlacement%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FChildPlacement",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2Fcontext%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextItem",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2Fcontext%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2FpermissionMode%2F13/attribute/spark-class-model%3A%2F%2Fmodel%2FNavPermissionMode",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData%2Fattributes%2Fchildren%2F14/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData"
+      ]
+    },
+    "spark-class-model://schema/ProjectNodeNavigationPatch": {
+      "ref": "spark-class-model://schema/ProjectNodeNavigationPatch",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectNodeNavigationPatch",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "nodeKind": {
+            "$ref": "spark-class-model://schema/NavNodeKind"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "dividerAfter": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "planningAttachmentRef": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "linkTarget": {
+            "type": "string"
+          },
+          "childPlacement": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number"
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "refId": {
+            "type": "string"
+          },
+          "permissionMode": {
+            "$ref": "spark-class-model://schema/NavPermissionMode"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "spark-class-model://schema/NavContextItem"
+                }
+              },
+              {
+                "$ref": "spark-class-model://schema/NavContextConfig"
+              }
+            ]
+          },
+          "implGate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "closed"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "open"
+                ]
+              }
+            ]
+          },
+          "upstreamContractsSatisfied": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectNodeNavigationPatch"
+      }
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/title/0": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/title/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/nodeKind/1": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/nodeKind/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "nodeKind",
+      "schemaRef": "spark-class-model://schema/shared/2e08f2623ffa90adf309f2e07f11a6d63773a6c34346719a9924d9f8f1563f0c",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch%2Fattributes%2FnodeKind%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FNavNodeKind": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch%2Fattributes%2FnodeKind%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FNavNodeKind",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/nodeKind/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavNodeKind",
+      "targetClassName": "NavNodeKind",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavNodeKind"
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/icon/2": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/icon/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "icon",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/dividerAfter/3": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/dividerAfter/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "dividerAfter",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/description/4": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/description/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "description",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/planningAttachmentRef/5": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/planningAttachmentRef/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "planningAttachmentRef",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/path/6": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/path/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "path",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/linkTarget/7": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/linkTarget/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "linkTarget",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/childPlacement/8": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/childPlacement/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "childPlacement",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/order/9": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/order/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "order",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/hidden/10": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/hidden/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "hidden",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/disabled/11": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/disabled/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "disabled",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/refId/12": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/refId/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "refId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/permissionMode/13": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/permissionMode/13",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "permissionMode",
+      "schemaRef": "spark-class-model://schema/shared/6c664c963c95f879c064e3b015b81359d40f5af9003d4756ed912d17aa6572d4",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch%2Fattributes%2FpermissionMode%2F13/attribute/spark-class-model%3A%2F%2Fmodel%2FNavPermissionMode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch%2Fattributes%2FpermissionMode%2F13/attribute/spark-class-model%3A%2F%2Fmodel%2FNavPermissionMode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/permissionMode/13",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavPermissionMode",
+      "targetClassName": "NavPermissionMode",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavPermissionMode"
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/context/14": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/context/14",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "context",
+      "schemaRef": "spark-class-model://schema/shared/9fb4d8f3d950c7917965f5034307e9689e022262f10eef23825be22dfd4ab044",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch%2Fattributes%2Fcontext%2F14/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextItem": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch%2Fattributes%2Fcontext%2F14/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextItem",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/context/14",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavContextItem",
+      "targetClassName": "NavContextItem",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavContextItem"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch%2Fattributes%2Fcontext%2F14/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch%2Fattributes%2Fcontext%2F14/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/context/14",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavContextConfig",
+      "targetClassName": "NavContextConfig",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavContextConfig"
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/implGate/15": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/implGate/15",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "implGate",
+      "schemaRef": "spark-class-model://schema/shared/fb5c25a6bb0546dbb1afc45aceb9bdedbe00e386435017718590eb694ef7c377",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch/attributes/upstreamContractsSatisfied/16": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch/attributes/upstreamContractsSatisfied/16",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "name": "upstreamContractsSatisfied",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeNavigationPatch": {
+      "ref": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "kind": "model",
+      "className": "ProjectNodeNavigationPatch",
+      "schemaRef": "spark-class-model://schema/ProjectNodeNavigationPatch",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/title/0",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/nodeKind/1",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/icon/2",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/dividerAfter/3",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/description/4",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/planningAttachmentRef/5",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/path/6",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/linkTarget/7",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/childPlacement/8",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/order/9",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/hidden/10",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/disabled/11",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/refId/12",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/permissionMode/13",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/context/14",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/implGate/15",
+        "spark-class-model://model/ProjectNodeNavigationPatch/attributes/upstreamContractsSatisfied/16"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch%2Fattributes%2FnodeKind%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FNavNodeKind",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch%2Fattributes%2FpermissionMode%2F13/attribute/spark-class-model%3A%2F%2Fmodel%2FNavPermissionMode",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch%2Fattributes%2Fcontext%2F14/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextItem",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch%2Fattributes%2Fcontext%2F14/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextConfig"
+      ]
+    },
+    "spark-class-model://schema/ProjectNodeLocation": {
+      "ref": "spark-class-model://schema/ProjectNodeLocation",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectNodeLocation",
+        "properties": {
+          "node": {
+            "$ref": "spark-class-model://schema/ProjectNodeData"
+          },
+          "parent": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/ProjectNodeData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parentId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "index": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectNodeLocation"
+      }
+    },
+    "spark-class-model://model/ProjectNodeLocation/attributes/node/0": {
+      "ref": "spark-class-model://model/ProjectNodeLocation/attributes/node/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeLocation",
+      "name": "node",
+      "schemaRef": "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeLocation%2Fattributes%2Fnode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeLocation%2Fattributes%2Fnode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeLocation/attributes/node/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://schema/shared/a85775cb6efcc2bdc5171fdbfcfa579b97f413e289bf142547df48017bb6189f": {
+      "ref": "spark-class-model://schema/shared/a85775cb6efcc2bdc5171fdbfcfa579b97f413e289bf142547df48017bb6189f",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/ProjectNodeData"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a85775cb6efcc2bdc5171fdbfcfa579b97f413e289bf142547df48017bb6189f"
+      }
+    },
+    "spark-class-model://model/ProjectNodeLocation/attributes/parent/1": {
+      "ref": "spark-class-model://model/ProjectNodeLocation/attributes/parent/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeLocation",
+      "name": "parent",
+      "schemaRef": "spark-class-model://schema/shared/a85775cb6efcc2bdc5171fdbfcfa579b97f413e289bf142547df48017bb6189f",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeLocation%2Fattributes%2Fparent%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeLocation%2Fattributes%2Fparent%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeLocation/attributes/parent/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://model/ProjectNodeLocation/attributes/parentId/2": {
+      "ref": "spark-class-model://model/ProjectNodeLocation/attributes/parentId/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeLocation",
+      "name": "parentId",
+      "schemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectNodeLocation/attributes/index/3": {
+      "ref": "spark-class-model://model/ProjectNodeLocation/attributes/index/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeLocation",
+      "name": "index",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectNodeLocation": {
+      "ref": "spark-class-model://model/ProjectNodeLocation",
+      "kind": "model",
+      "className": "ProjectNodeLocation",
+      "schemaRef": "spark-class-model://schema/ProjectNodeLocation",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectNodeLocation/attributes/node/0",
+        "spark-class-model://model/ProjectNodeLocation/attributes/parent/1",
+        "spark-class-model://model/ProjectNodeLocation/attributes/parentId/2",
+        "spark-class-model://model/ProjectNodeLocation/attributes/index/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeLocation%2Fattributes%2Fnode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeLocation%2Fattributes%2Fparent%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData"
+      ]
+    },
+    "spark-class-model://schema/ProjectModelData": {
+      "ref": "spark-class-model://schema/ProjectModelData",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectModelData",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nodeKind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "module"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "system-directory"
+                ]
+              }
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "childPlacement": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "header"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "sidebar"
+                ]
+              }
+            ]
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/ProjectNodeData"
+            }
+          },
+          "homePath": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectModelData"
+      }
+    },
+    "spark-class-model://model/ProjectModelData/attributes/id/0": {
+      "ref": "spark-class-model://model/ProjectModelData/attributes/id/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectModelData",
+      "name": "id",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectModelData/attributes/nodeKind/1": {
+      "ref": "spark-class-model://model/ProjectModelData/attributes/nodeKind/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectModelData",
+      "name": "nodeKind",
+      "schemaRef": "spark-class-model://schema/shared/57f75d924ac8b0503bd0e3a741391f5745007b3cef58e5e82aa3f7e72d64cad8",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectModelData/attributes/title/2": {
+      "ref": "spark-class-model://model/ProjectModelData/attributes/title/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectModelData",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/3980debe6e7b15d1768a4988b4896fd4c4f9ba58a848e44653d3f70df945330f": {
+      "ref": "spark-class-model://schema/shared/3980debe6e7b15d1768a4988b4896fd4c4f9ba58a848e44653d3f70df945330f",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "header"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "sidebar"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3980debe6e7b15d1768a4988b4896fd4c4f9ba58a848e44653d3f70df945330f"
+      }
+    },
+    "spark-class-model://model/ProjectModelData/attributes/childPlacement/3": {
+      "ref": "spark-class-model://model/ProjectModelData/attributes/childPlacement/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectModelData",
+      "name": "childPlacement",
+      "schemaRef": "spark-class-model://schema/shared/3980debe6e7b15d1768a4988b4896fd4c4f9ba58a848e44653d3f70df945330f",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectModelData/attributes/children/4": {
+      "ref": "spark-class-model://model/ProjectModelData/attributes/children/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectModelData",
+      "name": "children",
+      "schemaRef": "spark-class-model://schema/shared/7ba31981e52c3381a0561bc7138051d555ffd813c0c6b785c212b12e086cd99f",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectModelData%2Fattributes%2Fchildren%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectModelData%2Fattributes%2Fchildren%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectModelData/attributes/children/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://model/ProjectModelData/attributes/homePath/5": {
+      "ref": "spark-class-model://model/ProjectModelData/attributes/homePath/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectModelData",
+      "name": "homePath",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectModelData": {
+      "ref": "spark-class-model://model/ProjectModelData",
+      "kind": "model",
+      "className": "ProjectModelData",
+      "schemaRef": "spark-class-model://schema/ProjectModelData",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectModelData/attributes/id/0",
+        "spark-class-model://model/ProjectModelData/attributes/nodeKind/1",
+        "spark-class-model://model/ProjectModelData/attributes/title/2",
+        "spark-class-model://model/ProjectModelData/attributes/childPlacement/3",
+        "spark-class-model://model/ProjectModelData/attributes/children/4",
+        "spark-class-model://model/ProjectModelData/attributes/homePath/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectModelData%2Fattributes%2Fchildren%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData"
+      ]
+    },
+    "spark-class-model://schema/RegionItems": {
+      "ref": "spark-class-model://schema/RegionItems",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RegionItems",
+        "properties": {
+          "header": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/ProjectNodeData"
+            }
+          },
+          "sidebar": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/ProjectNodeData"
+            }
+          },
+          "toolbar": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/ProjectNodeData"
+            }
+          },
+          "userMenu": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/ProjectNodeData"
+            }
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RegionItems"
+      }
+    },
+    "spark-class-model://model/RegionItems/attributes/header/0": {
+      "ref": "spark-class-model://model/RegionItems/attributes/header/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegionItems",
+      "name": "header",
+      "schemaRef": "spark-class-model://schema/shared/7ba31981e52c3381a0561bc7138051d555ffd813c0c6b785c212b12e086cd99f",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRegionItems%2Fattributes%2Fheader%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRegionItems%2Fattributes%2Fheader%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RegionItems/attributes/header/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://model/RegionItems/attributes/sidebar/1": {
+      "ref": "spark-class-model://model/RegionItems/attributes/sidebar/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegionItems",
+      "name": "sidebar",
+      "schemaRef": "spark-class-model://schema/shared/7ba31981e52c3381a0561bc7138051d555ffd813c0c6b785c212b12e086cd99f",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRegionItems%2Fattributes%2Fsidebar%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRegionItems%2Fattributes%2Fsidebar%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RegionItems/attributes/sidebar/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://model/RegionItems/attributes/toolbar/2": {
+      "ref": "spark-class-model://model/RegionItems/attributes/toolbar/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegionItems",
+      "name": "toolbar",
+      "schemaRef": "spark-class-model://schema/shared/7ba31981e52c3381a0561bc7138051d555ffd813c0c6b785c212b12e086cd99f",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRegionItems%2Fattributes%2Ftoolbar%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRegionItems%2Fattributes%2Ftoolbar%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RegionItems/attributes/toolbar/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://model/RegionItems/attributes/userMenu/3": {
+      "ref": "spark-class-model://model/RegionItems/attributes/userMenu/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegionItems",
+      "name": "userMenu",
+      "schemaRef": "spark-class-model://schema/shared/7ba31981e52c3381a0561bc7138051d555ffd813c0c6b785c212b12e086cd99f",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRegionItems%2Fattributes%2FuserMenu%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRegionItems%2Fattributes%2FuserMenu%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RegionItems/attributes/userMenu/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://model/RegionItems": {
+      "ref": "spark-class-model://model/RegionItems",
+      "kind": "model",
+      "className": "RegionItems",
+      "schemaRef": "spark-class-model://schema/RegionItems",
+      "attributeRefs": [
+        "spark-class-model://model/RegionItems/attributes/header/0",
+        "spark-class-model://model/RegionItems/attributes/sidebar/1",
+        "spark-class-model://model/RegionItems/attributes/toolbar/2",
+        "spark-class-model://model/RegionItems/attributes/userMenu/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRegionItems%2Fattributes%2Fheader%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRegionItems%2Fattributes%2Fsidebar%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRegionItems%2Fattributes%2Ftoolbar%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRegionItems%2Fattributes%2FuserMenu%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData"
+      ]
+    },
+    "spark-class-model://schema/RegionVisibility": {
+      "ref": "spark-class-model://schema/RegionVisibility",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RegionVisibility",
+        "properties": {
+          "header": {
+            "type": "boolean"
+          },
+          "sidebar": {
+            "type": "boolean"
+          },
+          "toolbar": {
+            "type": "boolean"
+          },
+          "userMenu": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RegionVisibility"
+      }
+    },
+    "spark-class-model://model/RegionVisibility/attributes/header/0": {
+      "ref": "spark-class-model://model/RegionVisibility/attributes/header/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegionVisibility",
+      "name": "header",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RegionVisibility/attributes/sidebar/1": {
+      "ref": "spark-class-model://model/RegionVisibility/attributes/sidebar/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegionVisibility",
+      "name": "sidebar",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RegionVisibility/attributes/toolbar/2": {
+      "ref": "spark-class-model://model/RegionVisibility/attributes/toolbar/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegionVisibility",
+      "name": "toolbar",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RegionVisibility/attributes/userMenu/3": {
+      "ref": "spark-class-model://model/RegionVisibility/attributes/userMenu/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RegionVisibility",
+      "name": "userMenu",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/RegionVisibility": {
+      "ref": "spark-class-model://model/RegionVisibility",
+      "kind": "model",
+      "className": "RegionVisibility",
+      "schemaRef": "spark-class-model://schema/RegionVisibility",
+      "attributeRefs": [
+        "spark-class-model://model/RegionVisibility/attributes/header/0",
+        "spark-class-model://model/RegionVisibility/attributes/sidebar/1",
+        "spark-class-model://model/RegionVisibility/attributes/toolbar/2",
+        "spark-class-model://model/RegionVisibility/attributes/userMenu/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/NavContextState": {
+      "ref": "spark-class-model://schema/NavContextState",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "NavContextState",
+        "properties": {
+          "config": {
+            "$ref": "spark-class-model://schema/NavContextConfig"
+          },
+          "nodeId": {
+            "type": "string"
+          },
+          "selected": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/NavContextItem"
+            }
+          },
+          "loading": {
+            "type": "boolean"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/NavContextState"
+      }
+    },
+    "spark-class-model://schema/shared/6ad77b0a80bfbf8a9629a4d16d1de90e9b39f69e41a1546c5828e570a0c03e8a": {
+      "ref": "spark-class-model://schema/shared/6ad77b0a80bfbf8a9629a4d16d1de90e9b39f69e41a1546c5828e570a0c03e8a",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/NavContextConfig",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6ad77b0a80bfbf8a9629a4d16d1de90e9b39f69e41a1546c5828e570a0c03e8a"
+      }
+    },
+    "spark-class-model://model/NavContextState/attributes/config/0": {
+      "ref": "spark-class-model://model/NavContextState/attributes/config/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavContextState",
+      "name": "config",
+      "schemaRef": "spark-class-model://schema/shared/6ad77b0a80bfbf8a9629a4d16d1de90e9b39f69e41a1546c5828e570a0c03e8a",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavContextState%2Fattributes%2Fconfig%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavContextState%2Fattributes%2Fconfig%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavContextState/attributes/config/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavContextConfig",
+      "targetClassName": "NavContextConfig",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavContextConfig"
+    },
+    "spark-class-model://model/NavContextState/attributes/nodeId/1": {
+      "ref": "spark-class-model://model/NavContextState/attributes/nodeId/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavContextState",
+      "name": "nodeId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NavContextState/attributes/selected/2": {
+      "ref": "spark-class-model://model/NavContextState/attributes/selected/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavContextState",
+      "name": "selected",
+      "schemaRef": "spark-class-model://schema/shared/a4de3d015ab7310e281e9516ea51a2ff94b8a8688fe2ae47112f9bddb375248f",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/a049be43c1602a2055ee7f6252a51515d64b2a347431f8be0bb85abb60eb14da": {
+      "ref": "spark-class-model://schema/shared/a049be43c1602a2055ee7f6252a51515d64b2a347431f8be0bb85abb60eb14da",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "spark-class-model://schema/NavContextItem"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a049be43c1602a2055ee7f6252a51515d64b2a347431f8be0bb85abb60eb14da"
+      }
+    },
+    "spark-class-model://model/NavContextState/attributes/items/3": {
+      "ref": "spark-class-model://model/NavContextState/attributes/items/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavContextState",
+      "name": "items",
+      "schemaRef": "spark-class-model://schema/shared/a049be43c1602a2055ee7f6252a51515d64b2a347431f8be0bb85abb60eb14da",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavContextState%2Fattributes%2Fitems%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextItem": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavContextState%2Fattributes%2Fitems%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextItem",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavContextState/attributes/items/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavContextItem",
+      "targetClassName": "NavContextItem",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavContextItem"
+    },
+    "spark-class-model://model/NavContextState/attributes/loading/4": {
+      "ref": "spark-class-model://model/NavContextState/attributes/loading/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavContextState",
+      "name": "loading",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NavContextState/attributes/error/5": {
+      "ref": "spark-class-model://model/NavContextState/attributes/error/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/NavContextState",
+      "name": "error",
+      "schemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/NavContextState": {
+      "ref": "spark-class-model://model/NavContextState",
+      "kind": "model",
+      "className": "NavContextState",
+      "schemaRef": "spark-class-model://schema/NavContextState",
+      "attributeRefs": [
+        "spark-class-model://model/NavContextState/attributes/config/0",
+        "spark-class-model://model/NavContextState/attributes/nodeId/1",
+        "spark-class-model://model/NavContextState/attributes/selected/2",
+        "spark-class-model://model/NavContextState/attributes/items/3",
+        "spark-class-model://model/NavContextState/attributes/loading/4",
+        "spark-class-model://model/NavContextState/attributes/error/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavContextState%2Fattributes%2Fconfig%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavContextState%2Fattributes%2Fitems%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FNavContextItem"
+      ]
+    },
+    "spark-class-model://schema/ProjectPageSurface": {
+      "ref": "spark-class-model://schema/ProjectPageSurface",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPageSurface",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPageSurface"
+      }
+    },
+    "spark-class-model://model/ProjectPageSurface": {
+      "ref": "spark-class-model://model/ProjectPageSurface",
+      "kind": "model",
+      "className": "ProjectPageSurface",
+      "schemaRef": "spark-class-model://schema/ProjectPageSurface",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectPageNodeSummary": {
+      "ref": "spark-class-model://schema/ProjectPageNodeSummary",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPageNodeSummary",
+        "properties": {
+          "pageId": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "nodeId": {
+            "type": "string"
+          },
+          "nodeKind": {
+            "$ref": "spark-class-model://schema/NavNodeKind"
+          },
+          "designSurface": {
+            "$ref": "spark-class-model://schema/ProjectPageSurface"
+          },
+          "description": {
+            "type": "string"
+          },
+          "planningAttachmentRef": {
+            "type": "string"
+          },
+          "descriptionContext": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/ProjectDescriptionContext"
+            }
+          },
+          "effectiveDescription": {
+            "type": "string"
+          },
+          "implGate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "closed"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "open"
+                ]
+              }
+            ]
+          },
+          "upstreamContractsSatisfied": {
+            "type": "boolean"
+          },
+          "icon": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPageNodeSummary"
+      }
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/pageId/0": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/pageId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "pageId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/path/1": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/path/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "path",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/title/2": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/title/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/nodeId/3": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/nodeId/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "nodeId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/nodeKind/4": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/nodeKind/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "nodeKind",
+      "schemaRef": "spark-class-model://schema/shared/2e08f2623ffa90adf309f2e07f11a6d63773a6c34346719a9924d9f8f1563f0c",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPageNodeSummary%2Fattributes%2FnodeKind%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FNavNodeKind": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPageNodeSummary%2Fattributes%2FnodeKind%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FNavNodeKind",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPageNodeSummary/attributes/nodeKind/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/NavNodeKind",
+      "targetClassName": "NavNodeKind",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavNodeKind"
+    },
+    "spark-class-model://schema/shared/8be18479f1de3826476e7b3687da96a5c0e2e956962f3e2639e33ff4df05b40f": {
+      "ref": "spark-class-model://schema/shared/8be18479f1de3826476e7b3687da96a5c0e2e956962f3e2639e33ff4df05b40f",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ProjectPageSurface",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8be18479f1de3826476e7b3687da96a5c0e2e956962f3e2639e33ff4df05b40f"
+      }
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/designSurface/5": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/designSurface/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "designSurface",
+      "schemaRef": "spark-class-model://schema/shared/8be18479f1de3826476e7b3687da96a5c0e2e956962f3e2639e33ff4df05b40f",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPageNodeSummary%2Fattributes%2FdesignSurface%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectPageSurface": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPageNodeSummary%2Fattributes%2FdesignSurface%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectPageSurface",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPageNodeSummary/attributes/designSurface/5",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectPageSurface",
+      "targetClassName": "ProjectPageSurface",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectPageSurface"
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/description/6": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/description/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "description",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/planningAttachmentRef/7": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/planningAttachmentRef/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "planningAttachmentRef",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/58da76c097fb90a830c711e332bb53ffec1ab86c171bd9e916688e45a8b8f5f1": {
+      "ref": "spark-class-model://schema/shared/58da76c097fb90a830c711e332bb53ffec1ab86c171bd9e916688e45a8b8f5f1",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "spark-class-model://schema/ProjectDescriptionContext"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/58da76c097fb90a830c711e332bb53ffec1ab86c171bd9e916688e45a8b8f5f1"
+      }
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/descriptionContext/8": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/descriptionContext/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "descriptionContext",
+      "schemaRef": "spark-class-model://schema/shared/58da76c097fb90a830c711e332bb53ffec1ab86c171bd9e916688e45a8b8f5f1",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPageNodeSummary%2Fattributes%2FdescriptionContext%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectDescriptionContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPageNodeSummary%2Fattributes%2FdescriptionContext%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectDescriptionContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectPageNodeSummary/attributes/descriptionContext/8",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectDescriptionContext",
+      "targetClassName": "ProjectDescriptionContext",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectDescriptionContext"
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/effectiveDescription/9": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/effectiveDescription/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "effectiveDescription",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/implGate/10": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/implGate/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "implGate",
+      "schemaRef": "spark-class-model://schema/shared/fb5c25a6bb0546dbb1afc45aceb9bdedbe00e386435017718590eb694ef7c377",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/upstreamContractsSatisfied/11": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/upstreamContractsSatisfied/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "upstreamContractsSatisfied",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectPageNodeSummary/attributes/icon/12": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary/attributes/icon/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "name": "icon",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectPageNodeSummary": {
+      "ref": "spark-class-model://model/ProjectPageNodeSummary",
+      "kind": "model",
+      "className": "ProjectPageNodeSummary",
+      "schemaRef": "spark-class-model://schema/ProjectPageNodeSummary",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/pageId/0",
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/path/1",
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/title/2",
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/nodeId/3",
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/nodeKind/4",
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/designSurface/5",
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/description/6",
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/planningAttachmentRef/7",
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/descriptionContext/8",
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/effectiveDescription/9",
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/implGate/10",
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/upstreamContractsSatisfied/11",
+        "spark-class-model://model/ProjectPageNodeSummary/attributes/icon/12"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPageNodeSummary%2Fattributes%2FnodeKind%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FNavNodeKind",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPageNodeSummary%2Fattributes%2FdesignSurface%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectPageSurface",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectPageNodeSummary%2Fattributes%2FdescriptionContext%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectDescriptionContext"
+      ]
+    },
+    "spark-class-model://schema/ProjectNodeModelOptions": {
+      "ref": "spark-class-model://schema/ProjectNodeModelOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectNodeModelOptions",
+        "properties": {
+          "node": {
+            "$ref": "spark-class-model://schema/ProjectNodeData"
+          },
+          "pid": {
+            "type": "string"
+          },
+          "descriptionContext": {
+            "type": "array"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectNodeModelOptions"
+      }
+    },
+    "spark-class-model://model/ProjectNodeModelOptions/attributes/node/0": {
+      "ref": "spark-class-model://model/ProjectNodeModelOptions/attributes/node/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeModelOptions",
+      "name": "node",
+      "schemaRef": "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeModelOptions%2Fattributes%2Fnode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeModelOptions%2Fattributes%2Fnode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNodeModelOptions/attributes/node/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://model/ProjectNodeModelOptions/attributes/pid/1": {
+      "ref": "spark-class-model://model/ProjectNodeModelOptions/attributes/pid/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeModelOptions",
+      "name": "pid",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ProjectNodeModelOptions/attributes/descriptionContext/2": {
+      "ref": "spark-class-model://model/ProjectNodeModelOptions/attributes/descriptionContext/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectNodeModelOptions",
+      "name": "descriptionContext",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectNodeModelOptions": {
+      "ref": "spark-class-model://model/ProjectNodeModelOptions",
+      "kind": "model",
+      "className": "ProjectNodeModelOptions",
+      "schemaRef": "spark-class-model://schema/ProjectNodeModelOptions",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectNodeModelOptions/attributes/node/0",
+        "spark-class-model://model/ProjectNodeModelOptions/attributes/pid/1",
+        "spark-class-model://model/ProjectNodeModelOptions/attributes/descriptionContext/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNodeModelOptions%2Fattributes%2Fnode%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData"
+      ]
+    },
+    "spark-class-model://schema/ProjectNode": {
+      "ref": "spark-class-model://schema/ProjectNode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectNode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectNode"
+      }
+    },
+    "spark-class-model://model/ProjectNode/constructors/0": {
+      "ref": "spark-class-model://model/ProjectNode/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/ProjectNode",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/605b340533a42f5c487a23e649c2537e431bc6ccbc196ad7fe3ccffd23c20cc1"
+    },
+    "spark-class-model://schema/shared/605b340533a42f5c487a23e649c2537e431bc6ccbc196ad7fe3ccffd23c20cc1": {
+      "ref": "spark-class-model://schema/shared/605b340533a42f5c487a23e649c2537e431bc6ccbc196ad7fe3ccffd23c20cc1",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/ProjectNodeModelOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/605b340533a42f5c487a23e649c2537e431bc6ccbc196ad7fe3ccffd23c20cc1"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeModelOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeModelOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNode/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/ProjectNodeModelOptions",
+      "targetClassName": "ProjectNodeModelOptions",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeModelOptions"
+    },
+    "spark-class-model://model/ProjectNode/methods/toNodeData/0": {
+      "ref": "spark-class-model://model/ProjectNode/methods/toNodeData/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectNode",
+      "name": "toNodeData",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FtoNodeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FtoNodeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNode/methods/toNodeData/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://model/ProjectNode/methods/applyNavigationPatch/1": {
+      "ref": "spark-class-model://model/ProjectNode/methods/applyNavigationPatch/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectNode",
+      "name": "applyNavigationPatch",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0af1fbe165087ce5fc0fe6eb727214fc17e345c89c03c455060c1d7302a83e93"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FapplyNavigationPatch%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FapplyNavigationPatch%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNode/methods/applyNavigationPatch/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "targetClassName": "ProjectNodeNavigationPatch",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeNavigationPatch"
+    },
+    "spark-class-model://model/ProjectNode/methods/rebindNavigationNode/2": {
+      "ref": "spark-class-model://model/ProjectNode/methods/rebindNavigationNode/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectNode",
+      "name": "rebindNavigationNode",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/161c86f2322678f8ba71dd10c45e5542a5c5418c0eca6b76d954a23470bd5aff"
+    },
+    "spark-class-model://schema/shared/161c86f2322678f8ba71dd10c45e5542a5c5418c0eca6b76d954a23470bd5aff": {
+      "ref": "spark-class-model://schema/shared/161c86f2322678f8ba71dd10c45e5542a5c5418c0eca6b76d954a23470bd5aff",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "node": {
+            "$ref": "spark-class-model://schema/ProjectNodeData"
+          },
+          "pid": {
+            "type": "string"
+          },
+          "descriptionContext": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/161c86f2322678f8ba71dd10c45e5542a5c5418c0eca6b76d954a23470bd5aff"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FrebindNavigationNode%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FrebindNavigationNode%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNode/methods/rebindNavigationNode/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
+    "spark-class-model://model/ProjectNode": {
+      "ref": "spark-class-model://model/ProjectNode",
+      "kind": "model",
+      "className": "ProjectNode",
+      "schemaRef": "spark-class-model://schema/ProjectNode",
+      "constructorRef": "spark-class-model://model/ProjectNode/constructors/0",
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ProjectNode/methods/toNodeData/0",
+        "spark-class-model://model/ProjectNode/methods/applyNavigationPatch/1",
+        "spark-class-model://model/ProjectNode/methods/rebindNavigationNode/2"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeModelOptions",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FtoNodeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FapplyNavigationPatch%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FrebindNavigationNode%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData"
+      ]
+    }
+  }
+}

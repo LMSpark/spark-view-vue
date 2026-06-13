@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/from-runtime-metadata.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-ai:class-model/class-model/from-runtime-metadata",
+    "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/from-runtime-metadata.d.ts",
+    "sourceFile": "packages/spark-ai/src/class-model/class-model/from-runtime-metadata.ts",
+    "packageName": "@spark-appworks/spark-ai",
+    "modulePath": "class-model/class-model/from-runtime-metadata",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/from-runtime-metadata\n职责：维护 DTS ClassModel 知识链路中的 from-runtime-metadata 能力，围绕 RuntimeDocumentInput 提供声明投影、协议读取、知识查询或运行时适配。\n边界：只服务 .d.ts => JSON => guide 的知识索引链路，不直接执行业务页面逻辑。\nAI用途：当需要判断 ClassModel 在 class-model/class-model/from-runtime-metadata 这一段如何生成、加载或投影时，用本模块定位职责。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RuntimeDocumentInput"
+    ]
+  },
+  "symbols": [
+    "RuntimeDocumentInput"
+  ],
+  "models": {
+    "RuntimeDocumentInput": {
+      "kind": "RuntimeDocumentInput",
+      "className": "RuntimeDocumentInput",
+      "jsdoc": "Runtime Document Input 的输入数据。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    modules: readonly AiRuntimeApiMetadataJson[];\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    $defs?: Readonly<Record<string, AiJsonSchemaObject>>;\n    modules: readonly AiRuntimeApiMetadataJson[];\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/from-runtime-metadata.d.ts",
+        "line": 11,
+        "className": "RuntimeDocumentInput",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "$defs",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "modules",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.463Z",
+  "$defs": {
+    "RuntimeDocumentInput": {
+      "type": "object",
+      "title": "RuntimeDocumentInput",
+      "description": "Runtime Document Input 的输入数据。",
+      "properties": {
+        "$defs": {
+          "type": "object",
+          "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+        },
+        "modules": {
+          "type": "array"
+        }
+      }
+    }
+  }
+}

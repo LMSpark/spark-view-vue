@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererLink.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:components/containers/layout/RendererLink.props",
+    "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererLink.props.d.ts",
+    "sourceFile": "packages/spark-component/src/components/containers/layout/RendererLink.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "components/containers/layout/RendererLink.props",
+    "jsdoc": "@module @spark-appworks/spark-component:components/containers/layout/RendererLink.props\n职责：定义 RendererLink（r-link）的配置属性契约，把页面 JSON 中的字段、数据绑定、显示选项和交互开关约束成可生成的类型。\n边界：只描述 container/layout-container 组件的声明式配置，不读取 DataSet、不触发运行时事件，也不直接渲染 DOM。\nAI用途：生成或修订页面配置时，用本模块判断 renderer link 允许哪些 props、哪些字段属于数据绑定，避免把运行时 API 写进配置。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "RLinkProps"
+    ],
+    "componentName": "RendererLink",
+    "componentType": "r-link",
+    "componentLevel": "container",
+    "componentLayer": "layout-container",
+    "componentDirectory": "containers/layout"
+  },
+  "symbols": [
+    "RLinkProps"
+  ],
+  "models": {
+    "RLinkProps": {
+      "kind": "RLinkProps",
+      "className": "RLinkProps",
+      "jsdoc": "RLink Props 的属性契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "SparkNodeProps & {\n    /** 链接文本 */\n    label?: string;\n    /** 链接类型 */\n    linkType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 是否显示下划线 */\n    underline?: boolean;\n    /** 跳转地址 */\n    href?: string;\n    /** 跳转目标 */\n    target?: '_blank' | '_self' | '_parent' | '_top';\n}",
+      "declarationRelations": [
+        {
+          "kind": "intersection",
+          "typeText": "SparkNodeProps",
+          "targetName": "SparkNodeProps"
+        },
+        {
+          "kind": "intersection",
+          "typeText": "{\n    /** 链接文本 */\n    label?: string;\n    /** 链接类型 */\n    linkType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger';\n    /** 是否显示下划线 */\n    underline?: boolean;\n    /** 跳转地址 */\n    href?: string;\n    /** 跳转目标 */\n    target?: '_blank' | '_self' | '_parent' | '_top';\n}"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererLink.props.d.ts",
+        "line": 9,
+        "className": "RLinkProps",
+        "declarationKind": "type",
+        "componentName": "RendererLink",
+        "componentType": "r-link",
+        "componentLevel": "container",
+        "componentLayer": "layout-container",
+        "componentDirectory": "containers/layout"
+      },
+      "attributes": [
+        {
+          "name": "label",
+          "jsdoc": "链接文本",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "linkType",
+          "jsdoc": "链接类型",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  ""
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "default"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "primary"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "success"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warning"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "danger"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "underline",
+          "jsdoc": "是否显示下划线",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "href",
+          "jsdoc": "跳转地址",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "target",
+          "jsdoc": "跳转目标",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "_blank"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "_self"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "_parent"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "_top"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:54.196Z",
+  "$defs": {
+    "RLinkProps": {
+      "type": "object",
+      "title": "RLinkProps",
+      "description": "RLink Props 的属性契约。",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "linkType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                ""
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "default"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "primary"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "success"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "danger"
+              ]
+            }
+          ]
+        },
+        "underline": {
+          "type": "boolean"
+        },
+        "href": {
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "_blank"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "_self"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "_parent"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "_top"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

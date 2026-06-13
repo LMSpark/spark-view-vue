@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalPanel.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/AiToolApprovalPanel.props",
+    "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalPanel.props.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/AiToolApprovalPanel.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/AiToolApprovalPanel.props",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/AiToolApprovalPanel.props\n职责：维护 @spark-appworks/spark-component 中 ai/components/AiToolApprovalPanel.props 的模块能力，围绕 AiToolApprovalPanelProps 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 ai/components/AiToolApprovalPanel.props 的声明、导出和使用边界时，从本模块开始。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "AiToolApprovalPanelProps"
+    ]
+  },
+  "symbols": [
+    "AiToolApprovalPanelProps"
+  ],
+  "models": {
+    "AiToolApprovalPanelProps": {
+      "kind": "AiToolApprovalPanelProps",
+      "className": "AiToolApprovalPanelProps",
+      "jsdoc": "Ai Tool Approval Panel Props 的属性契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    pending: readonly ToolApprovalDisplayItem[];\n    emptyText?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    pending: readonly ToolApprovalDisplayItem[];\n    emptyText?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/ai/components/AiToolApprovalPanel.props.d.ts",
+        "line": 9,
+        "className": "AiToolApprovalPanelProps",
+        "declarationKind": "type",
+        "componentName": "AiToolApprovalPanel"
+      },
+      "attributes": [
+        {
+          "name": "pending",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "emptyText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.857Z",
+  "$defs": {
+    "AiToolApprovalPanelProps": {
+      "type": "object",
+      "title": "AiToolApprovalPanelProps",
+      "description": "Ai Tool Approval Panel Props 的属性契约。",
+      "properties": {
+        "pending": {
+          "type": "array"
+        },
+        "emptyText": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

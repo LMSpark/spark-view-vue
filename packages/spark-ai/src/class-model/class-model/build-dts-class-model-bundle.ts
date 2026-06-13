@@ -1,6 +1,6 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/build-dts-class-model-bundle
- * 职责：把 declarations 下的 DTS 文件投影成 ClassModel JSON bundle，生成 manifest、per-file shard 和 semantic-gaps 日志。
+ * 职责：把内存 emit 的 DTS 文件投影成 ClassModel JSON bundle，生成 manifest、per-file shard 和 semantic-gaps 日志。
  * 边界：只负责编译期索引生成和语义缺口报告，不在运行时解析业务数据，也不替代源文件 JSDoc。
  * AI用途：需要重建知识索引、定位 JSDoc 断链或验证模块/成员语义闭环时，用本模块作为编译入口。
  */
@@ -33,7 +33,11 @@ import {
 import type { AttributeMeta, ClassModel, ConstructorMeta, MethodMeta, SourceProvenanceMeta } from './types'
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
 import { canRenderMethodSignatureFromTypeTree, resolveMethodReturnType, visitDtsTypeMeta } from './dts-type-meta-ops'
-import { normalizeRepoPath, resolveAliasedSymbol, declarationNameText, sourceFileFromDeclarationFile } from './dts-ast-utils'
+import {
+  isClassModelEmitPath,
+  sourceFileFromEmitPath,
+} from './class-model-emit-path'
+import { normalizeRepoPath, resolveAliasedSymbol, declarationNameText } from './dts-ast-utils'
 import { projectDtsSourceFileProjection } from './project-from-declarations'
 
 /** Build Dts Class Model Bundle Progress Phase 的语义模型。 */
@@ -150,7 +154,7 @@ export function buildDtsClassModelBundle(
   const outputDir = resolve(options.outputDir)
   const rootFiles = options.rootFiles.filter(absolutePath => {
     const sourcePath = normalizeRepoPath(absolutePath, repoRoot)
-    return sourcePath.startsWith('declarations/')
+    return isClassModelEmitPath(sourcePath)
   })
   const total = rootFiles.length
   const progressInterval = options.progressInterval ?? 50
@@ -346,7 +350,7 @@ function resolveDtsTypeReferenceTarget(
   const declaration = symbol?.valueDeclaration ?? symbol?.declarations?.[0]
   if (declaration === undefined) return undefined
   const targetSourcePath = normalizeRepoPath(declaration.getSourceFile().fileName, repoRoot)
-  if (!targetSourcePath.startsWith('declarations/')) return undefined
+  if (!isClassModelEmitPath(targetSourcePath)) return undefined
   const targetName = declarationNameText(declaration) ?? symbol?.name
   if (targetName === undefined || targetName.length === 0 || targetName === '__type') return undefined
   return {
@@ -1463,7 +1467,7 @@ function createModuleSemanticGap(module: DtsFileModuleSemanticMeta): DtsClassMod
     moduleName: module.name,
     reason: moduleSemanticGapReason(module),
     chainBreak: describeModuleSemanticGapChainBreak(module),
-    fixHint: `在 ${module.sourceFile} 文件顶部补高质量模块级 JSDoc：说明职责、边界和 AI 选择该模块的用途，然后重新生成 declarations 和 dts-class-model。`,
+    fixHint: `在 ${module.sourceFile} 文件顶部补高质量模块级 JSDoc：说明职责、边界和 AI 选择该模块的用途，然后重新运行 generate:class-model-surface。`,
     declarationFile: module.sourcePath,
     declarationLine: 1,
     sourceFile: module.sourceFile,
@@ -1479,14 +1483,14 @@ function createSemanticGap(command: CreateSemanticGapCommand): DtsClassModelSema
   const { kind, model, provenance, memberName } = command
   const declarationFile = provenance?.file ?? ''
   const declarationLine = provenance?.line ?? 1
-  const sourceFile = sourceFileFromDeclarationFile(declarationFile)
+  const sourceFile = sourceFileFromEmitPath(declarationFile)
   return {
     kind,
     className: model.className,
     ...(memberName === undefined ? {} : { memberName }),
     reason: 'missing-jsdoc',
     chainBreak: describeSemanticGapChainBreak(kind, model, memberName),
-    fixHint: `在 ${sourceFile} 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。`,
+    fixHint: `在 ${sourceFile} 的对应声明前补 JSDoc，然后重新运行 generate:class-model-surface。`,
     declarationFile,
     declarationLine,
     sourceFile,

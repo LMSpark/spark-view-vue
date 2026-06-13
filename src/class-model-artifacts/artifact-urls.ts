@@ -1,12 +1,30 @@
 /**
  * @module app:class-model-artifacts/artifact-urls
- * 职责：提供主应用 artifact-urls 能力，围绕 模块入口、副作用注册或内部组合逻辑 连接视图、服务、布局、路由或平台租户流程。
- * 边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。
- * AI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 class-model-artifacts/artifact-urls。
+ * 职责：提供主应用 ClassModel 静态 bundle 的 HTTP manifest URL。
+ * 边界：只解析发布路径；bundle 内容由 generate + sync-class-model-static 维护。
+ * AI用途：Worker 按需 fetch shard 时，用本模块定位 manifest 入口 URL。
  */
-/** AI ClassModel 生成物 URL（build-time 产物，runtime 由 Worker 按需 fetch）。 */
 
-export const dtsClassModelManifestUrl = new URL(
-  '../../generated/dts-class-model/manifest.json',
-  import.meta.url,
-).href
+/** Vite public/ 下 ClassModel 静态目录（由 sync-class-model-static 从 generated/ 同步）。 */
+export const DTS_CLASS_MODEL_MANIFEST_PATH = '/dts-class-model/manifest.json' as const
+
+const DEFAULT_DEV_ORIGIN = 'http://127.0.0.1:5273'
+
+/** 解析可 fetch 的 manifest 绝对 URL（浏览器 / Node e2e 共用）。 */
+export function resolveDtsClassModelManifestUrl(baseUrl?: string | URL): string {
+  const base = baseUrl ?? readRuntimeOrigin()
+  return new URL(DTS_CLASS_MODEL_MANIFEST_PATH, base).href
+}
+
+/** pageDesign / projectPlanning 注册时使用的 manifest URL。 */
+export const dtsClassModelManifestUrl = resolveDtsClassModelManifestUrl()
+
+function readRuntimeOrigin(): string {
+  if (typeof globalThis !== 'undefined' && 'location' in globalThis) {
+    const location = globalThis.location
+    if (typeof location?.origin === 'string' && location.origin.length > 0) {
+      return location.origin
+    }
+  }
+  return DEFAULT_DEV_ORIGIN
+}

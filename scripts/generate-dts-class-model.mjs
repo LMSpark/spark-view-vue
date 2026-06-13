@@ -24,17 +24,20 @@ import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 
 import { buildDtsClassModelBundle } from '../packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts'
+import {
+  CLASS_MODEL_EMIT_PREFIX,
+  CLASS_MODEL_EMIT_TSCONFIG,
+  isClassModelEmitPath,
+  toClassModelEmitPath,
+} from '../packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts'
 
 const require = createRequire(import.meta.url)
 const vueTscRequire = createRequire(require.resolve('vue-tsc'))
 
 const repoRoot = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
-const declarationsDir = resolve(repoRoot, 'declarations')
 const outputDir = resolve(repoRoot, 'generated/dts-class-model')
 const dtsManifestPath = resolve(outputDir, '.dts-manifest.json')
 const cliOptions = parseCliOptions(process.argv.slice(2))
-const fromDiskDeclarations = cliOptions.fromDiskDeclarations
-const deleteDeclarations = cliOptions.deleteDeclarations
 const checkDiagnostics = cliOptions.checkDiagnostics
 const emitBackend = cliOptions.emitBackend
 const targetedBuildRequested = cliOptions.models.length > 0 || cliOptions.sources.length > 0
@@ -51,32 +54,25 @@ const timings = createTimings()
 let dtsFiles
 let declarationCompilerHost
 
-if (fromDiskDeclarations) {
-  console.log('Using existing declarations from disk.')
-  dtsFiles = collectDeclarationFiles(declarationsDir)
-} else {
-  console.log(targetedSeed === undefined
-    ? `Emitting declarations in memory (${emitBackend})...`
-    : `Emitting targeted declarations in memory (${emitBackend}): ${targetedSeed.sourceFiles.map(fileName => relative(repoRoot, fileName)).join(', ')}`)
-  const declarationEmit = emitDeclarationsToMemory({
-    repoRoot,
-    configPath: resolve(repoRoot, 'tsconfig.declarations.json'),
-    checkDiagnostics,
-    backend: emitBackend,
-    ...(targetedSeed === undefined ? {} : { sourceRootFiles: targetedSeed.sourceFiles }),
-    onEvent: event => {
-      const line = renderDeclarationEmitEvent(event)
-      if (line.length > 0) console.log(line)
-    },
-  })
-  dtsFiles = [...declarationEmit.files.keys()].sort((left, right) => left.localeCompare(right))
-  declarationCompilerHost = createInMemoryDeclarationCompilerHost(declarationEmit.files)
-}
+console.log(targetedSeed === undefined
+  ? `Emitting ClassModel surface in memory (${emitBackend})...`
+  : `Emitting targeted ClassModel surface in memory (${emitBackend}): ${targetedSeed.sourceFiles.map(fileName => relative(repoRoot, fileName)).join(', ')}`)
+const declarationEmit = emitDeclarationsToMemory({
+  repoRoot,
+  configPath: resolve(repoRoot, CLASS_MODEL_EMIT_TSCONFIG),
+  checkDiagnostics,
+  backend: emitBackend,
+  ...(targetedSeed === undefined ? {} : { sourceRootFiles: targetedSeed.sourceFiles }),
+  onEvent: event => {
+    const line = renderDeclarationEmitEvent(event)
+    if (line.length > 0) console.log(line)
+  },
+})
+dtsFiles = [...declarationEmit.files.keys()].sort((left, right) => left.localeCompare(right))
+declarationCompilerHost = createInMemoryDeclarationCompilerHost(declarationEmit.files)
 
 if (dtsFiles.length === 0) {
-  throw new Error(fromDiskDeclarations
-    ? 'No .d.ts files found under declarations/.'
-    : 'No in-memory .d.ts outputs were emitted.')
+  throw new Error('No in-memory ClassModel emit outputs were produced.')
 }
 console.log(`Collected DTS files: ${String(dtsFiles.length)}`)
 
@@ -89,7 +85,7 @@ const targetedBuild = targetedBuildRequested
       models: cliOptions.models,
       sources: cliOptions.sources,
       seed: targetedSeed,
-      useEmittedDtsClosure: targetedSeed !== undefined && !fromDiskDeclarations,
+      useEmittedDtsClosure: targetedSeed !== undefined,
     })
   : undefined
 const buildRootFiles = targetedBuild?.rootFiles ?? dtsFiles
@@ -163,12 +159,12 @@ if (publishedResult.manifest.duplicates !== undefined && publishedResult.manifes
   console.log(`Duplicate className skipped in classIndex: ${String(publishedResult.manifest.duplicates.length)}`)
 }
 
-if (deleteDeclarations) {
-  removeDeclarationsDir()
-  console.log(`Deleted ${relative(repoRoot, declarationsDir)}`)
-}
 timings.mark('cleanup')
 console.log(renderTimings(timings))
+
+const { syncClassModelStaticBundle } = await import('./lib/sync-class-model-static.mjs')
+const staticSync = syncClassModelStaticBundle({ repoRoot })
+console.log(`Synced ClassModel static bundle → ${relative(repoRoot, staticSync.targetDir)}`)
 
 function renderProgress(event) {
   if (event.phase === 'create-program') {
@@ -460,62 +456,19 @@ function createInMemoryDeclarationCompilerHost(files) {
   return host
 }
 
-function collectDeclarationFiles(rootDir) {
-  if (!existsSync(rootDir)) {
-    throw new Error(`Missing declarations dir: ${rootDir}`)
-  }
-
-  const files = []
-  walk(rootDir, files)
-  return files.sort((left, right) => left.localeCompare(right))
-}
-
-function walk(currentDir, files) {
-  const entries = readdirSync(currentDir, { withFileTypes: true })
-  for (const entry of entries) {
-    const fullPath = resolve(currentDir, entry.name)
-    if (entry.isDirectory()) {
-      walk(fullPath, files)
-      continue
-    }
-    if (entry.isFile() && entry.name.endsWith('.d.ts')) {
-      files.push(fullPath)
-    }
-  }
-}
-
 function removeTreeSync(targetPath) {
   if (!existsSync(targetPath)) return
   rmSync(targetPath, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 })
-}
-
-function removeDeclarationsDir() {
-  const expected = resolve(repoRoot, 'declarations')
-  if (declarationsDir !== expected) {
-    throw new Error(`Refusing to delete unexpected declarations dir: ${declarationsDir}`)
-  }
-  if (!existsSync(declarationsDir)) return
-  removeTreeSync(declarationsDir)
 }
 
 function parseCliOptions(args) {
   const models = []
   const sources = []
   let emitBackend = 'compiler-api'
-  let fromDiskDeclarations = false
-  let deleteDeclarations = false
   let checkDiagnostics = false
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index]
-    if (arg === '--skip-declarations' || arg === '--from-disk') {
-      fromDiskDeclarations = true
-      continue
-    }
-    if (arg === '--delete-declarations') {
-      deleteDeclarations = true
-      continue
-    }
     if (arg === '--check-diagnostics') {
       checkDiagnostics = true
       continue
@@ -577,8 +530,6 @@ function parseCliOptions(args) {
   }
 
   return {
-    fromDiskDeclarations,
-    deleteDeclarations,
     checkDiagnostics,
     emitBackend: readEmitBackendValue(emitBackend),
     models: uniqueStrings(models),
@@ -731,14 +682,15 @@ function resolveSourceFileForDtsSourcePath(command) {
     candidates.push(resolve(command.repoRoot, command.manifestSourceFile))
   }
   const sourcePath = String(command.sourcePath).replace(/\\/g, '/')
-  if (sourcePath.endsWith('.vue.d.ts')) {
-    candidates.push(resolve(command.repoRoot, sourcePath.slice('declarations/'.length, -'.d.ts'.length)))
-  } else if (sourcePath.startsWith('declarations/') && sourcePath.endsWith('.d.ts')) {
-    const withoutDeclarationPrefix = sourcePath.slice('declarations/'.length, -'.d.ts'.length)
-    candidates.push(resolve(command.repoRoot, `${withoutDeclarationPrefix}.ts`))
-    candidates.push(resolve(command.repoRoot, `${withoutDeclarationPrefix}.tsx`))
-    candidates.push(resolve(command.repoRoot, `${withoutDeclarationPrefix}.mts`))
-    candidates.push(resolve(command.repoRoot, `${withoutDeclarationPrefix}.cts`))
+  if (isClassModelEmitPath(sourcePath) && sourcePath.endsWith('.d.ts')) {
+    const withoutSuffix = sourcePath.endsWith('.vue.d.ts')
+      ? sourcePath.slice(CLASS_MODEL_EMIT_PREFIX.length, -'.d.ts'.length)
+      : sourcePath.slice(CLASS_MODEL_EMIT_PREFIX.length, -'.d.ts'.length)
+    candidates.push(resolve(command.repoRoot, withoutSuffix))
+    candidates.push(resolve(command.repoRoot, `${withoutSuffix}.ts`))
+    candidates.push(resolve(command.repoRoot, `${withoutSuffix}.tsx`))
+    candidates.push(resolve(command.repoRoot, `${withoutSuffix}.mts`))
+    candidates.push(resolve(command.repoRoot, `${withoutSuffix}.cts`))
   }
   const found = candidates.find(candidate => existsSync(candidate))
   if (found !== undefined) return found
@@ -762,15 +714,12 @@ function normalizeDtsSourcePathInput(input, repoRoot) {
   normalized = normalized.replace(/^runtime\/files\//u, '')
   normalized = normalized.replace(/^files\//u, '')
   if (normalized.endsWith('.json')) normalized = normalized.slice(0, -'.json'.length)
-  if (normalized.startsWith('declarations/')) return normalized
+  if (isClassModelEmitPath(normalized)) return normalized
 
   const absolutePath = isAbsolute(raw) ? resolve(raw) : resolve(repoRoot, raw)
   const repoPath = normalizeRepoPath(absolutePath, repoRoot)
-  if (repoPath.startsWith('declarations/')) return repoPath
-  if (repoPath.endsWith('.vue')) return `declarations/${repoPath}.d.ts`
-  if (/\.[cm]?tsx?$/u.test(repoPath)) return `declarations/${repoPath.replace(/\.[cm]?tsx?$/u, '.d.ts')}`
-  if (/\.[cm]?jsx?$/u.test(repoPath)) return `declarations/${repoPath.replace(/\.[cm]?jsx?$/u, '.d.ts')}`
-  throw new Error(`Cannot map source to DTS path: ${input}`)
+  if (isClassModelEmitPath(repoPath)) return repoPath
+  return toClassModelEmitPath(repoPath)
 }
 
 function collectDtsDependencyClosure(options) {

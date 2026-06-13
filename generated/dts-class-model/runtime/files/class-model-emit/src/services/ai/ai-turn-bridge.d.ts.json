@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/src/services/ai/ai-turn-bridge.d.ts",
+  "symbols": [
+    "AiTurnBridgeDiagnostic",
+    "AiAgentTurnBridgeOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/AiTurnBridgeDiagnostic": {
+      "ref": "spark-class-model://schema/AiTurnBridgeDiagnostic",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiTurnBridgeDiagnostic",
+        "properties": {
+          "at": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string"
+          },
+          "turnId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiTurnBridgeDiagnostic"
+      }
+    },
+    "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/at/0": {
+      "ref": "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/at/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiTurnBridgeDiagnostic",
+      "name": "at",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/type/1": {
+      "ref": "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/type/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiTurnBridgeDiagnostic",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/sessionId/2": {
+      "ref": "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/sessionId/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiTurnBridgeDiagnostic",
+      "name": "sessionId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/turnId/3": {
+      "ref": "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/turnId/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiTurnBridgeDiagnostic",
+      "name": "turnId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/message/4": {
+      "ref": "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/message/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiTurnBridgeDiagnostic",
+      "name": "message",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/details/5": {
+      "ref": "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/details/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiTurnBridgeDiagnostic",
+      "name": "details",
+      "schemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiTurnBridgeDiagnostic": {
+      "ref": "spark-class-model://model/AiTurnBridgeDiagnostic",
+      "kind": "model",
+      "className": "AiTurnBridgeDiagnostic",
+      "schemaRef": "spark-class-model://schema/AiTurnBridgeDiagnostic",
+      "attributeRefs": [
+        "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/at/0",
+        "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/type/1",
+        "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/sessionId/2",
+        "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/turnId/3",
+        "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/message/4",
+        "spark-class-model://model/AiTurnBridgeDiagnostic/attributes/details/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/AiAgentTurnBridgeOptions": {
+      "ref": "spark-class-model://schema/AiAgentTurnBridgeOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiAgentTurnBridgeOptions",
+        "properties": {
+          "transport": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "app-sse"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "session-turn"
+                ]
+              }
+            ]
+          },
+          "timeoutMs": {
+            "type": "number"
+          },
+          "idleTimeoutMs": {
+            "type": "number"
+          },
+          "windowSize": {
+            "type": "number"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/AiAgentTurnBridgeOptions"
+      }
+    },
+    "spark-class-model://schema/shared/4cf5cffe053113fb5567ea2bb56034df592da8556a10aa64dcfff52bbb58b762": {
+      "ref": "spark-class-model://schema/shared/4cf5cffe053113fb5567ea2bb56034df592da8556a10aa64dcfff52bbb58b762",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "app-sse"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "session-turn"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4cf5cffe053113fb5567ea2bb56034df592da8556a10aa64dcfff52bbb58b762"
+      }
+    },
+    "spark-class-model://model/AiAgentTurnBridgeOptions/attributes/transport/0": {
+      "ref": "spark-class-model://model/AiAgentTurnBridgeOptions/attributes/transport/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentTurnBridgeOptions",
+      "name": "transport",
+      "schemaRef": "spark-class-model://schema/shared/4cf5cffe053113fb5567ea2bb56034df592da8556a10aa64dcfff52bbb58b762",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentTurnBridgeOptions/attributes/timeoutMs/1": {
+      "ref": "spark-class-model://model/AiAgentTurnBridgeOptions/attributes/timeoutMs/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentTurnBridgeOptions",
+      "name": "timeoutMs",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentTurnBridgeOptions/attributes/idleTimeoutMs/2": {
+      "ref": "spark-class-model://model/AiAgentTurnBridgeOptions/attributes/idleTimeoutMs/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentTurnBridgeOptions",
+      "name": "idleTimeoutMs",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentTurnBridgeOptions/attributes/windowSize/3": {
+      "ref": "spark-class-model://model/AiAgentTurnBridgeOptions/attributes/windowSize/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentTurnBridgeOptions",
+      "name": "windowSize",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentTurnBridgeOptions": {
+      "ref": "spark-class-model://model/AiAgentTurnBridgeOptions",
+      "kind": "model",
+      "className": "AiAgentTurnBridgeOptions",
+      "schemaRef": "spark-class-model://schema/AiAgentTurnBridgeOptions",
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentTurnBridgeOptions/attributes/transport/0",
+        "spark-class-model://model/AiAgentTurnBridgeOptions/attributes/timeoutMs/1",
+        "spark-class-model://model/AiAgentTurnBridgeOptions/attributes/idleTimeoutMs/2",
+        "spark-class-model://model/AiAgentTurnBridgeOptions/attributes/windowSize/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

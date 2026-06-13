@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.props.d.ts",
+  "symbols": [
+    "RSectionProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RSectionProps": {
+      "ref": "spark-class-model://schema/RSectionProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RSectionProps",
+        "properties": {
+          "header": {
+            "$ref": "spark-class-model://schema/RHeaderProps"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "collapsible": {
+            "type": "boolean"
+          },
+          "defaultCollapsed": {
+            "type": "boolean"
+          },
+          "bordered": {
+            "type": "boolean"
+          },
+          "useCard": {
+            "type": "boolean"
+          },
+          "cardShadow": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "always"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "hover"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "never"
+                ]
+              }
+            ]
+          },
+          "bodyClass": {
+            "type": "string"
+          },
+          "expandText": {
+            "type": "string"
+          },
+          "collapseText": {
+            "type": "string"
+          },
+          "showToggleIcon": {
+            "type": "boolean"
+          },
+          "expandIconText": {
+            "type": "string"
+          },
+          "collapseIconText": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RSectionProps"
+      }
+    },
+    "spark-class-model://model/RSectionProps/attributes/header/0": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/header/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "header",
+      "schemaRef": "spark-class-model://schema/shared/c71a68b79a1dd5eb08d0b7bab67124eb1e31a564384ad13278cc7f1fb428e475",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRSectionProps%2Fattributes%2Fheader%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FRHeaderProps": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRSectionProps%2Fattributes%2Fheader%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FRHeaderProps",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RSectionProps/attributes/header/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/RHeaderProps",
+      "targetClassName": "RHeaderProps",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/zones/RendererHeader.types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RHeaderProps"
+    },
+    "spark-class-model://model/RSectionProps/attributes/title/1": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/title/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps/attributes/description/2": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/description/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "description",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps/attributes/collapsible/3": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/collapsible/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "collapsible",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps/attributes/defaultCollapsed/4": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/defaultCollapsed/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "defaultCollapsed",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps/attributes/bordered/5": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/bordered/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "bordered",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps/attributes/useCard/6": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/useCard/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "useCard",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps/attributes/cardShadow/7": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/cardShadow/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "cardShadow",
+      "schemaRef": "spark-class-model://schema/shared/75a8ac7c5af7cd67d722072434aa632781de409cfe690b73a4d88123e344c3ca",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps/attributes/bodyClass/8": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/bodyClass/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "bodyClass",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps/attributes/expandText/9": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/expandText/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "expandText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps/attributes/collapseText/10": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/collapseText/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "collapseText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps/attributes/showToggleIcon/11": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/showToggleIcon/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "showToggleIcon",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps/attributes/expandIconText/12": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/expandIconText/12",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "expandIconText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps/attributes/collapseIconText/13": {
+      "ref": "spark-class-model://model/RSectionProps/attributes/collapseIconText/13",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RSectionProps",
+      "name": "collapseIconText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RSectionProps": {
+      "ref": "spark-class-model://model/RSectionProps",
+      "kind": "model",
+      "className": "RSectionProps",
+      "schemaRef": "spark-class-model://schema/RSectionProps",
+      "attributeRefs": [
+        "spark-class-model://model/RSectionProps/attributes/header/0",
+        "spark-class-model://model/RSectionProps/attributes/title/1",
+        "spark-class-model://model/RSectionProps/attributes/description/2",
+        "spark-class-model://model/RSectionProps/attributes/collapsible/3",
+        "spark-class-model://model/RSectionProps/attributes/defaultCollapsed/4",
+        "spark-class-model://model/RSectionProps/attributes/bordered/5",
+        "spark-class-model://model/RSectionProps/attributes/useCard/6",
+        "spark-class-model://model/RSectionProps/attributes/cardShadow/7",
+        "spark-class-model://model/RSectionProps/attributes/bodyClass/8",
+        "spark-class-model://model/RSectionProps/attributes/expandText/9",
+        "spark-class-model://model/RSectionProps/attributes/collapseText/10",
+        "spark-class-model://model/RSectionProps/attributes/showToggleIcon/11",
+        "spark-class-model://model/RSectionProps/attributes/expandIconText/12",
+        "spark-class-model://model/RSectionProps/attributes/collapseIconText/13"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRSectionProps%2Fattributes%2Fheader%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FRHeaderProps"
+      ]
+    }
+  }
+}

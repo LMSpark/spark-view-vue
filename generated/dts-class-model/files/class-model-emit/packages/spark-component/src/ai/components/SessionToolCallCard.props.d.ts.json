@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionToolCallCard.props.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-component:ai/components/SessionToolCallCard.props",
+    "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionToolCallCard.props.d.ts",
+    "sourceFile": "packages/spark-component/src/ai/components/SessionToolCallCard.props.ts",
+    "packageName": "@spark-appworks/spark-component",
+    "modulePath": "ai/components/SessionToolCallCard.props",
+    "jsdoc": "@module @spark-appworks/spark-component:ai/components/SessionToolCallCard.props\n职责：维护 @spark-appworks/spark-component 中 ai/components/SessionToolCallCard.props 的模块能力，围绕 SessionToolCallCardProps 提供稳定的公开契约。\n边界：只覆盖当前模块职责，不把相邻包、运行时副作用或业务配置混入同一语义入口。\nAI用途：需要定位 ai/components/SessionToolCallCard.props 的声明、导出和使用边界时，从本模块开始。",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "SessionToolCallCardProps"
+    ]
+  },
+  "symbols": [
+    "SessionToolCallCardProps"
+  ],
+  "models": {
+    "SessionToolCallCardProps": {
+      "kind": "SessionToolCallCardProps",
+      "className": "SessionToolCallCardProps",
+      "jsdoc": "Session Tool Call Card Props 的属性契约。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    toolCall: ToolCallDisplayItem;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    toolCall: ToolCallDisplayItem;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-component/src/ai/components/SessionToolCallCard.props.d.ts",
+        "line": 9,
+        "className": "SessionToolCallCardProps",
+        "declarationKind": "type",
+        "componentName": "SessionToolCallCard"
+      },
+      "attributes": [
+        {
+          "name": "toolCall",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ToolCallDisplayItem"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": []
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:53.877Z",
+  "$defs": {
+    "SessionToolCallCardProps": {
+      "type": "object",
+      "title": "SessionToolCallCardProps",
+      "description": "Session Tool Call Card Props 的属性契约。",
+      "properties": {
+        "toolCall": {
+          "type": "object",
+          "title": "ToolCallDisplayItem"
+        }
+      }
+    }
+  }
+}

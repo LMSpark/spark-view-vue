@@ -1,0 +1,1353 @@
+{
+  "schemaVersion": 1,
+  "sourcePath": "class-model-emit/packages/spark-data/src/tree-manager.d.ts",
+  "module": {
+    "name": "@spark-appworks/spark-data:tree-manager",
+    "sourcePath": "class-model-emit/packages/spark-data/src/tree-manager.d.ts",
+    "sourceFile": "packages/spark-data/src/tree-manager.ts",
+    "packageName": "@spark-appworks/spark-data",
+    "modulePath": "tree-manager",
+    "jsdoc": "@module @spark-appworks/spark-data:tree-manager\n职责：提供 spark-data 数据管线中的 tree manager 能力，支撑 DataSet、DataTable、DataView、树或 CRUD 状态协作。\n边界：保持框架无关，只维护数据模型和操作协议，不导入 Vue、Element Plus 或应用路由。\nAI用途：处理页面数据绑定、DataViewKey、行状态、树结构或 CRUD 行为时，用本模块确认数据层语义。\n\n树管理器\n统一入口：内存缓存 + HTTP 调用（含 flat/nested 双模式接口族）\n依赖方向：DataView → TreeManager（单向）",
+    "jsdocSource": "leading-jsdoc",
+    "symbols": [
+      "TreeManagerOptions",
+      "FetchNestedInput",
+      "TreeManager"
+    ]
+  },
+  "symbols": [
+    "TreeManagerOptions",
+    "FetchNestedInput",
+    "TreeManager"
+  ],
+  "models": {
+    "TreeManagerOptions": {
+      "kind": "TreeManagerOptions",
+      "className": "TreeManagerOptions",
+      "jsdoc": "Tree Manager Options 的调用配置。",
+      "shapeKind": "type",
+      "declarationTypeText": "{\n    /** 配置对象。 */\n    config: TreeConfig;\n    /** api 字段。 */\n    api?: TreeApi;\n    /** initial Nodes 字段。 */\n    initialNodes?: FlatTreeNode[];\n    /** http Client 字段。 */\n    httpClient?: HttpClientBase;\n    /** endpoint Context Provider 回调。 */\n    endpointContextProvider?: () => Record<string, unknown>;\n}",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-data/src/tree-manager.d.ts",
+        "line": 15,
+        "className": "TreeManagerOptions",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "config",
+          "jsdoc": "配置对象。",
+          "schema": {
+            "type": "object",
+            "title": "TreeConfig"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "api",
+          "jsdoc": "api 字段。",
+          "schema": {
+            "type": "object",
+            "title": "TreeApi"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "initialNodes",
+          "jsdoc": "initial Nodes 字段。",
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "FlatTreeNode"
+            }
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "httpClient",
+          "jsdoc": "http Client 字段。",
+          "schema": {
+            "type": "object",
+            "title": "HttpClientBase"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "endpointContextProvider",
+          "jsdoc": "endpoint Context Provider 回调。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        }
+      ]
+    },
+    "FetchNestedInput": {
+      "kind": "FetchNestedInput",
+      "className": "FetchNestedInput",
+      "jsdoc": "Fetch Nested Input 的输入数据。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    rootId?: string | number | null | undefined;\n    limit?: number | undefined;\n    depthLimit?: number | undefined;\n    treeMode?: 'flat' | 'nested' | undefined;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    rootId?: string | number | null | undefined;\n    limit?: number | undefined;\n    depthLimit?: number | undefined;\n    treeMode?: 'flat' | 'nested' | undefined;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "class-model-emit/packages/spark-data/src/tree-manager.d.ts",
+        "line": 28,
+        "className": "FetchNestedInput",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "rootId",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "limit",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "depthLimit",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "treeMode",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "flat"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "nested"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "TreeManager": {
+      "kind": "TreeManager",
+      "className": "TreeManager",
+      "jsdoc": "树管理器类\n管理 DataView 中的树形数据视图",
+      "shapeKind": "class",
+      "provenance": {
+        "file": "class-model-emit/packages/spark-data/src/tree-manager.d.ts",
+        "line": 38,
+        "className": "TreeManager",
+        "declarationKind": "class"
+      },
+      "constructorMeta": {
+        "jsdoc": "创建树管理器实例\n@param config 树配置\n@param initialNodes 初始节点\n@param dataView 关联的数据视图",
+        "signatureText": "constructor(options: TreeManagerOptions)",
+        "parameterStyle": "positional",
+        "parameters": [
+          {
+            "name": "options",
+            "type": {
+              "type": "reference",
+              "name": "TreeManagerOptions",
+              "sourcePath": "class-model-emit/packages/spark-data/src/tree-manager.d.ts"
+            }
+          }
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/TreeManagerOptions"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "attributes": [],
+      "methods": [
+        {
+          "name": "getConfig",
+          "jsdoc": "获取树配置\n@returns 树配置副本",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "TreeConfig"
+          }
+        },
+        {
+          "name": "addNodesToCache",
+          "jsdoc": "添加节点到缓存\n@param nodes 要添加的节点数组",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "nodes",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "unknown"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "FlatTreeNode"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "clear",
+          "jsdoc": "清空缓存",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "getAllNodes",
+          "jsdoc": "返回缓存中所有扁平节点的数组",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "FlatTreeNode"
+            }
+          }
+        },
+        {
+          "name": "fromJson",
+          "jsdoc": "从 JSON 恢复树缓存（与 toJson 输出格式对应：FlatTreeNode[]）。\n@param json 节点数组、松散对象或 JSON 字符串\n@param options TreeManager 构造选项（config 必填）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "json",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "array",
+                    "elementType": {
+                      "type": "reference",
+                      "name": "unknown"
+                    }
+                  },
+                  {
+                    "type": "reference",
+                    "name": "Record",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "unknown"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "TreeManagerOptions",
+                "sourcePath": "class-model-emit/packages/spark-data/src/tree-manager.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "TreeManager",
+            "sourcePath": "class-model-emit/packages/spark-data/src/tree-manager.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "json": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "title": "FlatTreeNode"
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "title": "Record<string, unknown>"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "options": {
+                "$ref": "#/$defs/TreeManagerOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/TreeManager"
+          }
+        },
+        {
+          "name": "toJson",
+          "jsdoc": "将所有扁平节点序列化为 JSON 字符串（用于导出）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "getNode",
+          "jsdoc": "获取指定节点\n@param id 节点ID\n@returns 节点对象",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "FlatTreeNode"
+          }
+        },
+        {
+          "name": "getChildren",
+          "jsdoc": "获取子节点\n@param parentId 父节点ID\n@returns 子节点数组",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "parentId",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "FlatTreeNode"
+            }
+          }
+        },
+        {
+          "name": "getRoots",
+          "jsdoc": "获取根节点\n@returns 根节点数组",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "FlatTreeNode"
+            }
+          }
+        },
+        {
+          "name": "fetchChildren",
+          "jsdoc": "拉取直接子节点并写入缓存（对应 /tree/children）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "parentId",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "limit",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "unknown"
+                }
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "limit": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<FlatTreeNode[]>"
+          }
+        },
+        {
+          "name": "fetchPath",
+          "jsdoc": "获取节点祖先链 ID（对应 /tree/path）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<TreePath>"
+          }
+        },
+        {
+          "name": "expandToNode",
+          "jsdoc": "展开到目标节点（差量补齐缓存，对应 /tree/path + /tree/subtree）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "targetId",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "targetId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "moveNode",
+          "jsdoc": "执行 move Node 操作。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "nodeId",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "newParentId",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "index",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "newParentId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<FlatTreeNode>"
+          }
+        },
+        {
+          "name": "fetchNestedSearch",
+          "jsdoc": "嵌套模式远端搜索，返回匹配节点 + 祖先链（对应 /tree/nested/search）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "keyword",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "limit",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "unknown"
+                }
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "keyword": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<NestedTreeSearchResult[]>"
+          }
+        },
+        {
+          "name": "fetchNested",
+          "jsdoc": "拉取完整嵌套树（对应 /tree/nested）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "FetchNestedInput",
+                "sourcePath": "class-model-emit/packages/spark-data/src/tree-manager.d.ts"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "unknown"
+                }
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/FetchNestedInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<NestedTreeNode[]>"
+          }
+        },
+        {
+          "name": "searchNodes",
+          "jsdoc": "搜索节点\n@param keyword 搜索关键词\n@param matchFn 匹配函数\n@returns 匹配的节点数组",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "keyword",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "matchFn",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "node",
+                          "type": {
+                            "type": "reference",
+                            "name": "unknown"
+                          }
+                        },
+                        {
+                          "name": "keyword",
+                          "type": {
+                            "type": "intrinsic",
+                            "name": "string"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "boolean"
+                      }
+                    }
+                  ]
+                }
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "keyword": {
+                "type": "string"
+              },
+              "matchFn": {
+                "type": "object",
+                "title": "(node: FlatTreeNode, keyword: string) => boolean"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "FlatTreeNode"
+            }
+          }
+        },
+        {
+          "name": "searchNested",
+          "jsdoc": "嵌套树搜索（层次模式）\n对应 /tree/nested/search 接口\n返回匹配节点及其祖先链，前端可直接展开定位\n@param keyword 搜索关键词\n@param matchFn 自定义匹配函数（默认匹配 textField）\n@param limit 最大返回结果数（默认不限制）\n@returns 匹配节点 + 从根到该节点的祖先链数组",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "keyword",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "matchFn",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "node",
+                          "type": {
+                            "type": "reference",
+                            "name": "unknown"
+                          }
+                        },
+                        {
+                          "name": "keyword",
+                          "type": {
+                            "type": "intrinsic",
+                            "name": "string"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "boolean"
+                      }
+                    }
+                  ]
+                }
+              },
+              "flags": {
+                "isOptional": true
+              }
+            },
+            {
+              "name": "limit",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "keyword": {
+                "type": "string"
+              },
+              "matchFn": {
+                "type": "object",
+                "title": "(node: FlatTreeNode, keyword: string) => boolean"
+              },
+              "limit": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "NestedTreeSearchResult"
+            }
+          }
+        },
+        {
+          "name": "getNodePath",
+          "jsdoc": "获取节点路径\n@param nodeId 节点ID\n@returns 节点路径",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "nodeId",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "TreePath"
+          }
+        },
+        {
+          "name": "buildNestedTree",
+          "jsdoc": "全量构建嵌套树\n@param rootId 根节点ID\n@returns 嵌套树数组",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rootId",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rootId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "NestedTreeNode"
+            }
+          }
+        },
+        {
+          "name": "buildSubTree",
+          "jsdoc": "局部构建子树（递归）\n@param rootId 根节点ID\n@returns 嵌套子树",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rootId",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rootId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "NestedTreeNode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "generatedAt": "2026-06-13T22:23:55.560Z",
+  "$defs": {
+    "TreeManagerOptions": {
+      "type": "object",
+      "title": "TreeManagerOptions",
+      "description": "Tree Manager Options 的调用配置。",
+      "properties": {
+        "config": {
+          "type": "object",
+          "title": "TreeConfig"
+        },
+        "api": {
+          "type": "object",
+          "title": "TreeApi"
+        },
+        "initialNodes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "FlatTreeNode"
+          }
+        },
+        "httpClient": {
+          "type": "object",
+          "title": "HttpClientBase"
+        }
+      }
+    },
+    "FetchNestedInput": {
+      "type": "object",
+      "title": "FetchNestedInput",
+      "description": "Fetch Nested Input 的输入数据。",
+      "properties": {
+        "rootId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "limit": {
+          "type": "number"
+        },
+        "depthLimit": {
+          "type": "number"
+        },
+        "treeMode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "flat"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "nested"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "TreeManager": {
+      "type": "object",
+      "title": "TreeManager",
+      "description": "树管理器类\n管理 DataView 中的树形数据视图"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/ai/components/SessionDiagnosticsPanel.props.d.ts",
+  "symbols": [
+    "SessionDiagnosticsPanelProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/SessionDiagnosticsPanelProps": {
+      "ref": "spark-class-model://schema/SessionDiagnosticsPanelProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "SessionDiagnosticsPanelProps",
+        "properties": {
+          "data": {
+            "$ref": "spark-class-model://schema/SessionDiagnosticsData"
+          },
+          "loading": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/SessionDiagnosticsPanelProps"
+      }
+    },
+    "spark-class-model://model/SessionDiagnosticsPanelProps/attributes/data/0": {
+      "ref": "spark-class-model://model/SessionDiagnosticsPanelProps/attributes/data/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SessionDiagnosticsPanelProps",
+      "name": "data",
+      "schemaRef": "spark-class-model://schema/shared/93b0e5b626e750f14095b2860130ce9b329b19c3554f56e2aa2a4603c35763e6",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSessionDiagnosticsPanelProps%2Fattributes%2Fdata%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FSessionDiagnosticsData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSessionDiagnosticsPanelProps%2Fattributes%2Fdata%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FSessionDiagnosticsData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SessionDiagnosticsPanelProps/attributes/data/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/SessionDiagnosticsData",
+      "targetClassName": "SessionDiagnosticsData",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/ai/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SessionDiagnosticsData"
+    },
+    "spark-class-model://model/SessionDiagnosticsPanelProps/attributes/loading/1": {
+      "ref": "spark-class-model://model/SessionDiagnosticsPanelProps/attributes/loading/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SessionDiagnosticsPanelProps",
+      "name": "loading",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/SessionDiagnosticsPanelProps": {
+      "ref": "spark-class-model://model/SessionDiagnosticsPanelProps",
+      "kind": "model",
+      "className": "SessionDiagnosticsPanelProps",
+      "schemaRef": "spark-class-model://schema/SessionDiagnosticsPanelProps",
+      "attributeRefs": [
+        "spark-class-model://model/SessionDiagnosticsPanelProps/attributes/data/0",
+        "spark-class-model://model/SessionDiagnosticsPanelProps/attributes/loading/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSessionDiagnosticsPanelProps%2Fattributes%2Fdata%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FSessionDiagnosticsData"
+      ]
+    }
+  }
+}

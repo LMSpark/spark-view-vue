@@ -7,11 +7,18 @@
  *   node scripts/build-packages.mjs
  *   node scripts/build-packages.mjs --only spark-utils,spark-data
  *   node scripts/build-packages.mjs --dry-run
+ *   node scripts/build-packages.mjs --force
  */
 
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { PACKAGES_DIR, ROOT_DIR, runCommand } from './build-shared.mjs'
+import { PACKAGES_DIR, runCommand } from './build-shared.mjs'
+import {
+  computePackageInputFingerprint,
+  isPackageBuildFresh,
+  writeBuildStamp,
+} from './lib/package-build-cache.mjs'
 import { resolvePackagesInBuildOrder } from './lib/sort-packages-by-dependency.mjs'
 
 function parseOnlyArg(argv) {
@@ -26,11 +33,27 @@ function parseOnlyArg(argv) {
   return null
 }
 
+function readPackageJson(pkgDir) {
+  const packageJsonPath = join(PACKAGES_DIR, pkgDir, 'package.json')
+  return JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+}
+
+function readPackageName(pkgDir) {
+  return readPackageJson(pkgDir).name
+}
+
+function hasBuildScript(pkgDir) {
+  return typeof readPackageJson(pkgDir).scripts?.build === 'string'
+}
+
 function main() {
   const argv = process.argv.slice(2)
   const dryRun = argv.includes('--dry-run')
+  const force = argv.includes('--force')
   const onlyDirs = parseOnlyArg(argv)
-  const packages = resolvePackagesInBuildOrder(PACKAGES_DIR, onlyDirs)
+  const selected = resolvePackagesInBuildOrder(PACKAGES_DIR, onlyDirs)
+  const packages = selected.filter(hasBuildScript)
+  const skippedWithoutBuild = selected.filter((pkgDir) => !hasBuildScript(pkgDir))
 
   if (packages.length === 0) {
     console.log('No packages selected.')
@@ -38,16 +61,36 @@ function main() {
   }
 
   console.log(`📦 Package build order: ${packages.join(' → ')}`)
+  if (skippedWithoutBuild.length > 0) {
+    console.log(`ℹ️  Skipping source-only packages (no build script): ${skippedWithoutBuild.join(', ')}`)
+  }
   if (dryRun) {
     process.exit(0)
   }
 
+  const dependencyFingerprints = new Map()
+  let builtCount = 0
+  let skippedCount = 0
+
   for (const pkgDir of packages) {
+    const pkgRoot = join(PACKAGES_DIR, pkgDir)
+    const fingerprint = computePackageInputFingerprint(pkgRoot, dependencyFingerprints)
+
+    if (!force && isPackageBuildFresh(pkgRoot, fingerprint)) {
+      console.log(`\n⏭️  Skipping ${pkgDir} (unchanged)`)
+      dependencyFingerprints.set(readPackageName(pkgDir), fingerprint)
+      skippedCount += 1
+      continue
+    }
+
     console.log(`\n🔧 Building ${pkgDir} ...`)
-    runCommand('pnpm run build', { cwd: join(PACKAGES_DIR, pkgDir) })
+    runCommand('pnpm run build', { cwd: pkgRoot })
+    writeBuildStamp(pkgRoot, fingerprint)
+    dependencyFingerprints.set(readPackageName(pkgDir), fingerprint)
+    builtCount += 1
   }
 
-  console.log('\n✅ Package build complete.')
+  console.log(`\n✅ Package build complete (${builtCount} built, ${skippedCount} skipped).`)
 }
 
 try {

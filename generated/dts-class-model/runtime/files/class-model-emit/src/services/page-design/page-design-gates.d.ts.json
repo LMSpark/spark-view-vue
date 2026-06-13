@@ -1,0 +1,636 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/src/services/page-design/page-design-gates.d.ts",
+  "symbols": [
+    "PageDesignAllowedOperations",
+    "PageDesignRunContext",
+    "PageDesignRunMode",
+    "PageDesignImplGate",
+    "PageDesignGateState",
+    "ReadPageDesignGateStateOptions",
+    "PageDesignGateValidationResult",
+    "EvaluatePageDesignMutationToolGateOptions",
+    "EvaluatePageDesignScriptOperationGateOptions"
+  ],
+  "@refs": {
+    "spark-class-model://schema/PageDesignAllowedOperations": {
+      "ref": "spark-class-model://schema/PageDesignAllowedOperations",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignAllowedOperations",
+        "properties": {
+          "nodeTree": {
+            "type": "boolean"
+          },
+          "dataSet": {
+            "type": "boolean"
+          },
+          "script": {
+            "type": "boolean"
+          },
+          "style": {
+            "type": "boolean"
+          },
+          "navigation": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignAllowedOperations"
+      }
+    },
+    "spark-class-model://model/PageDesignAllowedOperations/attributes/nodeTree/0": {
+      "ref": "spark-class-model://model/PageDesignAllowedOperations/attributes/nodeTree/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignAllowedOperations",
+      "name": "nodeTree",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageDesignAllowedOperations/attributes/dataSet/1": {
+      "ref": "spark-class-model://model/PageDesignAllowedOperations/attributes/dataSet/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignAllowedOperations",
+      "name": "dataSet",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageDesignAllowedOperations/attributes/script/2": {
+      "ref": "spark-class-model://model/PageDesignAllowedOperations/attributes/script/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignAllowedOperations",
+      "name": "script",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageDesignAllowedOperations/attributes/style/3": {
+      "ref": "spark-class-model://model/PageDesignAllowedOperations/attributes/style/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignAllowedOperations",
+      "name": "style",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageDesignAllowedOperations/attributes/navigation/4": {
+      "ref": "spark-class-model://model/PageDesignAllowedOperations/attributes/navigation/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignAllowedOperations",
+      "name": "navigation",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageDesignAllowedOperations": {
+      "ref": "spark-class-model://model/PageDesignAllowedOperations",
+      "kind": "model",
+      "className": "PageDesignAllowedOperations",
+      "schemaRef": "spark-class-model://schema/PageDesignAllowedOperations",
+      "attributeRefs": [
+        "spark-class-model://model/PageDesignAllowedOperations/attributes/nodeTree/0",
+        "spark-class-model://model/PageDesignAllowedOperations/attributes/dataSet/1",
+        "spark-class-model://model/PageDesignAllowedOperations/attributes/script/2",
+        "spark-class-model://model/PageDesignAllowedOperations/attributes/style/3",
+        "spark-class-model://model/PageDesignAllowedOperations/attributes/navigation/4"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageDesignRunContext": {
+      "ref": "spark-class-model://schema/PageDesignRunContext",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignRunContext",
+        "properties": {
+          "allowedOperations": {
+            "$ref": "spark-class-model://schema/PageDesignAllowedOperations"
+          },
+          "deliverySaveFileNames": {
+            "type": "array"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignRunContext"
+      }
+    },
+    "spark-class-model://model/PageDesignRunContext/attributes/allowedOperations/0": {
+      "ref": "spark-class-model://model/PageDesignRunContext/attributes/allowedOperations/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignRunContext",
+      "name": "allowedOperations",
+      "schemaRef": "spark-class-model://schema/shared/4eaeab3ce340f2135657ff43967687f33bc6c480a32a644befbbd5671d8ad52d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageDesignRunContext%2Fattributes%2FallowedOperations%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignAllowedOperations": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageDesignRunContext%2Fattributes%2FallowedOperations%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignAllowedOperations",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PageDesignRunContext/attributes/allowedOperations/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/PageDesignAllowedOperations",
+      "targetClassName": "PageDesignAllowedOperations",
+      "targetFile": "files/class-model-emit/src/services/page-design/page-design-gates.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageDesignAllowedOperations"
+    },
+    "spark-class-model://model/PageDesignRunContext/attributes/deliverySaveFileNames/1": {
+      "ref": "spark-class-model://model/PageDesignRunContext/attributes/deliverySaveFileNames/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignRunContext",
+      "name": "deliverySaveFileNames",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageDesignRunContext": {
+      "ref": "spark-class-model://model/PageDesignRunContext",
+      "kind": "model",
+      "className": "PageDesignRunContext",
+      "schemaRef": "spark-class-model://schema/PageDesignRunContext",
+      "attributeRefs": [
+        "spark-class-model://model/PageDesignRunContext/attributes/allowedOperations/0",
+        "spark-class-model://model/PageDesignRunContext/attributes/deliverySaveFileNames/1"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageDesignRunContext%2Fattributes%2FallowedOperations%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignAllowedOperations"
+      ]
+    },
+    "spark-class-model://schema/PageDesignRunMode": {
+      "ref": "spark-class-model://schema/PageDesignRunMode",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignRunMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignRunMode"
+      }
+    },
+    "spark-class-model://model/PageDesignRunMode": {
+      "ref": "spark-class-model://model/PageDesignRunMode",
+      "kind": "model",
+      "className": "PageDesignRunMode",
+      "schemaRef": "spark-class-model://schema/PageDesignRunMode",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageDesignImplGate": {
+      "ref": "spark-class-model://schema/PageDesignImplGate",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignImplGate",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignImplGate"
+      }
+    },
+    "spark-class-model://model/PageDesignImplGate": {
+      "ref": "spark-class-model://model/PageDesignImplGate",
+      "kind": "model",
+      "className": "PageDesignImplGate",
+      "schemaRef": "spark-class-model://schema/PageDesignImplGate",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageDesignGateState": {
+      "ref": "spark-class-model://schema/PageDesignGateState",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignGateState",
+        "properties": {
+          "pageId": {
+            "type": "string"
+          },
+          "planningReady": {
+            "type": "boolean"
+          },
+          "implGate": {
+            "$ref": "spark-class-model://schema/PageDesignImplGate"
+          },
+          "upstreamContractsSatisfied": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignGateState"
+      }
+    },
+    "spark-class-model://model/PageDesignGateState/attributes/pageId/0": {
+      "ref": "spark-class-model://model/PageDesignGateState/attributes/pageId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignGateState",
+      "name": "pageId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageDesignGateState/attributes/planningReady/1": {
+      "ref": "spark-class-model://model/PageDesignGateState/attributes/planningReady/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignGateState",
+      "name": "planningReady",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/19df4ca8fa29b0280582850b15688f52ef9420223690e92d1955f87e079b54ec": {
+      "ref": "spark-class-model://schema/shared/19df4ca8fa29b0280582850b15688f52ef9420223690e92d1955f87e079b54ec",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/PageDesignImplGate",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/19df4ca8fa29b0280582850b15688f52ef9420223690e92d1955f87e079b54ec"
+      }
+    },
+    "spark-class-model://model/PageDesignGateState/attributes/implGate/2": {
+      "ref": "spark-class-model://model/PageDesignGateState/attributes/implGate/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignGateState",
+      "name": "implGate",
+      "schemaRef": "spark-class-model://schema/shared/19df4ca8fa29b0280582850b15688f52ef9420223690e92d1955f87e079b54ec",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageDesignGateState%2Fattributes%2FimplGate%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignImplGate": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageDesignGateState%2Fattributes%2FimplGate%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignImplGate",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PageDesignGateState/attributes/implGate/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/PageDesignImplGate",
+      "targetClassName": "PageDesignImplGate",
+      "targetFile": "files/class-model-emit/src/services/page-design/page-design-gates.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageDesignImplGate"
+    },
+    "spark-class-model://model/PageDesignGateState/attributes/upstreamContractsSatisfied/3": {
+      "ref": "spark-class-model://model/PageDesignGateState/attributes/upstreamContractsSatisfied/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignGateState",
+      "name": "upstreamContractsSatisfied",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageDesignGateState": {
+      "ref": "spark-class-model://model/PageDesignGateState",
+      "kind": "model",
+      "className": "PageDesignGateState",
+      "schemaRef": "spark-class-model://schema/PageDesignGateState",
+      "attributeRefs": [
+        "spark-class-model://model/PageDesignGateState/attributes/pageId/0",
+        "spark-class-model://model/PageDesignGateState/attributes/planningReady/1",
+        "spark-class-model://model/PageDesignGateState/attributes/implGate/2",
+        "spark-class-model://model/PageDesignGateState/attributes/upstreamContractsSatisfied/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageDesignGateState%2Fattributes%2FimplGate%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignImplGate"
+      ]
+    },
+    "spark-class-model://schema/ReadPageDesignGateStateOptions": {
+      "ref": "spark-class-model://schema/ReadPageDesignGateStateOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ReadPageDesignGateStateOptions",
+        "properties": {
+          "strictImplGate": {
+            "type": "boolean"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ReadPageDesignGateStateOptions"
+      }
+    },
+    "spark-class-model://model/ReadPageDesignGateStateOptions/attributes/strictImplGate/0": {
+      "ref": "spark-class-model://model/ReadPageDesignGateStateOptions/attributes/strictImplGate/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ReadPageDesignGateStateOptions",
+      "name": "strictImplGate",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ReadPageDesignGateStateOptions": {
+      "ref": "spark-class-model://model/ReadPageDesignGateStateOptions",
+      "kind": "model",
+      "className": "ReadPageDesignGateStateOptions",
+      "schemaRef": "spark-class-model://schema/ReadPageDesignGateStateOptions",
+      "attributeRefs": [
+        "spark-class-model://model/ReadPageDesignGateStateOptions/attributes/strictImplGate/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PageDesignGateValidationResult": {
+      "ref": "spark-class-model://schema/PageDesignGateValidationResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PageDesignGateValidationResult",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "fix": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PageDesignGateValidationResult"
+      }
+    },
+    "spark-class-model://model/PageDesignGateValidationResult/attributes/ok/0": {
+      "ref": "spark-class-model://model/PageDesignGateValidationResult/attributes/ok/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignGateValidationResult",
+      "name": "ok",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageDesignGateValidationResult/attributes/code/1": {
+      "ref": "spark-class-model://model/PageDesignGateValidationResult/attributes/code/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignGateValidationResult",
+      "name": "code",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageDesignGateValidationResult/attributes/reason/2": {
+      "ref": "spark-class-model://model/PageDesignGateValidationResult/attributes/reason/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignGateValidationResult",
+      "name": "reason",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageDesignGateValidationResult/attributes/fix/3": {
+      "ref": "spark-class-model://model/PageDesignGateValidationResult/attributes/fix/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDesignGateValidationResult",
+      "name": "fix",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageDesignGateValidationResult": {
+      "ref": "spark-class-model://model/PageDesignGateValidationResult",
+      "kind": "model",
+      "className": "PageDesignGateValidationResult",
+      "schemaRef": "spark-class-model://schema/PageDesignGateValidationResult",
+      "attributeRefs": [
+        "spark-class-model://model/PageDesignGateValidationResult/attributes/ok/0",
+        "spark-class-model://model/PageDesignGateValidationResult/attributes/code/1",
+        "spark-class-model://model/PageDesignGateValidationResult/attributes/reason/2",
+        "spark-class-model://model/PageDesignGateValidationResult/attributes/fix/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/EvaluatePageDesignMutationToolGateOptions": {
+      "ref": "spark-class-model://schema/EvaluatePageDesignMutationToolGateOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "EvaluatePageDesignMutationToolGateOptions",
+        "properties": {
+          "toolName": {
+            "type": "string"
+          },
+          "summary": {
+            "$ref": "spark-class-model://schema/ProjectPageNodeSummary"
+          },
+          "mode": {
+            "$ref": "spark-class-model://schema/PageDesignRunMode"
+          },
+          "gateOptions": {
+            "$ref": "spark-class-model://schema/ReadPageDesignGateStateOptions"
+          },
+          "allowedOperations": {
+            "$ref": "spark-class-model://schema/PageDesignAllowedOperations"
+          },
+          "toolArgs": {
+            "type": "object",
+            "title": "AiJsonParams"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/EvaluatePageDesignMutationToolGateOptions"
+      }
+    },
+    "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/toolName/0": {
+      "ref": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/toolName/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions",
+      "name": "toolName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/summary/1": {
+      "ref": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/summary/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions",
+      "name": "summary",
+      "schemaRef": "spark-class-model://schema/shared/cc8faeda454bab2dbdeb6b7e95746c29e045cea41d6c5041514edfcfc67a13b9",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignMutationToolGateOptions%2Fattributes%2Fsummary%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectPageNodeSummary": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignMutationToolGateOptions%2Fattributes%2Fsummary%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectPageNodeSummary",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/summary/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectPageNodeSummary",
+      "targetClassName": "ProjectPageNodeSummary",
+      "targetFile": "files/class-model-emit/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectPageNodeSummary"
+    },
+    "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/mode/2": {
+      "ref": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/mode/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions",
+      "name": "mode",
+      "schemaRef": "spark-class-model://schema/shared/b0075bda01c521875bc6b398c3a9e21455d54b25d46e790c93570e64b5465d92",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignMutationToolGateOptions%2Fattributes%2Fmode%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignRunMode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignMutationToolGateOptions%2Fattributes%2Fmode%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignRunMode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/mode/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/PageDesignRunMode",
+      "targetClassName": "PageDesignRunMode",
+      "targetFile": "files/class-model-emit/src/services/page-design/page-design-gates.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageDesignRunMode"
+    },
+    "spark-class-model://schema/shared/6060d5516b6c4f8f83e85e57c8171c3db32b92dedb44904143283340e3c11a9c": {
+      "ref": "spark-class-model://schema/shared/6060d5516b6c4f8f83e85e57c8171c3db32b92dedb44904143283340e3c11a9c",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ReadPageDesignGateStateOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6060d5516b6c4f8f83e85e57c8171c3db32b92dedb44904143283340e3c11a9c"
+      }
+    },
+    "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/gateOptions/3": {
+      "ref": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/gateOptions/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions",
+      "name": "gateOptions",
+      "schemaRef": "spark-class-model://schema/shared/6060d5516b6c4f8f83e85e57c8171c3db32b92dedb44904143283340e3c11a9c",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignMutationToolGateOptions%2Fattributes%2FgateOptions%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FReadPageDesignGateStateOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignMutationToolGateOptions%2Fattributes%2FgateOptions%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FReadPageDesignGateStateOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/gateOptions/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ReadPageDesignGateStateOptions",
+      "targetClassName": "ReadPageDesignGateStateOptions",
+      "targetFile": "files/class-model-emit/src/services/page-design/page-design-gates.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ReadPageDesignGateStateOptions"
+    },
+    "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/allowedOperations/4": {
+      "ref": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/allowedOperations/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions",
+      "name": "allowedOperations",
+      "schemaRef": "spark-class-model://schema/shared/4eaeab3ce340f2135657ff43967687f33bc6c480a32a644befbbd5671d8ad52d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignMutationToolGateOptions%2Fattributes%2FallowedOperations%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignAllowedOperations": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignMutationToolGateOptions%2Fattributes%2FallowedOperations%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignAllowedOperations",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/allowedOperations/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/PageDesignAllowedOperations",
+      "targetClassName": "PageDesignAllowedOperations",
+      "targetFile": "files/class-model-emit/src/services/page-design/page-design-gates.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageDesignAllowedOperations"
+    },
+    "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/toolArgs/5": {
+      "ref": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/toolArgs/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions",
+      "name": "toolArgs",
+      "schemaRef": "spark-class-model://schema/shared/f2e0885470452f1b4b099253e6e1f3b215ea957857041fc2cdced95d9ec81f90",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions": {
+      "ref": "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions",
+      "kind": "model",
+      "className": "EvaluatePageDesignMutationToolGateOptions",
+      "schemaRef": "spark-class-model://schema/EvaluatePageDesignMutationToolGateOptions",
+      "attributeRefs": [
+        "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/toolName/0",
+        "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/summary/1",
+        "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/mode/2",
+        "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/gateOptions/3",
+        "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/allowedOperations/4",
+        "spark-class-model://model/EvaluatePageDesignMutationToolGateOptions/attributes/toolArgs/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignMutationToolGateOptions%2Fattributes%2Fsummary%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectPageNodeSummary",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignMutationToolGateOptions%2Fattributes%2Fmode%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignRunMode",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignMutationToolGateOptions%2Fattributes%2FgateOptions%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FReadPageDesignGateStateOptions",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignMutationToolGateOptions%2Fattributes%2FallowedOperations%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignAllowedOperations"
+      ]
+    },
+    "spark-class-model://schema/EvaluatePageDesignScriptOperationGateOptions": {
+      "ref": "spark-class-model://schema/EvaluatePageDesignScriptOperationGateOptions",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "EvaluatePageDesignScriptOperationGateOptions",
+        "properties": {
+          "toolName": {
+            "type": "string"
+          },
+          "args": {
+            "type": "object",
+            "title": "AiJsonParams"
+          },
+          "allowedOperations": {
+            "$ref": "spark-class-model://schema/PageDesignAllowedOperations"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/EvaluatePageDesignScriptOperationGateOptions"
+      }
+    },
+    "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions/attributes/toolName/0": {
+      "ref": "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions/attributes/toolName/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions",
+      "name": "toolName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions/attributes/args/1": {
+      "ref": "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions/attributes/args/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions",
+      "name": "args",
+      "schemaRef": "spark-class-model://schema/shared/f2e0885470452f1b4b099253e6e1f3b215ea957857041fc2cdced95d9ec81f90",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions/attributes/allowedOperations/2": {
+      "ref": "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions/attributes/allowedOperations/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions",
+      "name": "allowedOperations",
+      "schemaRef": "spark-class-model://schema/shared/4eaeab3ce340f2135657ff43967687f33bc6c480a32a644befbbd5671d8ad52d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignScriptOperationGateOptions%2Fattributes%2FallowedOperations%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignAllowedOperations": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignScriptOperationGateOptions%2Fattributes%2FallowedOperations%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignAllowedOperations",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions/attributes/allowedOperations/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/PageDesignAllowedOperations",
+      "targetClassName": "PageDesignAllowedOperations",
+      "targetFile": "files/class-model-emit/src/services/page-design/page-design-gates.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageDesignAllowedOperations"
+    },
+    "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions": {
+      "ref": "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions",
+      "kind": "model",
+      "className": "EvaluatePageDesignScriptOperationGateOptions",
+      "schemaRef": "spark-class-model://schema/EvaluatePageDesignScriptOperationGateOptions",
+      "attributeRefs": [
+        "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions/attributes/toolName/0",
+        "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions/attributes/args/1",
+        "spark-class-model://model/EvaluatePageDesignScriptOperationGateOptions/attributes/allowedOperations/2"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FEvaluatePageDesignScriptOperationGateOptions%2Fattributes%2FallowedOperations%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FPageDesignAllowedOperations"
+      ]
+    }
+  }
+}

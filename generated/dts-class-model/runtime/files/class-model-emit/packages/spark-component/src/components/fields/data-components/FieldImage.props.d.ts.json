@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/fields/data-components/FieldImage.props.d.ts",
+  "symbols": [
+    "RImageProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RImageProps": {
+      "ref": "spark-class-model://schema/RImageProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RImageProps",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RImageProps"
+      }
+    },
+    "spark-class-model://model/RImageProps": {
+      "ref": "spark-class-model://model/RImageProps",
+      "kind": "model",
+      "className": "RImageProps",
+      "schemaRef": "spark-class-model://schema/RImageProps",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

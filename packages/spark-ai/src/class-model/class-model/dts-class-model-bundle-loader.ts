@@ -11,6 +11,7 @@ import type {
   DtsFileProjectionDocument,
 } from './dts-bundle-types'
 import type { DtsClassModelSurfaceDocument } from './dts-surface-types'
+import { CLASS_MODEL_EMIT_SOURCE } from './class-model-emit-path'
 import { resolveDtsBundleRelativeUrl } from './dts-bundle-url'
 import {
   readDtsClassModelBundleManifest,
@@ -119,7 +120,7 @@ public buildLoadedSurface(configPath = ''): DtsClassModelSurfaceDocument {
     for (const sourcePath of this.loadedFilePaths) fileIndex[sourcePath] = []
     return {
       schemaVersion: 1,
-      source: 'declarations',
+      source: CLASS_MODEL_EMIT_SOURCE,
       configPath,
       models,
       fileIndex,

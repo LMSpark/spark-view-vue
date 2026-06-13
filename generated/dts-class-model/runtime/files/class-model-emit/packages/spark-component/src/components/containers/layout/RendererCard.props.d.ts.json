@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/layout/RendererCard.props.d.ts",
+  "symbols": [
+    "RCardProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/RCardProps": {
+      "ref": "spark-class-model://schema/RCardProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RCardProps",
+        "properties": {
+          "header": {
+            "type": "string"
+          },
+          "shadow": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "always"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "hover"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "never"
+                ]
+              }
+            ]
+          },
+          "bodyStyle": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "bodyClass": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RCardProps"
+      }
+    },
+    "spark-class-model://model/RCardProps/attributes/header/0": {
+      "ref": "spark-class-model://model/RCardProps/attributes/header/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RCardProps",
+      "name": "header",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RCardProps/attributes/shadow/1": {
+      "ref": "spark-class-model://model/RCardProps/attributes/shadow/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RCardProps",
+      "name": "shadow",
+      "schemaRef": "spark-class-model://schema/shared/75a8ac7c5af7cd67d722072434aa632781de409cfe690b73a4d88123e344c3ca",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/856997992200a592b94530dfa27026ec7f0c2f0d2af7df90be503a0829c04dd5": {
+      "ref": "spark-class-model://schema/shared/856997992200a592b94530dfa27026ec7f0c2f0d2af7df90be503a0829c04dd5",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/856997992200a592b94530dfa27026ec7f0c2f0d2af7df90be503a0829c04dd5"
+      }
+    },
+    "spark-class-model://model/RCardProps/attributes/bodyStyle/2": {
+      "ref": "spark-class-model://model/RCardProps/attributes/bodyStyle/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RCardProps",
+      "name": "bodyStyle",
+      "schemaRef": "spark-class-model://schema/shared/856997992200a592b94530dfa27026ec7f0c2f0d2af7df90be503a0829c04dd5",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RCardProps/attributes/bodyClass/3": {
+      "ref": "spark-class-model://model/RCardProps/attributes/bodyClass/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RCardProps",
+      "name": "bodyClass",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RCardProps": {
+      "ref": "spark-class-model://model/RCardProps",
+      "kind": "model",
+      "className": "RCardProps",
+      "schemaRef": "spark-class-model://schema/RCardProps",
+      "attributeRefs": [
+        "spark-class-model://model/RCardProps/attributes/header/0",
+        "spark-class-model://model/RCardProps/attributes/shadow/1",
+        "spark-class-model://model/RCardProps/attributes/bodyStyle/2",
+        "spark-class-model://model/RCardProps/attributes/bodyClass/3"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    }
+  }
+}

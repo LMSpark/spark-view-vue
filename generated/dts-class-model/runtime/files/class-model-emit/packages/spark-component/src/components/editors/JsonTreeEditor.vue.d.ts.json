@@ -1,0 +1,446 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/editors/JsonTreeEditor.vue.d.ts",
+  "symbols": [
+    "JsonTreeEditorProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/JsonTreeEditorProps": {
+      "ref": "spark-class-model://schema/JsonTreeEditorProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "JsonTreeEditorProps",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "json-tree-editor"
+            ]
+          },
+          "field": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "width": {
+            "type": "number"
+          },
+          "modelValue": {
+            "type": "string"
+          },
+          "documentValue": {
+            "anyOf": [
+              {
+                "$ref": "spark-class-model://schema/JsonDocument",
+                "title": "Sjd.JsonDocument"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "readOnly": {
+            "type": "boolean"
+          },
+          "schema": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "filterPlaceholder": {
+            "type": "string"
+          },
+          "policy": {
+            "$ref": "spark-class-model://schema/JsonTreePolicy",
+            "title": "Sjd.JsonTreePolicy"
+          },
+          "rootLabel": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/JsonTreeEditorProps"
+      }
+    },
+    "spark-class-model://schema/shared/64cd22ec14584628c667092b15ef4eecb2548bdf642be2d021160371e0b599a4": {
+      "ref": "spark-class-model://schema/shared/64cd22ec14584628c667092b15ef4eecb2548bdf642be2d021160371e0b599a4",
+      "kind": "schema",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "json-tree-editor"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/64cd22ec14584628c667092b15ef4eecb2548bdf642be2d021160371e0b599a4"
+      }
+    },
+    "spark-class-model://model/JsonTreeEditorProps/attributes/type/0": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/attributes/type/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "type",
+      "schemaRef": "spark-class-model://schema/shared/64cd22ec14584628c667092b15ef4eecb2548bdf642be2d021160371e0b599a4",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/JsonTreeEditorProps/attributes/field/1": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/attributes/field/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "field",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/JsonTreeEditorProps/attributes/label/2": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/attributes/label/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "label",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/JsonTreeEditorProps/attributes/width/3": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/attributes/width/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "width",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/JsonTreeEditorProps/attributes/modelValue/4": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/attributes/modelValue/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "modelValue",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/9f1e14655c860f3bd2c153cd86a9de9b7f70c3646719b719089a72c7d460d2dd": {
+      "ref": "spark-class-model://schema/shared/9f1e14655c860f3bd2c153cd86a9de9b7f70c3646719b719089a72c7d460d2dd",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/JsonDocument",
+            "title": "Sjd.JsonDocument"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9f1e14655c860f3bd2c153cd86a9de9b7f70c3646719b719089a72c7d460d2dd"
+      }
+    },
+    "spark-class-model://model/JsonTreeEditorProps/attributes/documentValue/5": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/attributes/documentValue/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "documentValue",
+      "schemaRef": "spark-class-model://schema/shared/9f1e14655c860f3bd2c153cd86a9de9b7f70c3646719b719089a72c7d460d2dd",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fattributes%2FdocumentValue%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonDocument": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fattributes%2FdocumentValue%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonDocument",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/JsonTreeEditorProps/attributes/documentValue/5",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/JsonDocument",
+      "targetClassName": "JsonDocument",
+      "targetFile": "files/class-model-emit/packages/spark-json-document/src/core/json-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonDocument"
+    },
+    "spark-class-model://model/JsonTreeEditorProps/attributes/height/6": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/attributes/height/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "height",
+      "schemaRef": "spark-class-model://schema/shared/0f65693df6033a7e1dbae6098ff89cd34ca0ddcb320b3294e5e121a68504d4df",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/JsonTreeEditorProps/attributes/readOnly/7": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/attributes/readOnly/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "readOnly",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/JsonTreeEditorProps/attributes/schema/8": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/attributes/schema/8",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "schema",
+      "schemaRef": "spark-class-model://schema/shared/f7a73c5609cc5c5b19daea6cc7b04a06b278ca473351d9d17ef5820935e75122",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/JsonTreeEditorProps/attributes/filterPlaceholder/9": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/attributes/filterPlaceholder/9",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "filterPlaceholder",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/f1623ef8681bd462c8a21fd42c95f1bb2e698e782f8b40601ebdad4a5aec020d": {
+      "ref": "spark-class-model://schema/shared/f1623ef8681bd462c8a21fd42c95f1bb2e698e782f8b40601ebdad4a5aec020d",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/JsonTreePolicy",
+        "title": "Sjd.JsonTreePolicy",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f1623ef8681bd462c8a21fd42c95f1bb2e698e782f8b40601ebdad4a5aec020d"
+      }
+    },
+    "spark-class-model://model/JsonTreeEditorProps/attributes/policy/10": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/attributes/policy/10",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "policy",
+      "schemaRef": "spark-class-model://schema/shared/f1623ef8681bd462c8a21fd42c95f1bb2e698e782f8b40601ebdad4a5aec020d",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fattributes%2Fpolicy%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonTreePolicy": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fattributes%2Fpolicy%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonTreePolicy",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/JsonTreeEditorProps/attributes/policy/10",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/JsonTreePolicy",
+      "targetClassName": "JsonTreePolicy",
+      "targetFile": "files/class-model-emit/packages/spark-json-document/src/tree/tree-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonTreePolicy"
+    },
+    "spark-class-model://model/JsonTreeEditorProps/attributes/rootLabel/11": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/attributes/rootLabel/11",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "rootLabel",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/JsonTreeEditorProps/methods/isProtected/0": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/methods/isProtected/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "isProtected",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FisProtected%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FisProtected%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/JsonTreeEditorProps/methods/isProtected/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/JsonPath",
+      "targetClassName": "JsonPath",
+      "targetFile": "files/class-model-emit/packages/spark-json-document/src/core/json-path.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonPath"
+    },
+    "spark-class-model://model/JsonTreeEditorProps/methods/canEditKey/1": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/methods/canEditKey/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "canEditKey",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcanEditKey%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcanEditKey%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/JsonTreeEditorProps/methods/canEditKey/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/JsonPath",
+      "targetClassName": "JsonPath",
+      "targetFile": "files/class-model-emit/packages/spark-json-document/src/core/json-path.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonPath"
+    },
+    "spark-class-model://model/JsonTreeEditorProps/methods/canEditType/2": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/methods/canEditType/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "canEditType",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcanEditType%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcanEditType%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/JsonTreeEditorProps/methods/canEditType/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/JsonPath",
+      "targetClassName": "JsonPath",
+      "targetFile": "files/class-model-emit/packages/spark-json-document/src/core/json-path.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonPath"
+    },
+    "spark-class-model://model/JsonTreeEditorProps/methods/suggestChildKey/3": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/methods/suggestChildKey/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "suggestChildKey",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FsuggestChildKey%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonObject": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FsuggestChildKey%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonObject",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/JsonTreeEditorProps/methods/suggestChildKey/3",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/JsonObject",
+      "targetClassName": "JsonObject",
+      "targetFile": "files/class-model-emit/packages/spark-json-document/src/core/json-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonObject"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FsuggestChildKey%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FsuggestChildKey%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/JsonTreeEditorProps/methods/suggestChildKey/3",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/JsonPath",
+      "targetClassName": "JsonPath",
+      "targetFile": "files/class-model-emit/packages/spark-json-document/src/core/json-path.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonPath"
+    },
+    "spark-class-model://model/JsonTreeEditorProps/methods/createDefaultArrayItem/4": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/methods/createDefaultArrayItem/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "createDefaultArrayItem",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/a3b2030bfec8819b176ee0c185995762d4bf766c88af04ce03f5ff6063d6fa3f"
+    },
+    "spark-class-model://schema/shared/a3b2030bfec8819b176ee0c185995762d4bf766c88af04ce03f5ff6063d6fa3f": {
+      "ref": "spark-class-model://schema/shared/a3b2030bfec8819b176ee0c185995762d4bf766c88af04ce03f5ff6063d6fa3f",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/JsonValue",
+        "title": "Sjd.JsonValue",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a3b2030bfec8819b176ee0c185995762d4bf766c88af04ce03f5ff6063d6fa3f"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcreateDefaultArrayItem%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcreateDefaultArrayItem%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/JsonTreeEditorProps/methods/createDefaultArrayItem/4",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/JsonPath",
+      "targetClassName": "JsonPath",
+      "targetFile": "files/class-model-emit/packages/spark-json-document/src/core/json-path.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonPath"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcreateDefaultArrayItem%2F4/method-return/spark-class-model%3A%2F%2Fmodel%2FJsonValue": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcreateDefaultArrayItem%2F4/method-return/spark-class-model%3A%2F%2Fmodel%2FJsonValue",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/JsonTreeEditorProps/methods/createDefaultArrayItem/4",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/JsonValue",
+      "targetClassName": "JsonValue",
+      "targetFile": "files/class-model-emit/packages/spark-json-document/src/core/json-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonValue"
+    },
+    "spark-class-model://model/JsonTreeEditorProps/methods/createDefaultObjectValue/5": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps/methods/createDefaultObjectValue/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/JsonTreeEditorProps",
+      "name": "createDefaultObjectValue",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/a3b2030bfec8819b176ee0c185995762d4bf766c88af04ce03f5ff6063d6fa3f"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcreateDefaultObjectValue%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcreateDefaultObjectValue%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/JsonTreeEditorProps/methods/createDefaultObjectValue/5",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/JsonPath",
+      "targetClassName": "JsonPath",
+      "targetFile": "files/class-model-emit/packages/spark-json-document/src/core/json-path.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonPath"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcreateDefaultObjectValue%2F5/method-return/spark-class-model%3A%2F%2Fmodel%2FJsonValue": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcreateDefaultObjectValue%2F5/method-return/spark-class-model%3A%2F%2Fmodel%2FJsonValue",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/JsonTreeEditorProps/methods/createDefaultObjectValue/5",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/JsonValue",
+      "targetClassName": "JsonValue",
+      "targetFile": "files/class-model-emit/packages/spark-json-document/src/core/json-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/JsonValue"
+    },
+    "spark-class-model://model/JsonTreeEditorProps": {
+      "ref": "spark-class-model://model/JsonTreeEditorProps",
+      "kind": "model",
+      "className": "JsonTreeEditorProps",
+      "schemaRef": "spark-class-model://schema/JsonTreeEditorProps",
+      "attributeRefs": [
+        "spark-class-model://model/JsonTreeEditorProps/attributes/type/0",
+        "spark-class-model://model/JsonTreeEditorProps/attributes/field/1",
+        "spark-class-model://model/JsonTreeEditorProps/attributes/label/2",
+        "spark-class-model://model/JsonTreeEditorProps/attributes/width/3",
+        "spark-class-model://model/JsonTreeEditorProps/attributes/modelValue/4",
+        "spark-class-model://model/JsonTreeEditorProps/attributes/documentValue/5",
+        "spark-class-model://model/JsonTreeEditorProps/attributes/height/6",
+        "spark-class-model://model/JsonTreeEditorProps/attributes/readOnly/7",
+        "spark-class-model://model/JsonTreeEditorProps/attributes/schema/8",
+        "spark-class-model://model/JsonTreeEditorProps/attributes/filterPlaceholder/9",
+        "spark-class-model://model/JsonTreeEditorProps/attributes/policy/10",
+        "spark-class-model://model/JsonTreeEditorProps/attributes/rootLabel/11"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/JsonTreeEditorProps/methods/isProtected/0",
+        "spark-class-model://model/JsonTreeEditorProps/methods/canEditKey/1",
+        "spark-class-model://model/JsonTreeEditorProps/methods/canEditType/2",
+        "spark-class-model://model/JsonTreeEditorProps/methods/suggestChildKey/3",
+        "spark-class-model://model/JsonTreeEditorProps/methods/createDefaultArrayItem/4",
+        "spark-class-model://model/JsonTreeEditorProps/methods/createDefaultObjectValue/5"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fattributes%2FdocumentValue%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonDocument",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fattributes%2Fpolicy%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FJsonTreePolicy",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FisProtected%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcanEditKey%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcanEditType%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FsuggestChildKey%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonObject",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FsuggestChildKey%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcreateDefaultArrayItem%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcreateDefaultArrayItem%2F4/method-return/spark-class-model%3A%2F%2Fmodel%2FJsonValue",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcreateDefaultObjectValue%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreeEditorProps%2Fmethods%2FcreateDefaultObjectValue%2F5/method-return/spark-class-model%3A%2F%2Fmodel%2FJsonValue"
+      ]
+    }
+  }
+}

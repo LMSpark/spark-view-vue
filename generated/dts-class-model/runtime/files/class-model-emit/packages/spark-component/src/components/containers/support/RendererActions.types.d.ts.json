@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "protocol": "spark-appworks.dts-class-model.runtime",
+  "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts",
+  "symbols": [
+    "ActionsAlign",
+    "ActionsPosition",
+    "PermissionDeniedBehavior",
+    "RendererActionsProps"
+  ],
+  "@refs": {
+    "spark-class-model://schema/ActionsAlign": {
+      "ref": "spark-class-model://schema/ActionsAlign",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ActionsAlign",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ActionsAlign"
+      }
+    },
+    "spark-class-model://model/ActionsAlign": {
+      "ref": "spark-class-model://model/ActionsAlign",
+      "kind": "model",
+      "className": "ActionsAlign",
+      "schemaRef": "spark-class-model://schema/ActionsAlign",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ActionsPosition": {
+      "ref": "spark-class-model://schema/ActionsPosition",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ActionsPosition",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ActionsPosition"
+      }
+    },
+    "spark-class-model://model/ActionsPosition": {
+      "ref": "spark-class-model://model/ActionsPosition",
+      "kind": "model",
+      "className": "ActionsPosition",
+      "schemaRef": "spark-class-model://schema/ActionsPosition",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/PermissionDeniedBehavior": {
+      "ref": "spark-class-model://schema/PermissionDeniedBehavior",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "PermissionDeniedBehavior",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/PermissionDeniedBehavior"
+      }
+    },
+    "spark-class-model://model/PermissionDeniedBehavior": {
+      "ref": "spark-class-model://model/PermissionDeniedBehavior",
+      "kind": "model",
+      "className": "PermissionDeniedBehavior",
+      "schemaRef": "spark-class-model://schema/PermissionDeniedBehavior",
+      "attributeRefs": [],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/RendererActionsProps": {
+      "ref": "spark-class-model://schema/RendererActionsProps",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "RendererActionsProps",
+        "properties": {
+          "position": {
+            "$ref": "spark-class-model://schema/ActionsPosition"
+          },
+          "align": {
+            "$ref": "spark-class-model://schema/ActionsAlign"
+          },
+          "fixed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "$ref": "spark-class-model://schema/ActionsPosition"
+              }
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "class": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/RendererActionsProps"
+      }
+    },
+    "spark-class-model://schema/shared/f3a160bde9fca2bd6383efd1eab15b3003927d05bb8deb6dfa2fe157c0199086": {
+      "ref": "spark-class-model://schema/shared/f3a160bde9fca2bd6383efd1eab15b3003927d05bb8deb6dfa2fe157c0199086",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ActionsPosition",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f3a160bde9fca2bd6383efd1eab15b3003927d05bb8deb6dfa2fe157c0199086"
+      }
+    },
+    "spark-class-model://model/RendererActionsProps/attributes/position/0": {
+      "ref": "spark-class-model://model/RendererActionsProps/attributes/position/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererActionsProps",
+      "name": "position",
+      "schemaRef": "spark-class-model://schema/shared/f3a160bde9fca2bd6383efd1eab15b3003927d05bb8deb6dfa2fe157c0199086",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererActionsProps%2Fattributes%2Fposition%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FActionsPosition": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererActionsProps%2Fattributes%2Fposition%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FActionsPosition",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererActionsProps/attributes/position/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ActionsPosition",
+      "targetClassName": "ActionsPosition",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ActionsPosition"
+    },
+    "spark-class-model://schema/shared/1abe04c68a61e3cb41dcb57e679165e1cac06d7c83e10faac44ff9c159697fde": {
+      "ref": "spark-class-model://schema/shared/1abe04c68a61e3cb41dcb57e679165e1cac06d7c83e10faac44ff9c159697fde",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ActionsAlign",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/1abe04c68a61e3cb41dcb57e679165e1cac06d7c83e10faac44ff9c159697fde"
+      }
+    },
+    "spark-class-model://model/RendererActionsProps/attributes/align/1": {
+      "ref": "spark-class-model://model/RendererActionsProps/attributes/align/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererActionsProps",
+      "name": "align",
+      "schemaRef": "spark-class-model://schema/shared/1abe04c68a61e3cb41dcb57e679165e1cac06d7c83e10faac44ff9c159697fde",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererActionsProps%2Fattributes%2Falign%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FActionsAlign": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererActionsProps%2Fattributes%2Falign%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FActionsAlign",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererActionsProps/attributes/align/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ActionsAlign",
+      "targetClassName": "ActionsAlign",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ActionsAlign"
+    },
+    "spark-class-model://schema/shared/1c8aedf26ae950053da7853fc7a5af0c4e15e1821cded464f3ff053f41997c64": {
+      "ref": "spark-class-model://schema/shared/1c8aedf26ae950053da7853fc7a5af0c4e15e1821cded464f3ff053f41997c64",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "$ref": "spark-class-model://schema/ActionsPosition"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/1c8aedf26ae950053da7853fc7a5af0c4e15e1821cded464f3ff053f41997c64"
+      }
+    },
+    "spark-class-model://model/RendererActionsProps/attributes/fixed/2": {
+      "ref": "spark-class-model://model/RendererActionsProps/attributes/fixed/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererActionsProps",
+      "name": "fixed",
+      "schemaRef": "spark-class-model://schema/shared/1c8aedf26ae950053da7853fc7a5af0c4e15e1821cded464f3ff053f41997c64",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererActionsProps%2Fattributes%2Ffixed%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FActionsPosition": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererActionsProps%2Fattributes%2Ffixed%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FActionsPosition",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererActionsProps/attributes/fixed/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ActionsPosition",
+      "targetClassName": "ActionsPosition",
+      "targetFile": "files/class-model-emit/packages/spark-component/src/components/containers/support/RendererActions.types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ActionsPosition"
+    },
+    "spark-class-model://model/RendererActionsProps/attributes/label/3": {
+      "ref": "spark-class-model://model/RendererActionsProps/attributes/label/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererActionsProps",
+      "name": "label",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RendererActionsProps/attributes/width/4": {
+      "ref": "spark-class-model://model/RendererActionsProps/attributes/width/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererActionsProps",
+      "name": "width",
+      "schemaRef": "spark-class-model://schema/shared/0f65693df6033a7e1dbae6098ff89cd34ca0ddcb320b3294e5e121a68504d4df",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RendererActionsProps/attributes/class/5": {
+      "ref": "spark-class-model://model/RendererActionsProps/attributes/class/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/RendererActionsProps",
+      "name": "class",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/RendererActionsProps": {
+      "ref": "spark-class-model://model/RendererActionsProps",
+      "kind": "model",
+      "className": "RendererActionsProps",
+      "schemaRef": "spark-class-model://schema/RendererActionsProps",
+      "attributeRefs": [
+        "spark-class-model://model/RendererActionsProps/attributes/position/0",
+        "spark-class-model://model/RendererActionsProps/attributes/align/1",
+        "spark-class-model://model/RendererActionsProps/attributes/fixed/2",
+        "spark-class-model://model/RendererActionsProps/attributes/label/3",
+        "spark-class-model://model/RendererActionsProps/attributes/width/4",
+        "spark-class-model://model/RendererActionsProps/attributes/class/5"
+      ],
+      "methodRefs": [],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererActionsProps%2Fattributes%2Fposition%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FActionsPosition",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererActionsProps%2Fattributes%2Falign%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FActionsAlign",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererActionsProps%2Fattributes%2Ffixed%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FActionsPosition"
+      ]
+    }
+  }
+}
