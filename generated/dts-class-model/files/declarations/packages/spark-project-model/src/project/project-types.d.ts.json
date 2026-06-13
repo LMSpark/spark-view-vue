@@ -19,6 +19,8 @@
       "ProjectDirtyProjection",
       "ProjectPlanningInput",
       "NavigationPlanningInput",
+      "ProjectPlanningCompletionInput",
+      "ProjectPlanningCompletionResult",
       "ProjectInfo",
       "ProjectInfoInput",
       "ProjectModelInitOptions"
@@ -34,6 +36,8 @@
     "ProjectDirtyProjection",
     "ProjectPlanningInput",
     "NavigationPlanningInput",
+    "ProjectPlanningCompletionInput",
+    "ProjectPlanningCompletionResult",
     "ProjectInfo",
     "ProjectInfoInput",
     "ProjectModelInitOptions"
@@ -517,6 +521,65 @@
       ],
       "methods": []
     },
+    "ProjectPlanningCompletionInput": {
+      "kind": "ProjectPlanningCompletionInput",
+      "className": "ProjectPlanningCompletionInput",
+      "jsdoc": "项目策划完成动作输入；由 agent_complete 转发到领域模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    summary?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    summary?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
+        "line": 110,
+        "className": "ProjectPlanningCompletionInput",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "summary",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "ProjectPlanningCompletionResult": {
+      "kind": "ProjectPlanningCompletionResult",
+      "className": "ProjectPlanningCompletionResult",
+      "jsdoc": "项目策划完成动作结果；失败结果会回灌给 LLM 继续补查/补执行。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ok: true;\n    completed: true;\n    summary: string;\n    moduleCount: number;\n    pageCount: number;\n}> | Readonly<{\n    ok: false;\n    code: string;\n    msg: string;\n    fix: string;\n    /** 领域模型需要的业务能力名；由 AI runtime 的知识体系翻译为具体查询和代理执行步骤。 */\n    requiredCapabilities?: readonly string[];\n    missingFacts?: readonly string[];\n    nextStep?: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    ok: true;\n    completed: true;\n    summary: string;\n    moduleCount: number;\n    pageCount: number;\n}>",
+          "targetName": "Readonly"
+        },
+        {
+          "kind": "union",
+          "typeText": "Readonly<{\n    ok: false;\n    code: string;\n    msg: string;\n    fix: string;\n    /** 领域模型需要的业务能力名；由 AI runtime 的知识体系翻译为具体查询和代理执行步骤。 */\n    requiredCapabilities?: readonly string[];\n    missingFacts?: readonly string[];\n    nextStep?: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
+        "line": 114,
+        "className": "ProjectPlanningCompletionResult",
+        "declarationKind": "type"
+      },
+      "attributes": [],
+      "methods": []
+    },
     "ProjectInfo": {
       "kind": "ProjectInfo",
       "className": "ProjectInfo",
@@ -525,7 +588,7 @@
       "declarationTypeText": "{\n    /** 租户 ID；多租户环境下用于隔离项目。 */\n    tenantId?: string | undefined;\n    /** 项目唯一 ID。 */\n    projectId: string;\n    /** 项目名称。 */\n    name: string;\n    /** 项目类型标识。 */\n    projectType: string;\n    /** 项目图标名。 */\n    icon?: string | undefined;\n    /** 项目描述，供导航、规划和 AI 设计理解项目目标。 */\n    description: string;\n    /** 策划详细说明附件引用（文件 ID / 工作区路径等，由 IO 层约定）。 */\n    planningAttachmentRef?: string | undefined;\n    /** 项目首页导航节点 ID。 */\n    homeNodeId?: string | undefined;\n    /** 项目排序值。 */\n    order: number;\n    /** 项目创建时间。 */\n    createdAt?: string | undefined;\n    /** 项目更新时间。 */\n    updatedAt?: string | undefined;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 110,
+        "line": 131,
         "className": "ProjectInfo",
         "declarationKind": "type"
       },
@@ -651,7 +714,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 135,
+        "line": 156,
         "className": "ProjectInfoInput",
         "declarationKind": "type"
       },
@@ -676,7 +739,7 @@
       "declarationTypeText": "{\n    /** 当前 ProjectModel 绑定的项目 ID。 */\n    projectId: string;\n    /** 可选项目基础信息；缺省字段由 ProjectModel 使用默认值补齐。 */\n    project?: ProjectInfoInput | undefined;\n}",
       "provenance": {
         "file": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
-        "line": 140,
+        "line": 161,
         "className": "ProjectModelInitOptions",
         "declarationKind": "type"
       },
@@ -703,7 +766,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T06:21:07.162Z",
+  "generatedAt": "2026-06-13T21:06:57.406Z",
   "$defs": {
     "ProjectNavigationDirtyScope": {
       "type": "object",
@@ -888,6 +951,21 @@
           "type": "string"
         }
       }
+    },
+    "ProjectPlanningCompletionInput": {
+      "type": "object",
+      "title": "ProjectPlanningCompletionInput",
+      "description": "项目策划完成动作输入；由 agent_complete 转发到领域模型。",
+      "properties": {
+        "summary": {
+          "type": "string"
+        }
+      }
+    },
+    "ProjectPlanningCompletionResult": {
+      "type": "object",
+      "title": "ProjectPlanningCompletionResult",
+      "description": "项目策划完成动作结果；失败结果会回灌给 LLM 继续补查/补执行。"
     },
     "ProjectInfo": {
       "type": "object",

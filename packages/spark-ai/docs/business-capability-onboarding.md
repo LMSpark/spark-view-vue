@@ -23,6 +23,7 @@
 ### B · 知识（编译）
 
 - [ ] `pnpm run generate:class-model-surface`
+- [ ] 迭代单个领域模型时可用 `pnpm run generate:class-model-surface:model -- RootClassName`
 - [ ] `classIndex[RootClass]` 存在
 - [ ] `semantic-gaps.json` 可接受
 - [ ] mutator 回调 ref 闭包可达

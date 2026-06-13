@@ -100,6 +100,22 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd": {
+      "ref": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
+      }
+    },
     "spark-class-model://model/TreeNode/attributes/parentId/1": {
       "ref": "spark-class-model://model/TreeNode/attributes/parentId/1",
       "kind": "attribute",
@@ -108,6 +124,22 @@
       "schemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
       "readable": true,
       "writable": false
+    },
+    "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8": {
+      "ref": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8"
+      }
     },
     "spark-class-model://model/TreeNode/attributes/segment/2": {
       "ref": "spark-class-model://model/TreeNode/attributes/segment/2",
@@ -877,6 +909,18 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/52b62f7c2429eb3af09cb6711a4a2330377fac7162d74b92c104dd6c2c705bf5",
       "returnSchemaRef": "spark-class-model://schema/shared/ce2a614e3c2950334a6fbdba2b701b49f3a27e8d1958c44ae3e307fdcb35cea0"
     },
+    "spark-class-model://schema/shared/ce2a614e3c2950334a6fbdba2b701b49f3a27e8d1958c44ae3e307fdcb35cea0": {
+      "ref": "spark-class-model://schema/shared/ce2a614e3c2950334a6fbdba2b701b49f3a27e8d1958c44ae3e307fdcb35cea0",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ce2a614e3c2950334a6fbdba2b701b49f3a27e8d1958c44ae3e307fdcb35cea0"
+      }
+    },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreePolicy%2Fmethods%2FgetValueLabels%2F7/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FJsonTreePolicy%2Fmethods%2FgetValueLabels%2F7/method-parameter/spark-class-model%3A%2F%2Fmodel%2FJsonPath",
       "kind": "link",
@@ -1127,6 +1171,18 @@
       "schemaRef": "spark-class-model://schema/shared/f1e3cba927a1bb23841259afecbac47c59b7b79df714b5d935a42dc644106f55",
       "readable": true,
       "writable": false
+    },
+    "spark-class-model://schema/shared/e477735aa0655d3199eaaed2cface3a2f9b83617b78648cebe66f6d635b44c37": {
+      "ref": "spark-class-model://schema/shared/e477735aa0655d3199eaaed2cface3a2f9b83617b78648cebe66f6d635b44c37",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "spark-class-model://schema/TreeNode"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e477735aa0655d3199eaaed2cface3a2f9b83617b78648cebe66f6d635b44c37"
+      }
     },
     "spark-class-model://model/FlatJsonTreeDocument/attributes/rows/1": {
       "ref": "spark-class-model://model/FlatJsonTreeDocument/attributes/rows/1",

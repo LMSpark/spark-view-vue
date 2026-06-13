@@ -913,7 +913,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T06:21:07.023Z",
+  "generatedAt": "2026-06-13T21:06:56.352Z",
   "$defs": {
     "CrudService": {
       "type": "object",

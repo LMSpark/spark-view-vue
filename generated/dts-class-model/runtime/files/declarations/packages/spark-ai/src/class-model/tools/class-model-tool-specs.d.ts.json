@@ -27,6 +27,18 @@
         "$id": "spark-class-model://schema/ClassModelToolSpec"
       }
     },
+    "spark-class-model://schema/shared/b201f7d5e018d225ba494997af98119f348dd5f614628865f0ef55f9859cbeec": {
+      "ref": "spark-class-model://schema/shared/b201f7d5e018d225ba494997af98119f348dd5f614628865f0ef55f9859cbeec",
+      "kind": "schema",
+      "schema": {
+        "type": "string",
+        "enum": [
+          "function"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b201f7d5e018d225ba494997af98119f348dd5f614628865f0ef55f9859cbeec"
+      }
+    },
     "spark-class-model://model/ClassModelToolSpec/attributes/type/0": {
       "ref": "spark-class-model://model/ClassModelToolSpec/attributes/type/0",
       "kind": "attribute",
@@ -35,6 +47,15 @@
       "schemaRef": "spark-class-model://schema/shared/b201f7d5e018d225ba494997af98119f348dd5f614628865f0ef55f9859cbeec",
       "readable": true,
       "writable": true
+    },
+    "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0": {
+      "ref": "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0"
+      }
     },
     "spark-class-model://model/ClassModelToolSpec/attributes/function/1": {
       "ref": "spark-class-model://model/ClassModelToolSpec/attributes/function/1",

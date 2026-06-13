@@ -172,7 +172,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.526Z",
+  "generatedAt": "2026-06-13T20:09:11.788Z",
   "$defs": {
     "AiAgentRegistry": {
       "type": "object",

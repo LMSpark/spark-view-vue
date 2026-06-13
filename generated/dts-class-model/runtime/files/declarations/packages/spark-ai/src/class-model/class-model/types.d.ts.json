@@ -64,6 +64,15 @@
       "readable": true,
       "writable": true
     },
+    "spark-class-model://schema/shared/64f092d14bdbc6e0d1c9c21c72ceae4137080b03be000962465af2c375826ea7": {
+      "ref": "spark-class-model://schema/shared/64f092d14bdbc6e0d1c9c21c72ceae4137080b03be000962465af2c375826ea7",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiRuntimeApiMetadataJson",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/64f092d14bdbc6e0d1c9c21c72ceae4137080b03be000962465af2c375826ea7"
+      }
+    },
     "spark-class-model://model/ClassModelDocument/attributes/module/2": {
       "ref": "spark-class-model://model/ClassModelDocument/attributes/module/2",
       "kind": "attribute",
@@ -872,6 +881,16 @@
       "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
       "readable": true,
       "writable": false
+    },
+    "spark-class-model://schema/shared/630ef4fd9abed7c21e25329bcefe988d20d60599b876addb03cec8fad64223f5": {
+      "ref": "spark-class-model://schema/shared/630ef4fd9abed7c21e25329bcefe988d20d60599b876addb03cec8fad64223f5",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiJsonSchemaObject",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/630ef4fd9abed7c21e25329bcefe988d20d60599b876addb03cec8fad64223f5"
+      }
     },
     "spark-class-model://model/ConstructorMeta/attributes/paramsSchema/3": {
       "ref": "spark-class-model://model/ConstructorMeta/attributes/paramsSchema/3",

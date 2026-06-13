@@ -20,9 +20,15 @@ export type ClassModelKnowledgeWorkerInitInput = Readonly<{
   rootClassName: string
 }>
 
+/** Class Model Knowledge Worker Refresh Input 的输入数据。 */
+export type ClassModelKnowledgeWorkerRefreshInput = Readonly<{
+  requestedClassName?: string
+}>
+
 /** Class Model Knowledge Worker Api 的语义模型。 */
 export type ClassModelKnowledgeWorkerApi = Readonly<{
   init(input: ClassModelKnowledgeWorkerInitInput): Promise<{ initialized: true }>
+  refresh(input?: ClassModelKnowledgeWorkerRefreshInput): Promise<{ refreshed: true }>
   query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue>
   modelGuide(input: ClassModelModelGuideInput): Promise<string>
   attributeGuide(input: ClassModelAttributeGuideInput): Promise<string>

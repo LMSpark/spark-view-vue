@@ -210,6 +210,46 @@
           }
         },
         {
+          "name": "refresh",
+          "jsdoc": "显式刷新 worker 内 knowledge bundle，并让 worker 重新加载 manifest。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "requestedClassName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "requestedClassName": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
           "name": "modelGuide",
           "jsdoc": "执行 model Guide 操作。",
           "parameterStyle": "positional",
@@ -326,7 +366,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.661Z",
+  "generatedAt": "2026-06-13T20:57:30.604Z",
   "$defs": {
     "CreateWorkerDtsClassModelKnowledgeProviderOptions": {
       "type": "object",

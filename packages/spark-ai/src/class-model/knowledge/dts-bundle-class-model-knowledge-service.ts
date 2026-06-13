@@ -16,9 +16,28 @@ import {
 } from './class-model-knowledge-service'
 
 /** Dts Bundle Class Model Knowledge Service Options 的调用配置。 */
+export type DtsBundleClassModelKnowledgeRefreshInput = Readonly<{
+  rootClassName: string
+  requestedClassName?: string
+}>
+
+/** Dts Bundle Class Model Knowledge Refresh Policy 的刷新策略。 */
+export type DtsBundleClassModelKnowledgeRefreshPolicy =
+  | 'never'
+  | 'before-first-load'
+  | 'always'
+
+/** Dts Bundle Class Model Knowledge Refresh Function 的刷新函数。 */
+export type DtsBundleClassModelKnowledgeRefreshFunction = (
+  input: DtsBundleClassModelKnowledgeRefreshInput,
+) => Promise<void>
+
+/** Dts Bundle Class Model Knowledge Service Options 的调用配置。 */
 export type DtsBundleClassModelKnowledgeServiceOptions = Readonly<{
   loader: DtsClassModelBundleLoader
   rootClassName: string
+  refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction
+  refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy
 }>
 
 /** Create Dts Bundle Class Model Knowledge Provider Options 的调用配置。 */
@@ -26,6 +45,8 @@ export type CreateDtsBundleClassModelKnowledgeProviderOptions = Readonly<{
   dtsClassModelManifestUrl: string
   rootClassName: string
   fetchJson?: (url: string) => Promise<unknown>
+  refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction
+  refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy
 }>
 
 export function createDtsBundleClassModelKnowledgeProvider(
@@ -43,17 +64,34 @@ export function createDtsBundleClassModelKnowledgeProvider(
   return new DtsBundleClassModelKnowledgeService({
     loader,
     rootClassName,
+    ...(options.refreshBundle === undefined ? {} : { refreshBundle: options.refreshBundle }),
+    ...(options.refreshPolicy === undefined ? {} : { refreshPolicy: options.refreshPolicy }),
   })
 }
 
 /** Dts Bundle Class Model Knowledge Service 的语义模型。 */
 export class DtsBundleClassModelKnowledgeService implements ClassModelKnowledgeProvider {
+  private refreshPromise?: Promise<void>
+
     /** 创建 Dts Bundle Class Model Knowledge Service 实例。 */
 public constructor(private readonly options: DtsBundleClassModelKnowledgeServiceOptions) {}
 
     /** 初始化 manifest，保持动态加载入口 fail-fast。 */
 public async init(): Promise<void> {
+    await this.refreshForInput(undefined)
     await this.options.loader.init()
+  }
+
+    /** 触发外部编译/刷新钩子，并重新读取 manifest/shard。 */
+public async refresh(requestedClassName?: string): Promise<void> {
+    const refreshBundle = this.options.refreshBundle
+    if (refreshBundle !== undefined) {
+      await refreshBundle({
+        rootClassName: this.options.rootClassName,
+        ...(requestedClassName === undefined ? {} : { requestedClassName }),
+      })
+    }
+    await this.options.loader.reload()
   }
 
     /** 查询参数。 */
@@ -81,8 +119,20 @@ public async methodGuide(input: ClassModelMethodGuideInput): Promise<string> {
   }
 
   private async loadForInput(className: string | undefined): Promise<void> {
+    await this.refreshForInput(className)
     await this.options.loader.ensureReachableClosure(this.options.rootClassName)
     if (className !== undefined) await this.options.loader.ensureClassName(className)
+  }
+
+  private async refreshForInput(className: string | undefined): Promise<void> {
+    const policy = this.options.refreshPolicy ?? 'never'
+    if (policy === 'never') return
+    if (policy === 'before-first-load') {
+      this.refreshPromise ??= this.refresh(className)
+      await this.refreshPromise
+      return
+    }
+    await this.refresh(className)
   }
 
   private delegate(): ClassModelKnowledgeService {

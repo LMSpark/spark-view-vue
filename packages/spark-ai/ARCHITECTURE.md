@@ -43,9 +43,13 @@ spark-ai 的 AI 知识面只来自 TypeScript 声明：
 ```bash
 pnpm run generate:class-model-surface
 pnpm run generate:class-model-surface:delete-dts
+pnpm run generate:class-model-surface:model -- ProjectModel
 ```
 
 第二个命令会在生成 JSON 后删除临时 `.d.ts`，用于审核完成后的编译流水线。
+第三个命令用于领域模型迭代：按 root className 定位已有 bundle 中的声明文件，只重建该模型的 DTS 依赖闭包，并把 shard/manifest/runtime/refIndex 合并回 `generated/dts-class-model`。也可以直接使用 `--source packages/.../model.ts` 指定源文件。
+
+动态加载可以和编译整合，但编译属于宿主能力：`DtsBundleClassModelKnowledgeService.refresh()` 只调用注入的 `refreshBundle` 并清空 loader 缓存；Node 宿主可用 `scripts/lib/class-model-knowledge-refresh.mjs` 创建 refresh callback。Worker 是 browser/node 共用隔离层，只承载 refresh/reload 协议，不内置浏览器 HTTP 或具体编译实现。
 
 ## 业务接入
 

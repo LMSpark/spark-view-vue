@@ -142,7 +142,8 @@ export type ProjectPlanningCompletionResult = Readonly<{
   code: string
   msg: string
   fix: string
-  requiredQueries?: readonly string[]
+  /** 领域模型需要的业务能力名；由 AI runtime 的知识体系翻译为具体查询和代理执行步骤。 */
+  requiredCapabilities?: readonly string[]
   missingFacts?: readonly string[]
   nextStep?: string
 }>

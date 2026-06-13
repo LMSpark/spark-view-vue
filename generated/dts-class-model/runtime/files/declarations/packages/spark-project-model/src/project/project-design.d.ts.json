@@ -173,6 +173,15 @@
         "$id": "spark-class-model://schema/shared/02cca5b56f32b776722ed93a0edf8bcfee5687418cc046cc310ed47fae1d8e29"
       }
     },
+    "spark-class-model://schema/shared/07266d3c9a085b59eec901fb089ba2f92b2bcb0bf27a35f85d707869e9377016": {
+      "ref": "spark-class-model://schema/shared/07266d3c9a085b59eec901fb089ba2f92b2bcb0bf27a35f85d707869e9377016",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ProjectModelData",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/07266d3c9a085b59eec901fb089ba2f92b2bcb0bf27a35f85d707869e9377016"
+      }
+    },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectDesign%2Fmethods%2FreplaceNavigationRoot%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectModelData": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectDesign%2Fmethods%2FreplaceNavigationRoot%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectModelData",
       "kind": "link",

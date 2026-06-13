@@ -31,6 +31,18 @@
         "$id": "spark-class-model://schema/DataTableAddColumnsResult"
       }
     },
+    "spark-class-model://schema/shared/681004346c78d5f384b654c986b4eda8fea28010db3be7da70b19aa0080f3ff9": {
+      "ref": "spark-class-model://schema/shared/681004346c78d5f384b654c986b4eda8fea28010db3be7da70b19aa0080f3ff9",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/681004346c78d5f384b654c986b4eda8fea28010db3be7da70b19aa0080f3ff9"
+      }
+    },
     "spark-class-model://model/DataTableAddColumnsResult/attributes/added/0": {
       "ref": "spark-class-model://model/DataTableAddColumnsResult/attributes/added/0",
       "kind": "attribute",
@@ -330,6 +342,18 @@
       "targetFile": "files/declarations/packages/spark-data/src/validation.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/DataValidator"
     },
+    "spark-class-model://schema/shared/a0c983f3670811a4d09e154cbf801128a113a8c1b30ce1084cea83c58500c3d3": {
+      "ref": "spark-class-model://schema/shared/a0c983f3670811a4d09e154cbf801128a113a8c1b30ce1084cea83c58500c3d3",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "spark-class-model://schema/DataRow"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a0c983f3670811a4d09e154cbf801128a113a8c1b30ce1084cea83c58500c3d3"
+      }
+    },
     "spark-class-model://model/DataTable/attributes/rows/9": {
       "ref": "spark-class-model://model/DataTable/attributes/rows/9",
       "kind": "attribute",
@@ -414,6 +438,21 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/2d1e5ad750340cacd3a59ae8cd741f6d8a80039dc79bc38dd722886fa7036a89"
     },
+    "spark-class-model://schema/shared/2d1e5ad750340cacd3a59ae8cd741f6d8a80039dc79bc38dd722886fa7036a89": {
+      "ref": "spark-class-model://schema/shared/2d1e5ad750340cacd3a59ae8cd741f6d8a80039dc79bc38dd722886fa7036a89",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "ds": {
+            "$ref": "spark-class-model://schema/DataSet"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/2d1e5ad750340cacd3a59ae8cd741f6d8a80039dc79bc38dd722886fa7036a89"
+      }
+    },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fmethods%2FsetDataSet%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSet": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fmethods%2FsetDataSet%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSet",
       "kind": "link",
@@ -454,6 +493,15 @@
         "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/shared/b9c37eced01ed18450944c3590a3bf2c059977ce803bad94a25c8a044c922574"
+      }
+    },
+    "spark-class-model://schema/shared/26422d000505dc4310895bf07a58f20f12afe485aad929313bf1e59d8fa876c9": {
+      "ref": "spark-class-model://schema/shared/26422d000505dc4310895bf07a58f20f12afe485aad929313bf1e59d8fa876c9",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DataView",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/26422d000505dc4310895bf07a58f20f12afe485aad929313bf1e59d8fa876c9"
       }
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fmethods%2FgetView%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FDataView": {
@@ -728,6 +776,24 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/b9c89967d88a95252d631a79ac6fd63be9ecf7717524effc5c7904ad22e9e378",
       "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
+    },
+    "spark-class-model://schema/shared/b9c89967d88a95252d631a79ac6fd63be9ecf7717524effc5c7904ad22e9e378": {
+      "ref": "spark-class-model://schema/shared/b9c89967d88a95252d631a79ac6fd63be9ecf7717524effc5c7904ad22e9e378",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/DataRow"
+            }
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b9c89967d88a95252d631a79ac6fd63be9ecf7717524effc5c7904ad22e9e378"
+      }
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fmethods%2FaddRows%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fmethods%2FaddRows%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",

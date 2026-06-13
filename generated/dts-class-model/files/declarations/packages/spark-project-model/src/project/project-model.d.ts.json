@@ -581,6 +581,41 @@
           }
         },
         {
+          "name": "completeProjectPlanning",
+          "jsdoc": "项目策划完成动作；agent_complete 会调用它，而不是只在协议层标记结束。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ProjectPlanningCompletionInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectPlanningCompletionResult"
+          }
+        },
+        {
           "name": "applyProjectLayoutEdit",
           "jsdoc": "更新根模块 childPlacement（项目级 header / sidebar 布局）。",
           "parameterStyle": "positional",
@@ -1745,7 +1780,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T06:21:07.159Z",
+  "generatedAt": "2026-06-13T21:06:57.362Z",
   "$defs": {
     "ProjectModel": {
       "type": "object",

@@ -94,6 +94,15 @@
         "$id": "spark-class-model://schema/SparkNodeTreeRootParams"
       }
     },
+    "spark-class-model://schema/shared/36eabb74c8ff4b47a058618141545d9f965e33bc8de729e0eab0f7e6ab3d2b7e": {
+      "ref": "spark-class-model://schema/shared/36eabb74c8ff4b47a058618141545d9f965e33bc8de729e0eab0f7e6ab3d2b7e",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/SparkNode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/36eabb74c8ff4b47a058618141545d9f965e33bc8de729e0eab0f7e6ab3d2b7e"
+      }
+    },
     "spark-class-model://model/SparkNodeTreeRootParams/attributes/root/0": {
       "ref": "spark-class-model://model/SparkNodeTreeRootParams/attributes/root/0",
       "kind": "attribute",
@@ -475,6 +484,18 @@
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/SparkNodeTreeAddNodesParams"
+      }
+    },
+    "spark-class-model://schema/shared/f89d016da0de550109a06dbeb474ed21a7e9b6a19fabfd626e9da9d4204feac7": {
+      "ref": "spark-class-model://schema/shared/f89d016da0de550109a06dbeb474ed21a7e9b6a19fabfd626e9da9d4204feac7",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "spark-class-model://schema/SparkNode"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f89d016da0de550109a06dbeb474ed21a7e9b6a19fabfd626e9da9d4204feac7"
       }
     },
     "spark-class-model://model/SparkNodeTreeAddNodesParams/attributes/nodes/0": {
@@ -1178,6 +1199,18 @@
       "targetClassName": "SparkNode",
       "targetFile": "files/declarations/packages/spark-data/src/node-tree/spark-node.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/SparkNode"
+    },
+    "spark-class-model://schema/shared/569f4d6b0385907ee0c3d2e2a5efabb760b1d33bf4126133b5020c2eda699d1e": {
+      "ref": "spark-class-model://schema/shared/569f4d6b0385907ee0c3d2e2a5efabb760b1d33bf4126133b5020c2eda699d1e",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/569f4d6b0385907ee0c3d2e2a5efabb760b1d33bf4126133b5020c2eda699d1e"
+      }
     },
     "spark-class-model://model/SparkNodeAddNodesResult/attributes/indexes/1": {
       "ref": "spark-class-model://model/SparkNodeAddNodesResult/attributes/indexes/1",
@@ -2384,6 +2417,15 @@
         "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/shared/f0a6629c10cf7f461b0f8dbdf4b88d88f5567368c38eafcad00f1ff58148004d"
+      }
+    },
+    "spark-class-model://schema/shared/dff8d3204c950961e8ab627b2fafac7182029d193cc20b0fc11c244e5a8f60b6": {
+      "ref": "spark-class-model://schema/shared/dff8d3204c950961e8ab627b2fafac7182029d193cc20b0fc11c244e5a8f60b6",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/SparkNodeChildren",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/dff8d3204c950961e8ab627b2fafac7182029d193cc20b0fc11c244e5a8f60b6"
       }
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTree%2Fmethods%2FlistChildren%2F16/method-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTreeChildrenParams": {

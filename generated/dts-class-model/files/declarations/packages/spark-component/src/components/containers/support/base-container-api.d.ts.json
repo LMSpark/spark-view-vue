@@ -694,7 +694,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.854Z",
+  "generatedAt": "2026-06-13T20:09:13.573Z",
   "$defs": {
     "BaseCrudContainerApi": {
       "type": "object",

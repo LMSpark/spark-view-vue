@@ -64,6 +64,15 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
       "returnSchemaRef": "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6"
     },
+    "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6": {
+      "ref": "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ProjectNodeData",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6"
+      }
+    },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationTreeNodeLike%2Fmethods%2FtoNodeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationTreeNodeLike%2Fmethods%2FtoNodeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
       "kind": "link",
@@ -172,6 +181,21 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963",
       "returnSchemaRef": "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6"
+    },
+    "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963": {
+      "ref": "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "nodeId": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963"
+      }
     },
     "spark-class-model://model/NavigationIndex/methods/nextChildOrder/4": {
       "ref": "spark-class-model://model/NavigationIndex/methods/nextChildOrder/4",

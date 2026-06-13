@@ -317,7 +317,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.546Z",
+  "generatedAt": "2026-06-13T20:09:11.861Z",
   "$defs": {
     "AiAgentBeforeFunctionCallStatus": {
       "type": "object",

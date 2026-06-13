@@ -119,6 +119,16 @@
       "readable": true,
       "writable": true
     },
+    "spark-class-model://schema/shared/baba72fd9bdcba9c4483a00099d0a4bea41ea99c42bd24a041092c86dd2a1472": {
+      "ref": "spark-class-model://schema/shared/baba72fd9bdcba9c4483a00099d0a4bea41ea99c42bd24a041092c86dd2a1472",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Readonly<Record<string, AiJsonSchemaObject>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/baba72fd9bdcba9c4483a00099d0a4bea41ea99c42bd24a041092c86dd2a1472"
+      }
+    },
     "spark-class-model://model/DtsFileProjectionDocument/attributes/%24defs/4": {
       "ref": "spark-class-model://model/DtsFileProjectionDocument/attributes/%24defs/4",
       "kind": "attribute",
@@ -912,16 +922,6 @@
       "schemaRef": "spark-class-model://schema/shared/bb8d303156ee5778b6c8e18225bed6bea32892e3e7f5c1390ce4b9a6ea1488a9",
       "readable": true,
       "writable": true
-    },
-    "spark-class-model://schema/shared/3c7a8888ca975b08e03743dec34d491a876cba72ebc7a4cdb0aaa35e927444cc": {
-      "ref": "spark-class-model://schema/shared/3c7a8888ca975b08e03743dec34d491a876cba72ebc7a4cdb0aaa35e927444cc",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "Readonly<Record<string, DtsClassModelRuntimeClassEntry>>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/3c7a8888ca975b08e03743dec34d491a876cba72ebc7a4cdb0aaa35e927444cc"
-      }
     },
     "spark-class-model://model/DtsClassModelRuntimeManifest/attributes/classIndex/3": {
       "ref": "spark-class-model://model/DtsClassModelRuntimeManifest/attributes/classIndex/3",

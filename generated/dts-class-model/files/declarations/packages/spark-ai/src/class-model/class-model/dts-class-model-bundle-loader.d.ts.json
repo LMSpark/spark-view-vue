@@ -143,6 +143,47 @@
           }
         },
         {
+          "name": "clearCache",
+          "jsdoc": "清空已加载 manifest/shard/model 缓存，下次查询重新读取 bundle。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "reload",
+          "jsdoc": "重新读取 manifest，用于编译器更新 generated bundle 后刷新知识。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<DtsClassModelBundleManifest>"
+          }
+        },
+        {
           "name": "ensureClassName",
           "jsdoc": "ensure Class Name 名称。",
           "parameterStyle": "positional",
@@ -290,7 +331,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.625Z",
+  "generatedAt": "2026-06-13T20:57:30.453Z",
   "$defs": {
     "DtsClassModelBundleLoaderOptions": {
       "type": "object",

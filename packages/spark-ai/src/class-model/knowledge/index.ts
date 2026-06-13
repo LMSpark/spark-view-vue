@@ -34,6 +34,9 @@ export type {
 
 export type {
   CreateDtsBundleClassModelKnowledgeProviderOptions,
+  DtsBundleClassModelKnowledgeRefreshFunction,
+  DtsBundleClassModelKnowledgeRefreshInput,
+  DtsBundleClassModelKnowledgeRefreshPolicy,
   DtsBundleClassModelKnowledgeServiceOptions,
 } from './dts-bundle-class-model-knowledge-service'
 
@@ -48,6 +51,7 @@ export type {
 export type {
   ClassModelKnowledgeWorkerApi,
   ClassModelKnowledgeWorkerInitInput,
+  ClassModelKnowledgeWorkerRefreshInput,
 } from './worker-knowledge-api'
 
 export {

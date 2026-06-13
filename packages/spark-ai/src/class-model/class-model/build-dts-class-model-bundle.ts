@@ -61,6 +61,7 @@ export type BuildDtsClassModelBundleOptions = Readonly<{
   outputDir: string
   compilerHost?: ts.CompilerHost
   exportedOnly?: boolean
+  runtimeClassIndexBase?: Readonly<Record<string, DtsClassModelRuntimeClassEntry>>
   onProgress?: (event: BuildDtsClassModelBundleProgress) => void
   progressInterval?: number
 }>
@@ -245,6 +246,7 @@ export function buildDtsClassModelBundle(
     outputDir: resolve(outputDir, 'runtime'),
     projectedFiles,
     classIndex,
+    ...(options.runtimeClassIndexBase === undefined ? {} : { runtimeClassIndexBase: options.runtimeClassIndexBase }),
     projectedClassNamesBySourcePath,
     typeReferenceIndex,
   })
@@ -485,10 +487,13 @@ function writeRuntimeClassModelBundle(command: {
   outputDir: string
   projectedFiles: readonly ProjectedBundleFile[]
   classIndex: DtsClassModelBundleManifest['classIndex']
+  runtimeClassIndexBase?: Readonly<Record<string, DtsClassModelRuntimeClassEntry>>
   projectedClassNamesBySourcePath: ReadonlyMap<string, ReadonlySet<string>>
   typeReferenceIndex: ReadonlyMap<string, ReadonlyMap<string, TypeReferenceTarget>>
 }): Readonly<{ manifest: DtsClassModelRuntimeManifest; manifestPath: string }> {
-  const runtimeClassIndex: Record<string, DtsClassModelRuntimeClassEntry> = {}
+  const runtimeClassIndex: Record<string, DtsClassModelRuntimeClassEntry> = {
+    ...(command.runtimeClassIndexBase ?? {}),
+  }
   for (const [className, entry] of Object.entries(command.classIndex)) {
     runtimeClassIndex[className] = {
       sourcePath: entry.sourcePath,
@@ -500,6 +505,17 @@ function writeRuntimeClassModelBundle(command: {
 
   const runtimeClassTargetsBySourceAndName = new Map<string, RuntimeClassTarget>()
   const runtimeClassTargetsBySchemaRef = new Map<string, RuntimeClassTarget>()
+  for (const [className, entry] of Object.entries(runtimeClassIndex)) {
+    const target: RuntimeClassTarget = {
+      className,
+      sourcePath: entry.sourcePath,
+      file: entry.file,
+      modelRef: entry.modelRef,
+      schemaRef: entry.schemaRef,
+    }
+    runtimeClassTargetsBySourceAndName.set(runtimeClassKey(entry.sourcePath, className), target)
+    runtimeClassTargetsBySchemaRef.set(target.schemaRef, target)
+  }
   for (const projectedFile of command.projectedFiles) {
     for (const className of Object.keys(projectedFile.projection.models)) {
       const target: RuntimeClassTarget = {
@@ -515,7 +531,10 @@ function writeRuntimeClassModelBundle(command: {
   }
 
   const sourcePathByBundleFile = new Map(
-    command.projectedFiles.map(file => [file.bundleFile, file.sourcePath] as const),
+    [
+      ...Object.values(runtimeClassIndex).map(entry => [entry.file, entry.sourcePath] as const),
+      ...command.projectedFiles.map(file => [file.bundleFile, file.sourcePath] as const),
+    ],
   )
   const files: Record<string, DtsClassModelRuntimeManifest['files'][string]> = {}
   const refIndex: Record<string, DtsClassModelRuntimeManifest['refIndex'][string]> = {}

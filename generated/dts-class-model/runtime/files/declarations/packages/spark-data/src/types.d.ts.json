@@ -499,6 +499,16 @@
       "readable": true,
       "writable": true
     },
+    "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6": {
+      "ref": "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": true,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6"
+      }
+    },
     "spark-class-model://model/ColumnTypeMap/attributes/array/15": {
       "ref": "spark-class-model://model/ColumnTypeMap/attributes/array/15",
       "kind": "attribute",
@@ -1382,6 +1392,16 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730": {
+      "ref": "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Record<string, string>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730"
+      }
+    },
     "spark-class-model://model/HttpEndpoint/attributes/headers/2": {
       "ref": "spark-class-model://model/HttpEndpoint/attributes/headers/2",
       "kind": "attribute",
@@ -1721,6 +1741,15 @@
       "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
       "readable": true,
       "writable": false
+    },
+    "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0": {
+      "ref": "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0"
+      }
     },
     "spark-class-model://model/CrudApi/attributes/batch/6": {
       "ref": "spark-class-model://model/CrudApi/attributes/batch/6",
@@ -2210,6 +2239,28 @@
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/FilterLogicExpression"
+      }
+    },
+    "spark-class-model://schema/shared/c464fd70348d0947fd742710f9b05656614438f0a0616e040cb855fe2b91aaf9": {
+      "ref": "spark-class-model://schema/shared/c464fd70348d0947fd742710f9b05656614438f0a0616e040cb855fe2b91aaf9",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "and"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "or"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c464fd70348d0947fd742710f9b05656614438f0a0616e040cb855fe2b91aaf9"
       }
     },
     "spark-class-model://model/FilterLogicExpression/attributes/type/0": {
@@ -4354,6 +4405,15 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://schema/shared/f90a026e5c502bda53fcfa5912bcbebcef521c4db1e3ea4f312025e258efe733": {
+      "ref": "spark-class-model://schema/shared/f90a026e5c502bda53fcfa5912bcbebcef521c4db1e3ea4f312025e258efe733",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/LoggerApi",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f90a026e5c502bda53fcfa5912bcbebcef521c4db1e3ea4f312025e258efe733"
+      }
+    },
     "spark-class-model://model/DataSetAppServices/attributes/logger/2": {
       "ref": "spark-class-model://model/DataSetAppServices/attributes/logger/2",
       "kind": "attribute",
@@ -6313,6 +6373,15 @@
         "$id": "spark-class-model://schema/DataSetSaveChangesConfig"
       }
     },
+    "spark-class-model://schema/shared/20203bfb014f748a9a19523713c3aa156940a413b75ff2b0b2f0f6270d6177cc": {
+      "ref": "spark-class-model://schema/shared/20203bfb014f748a9a19523713c3aa156940a413b75ff2b0b2f0f6270d6177cc",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/DataSetSaveChangesMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/20203bfb014f748a9a19523713c3aa156940a413b75ff2b0b2f0f6270d6177cc"
+      }
+    },
     "spark-class-model://model/DataSetSaveChangesConfig/attributes/mode/0": {
       "ref": "spark-class-model://model/DataSetSaveChangesConfig/attributes/mode/0",
       "kind": "attribute",
@@ -6400,6 +6469,18 @@
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/DataSetSaveChangesOptions"
+      }
+    },
+    "spark-class-model://schema/shared/766e0567817cdb946c6e831e7a29c827e5daadb8ce09be3e2b2e46fcd413a8f9": {
+      "ref": "spark-class-model://schema/shared/766e0567817cdb946c6e831e7a29c827e5daadb8ce09be3e2b2e46fcd413a8f9",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "spark-class-model://schema/DataSetSaveChangesViewSelector"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/766e0567817cdb946c6e831e7a29c827e5daadb8ce09be3e2b2e46fcd413a8f9"
       }
     },
     "spark-class-model://model/DataSetSaveChangesOptions/attributes/views/0": {

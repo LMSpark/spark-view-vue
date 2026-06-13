@@ -135,6 +135,21 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1"
     },
+    "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1": {
+      "ref": "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1"
+      }
+    },
     "spark-class-model://model/PageTextFile/methods/loadText/2": {
       "ref": "spark-class-model://model/PageTextFile/methods/loadText/2",
       "kind": "method",

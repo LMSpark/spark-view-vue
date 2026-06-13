@@ -608,6 +608,47 @@
           }
         },
         {
+          "name": "clearCache",
+          "jsdoc": "清空已加载 manifest/shard/ref/model 缓存，下次查询重新读取 runtime bundle。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "reload",
+          "jsdoc": "重新读取 runtime manifest，用于编译器更新 generated bundle 后刷新知识。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<DtsClassModelRuntimeManifest>"
+          }
+        },
+        {
           "name": "ensureClassName",
           "jsdoc": "按 className 加载单个 runtime model。",
           "parameterStyle": "positional",
@@ -987,7 +1028,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.631Z",
+  "generatedAt": "2026-06-13T20:57:30.493Z",
   "$defs": {
     "DtsClassModelRuntimeLoaderOptions": {
       "type": "object",

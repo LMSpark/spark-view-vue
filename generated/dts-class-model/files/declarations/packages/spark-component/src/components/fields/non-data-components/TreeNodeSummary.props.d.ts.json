@@ -154,7 +154,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.960Z",
+  "generatedAt": "2026-06-13T20:09:14.236Z",
   "$defs": {
     "RTreeNodeSummaryProps": {
       "type": "object",

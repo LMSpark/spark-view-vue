@@ -214,8 +214,27 @@
         "$id": "spark-class-model://schema/ClassModelKnowledgeProvider"
       }
     },
-    "spark-class-model://model/ClassModelKnowledgeProvider/methods/query/0": {
-      "ref": "spark-class-model://model/ClassModelKnowledgeProvider/methods/query/0",
+    "spark-class-model://model/ClassModelKnowledgeProvider/methods/refresh/0": {
+      "ref": "spark-class-model://model/ClassModelKnowledgeProvider/methods/refresh/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ClassModelKnowledgeProvider",
+      "name": "refresh",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219": {
+      "ref": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<void>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+      }
+    },
+    "spark-class-model://model/ClassModelKnowledgeProvider/methods/query/1": {
+      "ref": "spark-class-model://model/ClassModelKnowledgeProvider/methods/query/1",
       "kind": "method",
       "ownerRef": "spark-class-model://model/ClassModelKnowledgeProvider",
       "name": "query",
@@ -256,18 +275,18 @@
         "$id": "spark-class-model://schema/shared/be1895c45f0c1a30418694cc87f8499e622376b220289fe51eab37eb2e8150b1"
       }
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2Fquery%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeQueryInput": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2Fquery%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeQueryInput",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2Fquery%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeQueryInput": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2Fquery%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeQueryInput",
       "kind": "link",
-      "fromRef": "spark-class-model://model/ClassModelKnowledgeProvider/methods/query/0",
+      "fromRef": "spark-class-model://model/ClassModelKnowledgeProvider/methods/query/1",
       "relation": "method-parameter",
       "targetModelRef": "spark-class-model://model/ClassModelKnowledgeQueryInput",
       "targetClassName": "ClassModelKnowledgeQueryInput",
       "targetFile": "files/declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/ClassModelKnowledgeQueryInput"
     },
-    "spark-class-model://model/ClassModelKnowledgeProvider/methods/modelGuide/1": {
-      "ref": "spark-class-model://model/ClassModelKnowledgeProvider/methods/modelGuide/1",
+    "spark-class-model://model/ClassModelKnowledgeProvider/methods/modelGuide/2": {
+      "ref": "spark-class-model://model/ClassModelKnowledgeProvider/methods/modelGuide/2",
       "kind": "method",
       "ownerRef": "spark-class-model://model/ClassModelKnowledgeProvider",
       "name": "modelGuide",
@@ -307,18 +326,18 @@
         "$id": "spark-class-model://schema/shared/50f88812e58c1bfa228d90383e6c20e0c533b254dd8e5341297ee9a59e5b007d"
       }
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FmodelGuide%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelModelGuideInput": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FmodelGuide%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelModelGuideInput",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FmodelGuide%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelModelGuideInput": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FmodelGuide%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelModelGuideInput",
       "kind": "link",
-      "fromRef": "spark-class-model://model/ClassModelKnowledgeProvider/methods/modelGuide/1",
+      "fromRef": "spark-class-model://model/ClassModelKnowledgeProvider/methods/modelGuide/2",
       "relation": "method-parameter",
       "targetModelRef": "spark-class-model://model/ClassModelModelGuideInput",
       "targetClassName": "ClassModelModelGuideInput",
       "targetFile": "files/declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/ClassModelModelGuideInput"
     },
-    "spark-class-model://model/ClassModelKnowledgeProvider/methods/attributeGuide/2": {
-      "ref": "spark-class-model://model/ClassModelKnowledgeProvider/methods/attributeGuide/2",
+    "spark-class-model://model/ClassModelKnowledgeProvider/methods/attributeGuide/3": {
+      "ref": "spark-class-model://model/ClassModelKnowledgeProvider/methods/attributeGuide/3",
       "kind": "method",
       "ownerRef": "spark-class-model://model/ClassModelKnowledgeProvider",
       "name": "attributeGuide",
@@ -341,18 +360,18 @@
         "$id": "spark-class-model://schema/shared/ad83b265e1361582630a28b458ca918a24595d0e0bd0a3c99683981dbd45e2a5"
       }
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FattributeGuide%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAttributeGuideInput": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FattributeGuide%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAttributeGuideInput",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FattributeGuide%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAttributeGuideInput": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FattributeGuide%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAttributeGuideInput",
       "kind": "link",
-      "fromRef": "spark-class-model://model/ClassModelKnowledgeProvider/methods/attributeGuide/2",
+      "fromRef": "spark-class-model://model/ClassModelKnowledgeProvider/methods/attributeGuide/3",
       "relation": "method-parameter",
       "targetModelRef": "spark-class-model://model/ClassModelAttributeGuideInput",
       "targetClassName": "ClassModelAttributeGuideInput",
       "targetFile": "files/declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/ClassModelAttributeGuideInput"
     },
-    "spark-class-model://model/ClassModelKnowledgeProvider/methods/methodGuide/3": {
-      "ref": "spark-class-model://model/ClassModelKnowledgeProvider/methods/methodGuide/3",
+    "spark-class-model://model/ClassModelKnowledgeProvider/methods/methodGuide/4": {
+      "ref": "spark-class-model://model/ClassModelKnowledgeProvider/methods/methodGuide/4",
       "kind": "method",
       "ownerRef": "spark-class-model://model/ClassModelKnowledgeProvider",
       "name": "methodGuide",
@@ -375,10 +394,10 @@
         "$id": "spark-class-model://schema/shared/ef932a70237cb15ab6ea9db6e9edacef062772ebd5c193add1b6916f7da7b36d"
       }
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FmethodGuide%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelMethodGuideInput": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FmethodGuide%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelMethodGuideInput",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FmethodGuide%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelMethodGuideInput": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FmethodGuide%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelMethodGuideInput",
       "kind": "link",
-      "fromRef": "spark-class-model://model/ClassModelKnowledgeProvider/methods/methodGuide/3",
+      "fromRef": "spark-class-model://model/ClassModelKnowledgeProvider/methods/methodGuide/4",
       "relation": "method-parameter",
       "targetModelRef": "spark-class-model://model/ClassModelMethodGuideInput",
       "targetClassName": "ClassModelMethodGuideInput",
@@ -392,16 +411,17 @@
       "schemaRef": "spark-class-model://schema/ClassModelKnowledgeProvider",
       "attributeRefs": [],
       "methodRefs": [
-        "spark-class-model://model/ClassModelKnowledgeProvider/methods/query/0",
-        "spark-class-model://model/ClassModelKnowledgeProvider/methods/modelGuide/1",
-        "spark-class-model://model/ClassModelKnowledgeProvider/methods/attributeGuide/2",
-        "spark-class-model://model/ClassModelKnowledgeProvider/methods/methodGuide/3"
+        "spark-class-model://model/ClassModelKnowledgeProvider/methods/refresh/0",
+        "spark-class-model://model/ClassModelKnowledgeProvider/methods/query/1",
+        "spark-class-model://model/ClassModelKnowledgeProvider/methods/modelGuide/2",
+        "spark-class-model://model/ClassModelKnowledgeProvider/methods/attributeGuide/3",
+        "spark-class-model://model/ClassModelKnowledgeProvider/methods/methodGuide/4"
       ],
       "linkRefs": [
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2Fquery%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeQueryInput",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FmodelGuide%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelModelGuideInput",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FattributeGuide%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAttributeGuideInput",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FmethodGuide%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelMethodGuideInput"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2Fquery%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeQueryInput",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FmodelGuide%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelModelGuideInput",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FattributeGuide%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAttributeGuideInput",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeProvider%2Fmethods%2FmethodGuide%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelMethodGuideInput"
       ]
     },
     "spark-class-model://schema/ClassModelKnowledgeServiceOptions": {

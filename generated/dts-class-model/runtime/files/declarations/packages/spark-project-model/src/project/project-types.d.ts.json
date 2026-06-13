@@ -12,6 +12,8 @@
     "ProjectDirtyProjection",
     "ProjectPlanningInput",
     "NavigationPlanningInput",
+    "ProjectPlanningCompletionInput",
+    "ProjectPlanningCompletionResult",
     "ProjectInfo",
     "ProjectInfoInput",
     "ProjectModelInitOptions"
@@ -727,6 +729,60 @@
         "spark-class-model://model/NavigationPlanningInput/attributes/requirement/3",
         "spark-class-model://model/NavigationPlanningInput/attributes/planningAttachmentRef/4"
       ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectPlanningCompletionInput": {
+      "ref": "spark-class-model://schema/ProjectPlanningCompletionInput",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningCompletionInput",
+        "properties": {
+          "summary": {
+            "type": "string"
+          }
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningCompletionInput"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningCompletionInput/attributes/summary/0": {
+      "ref": "spark-class-model://model/ProjectPlanningCompletionInput/attributes/summary/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ProjectPlanningCompletionInput",
+      "name": "summary",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/ProjectPlanningCompletionInput": {
+      "ref": "spark-class-model://model/ProjectPlanningCompletionInput",
+      "kind": "model",
+      "className": "ProjectPlanningCompletionInput",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningCompletionInput",
+      "attributeRefs": [
+        "spark-class-model://model/ProjectPlanningCompletionInput/attributes/summary/0"
+      ],
+      "methodRefs": [],
+      "linkRefs": []
+    },
+    "spark-class-model://schema/ProjectPlanningCompletionResult": {
+      "ref": "spark-class-model://schema/ProjectPlanningCompletionResult",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ProjectPlanningCompletionResult",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/ProjectPlanningCompletionResult"
+      }
+    },
+    "spark-class-model://model/ProjectPlanningCompletionResult": {
+      "ref": "spark-class-model://model/ProjectPlanningCompletionResult",
+      "kind": "model",
+      "className": "ProjectPlanningCompletionResult",
+      "schemaRef": "spark-class-model://schema/ProjectPlanningCompletionResult",
+      "attributeRefs": [],
       "methodRefs": [],
       "linkRefs": []
     },

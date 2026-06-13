@@ -60,6 +60,18 @@
       "readable": true,
       "writable": true
     },
+    "spark-class-model://schema/shared/681004346c78d5f384b654c986b4eda8fea28010db3be7da70b19aa0080f3ff9": {
+      "ref": "spark-class-model://schema/shared/681004346c78d5f384b654c986b4eda8fea28010db3be7da70b19aa0080f3ff9",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/681004346c78d5f384b654c986b4eda8fea28010db3be7da70b19aa0080f3ff9"
+      }
+    },
     "spark-class-model://model/JsonSchemaInfo/attributes/enumValues/3": {
       "ref": "spark-class-model://model/JsonSchemaInfo/attributes/enumValues/3",
       "kind": "attribute",

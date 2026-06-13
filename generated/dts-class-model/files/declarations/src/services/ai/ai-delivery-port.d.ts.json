@@ -412,7 +412,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T06:21:07.191Z",
+  "generatedAt": "2026-06-13T20:09:15.511Z",
   "$defs": {
     "AiDeliveryMode": {
       "type": "object",

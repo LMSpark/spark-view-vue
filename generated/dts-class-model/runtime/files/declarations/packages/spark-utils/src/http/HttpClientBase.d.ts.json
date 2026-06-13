@@ -238,6 +238,16 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/c5142fb9ec3c13b03f03f7b1ba0e7017fb308ba699fa1ced179d9893636cb690",
       "returnSchemaRef": "spark-class-model://schema/shared/49f8c5b4697f8111cfb01b225b5a92caed50d7689552c93ad19ea898246dfc95"
     },
+    "spark-class-model://schema/shared/49f8c5b4697f8111cfb01b225b5a92caed50d7689552c93ad19ea898246dfc95": {
+      "ref": "spark-class-model://schema/shared/49f8c5b4697f8111cfb01b225b5a92caed50d7689552c93ad19ea898246dfc95",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<T>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/49f8c5b4697f8111cfb01b225b5a92caed50d7689552c93ad19ea898246dfc95"
+      }
+    },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase%2Fmethods%2Frequest%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FRequestConfig": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase%2Fmethods%2Frequest%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FRequestConfig",
       "kind": "link",
@@ -372,6 +382,21 @@
       "name": "clearCache",
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/146eb531b29895fb9a49a176b3091c2860011a6937c71bbfdb974e04a0a66f8c"
+    },
+    "spark-class-model://schema/shared/146eb531b29895fb9a49a176b3091c2860011a6937c71bbfdb974e04a0a66f8c": {
+      "ref": "spark-class-model://schema/shared/146eb531b29895fb9a49a176b3091c2860011a6937c71bbfdb974e04a0a66f8c",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/146eb531b29895fb9a49a176b3091c2860011a6937c71bbfdb974e04a0a66f8c"
+      }
     },
     "spark-class-model://model/HttpClientBase/methods/applyRequestInterceptors/11": {
       "ref": "spark-class-model://model/HttpClientBase/methods/applyRequestInterceptors/11",

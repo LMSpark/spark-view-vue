@@ -325,6 +325,16 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://schema/shared/9800c53311ff16fa548d103dae2576892b6327674b8b00486027a188f14c061c": {
+      "ref": "spark-class-model://schema/shared/9800c53311ff16fa548d103dae2576892b6327674b8b00486027a188f14c061c",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AbortSignal",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9800c53311ff16fa548d103dae2576892b6327674b8b00486027a188f14c061c"
+      }
+    },
     "spark-class-model://model/RequestConfig/attributes/signal/13": {
       "ref": "spark-class-model://model/RequestConfig/attributes/signal/13",
       "kind": "attribute",
@@ -657,6 +667,15 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://schema/shared/64548ceafe9aab4d7796870e008d6f500df671e4cce68d21381c972fd24c6f89": {
+      "ref": "spark-class-model://schema/shared/64548ceafe9aab4d7796870e008d6f500df671e4cce68d21381c972fd24c6f89",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ApiEnvelopeContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/64548ceafe9aab4d7796870e008d6f500df671e4cce68d21381c972fd24c6f89"
+      }
+    },
     "spark-class-model://model/ApiEnvelope/attributes/context/5": {
       "ref": "spark-class-model://model/ApiEnvelope/attributes/context/5",
       "kind": "attribute",
@@ -675,6 +694,15 @@
       "targetClassName": "ApiEnvelopeContext",
       "targetFile": "files/declarations/packages/spark-utils/src/http/types.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/ApiEnvelopeContext"
+    },
+    "spark-class-model://schema/shared/c4804aec1591e911f7f09ea8587c08e329db16bc2eb22ca5b69669c7bb118315": {
+      "ref": "spark-class-model://schema/shared/c4804aec1591e911f7f09ea8587c08e329db16bc2eb22ca5b69669c7bb118315",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ApiEnvelopeEvent",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c4804aec1591e911f7f09ea8587c08e329db16bc2eb22ca5b69669c7bb118315"
+      }
     },
     "spark-class-model://model/ApiEnvelope/attributes/event/6": {
       "ref": "spark-class-model://model/ApiEnvelope/attributes/event/6",
@@ -1541,6 +1569,34 @@
       "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
       "readable": true,
       "writable": true
+    },
+    "spark-class-model://schema/shared/5fd45786c81a38f2cbe0958ebdaf42adba025d277462c60e21d852dc875f07b2": {
+      "ref": "spark-class-model://schema/shared/5fd45786c81a38f2cbe0958ebdaf42adba025d277462c60e21d852dc875f07b2",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "localStorage"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "sessionStorage"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "memory"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5fd45786c81a38f2cbe0958ebdaf42adba025d277462c60e21d852dc875f07b2"
+      }
     },
     "spark-class-model://model/FileLoadOptions/attributes/storage/1": {
       "ref": "spark-class-model://model/FileLoadOptions/attributes/storage/1",

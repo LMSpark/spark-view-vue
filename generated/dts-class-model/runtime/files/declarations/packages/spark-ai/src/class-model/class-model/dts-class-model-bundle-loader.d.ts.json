@@ -40,6 +40,16 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
       "returnSchemaRef": "spark-class-model://schema/shared/f7a60b73eced33e5993eaab20d6f834f485823649c4cc25931491c72eec27d15"
     },
+    "spark-class-model://schema/shared/f7a60b73eced33e5993eaab20d6f834f485823649c4cc25931491c72eec27d15": {
+      "ref": "spark-class-model://schema/shared/f7a60b73eced33e5993eaab20d6f834f485823649c4cc25931491c72eec27d15",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<unknown>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f7a60b73eced33e5993eaab20d6f834f485823649c4cc25931491c72eec27d15"
+      }
+    },
     "spark-class-model://model/DtsClassModelBundleLoaderOptions": {
       "ref": "spark-class-model://model/DtsClassModelBundleLoaderOptions",
       "kind": "model",
@@ -114,8 +124,25 @@
         "$id": "spark-class-model://schema/shared/2900bed1be9bd87c32b9cb5458e6470ddba71be207354c5db59bb380087aa26d"
       }
     },
-    "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureClassName/1": {
-      "ref": "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureClassName/1",
+    "spark-class-model://model/DtsClassModelBundleLoader/methods/clearCache/1": {
+      "ref": "spark-class-model://model/DtsClassModelBundleLoader/methods/clearCache/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DtsClassModelBundleLoader",
+      "name": "clearCache",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/DtsClassModelBundleLoader/methods/reload/2": {
+      "ref": "spark-class-model://model/DtsClassModelBundleLoader/methods/reload/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DtsClassModelBundleLoader",
+      "name": "reload",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/2900bed1be9bd87c32b9cb5458e6470ddba71be207354c5db59bb380087aa26d"
+    },
+    "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureClassName/3": {
+      "ref": "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureClassName/3",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelBundleLoader",
       "name": "ensureClassName",
@@ -148,8 +175,8 @@
         "$id": "spark-class-model://schema/shared/87e1163c4b82c1d9520d0fe0229144cb53be3425a673511180f9627b5b756eb9"
       }
     },
-    "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureSourcePath/2": {
-      "ref": "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureSourcePath/2",
+    "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureSourcePath/4": {
+      "ref": "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureSourcePath/4",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelBundleLoader",
       "name": "ensureSourcePath",
@@ -182,8 +209,8 @@
         "$id": "spark-class-model://schema/shared/1f80ad873f315a9838bbf91a935fedd08fe56b9d207ce88cb4c4a4c244533316"
       }
     },
-    "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureReachableClosure/3": {
-      "ref": "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureReachableClosure/3",
+    "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureReachableClosure/5": {
+      "ref": "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureReachableClosure/5",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelBundleLoader",
       "name": "ensureReachableClosure",
@@ -216,8 +243,8 @@
         "$id": "spark-class-model://schema/shared/72f1a6432f7c696317171917c870a46d076e0ea50602bb1e8c405d4b614b2853"
       }
     },
-    "spark-class-model://model/DtsClassModelBundleLoader/methods/buildLoadedSurface/4": {
-      "ref": "spark-class-model://model/DtsClassModelBundleLoader/methods/buildLoadedSurface/4",
+    "spark-class-model://model/DtsClassModelBundleLoader/methods/buildLoadedSurface/6": {
+      "ref": "spark-class-model://model/DtsClassModelBundleLoader/methods/buildLoadedSurface/6",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelBundleLoader",
       "name": "buildLoadedSurface",
@@ -249,10 +276,10 @@
         "$id": "spark-class-model://schema/shared/37a1d58bc16a85c90221e3face0ed70406b59554f7c26a5c1edb325bc04b906c"
       }
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelBundleLoader%2Fmethods%2FbuildLoadedSurface%2F4/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelSurfaceDocument": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelBundleLoader%2Fmethods%2FbuildLoadedSurface%2F4/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelSurfaceDocument",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelBundleLoader%2Fmethods%2FbuildLoadedSurface%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelSurfaceDocument": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelBundleLoader%2Fmethods%2FbuildLoadedSurface%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelSurfaceDocument",
       "kind": "link",
-      "fromRef": "spark-class-model://model/DtsClassModelBundleLoader/methods/buildLoadedSurface/4",
+      "fromRef": "spark-class-model://model/DtsClassModelBundleLoader/methods/buildLoadedSurface/6",
       "relation": "method-return",
       "targetModelRef": "spark-class-model://model/DtsClassModelSurfaceDocument",
       "targetClassName": "DtsClassModelSurfaceDocument",
@@ -268,14 +295,16 @@
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/DtsClassModelBundleLoader/methods/init/0",
-        "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureClassName/1",
-        "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureSourcePath/2",
-        "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureReachableClosure/3",
-        "spark-class-model://model/DtsClassModelBundleLoader/methods/buildLoadedSurface/4"
+        "spark-class-model://model/DtsClassModelBundleLoader/methods/clearCache/1",
+        "spark-class-model://model/DtsClassModelBundleLoader/methods/reload/2",
+        "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureClassName/3",
+        "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureSourcePath/4",
+        "spark-class-model://model/DtsClassModelBundleLoader/methods/ensureReachableClosure/5",
+        "spark-class-model://model/DtsClassModelBundleLoader/methods/buildLoadedSurface/6"
       ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelBundleLoader%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelBundleLoaderOptions",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelBundleLoader%2Fmethods%2FbuildLoadedSurface%2F4/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelSurfaceDocument"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelBundleLoader%2Fmethods%2FbuildLoadedSurface%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelSurfaceDocument"
       ]
     }
   }

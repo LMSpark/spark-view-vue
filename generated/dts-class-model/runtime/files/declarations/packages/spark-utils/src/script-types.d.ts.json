@@ -79,6 +79,22 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://schema/shared/0f65693df6033a7e1dbae6098ff89cd34ca0ddcb320b3294e5e121a68504d4df": {
+      "ref": "spark-class-model://schema/shared/0f65693df6033a7e1dbae6098ff89cd34ca0ddcb320b3294e5e121a68504d4df",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/0f65693df6033a7e1dbae6098ff89cd34ca0ddcb320b3294e5e121a68504d4df"
+      }
+    },
     "spark-class-model://model/FieldRenderConfig/attributes/width/4": {
       "ref": "spark-class-model://model/FieldRenderConfig/attributes/width/4",
       "kind": "attribute",

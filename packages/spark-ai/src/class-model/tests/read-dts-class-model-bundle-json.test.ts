@@ -845,6 +845,59 @@ describe('readDtsClassModelBundleJson', () => {
     }
   })
 
+  it('reloads DTS bundle knowledge after host refresh rebuilds the bundle', async () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-refresh-${String(process.pid)}-${String(Date.now())}`)
+    const sourcePath = 'declarations/packages/spark-ai/src/refresh/refresh-model.d.ts'
+    const absolutePath = resolve(tempRoot, sourcePath)
+    const outputDir = resolve(tempRoot, 'generated/dts-class-model')
+    try {
+      mkdirSync(dirname(absolutePath), { recursive: true })
+      writeFileSync(absolutePath, [
+        '/** Refreshable model v1. */',
+        'export class RefreshModel {',
+        '  /** Reads old knowledge. */',
+        '  readOld(): string',
+        '}',
+      ].join('\n'), 'utf8')
+
+      const first = buildDtsClassModelBundle({
+        repoRoot: tempRoot,
+        rootFiles: [absolutePath],
+        outputDir,
+      })
+      const provider = createDtsBundleClassModelKnowledgeProvider({
+        dtsClassModelManifestUrl: pathToFileURL(first.manifestPath).href,
+        rootClassName: 'RefreshModel',
+        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+        refreshBundle: async () => {
+          writeFileSync(absolutePath, [
+            '/** Refreshable model v2. */',
+            'export class RefreshModel {',
+            '  /** Reads new knowledge. */',
+            '  readNew(): string',
+            '}',
+          ].join('\n'), 'utf8')
+          buildDtsClassModelBundle({
+            repoRoot: tempRoot,
+            rootFiles: [absolutePath],
+            outputDir,
+          })
+        },
+      })
+      await provider.init()
+
+      const before = await provider.query({ kind: 'RefreshModel', includeMembers: true })
+      expect(JSON.stringify(before)).toContain('readOld')
+
+      await provider.refresh('RefreshModel')
+      const after = await provider.query({ kind: 'RefreshModel', includeMembers: true })
+      expect(JSON.stringify(after)).toContain('readNew')
+      expect(JSON.stringify(after)).not.toContain('readOld')
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true })
+    }
+  })
+
   it('resolves recursive dts ref closures without looping', async () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-recursive-ref-${String(process.pid)}-${String(Date.now())}`)
     const nodeSourcePath = 'declarations/packages/spark-data/src/node-tree/tree-node.d.ts'

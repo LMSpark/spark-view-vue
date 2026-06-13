@@ -228,14 +228,14 @@ closePageDesign(pageId: string): void { this.design.closePageDesign(pageId) }
         ok: false,
         code: 'PROJECT_PLANNING_NAVIGATION_NOT_WRITTEN',
         msg: 'projectPlanning: navigation children 尚未写入，不能完成。',
-        fix: '先调用 readProjectPlanningInput/readNavigationPlanningInputs 获取输入，再通过 replaceNavigationChildren 写入 module + page 两级导航；完成写入后再次 agent_complete。',
-        requiredQueries: [
-          'model_action_guide({ kind: "ProjectModel", actionName: "readProjectPlanningInput" })',
-          'model_action_guide({ kind: "ProjectModel", actionName: "readNavigationPlanningInputs" })',
-          'model_action_guide({ kind: "ProjectModel", actionName: "replaceNavigationChildren" })',
+        fix: '需要先读取项目策划输入和导航策划输入，再替换导航 children 为 module + page 两级结构。',
+        requiredCapabilities: [
+          'readProjectPlanningInput',
+          'readNavigationPlanningInputs',
+          'replaceNavigationChildren',
         ],
         missingFacts: ['navigationRoot.children'],
-        nextStep: '执行 model_script，读取策划输入并调用 this.replaceNavigationChildren({ children })。',
+        nextStep: '补齐导航 children，确保业务模块下包含页面概要。',
       }
     }
 
@@ -245,12 +245,12 @@ closePageDesign(pageId: string): void { this.design.closePageDesign(pageId) }
         ok: false,
         code: 'PROJECT_PLANNING_PAGE_NODES_MISSING',
         msg: 'projectPlanning: navigation 策划只有模块壳，缺少 nodeKind="page" 的页面概要。',
-        fix: '重发 model_script，用 replaceNavigationChildren 写入 module + page 两级导航；每个主要业务 module 至少包含一个 nodeKind="page" 子节点。',
-        requiredQueries: [
-          'model_action_guide({ kind: "ProjectModel", actionName: "replaceNavigationChildren" })',
+        fix: '需要替换导航 children 为 module + page 两级结构；每个主要业务 module 至少包含一个 nodeKind="page" 子节点。',
+        requiredCapabilities: [
+          'replaceNavigationChildren',
         ],
         missingFacts: ['nodeKind="page" navigation children'],
-        nextStep: '执行 model_script，补齐 page 子节点后再次 agent_complete。',
+        nextStep: '补齐 page 子节点后再次请求完成。',
       }
     }
 

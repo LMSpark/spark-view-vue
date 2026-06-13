@@ -332,7 +332,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T06:21:07.133Z",
+  "generatedAt": "2026-06-13T21:06:57.204Z",
   "$defs": {
     "NavigationTreeNodeLike": {
       "type": "object",

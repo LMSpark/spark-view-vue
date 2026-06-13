@@ -498,6 +498,22 @@
       "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/TableResourceType"
     },
+    "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd": {
+      "ref": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
+      }
+    },
     "spark-class-model://model/DataSetCrudToolUpdateTableOptions/attributes/resourceId/6": {
       "ref": "spark-class-model://model/DataSetCrudToolUpdateTableOptions/attributes/resourceId/6",
       "kind": "attribute",

@@ -213,7 +213,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.670Z",
+  "generatedAt": "2026-06-13T20:57:30.722Z",
   "$defs": {
     "AiApiMetadataGraphEdge": {
       "type": "object",

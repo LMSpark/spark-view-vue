@@ -900,8 +900,25 @@
         "$id": "spark-class-model://schema/shared/d5f683e488ab25c32b54605ab3371fa3366f895974ab9f5578d0a438862d2ee0"
       }
     },
-    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureClassName/1": {
-      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureClassName/1",
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/clearCache/1": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/clearCache/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
+      "name": "clearCache",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/reload/2": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/reload/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
+      "name": "reload",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/d5f683e488ab25c32b54605ab3371fa3366f895974ab9f5578d0a438862d2ee0"
+    },
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureClassName/3": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureClassName/3",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
       "name": "ensureClassName",
@@ -919,8 +936,8 @@
         "$id": "spark-class-model://schema/shared/02b9324e33860b3972e5960c0b7dc83872b1ca7c8dce4dde70c4c0ec734cbb68"
       }
     },
-    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureRef/2": {
-      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureRef/2",
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureRef/4": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureRef/4",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
       "name": "ensureRef",
@@ -956,8 +973,8 @@
         "$id": "spark-class-model://schema/shared/95294c92d01311fe8434c7a61f5033a6b1ed01ecf03ebfb11e498a0424b5fd89"
       }
     },
-    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchema/3": {
-      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchema/3",
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchema/5": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchema/5",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
       "name": "ensureSchema",
@@ -975,8 +992,8 @@
         "$id": "spark-class-model://schema/shared/83085bacc42f21f4d33ce64394735d1a2021e181517eba2ce5d43d8f34c8ea4f"
       }
     },
-    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchemaClosure/4": {
-      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchemaClosure/4",
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchemaClosure/6": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchemaClosure/6",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
       "name": "ensureSchemaClosure",
@@ -1012,18 +1029,18 @@
         "$id": "spark-class-model://schema/shared/1b17a909e072af40768eb699304948e7aa87a2f853e3606ec48fc3ba7efff2a1"
       }
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureSchemaClosure%2F4/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeSchemaClosure": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureSchemaClosure%2F4/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeSchemaClosure",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureSchemaClosure%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeSchemaClosure": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureSchemaClosure%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeSchemaClosure",
       "kind": "link",
-      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchemaClosure/4",
+      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchemaClosure/6",
       "relation": "method-return",
       "targetModelRef": "spark-class-model://model/DtsClassModelRuntimeSchemaClosure",
       "targetClassName": "DtsClassModelRuntimeSchemaClosure",
       "targetFile": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/DtsClassModelRuntimeSchemaClosure"
     },
-    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureReachableClosure/5": {
-      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureReachableClosure/5",
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureReachableClosure/7": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureReachableClosure/7",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
       "name": "ensureReachableClosure",
@@ -1031,8 +1048,8 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/6e619ca4e495d932d648aca7a48302c18b16b99edf4f390fb4fb25fb5980e4ab",
       "returnSchemaRef": "spark-class-model://schema/shared/72f1a6432f7c696317171917c870a46d076e0ea50602bb1e8c405d4b614b2853"
     },
-    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureConstructorContract/6": {
-      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureConstructorContract/6",
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureConstructorContract/8": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureConstructorContract/8",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
       "name": "ensureConstructorContract",
@@ -1065,28 +1082,28 @@
         "$id": "spark-class-model://schema/shared/94c6ddeec0eb35a2ef02b0d652041058c96453876d5e5301339aba8fd4f1399a"
       }
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureConstructorContract%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeConstructorContractQuery": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureConstructorContract%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeConstructorContractQuery",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureConstructorContract%2F8/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeConstructorContractQuery": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureConstructorContract%2F8/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeConstructorContractQuery",
       "kind": "link",
-      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureConstructorContract/6",
+      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureConstructorContract/8",
       "relation": "method-parameter",
       "targetModelRef": "spark-class-model://model/DtsClassModelRuntimeConstructorContractQuery",
       "targetClassName": "DtsClassModelRuntimeConstructorContractQuery",
       "targetFile": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/DtsClassModelRuntimeConstructorContractQuery"
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureConstructorContract%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeConstructorContract": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureConstructorContract%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeConstructorContract",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureConstructorContract%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeConstructorContract": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureConstructorContract%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeConstructorContract",
       "kind": "link",
-      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureConstructorContract/6",
+      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureConstructorContract/8",
       "relation": "method-return",
       "targetModelRef": "spark-class-model://model/DtsClassModelRuntimeConstructorContract",
       "targetClassName": "DtsClassModelRuntimeConstructorContract",
       "targetFile": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/DtsClassModelRuntimeConstructorContract"
     },
-    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureMethodContract/7": {
-      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureMethodContract/7",
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureMethodContract/9": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureMethodContract/9",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
       "name": "ensureMethodContract",
@@ -1119,28 +1136,28 @@
         "$id": "spark-class-model://schema/shared/9919bf1cc950be4aba5ad227de3d43617e7ceba30d18825b14b789b31e776e5b"
       }
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureMethodContract%2F7/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeMethodContractQuery": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureMethodContract%2F7/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeMethodContractQuery",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureMethodContract%2F9/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeMethodContractQuery": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureMethodContract%2F9/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeMethodContractQuery",
       "kind": "link",
-      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureMethodContract/7",
+      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureMethodContract/9",
       "relation": "method-parameter",
       "targetModelRef": "spark-class-model://model/DtsClassModelRuntimeMethodContractQuery",
       "targetClassName": "DtsClassModelRuntimeMethodContractQuery",
       "targetFile": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/DtsClassModelRuntimeMethodContractQuery"
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureMethodContract%2F7/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeMethodContract": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureMethodContract%2F7/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeMethodContract",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureMethodContract%2F9/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeMethodContract": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureMethodContract%2F9/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeMethodContract",
       "kind": "link",
-      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureMethodContract/7",
+      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureMethodContract/9",
       "relation": "method-return",
       "targetModelRef": "spark-class-model://model/DtsClassModelRuntimeMethodContract",
       "targetClassName": "DtsClassModelRuntimeMethodContract",
       "targetFile": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/DtsClassModelRuntimeMethodContract"
     },
-    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureAttributeContract/8": {
-      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureAttributeContract/8",
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureAttributeContract/10": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureAttributeContract/10",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
       "name": "ensureAttributeContract",
@@ -1173,28 +1190,28 @@
         "$id": "spark-class-model://schema/shared/9d306f7f488c30345a4f111c1a80d853431b9d9c5690825490e54e67c8ae31dd"
       }
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureAttributeContract%2F8/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeAttributeContractQuery": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureAttributeContract%2F8/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeAttributeContractQuery",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureAttributeContract%2F10/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeAttributeContractQuery": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureAttributeContract%2F10/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeAttributeContractQuery",
       "kind": "link",
-      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureAttributeContract/8",
+      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureAttributeContract/10",
       "relation": "method-parameter",
       "targetModelRef": "spark-class-model://model/DtsClassModelRuntimeAttributeContractQuery",
       "targetClassName": "DtsClassModelRuntimeAttributeContractQuery",
       "targetFile": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/DtsClassModelRuntimeAttributeContractQuery"
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureAttributeContract%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeAttributeContract": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureAttributeContract%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeAttributeContract",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureAttributeContract%2F10/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeAttributeContract": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureAttributeContract%2F10/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeAttributeContract",
       "kind": "link",
-      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureAttributeContract/8",
+      "fromRef": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureAttributeContract/10",
       "relation": "method-return",
       "targetModelRef": "spark-class-model://model/DtsClassModelRuntimeAttributeContract",
       "targetClassName": "DtsClassModelRuntimeAttributeContract",
       "targetFile": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/DtsClassModelRuntimeAttributeContract"
     },
-    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/buildLoadedModels/9": {
-      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/buildLoadedModels/9",
+    "spark-class-model://model/DtsClassModelRuntimeLoader/methods/buildLoadedModels/11": {
+      "ref": "spark-class-model://model/DtsClassModelRuntimeLoader/methods/buildLoadedModels/11",
       "kind": "method",
       "ownerRef": "spark-class-model://model/DtsClassModelRuntimeLoader",
       "name": "buildLoadedModels",
@@ -1221,25 +1238,27 @@
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/DtsClassModelRuntimeLoader/methods/init/0",
-        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureClassName/1",
-        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureRef/2",
-        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchema/3",
-        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchemaClosure/4",
-        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureReachableClosure/5",
-        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureConstructorContract/6",
-        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureMethodContract/7",
-        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureAttributeContract/8",
-        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/buildLoadedModels/9"
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/clearCache/1",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/reload/2",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureClassName/3",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureRef/4",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchema/5",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureSchemaClosure/6",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureReachableClosure/7",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureConstructorContract/8",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureMethodContract/9",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/ensureAttributeContract/10",
+        "spark-class-model://model/DtsClassModelRuntimeLoader/methods/buildLoadedModels/11"
       ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoaderOptions",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureSchemaClosure%2F4/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeSchemaClosure",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureConstructorContract%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeConstructorContractQuery",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureConstructorContract%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeConstructorContract",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureMethodContract%2F7/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeMethodContractQuery",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureMethodContract%2F7/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeMethodContract",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureAttributeContract%2F8/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeAttributeContractQuery",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureAttributeContract%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeAttributeContract"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureSchemaClosure%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeSchemaClosure",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureConstructorContract%2F8/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeConstructorContractQuery",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureConstructorContract%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeConstructorContract",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureMethodContract%2F9/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeMethodContractQuery",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureMethodContract%2F9/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeMethodContract",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureAttributeContract%2F10/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeAttributeContractQuery",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeLoader%2Fmethods%2FensureAttributeContract%2F10/method-return/spark-class-model%3A%2F%2Fmodel%2FDtsClassModelRuntimeAttributeContract"
       ]
     }
   }

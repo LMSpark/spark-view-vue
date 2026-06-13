@@ -320,7 +320,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.701Z",
+  "generatedAt": "2026-06-13T20:09:12.738Z",
   "$defs": {
     "NavNodeRouteTargetKind": {
       "type": "object",

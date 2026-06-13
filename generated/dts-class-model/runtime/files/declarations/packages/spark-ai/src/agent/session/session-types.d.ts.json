@@ -143,18 +143,6 @@
         "$id": "spark-class-model://schema/AiAgentFunctionCallFailure"
       }
     },
-    "spark-class-model://schema/shared/4555c8229f3513646a1b44f38cd04e9b031698050291848a7681fdbec11af307": {
-      "ref": "spark-class-model://schema/shared/4555c8229f3513646a1b44f38cd04e9b031698050291848a7681fdbec11af307",
-      "kind": "schema",
-      "schema": {
-        "type": "boolean",
-        "enum": [
-          false
-        ],
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/4555c8229f3513646a1b44f38cd04e9b031698050291848a7681fdbec11af307"
-      }
-    },
     "spark-class-model://model/AiAgentFunctionCallFailure/attributes/ok/0": {
       "ref": "spark-class-model://model/AiAgentFunctionCallFailure/attributes/ok/0",
       "kind": "attribute",

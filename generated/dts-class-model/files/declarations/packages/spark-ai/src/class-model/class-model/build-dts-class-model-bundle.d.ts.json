@@ -132,11 +132,11 @@
       "className": "BuildDtsClassModelBundleOptions",
       "jsdoc": "Build Dts Class Model Bundle Options 的调用配置。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    outputDir: string;\n    compilerHost?: ts.CompilerHost;\n    exportedOnly?: boolean;\n    onProgress?: (event: BuildDtsClassModelBundleProgress) => void;\n    progressInterval?: number;\n}>",
+      "declarationTypeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    outputDir: string;\n    compilerHost?: ts.CompilerHost;\n    exportedOnly?: boolean;\n    runtimeClassIndexBase?: Readonly<Record<string, DtsClassModelRuntimeClassEntry>>;\n    onProgress?: (event: BuildDtsClassModelBundleProgress) => void;\n    progressInterval?: number;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    outputDir: string;\n    compilerHost?: ts.CompilerHost;\n    exportedOnly?: boolean;\n    onProgress?: (event: BuildDtsClassModelBundleProgress) => void;\n    progressInterval?: number;\n}>",
+          "typeText": "Readonly<{\n    repoRoot: string;\n    rootFiles: readonly string[];\n    outputDir: string;\n    compilerHost?: ts.CompilerHost;\n    exportedOnly?: boolean;\n    runtimeClassIndexBase?: Readonly<Record<string, DtsClassModelRuntimeClassEntry>>;\n    onProgress?: (event: BuildDtsClassModelBundleProgress) => void;\n    progressInterval?: number;\n}>",
           "targetName": "Readonly"
         }
       ],
@@ -194,6 +194,16 @@
           "writable": false
         },
         {
+          "name": "runtimeClassIndexBase",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, DtsClassModelRuntimeClassEntry>>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
           "name": "progressInterval",
           "jsdoc": "",
           "schema": {
@@ -241,7 +251,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-        "line": 23,
+        "line": 24,
         "className": "BuildDtsClassModelBundleResult",
         "declarationKind": "type"
       },
@@ -333,7 +343,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.610Z",
+  "generatedAt": "2026-06-13T20:57:30.357Z",
   "$defs": {
     "BuildDtsClassModelBundleProgressPhase": {
       "type": "object",
@@ -379,6 +389,10 @@
         },
         "exportedOnly": {
           "type": "boolean"
+        },
+        "runtimeClassIndexBase": {
+          "type": "object",
+          "title": "Readonly<Record<string, DtsClassModelRuntimeClassEntry>>"
         },
         "progressInterval": {
           "type": "number"

@@ -229,6 +229,15 @@
       "readable": true,
       "writable": true
     },
+    "spark-class-model://schema/shared/6c664c963c95f879c064e3b015b81359d40f5af9003d4756ed912d17aa6572d4": {
+      "ref": "spark-class-model://schema/shared/6c664c963c95f879c064e3b015b81359d40f5af9003d4756ed912d17aa6572d4",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/NavPermissionMode",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6c664c963c95f879c064e3b015b81359d40f5af9003d4756ed912d17aa6572d4"
+      }
+    },
     "spark-class-model://model/NavigationNodeDraftNode/attributes/permissionMode/14": {
       "ref": "spark-class-model://model/NavigationNodeDraftNode/attributes/permissionMode/14",
       "kind": "attribute",
@@ -578,7 +587,7 @@
       "relation": "attribute",
       "targetModelRef": "spark-class-model://model/NavigationNodeDraftNode",
       "targetClassName": "NavigationNodeDraftNode",
-      "targetFile": "files/declarations/src/views/app/dev-system/useDevState.d.ts.json",
+      "targetFile": "files/declarations/packages/spark-project-model/src/navigation/navigation-edit.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/NavigationNodeDraftNode"
     },
     "spark-class-model://schema/shared/e57ecd07fb0e9d061e47ff247e2154be99c127861bd2bd510b32150ed48d0fb6": {

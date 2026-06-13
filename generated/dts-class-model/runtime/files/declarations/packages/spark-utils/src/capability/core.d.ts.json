@@ -109,6 +109,19 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f",
       "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
     },
+    "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f": {
+      "ref": "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": true
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f"
+      }
+    },
     "spark-class-model://model/CapabilityKey/methods/toString/1": {
       "ref": "spark-class-model://model/CapabilityKey/methods/toString/1",
       "kind": "method",
@@ -235,6 +248,15 @@
       "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
       "readable": true,
       "writable": true
+    },
+    "spark-class-model://schema/shared/847bba11c938fd42135226be7d37ecca9d911709de29c0d0a075b63153cd9d2f": {
+      "ref": "spark-class-model://schema/shared/847bba11c938fd42135226be7d37ecca9d911709de29c0d0a075b63153cd9d2f",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/CapabilityContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/847bba11c938fd42135226be7d37ecca9d911709de29c0d0a075b63153cd9d2f"
+      }
     },
     "spark-class-model://model/CapabilityContext/attributes/parent/2": {
       "ref": "spark-class-model://model/CapabilityContext/attributes/parent/2",

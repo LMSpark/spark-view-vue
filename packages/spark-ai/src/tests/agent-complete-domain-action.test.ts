@@ -28,12 +28,12 @@ class PlanningDomain {
         ok: false,
         code: 'PROJECT_PLANNING_NOT_READY',
         msg: 'projectPlanning is not ready.',
-        fix: '先查询 write 的 action guide，再执行 model_script 写入领域数据，之后再次 agent_complete。',
-        requiredQueries: [
-          'model_action_guide({ kind: "planningdomain", actionName: "write" })',
+        fix: '需要先写入领域数据。',
+        requiredCapabilities: [
+          'write',
         ],
         missingFacts: ['ready'],
-        nextStep: '执行 model_script：await this.write({})',
+        nextStep: '写入 ready 状态后再次请求完成。',
       }
     }
     return {
@@ -91,6 +91,18 @@ describe('agent_complete domain action', () => {
 
     expect(rejected.ok).toBe(false)
     expect(rejected.checks?.[0]?.code).toBe('PROJECT_PLANNING_NOT_READY')
+    expect(rejected.state).toMatchObject({
+      requiredCapabilities: ['write'],
+      missingFacts: ['ready'],
+      knowledgeLookups: [
+        'model_action_guide({ kind: "planningdomain", actionName: "write" })',
+      ],
+    })
+    expect(JSON.stringify(rejected.state)).not.toContain('requiredQueries')
+    expect(rejected.checks?.some(check =>
+      check.code === 'AGENT_COMPLETE_KNOWLEDGE_LOOKUP'
+        && check.message.includes('model_action_guide({ kind: "planningdomain", actionName: "write" })'),
+    )).toBe(true)
     expect(instance.completeCalls).toBe(1)
 
     instance.ready = true

@@ -68,7 +68,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.611Z",
+  "generatedAt": "2026-06-13T20:09:12.159Z",
   "$defs": {
     "ClassModelBuildConsistencyIssue": {
       "type": "object",

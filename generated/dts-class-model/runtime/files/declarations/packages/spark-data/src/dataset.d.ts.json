@@ -481,6 +481,18 @@
       "readable": true,
       "writable": true
     },
+    "spark-class-model://schema/shared/ce2a614e3c2950334a6fbdba2b701b49f3a27e8d1958c44ae3e307fdcb35cea0": {
+      "ref": "spark-class-model://schema/shared/ce2a614e3c2950334a6fbdba2b701b49f3a27e8d1958c44ae3e307fdcb35cea0",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ce2a614e3c2950334a6fbdba2b701b49f3a27e8d1958c44ae3e307fdcb35cea0"
+      }
+    },
     "spark-class-model://model/DataSet/attributes/_activeViewSubs/13": {
       "ref": "spark-class-model://model/DataSet/attributes/_activeViewSubs/13",
       "kind": "attribute",
@@ -676,6 +688,16 @@
         "$id": "spark-class-model://schema/shared/b08bec81dcc16bbce350a2fc62463b6087a9b968a1f070581e4437d3f59a3407"
       }
     },
+    "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839": {
+      "ref": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "() => void",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839"
+      }
+    },
     "spark-class-model://model/DataSet/methods/onAnyViewChange/6": {
       "ref": "spark-class-model://model/DataSet/methods/onAnyViewChange/6",
       "kind": "method",
@@ -717,6 +739,21 @@
       "name": "_subscribeNewView",
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/9a498ca914eaf2c79b97f0fd5687dad6e7c4be7a3d06f6f05465330d9a37a165"
+    },
+    "spark-class-model://schema/shared/9a498ca914eaf2c79b97f0fd5687dad6e7c4be7a3d06f6f05465330d9a37a165": {
+      "ref": "spark-class-model://schema/shared/9a498ca914eaf2c79b97f0fd5687dad6e7c4be7a3d06f6f05465330d9a37a165",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "view": {
+            "$ref": "spark-class-model://schema/DataView"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9a498ca914eaf2c79b97f0fd5687dad6e7c4be7a3d06f6f05465330d9a37a165"
+      }
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fmethods%2F_subscribeNewView%2F7/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fmethods%2F_subscribeNewView%2F7/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView",

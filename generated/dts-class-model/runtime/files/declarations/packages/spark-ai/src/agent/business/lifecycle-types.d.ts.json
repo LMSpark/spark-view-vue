@@ -166,16 +166,6 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://schema/shared/f2e0885470452f1b4b099253e6e1f3b215ea957857041fc2cdced95d9ec81f90": {
-      "ref": "spark-class-model://schema/shared/f2e0885470452f1b4b099253e6e1f3b215ea957857041fc2cdced95d9ec81f90",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "AiJsonParams",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/f2e0885470452f1b4b099253e6e1f3b215ea957857041fc2cdced95d9ec81f90"
-      }
-    },
     "spark-class-model://model/AiAgentBeforeFunctionCallOptions/attributes/args/1": {
       "ref": "spark-class-model://model/AiAgentBeforeFunctionCallOptions/attributes/args/1",
       "kind": "attribute",

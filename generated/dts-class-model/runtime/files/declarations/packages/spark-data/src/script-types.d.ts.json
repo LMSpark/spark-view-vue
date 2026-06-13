@@ -32,6 +32,15 @@
         "$id": "spark-class-model://schema/PermissionActionContext"
       }
     },
+    "spark-class-model://schema/shared/22a948f7ac12a0079305d3850be375d3e0da3057946193462b487498c87b8c34": {
+      "ref": "spark-class-model://schema/shared/22a948f7ac12a0079305d3850be375d3e0da3057946193462b487498c87b8c34",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ModelPermission",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/22a948f7ac12a0079305d3850be375d3e0da3057946193462b487498c87b8c34"
+      }
+    },
     "spark-class-model://model/PermissionActionContext/attributes/modelPermission/0": {
       "ref": "spark-class-model://model/PermissionActionContext/attributes/modelPermission/0",
       "kind": "attribute",
@@ -123,6 +132,15 @@
       "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
       "readable": true,
       "writable": true
+    },
+    "spark-class-model://schema/shared/f1d3e02ebf61a3869ba7fd06f6a29b007e4fc74c7747d0ce55bd720eb53a2715": {
+      "ref": "spark-class-model://schema/shared/f1d3e02ebf61a3869ba7fd06f6a29b007e4fc74c7747d0ce55bd720eb53a2715",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/FieldVisibility",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f1d3e02ebf61a3869ba7fd06f6a29b007e4fc74c7747d0ce55bd720eb53a2715"
+      }
     },
     "spark-class-model://model/FieldRenderState/attributes/visibility/1": {
       "ref": "spark-class-model://model/FieldRenderState/attributes/visibility/1",

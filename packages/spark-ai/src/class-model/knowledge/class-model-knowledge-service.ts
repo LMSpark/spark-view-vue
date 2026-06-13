@@ -52,6 +52,7 @@ export type ClassModelMethodGuideInput = Readonly<{
 
 /** Class Model Knowledge Provider 的语义模型。 */
 export type ClassModelKnowledgeProvider = Readonly<{
+  refresh?: (requestedClassName?: string) => Promise<void>
   query(input: ClassModelKnowledgeQueryInput): AiJsonValue | Promise<AiJsonValue>
   modelGuide(input: ClassModelModelGuideInput): string | Promise<string>
   attributeGuide(input: ClassModelAttributeGuideInput): string | Promise<string>

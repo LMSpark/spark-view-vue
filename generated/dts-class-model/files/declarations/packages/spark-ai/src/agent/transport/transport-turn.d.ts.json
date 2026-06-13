@@ -68,7 +68,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.602Z",
+  "generatedAt": "2026-06-13T20:09:12.124Z",
   "$defs": {
     "AiAgentTransportTurn": {
       "type": "object",

@@ -90,7 +90,8 @@ export type ClassModelAgentCompleteRejected = Readonly<{
   message?: string
   fix?: string
   checks?: readonly ClassModelAgentCompleteCheck[]
-  requiredQueries?: readonly string[]
+  /** 领域模型需要的业务能力名；AI runtime 会用 ClassModel 知识体系翻译成 guide/script 恢复路径。 */
+  requiredCapabilities?: readonly string[]
   missingFacts?: readonly string[]
   nextStep?: string
 }>
@@ -386,6 +387,7 @@ class ClassModelAgentToolRuntime<T> implements AiAgentToolRuntime {
       return normalizeAgentCompleteActionResult(
         await action(instance, actionOptions),
         parsed.summary,
+        createAgentCompleteKnowledgeRecoveryContext(this.adapterOptions),
       )
     }
 
@@ -412,7 +414,11 @@ class ClassModelAgentToolRuntime<T> implements AiAgentToolRuntime {
       args,
       summary: parsed.summary,
     })
-    return normalizeAgentCompleteActionResult(raw, parsed.summary)
+    return normalizeAgentCompleteActionResult(
+      raw,
+      parsed.summary,
+      createAgentCompleteKnowledgeRecoveryContext(this.adapterOptions),
+    )
   }
 }
 
@@ -432,6 +438,11 @@ type CallAgentCompleteMethodCommand<T> = Readonly<{
   context: AiAgentRuntimeContext
   args: Readonly<Record<string, AiJsonValue>>
   summary: string
+}>
+
+type AgentCompleteKnowledgeRecoveryContext = Readonly<{
+  rootKind: string
+  metadata?: AiRuntimeApiMetadataJson
 }>
 
 function parseAgentCompleteArgs(
@@ -492,6 +503,7 @@ function callAgentCompleteMethod<T>(
 function normalizeAgentCompleteActionResult(
   raw: unknown,
   fallbackSummary: string,
+  knowledgeContext: AgentCompleteKnowledgeRecoveryContext,
 ): AiAgentToolResult<AiJsonValue> {
   if (raw instanceof AiAgentToolResult) {
     if (!raw.ok) return raw as AiAgentToolResult<AiJsonValue>
@@ -513,9 +525,13 @@ function normalizeAgentCompleteActionResult(
   if (isUnknownRecord(raw)) {
     if (raw['ok'] === false || raw['completed'] === false) {
       const checks = readAgentCompleteChecks(raw['checks'])
-      const requiredQueries = readStringArrayRecordField(raw, 'requiredQueries')
+      const requiredCapabilities = readStringArrayRecordField(raw, 'requiredCapabilities')
       const missingFacts = readStringArrayRecordField(raw, 'missingFacts')
       const nextStep = readStringRecordField(raw, 'nextStep')
+      const knowledgeLookups = collectAgentCompleteKnowledgeLookups({
+        context: knowledgeContext,
+        ...(requiredCapabilities === undefined ? {} : { requiredCapabilities }),
+      })
       return rejectAgentComplete({
         code: readStringRecordField(raw, 'code') ?? 'AGENT_COMPLETE_REJECTED',
         message: readStringRecordField(raw, 'msg')
@@ -525,9 +541,10 @@ function normalizeAgentCompleteActionResult(
           ?? readStringRecordField(raw, 'nextStep')
           ?? '读取 agent_complete tool result，补查缺失知识或补执行 model_script 后再次 agent_complete。',
         ...(checks === undefined ? {} : { checks }),
-        ...(requiredQueries === undefined ? {} : { requiredQueries }),
+        ...(requiredCapabilities === undefined ? {} : { requiredCapabilities }),
         ...(missingFacts === undefined ? {} : { missingFacts }),
         ...(nextStep === undefined ? {} : { nextStep }),
+        ...(knowledgeLookups.length === 0 ? {} : { knowledgeLookups }),
       })
     }
     if (raw['ok'] === true) {
@@ -570,9 +587,10 @@ function rejectAgentComplete(input: Readonly<{
   message: string
   fix: string
   checks?: readonly AiAgentToolCheck[]
-  requiredQueries?: readonly string[]
+  requiredCapabilities?: readonly string[]
   missingFacts?: readonly string[]
   nextStep?: string
+  knowledgeLookups?: readonly string[]
 }>): AiAgentToolResult<AiJsonValue> {
   const checks = [
     AiAgentToolCheck.error(input.code, input.message, input.fix),
@@ -581,22 +599,24 @@ function rejectAgentComplete(input: Readonly<{
   ]
   return AiAgentToolResult.fail(checks, {
     agentComplete: 'rejected',
-    ...(input.requiredQueries === undefined ? {} : { requiredQueries: input.requiredQueries }),
+    ...(input.requiredCapabilities === undefined ? {} : { requiredCapabilities: input.requiredCapabilities }),
     ...(input.missingFacts === undefined ? {} : { missingFacts: input.missingFacts }),
     ...(input.nextStep === undefined ? {} : { nextStep: input.nextStep }),
+    ...(input.knowledgeLookups === undefined ? {} : { knowledgeLookups: input.knowledgeLookups }),
   })
 }
 
 function agentCompleteInfoChecks(input: Readonly<{
-  requiredQueries?: readonly string[]
+  requiredCapabilities?: readonly string[]
   missingFacts?: readonly string[]
   nextStep?: string
+  knowledgeLookups?: readonly string[]
 }>): readonly AiAgentToolCheck[] {
   const checks: AiAgentToolCheck[] = []
-  if (input.requiredQueries !== undefined && input.requiredQueries.length > 0) {
+  if (input.requiredCapabilities !== undefined && input.requiredCapabilities.length > 0) {
     checks.push(AiAgentToolCheck.info(
-      'AGENT_COMPLETE_REQUIRED_QUERIES',
-      `下一步需要查询: ${input.requiredQueries.join('；')}`,
+      'AGENT_COMPLETE_REQUIRED_CAPABILITIES',
+      `领域模型要求补齐能力: ${input.requiredCapabilities.join('；')}`,
     ))
   }
   if (input.missingFacts !== undefined && input.missingFacts.length > 0) {
@@ -611,7 +631,74 @@ function agentCompleteInfoChecks(input: Readonly<{
       input.nextStep,
     ))
   }
+  if (input.knowledgeLookups !== undefined && input.knowledgeLookups.length > 0) {
+    checks.push(AiAgentToolCheck.info(
+      'AGENT_COMPLETE_KNOWLEDGE_LOOKUP',
+      `知识恢复: ${input.knowledgeLookups.join('；')}`,
+      '先按知识恢复查询 ClassModel 契约，再通过 model_script 代理调用领域模型方法。',
+    ))
+  }
   return checks
+}
+
+function createAgentCompleteKnowledgeRecoveryContext<T>(
+  adapterOptions: ClassModelAgentToolRuntimeOptions<T>,
+): AgentCompleteKnowledgeRecoveryContext {
+  return {
+    rootKind: adapterOptions.rootClassName,
+    ...(adapterOptions.metadata === undefined ? {} : { metadata: adapterOptions.metadata }),
+  }
+}
+
+function collectAgentCompleteKnowledgeLookups(input: Readonly<{
+  context: AgentCompleteKnowledgeRecoveryContext
+  requiredCapabilities?: readonly string[]
+}>): readonly string[] {
+  const capabilities = input.requiredCapabilities ?? []
+  const lookups: string[] = []
+  for (const capability of capabilities) {
+    for (const actionRef of resolveCapabilityActionRefs(input.context, capability)) {
+      lookups.push(
+        `model_action_guide({ kind: "${actionRef.kind}", actionName: "${actionRef.actionName}" })`,
+      )
+    }
+  }
+  return uniqueStrings(lookups)
+}
+
+function resolveCapabilityActionRefs(
+  context: AgentCompleteKnowledgeRecoveryContext,
+  capability: string,
+): readonly Readonly<{ kind: string; actionName: string }>[] {
+  const parsed = parseCapabilityRef(capability)
+  if (parsed !== undefined) return [parsed]
+
+  const metadata = context.metadata
+  if (metadata !== undefined) {
+    const refs: Array<Readonly<{ kind: string; actionName: string }>> = []
+    for (const api of collectMetadataApis(metadata)) {
+      const action = api.actions.find(candidate =>
+        candidate.name === capability || candidate.methodName === capability)
+      if (action !== undefined) refs.push({ kind: api.kind, actionName: action.name })
+    }
+    if (refs.length > 0) return refs
+  }
+
+  return [{ kind: context.rootKind, actionName: capability }]
+}
+
+function parseCapabilityRef(value: string): Readonly<{ kind: string; actionName: string }> | undefined {
+  const normalized = value.trim()
+  const separator = normalized.indexOf('.')
+  if (separator <= 0 || separator >= normalized.length - 1) return undefined
+  return {
+    kind: normalized.slice(0, separator),
+    actionName: normalized.slice(separator + 1),
+  }
+}
+
+function collectMetadataApis(metadata: AiRuntimeApiMetadataJson): readonly AiRuntimeApiMetadataJson['rootApi'][] {
+  return [metadata.rootApi, ...Object.values(metadata.apiRegistry ?? {})]
 }
 
 function readAgentCompleteChecks(value: unknown): readonly AiAgentToolCheck[] | undefined {
@@ -658,6 +745,10 @@ function readStringArrayRecordField(value: Record<string, unknown>, key: string)
     .map(item => typeof item === 'string' ? item.trim() : '')
     .filter(item => item.length > 0)
   return items.length === 0 ? undefined : items
+}
+
+function uniqueStrings(values: readonly string[]): readonly string[] {
+  return [...new Set(values)]
 }
 
 function resolveClassModelRuntimeKnowledge<T>(

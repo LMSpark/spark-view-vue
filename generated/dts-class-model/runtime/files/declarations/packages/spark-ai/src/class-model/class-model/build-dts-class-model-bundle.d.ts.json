@@ -80,6 +80,15 @@
       "targetFile": "files/declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/BuildDtsClassModelBundleProgressPhase"
     },
+    "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387": {
+      "ref": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "kind": "schema",
+      "schema": {
+        "type": "number",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
+      }
+    },
     "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/current/1": {
       "ref": "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/current/1",
       "kind": "attribute",
@@ -97,6 +106,15 @@
       "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
       "readable": true,
       "writable": false
+    },
+    "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96": {
+      "ref": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "kind": "schema",
+      "schema": {
+        "type": "string",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96"
+      }
     },
     "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/sourcePath/3": {
       "ref": "spark-class-model://model/BuildDtsClassModelBundleProgress/attributes/sourcePath/3",
@@ -146,6 +164,10 @@
           "exportedOnly": {
             "type": "boolean"
           },
+          "runtimeClassIndexBase": {
+            "type": "object",
+            "title": "Readonly<Record<string, DtsClassModelRuntimeClassEntry>>"
+          },
           "progressInterval": {
             "type": "number"
           }
@@ -162,6 +184,15 @@
       "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
       "readable": true,
       "writable": true
+    },
+    "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22": {
+      "ref": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22"
+      }
     },
     "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/rootFiles/1": {
       "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/rootFiles/1",
@@ -200,6 +231,15 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553": {
+      "ref": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "kind": "schema",
+      "schema": {
+        "type": "boolean",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+      }
+    },
     "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/exportedOnly/4": {
       "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/exportedOnly/4",
       "kind": "attribute",
@@ -209,8 +249,27 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/progressInterval/5": {
-      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/progressInterval/5",
+    "spark-class-model://schema/shared/3c7a8888ca975b08e03743dec34d491a876cba72ebc7a4cdb0aaa35e927444cc": {
+      "ref": "spark-class-model://schema/shared/3c7a8888ca975b08e03743dec34d491a876cba72ebc7a4cdb0aaa35e927444cc",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Readonly<Record<string, DtsClassModelRuntimeClassEntry>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3c7a8888ca975b08e03743dec34d491a876cba72ebc7a4cdb0aaa35e927444cc"
+      }
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/runtimeClassIndexBase/5": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/runtimeClassIndexBase/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleOptions",
+      "name": "runtimeClassIndexBase",
+      "schemaRef": "spark-class-model://schema/shared/3c7a8888ca975b08e03743dec34d491a876cba72ebc7a4cdb0aaa35e927444cc",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/progressInterval/6": {
+      "ref": "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/progressInterval/6",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/BuildDtsClassModelBundleOptions",
       "name": "progressInterval",
@@ -225,6 +284,17 @@
       "name": "onProgress",
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa": {
+      "ref": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+      }
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleOptions%2Fmethods%2FonProgress%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleProgress": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleOptions%2Fmethods%2FonProgress%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FBuildDtsClassModelBundleProgress",
@@ -247,7 +317,8 @@
         "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/outputDir/2",
         "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/compilerHost/3",
         "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/exportedOnly/4",
-        "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/progressInterval/5"
+        "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/runtimeClassIndexBase/5",
+        "spark-class-model://model/BuildDtsClassModelBundleOptions/attributes/progressInterval/6"
       ],
       "methodRefs": [
         "spark-class-model://model/BuildDtsClassModelBundleOptions/methods/onProgress/0"

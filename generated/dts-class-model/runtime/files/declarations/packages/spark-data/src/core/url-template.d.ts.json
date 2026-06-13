@@ -34,6 +34,16 @@
       "readable": true,
       "writable": true
     },
+    "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9": {
+      "ref": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Record<string, unknown>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9"
+      }
+    },
     "spark-class-model://model/ResolvedUrl/attributes/rest/1": {
       "ref": "spark-class-model://model/ResolvedUrl/attributes/rest/1",
       "kind": "attribute",

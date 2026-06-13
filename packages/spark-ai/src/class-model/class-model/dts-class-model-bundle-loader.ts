@@ -25,7 +25,7 @@ export type DtsClassModelBundleLoaderOptions = Readonly<{
 
 /** Dts Class Model Bundle Loader 的语义模型。 */
 export class DtsClassModelBundleLoader {
-  private manifestPromise?: Promise<DtsClassModelBundleManifest>
+  private manifestPromise: Promise<DtsClassModelBundleManifest> | undefined
   private readonly filePromises = new Map<string, Promise<DtsFileProjectionDocument>>()
   private readonly loadedModels = new Map<string, ClassModel>()
   private readonly loadedFilePaths = new Set<string>()
@@ -38,6 +38,20 @@ public constructor(private readonly options: DtsClassModelBundleLoaderOptions) {
 
     /** 执行 init 操作。 */
 public async init(): Promise<DtsClassModelBundleManifest> {
+    return await this.loadManifest()
+  }
+
+    /** 清空已加载 manifest/shard/model 缓存，下次查询重新读取 bundle。 */
+public clearCache(): void {
+    this.manifestPromise = undefined
+    this.filePromises.clear()
+    this.loadedModels.clear()
+    this.loadedFilePaths.clear()
+  }
+
+    /** 重新读取 manifest，用于编译器更新 generated bundle 后刷新知识。 */
+public async reload(): Promise<DtsClassModelBundleManifest> {
+    this.clearCache()
     return await this.loadManifest()
   }
 

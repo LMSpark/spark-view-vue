@@ -22,21 +22,42 @@
       "className": "CreateClassModelKnowledgeWorkerApiOptions",
       "jsdoc": "Create Class Model Knowledge Worker Api Options 的调用配置。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
+      "declarationTypeText": "Readonly<{\n    fetchJson?: (url: string) => Promise<unknown>;\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    fetchJson?: (url: string) => Promise<unknown>;\n}>",
+          "typeText": "Readonly<{\n    fetchJson?: (url: string) => Promise<unknown>;\n    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction;\n    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy;\n}>",
           "targetName": "Readonly"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.d.ts",
-        "line": 10,
+        "line": 11,
         "className": "CreateClassModelKnowledgeWorkerApiOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "refreshBundle",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "DtsBundleClassModelKnowledgeRefreshFunction"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "refreshPolicy",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "DtsBundleClassModelKnowledgeRefreshPolicy"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": [
         {
           "name": "fetchJson",
@@ -69,12 +90,22 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.661Z",
+  "generatedAt": "2026-06-13T20:57:30.607Z",
   "$defs": {
     "CreateClassModelKnowledgeWorkerApiOptions": {
       "type": "object",
       "title": "CreateClassModelKnowledgeWorkerApiOptions",
-      "description": "Create Class Model Knowledge Worker Api Options 的调用配置。"
+      "description": "Create Class Model Knowledge Worker Api Options 的调用配置。",
+      "properties": {
+        "refreshBundle": {
+          "type": "object",
+          "title": "DtsBundleClassModelKnowledgeRefreshFunction"
+        },
+        "refreshPolicy": {
+          "type": "object",
+          "title": "DtsBundleClassModelKnowledgeRefreshPolicy"
+        }
+      }
     }
   }
 }

@@ -275,7 +275,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T06:21:07.169Z",
+  "generatedAt": "2026-06-13T21:06:57.415Z",
   "$defs": {
     "CapabilityReader": {
       "type": "object",

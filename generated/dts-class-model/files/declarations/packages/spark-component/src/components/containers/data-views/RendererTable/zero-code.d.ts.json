@@ -204,7 +204,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.758Z",
+  "generatedAt": "2026-06-13T20:09:13.056Z",
   "$defs": {
     "NativeTableLike": {
       "type": "object",

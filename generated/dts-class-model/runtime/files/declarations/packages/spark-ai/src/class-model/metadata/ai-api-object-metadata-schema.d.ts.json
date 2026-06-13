@@ -726,6 +726,15 @@
       "readable": true,
       "writable": true
     },
+    "spark-class-model://schema/shared/55526394420b76c6e70aa3f3af83af711c97b86a9a24b9649a1969b663714d1a": {
+      "ref": "spark-class-model://schema/shared/55526394420b76c6e70aa3f3af83af711c97b86a9a24b9649a1969b663714d1a",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiApiObjectMetadata",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/55526394420b76c6e70aa3f3af83af711c97b86a9a24b9649a1969b663714d1a"
+      }
+    },
     "spark-class-model://model/AiApiAttributeMetadata/attributes/api/7": {
       "ref": "spark-class-model://model/AiApiAttributeMetadata/attributes/api/7",
       "kind": "attribute",

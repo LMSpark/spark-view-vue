@@ -196,6 +196,22 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/3f1057775891587e4d83ec31fbdcd8859bcd3d56303b2dcf336ac6f30a536c87",
       "returnSchemaRef": "spark-class-model://schema/shared/d6da516bf1ead8be0d121529135c994dc180abc194ff65cda45b488c54e1f495"
     },
+    "spark-class-model://schema/shared/3f1057775891587e4d83ec31fbdcd8859bcd3d56303b2dcf336ac6f30a536c87": {
+      "ref": "spark-class-model://schema/shared/3f1057775891587e4d83ec31fbdcd8859bcd3d56303b2dcf336ac6f30a536c87",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "row": {
+            "type": "object",
+            "title": "Partial<DataRow>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3f1057775891587e4d83ec31fbdcd8859bcd3d56303b2dcf336ac6f30a536c87"
+      }
+    },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgeneratePrimaryKey%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgeneratePrimaryKey%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
       "kind": "link",

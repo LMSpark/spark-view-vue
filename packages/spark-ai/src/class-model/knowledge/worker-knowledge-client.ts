@@ -28,7 +28,7 @@ export type CreateWorkerDtsClassModelKnowledgeProviderOptions =
 
 export function createWorkerDtsClassModelKnowledgeProvider(
   options: CreateWorkerDtsClassModelKnowledgeProviderOptions,
-): ClassModelKnowledgeProvider {
+): WorkerClassModelKnowledgeProvider {
   const worker = (options.createWorker ?? createBrowserWorker)(
     options.workerUrl,
     options.workerOptions ?? DEFAULT_WORKER_OPTIONS,
@@ -62,6 +62,12 @@ public constructor(worker: Worker, init: ClassModelKnowledgeWorkerInitInput) {
 public async query(input: ClassModelKnowledgeQueryInput): Promise<AiJsonValue> {
     await this.initialized
     return this.api.query(input)
+  }
+
+    /** 显式刷新 worker 内 knowledge bundle，并让 worker 重新加载 manifest。 */
+public async refresh(requestedClassName?: string): Promise<void> {
+    await this.initialized
+    await this.api.refresh(requestedClassName === undefined ? {} : { requestedClassName })
   }
 
     /** 执行 model Guide 操作。 */

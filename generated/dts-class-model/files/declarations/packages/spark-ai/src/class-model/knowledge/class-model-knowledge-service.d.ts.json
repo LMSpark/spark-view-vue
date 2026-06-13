@@ -198,11 +198,11 @@
       "className": "ClassModelKnowledgeProvider",
       "jsdoc": "Class Model Knowledge Provider 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    query(input: ClassModelKnowledgeQueryInput): AiJsonValue | Promise<AiJsonValue>;\n    modelGuide(input: ClassModelModelGuideInput): string | Promise<string>;\n    attributeGuide(input: ClassModelAttributeGuideInput): string | Promise<string>;\n    methodGuide(input: ClassModelMethodGuideInput): string | Promise<string>;\n}>",
+      "declarationTypeText": "Readonly<{\n    refresh?: (requestedClassName?: string) => Promise<void>;\n    query(input: ClassModelKnowledgeQueryInput): AiJsonValue | Promise<AiJsonValue>;\n    modelGuide(input: ClassModelModelGuideInput): string | Promise<string>;\n    attributeGuide(input: ClassModelAttributeGuideInput): string | Promise<string>;\n    methodGuide(input: ClassModelMethodGuideInput): string | Promise<string>;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    query(input: ClassModelKnowledgeQueryInput): AiJsonValue | Promise<AiJsonValue>;\n    modelGuide(input: ClassModelModelGuideInput): string | Promise<string>;\n    attributeGuide(input: ClassModelAttributeGuideInput): string | Promise<string>;\n    methodGuide(input: ClassModelMethodGuideInput): string | Promise<string>;\n}>",
+          "typeText": "Readonly<{\n    refresh?: (requestedClassName?: string) => Promise<void>;\n    query(input: ClassModelKnowledgeQueryInput): AiJsonValue | Promise<AiJsonValue>;\n    modelGuide(input: ClassModelModelGuideInput): string | Promise<string>;\n    attributeGuide(input: ClassModelAttributeGuideInput): string | Promise<string>;\n    methodGuide(input: ClassModelMethodGuideInput): string | Promise<string>;\n}>",
           "targetName": "Readonly"
         }
       ],
@@ -214,6 +214,37 @@
       },
       "attributes": [],
       "methods": [
+        {
+          "name": "refresh",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "requestedClassName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
         {
           "name": "query",
           "jsdoc": "",
@@ -448,7 +479,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts",
-        "line": 38,
+        "line": 39,
         "className": "ClassModelKnowledgeServiceOptions",
         "declarationKind": "type"
       },
@@ -499,7 +530,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts",
-        "line": 44,
+        "line": 45,
         "className": "ClassModelKnowledgeService",
         "declarationKind": "class"
       },
@@ -657,7 +688,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T06:21:06.649Z",
+  "generatedAt": "2026-06-13T20:57:30.578Z",
   "$defs": {
     "ClassModelKnowledgeQueryInput": {
       "type": "object",

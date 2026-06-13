@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-13T06:21:10.552Z",
-  "gapCount": 1206,
+  "generatedAt": "2026-06-13T21:07:04.231Z",
+  "gapCount": 1239,
   "notes": [
     ".d.ts 是类型关系真源；declarationRelations 保留 extends / alias / intersection / union 等直接声明边。",
     "module 是单个 DTS shard 的入口语义；必须来自源文件头 JSDoc，路径/组件目录/symbol 推导只作为定位日志，不算语义闭环。",
@@ -585,13 +585,253 @@
     },
     {
       "kind": "attribute",
+      "className": "ClassModelAgentCompleteActionOptions",
+      "memberName": "summary",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteActionOptions.summary 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 21,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteActionOptions",
+      "memberName": "args",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteActionOptions.args 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 22,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteCheck",
+      "memberName": "level",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteCheck.level 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 26,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteCheck",
+      "memberName": "code",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteCheck.code 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 27,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteCheck",
+      "memberName": "message",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteCheck.message 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 28,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteCheck",
+      "memberName": "hint",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteCheck.hint 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 29,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteAccepted",
+      "memberName": "ok",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteAccepted.ok 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 33,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteAccepted",
+      "memberName": "completed",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteAccepted.completed 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 34,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteAccepted",
+      "memberName": "summary",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteAccepted.summary 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 35,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteAccepted",
+      "memberName": "finalAssistantMessage",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteAccepted.finalAssistantMessage 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 36,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteAccepted",
+      "memberName": "data",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteAccepted.data 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 37,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteAccepted",
+      "memberName": "checks",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteAccepted.checks 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 38,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteRejected",
+      "memberName": "ok",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteRejected.ok 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 42,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteRejected",
+      "memberName": "code",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteRejected.code 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 43,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteRejected",
+      "memberName": "msg",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteRejected.msg 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 44,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteRejected",
+      "memberName": "message",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteRejected.message 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 45,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteRejected",
+      "memberName": "fix",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteRejected.fix 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 46,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteRejected",
+      "memberName": "checks",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteRejected.checks 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 47,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteRejected",
+      "memberName": "missingFacts",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteRejected.missingFacts 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 50,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelAgentCompleteRejected",
+      "memberName": "nextStep",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelAgentCompleteRejected.nextStep 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
+      "declarationLine": 51,
+      "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
       "className": "ClassModelAgentAdapterRegisterCommand",
       "memberName": "host",
       "reason": "missing-jsdoc",
       "chainBreak": "ClassModelAgentAdapterRegisterCommand.host 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 20,
+      "declarationLine": 57,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -603,7 +843,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterCommand.alias 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 21,
+      "declarationLine": 58,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -615,7 +855,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterCommand.moduleClass 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 22,
+      "declarationLine": 59,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -627,7 +867,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterCommand.metadata 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 23,
+      "declarationLine": 60,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -639,7 +879,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterCommand.options 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 24,
+      "declarationLine": 61,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -651,7 +891,7 @@
       "chainBreak": "ClassModelAgentAdapterRegistrationCommand.moduleClass 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 28,
+      "declarationLine": 65,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -663,7 +903,7 @@
       "chainBreak": "ClassModelAgentAdapterRegistrationCommand.metadata 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 29,
+      "declarationLine": 66,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -675,7 +915,7 @@
       "chainBreak": "ClassModelAgentAdapterRegistrationCommand.options 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 30,
+      "declarationLine": 67,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -687,7 +927,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.moduleId 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 34,
+      "declarationLine": 71,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -699,7 +939,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.instance 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 35,
+      "declarationLine": 72,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -711,7 +951,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.constructArgs 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 36,
+      "declarationLine": 73,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -723,7 +963,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.resolveInstance 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 37,
+      "declarationLine": 74,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "type"
     },
@@ -735,7 +975,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.dtsClassModelManifestUrl 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 40,
+      "declarationLine": 77,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -747,7 +987,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.dtsClassModelFetchJson 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 41,
+      "declarationLine": 78,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "type"
     },
@@ -759,7 +999,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.rootClassName 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 42,
+      "declarationLine": 79,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -771,7 +1011,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.knowledge 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 43,
+      "declarationLine": 80,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -783,7 +1023,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.inputContract 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 44,
+      "declarationLine": 81,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -795,7 +1035,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.sessionStore 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 45,
+      "declarationLine": 82,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -807,7 +1047,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.systemPrompt 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 46,
+      "declarationLine": 83,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "type"
     },
@@ -819,7 +1059,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.beforeFunctionCall 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 47,
+      "declarationLine": 84,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "type"
     },
@@ -831,7 +1071,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.afterFunctionCall 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 48,
+      "declarationLine": 85,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "type"
     },
@@ -843,7 +1083,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.onStartSession 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 49,
+      "declarationLine": 90,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "type"
     },
@@ -855,7 +1095,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.onEndBusinessInstance 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 50,
+      "declarationLine": 91,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "type"
     },
@@ -867,7 +1107,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.releaseModuleInstance 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 51,
+      "declarationLine": 92,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "type"
     },
@@ -879,7 +1119,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.toolLoopNudge 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 52,
+      "declarationLine": 93,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "type"
     },
@@ -891,7 +1131,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.executionToolNames 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 53,
+      "declarationLine": 94,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -903,7 +1143,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.planWithoutToolMarkers 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 54,
+      "declarationLine": 95,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "interface"
     },
@@ -915,7 +1155,7 @@
       "chainBreak": "ClassModelAgentAdapterRegisterOptions.enrichRecoveryHints 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/agent/business/class-model-agent-adapter.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/agent/business/class-model-agent-adapter.d.ts",
-      "declarationLine": 55,
+      "declarationLine": 96,
       "sourceFile": "packages/spark-ai/src/agent/business/class-model-agent-adapter.ts",
       "declarationKind": "type"
     },
@@ -4244,6 +4484,18 @@
       "declarationKind": "interface"
     },
     {
+      "kind": "attribute",
+      "className": "BuildDtsClassModelBundleOptions",
+      "memberName": "runtimeClassIndexBase",
+      "reason": "missing-jsdoc",
+      "chainBreak": "BuildDtsClassModelBundleOptions.runtimeClassIndexBase 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
+      "declarationLine": 19,
+      "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
+      "declarationKind": "interface"
+    },
+    {
       "kind": "method",
       "className": "BuildDtsClassModelBundleOptions",
       "memberName": "onProgress",
@@ -4251,7 +4503,7 @@
       "chainBreak": "BuildDtsClassModelBundleOptions.onProgress 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-      "declarationLine": 19,
+      "declarationLine": 20,
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "declarationKind": "type"
     },
@@ -4263,7 +4515,7 @@
       "chainBreak": "BuildDtsClassModelBundleOptions.progressInterval 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-      "declarationLine": 20,
+      "declarationLine": 21,
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "declarationKind": "interface"
     },
@@ -4275,7 +4527,7 @@
       "chainBreak": "BuildDtsClassModelBundleResult.manifest 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-      "declarationLine": 24,
+      "declarationLine": 25,
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "declarationKind": "interface"
     },
@@ -4287,7 +4539,7 @@
       "chainBreak": "BuildDtsClassModelBundleResult.manifestPath 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-      "declarationLine": 25,
+      "declarationLine": 26,
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "declarationKind": "interface"
     },
@@ -4299,7 +4551,7 @@
       "chainBreak": "BuildDtsClassModelBundleResult.runtimeManifest 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-      "declarationLine": 26,
+      "declarationLine": 27,
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "declarationKind": "interface"
     },
@@ -4311,7 +4563,7 @@
       "chainBreak": "BuildDtsClassModelBundleResult.runtimeManifestPath 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-      "declarationLine": 27,
+      "declarationLine": 28,
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "declarationKind": "interface"
     },
@@ -4323,7 +4575,7 @@
       "chainBreak": "BuildDtsClassModelBundleResult.semanticLogPath 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-      "declarationLine": 28,
+      "declarationLine": 29,
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "declarationKind": "interface"
     },
@@ -4335,7 +4587,7 @@
       "chainBreak": "BuildDtsClassModelBundleResult.semanticLogJsonPath 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-      "declarationLine": 29,
+      "declarationLine": 30,
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "declarationKind": "interface"
     },
@@ -4347,7 +4599,7 @@
       "chainBreak": "BuildDtsClassModelBundleResult.semanticGapCount 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-      "declarationLine": 30,
+      "declarationLine": 31,
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "declarationKind": "interface"
     },
@@ -4359,7 +4611,7 @@
       "chainBreak": "BuildDtsClassModelBundleResult.fileCount 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-      "declarationLine": 31,
+      "declarationLine": 32,
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "declarationKind": "interface"
     },
@@ -4371,7 +4623,7 @@
       "chainBreak": "BuildDtsClassModelBundleResult.modelCount 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
-      "declarationLine": 32,
+      "declarationLine": 33,
       "sourceFile": "packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.ts",
       "declarationKind": "interface"
     },
@@ -7220,12 +7472,24 @@
     {
       "kind": "method",
       "className": "ClassModelKnowledgeProvider",
+      "memberName": "refresh",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelKnowledgeProvider.refresh 的成员语义链断开：method 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts",
+      "declarationLine": 32,
+      "sourceFile": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
+      "declarationKind": "type"
+    },
+    {
+      "kind": "method",
+      "className": "ClassModelKnowledgeProvider",
       "memberName": "query",
       "reason": "missing-jsdoc",
       "chainBreak": "ClassModelKnowledgeProvider.query 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts",
-      "declarationLine": 32,
+      "declarationLine": 33,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
       "declarationKind": "interface"
     },
@@ -7237,7 +7501,7 @@
       "chainBreak": "ClassModelKnowledgeProvider.modelGuide 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts",
-      "declarationLine": 33,
+      "declarationLine": 34,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
       "declarationKind": "interface"
     },
@@ -7249,7 +7513,7 @@
       "chainBreak": "ClassModelKnowledgeProvider.attributeGuide 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts",
-      "declarationLine": 34,
+      "declarationLine": 35,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
       "declarationKind": "interface"
     },
@@ -7261,7 +7525,7 @@
       "chainBreak": "ClassModelKnowledgeProvider.methodGuide 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts",
-      "declarationLine": 35,
+      "declarationLine": 36,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
       "declarationKind": "interface"
     },
@@ -7273,7 +7537,7 @@
       "chainBreak": "ClassModelKnowledgeServiceOptions.document 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts",
-      "declarationLine": 39,
+      "declarationLine": 40,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
       "declarationKind": "interface"
     },
@@ -7285,7 +7549,7 @@
       "chainBreak": "ClassModelKnowledgeServiceOptions.surface 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts",
-      "declarationLine": 40,
+      "declarationLine": 41,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
       "declarationKind": "interface"
     },
@@ -7297,8 +7561,32 @@
       "chainBreak": "ClassModelKnowledgeServiceOptions.rootClassName 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts",
-      "declarationLine": 41,
+      "declarationLine": 42,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "DtsBundleClassModelKnowledgeRefreshInput",
+      "memberName": "rootClassName",
+      "reason": "missing-jsdoc",
+      "chainBreak": "DtsBundleClassModelKnowledgeRefreshInput.rootClassName 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+      "declarationLine": 12,
+      "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "DtsBundleClassModelKnowledgeRefreshInput",
+      "memberName": "requestedClassName",
+      "reason": "missing-jsdoc",
+      "chainBreak": "DtsBundleClassModelKnowledgeRefreshInput.requestedClassName 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+      "declarationLine": 13,
+      "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
       "declarationKind": "interface"
     },
     {
@@ -7309,7 +7597,7 @@
       "chainBreak": "DtsBundleClassModelKnowledgeServiceOptions.loader 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
-      "declarationLine": 12,
+      "declarationLine": 21,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
       "declarationKind": "interface"
     },
@@ -7321,7 +7609,31 @@
       "chainBreak": "DtsBundleClassModelKnowledgeServiceOptions.rootClassName 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
-      "declarationLine": 13,
+      "declarationLine": 22,
+      "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "DtsBundleClassModelKnowledgeServiceOptions",
+      "memberName": "refreshBundle",
+      "reason": "missing-jsdoc",
+      "chainBreak": "DtsBundleClassModelKnowledgeServiceOptions.refreshBundle 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+      "declarationLine": 23,
+      "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "DtsBundleClassModelKnowledgeServiceOptions",
+      "memberName": "refreshPolicy",
+      "reason": "missing-jsdoc",
+      "chainBreak": "DtsBundleClassModelKnowledgeServiceOptions.refreshPolicy 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+      "declarationLine": 24,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
       "declarationKind": "interface"
     },
@@ -7333,7 +7645,7 @@
       "chainBreak": "CreateDtsBundleClassModelKnowledgeProviderOptions.dtsClassModelManifestUrl 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
-      "declarationLine": 17,
+      "declarationLine": 28,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
       "declarationKind": "interface"
     },
@@ -7345,7 +7657,7 @@
       "chainBreak": "CreateDtsBundleClassModelKnowledgeProviderOptions.rootClassName 的成员语义链断开：attribute 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
-      "declarationLine": 18,
+      "declarationLine": 29,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
       "declarationKind": "interface"
     },
@@ -7357,9 +7669,45 @@
       "chainBreak": "CreateDtsBundleClassModelKnowledgeProviderOptions.fetchJson 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
-      "declarationLine": 19,
+      "declarationLine": 30,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
       "declarationKind": "type"
+    },
+    {
+      "kind": "attribute",
+      "className": "CreateDtsBundleClassModelKnowledgeProviderOptions",
+      "memberName": "refreshBundle",
+      "reason": "missing-jsdoc",
+      "chainBreak": "CreateDtsBundleClassModelKnowledgeProviderOptions.refreshBundle 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+      "declarationLine": 31,
+      "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "CreateDtsBundleClassModelKnowledgeProviderOptions",
+      "memberName": "refreshPolicy",
+      "reason": "missing-jsdoc",
+      "chainBreak": "CreateDtsBundleClassModelKnowledgeProviderOptions.refreshPolicy 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts",
+      "declarationLine": 32,
+      "sourceFile": "packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ClassModelKnowledgeWorkerRefreshInput",
+      "memberName": "requestedClassName",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelKnowledgeWorkerRefreshInput.requestedClassName 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
+      "declarationLine": 18,
+      "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts",
+      "declarationKind": "interface"
     },
     {
       "kind": "method",
@@ -7369,7 +7717,19 @@
       "chainBreak": "ClassModelKnowledgeWorkerApi.init 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
-      "declarationLine": 18,
+      "declarationLine": 22,
+      "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "method",
+      "className": "ClassModelKnowledgeWorkerApi",
+      "memberName": "refresh",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ClassModelKnowledgeWorkerApi.refresh 的成员语义链断开：method 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
+      "declarationLine": 25,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts",
       "declarationKind": "interface"
     },
@@ -7381,7 +7741,7 @@
       "chainBreak": "ClassModelKnowledgeWorkerApi.query 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
-      "declarationLine": 21,
+      "declarationLine": 28,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts",
       "declarationKind": "interface"
     },
@@ -7393,7 +7753,7 @@
       "chainBreak": "ClassModelKnowledgeWorkerApi.modelGuide 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
-      "declarationLine": 22,
+      "declarationLine": 29,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts",
       "declarationKind": "interface"
     },
@@ -7405,7 +7765,7 @@
       "chainBreak": "ClassModelKnowledgeWorkerApi.attributeGuide 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
-      "declarationLine": 23,
+      "declarationLine": 30,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts",
       "declarationKind": "interface"
     },
@@ -7417,7 +7777,7 @@
       "chainBreak": "ClassModelKnowledgeWorkerApi.methodGuide 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts",
-      "declarationLine": 24,
+      "declarationLine": 31,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.ts",
       "declarationKind": "interface"
     },
@@ -7465,9 +7825,33 @@
       "chainBreak": "CreateClassModelKnowledgeWorkerApiOptions.fetchJson 的成员语义链断开：method 声明没有 JSDoc。",
       "fixHint": "在 packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.d.ts",
-      "declarationLine": 11,
+      "declarationLine": 12,
       "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts",
       "declarationKind": "type"
+    },
+    {
+      "kind": "attribute",
+      "className": "CreateClassModelKnowledgeWorkerApiOptions",
+      "memberName": "refreshBundle",
+      "reason": "missing-jsdoc",
+      "chainBreak": "CreateClassModelKnowledgeWorkerApiOptions.refreshBundle 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.d.ts",
+      "declarationLine": 13,
+      "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "CreateClassModelKnowledgeWorkerApiOptions",
+      "memberName": "refreshPolicy",
+      "reason": "missing-jsdoc",
+      "chainBreak": "CreateClassModelKnowledgeWorkerApiOptions.refreshPolicy 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.d.ts",
+      "declarationLine": 14,
+      "sourceFile": "packages/spark-ai/src/class-model/knowledge/worker-knowledge-handler.ts",
+      "declarationKind": "interface"
     },
     {
       "kind": "attribute",
@@ -12849,6 +13233,18 @@
       "fixHint": "在 packages/spark-project-model/src/project/project-types.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
       "declarationFile": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
       "declarationLine": 107,
+      "sourceFile": "packages/spark-project-model/src/project/project-types.ts",
+      "declarationKind": "interface"
+    },
+    {
+      "kind": "attribute",
+      "className": "ProjectPlanningCompletionInput",
+      "memberName": "summary",
+      "reason": "missing-jsdoc",
+      "chainBreak": "ProjectPlanningCompletionInput.summary 的成员语义链断开：attribute 声明没有 JSDoc。",
+      "fixHint": "在 packages/spark-project-model/src/project/project-types.ts 的对应声明前补 JSDoc，然后重新生成 declarations 和 dts-class-model。",
+      "declarationFile": "declarations/packages/spark-project-model/src/project/project-types.d.ts",
+      "declarationLine": 111,
       "sourceFile": "packages/spark-project-model/src/project/project-types.ts",
       "declarationKind": "interface"
     },

@@ -5,10 +5,12 @@
  * AI用途：当需要判断 ClassModel 在 class-model/knowledge/worker-knowledge-handler 这一段如何生成、加载或投影时，用本模块定位职责。
  */
 import { expose, type Endpoint } from 'comlink'
-import { createDtsBundleClassModelKnowledgeProvider } from './dts-bundle-class-model-knowledge-service'
-import type {
-  ClassModelKnowledgeProvider,
-} from './class-model-knowledge-service'
+import {
+  createDtsBundleClassModelKnowledgeProvider,
+  type DtsBundleClassModelKnowledgeRefreshFunction,
+  type DtsBundleClassModelKnowledgeRefreshPolicy,
+  type DtsBundleClassModelKnowledgeService,
+} from './dts-bundle-class-model-knowledge-service'
 import type {
   ClassModelKnowledgeWorkerApi,
   ClassModelKnowledgeWorkerInitInput,
@@ -17,6 +19,8 @@ import type {
 /** Create Class Model Knowledge Worker Api Options 的调用配置。 */
 export type CreateClassModelKnowledgeWorkerApiOptions = Readonly<{
   fetchJson?: (url: string) => Promise<unknown>
+  refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction
+  refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy
 }>
 
 /**
@@ -30,9 +34,18 @@ export function createClassModelKnowledgeWorkerApi(
 
   return {
     async init(input) {
-      statePromise = createWorkerStateFromInitInput(input, fetchJson)
+      statePromise = createWorkerStateFromInitInput(input, {
+        fetchJson,
+        ...(options.refreshBundle === undefined ? {} : { refreshBundle: options.refreshBundle }),
+        ...(options.refreshPolicy === undefined ? {} : { refreshPolicy: options.refreshPolicy }),
+      })
       await statePromise
       return { initialized: true }
+    },
+
+    async refresh(input) {
+      await (await requireState()).baseProvider.refresh(input?.requestedClassName)
+      return { refreshed: true }
     },
 
     async query(input) {
@@ -70,10 +83,10 @@ export function exposeClassModelKnowledgeWorker(workerGlobal?: Endpoint): void {
 }
 
 class ClassModelKnowledgeWorkerState {
-  public readonly baseProvider: ClassModelKnowledgeProvider
+  public readonly baseProvider: DtsBundleClassModelKnowledgeService
 
   public constructor(options: Readonly<{
-    baseProvider: ClassModelKnowledgeProvider
+    baseProvider: DtsBundleClassModelKnowledgeService
   }>) {
     this.baseProvider = options.baseProvider
   }
@@ -81,7 +94,11 @@ class ClassModelKnowledgeWorkerState {
 
 async function createWorkerStateFromInitInput(
   input: ClassModelKnowledgeWorkerInitInput,
-  fetchJson: (url: string) => Promise<unknown>,
+  options: Readonly<{
+    fetchJson: (url: string) => Promise<unknown>
+    refreshBundle?: DtsBundleClassModelKnowledgeRefreshFunction
+    refreshPolicy?: DtsBundleClassModelKnowledgeRefreshPolicy
+  }>,
 ): Promise<ClassModelKnowledgeWorkerState> {
   if (input.dtsClassModelManifestUrl.length === 0) {
     throw new Error('DTS class-model worker init requires dtsClassModelManifestUrl.')
@@ -92,7 +109,9 @@ async function createWorkerStateFromInitInput(
   const provider = createDtsBundleClassModelKnowledgeProvider({
     dtsClassModelManifestUrl: input.dtsClassModelManifestUrl,
     rootClassName: input.rootClassName,
-    fetchJson,
+    fetchJson: options.fetchJson,
+    ...(options.refreshBundle === undefined ? {} : { refreshBundle: options.refreshBundle }),
+    ...(options.refreshPolicy === undefined ? {} : { refreshPolicy: options.refreshPolicy }),
   })
   await provider.init()
   return new ClassModelKnowledgeWorkerState({

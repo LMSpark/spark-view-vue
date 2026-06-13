@@ -93,7 +93,7 @@ export type DtsClassModelRuntimeAttributeContract = Readonly<{
 
 /** Dts Class Model Runtime Loader 的语义模型。 */
 export class DtsClassModelRuntimeLoader {
-  private manifestPromise?: Promise<DtsClassModelRuntimeManifest>
+  private manifestPromise: Promise<DtsClassModelRuntimeManifest> | undefined
   private readonly filePromises = new Map<string, Promise<DtsClassModelRuntimeShard>>()
   private readonly loadedRefs = new Map<string, DtsClassModelRuntimeRef>()
   private readonly loadedModels = new Map<string, DtsClassModelRuntimeModel>()
@@ -106,6 +106,20 @@ export class DtsClassModelRuntimeLoader {
 
   /** 初始化并返回 runtime manifest。 */
   public async init(): Promise<DtsClassModelRuntimeManifest> {
+    return await this.loadManifest()
+  }
+
+  /** 清空已加载 manifest/shard/ref/model 缓存，下次查询重新读取 runtime bundle。 */
+  public clearCache(): void {
+    this.manifestPromise = undefined
+    this.filePromises.clear()
+    this.loadedRefs.clear()
+    this.loadedModels.clear()
+  }
+
+  /** 重新读取 runtime manifest，用于编译器更新 generated bundle 后刷新知识。 */
+  public async reload(): Promise<DtsClassModelRuntimeManifest> {
+    this.clearCache()
     return await this.loadManifest()
   }
 
