@@ -32,7 +32,7 @@ import {
   ensurePageDesignBusiness,
   resolvePageDesignPlanningContext,
 } from '../src/services/page-design/page-design-business.ts'
-import { dtsClassModelManifestUrl } from '../src/class-model-artifacts/artifact-urls.ts'
+import { getDtsClassModelManifestUrl } from '../src/class-model-artifacts/artifact-urls.ts'
 import { createRequest } from '@spark-appworks/spark-utils'
 import { PAGE_NODE_FILE_NAMES } from '@spark-appworks/spark-project-model'
 import { ProjectWorkspace } from '@spark-appworks/spark-project-model'
@@ -725,7 +725,7 @@ function createPageDesignAiAgent(options, auth, workspace) {
 function createNodePageDesignKnowledgeProvider() {
   return new DtsBundleClassModelKnowledgeService({
     loader: new DtsClassModelBundleLoader({
-      manifestUrl: dtsClassModelManifestUrl,
+      manifestUrl: getDtsClassModelManifestUrl(process.env.SPARK_FE_ORIGIN),
       fetchJson: readDtsBundleJson,
     }),
     rootClassName: 'ProjectModel',

@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import { fileURLToPath } from 'node:url'
 import { sparkComponentsPlugin } from './tools/vite-plugin-spark-components'
+import { classModelStaticPlugin } from './tools/vite-plugin-class-model-static'
 import {
   COMPONENT_SCAN_PATTERNS,
   COMPONENT_EXCLUDE_PATTERNS,
@@ -94,6 +95,9 @@ export default defineConfig({
       exclude: [...COMPONENT_EXCLUDE_PATTERNS],
       verbose: false
     } satisfies Parameters<typeof sparkComponentsPlugin>[0]),
+
+    // ClassModel JSON：dev/build 均直接读 generated/dts-class-model（入库 SSOT，便于评审）
+    classModelStaticPlugin(),
   ],
   build: {
     rollupOptions: {
@@ -166,6 +170,9 @@ export default defineConfig({
           // ⚠️ spark-utils 必须独立 chunk：它是 spark-data 和 spark-component 的共同依赖，
           //    若不单独分配，Rollup 可能将 spark-utils 模块分入 spark-component chunk，
           //    导致 spark-data chunk 反向引用 spark-component chunk（虚假循环依赖）。
+          if (normalizedId.includes('packages/spark-json-document')) {
+            return 'spark-json-document'
+          }
           if (normalizedId.includes('packages/spark-utils')) {
             return 'spark-utils'
           }

@@ -28,7 +28,7 @@ import {
   ProjectModel,
   type ProjectWorkspace,
 } from '@spark-appworks/spark-project-model'
-import { dtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
+import { getDtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
 
 export const PROJECT_PLANNING_MODULE_ID = 'projectPlanning'
 
@@ -37,7 +37,7 @@ const PROJECT_PLANNING_ROOT_CLASS_NAME = 'ProjectModel'
 function createProjectPlanningClassModelKnowledgeProvider(): ClassModelKnowledgeProvider {
   return createWorkerDtsClassModelKnowledgeProvider({
     workerUrl: new URL('../class-model-knowledge.worker.ts', import.meta.url),
-    dtsClassModelManifestUrl,
+    dtsClassModelManifestUrl: getDtsClassModelManifestUrl(),
     rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
   })
 }
@@ -264,7 +264,7 @@ export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusi
       options: {
         moduleId: PROJECT_PLANNING_MODULE_ID,
         rootClassName: PROJECT_PLANNING_ROOT_CLASS_NAME,
-        dtsClassModelManifestUrl,
+        dtsClassModelManifestUrl: getDtsClassModelManifestUrl(),
         knowledge: createProjectPlanningClassModelKnowledgeProvider(),
         inputContract: createSimpleInputContract<ProjectPlanningAgentInput>({
           businessId: PROJECT_PLANNING_MODULE_ID,

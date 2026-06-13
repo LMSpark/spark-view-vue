@@ -1,7 +1,7 @@
 # SPARK AppWorks 编译管线审计
 
 > **初版审计**: 2026-06-14  
-> **复核日期**: 2026-06-14（含 #1–#3 修复验证 + public 迁移审核）  
+> **复核日期**: 2026-06-14（含 #1–#3、#30–#31、P2/P5 修复验证）  
 > **SSOT 索引**: 日常命令见 [`scripts/README.md`](../scripts/README.md)；ClassModel 架构见 [`packages/spark-ai/ARCHITECTURE.md`](../packages/spark-ai/ARCHITECTURE.md)
 
 ---
@@ -18,12 +18,12 @@ pnpm monorepo，无 lerna/nx/turborepo，构建编排集中在 `scripts/`。
 | D. npm 包 | `pnpm run build:packages` | 拓扑排序 + 增量 stamp |
 | E. 日常门禁 | `pnpm run verify` | typecheck + lint + verify:rules（**不**预构建 dist） |
 | F. 产物门禁 | `pnpm run verify:dist` | build:packages + verify（发布前） |
-| G. ClassModel | `pnpm run generate:class-model-surface` | 内存 emit → JSON bundle → sync public（**独立**于 D） |
+| G. ClassModel | `pnpm run generate:class-model-surface` | 内存 emit → JSON bundle（**独立**于 D） |
 
 ```text
 Dev / build:fe / verify  →  alias 指向 packages/*/src，通常不需要 dist
 build:packages / verify:dist / publish  →  需要 packages/*/dist
-generate:class-model-surface  →  generated/dts-class-model/ → sync → public/dts-class-model/
+generate:class-model-surface  →  generated/dts-class-model/（入库 SSOT，Vite 映射 /dts-class-model/）
 ```
 
 ---
@@ -32,12 +32,12 @@ generate:class-model-surface  →  generated/dts-class-model/ → sync → publi
 
 ### A. Dev — `scripts/start-dev.mjs`
 
-Docker MySQL (3406) → `mvn spring-boot:run` (8180) → sync ClassModel → Vite (5273+)。根 `vite.config.ts` alias 指向各包 `src/`。
+Docker MySQL (3406) → `mvn spring-boot:run` (8180) → Vite (5273+)。ClassModel 由 Vite 插件从 `generated/` 提供。
 
 ### B. 前端生产 — `scripts/build-frontend.mjs`
 
-1. `ensure:class-model-bundle`（manifest 缺失才 generate → sync）
-2. `vite build`
+1. `ensure:class-model-bundle`（manifest 缺失才 generate）
+2. `vite build`（插件将 `generated/dts-class-model` 拷贝到 `dist/dts-class-model/`）
 
 ### C. 全量 — `scripts/build-all.mjs`
 
@@ -94,7 +94,7 @@ tsconfig.class-model-emit.json
   → emitDeclarationsToMemory (compiler-api 默认 / vue-tsc 可选)
   → buildDtsClassModelBundle (TS AST 投影)
   → generated/dts-class-model/manifest.json + files/** + runtime/**
-  → sync → public/dts-class-model/（Vite 静态发布）
+  → Vite 插件：dev 静态映射 / build 拷贝至 dist/dts-class-model/
 ```
 
 | 事实 | 说明 |
@@ -104,11 +104,11 @@ tsconfig.class-model-emit.json
 | 产出含 JSON Schema 形状 | `paramsSchema` 等由 `dts-type-schema.ts`（TypeChecker）静态投影，非运行时校验 |
 | 定向重建 | `--model RootClassName`；refresh 见 `scripts/lib/class-model-knowledge-refresh.mjs` |
 | 运行时加载 | Web Worker + `DtsClassModelBundleLoader` 按 HTTP fetch `/dts-class-model/**` |
-| **双源架构** | SSOT 在 `generated/`（入库）；`public/` 为运行时镜像（gitignore） |
+| **双源架构** | 仅 `generated/dts-class-model/` 一处真源（**入库，可人工评审**）；无 public 镜像 |
 
-**守卫**: `scripts/ensure-class-model-bundle.mjs` — manifest 存在则跳过 generate，之后执行 sync。
+**守卫**: `scripts/ensure-class-model-bundle.mjs` — manifest 缺失时 generate。
 
-**sync**: `scripts/lib/sync-class-model-static.mjs` — 全量 `rmSync + cpSync` 从 `generated/` 到 `public/dts-class-model/`。
+**静态发布**: `tools/vite-plugin-class-model-static.ts` — dev 中间件 + build 拷贝至 `dist/`。
 
 **门禁**: `verify:class-model:full` = generate + verify:class-model + typecheck（无需 `build:packages`）。
 
@@ -143,8 +143,8 @@ tsconfig.class-model-emit.json
 | 1 | `packages/spark-json-document/vite.config.ts` | ~~ajv/jmespath 被 Rollup 内联~~ | ✔️ **已修复**：`preserveModules` + 标准 external；`dist/index.js` 约 20 行，无 ajv 字符串 |
 | 2 | `packages/spark-json-document/vite.config.ts` + `package.json exports` | ~~`./schema` / `./tree` JS 入口缺失~~ | ✔️ **已修复**：多 entry 产出 `dist/schema/index.js`、`dist/tree/index.js` |
 | 3 | `packages/spark-data/tsconfig.json:12` | ~~dev tsconfig 将 spark-utils 指到 dist~~ | ✔️ **已修复**：改为 `../spark-utils/src/index.ts` |
-| **30** | `src/class-model-artifacts/artifact-urls.ts:11` | `DEFAULT_DEV_ORIGIN = 'http://127.0.0.1:5273'` 硬编码端口 | 🆕 `start-dev.mjs` 支持动态端口（5273 被占时自动 +1），但 fallback 写死 5273。若 Vite 实际跑在 5274，Worker fetch 会打 5273 导致静默失败 |
-| **31** | `src/class-model-artifacts/artifact-urls.ts:20` | `dtsClassModelManifestUrl` 模块顶层立即求值 | 🆕 Node e2e 中 `location` 不存在，fallback 到硬编码 origin。若测试不启动 Vite dev server，URL 永远不可达。旧方案 `new URL('../../generated/...', import.meta.url)` 在 Node 中可解析文件路径 |
+| **30** | `artifact-urls.ts` | ~~硬编码 5273 + 模块顶层求值~~ | ✔️ **已修复**：`getDtsClassModelManifestUrl()` 延迟求值；`location.origin` / `VITE_DEV_SERVER_ORIGIN` / `SPARK_FE_ORIGIN` |
+| **31** | `artifact-urls.ts` | ~~Node e2e fallback 不可达~~ | ✔️ **已修复**：e2e 传 `SPARK_FE_ORIGIN`；`start-dev` 注入 `VITE_DEV_SERVER_ORIGIN` |
 
 ### 🟡 中严重度
 
@@ -152,16 +152,16 @@ tsconfig.class-model-emit.json
 |---|------|------|------|
 | 4 | `spark-data` / `spark-app` `tsconfig.build.json` | 仅这两包用 `declarationDir: ./dist/types`，其余包 `.d.ts` 在 `dist/` 根 | ✅ 下游 paths 被迫分叉 |
 | 5 | `sort-packages-by-dependency.mjs:19` | 拓扑只读 `dependencies`，不读 `peerDependencies` | ✅ 当前无 peer 依赖 workspace 包 |
-| 6 | `spark-project-model/tsconfig.build.json:13` | 构建 tsconfig 自引用 `./src/index.ts` | ✅ |
-| 7 | `spark-project-model/vite.config.ts:7` | 自引用 alias | ✅ |
-| 8 | `spark-component` / `spark-app` `tsconfig.build.json` | 未映射 `spark-json-document/schema|tree` 子路径（`spark-ai` 已映射） | ✅ |
-| 17 | `spark-component/tsconfig.build.json` | 缺少 `@spark-appworks/spark-utils/internal` path 映射；但 `src/page/actions/executor-helpers.ts:30` import 该子路径 | ✅ tsc 声明 emit 解析失败，.d.ts 含 `any` |
+| 6 | `spark-project-model/tsconfig.build.json` | ~~构建 tsconfig 自引用~~ | ✔️ **已修复** |
+| 7 | `spark-project-model/vite.config.ts` | ~~自引用 alias~~ | ✔️ **已修复** |
+| 8 | `spark-component` / `spark-app` `tsconfig.build.json` | ~~未映射 json-document 子路径~~ | ✔️ **已修复** |
+| 17 | `spark-component/tsconfig.build.json` | ~~缺 spark-utils/internal~~ | ✔️ **已修复** |
 | 18 | `spark-component/package.json:53-57` | `vue-router` 仅在 `peerDependencies`，未列入 `devDependencies`；`vue` 两者皆有 | ✅ CI 独立 install 时 vue-router 类型可能缺失 |
 | 19 | `spark-component/src/.../JsonTreeEditor.vue:199` | `import type ... from 'vxe-table'` 但 package.json 未声明 `vxe-table` 依赖 | ✅ type-only 不致运行时错误，但消费者类型解析失败 |
-| 20 | `spark-project-model/tsconfig.build.json` | 缺 `declarationMap`/`sourceMap`/`noEmitOnError`/`removeComments`/`composite`（其余 6 包均有） | ✅ 缺 `noEmitOnError` 最危险——类型错误时仍 emit .d.ts |
-| 21 | `build-packages.mjs --only` 选项 | `--only spark-ai` 不含传递依赖；若 spark-utils dist 过期，tsc 构建失败 | ✅ 应取依赖闭包 |
-| 22 | 根 `vite.config.ts` manualChunks | `spark-json-document` 无专属 chunk 规则；被 Rollup 分入首个引用 chunk | ✅ 可能制造虚假循环依赖 |
-| **32** | `scripts/lib/sync-class-model-static.mjs:27-29` | `rmSync + cpSync` 全量删拷 1322 文件/21MB | 🆕 功能正确但非增量；频繁 regenerate + sync 时低效。CI 影响小，可后续优化 |
+| 20 | `spark-project-model/tsconfig.build.json` | ~~缺 declarationMap 等~~ | ✔️ **已修复** |
+| 21 | `build-packages.mjs --only` | ~~不含传递依赖~~ | ✔️ **已修复** |
+| 22 | 根 `vite.config.ts` manualChunks | ~~无 spark-json-document chunk~~ | ✔️ **已修复** |
+| **32** | ~~`sync-class-model-static` 全量删拷~~ | ✔️ **已移除**：改 Vite 插件直读 `generated/`（#32 关闭） |
 
 ### 🟢 低严重度
 
@@ -214,40 +214,28 @@ external: (id) => !id.startsWith('.') && !id.startsWith('\0') && !isAbsolute(id)
 ### 架构
 
 ```text
-generated/dts-class-model/          ← 编译 SSOT（入库 git，1322 文件/21MB）
-         │
-    sync-class-model-static.mjs     ← 全量 rmSync + cpSync
+generated/dts-class-model/          ← 编译 SSOT（入库 git，开发直接评审）
          ↓
-public/dts-class-model/             ← 运行时镜像（.gitignore 排除）
+vite-plugin-class-model-static      ← dev: HTTP /dts-class-model/**  |  build: → dist/dts-class-model/
          ↓
-Vite public/ → dist/dts-class-model/  ← 生产构建原样拷贝
-         ↓
-Worker fetch('/dts-class-model/manifest.json')  ← HTTP 绝对路径
+Worker fetch('/dts-class-model/manifest.json')
 ```
 
 ### 落地检查清单
 
 | 检查项 | 状态 | 说明 |
 |--------|------|------|
-| `sync-class-model-static.mjs` 实现 | ✅ | 全量 rm + cp，功能正确 |
-| `ensure-class-model-bundle.mjs` 集成 sync | ✅ | generate 后自动 sync |
-| `generate-dts-class-model.mjs` 末尾 sync | ✅ | generate 完成后调用 sync |
-| `start-dev.mjs` 启动前 sync | ✅ | Vite 启动前确保 public/ 有最新镜像 |
-| `build-frontend.mjs` 注释更新 | ✅ | 说明 ensure 已含 sync |
-| `.gitignore` 排除 `public/dts-class-model/` | ✅ | 镜像不入库 |
-| `public/README.md` 文档更新 | ✅ | 说明 dts-class-model/ 为编译镜像 |
-| `artifact-urls.ts` 改为绝对路径 | ✅ | `/dts-class-model/manifest.json` |
+| `vite-plugin-class-model-static.ts` | ✅ | dev 映射 + build 拷贝至 dist |
+| `generated/dts-class-model/` 入库可评审 | ✅ | 已移除 public 镜像 |
+| `ensure:class-model-bundle.mjs` | ✅ | manifest 缺失时 generate |
+| `artifact-urls.ts` 运行时求值 | ✅ | `getDtsClassModelManifestUrl()` + env |
 | `--from-disk` / `--delete-declarations` 清理 | ✅ | 已从 generate 脚本移除 |
-| `build:check` 脚本链路 | ✅ | generate 末尾含 sync |
 
-### 🆕 遗留问题
+### 遗留问题（低优先级）
 
-| # | 严重度 | 位置 | 问题 | 修复建议 |
-|---|--------|------|------|----------|
-| **30** | 🔴 | `artifact-urls.ts:11` | `DEFAULT_DEV_ORIGIN` 硬编码 `127.0.0.1:5273` | 从 `process.env.VITE_PORT` 读取，或由 `start-dev.mjs` 注入环境变量 |
-| **31** | 🔴 | `artifact-urls.ts:20` | 模块顶层求值 `dtsClassModelManifestUrl` | 改为函数调用，由调用方在 Worker init 时传入 origin；或延迟求值 |
-| **32** | 🟡 | `sync-class-model-static.mjs:27-29` | 全量删拷 21MB | 后续可改为增量同步（mtime 比对）；当前低优先级 |
-| **33** | 🟢 | `vite.config.ts:44-45` | `fs.allow` 可收窄 | 确认 `'..'` 无其他用途后移除；不阻塞 |
+| # | 严重度 | 位置 | 问题 | 状态 |
+|---|--------|------|------|------|
+| **33** | 🟢 | `vite.config.ts` fs.allow | `'..'` 可收窄 | 待确认后移除 |
 
 ---
 
@@ -267,13 +255,10 @@ Worker fetch('/dts-class-model/manifest.json')  ← HTTP 绝对路径
 
 ## 十二、后续优先级建议
 
-1. **P0** — 修复 `artifact-urls.ts` 硬编码端口 + 顶层求值（#30 #31）
-2. **P1** — 评估 declarationDir 是否收敛到 `dist/`（#4）
-3. **P2** — 补齐 component/app 对 json-document 子路径的 build paths（#8）+ spark-component `spark-utils/internal` 映射（#17）
-4. **P3** — spark-project-model 自引用 paths/alias（#6 #7）
-5. **P4** — spark-project-model tsconfig.build.json 补齐缺失字段（#20）
-6. **P5** — `--only` 取依赖闭包（#21）、manualChunks 补 spark-json-document（#22）
-7. **P6** — lint 统一（#23 #24 #25）、sideEffects（#27）
+1. **P1** — 评估 declarationDir 是否收敛到 `dist/`（#4）
+2. **P2** — lint 统一（#18 #23 #24 #25）、vxe-table 类型依赖（#19）
+3. **P3** — fs.allow 收窄（#33）
+4. **P4** — sideEffects（#27）、package.json 字段统一（#26 #28）
 
 ---
 
@@ -285,5 +270,5 @@ pnpm --filter @spark-appworks/spark-json-document run build
 # 检查: dist/index.js 行数; 是否存在 dist/schema/index.js
 pnpm run verify          # 无 dist
 pnpm run verify:dist     # 含 build:packages
-ls public/dts-class-model/manifest.json  # sync 镜像存在
+ls generated/dts-class-model/manifest.json  # SSOT（入库，可评审）
 ```

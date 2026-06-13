@@ -2,11 +2,6 @@ import { defineConfig } from 'vite'
 import { resolve, isAbsolute } from 'path'
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      '@spark-appworks/spark-project-model': resolve(__dirname, 'src/index.ts'),
-    },
-  },
   build: {
     lib: {
       entry: {

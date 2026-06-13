@@ -29,7 +29,6 @@ CLAUDE.md
 *.deps.json
 *.runtimeconfig.json
 dist/
-public/dts-class-model/
 
 # Java / Maven build output
 spark-ai-server/target/

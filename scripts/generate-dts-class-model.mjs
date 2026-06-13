@@ -162,10 +162,6 @@ if (publishedResult.manifest.duplicates !== undefined && publishedResult.manifes
 timings.mark('cleanup')
 console.log(renderTimings(timings))
 
-const { syncClassModelStaticBundle } = await import('./lib/sync-class-model-static.mjs')
-const staticSync = syncClassModelStaticBundle({ repoRoot })
-console.log(`Synced ClassModel static bundle → ${relative(repoRoot, staticSync.targetDir)}`)
-
 function renderProgress(event) {
   if (event.phase === 'create-program') {
     return `Creating TypeScript Program for ${String(event.total ?? 0)} DTS file(s)...`

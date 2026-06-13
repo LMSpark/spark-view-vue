@@ -22,4 +22,13 @@ describe('build-packages ordering', () => {
     const order = resolvePackagesInBuildOrder(PACKAGES_DIR, ['spark-data', 'spark-utils'])
     expect(order).toEqual(['spark-utils', 'spark-data'])
   })
+
+  it('expands --only with transitive workspace dependencies', () => {
+    const order = resolvePackagesInBuildOrder(PACKAGES_DIR, ['spark-ai'])
+    expect(order).toEqual([
+      'spark-utils',
+      'spark-json-document',
+      'spark-ai',
+    ])
+  })
 })

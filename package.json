@@ -23,7 +23,6 @@
         "generate:class-model-surface": "pnpm exec tsx --no-cache scripts/generate-dts-class-model.mjs",
         "generate:class-model-surface:model": "pnpm exec tsx --no-cache scripts/generate-dts-class-model.mjs --model",
         "ensure:class-model-bundle": "node scripts/ensure-class-model-bundle.mjs",
-        "sync:class-model-static": "node scripts/sync-class-model-static.mjs",
         "build:check": "pnpm run generate:class-model-surface && vue-tsc --noEmit --skipLibCheck && node scripts/build-frontend.mjs",
         "typecheck": "vue-tsc --noEmit --skipLibCheck -p tsconfig.typecheck.json",
         "typecheck:ci": "vue-tsc --noEmit --skipLibCheck -p tsconfig.typecheck.json",

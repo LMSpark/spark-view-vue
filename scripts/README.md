@@ -40,8 +40,8 @@ ClassModel 全量门禁 (verify:class-model:full)
 - 根 `vite.config.ts` 通过 alias 指向 `packages/*/src`；日常 dev / `build:fe` **不需要**先 `build:packages`。
 - `packages/*/dist` 仅服务 npm 发布与消费者；`publish:packages` 会先跑 `build-packages`。
 - 编译期 `.d.ts` 仅在内存存在；bundle `sourcePath` 使用虚拟前缀 `class-model-emit/`；产物为 `generated/dts-class-model/**/*.json`。
-- `generated/dts-class-model/` 已入库（编译 SSOT）；`sync:class-model-static` 镜像到 `public/dts-class-model/` 供 Worker fetch。
-- `ensure:class-model-bundle` 在 manifest 缺失时 generate，并始终同步 public 镜像。
+- `generated/dts-class-model/` 已入库（编译 SSOT，可人工评审）；Vite 插件 dev/build 映射到 `/dts-class-model/`。
+- `ensure:class-model-bundle` 在 manifest 缺失时 generate。
 - ClassModel 运行时知识在 Web Worker 内按需加载；编译 refresh 见 `scripts/lib/class-model-knowledge-refresh.mjs`。
 - Java 改动后必须重启 `pnpm run dev`；纯前端走 Vite HMR。
 

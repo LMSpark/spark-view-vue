@@ -34,7 +34,7 @@ import {
   type PageDesignAllowedOperations,
   type PageDesignRunMode,
 } from '@/services/page-design/page-design-gates'
-import { dtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
+import { getDtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
 
 export type { PageDesignAllowedOperations, PageDesignRunMode }
 
@@ -75,7 +75,7 @@ export function buildPageDesignToolLoopNudge(
 function createPageDesignClassModelKnowledgeProvider(): ClassModelKnowledgeProvider {
   return createWorkerDtsClassModelKnowledgeProvider({
     workerUrl: new URL('../class-model-knowledge.worker.ts', import.meta.url),
-    dtsClassModelManifestUrl,
+    dtsClassModelManifestUrl: getDtsClassModelManifestUrl(),
     rootClassName: PAGE_DESIGN_ROOT_CLASS_NAME,
   })
 }
@@ -157,7 +157,7 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
       options: {
         moduleId: PAGE_DESIGN_MODULE_ID,
         rootClassName: PAGE_DESIGN_ROOT_CLASS_NAME,
-        dtsClassModelManifestUrl,
+        dtsClassModelManifestUrl: getDtsClassModelManifestUrl(),
         knowledge: options.knowledge ?? createPageDesignClassModelKnowledgeProvider(),
         inputContract: createSimpleInputContract<PageDesignRunInput>({
           businessId: PAGE_DESIGN_MODULE_ID,
