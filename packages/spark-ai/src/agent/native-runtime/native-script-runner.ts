@@ -56,7 +56,7 @@ export async function executeAiNativeScript(
     return AiAgentToolResult.failCode(
       'SCRIPT_EMPTY',
       'native script body must not be empty.',
-      '让 LLM 直接生成 async function body，例如 return { ... }；this 绑定当前业务根实例。',
+      '让 LLM 直接生成 JavaScript async function body，例如 return { ... }；不要生成 TypeScript/TSX/JSX、类型注解、import/export 或函数包裹；this 绑定当前业务根实例。',
     )
   }
   const context = createAiNativeScriptContext(command)

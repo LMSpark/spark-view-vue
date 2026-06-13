@@ -125,6 +125,28 @@ export type NavigationPlanningInput = Readonly<{
   planningAttachmentRef?: string
 }>
 
+/** 项目策划完成动作输入；由 agent_complete 转发到领域模型。 */
+export type ProjectPlanningCompletionInput = Readonly<{
+  summary?: string
+}>
+
+/** 项目策划完成动作结果；失败结果会回灌给 LLM 继续补查/补执行。 */
+export type ProjectPlanningCompletionResult = Readonly<{
+  ok: true
+  completed: true
+  summary: string
+  moduleCount: number
+  pageCount: number
+}> | Readonly<{
+  ok: false
+  code: string
+  msg: string
+  fix: string
+  requiredQueries?: readonly string[]
+  missingFacts?: readonly string[]
+  nextStep?: string
+}>
+
 /** Project Info 的语义模型。 */
 export type ProjectInfo = {
   /** 租户 ID；多租户环境下用于隔离项目。 */

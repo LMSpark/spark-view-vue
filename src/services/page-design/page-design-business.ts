@@ -254,7 +254,7 @@ export function formatPageDesignSystemPrompt(input: PageDesignRunInput): string 
       '知识索引: DTS ClassModel（ProjectModel → openPageDesign → editDataSet / DataSetCrudTool）。',
       '工具参数: model_query 只用 kind / keyword / includeMembers；model_action_guide 只用 kind / actionName；禁止 member / select / query 旧参数。',
       '执行规则: 先 model_action_guide 查 editDataSet 与 DataSetCrudTool，再 model_script 通过 editDataSet 回调变更表/视图/绑定。',
-      '脚本规则: model_script.script 只写 async function body；不要写 async function(){} / function(){} 包裹。',
+      '脚本规则: model_script.script 只写 JavaScript async function body；不要写 TS/TSX/JSX、类型注解、import/export、async function(){} / function(){} 包裹。',
       '交付: 仅 commit pagedata.json；nodeTree / rule / script / style 即使 dirty 也不落盘。',
       '模型来源: generated/dts-class-model。',
     ].join('\n')
@@ -275,7 +275,7 @@ function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
 
 function pageDesignScriptSopLines(input: PageDesignRunInput): readonly string[] {
   return [
-    'model_script 标准写法: script 是 async function body；不要写 async function(){} / function(){} / return (async function...) 包裹。',
+    'model_script 标准写法: script 是 JavaScript async function body；不要写 TS/TSX/JSX、类型注解、import/export、async function(){} / function(){} / return (async function...) 包裹。',
     `四文件写入闭环: const page = this.openPageDesign("${input.pageId}"); page.setFileText("pagedata.json", JSON.stringify(data, null, 2)); page.setFileText("rule.json", JSON.stringify(rule, null, 2)); page.setFileText("script.js", scriptText); page.setFileText("style.css", cssText); return { pageId: page.pageId }。`,
     '四文件名只允许 rule.json / pagedata.json / script.js / style.css；不要使用 style.json 或 script.json。',
     '表单页交付底线: pagedata.json 必须建业务表与 default view；rule.json 必须有 r-form、字段 prop 绑定、列表区域、提交按钮；枚举字段必须提供可用 options。',

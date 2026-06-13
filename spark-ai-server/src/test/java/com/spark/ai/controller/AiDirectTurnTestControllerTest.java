@@ -80,7 +80,13 @@ class AiDirectTurnTestControllerTest {
                 "scope", Map.of(
                         "moduleId", "runtimeParent",
                         "moduleInstanceId", "runtime-parent-1",
-                        "instanceId", "runtime-parent-1"));
+                        "instanceId", "runtime-parent-1"),
+                "includeConversation", true,
+                "includeRequestEcho", true);
+        when(sessionService.getConversationFull(eq("session-1")))
+                .thenReturn(List.of(
+                        Map.of("role", "user", "content", "Use the guide."),
+                        Map.of("role", "assistant", "content", "")));
 
         mockMvc.perform(post("/api/ai/test/direct-turn")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -88,7 +94,9 @@ class AiDirectTurnTestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.sessionId").value("session-1"))
                 .andExpect(jsonPath("$.data.toolCalls[0].function.name").value("model_script"))
-                .andExpect(jsonPath("$.data.state").value("READY"));
+                .andExpect(jsonPath("$.data.state").value("READY"))
+                .andExpect(jsonPath("$.data.conversation[0].role").value("user"))
+                .andExpect(jsonPath("$.data.request.systemPrompt").value("ClassModel prompt"));
     }
 
     @Test

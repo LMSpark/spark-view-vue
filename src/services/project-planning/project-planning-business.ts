@@ -26,7 +26,6 @@ import {
 } from '@spark-appworks/spark-ai/class-model'
 import {
   ProjectModel,
-  type ProjectNodeData,
   type ProjectWorkspace,
 } from '@spark-appworks/spark-project-model'
 import { dtsClassModelManifestUrl } from '@/class-model-artifacts/artifact-urls'
@@ -307,10 +306,8 @@ export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusi
           ],
         }),
         resolveInstance: (ctx) => resolveProjectPlanningDomainRoot(options, ctx),
-        beforeFunctionCall: (instance: ProjectModel, hookOptions) => evaluateProjectPlanningBeforeFunctionCall(
-          instance,
-          hookOptions,
-        ),
+        beforeFunctionCall: (_instance: ProjectModel, hookOptions) => evaluateProjectPlanningBeforeFunctionCall(hookOptions),
+        agentCompleteMethodName: 'completeProjectPlanning',
         executionToolNames: PROJECT_PLANNING_EXECUTION_TOOL_NAMES,
         planWithoutToolMarkers: PROJECT_PLANNING_PLAN_WITHOUT_TOOL_MARKERS,
         toolLoopNudge: createProjectPlanningToolLoopNudge,
@@ -354,13 +351,14 @@ function createProjectPlanningSystemPrompt(input: ProjectPlanningAgentInput): st
     `当前 projectPlanning 项目: ${input.projectId}`,
     context,
     '知识索引: DTS ClassModel（ProjectModel 根模型）；只把 ClassModel 当作模型知识索引，项目策划语义只在 App 层本业务内编排。',
-    '职责边界: LLM 只负责发出 model_script({ script }) tool_call；script 是 async function body；运行时负责把 this 绑定到 ProjectModel 并执行脚本。',
+    '职责边界: LLM 只负责发出 model_script({ script }) tool_call；script 必须是 JavaScript async function body；禁止 TS/TSX/JSX、类型注解、import/export、函数包裹；运行时负责把 this 绑定到 ProjectModel 并执行脚本。',
     '执行规则: 不要把脚本写成普通文本回答；最终必须通过 model_script 的 script 字符串调用 this.xxx。',
     '知识查询规则: action 只用 model_action_guide({ kind: "ProjectModel", actionName }) 查询；attribute 才用 model_attribute_guide；replaceNavigationChildren/readProjectPlanningInput/readNavigationPlanningInputs 都是 action。',
     '参数契约规则: 不要查询 ProjectNodeData 当作 attribute；children 的结构来自 model_action_guide({ kind: "ProjectModel", actionName: "replaceNavigationChildren" }) 的 paramsSchema.children。',
     '执行前查询: model_action_guide({ kind: "ProjectModel", actionName: "readProjectPlanningInput" }) + model_action_guide({ kind: "ProjectModel", actionName: "readNavigationPlanningInputs" }) + model_action_guide({ kind: "ProjectModel", actionName: "replaceNavigationChildren" })，然后 model_script 读取输入并写入 navigation children 概要。',
     '导航结构规则: 顶层按业务域生成 module；每个主要 module 至少包含 1 个 nodeKind="page" 的 children 页面概要；禁止只生成一组 module 壳。',
-    '完成自检: agent_complete 前必须确认 navigationRoot.children 的业务 module 下存在 nodeKind="page"；如果没有 page，必须先重发 model_script 修正 children。',
+    '完成自检: agent_complete 会调用 ProjectModel.completeProjectPlanning({ summary })；如果返回失败，按 tool result 的 requiredQueries/missingFacts/nextStep 补查或补执行后再次 agent_complete。',
+    '不要在 model_script 中直接调用 completeProjectPlanning；完成只通过 agent_complete FC 触发。',
     ...projectPlanningScriptSopLines(input.projectId),
     '输出要求: children 节点使用稳定英文 id/path，title/description 承载本轮产品需求的模块与页面概要；不调用 openPageDesign/writePageFile/readPageFileText。',
     '模型来源: generated/dts-class-model。',
@@ -369,7 +367,7 @@ function createProjectPlanningSystemPrompt(input: ProjectPlanningAgentInput): st
 
 function projectPlanningScriptSopLines(projectId: string): readonly string[] {
   return [
-    'model_script 标准写法：以下内容必须作为 tool_call 参数 script 的函数体交给运行时执行；不要作为自然语言回答。',
+    'model_script 标准写法：以下内容必须作为 tool_call 参数 script 的 JavaScript 函数体交给运行时执行；不要作为自然语言回答。',
     '根对象就是 this（ProjectModel）；通过 this.replaceNavigationChildren({ children }) 写入导航策划。',
     '业务功能不要只写 module；module 必须带 children page，页面概要必须使用 nodeKind: "page"。',
     'const projectInput = await this.readProjectPlanningInput()',
@@ -410,12 +408,8 @@ function resolveProjectPlanningDomainRoot(
 }
 
 function evaluateProjectPlanningBeforeFunctionCall(
-  project: ProjectModel,
   options: AiAgentBeforeFunctionCallOptions,
 ): AiAgentBeforeFunctionCallDirective {
-  const completionGate = evaluateProjectPlanningCompletionGate(project, options)
-  if (completionGate !== undefined) return completionGate
-
   const gate = evaluateProjectPlanningToolGate(options)
   if (gate.ok) {
     return { status: 'allow' }
@@ -425,42 +419,6 @@ function evaluateProjectPlanningBeforeFunctionCall(
     reason: gate.reason ?? 'projectPlanning gate rejected tool call.',
     ...(gate.fix === undefined ? {} : { fix: gate.fix }),
   }
-}
-
-function evaluateProjectPlanningCompletionGate(
-  project: ProjectModel,
-  options: AiAgentBeforeFunctionCallOptions,
-): AiAgentBeforeFunctionCallDirective | undefined {
-  if (options.toolName !== CLASS_MODEL_TOOL_NAMES.agentComplete) return undefined
-  if (!project.navigationDirty) {
-    return {
-      status: 'reject',
-      reason: 'projectPlanning: navigation children 尚未通过 model_script 写入，不能 agent_complete。',
-      fix: '先发起真实 model_script({ script }) tool_call，在 script 中 await this.readProjectPlanningInput() / await this.readNavigationPlanningInputs()，然后 await this.replaceNavigationChildren({ children })；完成写入后再 agent_complete。',
-    }
-  }
-  return evaluateProjectPlanningNavigationShapeForCompletion(project)
-}
-
-function evaluateProjectPlanningNavigationShapeForCompletion(
-  project: ProjectModel,
-): AiAgentBeforeFunctionCallDirective | undefined {
-  const pageCount = countNavigationNodesByKind(project.navigationRoot.children, 'page')
-  if (pageCount > 0) return undefined
-  return {
-    status: 'reject',
-    reason: 'projectPlanning: navigation 策划只有模块壳，缺少 nodeKind="page" 的页面概要，不能 agent_complete。',
-    fix: '重发 model_script({ script })，用 replaceNavigationChildren 写入 module + page 两级导航；每个主要业务 module 至少放入一个 page 子节点，page 只写 title/path/description 概要，不进入 pageDesign 四文件。',
-  }
-}
-
-function countNavigationNodesByKind(nodes: readonly ProjectNodeData[], nodeKind: string): number {
-  let count = 0
-  for (const node of nodes) {
-    if (node.nodeKind === nodeKind) count += 1
-    if (Array.isArray(node.children)) count += countNavigationNodesByKind(node.children, nodeKind)
-  }
-  return count
 }
 
 /** Project Planning Gate Validation Result 的返回结果。 */

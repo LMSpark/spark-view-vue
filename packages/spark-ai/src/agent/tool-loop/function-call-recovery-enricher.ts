@@ -60,7 +60,7 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
   ],
   SCRIPT_EXECUTION_FAILED: [
     '脚本恢复：model_action_guide({ kind: "<kind>", actionName: "<actionName>" }) 核对 usageRules 与 resultApis。',
-    'model_script 参数名必须是 script；this 绑定当前业务根实例。',
+    'model_script 参数名必须是 script；script 只能是 JavaScript 函数体，不能是 TypeScript/TSX/JSX；this 绑定当前业务根实例。',
   ],
   SCRIPT_ACTION_FAILED: [
     '脚本链式调用返回业务失败：按 tool result 原始 code 修正；必要时 model_action_guide 对照 paramsSchema。',
@@ -79,7 +79,7 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
   ],
   INVALID_TOOL_ARGS: [
     '契约恢复：model_action_guide({ kind: "<kind>", actionName: "<actionName>" }) 对照 paramsSchema 与 requiredBeforeCall。',
-    'model_script 形状：{ script: "<js body>" }；参数名必须是 script。',
+    'model_script 形状：{ script: "<js body>" }；参数名必须是 script；script 只能是 JavaScript 函数体。',
   ],
   FUNCTION_NOT_FOUND: [
     '目录恢复：model_query({ kind: "<kind>", includeMembers: true }) 列出真实 actionName。',

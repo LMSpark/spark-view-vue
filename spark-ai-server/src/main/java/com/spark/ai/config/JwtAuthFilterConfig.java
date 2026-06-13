@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,7 @@ import java.util.Set;
  *   <li>/api/auth/** — 登录、注册</li>
  *   <li>/api/config/default — 默认配置</li>
  *   <li>/api/events — SSE 事件流</li>
+ *   <li>/api/ai/test/** — 仅当 spark.ai.test.direct-turn-public=true 时放行，用于本地独立端口 LLM 探针</li>
  * </ul>
  *
  * <h3>认证流程</h3>
@@ -55,9 +57,12 @@ public class JwtAuthFilterConfig {
     );
 
     @Bean
-    public FilterRegistrationBean<Filter> jwtAuthFilter(JwtUtil jwtUtil, ObjectMapper objectMapper) {
+    public FilterRegistrationBean<Filter> jwtAuthFilter(
+            JwtUtil jwtUtil,
+            ObjectMapper objectMapper,
+            @Value("${spark.ai.test.direct-turn-public:false}") boolean directTurnPublic) {
         FilterRegistrationBean<Filter> reg = new FilterRegistrationBean<>();
-        reg.setFilter(new JwtFilter(jwtUtil, objectMapper));
+        reg.setFilter(new JwtFilter(jwtUtil, objectMapper, directTurnPublic));
         reg.addUrlPatterns("/api/*");
         reg.setOrder(1);
         return reg;
@@ -67,10 +72,12 @@ public class JwtAuthFilterConfig {
 
         private final JwtUtil jwtUtil;
         private final ObjectMapper objectMapper;
+        private final boolean directTurnPublic;
 
-        JwtFilter(JwtUtil jwtUtil, ObjectMapper objectMapper) {
+        JwtFilter(JwtUtil jwtUtil, ObjectMapper objectMapper, boolean directTurnPublic) {
             this.jwtUtil = jwtUtil;
             this.objectMapper = objectMapper;
+            this.directTurnPublic = directTurnPublic;
         }
 
         @Override
@@ -133,6 +140,9 @@ public class JwtAuthFilterConfig {
         }
 
         private boolean isPublic(String path) {
+            if (directTurnPublic && path.startsWith("/api/ai/test/")) {
+                return true;
+            }
             for (String prefix : PUBLIC_PREFIXES) {
                 if (path.startsWith(prefix)) return true;
             }

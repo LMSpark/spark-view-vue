@@ -26,6 +26,8 @@ export type {
   ProjectInfo,
   ProjectInfoInput,
   ProjectPlanningInput,
+  ProjectPlanningCompletionInput,
+  ProjectPlanningCompletionResult,
   NavigationPlanningInput,
 } from './project/project-types'
 export type {

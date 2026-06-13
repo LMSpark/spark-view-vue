@@ -83,9 +83,12 @@ function buildClassModelActionGuideTool(): ClassModelToolSpec {
 function buildClassModelScriptTool(): ClassModelToolSpec {
   return toolSpec({
     name: CLASS_MODEL_TOOL_NAMES.script,
-    description: 'Execute model_script through the injected business script executor after reading relevant guides.',
+    description: 'Execute a JavaScript-only model_script body through the injected business script executor after reading relevant guides.',
     properties: {
-      script: { type: 'string', description: 'JavaScript body.' },
+      script: {
+        type: 'string',
+        description: 'JavaScript async function body only. Do not return TypeScript, TSX, JSX, import/export, type annotations, interfaces, or an async function wrapper.',
+      },
     },
     required: ['script'],
   })
@@ -108,7 +111,7 @@ function buildHumanQuestionTool(): ClassModelToolSpec {
 function buildAgentCompleteTool(): ClassModelToolSpec {
   return toolSpec({
     name: CLASS_MODEL_TOOL_NAMES.agentComplete,
-    description: 'Complete the current ClassModel production line after all tool work is done.',
+    description: 'Request completion through the domain model completion method after all tool work is done; if the domain model rejects it, read the tool result and continue querying or executing.',
     properties: {
       summary: { type: 'string', description: 'Short final user-facing summary.' },
     },

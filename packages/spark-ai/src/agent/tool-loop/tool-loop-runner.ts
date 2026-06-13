@@ -47,7 +47,8 @@ const TOOL_PRODUCTION_LINE_PROMPT = [
   '工具生产线模式：只要下一步需要查询、校验、写入、修复或完成任务，就必须发起真实 OpenAI tool_call。',
   '工具回合的 assistant.content 必须为空；不要输出计划、解释、JSON、代码块或“我将调用工具”。',
   '每轮最多调用一个 tool_call，等待 tool 结果后再决定下一步。',
-  '任务完成时调用 agent_complete({ summary }) 收尾；不要用自然语言正文收尾。',
+  '任务完成时调用 agent_complete({ summary })；agent_complete 会执行领域模型完成方法，若 tool result 失败，按其中 fix/checks 补查或补执行后再次调用 agent_complete。',
+  '不要用自然语言正文收尾。',
 ].join('\n')
 
 const PSEUDO_TOOL_CALL_NUDGE = [

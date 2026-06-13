@@ -34,7 +34,9 @@ public class AiDirectTurnTestController {
             "windowSize",
             "scope",
             "reuseScopeSession",
-            "sessionId");
+            "sessionId",
+            "includeConversation",
+            "includeRequestEcho");
 
     private final AiSessionService sessionService;
 
@@ -74,6 +76,8 @@ public class AiDirectTurnTestController {
         if (mode == null) mode = "function";
         boolean reuseScopeSession = request.get("reuseScopeSession") instanceof Boolean value && value;
         String requestedSessionId = optionalString(request, "sessionId");
+        boolean includeConversation = request.get("includeConversation") instanceof Boolean value && value;
+        boolean includeRequestEcho = request.get("includeRequestEcho") instanceof Boolean value && value;
 
         String sessionId = sessionService.createSession(
                 systemPrompt,
@@ -112,6 +116,20 @@ public class AiDirectTurnTestController {
         if (result.getState() != null) body.put("state", result.getState());
         if (result.getStateTransition() != null) body.put("stateTransition", result.getStateTransition());
         if (result.getRuntimeMeta() != null) body.put("runtime", result.getRuntimeMeta());
+        if (includeConversation) {
+            body.put("conversation", sessionService.getConversationFull(sessionId));
+        }
+        if (includeRequestEcho) {
+            body.put("request", Map.of(
+                    "systemPrompt", systemPrompt,
+                    "messages", messages != null ? messages : List.of(),
+                    "turnMessages", turnMessages != null ? turnMessages : List.of(),
+                    "tools", tools != null ? tools : List.of(),
+                    "mode", mode,
+                    "windowSize", windowSize,
+                    "scope", scope != null ? scope : Map.of(),
+                    "sessionId", sessionId));
+        }
         return ResponseEntity.ok(body);
     }
 

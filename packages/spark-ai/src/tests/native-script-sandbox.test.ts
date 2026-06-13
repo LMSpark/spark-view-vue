@@ -32,7 +32,7 @@ describe('executeModuleScript', () => {
     expect(result.ok).toBe(false)
     if (result.ok) return
     const hint = result.checks?.[0]?.hint ?? ''
-    expect(hint).toContain('async function body')
+    expect(hint).toContain('JavaScript async function body')
     expect(hint).not.toContain('openPageDesign')
   })
 })

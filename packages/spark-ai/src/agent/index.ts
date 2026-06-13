@@ -82,6 +82,11 @@ export type {
 } from './tool-loop/function-call-recovery-enricher'
 
 export type {
+  ClassModelAgentCompleteAccepted,
+  ClassModelAgentCompleteActionOptions,
+  ClassModelAgentCompleteActionResult,
+  ClassModelAgentCompleteCheck,
+  ClassModelAgentCompleteRejected,
   ClassModelAgentAdapterRegistrationCommand,
   ClassModelAgentAdapterRegisterCommand,
   ClassModelAgentAdapterRegisterOptions,
