@@ -41,16 +41,6 @@
           "writable": true
         },
         {
-          "name": "commitVisibleValue",
-          "jsdoc": "commit Visible Value 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(value: boolean) => void"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "onOpen",
           "jsdoc": "on Open 事件回调。",
           "schema": {
@@ -91,10 +81,39 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "commitVisibleValue",
+          "jsdoc": "commit Visible Value 回调。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.701Z",
+  "generatedAt": "2026-06-13T06:21:06.859Z",
   "$defs": {
     "VisibilityContainerZeroCodeOptions": {
       "type": "object",
@@ -104,10 +123,6 @@
         "visibleValue": {
           "type": "object",
           "title": "ValueRef<boolean>"
-        },
-        "commitVisibleValue": {
-          "type": "object",
-          "title": "(value: boolean) => void"
         },
         "onOpen": {
           "type": "object",

@@ -185,32 +185,113 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "selectEntities",
           "jsdoc": "打开实体选择器并返回用户选择结果。",
-          "schema": {
-            "type": "object",
-            "title": "(options: {\n        /** 选择器标题。 */\n        title: string;\n        /** 选择器展示的实体名称。 */\n        entityName: string;\n        /** 搜索框或空值占位文本。 */\n        placeholder: string;\n        /** 是否允许多选。 */\n        multiple: boolean;\n        /** 是否允许搜索。 */\n        searchable: boolean;\n        /** 打开选择器前的当前值。 */\n        currentValue: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string;\n        /** 当前可选实体集合。 */\n        options: Array<{\n            label: string;\n            value: PageSelectorOption['value'];\n            disabled?: boolean;\n        }>;\n    }) => Promise<Array<{\n        label: string;\n        value: PageSelectorOption['value'];\n    }>>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        /** 选择器标题。 */\n        title: string;\n        /** 选择器展示的实体名称。 */\n        entityName: string;\n        /** 搜索框或空值占位文本。 */\n        placeholder: string;\n        /** 是否允许多选。 */\n        multiple: boolean;\n        /** 是否允许搜索。 */\n        searchable: boolean;\n        /** 打开选择器前的当前值。 */\n        currentValue: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string;\n        /** 当前可选实体集合。 */\n        options: Array<{\n            label: string;\n            value: PageSelectorOption['value'];\n            disabled?: boolean;\n        }>;\n    }"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "array",
+                "elementType": {
+                  "type": "unknown",
+                  "name": "{\n        label: string;\n        value: PageSelectorOption['value'];\n    }"
+                }
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<Array<{\n        label: string;\n        value: PageSelectorOption['value'];\n    }>>"
+          }
         },
         {
           "name": "updateValue",
           "jsdoc": "将选择结果写回字段值。",
-          "schema": {
-            "type": "object",
-            "title": "(value: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string) => void | Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "unknown",
+                    "name": "PageSelectorOption['value']"
+                  },
+                  {
+                    "type": "array",
+                    "elementType": {
+                      "type": "unknown",
+                      "name": "PageSelectorOption['value']"
+                    }
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.737Z",
+  "generatedAt": "2026-06-13T06:21:06.926Z",
   "$defs": {
     "UseEntityPickerStateOptions": {
       "type": "object",
@@ -276,14 +357,6 @@
         "primaryAction": {
           "type": "object",
           "title": "ValueRef<'select' | 'view'>"
-        },
-        "selectEntities": {
-          "type": "object",
-          "title": "(options: {\n        /** 选择器标题。 */\n        title: string;\n        /** 选择器展示的实体名称。 */\n        entityName: string;\n        /** 搜索框或空值占位文本。 */\n        placeholder: string;\n        /** 是否允许多选。 */\n        multiple: boolean;\n        /** 是否允许搜索。 */\n        searchable: boolean;\n        /** 打开选择器前的当前值。 */\n        currentValue: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string;\n        /** 当前可选实体集合。 */\n        options: Array<{\n            label: string;\n            value: PageSelectorOption['value'];\n            disabled?: boolean;\n        }>;\n    }) => Promise<Array<{\n        label: string;\n        value: PageSelectorOption['value'];\n    }>>"
-        },
-        "updateValue": {
-          "type": "object",
-          "title": "(value: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string) => void | Promise<void>"
         }
       }
     }

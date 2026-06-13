@@ -18,13 +18,24 @@
         "$id": "spark-class-model://schema/ProjectSwitchService"
       }
     },
+    "spark-class-model://model/ProjectSwitchService/methods/switchAndReload/0": {
+      "ref": "spark-class-model://model/ProjectSwitchService/methods/switchAndReload/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectSwitchService",
+      "name": "switchAndReload",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/5f531665602aa6bc11d1f7b0996d05b1ba02cc5611257789375dc53acd2a4ba8",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
     "spark-class-model://model/ProjectSwitchService": {
       "ref": "spark-class-model://model/ProjectSwitchService",
       "kind": "model",
       "className": "ProjectSwitchService",
       "schemaRef": "spark-class-model://schema/ProjectSwitchService",
       "attributeRefs": [],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ProjectSwitchService/methods/switchAndReload/0"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/ProjectWorkspaceScope": {

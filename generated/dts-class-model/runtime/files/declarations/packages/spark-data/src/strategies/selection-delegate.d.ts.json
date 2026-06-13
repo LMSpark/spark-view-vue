@@ -56,6 +56,64 @@
         "$id": "spark-class-model://schema/SelectionDelegate"
       }
     },
+    "spark-class-model://model/SelectionDelegate/constructors/0": {
+      "ref": "spark-class-model://model/SelectionDelegate/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/SelectionDelegate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/90ab79653763809f5c94b975f902794f9a5f201f9056438c5a135eca32281f61"
+    },
+    "spark-class-model://schema/shared/90ab79653763809f5c94b975f902794f9a5f201f9056438c5a135eca32281f61": {
+      "ref": "spark-class-model://schema/shared/90ab79653763809f5c94b975f902794f9a5f201f9056438c5a135eca32281f61",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "$ref": "spark-class-model://schema/DataView"
+          },
+          "emitCurrentRowChanged": {
+            "$ref": "spark-class-model://schema/EmitCurrentRowChangedFn"
+          },
+          "emitSelectedRowsChanged": {
+            "$ref": "spark-class-model://schema/EmitSelectedRowsChangedFn"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/90ab79653763809f5c94b975f902794f9a5f201f9056438c5a135eca32281f61"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSelectionDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FEmitCurrentRowChangedFn": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSelectionDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FEmitCurrentRowChangedFn",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SelectionDelegate/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/EmitCurrentRowChangedFn",
+      "targetClassName": "EmitCurrentRowChangedFn",
+      "targetFile": "files/declarations/packages/spark-data/src/strategies/selection-delegate.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/EmitCurrentRowChangedFn"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSelectionDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FEmitSelectedRowsChangedFn": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSelectionDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FEmitSelectedRowsChangedFn",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SelectionDelegate/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/EmitSelectedRowsChangedFn",
+      "targetClassName": "EmitSelectedRowsChangedFn",
+      "targetFile": "files/declarations/packages/spark-data/src/strategies/selection-delegate.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/EmitSelectedRowsChangedFn"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSelectionDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSelectionDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SelectionDelegate/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/declarations/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
+    },
     "spark-class-model://model/SelectionDelegate/methods/applyAutoFirst/0": {
       "ref": "spark-class-model://model/SelectionDelegate/methods/applyAutoFirst/0",
       "kind": "method",
@@ -255,6 +313,7 @@
       "kind": "model",
       "className": "SelectionDelegate",
       "schemaRef": "spark-class-model://schema/SelectionDelegate",
+      "constructorRef": "spark-class-model://model/SelectionDelegate/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/SelectionDelegate/methods/applyAutoFirst/0",
@@ -270,6 +329,9 @@
         "spark-class-model://model/SelectionDelegate/methods/cleanupInvalidSelections/10"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSelectionDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FEmitCurrentRowChangedFn",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSelectionDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FEmitSelectedRowsChangedFn",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSelectionDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSelectionDelegate%2Fmethods%2FsetCurrentRow%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSelectionDelegate%2Fmethods%2FsetSelectedRows%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSelectionDelegate%2Fmethods%2FaddSelectedRows%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",

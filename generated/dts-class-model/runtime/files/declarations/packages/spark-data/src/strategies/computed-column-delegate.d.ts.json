@@ -36,6 +36,23 @@
         "$id": "spark-class-model://schema/ComputedColumnDelegate"
       }
     },
+    "spark-class-model://model/ComputedColumnDelegate/constructors/0": {
+      "ref": "spark-class-model://model/ComputedColumnDelegate/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/ComputedColumnDelegate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/6b6a8bb9d230c750b934a3757fda56ea4438cec61f6d3a2d3fd774309ff70fe9"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FComputedColumnDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FComputedColumnDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ComputedColumnDelegate/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/declarations/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
+    },
     "spark-class-model://model/ComputedColumnDelegate/methods/setContext/0": {
       "ref": "spark-class-model://model/ComputedColumnDelegate/methods/setContext/0",
       "kind": "method",
@@ -169,6 +186,7 @@
       "kind": "model",
       "className": "ComputedColumnDelegate",
       "schemaRef": "spark-class-model://schema/ComputedColumnDelegate",
+      "constructorRef": "spark-class-model://model/ComputedColumnDelegate/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/ComputedColumnDelegate/methods/setContext/0",
@@ -181,6 +199,7 @@
         "spark-class-model://model/ComputedColumnDelegate/methods/destroy/7"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FComputedColumnDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FComputedColumnDelegate%2Fmethods%2FsetContext%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FComputedColumnContext",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FComputedColumnDelegate%2Fmethods%2Fregister%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FComputedColumnFn",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FComputedColumnDelegate%2Fmethods%2Fapply%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow"

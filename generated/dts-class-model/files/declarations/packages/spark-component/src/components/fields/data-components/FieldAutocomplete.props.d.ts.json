@@ -79,16 +79,6 @@
       },
       "attributes": [
         {
-          "name": "fetchSuggestions",
-          "jsdoc": "弹出建议面板前是否先基于当前焦点触发一次拉取。",
-          "schema": {
-            "type": "object",
-            "title": "(queryString: string, cb: FetchSuggestionsCallback) => void"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "triggerOnFocus",
           "jsdoc": "获得焦点时是否立即触发建议查询。",
           "schema": {
@@ -116,10 +106,38 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "fetchSuggestions",
+          "jsdoc": "弹出建议面板前是否先基于当前焦点触发一次拉取。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "queryString",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "cb",
+              "type": {
+                "type": "reference",
+                "name": "FetchSuggestionsCallback",
+                "sourcePath": "declarations/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.props.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "returnSchema": true
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.745Z",
+  "generatedAt": "2026-06-13T06:21:06.934Z",
   "$defs": {
     "FetchSuggestionsCallback": {
       "type": "object",
@@ -131,10 +149,6 @@
       "title": "RAutocompleteProps",
       "description": "RAutocomplete Props 的属性契约。",
       "properties": {
-        "fetchSuggestions": {
-          "type": "object",
-          "title": "(queryString: string, cb: FetchSuggestionsCallback) => void"
-        },
         "triggerOnFocus": {
           "type": "boolean"
         },

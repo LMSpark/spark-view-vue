@@ -349,18 +349,120 @@
       "schema": {
         "type": "object",
         "title": "DesignerTableUiStateReconcileInput",
+        "properties": {
+          "metadata": {
+            "$ref": "spark-class-model://schema/DataSetMetadata"
+          },
+          "currentTables": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>"
+            }
+          },
+          "layoutForNewTable": {
+            "$ref": "spark-class-model://schema/LayoutForNewTable"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/DesignerTableUiStateReconcileInput"
       }
+    },
+    "spark-class-model://model/DesignerTableUiStateReconcileInput/attributes/metadata/0": {
+      "ref": "spark-class-model://model/DesignerTableUiStateReconcileInput/attributes/metadata/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DesignerTableUiStateReconcileInput",
+      "name": "metadata",
+      "schemaRef": "spark-class-model://schema/shared/8508f649fc702f3a44956bc8b4b54d7520083074071fa6ef3814dba4f9817fb1",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDesignerTableUiStateReconcileInput%2Fattributes%2Fmetadata%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSetMetadata": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDesignerTableUiStateReconcileInput%2Fattributes%2Fmetadata%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSetMetadata",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DesignerTableUiStateReconcileInput/attributes/metadata/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/DataSetMetadata",
+      "targetClassName": "DataSetMetadata",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataSetMetadata"
+    },
+    "spark-class-model://schema/shared/57c72a55d566146fc461b5919d1c8117d9f6ad8e151e685488c183d92318b0d8": {
+      "ref": "spark-class-model://schema/shared/57c72a55d566146fc461b5919d1c8117d9f6ad8e151e685488c183d92318b0d8",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "title": "Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>"
+        },
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/57c72a55d566146fc461b5919d1c8117d9f6ad8e151e685488c183d92318b0d8"
+      }
+    },
+    "spark-class-model://model/DesignerTableUiStateReconcileInput/attributes/currentTables/1": {
+      "ref": "spark-class-model://model/DesignerTableUiStateReconcileInput/attributes/currentTables/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DesignerTableUiStateReconcileInput",
+      "name": "currentTables",
+      "schemaRef": "spark-class-model://schema/shared/57c72a55d566146fc461b5919d1c8117d9f6ad8e151e685488c183d92318b0d8",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/a37b70cfcbd16cf0f811ae62dab50725de8bb78a9b807b1d098350e9f3c86f0b": {
+      "ref": "spark-class-model://schema/shared/a37b70cfcbd16cf0f811ae62dab50725de8bb78a9b807b1d098350e9f3c86f0b",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/LayoutForNewTable",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a37b70cfcbd16cf0f811ae62dab50725de8bb78a9b807b1d098350e9f3c86f0b"
+      }
+    },
+    "spark-class-model://model/DesignerTableUiStateReconcileInput/attributes/layoutForNewTable/2": {
+      "ref": "spark-class-model://model/DesignerTableUiStateReconcileInput/attributes/layoutForNewTable/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DesignerTableUiStateReconcileInput",
+      "name": "layoutForNewTable",
+      "schemaRef": "spark-class-model://schema/shared/a37b70cfcbd16cf0f811ae62dab50725de8bb78a9b807b1d098350e9f3c86f0b",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDesignerTableUiStateReconcileInput%2Fattributes%2FlayoutForNewTable%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FLayoutForNewTable": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDesignerTableUiStateReconcileInput%2Fattributes%2FlayoutForNewTable%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FLayoutForNewTable",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DesignerTableUiStateReconcileInput/attributes/layoutForNewTable/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/LayoutForNewTable",
+      "targetClassName": "LayoutForNewTable",
+      "targetFile": "files/declarations/src/services/project-model-artifacts/page-data-designer.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/LayoutForNewTable"
+    },
+    "spark-class-model://model/DesignerTableUiStateReconcileInput/methods/createId/0": {
+      "ref": "spark-class-model://model/DesignerTableUiStateReconcileInput/methods/createId/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DesignerTableUiStateReconcileInput",
+      "name": "createId",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96"
     },
     "spark-class-model://model/DesignerTableUiStateReconcileInput": {
       "ref": "spark-class-model://model/DesignerTableUiStateReconcileInput",
       "kind": "model",
       "className": "DesignerTableUiStateReconcileInput",
       "schemaRef": "spark-class-model://schema/DesignerTableUiStateReconcileInput",
-      "attributeRefs": [],
-      "methodRefs": [],
-      "linkRefs": []
+      "attributeRefs": [
+        "spark-class-model://model/DesignerTableUiStateReconcileInput/attributes/metadata/0",
+        "spark-class-model://model/DesignerTableUiStateReconcileInput/attributes/currentTables/1",
+        "spark-class-model://model/DesignerTableUiStateReconcileInput/attributes/layoutForNewTable/2"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/DesignerTableUiStateReconcileInput/methods/createId/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDesignerTableUiStateReconcileInput%2Fattributes%2Fmetadata%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSetMetadata",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDesignerTableUiStateReconcileInput%2Fattributes%2FlayoutForNewTable%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FLayoutForNewTable"
+      ]
     }
   }
 }

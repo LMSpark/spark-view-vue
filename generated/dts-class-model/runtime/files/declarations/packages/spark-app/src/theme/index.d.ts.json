@@ -18,13 +18,45 @@
         "$id": "spark-class-model://schema/ThemeCapability"
       }
     },
+    "spark-class-model://model/ThemeCapability/methods/setStorageScope/0": {
+      "ref": "spark-class-model://model/ThemeCapability/methods/setStorageScope/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ThemeCapability",
+      "name": "setStorageScope",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/058ad5d9996ea5e71a2b8fce69bfc27dce48a30ec2f65151748e845848daf2cb"
+    },
+    "spark-class-model://schema/shared/058ad5d9996ea5e71a2b8fce69bfc27dce48a30ec2f65151748e845848daf2cb": {
+      "ref": "spark-class-model://schema/shared/058ad5d9996ea5e71a2b8fce69bfc27dce48a30ec2f65151748e845848daf2cb",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "scopeKey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/058ad5d9996ea5e71a2b8fce69bfc27dce48a30ec2f65151748e845848daf2cb"
+      }
+    },
     "spark-class-model://model/ThemeCapability": {
       "ref": "spark-class-model://model/ThemeCapability",
       "kind": "model",
       "className": "ThemeCapability",
       "schemaRef": "spark-class-model://schema/ThemeCapability",
       "attributeRefs": [],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ThemeCapability/methods/setStorageScope/0"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/ThemeServiceOptions": {

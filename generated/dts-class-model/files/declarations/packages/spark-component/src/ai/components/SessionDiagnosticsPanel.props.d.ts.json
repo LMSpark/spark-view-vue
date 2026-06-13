@@ -37,16 +37,45 @@
         "declarationKind": "type",
         "componentName": "SessionDiagnosticsPanel"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "data",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "SessionDiagnosticsData"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "loading",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.630Z",
+  "generatedAt": "2026-06-13T06:21:06.724Z",
   "$defs": {
     "SessionDiagnosticsPanelProps": {
       "type": "object",
       "title": "SessionDiagnosticsPanelProps",
-      "description": "Session Diagnostics Panel Props 的属性契约。"
+      "description": "Session Diagnostics Panel Props 的属性契约。",
+      "properties": {
+        "data": {
+          "type": "object",
+          "title": "SessionDiagnosticsData"
+        },
+        "loading": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }

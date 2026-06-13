@@ -89,22 +89,57 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "onChange",
           "jsdoc": "展开/折叠切换回调",
-          "schema": {
-            "type": "object",
-            "title": "(value: string | number | Array<string | number>) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  {
+                    "type": "array",
+                    "elementType": {
+                      "type": "union",
+                      "types": [
+                        {
+                          "type": "intrinsic",
+                          "name": "string"
+                        },
+                        {
+                          "type": "intrinsic",
+                          "name": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.670Z",
+  "generatedAt": "2026-06-13T06:21:06.803Z",
   "$defs": {
     "RCollapseProps": {
       "type": "object",
@@ -137,10 +172,6 @@
               }
             }
           ]
-        },
-        "onChange": {
-          "type": "object",
-          "title": "(value: string | number | Array<string | number>) => void"
         }
       }
     }

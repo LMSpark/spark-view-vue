@@ -84,6 +84,38 @@
         "$id": "spark-class-model://schema/ProjectDesign"
       }
     },
+    "spark-class-model://model/ProjectDesign/constructors/0": {
+      "ref": "spark-class-model://model/ProjectDesign/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/ProjectDesign",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/8f0e147816628c5793fccc579ab9456de43e164c8dcd445448e693aff2e2f4ca"
+    },
+    "spark-class-model://schema/shared/8f0e147816628c5793fccc579ab9456de43e164c8dcd445448e693aff2e2f4ca": {
+      "ref": "spark-class-model://schema/shared/8f0e147816628c5793fccc579ab9456de43e164c8dcd445448e693aff2e2f4ca",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/ProjectModelInitOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8f0e147816628c5793fccc579ab9456de43e164c8dcd445448e693aff2e2f4ca"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectDesign%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectModelInitOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectDesign%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectModelInitOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectDesign/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/ProjectModelInitOptions",
+      "targetClassName": "ProjectModelInitOptions",
+      "targetFile": "files/declarations/packages/spark-project-model/src/project/project-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectModelInitOptions"
+    },
     "spark-class-model://model/ProjectDesign/methods/getChildNodes/0": {
       "ref": "spark-class-model://model/ProjectDesign/methods/getChildNodes/0",
       "kind": "method",
@@ -586,6 +618,7 @@
       "kind": "model",
       "className": "ProjectDesign",
       "schemaRef": "spark-class-model://schema/ProjectDesign",
+      "constructorRef": "spark-class-model://model/ProjectDesign/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/ProjectDesign/methods/getChildNodes/0",
@@ -607,6 +640,7 @@
         "spark-class-model://model/ProjectDesign/methods/toTree/16"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectDesign%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectModelInitOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectDesign%2Fmethods%2FreplaceNavigationRoot%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectModelData",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectDesign%2Fmethods%2FreplaceNavigationRoot%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectModelData",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectDesign%2Fmethods%2FreplaceProjectInfo%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectInfoInput",

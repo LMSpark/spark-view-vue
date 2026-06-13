@@ -154,10 +154,6 @@
           "whole": {
             "type": "boolean"
           },
-          "checkIsWhole": {
-            "type": "object",
-            "title": "(pattern: string, prefix: string) => boolean"
-          },
           "loading": {
             "type": "boolean"
           },
@@ -270,27 +266,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/7e4e31cf119b060bac34fd42c4f1dadbe10250122acc18c209ca65f1ef1a80c5": {
-      "ref": "spark-class-model://schema/shared/7e4e31cf119b060bac34fd42c4f1dadbe10250122acc18c209ca65f1ef1a80c5",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(pattern: string, prefix: string) => boolean",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/7e4e31cf119b060bac34fd42c4f1dadbe10250122acc18c209ca65f1ef1a80c5"
-      }
-    },
-    "spark-class-model://model/RMentionProps/attributes/checkIsWhole/6": {
-      "ref": "spark-class-model://model/RMentionProps/attributes/checkIsWhole/6",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/RMentionProps",
-      "name": "checkIsWhole",
-      "schemaRef": "spark-class-model://schema/shared/7e4e31cf119b060bac34fd42c4f1dadbe10250122acc18c209ca65f1ef1a80c5",
-      "readable": true,
-      "writable": false
-    },
-    "spark-class-model://model/RMentionProps/attributes/loading/7": {
-      "ref": "spark-class-model://model/RMentionProps/attributes/loading/7",
+    "spark-class-model://model/RMentionProps/attributes/loading/6": {
+      "ref": "spark-class-model://model/RMentionProps/attributes/loading/6",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/RMentionProps",
       "name": "loading",
@@ -320,14 +297,23 @@
         "$id": "spark-class-model://schema/shared/169fd187e94dfae97b3e573365e1d77bc13f5d04decb7767f1018b8bfc2f371c"
       }
     },
-    "spark-class-model://model/RMentionProps/attributes/inputType/8": {
-      "ref": "spark-class-model://model/RMentionProps/attributes/inputType/8",
+    "spark-class-model://model/RMentionProps/attributes/inputType/7": {
+      "ref": "spark-class-model://model/RMentionProps/attributes/inputType/7",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/RMentionProps",
       "name": "inputType",
       "schemaRef": "spark-class-model://schema/shared/169fd187e94dfae97b3e573365e1d77bc13f5d04decb7767f1018b8bfc2f371c",
       "readable": true,
       "writable": false
+    },
+    "spark-class-model://model/RMentionProps/methods/checkIsWhole/0": {
+      "ref": "spark-class-model://model/RMentionProps/methods/checkIsWhole/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RMentionProps",
+      "name": "checkIsWhole",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
     },
     "spark-class-model://model/RMentionProps": {
       "ref": "spark-class-model://model/RMentionProps",
@@ -341,11 +327,12 @@
         "spark-class-model://model/RMentionProps/attributes/showArrow/3",
         "spark-class-model://model/RMentionProps/attributes/offset/4",
         "spark-class-model://model/RMentionProps/attributes/whole/5",
-        "spark-class-model://model/RMentionProps/attributes/checkIsWhole/6",
-        "spark-class-model://model/RMentionProps/attributes/loading/7",
-        "spark-class-model://model/RMentionProps/attributes/inputType/8"
+        "spark-class-model://model/RMentionProps/attributes/loading/6",
+        "spark-class-model://model/RMentionProps/attributes/inputType/7"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/RMentionProps/methods/checkIsWhole/0"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRMentionProps%2Fattributes%2Foptions%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRMentionOption"
       ]

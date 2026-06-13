@@ -22,13 +22,60 @@
         "$id": "spark-class-model://schema/DataSetHistoryStorageAdapter"
       }
     },
+    "spark-class-model://model/DataSetHistoryStorageAdapter/methods/getItem/0": {
+      "ref": "spark-class-model://model/DataSetHistoryStorageAdapter/methods/getItem/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DataSetHistoryStorageAdapter",
+      "name": "getItem",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/2707a76b3531466426adfc499200a251eb7fdf377fd590f8c04f72559fd346f8",
+      "returnSchemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
+    },
+    "spark-class-model://model/DataSetHistoryStorageAdapter/methods/setItem/1": {
+      "ref": "spark-class-model://model/DataSetHistoryStorageAdapter/methods/setItem/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DataSetHistoryStorageAdapter",
+      "name": "setItem",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/d2831ad09c02bbb1cfce0a1d3296dd2850ea26db441ae67548be0a11b55daf5f"
+    },
+    "spark-class-model://schema/shared/d2831ad09c02bbb1cfce0a1d3296dd2850ea26db441ae67548be0a11b55daf5f": {
+      "ref": "spark-class-model://schema/shared/d2831ad09c02bbb1cfce0a1d3296dd2850ea26db441ae67548be0a11b55daf5f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/d2831ad09c02bbb1cfce0a1d3296dd2850ea26db441ae67548be0a11b55daf5f"
+      }
+    },
+    "spark-class-model://model/DataSetHistoryStorageAdapter/methods/removeItem/2": {
+      "ref": "spark-class-model://model/DataSetHistoryStorageAdapter/methods/removeItem/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DataSetHistoryStorageAdapter",
+      "name": "removeItem",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/2707a76b3531466426adfc499200a251eb7fdf377fd590f8c04f72559fd346f8"
+    },
     "spark-class-model://model/DataSetHistoryStorageAdapter": {
       "ref": "spark-class-model://model/DataSetHistoryStorageAdapter",
       "kind": "model",
       "className": "DataSetHistoryStorageAdapter",
       "schemaRef": "spark-class-model://schema/DataSetHistoryStorageAdapter",
       "attributeRefs": [],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/DataSetHistoryStorageAdapter/methods/getItem/0",
+        "spark-class-model://model/DataSetHistoryStorageAdapter/methods/setItem/1",
+        "spark-class-model://model/DataSetHistoryStorageAdapter/methods/removeItem/2"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/DataSetHistoryScope": {

@@ -133,7 +133,53 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "setMode",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "mode",
+              "type": {
+                "type": "reference",
+                "name": "ThemeMode",
+                "sourcePath": "declarations/packages/spark-component/src/core/capability-keys.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "$ref": "#/$defs/ThemeMode"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "toggle",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "ModuleContextItem": {
       "kind": "ModuleContextItem",
@@ -242,7 +288,130 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "getCurrent",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "ModuleContext",
+                "sourcePath": "declarations/packages/spark-component/src/core/capability-keys.d.ts"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ModuleContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "subscribe",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "handler",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "next",
+                          "type": {
+                            "type": "union",
+                            "types": [
+                              {
+                                "type": "reference",
+                                "name": "ModuleContext",
+                                "sourcePath": "declarations/packages/spark-component/src/core/capability-keys.d.ts"
+                              },
+                              {
+                                "type": "literal",
+                                "value": null
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "name": "prev",
+                          "type": {
+                            "type": "union",
+                            "types": [
+                              {
+                                "type": "reference",
+                                "name": "ModuleContext",
+                                "sourcePath": "declarations/packages/spark-component/src/core/capability-keys.d.ts"
+                              },
+                              {
+                                "type": "literal",
+                                "value": null
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "signatures": [
+                {
+                  "parameters": [],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                }
+              ]
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "handler": {
+                "type": "object",
+                "title": "(next: ModuleContext | null, prev: ModuleContext | null) => void"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "() => void"
+          }
+        }
+      ]
     },
     "PageComponentInstanceEntry": {
       "kind": "PageComponentInstanceEntry",
@@ -342,7 +511,322 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "registerInstance",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "entry",
+              "type": {
+                "type": "reference",
+                "name": "PageComponentInstanceEntry",
+                "sourcePath": "declarations/packages/spark-component/src/core/capability-keys.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "entry": {
+                "$ref": "#/$defs/PageComponentInstanceEntry"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "unregisterInstance",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "listInstances",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "type",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "PageComponentInstanceEntry",
+              "sourcePath": "declarations/packages/spark-component/src/core/capability-keys.d.ts"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/PageComponentInstanceEntry"
+            }
+          }
+        },
+        {
+          "name": "getInstance",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "PageComponentInstanceEntry",
+                "sourcePath": "declarations/packages/spark-component/src/core/capability-keys.d.ts"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PageComponentInstanceEntry"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "registerApi",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "entry",
+              "type": {
+                "type": "reference",
+                "name": "PageComponentApiEntry",
+                "sourcePath": "declarations/packages/spark-component/src/core/capability-keys.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "entry": {
+                "$ref": "#/$defs/PageComponentApiEntry"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "unregisterApi",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "listApis",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "type",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "PageComponentApiEntry",
+              "sourcePath": "declarations/packages/spark-component/src/core/capability-keys.d.ts"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/PageComponentApiEntry"
+            }
+          }
+        },
+        {
+          "name": "getApi",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "getApisByType",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "type",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "T",
+              "refersToTypeParameter": true
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": true
+          }
+        }
+      ]
     },
     "PageCssScopeCapability": {
       "kind": "PageCssScopeCapability",
@@ -357,10 +841,39 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "inject",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "css",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "css": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.780Z",
+  "generatedAt": "2026-06-13T06:21:06.980Z",
   "$defs": {
     "SubtreeFieldPolicy": {
       "type": "object",

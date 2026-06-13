@@ -75,7 +75,53 @@
         "className": "AiAgentBeforeFunctionCallDirective",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentBeforeFunctionCallStatus"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "reason",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "fix",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "finalAssistantMessage",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "releaseInstance",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentBeforeFunctionCallOptions": {
@@ -102,7 +148,27 @@
         "className": "AiAgentBeforeFunctionCallOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "toolName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "args",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonParams"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentLifecycleStatus": {
@@ -153,7 +219,44 @@
         "className": "AiAgentLifecycleDirective",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentLifecycleStatus"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "reason",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "finalAssistantMessage",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "releaseInstance",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentAfterFunctionCallOptions": {
@@ -180,11 +283,41 @@
         "className": "AiAgentAfterFunctionCallOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "toolName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "args",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonParams"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "result",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentFunctionCallResult<unknown>"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.556Z",
+  "generatedAt": "2026-06-13T06:21:06.546Z",
   "$defs": {
     "AiAgentBeforeFunctionCallStatus": {
       "type": "object",
@@ -194,12 +327,38 @@
     "AiAgentBeforeFunctionCallDirective": {
       "type": "object",
       "title": "AiAgentBeforeFunctionCallDirective",
-      "description": "工具调用前置裁决指令。\n字段：\nstatus                — 必填，allow / reject / abort 之一\nreason                — 可选，拒绝或中止原因\nfix                   — 可选，给 LLM 的修正建议，仅 reject/abort 失败结果使用\nfinalAssistantMessage — 可选，abort 时发送给用户的最终消息\nreleaseInstance       — 可选，abort 时是否释放模块实例资源"
+      "description": "工具调用前置裁决指令。\n字段：\nstatus                — 必填，allow / reject / abort 之一\nreason                — 可选，拒绝或中止原因\nfix                   — 可选，给 LLM 的修正建议，仅 reject/abort 失败结果使用\nfinalAssistantMessage — 可选，abort 时发送给用户的最终消息\nreleaseInstance       — 可选，abort 时是否释放模块实例资源",
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/AiAgentBeforeFunctionCallStatus"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        },
+        "finalAssistantMessage": {
+          "type": "string"
+        },
+        "releaseInstance": {
+          "type": "boolean"
+        }
+      }
     },
     "AiAgentBeforeFunctionCallOptions": {
       "type": "object",
       "title": "AiAgentBeforeFunctionCallOptions",
-      "description": "beforeFunctionCall 回调的入参。\n继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n追加本次工具调用的工具名与已解析参数。该钩子只负责策略裁决，不执行工具。"
+      "description": "beforeFunctionCall 回调的入参。\n继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n追加本次工具调用的工具名与已解析参数。该钩子只负责策略裁决，不执行工具。",
+      "properties": {
+        "toolName": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "AiJsonParams"
+        }
+      }
     },
     "AiAgentLifecycleStatus": {
       "type": "object",
@@ -209,12 +368,39 @@
     "AiAgentLifecycleDirective": {
       "type": "object",
       "title": "AiAgentLifecycleDirective",
-      "description": "生命周期指令：业务方在 afterFunctionCall 中返回，决定工具循环的后续行为。\n字段：\nstatus               — 必填，三态之一\nreason               — 可选，结束原因（complete/abort 时建议提供）\nfinalAssistantMessage — 可选，结束时发送给用户的最终消息\nreleaseInstance      — 可选，是否在结束时释放模块实例资源"
+      "description": "生命周期指令：业务方在 afterFunctionCall 中返回，决定工具循环的后续行为。\n字段：\nstatus               — 必填，三态之一\nreason               — 可选，结束原因（complete/abort 时建议提供）\nfinalAssistantMessage — 可选，结束时发送给用户的最终消息\nreleaseInstance      — 可选，是否在结束时释放模块实例资源",
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/AiAgentLifecycleStatus"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "finalAssistantMessage": {
+          "type": "string"
+        },
+        "releaseInstance": {
+          "type": "boolean"
+        }
+      }
     },
     "AiAgentAfterFunctionCallOptions": {
       "type": "object",
       "title": "AiAgentAfterFunctionCallOptions",
-      "description": "afterFunctionCall 回调的入参。\n继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n追加本次工具调用的具体信息：\ntoolName — 被调用的工具名称\nargs     — 调用参数（已通过 JSON Schema 校验）\nresult   — 调用结果（ok: true 带 data，ok: false 带 code/msg/fix）"
+      "description": "afterFunctionCall 回调的入参。\n继承 AiAgentRuntimeContext（moduleId / moduleInstanceId / instanceId），\n追加本次工具调用的具体信息：\ntoolName — 被调用的工具名称\nargs     — 调用参数（已通过 JSON Schema 校验）\nresult   — 调用结果（ok: true 带 data，ok: false 带 code/msg/fix）",
+      "properties": {
+        "toolName": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "AiJsonParams"
+        },
+        "result": {
+          "type": "object",
+          "title": "AiAgentFunctionCallResult<unknown>"
+        }
+      }
     }
   }
 }

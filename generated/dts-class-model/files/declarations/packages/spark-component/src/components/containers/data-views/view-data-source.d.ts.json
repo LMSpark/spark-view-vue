@@ -42,7 +42,75 @@
         "componentDirectory": "containers/data-views"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "warn",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "error",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "error",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "error": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "UseContainerDataSourceOptions": {
       "kind": "UseContainerDataSourceOptions",
@@ -101,16 +169,6 @@
           "writable": true
         },
         {
-          "name": "mapView",
-          "jsdoc": "将解析到的 DataView 映射成容器实际消费的数据源形态。",
-          "schema": {
-            "type": "object",
-            "title": "(view: DataView) => TSource"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "externalDataSource",
           "jsdoc": "外部显式传入的数据源；优先级高于 dataViewKey。",
           "schema": {
@@ -126,16 +184,6 @@
           "schema": {
             "type": "object",
             "title": "MaybeRefOrGetter<TSource | null | undefined>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "provideDataSource",
-          "jsdoc": "将解析出的数据源提供给子级容器或字段。",
-          "schema": {
-            "type": "object",
-            "title": "(source: TSource) => void"
           },
           "readable": true,
           "writable": false
@@ -186,7 +234,58 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "mapView",
+          "jsdoc": "将解析到的 DataView 映射成容器实际消费的数据源形态。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "view",
+              "type": {
+                "type": "reference",
+                "name": "DataView"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "TSource",
+            "refersToTypeParameter": true
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "view": {
+                "type": "object",
+                "title": "DataView"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "provideDataSource",
+          "jsdoc": "将解析出的数据源提供给子级容器或字段。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "source",
+              "type": {
+                "type": "reference",
+                "name": "TSource",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "UseContainerDataSourceEffectsOptions": {
       "kind": "UseContainerDataSourceEffectsOptions",
@@ -220,16 +319,6 @@
           "schema": {
             "type": "object",
             "title": "ComputedRef<DataViewKeyDiagnostic | DataViewMemberDiagnostic | null>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "provideDataSource",
-          "jsdoc": "向下游提供数据源的回调。",
-          "schema": {
-            "type": "object",
-            "title": "(source: TSource) => void"
           },
           "readable": true,
           "writable": false
@@ -271,7 +360,28 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "provideDataSource",
+          "jsdoc": "向下游提供数据源的回调。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "source",
+              "type": {
+                "type": "reference",
+                "name": "TSource",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "ContainerDataSourceState": {
       "kind": "ContainerDataSourceState",
@@ -313,7 +423,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.657Z",
+  "generatedAt": "2026-06-13T06:21:06.781Z",
   "$defs": {
     "DataSourceLoggerLike": {
       "type": "object",
@@ -341,10 +451,6 @@
           "type": "object",
           "title": "SparkCapabilityConsumer"
         },
-        "mapView": {
-          "type": "object",
-          "title": "(view: DataView) => TSource"
-        },
         "externalDataSource": {
           "type": "object",
           "title": "MaybeRefOrGetter<TSource | undefined>"
@@ -352,10 +458,6 @@
         "inheritedDataSource": {
           "type": "object",
           "title": "MaybeRefOrGetter<TSource | null | undefined>"
-        },
-        "provideDataSource": {
-          "type": "object",
-          "title": "(source: TSource) => void"
         },
         "logger": {
           "$ref": "#/$defs/DataSourceLoggerLike"
@@ -386,10 +488,6 @@
         "diagnostic": {
           "type": "object",
           "title": "ComputedRef<DataViewKeyDiagnostic | DataViewMemberDiagnostic | null>"
-        },
-        "provideDataSource": {
-          "type": "object",
-          "title": "(source: TSource) => void"
         },
         "logger": {
           "$ref": "#/$defs/DataSourceLoggerLike"

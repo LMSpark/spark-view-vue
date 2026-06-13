@@ -794,29 +794,95 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "onRequest",
           "jsdoc": "on Request 事件回调。",
-          "schema": {
-            "type": "object",
-            "title": "(config: RequestConfig) => RequestConfig | Promise<RequestConfig>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "config",
+              "type": {
+                "type": "reference",
+                "name": "RequestConfig",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "RequestConfig",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "RequestConfig",
+                    "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/RequestConfig"
+              },
+              {
+                "type": "object",
+                "title": "Promise<RequestConfig>"
+              }
+            ]
+          }
         },
         {
           "name": "onRequestError",
           "jsdoc": "请求阶段错误回调。\n当前版本中，此回调在**同一拦截器**的 `onRequest` 抛出异常时被调用，\n允许拦截器自行记录或处理自身引发的错误。异常仍会向上传播。",
-          "schema": {
-            "type": "object",
-            "title": "(error: RequestError) => void | Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "error",
+              "type": {
+                "type": "reference",
+                "name": "RequestError",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         }
-      ],
-      "methods": []
+      ]
     },
     "ResponseInterceptor": {
       "kind": "ResponseInterceptor",
@@ -839,29 +905,126 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "onResponse",
           "jsdoc": "on Response 事件回调。",
-          "schema": {
-            "type": "object",
-            "title": "<T>(response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "response",
+              "type": {
+                "type": "reference",
+                "name": "HttpResponse",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "HttpResponse",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                ]
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "HttpResponse",
+                    "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "T",
+                        "refersToTypeParameter": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/HttpResponse",
+                "title": "HttpResponse<T>"
+              },
+              {
+                "type": "object",
+                "title": "Promise<HttpResponse<T>>"
+              }
+            ]
+          }
         },
         {
           "name": "onResponseError",
           "jsdoc": "on Response Error 事件回调。",
-          "schema": {
-            "type": "object",
-            "title": "(error: RequestError) => RequestError | Promise<RequestError>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "error",
+              "type": {
+                "type": "reference",
+                "name": "RequestError",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "RequestError",
+                "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "RequestError",
+                    "sourcePath": "declarations/packages/spark-utils/src/http/types.d.ts"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/RequestError"
+              },
+              {
+                "type": "object",
+                "title": "Promise<RequestError>"
+              }
+            ]
+          }
         }
-      ],
-      "methods": []
+      ]
     },
     "HttpClientFactoryOptions": {
       "kind": "HttpClientFactoryOptions",
@@ -1017,16 +1180,6 @@
           "writable": false
         },
         {
-          "name": "getHeaders",
-          "jsdoc": "动态请求头回调（每次请求时调用，优先级高于 headers）",
-          "schema": {
-            "type": "object",
-            "title": "() => Record<string, string>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "fallbackToCache",
           "jsdoc": "网络失败时降级到缓存",
           "schema": {
@@ -1093,7 +1246,32 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "getHeaders",
+          "jsdoc": "动态请求头回调（每次请求时调用，优先级高于 headers）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, string>"
+          }
+        }
+      ]
     },
     "CacheEntry": {
       "kind": "CacheEntry",
@@ -1315,7 +1493,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.913Z",
+  "generatedAt": "2026-06-13T06:21:07.179Z",
   "$defs": {
     "Method": {
       "type": "object",
@@ -1603,14 +1781,6 @@
       "properties": {
         "name": {
           "type": "string"
-        },
-        "onRequest": {
-          "type": "object",
-          "title": "(config: RequestConfig) => RequestConfig | Promise<RequestConfig>"
-        },
-        "onRequestError": {
-          "type": "object",
-          "title": "(error: RequestError) => void | Promise<void>"
         }
       }
     },
@@ -1621,14 +1791,6 @@
       "properties": {
         "name": {
           "type": "string"
-        },
-        "onResponse": {
-          "type": "object",
-          "title": "<T>(response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>"
-        },
-        "onResponseError": {
-          "type": "object",
-          "title": "(error: RequestError) => RequestError | Promise<RequestError>"
         }
       }
     },
@@ -1696,10 +1858,6 @@
         "headers": {
           "type": "object",
           "title": "Record<string, string>"
-        },
-        "getHeaders": {
-          "type": "object",
-          "title": "() => Record<string, string>"
         },
         "fallbackToCache": {
           "type": "boolean"

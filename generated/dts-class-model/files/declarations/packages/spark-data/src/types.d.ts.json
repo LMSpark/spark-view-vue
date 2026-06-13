@@ -166,7 +166,226 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "on",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "event",
+              "type": {
+                "type": "reference",
+                "name": "K",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "handler",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "args",
+                          "type": {
+                            "type": "rest",
+                            "elementType": {
+                              "type": "unknown",
+                              "name": "TEventMap[K]"
+                            }
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "event": true,
+              "handler": {
+                "type": "object",
+                "title": "(...args: TEventMap[K]) => void"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "off",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "event",
+              "type": {
+                "type": "reference",
+                "name": "K",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "handler",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "args",
+                          "type": {
+                            "type": "rest",
+                            "elementType": {
+                              "type": "unknown",
+                              "name": "TEventMap[K]"
+                            }
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "event": true,
+              "handler": {
+                "type": "object",
+                "title": "(...args: TEventMap[K]) => void"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "emit",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "event",
+              "type": {
+                "type": "reference",
+                "name": "K",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "args",
+              "type": {
+                "type": "rest",
+                "elementType": {
+                  "type": "unknown",
+                  "name": "TEventMap[K]"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "event": true,
+              "args": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "removeAllListeners",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "event",
+              "type": {
+                "type": "reference",
+                "name": "K",
+                "refersToTypeParameter": true
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "event": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "listenerCount",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "event",
+              "type": {
+                "type": "reference",
+                "name": "K",
+                "refersToTypeParameter": true
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "event": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
+        }
+      ]
     },
     "DataRow": {
       "kind": "DataRow",
@@ -3385,119 +3604,366 @@
         "className": "ViewChangeHandlers",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "currentRowChanged",
           "jsdoc": "当前行变化",
-          "schema": {
-            "type": "object",
-            "title": "(tableName: string, viewId: string, currentRow: DataRow | null, originatorId?: string) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "viewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "currentRow",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow",
+                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            {
+              "name": "originatorId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "selectedRowsChanged",
           "jsdoc": "选中行集合变化",
-          "schema": {
-            "type": "object",
-            "title": "(tableName: string, viewId: string, selectedRows: DataRow[], originatorId?: string) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "viewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "selectedRows",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "DataRow",
+                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                }
+              }
+            },
+            {
+              "name": "originatorId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "rowsChanged",
           "jsdoc": "行数据变化（不区分具体行）",
-          "schema": {
-            "type": "object",
-            "title": "(tableName: string, viewId: string) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "viewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "editingFieldChanged",
           "jsdoc": "编辑态字段变化",
-          "schema": {
-            "type": "object",
-            "title": "(tableName: string, viewId: string, event: DataViewEditingFieldChangeEvent) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "viewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "event",
+              "type": {
+                "type": "reference",
+                "name": "DataViewEditingFieldChangeEvent",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "editingChanged",
           "jsdoc": "编辑态开关变化",
-          "schema": {
-            "type": "object",
-            "title": "(tableName: string, viewId: string) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "viewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "cleared",
           "jsdoc": "视图清空",
-          "schema": {
-            "type": "object",
-            "title": "(tableName: string, viewId: string) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "viewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "configChanged",
           "jsdoc": "视图配置变化",
-          "schema": {
-            "type": "object",
-            "title": "(tableName: string, viewId: string) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "viewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "requestStateChanged",
           "jsdoc": "请求状态变化",
-          "schema": {
-            "type": "object",
-            "title": "(tableName: string, viewId: string, requestState: RequestState) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "viewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "requestState",
+              "type": {
+                "type": "reference",
+                "name": "RequestState",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "mutatingChanged",
           "jsdoc": "变更中标记变化",
-          "schema": {
-            "type": "object",
-            "title": "(tableName: string, viewId: string, mutating: boolean) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "viewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "mutating",
+              "type": {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "summaryChanged",
           "jsdoc": "聚合结果变化",
-          "schema": {
-            "type": "object",
-            "title": "(tableName: string, viewId: string) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "viewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "selectionSummaryChanged",
           "jsdoc": "选中聚合结果变化",
-          "schema": {
-            "type": "object",
-            "title": "(tableName: string, viewId: string) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "viewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     },
     "DataSetContract": {
       "kind": "DataSetContract",
@@ -3592,7 +4058,934 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "getChildRelations",
+          "jsdoc": "查询以指定视图为父的子关系（视图级索引）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "parentTable",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "parentViewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "DataRelation",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentTable": {
+                "type": "string"
+              },
+              "parentViewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/DataRelation"
+            }
+          }
+        },
+        {
+          "name": "getParentRelations",
+          "jsdoc": "查询以指定视图为子的父关系（视图级索引）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "childTable",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "childViewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "DataRelation",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "childTable": {
+                "type": "string"
+              },
+              "childViewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/DataRelation"
+            }
+          }
+        },
+        {
+          "name": "getTableChildRelations",
+          "jsdoc": "查询以指定表为父的所有表关系（表级索引，聚合函数消费）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "parentTable",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "TableRelation",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentTable": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/TableRelation"
+            }
+          }
+        },
+        {
+          "name": "getTableParentRelations",
+          "jsdoc": "查询以指定表为子的所有表关系（表级索引）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "childTable",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "TableRelation",
+              "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "childTable": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/TableRelation"
+            }
+          }
+        },
+        {
+          "name": "addTable",
+          "jsdoc": "动态添加数据表",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "columns",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "DataColumn",
+                  "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "columns": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/DataColumn"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataTable"
+          }
+        },
+        {
+          "name": "removeTable",
+          "jsdoc": "删除未被关系或依赖引用的数据表",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "addRelation",
+          "jsdoc": "添加表关系",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "params",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        parentTable: string;\n        childTable: string;\n        parentField: string;\n        childField: string;\n        relationName?: string;\n    }"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "updateRelation",
+          "jsdoc": "更新表关系",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "selector",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        parentTable: string;\n        childTable: string;\n        parentField?: string;\n        childField?: string;\n    }"
+              }
+            },
+            {
+              "name": "updates",
+              "type": {
+                "type": "reference",
+                "name": "Partial",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "TableRelation",
+                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "TableRelation",
+            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "type": "object"
+              },
+              "updates": {
+                "type": "object",
+                "title": "Partial<TableRelation>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/TableRelation"
+          }
+        },
+        {
+          "name": "removeRelation",
+          "jsdoc": "删除表关系",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "selector",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        parentTable: string;\n        childTable: string;\n        parentField?: string;\n        childField?: string;\n    }"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "addDependency",
+          "jsdoc": "添加视图依赖",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "dependency",
+              "type": {
+                "type": "reference",
+                "name": "ViewDependency",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "dependency": {
+                "$ref": "#/$defs/ViewDependency"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "updateDependency",
+          "jsdoc": "更新视图依赖",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "parentTable",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "childTable",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "updates",
+              "type": {
+                "type": "reference",
+                "name": "Partial",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "ViewDependency",
+                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "ViewDependency",
+            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentTable": {
+                "type": "string"
+              },
+              "childTable": {
+                "type": "string"
+              },
+              "updates": {
+                "type": "object",
+                "title": "Partial<ViewDependency>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/ViewDependency"
+          }
+        },
+        {
+          "name": "removeDependency",
+          "jsdoc": "删除视图依赖",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "parentTable",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "childTable",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentTable": {
+                "type": "string"
+              },
+              "childTable": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "resolveDependencyFilter",
+          "jsdoc": "将运行时关系解析为目标视图过滤表达式；返回 null 表示父视图依赖不满足",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rel",
+              "type": {
+                "type": "reference",
+                "name": "DataRelation",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "FilterExpression",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              },
+              {
+                "type": "intrinsic",
+                "name": "undefined"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rel": {
+                "$ref": "#/$defs/DataRelation"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/FilterExpression"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "getTable",
+          "jsdoc": "获取数据表",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "name",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataTable"
+          }
+        },
+        {
+          "name": "getView",
+          "jsdoc": "获取数据视图（委托到 DataTable）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "tableName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "viewId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataView"
+          }
+        },
+        {
+          "name": "saveChanges",
+          "jsdoc": "保存 DataSet 范围内的编辑态和 staged 变更；默认按表关系父表先于子表提交所有有变更视图",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "DataSetSaveChangesOptions",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "CrudResult",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "DataSetSaveChangesResult",
+                    "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "$ref": "#/$defs/DataSetSaveChangesOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<DataSetSaveChangesResult>>"
+          }
+        },
+        {
+          "name": "setAppServices",
+          "jsdoc": "注入页面运行时服务（用于 URL 模板 tenant/project 作用域解析）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "appServices",
+              "type": {
+                "type": "reference",
+                "name": "DataSetAppServices",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "appServices": {
+                "$ref": "#/$defs/DataSetAppServices"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "setPageRoute",
+          "jsdoc": "注入页面路由快照（页面运行时服务缺失时用于 URL 模板 tenant/project 作用域解析）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "route",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "route": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "getRequestTemplateParams",
+          "jsdoc": "生成端点 URL 模板上下文参数",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        {
+          "name": "toJson",
+          "jsdoc": "序列化为 JSON 友好的元数据对象",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "DataSetMetadata",
+            "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/DataSetMetadata"
+          }
+        },
+        {
+          "name": "on",
+          "jsdoc": "订阅数据集级别的加载事件（覆盖所有已注册表的所有视图）\n@returns 取消订阅函数",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "event",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "literal",
+                    "value": "loadSuccess"
+                  },
+                  {
+                    "type": "literal",
+                    "value": "loadError"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "handler",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "payload",
+                          "type": {
+                            "type": "unknown",
+                            "name": "{\n        tableName: string;\n        viewId: string;\n        error?: Error;\n    }"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "signatures": [
+                {
+                  "parameters": [],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                }
+              ]
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "event": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "loadSuccess"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "loadError"
+                    ]
+                  }
+                ]
+              },
+              "handler": {
+                "type": "object",
+                "title": "(payload: {\n        tableName: string;\n        viewId: string;\n        error?: Error;\n    }) => void"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "() => void"
+          }
+        },
+        {
+          "name": "onAnyViewChange",
+          "jsdoc": "订阅此 DataSet 内任意视图的状态变化。\n严格作用于本 DataSet 实例，多实例并存时互不干扰（替代全局 event-bus）。\n订阅时遍历当前已存在的所有视图；如需监听后续动态创建的视图，可在创建后重新订阅。\n@returns 取消订阅函数（组件卸载时调用）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "handlers",
+              "type": {
+                "type": "reference",
+                "name": "ViewChangeHandlers",
+                "sourcePath": "declarations/packages/spark-data/src/types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "signatures": [
+                {
+                  "parameters": [],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                }
+              ]
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "handlers": {
+                "$ref": "#/$defs/ViewChangeHandlers"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "() => void"
+          }
+        },
+        {
+          "name": "triggerAutoLoad",
+          "jsdoc": "触发所有标记了 `autoLoad: true` 的 default 视图自动加载。\n渲染层构建 DataSet 后调用；业务脚本无需手动编写加载代码。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "destroy",
+          "jsdoc": "销毁 DataSet 及其所有 DataTable/DataView 的资源。\n清理所有事件订阅、委托、共享 HTTP 客户端引用。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "DataSetSaveChangesViewSelector": {
       "kind": "DataSetSaveChangesViewSelector",
@@ -4710,32 +6103,51 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "transformRequest",
           "jsdoc": "请求数据转换函数",
-          "schema": {
-            "type": "object",
-            "title": "(data: unknown) => unknown"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "data",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "unknown"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "transformResponse",
           "jsdoc": "响应数据转换函数",
-          "schema": {
-            "type": "object",
-            "title": "(data: unknown) => unknown"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "data",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "unknown"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.857Z",
+  "generatedAt": "2026-06-13T06:21:07.109Z",
   "$defs": {
     "SparkEventEmitter": {
       "type": "object",
@@ -5912,53 +7324,7 @@
     "ViewChangeHandlers": {
       "type": "object",
       "title": "ViewChangeHandlers",
-      "description": "DataSet 级视图变更处理器映射\n用于 `DataSet.onAnyViewChange()`：\n订阅者按需注册感兴趣的事件类型，每个回调接收 `(tableName, viewId, ...payload)`。\n@example ```ts\ndataSet.onAnyViewChange({\n  currentRowChanged(tableName, viewId, currentRow, originatorId) {\n    syncCurrentRowToUI(tableName, viewId, currentRow)\n  },\n  cleared(tableName, viewId) {\n    clearUI(tableName, viewId)\n  },\n})\n```",
-      "properties": {
-        "currentRowChanged": {
-          "type": "object",
-          "title": "(tableName: string, viewId: string, currentRow: DataRow | null, originatorId?: string) => void"
-        },
-        "selectedRowsChanged": {
-          "type": "object",
-          "title": "(tableName: string, viewId: string, selectedRows: DataRow[], originatorId?: string) => void"
-        },
-        "rowsChanged": {
-          "type": "object",
-          "title": "(tableName: string, viewId: string) => void"
-        },
-        "editingFieldChanged": {
-          "type": "object",
-          "title": "(tableName: string, viewId: string, event: DataViewEditingFieldChangeEvent) => void"
-        },
-        "editingChanged": {
-          "type": "object",
-          "title": "(tableName: string, viewId: string) => void"
-        },
-        "cleared": {
-          "type": "object",
-          "title": "(tableName: string, viewId: string) => void"
-        },
-        "configChanged": {
-          "type": "object",
-          "title": "(tableName: string, viewId: string) => void"
-        },
-        "requestStateChanged": {
-          "type": "object",
-          "title": "(tableName: string, viewId: string, requestState: RequestState) => void"
-        },
-        "mutatingChanged": {
-          "type": "object",
-          "title": "(tableName: string, viewId: string, mutating: boolean) => void"
-        },
-        "summaryChanged": {
-          "type": "object",
-          "title": "(tableName: string, viewId: string) => void"
-        },
-        "selectionSummaryChanged": {
-          "type": "object",
-          "title": "(tableName: string, viewId: string) => void"
-        }
-      }
+      "description": "DataSet 级视图变更处理器映射\n用于 `DataSet.onAnyViewChange()`：\n订阅者按需注册感兴趣的事件类型，每个回调接收 `(tableName, viewId, ...payload)`。\n@example ```ts\ndataSet.onAnyViewChange({\n  currentRowChanged(tableName, viewId, currentRow, originatorId) {\n    syncCurrentRowToUI(tableName, viewId, currentRow)\n  },\n  cleared(tableName, viewId) {\n    clearUI(tableName, viewId)\n  },\n})\n```"
     },
     "DataSetContract": {
       "type": "object",
@@ -6462,14 +7828,6 @@
         },
         "validateData": {
           "type": "boolean"
-        },
-        "transformRequest": {
-          "type": "object",
-          "title": "(data: unknown) => unknown"
-        },
-        "transformResponse": {
-          "type": "object",
-          "title": "(data: unknown) => unknown"
         }
       }
     }

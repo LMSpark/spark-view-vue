@@ -108,7 +108,102 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "findNodeById",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "nodeId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ProjectNode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "findConfigPageByPageId",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "pageId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ConfigPageNode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      ]
     },
     "ProjectSession": {
       "kind": "ProjectSession",
@@ -134,7 +229,16 @@
               "sourcePath": "declarations/packages/spark-project-model/src/project/project-session.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "$ref": "#/$defs/ProjectSessionOwner"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -163,7 +267,25 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "draft": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "NavigationNodeDraft"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "beginNavigationDraft",
@@ -181,6 +303,20 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "draft": {
+                "type": "object",
+                "title": "NavigationNodeDraft"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "NavigationNodeDraft"
           }
         },
         {
@@ -191,7 +327,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "markNavigationDirty",
@@ -209,7 +351,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "scope": {
+                "type": "object",
+                "title": "ProjectNavigationDirtyScope"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "markNavigationClean",
@@ -219,7 +372,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "setSelectedNodeId",
@@ -260,7 +419,27 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "setActivePageId",
@@ -291,7 +470,24 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "syncWithModel",
@@ -301,12 +497,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.893Z",
+  "generatedAt": "2026-06-13T06:21:07.160Z",
   "$defs": {
     "ProjectSessionState": {
       "type": "object",

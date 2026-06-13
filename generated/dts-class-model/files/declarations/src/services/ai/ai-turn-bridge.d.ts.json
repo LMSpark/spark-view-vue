@@ -38,7 +38,63 @@
         "className": "AiTurnBridgeDiagnostic",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "at",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "type",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "sessionId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "turnId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "message",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "details",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentTurnBridgeOptions": {
@@ -60,21 +116,119 @@
         "className": "AiAgentTurnBridgeOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "transport",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "app-sse"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "session-turn"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "timeoutMs",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "idleTimeoutMs",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "windowSize",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.922Z",
+  "generatedAt": "2026-06-13T06:21:07.193Z",
   "$defs": {
     "AiTurnBridgeDiagnostic": {
       "type": "object",
       "title": "AiTurnBridgeDiagnostic",
-      "description": "Ai Turn Bridge Diagnostic 的诊断信息。"
+      "description": "Ai Turn Bridge Diagnostic 的诊断信息。",
+      "properties": {
+        "at": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "turnId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
     },
     "AiAgentTurnBridgeOptions": {
       "type": "object",
       "title": "AiAgentTurnBridgeOptions",
-      "description": "Ai Agent Turn Bridge Options 的调用配置。"
+      "description": "Ai Agent Turn Bridge Options 的调用配置。",
+      "properties": {
+        "transport": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "app-sse"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "session-turn"
+              ]
+            }
+          ]
+        },
+        "timeoutMs": {
+          "type": "number"
+        },
+        "idleTimeoutMs": {
+          "type": "number"
+        },
+        "windowSize": {
+          "type": "number"
+        }
+      }
     }
   }
 }

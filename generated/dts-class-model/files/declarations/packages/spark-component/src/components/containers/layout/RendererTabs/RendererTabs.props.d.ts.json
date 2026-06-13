@@ -115,32 +115,68 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "onTabChange",
           "jsdoc": "标签页切换回调（activeName 变更）",
-          "schema": {
-            "type": "object",
-            "title": "(name: string | number) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "name",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "onTabClick",
           "jsdoc": "标签页点击回调",
-          "schema": {
-            "type": "object",
-            "title": "(pane: TabsClickEvent, event: Event) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "pane",
+              "type": {
+                "type": "reference",
+                "name": "TabsClickEvent",
+                "sourcePath": "declarations/packages/spark-component/src/components/containers/layout/RendererTabs/RendererTabs.props.d.ts"
+              }
+            },
+            {
+              "name": "event",
+              "type": {
+                "type": "reference",
+                "name": "Event"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.684Z",
+  "generatedAt": "2026-06-13T06:21:06.823Z",
   "$defs": {
     "TabsClickEvent": {
       "type": "object",
@@ -177,14 +213,6 @@
               "type": "number"
             }
           ]
-        },
-        "onTabChange": {
-          "type": "object",
-          "title": "(name: string | number) => void"
-        },
-        "onTabClick": {
-          "type": "object",
-          "title": "(pane: TabsClickEvent, event: Event) => void"
         }
       }
     }

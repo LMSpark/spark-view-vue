@@ -153,7 +153,29 @@
               }
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "_getColumns": {
+              "type": "object",
+              "title": "() => DataColumn[]"
+            },
+            "_getColumnMap": {
+              "type": "object",
+              "title": "() => Map<string, DataColumn> | undefined"
+            },
+            "_getRows": {
+              "type": "object",
+              "title": "() => DataRow[]"
+            },
+            "_registerComputed": {
+              "type": "object",
+              "title": "(name: string, fn: (row: DataRow) => unknown) => void"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -165,7 +187,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "getPkColumnMeta",
@@ -175,6 +203,15 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataColumn"
           }
         },
         {
@@ -185,7 +222,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "getPkKey",
@@ -216,6 +259,26 @@
                 "name": "undefined"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
           }
         },
         {
@@ -244,6 +307,20 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
           }
         },
         {
@@ -269,6 +346,23 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row1": {
+                "type": "object",
+                "title": "DataRow"
+              },
+              "row2": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -287,7 +381,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "title": "PrimaryKeyGeneratorConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "removePrimaryKeyGenerator",
@@ -297,7 +402,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "generatePrimaryKey",
@@ -321,6 +432,20 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "Partial<DataRow>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataRow"
           }
         },
         {
@@ -345,6 +470,20 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "Partial<DataRow>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataRow"
           }
         },
         {
@@ -364,12 +503,21 @@
                 }
               ]
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Readonly<PrimaryKeyGeneratorConfig>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.841Z",
+  "generatedAt": "2026-06-13T06:21:07.077Z",
   "$defs": {
     "PrimaryKeyDelegate": {
       "type": "object",

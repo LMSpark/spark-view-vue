@@ -51,10 +51,68 @@
         "componentDirectory": "containers/data-views"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "getDetailData",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        {
+          "name": "getFieldValue",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "field",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.636Z",
+  "generatedAt": "2026-06-13T06:21:06.739Z",
   "$defs": {
     "RendererDetailApi": {
       "type": "object",

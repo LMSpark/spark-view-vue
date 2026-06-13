@@ -36,16 +36,41 @@
         "className": "JsonSchemaLocalDefsExtraction",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "schema",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "defs",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, JsonSchema>>"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.861Z",
+  "generatedAt": "2026-06-13T06:21:07.112Z",
   "$defs": {
     "JsonSchemaLocalDefsExtraction": {
       "type": "object",
       "title": "JsonSchemaLocalDefsExtraction",
-      "description": "Json Schema Local Defs Extraction 的语义模型。"
+      "description": "Json Schema Local Defs Extraction 的语义模型。",
+      "properties": {
+        "schema": true,
+        "defs": {
+          "type": "object",
+          "title": "Readonly<Record<string, JsonSchema>>"
+        }
+      }
     }
   }
 }

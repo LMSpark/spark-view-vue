@@ -16,6 +16,41 @@
         "$id": "spark-class-model://schema/PrimaryKeyDelegate"
       }
     },
+    "spark-class-model://model/PrimaryKeyDelegate/constructors/0": {
+      "ref": "spark-class-model://model/PrimaryKeyDelegate/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/PrimaryKeyDelegate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3ae6e45a6ff86ecd7e89eafba60a72f26fc83710fad91580348628ca834f84ff"
+    },
+    "spark-class-model://schema/shared/3ae6e45a6ff86ecd7e89eafba60a72f26fc83710fad91580348628ca834f84ff": {
+      "ref": "spark-class-model://schema/shared/3ae6e45a6ff86ecd7e89eafba60a72f26fc83710fad91580348628ca834f84ff",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "_getColumns": {
+            "type": "object",
+            "title": "() => DataColumn[]"
+          },
+          "_getColumnMap": {
+            "type": "object",
+            "title": "() => Map<string, DataColumn> | undefined"
+          },
+          "_getRows": {
+            "type": "object",
+            "title": "() => DataRow[]"
+          },
+          "_registerComputed": {
+            "type": "object",
+            "title": "(name: string, fn: (row: DataRow) => unknown) => void"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3ae6e45a6ff86ecd7e89eafba60a72f26fc83710fad91580348628ca834f84ff"
+      }
+    },
     "spark-class-model://model/PrimaryKeyDelegate/methods/ensurePkColumn/0": {
       "ref": "spark-class-model://model/PrimaryKeyDelegate/methods/ensurePkColumn/0",
       "kind": "method",
@@ -134,21 +169,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/4bcac39ea966f7a3e536a5cd36d865539a9750e65ecafdacad23f5b14a64a74d"
     },
-    "spark-class-model://schema/shared/4bcac39ea966f7a3e536a5cd36d865539a9750e65ecafdacad23f5b14a64a74d": {
-      "ref": "spark-class-model://schema/shared/4bcac39ea966f7a3e536a5cd36d865539a9750e65ecafdacad23f5b14a64a74d",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "config": {
-            "$ref": "spark-class-model://schema/PrimaryKeyGeneratorConfig"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/4bcac39ea966f7a3e536a5cd36d865539a9750e65ecafdacad23f5b14a64a74d"
-      }
-    },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FsetPrimaryKeyGenerator%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGeneratorConfig": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FsetPrimaryKeyGenerator%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyGeneratorConfig",
       "kind": "link",
@@ -175,22 +195,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/3f1057775891587e4d83ec31fbdcd8859bcd3d56303b2dcf336ac6f30a536c87",
       "returnSchemaRef": "spark-class-model://schema/shared/d6da516bf1ead8be0d121529135c994dc180abc194ff65cda45b488c54e1f495"
-    },
-    "spark-class-model://schema/shared/3f1057775891587e4d83ec31fbdcd8859bcd3d56303b2dcf336ac6f30a536c87": {
-      "ref": "spark-class-model://schema/shared/3f1057775891587e4d83ec31fbdcd8859bcd3d56303b2dcf336ac6f30a536c87",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "row": {
-            "type": "object",
-            "title": "Partial<DataRow>"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/3f1057775891587e4d83ec31fbdcd8859bcd3d56303b2dcf336ac6f30a536c87"
-      }
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgeneratePrimaryKey%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPrimaryKeyDelegate%2Fmethods%2FgeneratePrimaryKey%2F8/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
@@ -235,6 +239,7 @@
       "kind": "model",
       "className": "PrimaryKeyDelegate",
       "schemaRef": "spark-class-model://schema/PrimaryKeyDelegate",
+      "constructorRef": "spark-class-model://model/PrimaryKeyDelegate/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/PrimaryKeyDelegate/methods/ensurePkColumn/0",

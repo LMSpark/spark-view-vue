@@ -90,7 +90,23 @@
               "sourcePath": "declarations/packages/spark-data/src/strategies/crud-delegate.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "type": "object",
+              "title": "DataView"
+            },
+            "emitCrudLifecycle": {
+              "$ref": "#/$defs/EmitCrudLifecycleFn"
+            },
+            "emitMutating": {
+              "$ref": "#/$defs/MutatingFn"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -102,6 +118,15 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "CrudService"
           }
         },
         {
@@ -115,6 +140,15 @@
               "type": "reference",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "CrudOperationConfig"
           }
         },
         {
@@ -142,6 +176,20 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "type": "object",
+                "title": "QueryParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult>"
           }
         },
         {
@@ -182,6 +230,20 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pk": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<DataRow>>"
           }
         },
         {
@@ -218,6 +280,20 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "title": "Partial<DataRow>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<DataRow>>"
           }
         },
         {
@@ -290,6 +366,34 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "data": {
+                "type": "object",
+                "title": "Partial<DataRow>"
+              },
+              "serverPk": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<DataRow>>"
           }
         },
         {
@@ -349,6 +453,30 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "serverPk": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<boolean>>"
           }
         },
         {
@@ -388,6 +516,23 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "Partial<DataRow>"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<BatchResult>>"
           }
         },
         {
@@ -427,6 +572,23 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "Partial<DataRow>"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<BatchResult>>"
           }
         },
         {
@@ -469,6 +631,29 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ids": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<BatchResult>>"
           }
         },
         {
@@ -499,6 +684,20 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "type": "object",
+                "title": "File"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<{\n        imported: number;\n        failed: number;\n    }>>"
           }
         },
         {
@@ -532,6 +731,20 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "type": "object",
+                "title": "QueryParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<Blob>>"
           }
         },
         {
@@ -542,12 +755,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.838Z",
+  "generatedAt": "2026-06-13T06:21:07.073Z",
   "$defs": {
     "EmitCrudLifecycleFn": {
       "type": "object",

@@ -203,6 +203,37 @@
         "$id": "spark-class-model://schema/DirtyTrackingDelegate"
       }
     },
+    "spark-class-model://model/DirtyTrackingDelegate/constructors/0": {
+      "ref": "spark-class-model://model/DirtyTrackingDelegate/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/DirtyTrackingDelegate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/b5066e6812d47c0350a246cdf183547959da40340a044d3a3b3a9b276be6e847"
+    },
+    "spark-class-model://schema/shared/b5066e6812d47c0350a246cdf183547959da40340a044d3a3b3a9b276be6e847": {
+      "ref": "spark-class-model://schema/shared/b5066e6812d47c0350a246cdf183547959da40340a044d3a3b3a9b276be6e847",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "getColumns": {
+            "type": "object",
+            "title": "() => readonly DataColumn[] | undefined"
+          },
+          "getComputedColumnNames": {
+            "type": "object",
+            "title": "() => ReadonlySet<string>"
+          },
+          "getPrimaryKeyFields": {
+            "type": "object",
+            "title": "() => string[]"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b5066e6812d47c0350a246cdf183547959da40340a044d3a3b3a9b276be6e847"
+      }
+    },
     "spark-class-model://model/DirtyTrackingDelegate/methods/trackCreate/0": {
       "ref": "spark-class-model://model/DirtyTrackingDelegate/methods/trackCreate/0",
       "kind": "method",
@@ -576,6 +607,7 @@
       "kind": "model",
       "className": "DirtyTrackingDelegate",
       "schemaRef": "spark-class-model://schema/DirtyTrackingDelegate",
+      "constructorRef": "spark-class-model://model/DirtyTrackingDelegate/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/DirtyTrackingDelegate/methods/trackCreate/0",

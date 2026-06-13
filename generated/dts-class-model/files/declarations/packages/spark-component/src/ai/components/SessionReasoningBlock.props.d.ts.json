@@ -37,16 +37,55 @@
         "declarationKind": "type",
         "componentName": "SessionReasoningBlock"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "text",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "collapsed",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "isActive",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.631Z",
+  "generatedAt": "2026-06-13T06:21:06.724Z",
   "$defs": {
     "SessionReasoningBlockProps": {
       "type": "object",
       "title": "SessionReasoningBlockProps",
-      "description": "Session Reasoning Block Props 的属性契约。"
+      "description": "Session Reasoning Block Props 的属性契约。",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "collapsed": {
+          "type": "boolean"
+        },
+        "isActive": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }

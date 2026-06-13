@@ -233,26 +233,6 @@
           "writable": true
         },
         {
-          "name": "isTableCellHidden",
-          "jsdoc": "是否 is Table Cell Hidden。",
-          "schema": {
-            "type": "object",
-            "title": "(row: DataRow) => boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "getTableCellDisplayValue",
-          "jsdoc": "get Table Cell Display Value 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(row: DataRow) => string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "validationRules",
           "jsdoc": "validation Rules 字段。",
           "schema": {
@@ -266,7 +246,70 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "isTableCellHidden",
+          "jsdoc": "是否 is Table Cell Hidden。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "getTableCellDisplayValue",
+          "jsdoc": "get Table Cell Display Value 回调。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        }
+      ]
     },
     "FieldPermissionForContext": {
       "kind": "FieldPermissionForContext",
@@ -332,26 +375,6 @@
           "writable": true
         },
         {
-          "name": "isTableCellHidden",
-          "jsdoc": "是否 is Table Cell Hidden。",
-          "schema": {
-            "type": "object",
-            "title": "(row: DataRow) => boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "getTableCellDisplayValue",
-          "jsdoc": "get Table Cell Display Value 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(row: DataRow) => string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "validationRules",
           "jsdoc": "validation Rules 字段。",
           "schema": {
@@ -362,7 +385,70 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "isTableCellHidden",
+          "jsdoc": "是否 is Table Cell Hidden。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "getTableCellDisplayValue",
+          "jsdoc": "get Table Cell Display Value 回调。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        }
+      ]
     },
     "OptionalWithUndefined": {
       "kind": "OptionalWithUndefined",
@@ -421,7 +507,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.732Z",
+  "generatedAt": "2026-06-13T06:21:06.910Z",
   "$defs": {
     "FieldContextProps": {
       "type": "object",
@@ -528,14 +614,6 @@
         "currentDisplayValue": {
           "type": "string"
         },
-        "isTableCellHidden": {
-          "type": "object",
-          "title": "(row: DataRow) => boolean"
-        },
-        "getTableCellDisplayValue": {
-          "type": "object",
-          "title": "(row: DataRow) => string"
-        },
         "validationRules": {
           "type": "array",
           "items": {
@@ -569,14 +647,6 @@
         "currentDisplayValue": {
           "type": "object",
           "title": "ComputedRef<string>"
-        },
-        "isTableCellHidden": {
-          "type": "object",
-          "title": "(row: DataRow) => boolean"
-        },
-        "getTableCellDisplayValue": {
-          "type": "object",
-          "title": "(row: DataRow) => string"
         },
         "validationRules": {
           "type": "object",

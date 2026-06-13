@@ -44,7 +44,26 @@
         "className": "StringSchemaOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "nullable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "minLength",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "NumberSchemaOptions": {
@@ -66,7 +85,17 @@
         "className": "NumberSchemaOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "nullable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "BooleanSchemaOptions": {
@@ -88,7 +117,17 @@
         "className": "BooleanSchemaOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "nullable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "EnumSchemaOptions": {
@@ -110,7 +149,39 @@
         "className": "EnumSchemaOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "type",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "string"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "number"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "nullable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ObjectSchemaOptions": {
@@ -132,36 +203,116 @@
         "className": "ObjectSchemaOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "required",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "description",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "additionalProperties",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "JsonSchema"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.862Z",
+  "generatedAt": "2026-06-13T06:21:07.114Z",
   "$defs": {
     "StringSchemaOptions": {
       "type": "object",
       "title": "StringSchemaOptions",
-      "description": "String Schema Options 的调用配置。"
+      "description": "String Schema Options 的调用配置。",
+      "properties": {
+        "nullable": {
+          "type": "boolean"
+        },
+        "minLength": {
+          "type": "number"
+        }
+      }
     },
     "NumberSchemaOptions": {
       "type": "object",
       "title": "NumberSchemaOptions",
-      "description": "Number Schema Options 的调用配置。"
+      "description": "Number Schema Options 的调用配置。",
+      "properties": {
+        "nullable": {
+          "type": "boolean"
+        }
+      }
     },
     "BooleanSchemaOptions": {
       "type": "object",
       "title": "BooleanSchemaOptions",
-      "description": "Boolean Schema Options 的调用配置。"
+      "description": "Boolean Schema Options 的调用配置。",
+      "properties": {
+        "nullable": {
+          "type": "boolean"
+        }
+      }
     },
     "EnumSchemaOptions": {
       "type": "object",
       "title": "EnumSchemaOptions",
-      "description": "Enum Schema Options 的调用配置。"
+      "description": "Enum Schema Options 的调用配置。",
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "string"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "number"
+              ]
+            }
+          ]
+        },
+        "nullable": {
+          "type": "boolean"
+        }
+      }
     },
     "ObjectSchemaOptions": {
       "type": "object",
       "title": "ObjectSchemaOptions",
-      "description": "Object Schema Options 的调用配置。"
+      "description": "Object Schema Options 的调用配置。",
+      "properties": {
+        "required": {
+          "type": "array"
+        },
+        "description": {
+          "type": "string"
+        },
+        "additionalProperties": {
+          "type": "object",
+          "title": "JsonSchema"
+        }
+      }
     }
   }
 }

@@ -82,10 +82,6 @@
           },
           "onItemClick": {
             "$ref": "spark-class-model://schema/RowClickHandler"
-          },
-          "onPageChange": {
-            "type": "object",
-            "title": "(page: number) => void | Promise<void>"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -329,24 +325,14 @@
       "targetFile": "files/declarations/packages/spark-component/src/components/containers/support/interactionControl.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/RowClickHandler"
     },
-    "spark-class-model://schema/shared/02302bb1db021a4fea57b265fc51ab44ef969447e72f8d829854b8b6dee755a5": {
-      "ref": "spark-class-model://schema/shared/02302bb1db021a4fea57b265fc51ab44ef969447e72f8d829854b8b6dee755a5",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(page: number) => void | Promise<void>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/02302bb1db021a4fea57b265fc51ab44ef969447e72f8d829854b8b6dee755a5"
-      }
-    },
-    "spark-class-model://model/RVirtualCardProps/attributes/onPageChange/23": {
-      "ref": "spark-class-model://model/RVirtualCardProps/attributes/onPageChange/23",
-      "kind": "attribute",
+    "spark-class-model://model/RVirtualCardProps/methods/onPageChange/0": {
+      "ref": "spark-class-model://model/RVirtualCardProps/methods/onPageChange/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/RVirtualCardProps",
       "name": "onPageChange",
-      "schemaRef": "spark-class-model://schema/shared/02302bb1db021a4fea57b265fc51ab44ef969447e72f8d829854b8b6dee755a5",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
     },
     "spark-class-model://model/RVirtualCardProps": {
       "ref": "spark-class-model://model/RVirtualCardProps",
@@ -376,10 +362,11 @@
         "spark-class-model://model/RVirtualCardProps/attributes/showHeader/19",
         "spark-class-model://model/RVirtualCardProps/attributes/showHud/20",
         "spark-class-model://model/RVirtualCardProps/attributes/showPageMeta/21",
-        "spark-class-model://model/RVirtualCardProps/attributes/onItemClick/22",
-        "spark-class-model://model/RVirtualCardProps/attributes/onPageChange/23"
+        "spark-class-model://model/RVirtualCardProps/attributes/onItemClick/22"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/RVirtualCardProps/methods/onPageChange/0"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRVirtualCardProps%2Fattributes%2FdataSource%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataView",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRVirtualCardProps%2Fattributes%2Ftoolbar%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps",

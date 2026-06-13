@@ -20,13 +20,105 @@
         "$id": "spark-class-model://schema/AppLoggerApi"
       }
     },
+    "spark-class-model://model/AppLoggerApi/methods/debug/0": {
+      "ref": "spark-class-model://model/AppLoggerApi/methods/debug/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AppLoggerApi",
+      "name": "debug",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ebacc0e3fe80f9d3535f0ff9563e34540125e9e44422ed26304a7498a09a0bc7"
+    },
+    "spark-class-model://schema/shared/ebacc0e3fe80f9d3535f0ff9563e34540125e9e44422ed26304a7498a09a0bc7": {
+      "ref": "spark-class-model://schema/shared/ebacc0e3fe80f9d3535f0ff9563e34540125e9e44422ed26304a7498a09a0bc7",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ebacc0e3fe80f9d3535f0ff9563e34540125e9e44422ed26304a7498a09a0bc7"
+      }
+    },
+    "spark-class-model://model/AppLoggerApi/methods/info/1": {
+      "ref": "spark-class-model://model/AppLoggerApi/methods/info/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AppLoggerApi",
+      "name": "info",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ebacc0e3fe80f9d3535f0ff9563e34540125e9e44422ed26304a7498a09a0bc7"
+    },
+    "spark-class-model://model/AppLoggerApi/methods/warn/2": {
+      "ref": "spark-class-model://model/AppLoggerApi/methods/warn/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AppLoggerApi",
+      "name": "warn",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ebacc0e3fe80f9d3535f0ff9563e34540125e9e44422ed26304a7498a09a0bc7"
+    },
+    "spark-class-model://model/AppLoggerApi/methods/error/3": {
+      "ref": "spark-class-model://model/AppLoggerApi/methods/error/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AppLoggerApi",
+      "name": "error",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/064e575e7ed0adf17060383224226a13aa4dbc53cbe225e0e88ec5463a83580a"
+    },
+    "spark-class-model://schema/shared/064e575e7ed0adf17060383224226a13aa4dbc53cbe225e0e88ec5463a83580a": {
+      "ref": "spark-class-model://schema/shared/064e575e7ed0adf17060383224226a13aa4dbc53cbe225e0e88ec5463a83580a",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "Error"
+              },
+              {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/064e575e7ed0adf17060383224226a13aa4dbc53cbe225e0e88ec5463a83580a"
+      }
+    },
+    "spark-class-model://model/AppLoggerApi/methods/success/4": {
+      "ref": "spark-class-model://model/AppLoggerApi/methods/success/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AppLoggerApi",
+      "name": "success",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ebacc0e3fe80f9d3535f0ff9563e34540125e9e44422ed26304a7498a09a0bc7"
+    },
     "spark-class-model://model/AppLoggerApi": {
       "ref": "spark-class-model://model/AppLoggerApi",
       "kind": "model",
       "className": "AppLoggerApi",
       "schemaRef": "spark-class-model://schema/AppLoggerApi",
       "attributeRefs": [],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/AppLoggerApi/methods/debug/0",
+        "spark-class-model://model/AppLoggerApi/methods/info/1",
+        "spark-class-model://model/AppLoggerApi/methods/warn/2",
+        "spark-class-model://model/AppLoggerApi/methods/error/3",
+        "spark-class-model://model/AppLoggerApi/methods/success/4"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/AppLoggerConfig": {
@@ -210,13 +302,32 @@
         "$id": "spark-class-model://schema/LogTransport"
       }
     },
+    "spark-class-model://model/LogTransport/methods/flush/0": {
+      "ref": "spark-class-model://model/LogTransport/methods/flush/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/LogTransport",
+      "name": "flush",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/LogTransport/methods/destroy/1": {
+      "ref": "spark-class-model://model/LogTransport/methods/destroy/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/LogTransport",
+      "name": "destroy",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
     "spark-class-model://model/LogTransport": {
       "ref": "spark-class-model://model/LogTransport",
       "kind": "model",
       "className": "LogTransport",
       "schemaRef": "spark-class-model://schema/LogTransport",
       "attributeRefs": [],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/LogTransport/methods/flush/0",
+        "spark-class-model://model/LogTransport/methods/destroy/1"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/BatchTransportOptions": {
@@ -237,10 +348,6 @@
           },
           "flushInterval": {
             "type": "number"
-          },
-          "getPageId": {
-            "type": "object",
-            "title": "() => string | undefined"
           },
           "sessionId": {
             "type": "string"
@@ -296,33 +403,23 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/0e9541af997bda05ab2b6adcfd8c807524098dcf28c0577e681302f954bdf3a6": {
-      "ref": "spark-class-model://schema/shared/0e9541af997bda05ab2b6adcfd8c807524098dcf28c0577e681302f954bdf3a6",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => string | undefined",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/0e9541af997bda05ab2b6adcfd8c807524098dcf28c0577e681302f954bdf3a6"
-      }
-    },
-    "spark-class-model://model/BatchTransportOptions/attributes/getPageId/4": {
-      "ref": "spark-class-model://model/BatchTransportOptions/attributes/getPageId/4",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/BatchTransportOptions",
-      "name": "getPageId",
-      "schemaRef": "spark-class-model://schema/shared/0e9541af997bda05ab2b6adcfd8c807524098dcf28c0577e681302f954bdf3a6",
-      "readable": true,
-      "writable": false
-    },
-    "spark-class-model://model/BatchTransportOptions/attributes/sessionId/5": {
-      "ref": "spark-class-model://model/BatchTransportOptions/attributes/sessionId/5",
+    "spark-class-model://model/BatchTransportOptions/attributes/sessionId/4": {
+      "ref": "spark-class-model://model/BatchTransportOptions/attributes/sessionId/4",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/BatchTransportOptions",
       "name": "sessionId",
       "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
       "readable": true,
       "writable": false
+    },
+    "spark-class-model://model/BatchTransportOptions/methods/getPageId/0": {
+      "ref": "spark-class-model://model/BatchTransportOptions/methods/getPageId/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/BatchTransportOptions",
+      "name": "getPageId",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96"
     },
     "spark-class-model://model/BatchTransportOptions": {
       "ref": "spark-class-model://model/BatchTransportOptions",
@@ -334,10 +431,11 @@
         "spark-class-model://model/BatchTransportOptions/attributes/minLevel/1",
         "spark-class-model://model/BatchTransportOptions/attributes/batchSize/2",
         "spark-class-model://model/BatchTransportOptions/attributes/flushInterval/3",
-        "spark-class-model://model/BatchTransportOptions/attributes/getPageId/4",
-        "spark-class-model://model/BatchTransportOptions/attributes/sessionId/5"
+        "spark-class-model://model/BatchTransportOptions/attributes/sessionId/4"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/BatchTransportOptions/methods/getPageId/0"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBatchTransportOptions%2Fattributes%2FminLevel%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FLogLevel"
       ]
@@ -351,6 +449,38 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AppLogger"
       }
+    },
+    "spark-class-model://model/AppLogger/constructors/0": {
+      "ref": "spark-class-model://model/AppLogger/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/AppLogger",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/a53bc5bb8e9a4c7b57e2f9708dbabdf612ac3660b20beddea7615140f1e12a62"
+    },
+    "spark-class-model://schema/shared/a53bc5bb8e9a4c7b57e2f9708dbabdf612ac3660b20beddea7615140f1e12a62": {
+      "ref": "spark-class-model://schema/shared/a53bc5bb8e9a4c7b57e2f9708dbabdf612ac3660b20beddea7615140f1e12a62",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "config": {
+            "$ref": "spark-class-model://schema/AppLoggerConfig"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a53bc5bb8e9a4c7b57e2f9708dbabdf612ac3660b20beddea7615140f1e12a62"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAppLogger%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAppLoggerConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAppLogger%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAppLoggerConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AppLogger/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/AppLoggerConfig",
+      "targetClassName": "AppLoggerConfig",
+      "targetFile": "files/declarations/packages/spark-app/src/logger/index.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AppLoggerConfig"
     },
     "spark-class-model://model/AppLogger/methods/addTransport/0": {
       "ref": "spark-class-model://model/AppLogger/methods/addTransport/0",
@@ -393,25 +523,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/ebacc0e3fe80f9d3535f0ff9563e34540125e9e44422ed26304a7498a09a0bc7"
     },
-    "spark-class-model://schema/shared/ebacc0e3fe80f9d3535f0ff9563e34540125e9e44422ed26304a7498a09a0bc7": {
-      "ref": "spark-class-model://schema/shared/ebacc0e3fe80f9d3535f0ff9563e34540125e9e44422ed26304a7498a09a0bc7",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string"
-          },
-          "meta": {
-            "type": "object",
-            "title": "Record<string, unknown>"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/ebacc0e3fe80f9d3535f0ff9563e34540125e9e44422ed26304a7498a09a0bc7"
-      }
-    },
     "spark-class-model://model/AppLogger/methods/info/2": {
       "ref": "spark-class-model://model/AppLogger/methods/info/2",
       "kind": "method",
@@ -436,33 +547,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/064e575e7ed0adf17060383224226a13aa4dbc53cbe225e0e88ec5463a83580a"
     },
-    "spark-class-model://schema/shared/064e575e7ed0adf17060383224226a13aa4dbc53cbe225e0e88ec5463a83580a": {
-      "ref": "spark-class-model://schema/shared/064e575e7ed0adf17060383224226a13aa4dbc53cbe225e0e88ec5463a83580a",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "Error"
-              },
-              {
-                "type": "object",
-                "title": "Record<string, unknown>"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/064e575e7ed0adf17060383224226a13aa4dbc53cbe225e0e88ec5463a83580a"
-      }
-    },
     "spark-class-model://model/AppLogger/methods/success/5": {
       "ref": "spark-class-model://model/AppLogger/methods/success/5",
       "kind": "method",
@@ -476,6 +560,7 @@
       "kind": "model",
       "className": "AppLogger",
       "schemaRef": "spark-class-model://schema/AppLogger",
+      "constructorRef": "spark-class-model://model/AppLogger/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/AppLogger/methods/addTransport/0",
@@ -486,6 +571,7 @@
         "spark-class-model://model/AppLogger/methods/success/5"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAppLogger%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAppLoggerConfig",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAppLogger%2Fmethods%2FaddTransport%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FLogTransport"
       ]
     }

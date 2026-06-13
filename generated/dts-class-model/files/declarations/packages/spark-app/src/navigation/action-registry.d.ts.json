@@ -118,10 +118,209 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "register",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "command",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "handler",
+              "type": {
+                "type": "reference",
+                "name": "NavigationActionHandler",
+                "sourcePath": "declarations/packages/spark-app/src/navigation/action-registry.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "signatures": [
+                {
+                  "parameters": [],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                }
+              ]
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string"
+              },
+              "handler": {
+                "$ref": "#/$defs/NavigationActionHandler"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "() => void"
+          }
+        },
+        {
+          "name": "unregister",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "command",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "has",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "command",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "execute",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "command",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "Omit",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "NavigationActionContext",
+                    "sourcePath": "declarations/packages/spark-app/src/navigation/action-registry.d.ts"
+                  },
+                  {
+                    "type": "literal",
+                    "value": "command"
+                  }
+                ]
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string"
+              },
+              "context": {
+                "type": "object",
+                "title": "Omit<NavigationActionContext, 'command'>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<boolean>"
+          }
+        },
+        {
+          "name": "getCommands",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.612Z",
+  "generatedAt": "2026-06-13T06:21:06.696Z",
   "$defs": {
     "NavigationActionContext": {
       "type": "object",

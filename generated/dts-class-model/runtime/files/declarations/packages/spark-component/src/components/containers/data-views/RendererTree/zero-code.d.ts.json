@@ -51,22 +51,6 @@
         "$id": "spark-class-model://schema/TreeNode"
       }
     },
-    "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8": {
-      "ref": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8",
-      "kind": "schema",
-      "schema": {
-        "anyOf": [
-          {
-            "type": "string"
-          },
-          {
-            "type": "number"
-          }
-        ],
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8"
-      }
-    },
     "spark-class-model://model/TreeNode/attributes/id/0": {
       "ref": "spark-class-model://model/TreeNode/attributes/id/0",
       "kind": "attribute",
@@ -305,275 +289,153 @@
       "schema": {
         "type": "object",
         "title": "NativeTreeLike",
-        "properties": {
-          "getCurrentNode": {
-            "type": "object",
-            "title": "() => unknown"
-          },
-          "setCurrentKey": {
-            "type": "object",
-            "title": "(key: string | number | null) => void"
-          },
-          "filter": {
-            "type": "object",
-            "title": "(value: string) => void"
-          },
-          "getCheckedNodes": {
-            "type": "object",
-            "title": "(leafOnly?: boolean, includeHalfChecked?: boolean) => unknown[]"
-          },
-          "getCheckedKeys": {
-            "type": "object",
-            "title": "(leafOnly?: boolean) => Array<string | number>"
-          },
-          "setCheckedKeys": {
-            "type": "object",
-            "title": "(keys: Array<string | number>, leafOnly?: boolean) => void"
-          },
-          "append": {
-            "type": "object",
-            "title": "(data: unknown, parentNode: unknown) => void"
-          },
-          "insertBefore": {
-            "type": "object",
-            "title": "(data: unknown, refNode: unknown) => void"
-          },
-          "insertAfter": {
-            "type": "object",
-            "title": "(data: unknown, refNode: unknown) => void"
-          },
-          "remove": {
-            "type": "object",
-            "title": "(nodeOrData: unknown) => void"
-          },
-          "getNode": {
-            "type": "object",
-            "title": "(key: string | number) => NativeTreeNodeLike | undefined"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/NativeTreeLike"
       }
     },
-    "spark-class-model://schema/shared/1ba8db9736438220dbf4c4ad88412ccb1a3377bf353a60c9998b4682874c8a52": {
-      "ref": "spark-class-model://schema/shared/1ba8db9736438220dbf4c4ad88412ccb1a3377bf353a60c9998b4682874c8a52",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => unknown",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/1ba8db9736438220dbf4c4ad88412ccb1a3377bf353a60c9998b4682874c8a52"
-      }
-    },
-    "spark-class-model://model/NativeTreeLike/attributes/getCurrentNode/0": {
-      "ref": "spark-class-model://model/NativeTreeLike/attributes/getCurrentNode/0",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTreeLike/methods/getCurrentNode/0": {
+      "ref": "spark-class-model://model/NativeTreeLike/methods/getCurrentNode/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTreeLike",
       "name": "getCurrentNode",
-      "schemaRef": "spark-class-model://schema/shared/1ba8db9736438220dbf4c4ad88412ccb1a3377bf353a60c9998b4682874c8a52",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
     },
-    "spark-class-model://schema/shared/0f4c13657b383e6397e16493974beba9a3e1d4140b734af4e3635e1e1477c803": {
-      "ref": "spark-class-model://schema/shared/0f4c13657b383e6397e16493974beba9a3e1d4140b734af4e3635e1e1477c803",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(key: string | number | null) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/0f4c13657b383e6397e16493974beba9a3e1d4140b734af4e3635e1e1477c803"
-      }
-    },
-    "spark-class-model://model/NativeTreeLike/attributes/setCurrentKey/1": {
-      "ref": "spark-class-model://model/NativeTreeLike/attributes/setCurrentKey/1",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTreeLike/methods/setCurrentKey/1": {
+      "ref": "spark-class-model://model/NativeTreeLike/methods/setCurrentKey/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTreeLike",
       "name": "setCurrentKey",
-      "schemaRef": "spark-class-model://schema/shared/0f4c13657b383e6397e16493974beba9a3e1d4140b734af4e3635e1e1477c803",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://schema/shared/d6fa2742f8c4b07105727382b200964d4d3c00d550e19a9f873035bc43dc5c52": {
-      "ref": "spark-class-model://schema/shared/d6fa2742f8c4b07105727382b200964d4d3c00d550e19a9f873035bc43dc5c52",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(value: string) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/d6fa2742f8c4b07105727382b200964d4d3c00d550e19a9f873035bc43dc5c52"
-      }
-    },
-    "spark-class-model://model/NativeTreeLike/attributes/filter/2": {
-      "ref": "spark-class-model://model/NativeTreeLike/attributes/filter/2",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTreeLike/methods/filter/2": {
+      "ref": "spark-class-model://model/NativeTreeLike/methods/filter/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTreeLike",
       "name": "filter",
-      "schemaRef": "spark-class-model://schema/shared/d6fa2742f8c4b07105727382b200964d4d3c00d550e19a9f873035bc43dc5c52",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://schema/shared/c805f0b17c400335cef7d214a8d5262eef337e162cba07783490eda3d4a0057e": {
-      "ref": "spark-class-model://schema/shared/c805f0b17c400335cef7d214a8d5262eef337e162cba07783490eda3d4a0057e",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(leafOnly?: boolean, includeHalfChecked?: boolean) => unknown[]",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/c805f0b17c400335cef7d214a8d5262eef337e162cba07783490eda3d4a0057e"
-      }
-    },
-    "spark-class-model://model/NativeTreeLike/attributes/getCheckedNodes/3": {
-      "ref": "spark-class-model://model/NativeTreeLike/attributes/getCheckedNodes/3",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTreeLike/methods/getCheckedNodes/3": {
+      "ref": "spark-class-model://model/NativeTreeLike/methods/getCheckedNodes/3",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTreeLike",
       "name": "getCheckedNodes",
-      "schemaRef": "spark-class-model://schema/shared/c805f0b17c400335cef7d214a8d5262eef337e162cba07783490eda3d4a0057e",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6"
     },
-    "spark-class-model://schema/shared/dfdf5d83464f4dd19ca7d54c08da9506cae289f28e14c392aca71dad8c66df89": {
-      "ref": "spark-class-model://schema/shared/dfdf5d83464f4dd19ca7d54c08da9506cae289f28e14c392aca71dad8c66df89",
+    "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6": {
+      "ref": "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6",
       "kind": "schema",
       "schema": {
-        "type": "object",
-        "title": "(leafOnly?: boolean) => Array<string | number>",
+        "type": "array",
+        "items": true,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/dfdf5d83464f4dd19ca7d54c08da9506cae289f28e14c392aca71dad8c66df89"
+        "$id": "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6"
       }
     },
-    "spark-class-model://model/NativeTreeLike/attributes/getCheckedKeys/4": {
-      "ref": "spark-class-model://model/NativeTreeLike/attributes/getCheckedKeys/4",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTreeLike/methods/getCheckedKeys/4": {
+      "ref": "spark-class-model://model/NativeTreeLike/methods/getCheckedKeys/4",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTreeLike",
       "name": "getCheckedKeys",
-      "schemaRef": "spark-class-model://schema/shared/dfdf5d83464f4dd19ca7d54c08da9506cae289f28e14c392aca71dad8c66df89",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/8dcb03fce87aa95b9173b2842fd287a9a41924f3f7e8610d82895c3844fbd627"
     },
-    "spark-class-model://schema/shared/225c8f3fdda4380b8048389ded0e95f80b4500a11a513ef0af8467db92581d1f": {
-      "ref": "spark-class-model://schema/shared/225c8f3fdda4380b8048389ded0e95f80b4500a11a513ef0af8467db92581d1f",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(keys: Array<string | number>, leafOnly?: boolean) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/225c8f3fdda4380b8048389ded0e95f80b4500a11a513ef0af8467db92581d1f"
-      }
-    },
-    "spark-class-model://model/NativeTreeLike/attributes/setCheckedKeys/5": {
-      "ref": "spark-class-model://model/NativeTreeLike/attributes/setCheckedKeys/5",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTreeLike/methods/setCheckedKeys/5": {
+      "ref": "spark-class-model://model/NativeTreeLike/methods/setCheckedKeys/5",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTreeLike",
       "name": "setCheckedKeys",
-      "schemaRef": "spark-class-model://schema/shared/225c8f3fdda4380b8048389ded0e95f80b4500a11a513ef0af8467db92581d1f",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://schema/shared/c199011f1729b7e68c152af52b739562ec0865b7bd06bedb4758be9f866aebae": {
-      "ref": "spark-class-model://schema/shared/c199011f1729b7e68c152af52b739562ec0865b7bd06bedb4758be9f866aebae",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(data: unknown, parentNode: unknown) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/c199011f1729b7e68c152af52b739562ec0865b7bd06bedb4758be9f866aebae"
-      }
-    },
-    "spark-class-model://model/NativeTreeLike/attributes/append/6": {
-      "ref": "spark-class-model://model/NativeTreeLike/attributes/append/6",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTreeLike/methods/append/6": {
+      "ref": "spark-class-model://model/NativeTreeLike/methods/append/6",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTreeLike",
       "name": "append",
-      "schemaRef": "spark-class-model://schema/shared/c199011f1729b7e68c152af52b739562ec0865b7bd06bedb4758be9f866aebae",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://schema/shared/6598c156f9abd99357b8989f189cec7e40329d1daaf38fbbbc2b3e6fb0bef6a3": {
-      "ref": "spark-class-model://schema/shared/6598c156f9abd99357b8989f189cec7e40329d1daaf38fbbbc2b3e6fb0bef6a3",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(data: unknown, refNode: unknown) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/6598c156f9abd99357b8989f189cec7e40329d1daaf38fbbbc2b3e6fb0bef6a3"
-      }
-    },
-    "spark-class-model://model/NativeTreeLike/attributes/insertBefore/7": {
-      "ref": "spark-class-model://model/NativeTreeLike/attributes/insertBefore/7",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTreeLike/methods/insertBefore/7": {
+      "ref": "spark-class-model://model/NativeTreeLike/methods/insertBefore/7",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTreeLike",
       "name": "insertBefore",
-      "schemaRef": "spark-class-model://schema/shared/6598c156f9abd99357b8989f189cec7e40329d1daaf38fbbbc2b3e6fb0bef6a3",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://model/NativeTreeLike/attributes/insertAfter/8": {
-      "ref": "spark-class-model://model/NativeTreeLike/attributes/insertAfter/8",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTreeLike/methods/insertAfter/8": {
+      "ref": "spark-class-model://model/NativeTreeLike/methods/insertAfter/8",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTreeLike",
       "name": "insertAfter",
-      "schemaRef": "spark-class-model://schema/shared/6598c156f9abd99357b8989f189cec7e40329d1daaf38fbbbc2b3e6fb0bef6a3",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://schema/shared/aa83f49d2fe6e9386f1c8d248866616a85aacb624e151b80365a3d0325916e8a": {
-      "ref": "spark-class-model://schema/shared/aa83f49d2fe6e9386f1c8d248866616a85aacb624e151b80365a3d0325916e8a",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(nodeOrData: unknown) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/aa83f49d2fe6e9386f1c8d248866616a85aacb624e151b80365a3d0325916e8a"
-      }
-    },
-    "spark-class-model://model/NativeTreeLike/attributes/remove/9": {
-      "ref": "spark-class-model://model/NativeTreeLike/attributes/remove/9",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTreeLike/methods/remove/9": {
+      "ref": "spark-class-model://model/NativeTreeLike/methods/remove/9",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTreeLike",
       "name": "remove",
-      "schemaRef": "spark-class-model://schema/shared/aa83f49d2fe6e9386f1c8d248866616a85aacb624e151b80365a3d0325916e8a",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://schema/shared/f0cc8c14424e1b73b6c00888152ddbbe533600fc5dc80bcc8795c0f2141e244e": {
-      "ref": "spark-class-model://schema/shared/f0cc8c14424e1b73b6c00888152ddbbe533600fc5dc80bcc8795c0f2141e244e",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(key: string | number) => NativeTreeNodeLike | undefined",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/f0cc8c14424e1b73b6c00888152ddbbe533600fc5dc80bcc8795c0f2141e244e"
-      }
-    },
-    "spark-class-model://model/NativeTreeLike/attributes/getNode/10": {
-      "ref": "spark-class-model://model/NativeTreeLike/attributes/getNode/10",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTreeLike/methods/getNode/10": {
+      "ref": "spark-class-model://model/NativeTreeLike/methods/getNode/10",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTreeLike",
       "name": "getNode",
-      "schemaRef": "spark-class-model://schema/shared/f0cc8c14424e1b73b6c00888152ddbbe533600fc5dc80bcc8795c0f2141e244e",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f7edb8c99fcf9b7a7f6b4825a6393156e0fff8222b7353c478fc4c77232ba737"
+    },
+    "spark-class-model://schema/shared/f7edb8c99fcf9b7a7f6b4825a6393156e0fff8222b7353c478fc4c77232ba737": {
+      "ref": "spark-class-model://schema/shared/f7edb8c99fcf9b7a7f6b4825a6393156e0fff8222b7353c478fc4c77232ba737",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/NativeTreeNodeLike",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f7edb8c99fcf9b7a7f6b4825a6393156e0fff8222b7353c478fc4c77232ba737"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTreeLike%2Fmethods%2FgetNode%2F10/method-return/spark-class-model%3A%2F%2Fmodel%2FNativeTreeNodeLike": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTreeLike%2Fmethods%2FgetNode%2F10/method-return/spark-class-model%3A%2F%2Fmodel%2FNativeTreeNodeLike",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NativeTreeLike/methods/getNode/10",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/NativeTreeNodeLike",
+      "targetClassName": "NativeTreeNodeLike",
+      "targetFile": "files/declarations/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NativeTreeNodeLike"
     },
     "spark-class-model://model/NativeTreeLike": {
       "ref": "spark-class-model://model/NativeTreeLike",
       "kind": "model",
       "className": "NativeTreeLike",
       "schemaRef": "spark-class-model://schema/NativeTreeLike",
-      "attributeRefs": [
-        "spark-class-model://model/NativeTreeLike/attributes/getCurrentNode/0",
-        "spark-class-model://model/NativeTreeLike/attributes/setCurrentKey/1",
-        "spark-class-model://model/NativeTreeLike/attributes/filter/2",
-        "spark-class-model://model/NativeTreeLike/attributes/getCheckedNodes/3",
-        "spark-class-model://model/NativeTreeLike/attributes/getCheckedKeys/4",
-        "spark-class-model://model/NativeTreeLike/attributes/setCheckedKeys/5",
-        "spark-class-model://model/NativeTreeLike/attributes/append/6",
-        "spark-class-model://model/NativeTreeLike/attributes/insertBefore/7",
-        "spark-class-model://model/NativeTreeLike/attributes/insertAfter/8",
-        "spark-class-model://model/NativeTreeLike/attributes/remove/9",
-        "spark-class-model://model/NativeTreeLike/attributes/getNode/10"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/NativeTreeLike/methods/getCurrentNode/0",
+        "spark-class-model://model/NativeTreeLike/methods/setCurrentKey/1",
+        "spark-class-model://model/NativeTreeLike/methods/filter/2",
+        "spark-class-model://model/NativeTreeLike/methods/getCheckedNodes/3",
+        "spark-class-model://model/NativeTreeLike/methods/getCheckedKeys/4",
+        "spark-class-model://model/NativeTreeLike/methods/setCheckedKeys/5",
+        "spark-class-model://model/NativeTreeLike/methods/append/6",
+        "spark-class-model://model/NativeTreeLike/methods/insertBefore/7",
+        "spark-class-model://model/NativeTreeLike/methods/insertAfter/8",
+        "spark-class-model://model/NativeTreeLike/methods/remove/9",
+        "spark-class-model://model/NativeTreeLike/methods/getNode/10"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTreeLike%2Fmethods%2FgetNode%2F10/method-return/spark-class-model%3A%2F%2Fmodel%2FNativeTreeNodeLike"
+      ]
     },
     "spark-class-model://schema/NativeTreeNodeLike": {
       "ref": "spark-class-model://schema/NativeTreeNodeLike",
@@ -582,10 +444,6 @@
         "type": "object",
         "title": "NativeTreeNodeLike",
         "properties": {
-          "expand": {
-            "type": "object",
-            "title": "() => void"
-          },
           "data": {
             "$ref": "spark-class-model://schema/DataRow"
           }
@@ -594,17 +452,8 @@
         "$id": "spark-class-model://schema/NativeTreeNodeLike"
       }
     },
-    "spark-class-model://model/NativeTreeNodeLike/attributes/expand/0": {
-      "ref": "spark-class-model://model/NativeTreeNodeLike/attributes/expand/0",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/NativeTreeNodeLike",
-      "name": "expand",
-      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
-      "readable": true,
-      "writable": false
-    },
-    "spark-class-model://model/NativeTreeNodeLike/attributes/data/1": {
-      "ref": "spark-class-model://model/NativeTreeNodeLike/attributes/data/1",
+    "spark-class-model://model/NativeTreeNodeLike/attributes/data/0": {
+      "ref": "spark-class-model://model/NativeTreeNodeLike/attributes/data/0",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/NativeTreeNodeLike",
       "name": "data",
@@ -612,15 +461,23 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTreeNodeLike%2Fattributes%2Fdata%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTreeNodeLike%2Fattributes%2Fdata%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTreeNodeLike%2Fattributes%2Fdata%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTreeNodeLike%2Fattributes%2Fdata%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataRow",
       "kind": "link",
-      "fromRef": "spark-class-model://model/NativeTreeNodeLike/attributes/data/1",
+      "fromRef": "spark-class-model://model/NativeTreeNodeLike/attributes/data/0",
       "relation": "attribute",
       "targetModelRef": "spark-class-model://model/DataRow",
       "targetClassName": "DataRow",
       "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/NativeTreeNodeLike/methods/expand/0": {
+      "ref": "spark-class-model://model/NativeTreeNodeLike/methods/expand/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NativeTreeNodeLike",
+      "name": "expand",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
     "spark-class-model://model/NativeTreeNodeLike": {
       "ref": "spark-class-model://model/NativeTreeNodeLike",
@@ -628,12 +485,13 @@
       "className": "NativeTreeNodeLike",
       "schemaRef": "spark-class-model://schema/NativeTreeNodeLike",
       "attributeRefs": [
-        "spark-class-model://model/NativeTreeNodeLike/attributes/expand/0",
-        "spark-class-model://model/NativeTreeNodeLike/attributes/data/1"
+        "spark-class-model://model/NativeTreeNodeLike/attributes/data/0"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/NativeTreeNodeLike/methods/expand/0"
+      ],
       "linkRefs": [
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTreeNodeLike%2Fattributes%2Fdata%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataRow"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTreeNodeLike%2Fattributes%2Fdata%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FDataRow"
       ]
     },
     "spark-class-model://schema/TreeEventControl": {

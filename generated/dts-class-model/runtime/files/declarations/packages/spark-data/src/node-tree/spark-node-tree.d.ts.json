@@ -1840,6 +1840,38 @@
         "$id": "spark-class-model://schema/SparkNodeTree"
       }
     },
+    "spark-class-model://model/SparkNodeTree/constructors/0": {
+      "ref": "spark-class-model://model/SparkNodeTree/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/SparkNodeTree",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/07087ed13c246873afe1a3e5be6b4fd2762696315d8f4a96b20488cd1a76f2a7"
+    },
+    "spark-class-model://schema/shared/07087ed13c246873afe1a3e5be6b4fd2762696315d8f4a96b20488cd1a76f2a7": {
+      "ref": "spark-class-model://schema/shared/07087ed13c246873afe1a3e5be6b4fd2762696315d8f4a96b20488cd1a76f2a7",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "params": {
+            "$ref": "spark-class-model://schema/SparkNodeTreeRootParams"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/07087ed13c246873afe1a3e5be6b4fd2762696315d8f4a96b20488cd1a76f2a7"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTree%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTreeRootParams": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTree%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTreeRootParams",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkNodeTree/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/SparkNodeTreeRootParams",
+      "targetClassName": "SparkNodeTreeRootParams",
+      "targetFile": "files/declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SparkNodeTreeRootParams"
+    },
     "spark-class-model://model/SparkNodeTree/methods/fromJson/0": {
       "ref": "spark-class-model://model/SparkNodeTree/methods/fromJson/0",
       "kind": "method",
@@ -2946,6 +2978,7 @@
       "kind": "model",
       "className": "SparkNodeTree",
       "schemaRef": "spark-class-model://schema/SparkNodeTree",
+      "constructorRef": "spark-class-model://model/SparkNodeTree/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/SparkNodeTree/methods/fromJson/0",
@@ -2980,6 +3013,7 @@
         "spark-class-model://model/SparkNodeTree/methods/removeNodes/29"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTree%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTreeRootParams",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTree%2Fmethods%2FfromJson%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTreeFromJsonOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTree%2Fmethods%2FfromJson%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTree",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkNodeTree%2Fmethods%2FfromJson%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNode",

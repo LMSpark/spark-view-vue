@@ -36,16 +36,57 @@
         "className": "AiAgentOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "registry",
+          "jsdoc": "",
+          "schema": {
+            "type": "object"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "turnCallbacks",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTurnCallbacks"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "maxToolRounds",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.555Z",
+  "generatedAt": "2026-06-13T06:21:06.545Z",
   "$defs": {
     "AiAgentOptions": {
       "type": "object",
       "title": "AiAgentOptions",
-      "description": "Ai Agent Options 的调用配置。"
+      "description": "Ai Agent Options 的调用配置。",
+      "properties": {
+        "registry": {
+          "type": "object"
+        },
+        "turnCallbacks": {
+          "type": "object",
+          "title": "AiAgentTurnCallbacks"
+        },
+        "maxToolRounds": {
+          "type": "number"
+        }
+      }
     }
   }
 }

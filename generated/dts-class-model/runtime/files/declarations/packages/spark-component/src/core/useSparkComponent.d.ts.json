@@ -114,10 +114,6 @@
           "sparkProvide": {
             "type": "object"
           },
-          "sparkRemove": {
-            "type": "object",
-            "title": "<T>(name: CapabilityKey<T>) => void"
-          },
           "sparkConsume": {
             "$ref": "spark-class-model://schema/SparkCapabilityConsumer"
           },
@@ -174,27 +170,8 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://schema/shared/f9eb7cc65b2f70ed5d650007709b3edcb1e43ff029867d4fa127c828831eb841": {
-      "ref": "spark-class-model://schema/shared/f9eb7cc65b2f70ed5d650007709b3edcb1e43ff029867d4fa127c828831eb841",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "<T>(name: CapabilityKey<T>) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/f9eb7cc65b2f70ed5d650007709b3edcb1e43ff029867d4fa127c828831eb841"
-      }
-    },
-    "spark-class-model://model/UseSparkComponentReturn/attributes/sparkRemove/5": {
-      "ref": "spark-class-model://model/UseSparkComponentReturn/attributes/sparkRemove/5",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/UseSparkComponentReturn",
-      "name": "sparkRemove",
-      "schemaRef": "spark-class-model://schema/shared/f9eb7cc65b2f70ed5d650007709b3edcb1e43ff029867d4fa127c828831eb841",
-      "readable": true,
-      "writable": true
-    },
-    "spark-class-model://model/UseSparkComponentReturn/attributes/sparkConsume/6": {
-      "ref": "spark-class-model://model/UseSparkComponentReturn/attributes/sparkConsume/6",
+    "spark-class-model://model/UseSparkComponentReturn/attributes/sparkConsume/5": {
+      "ref": "spark-class-model://model/UseSparkComponentReturn/attributes/sparkConsume/5",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/UseSparkComponentReturn",
       "name": "sparkConsume",
@@ -202,18 +179,18 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fattributes%2FsparkConsume%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkCapabilityConsumer": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fattributes%2FsparkConsume%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkCapabilityConsumer",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fattributes%2FsparkConsume%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkCapabilityConsumer": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fattributes%2FsparkConsume%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkCapabilityConsumer",
       "kind": "link",
-      "fromRef": "spark-class-model://model/UseSparkComponentReturn/attributes/sparkConsume/6",
+      "fromRef": "spark-class-model://model/UseSparkComponentReturn/attributes/sparkConsume/5",
       "relation": "attribute",
       "targetModelRef": "spark-class-model://model/SparkCapabilityConsumer",
       "targetClassName": "SparkCapabilityConsumer",
       "targetFile": "files/declarations/packages/spark-utils/src/capability/core.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/SparkCapabilityConsumer"
     },
-    "spark-class-model://model/UseSparkComponentReturn/attributes/logger/7": {
-      "ref": "spark-class-model://model/UseSparkComponentReturn/attributes/logger/7",
+    "spark-class-model://model/UseSparkComponentReturn/attributes/logger/6": {
+      "ref": "spark-class-model://model/UseSparkComponentReturn/attributes/logger/6",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/UseSparkComponentReturn",
       "name": "logger",
@@ -221,15 +198,49 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fattributes%2Flogger%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FLoggerApi": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fattributes%2Flogger%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FLoggerApi",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fattributes%2Flogger%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FLoggerApi": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fattributes%2Flogger%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FLoggerApi",
       "kind": "link",
-      "fromRef": "spark-class-model://model/UseSparkComponentReturn/attributes/logger/7",
+      "fromRef": "spark-class-model://model/UseSparkComponentReturn/attributes/logger/6",
       "relation": "attribute",
       "targetModelRef": "spark-class-model://model/LoggerApi",
       "targetClassName": "LoggerApi",
       "targetFile": "files/declarations/packages/spark-utils/src/logger.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/LoggerApi"
+    },
+    "spark-class-model://model/UseSparkComponentReturn/methods/sparkRemove/0": {
+      "ref": "spark-class-model://model/UseSparkComponentReturn/methods/sparkRemove/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseSparkComponentReturn",
+      "name": "sparkRemove",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/719283a8cdb91dc884f407c12adfe96576bc18e55bc093d85843a1c23b0c6650"
+    },
+    "spark-class-model://schema/shared/719283a8cdb91dc884f407c12adfe96576bc18e55bc093d85843a1c23b0c6650": {
+      "ref": "spark-class-model://schema/shared/719283a8cdb91dc884f407c12adfe96576bc18e55bc093d85843a1c23b0c6650",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "spark-class-model://schema/CapabilityKey",
+            "title": "CapabilityKey<T>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/719283a8cdb91dc884f407c12adfe96576bc18e55bc093d85843a1c23b0c6650"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fmethods%2FsparkRemove%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCapabilityKey": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fmethods%2FsparkRemove%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCapabilityKey",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UseSparkComponentReturn/methods/sparkRemove/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CapabilityKey",
+      "targetClassName": "CapabilityKey",
+      "targetFile": "files/declarations/packages/spark-component/src/core/useSparkComponent.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CapabilityKey"
     },
     "spark-class-model://model/UseSparkComponentReturn": {
       "ref": "spark-class-model://model/UseSparkComponentReturn",
@@ -242,14 +253,16 @@
         "spark-class-model://model/UseSparkComponentReturn/attributes/isDisabled/2",
         "spark-class-model://model/UseSparkComponentReturn/attributes/resolvedProps/3",
         "spark-class-model://model/UseSparkComponentReturn/attributes/sparkProvide/4",
-        "spark-class-model://model/UseSparkComponentReturn/attributes/sparkRemove/5",
-        "spark-class-model://model/UseSparkComponentReturn/attributes/sparkConsume/6",
-        "spark-class-model://model/UseSparkComponentReturn/attributes/logger/7"
+        "spark-class-model://model/UseSparkComponentReturn/attributes/sparkConsume/5",
+        "spark-class-model://model/UseSparkComponentReturn/attributes/logger/6"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UseSparkComponentReturn/methods/sparkRemove/0"
+      ],
       "linkRefs": [
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fattributes%2FsparkConsume%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkCapabilityConsumer",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fattributes%2Flogger%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FLoggerApi"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fattributes%2FsparkConsume%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FSparkCapabilityConsumer",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fattributes%2Flogger%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FLoggerApi",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSparkComponentReturn%2Fmethods%2FsparkRemove%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCapabilityKey"
       ]
     },
     "spark-class-model://schema/UseSparkPageComponentReturn": {
@@ -258,44 +271,40 @@
       "schema": {
         "type": "object",
         "title": "UseSparkPageComponentReturn",
-        "properties": {
-          "registerApi": {
-            "type": "object",
-            "title": "(api: unknown) => void"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/UseSparkPageComponentReturn"
       }
     },
-    "spark-class-model://schema/shared/dd471e5998bac16bad6806cc4ac91f615195f0b703d210b01277b0589706e471": {
-      "ref": "spark-class-model://schema/shared/dd471e5998bac16bad6806cc4ac91f615195f0b703d210b01277b0589706e471",
+    "spark-class-model://model/UseSparkPageComponentReturn/methods/registerApi/0": {
+      "ref": "spark-class-model://model/UseSparkPageComponentReturn/methods/registerApi/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseSparkPageComponentReturn",
+      "name": "registerApi",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e88642b22aab0c88c3634948943fd27122ab163cfc7d8efb757794a4e87ce945"
+    },
+    "spark-class-model://schema/shared/e88642b22aab0c88c3634948943fd27122ab163cfc7d8efb757794a4e87ce945": {
+      "ref": "spark-class-model://schema/shared/e88642b22aab0c88c3634948943fd27122ab163cfc7d8efb757794a4e87ce945",
       "kind": "schema",
       "schema": {
         "type": "object",
-        "title": "(api: unknown) => void",
+        "properties": {
+          "api": true
+        },
+        "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/dd471e5998bac16bad6806cc4ac91f615195f0b703d210b01277b0589706e471"
+        "$id": "spark-class-model://schema/shared/e88642b22aab0c88c3634948943fd27122ab163cfc7d8efb757794a4e87ce945"
       }
-    },
-    "spark-class-model://model/UseSparkPageComponentReturn/attributes/registerApi/0": {
-      "ref": "spark-class-model://model/UseSparkPageComponentReturn/attributes/registerApi/0",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/UseSparkPageComponentReturn",
-      "name": "registerApi",
-      "schemaRef": "spark-class-model://schema/shared/dd471e5998bac16bad6806cc4ac91f615195f0b703d210b01277b0589706e471",
-      "readable": true,
-      "writable": true
     },
     "spark-class-model://model/UseSparkPageComponentReturn": {
       "ref": "spark-class-model://model/UseSparkPageComponentReturn",
       "kind": "model",
       "className": "UseSparkPageComponentReturn",
       "schemaRef": "spark-class-model://schema/UseSparkPageComponentReturn",
-      "attributeRefs": [
-        "spark-class-model://model/UseSparkPageComponentReturn/attributes/registerApi/0"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UseSparkPageComponentReturn/methods/registerApi/0"
       ],
-      "methodRefs": [],
       "linkRefs": []
     },
     "spark-class-model://schema/UseSparkCapabilityReaderReturn": {

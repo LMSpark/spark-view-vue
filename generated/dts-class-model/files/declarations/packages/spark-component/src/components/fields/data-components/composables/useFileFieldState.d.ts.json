@@ -179,36 +179,6 @@
           "writable": true
         },
         {
-          "name": "browseFiles",
-          "jsdoc": "打开文件浏览器并返回用户选择的文件。",
-          "schema": {
-            "type": "object",
-            "title": "(options: {\n        /** 文件选择窗口标题。 */\n        title: string;\n        /** 文件过滤规则。 */\n        accept: string;\n        /** 是否允许多选。 */\n        multiple: boolean;\n        /** 打开对话框前字段中的当前值。 */\n        currentValue: string;\n    }) => Promise<PageSelectedFile[]>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "uploadFiles",
-          "jsdoc": "上传用户选择的文件并返回上传结果。",
-          "schema": {
-            "type": "object",
-            "title": "(options: {\n        /** 上传动作地址或上传能力标识。 */\n        action: NonNullable<SparkFileUploadActionProps['action']>;\n        /** 文件过滤规则。 */\n        accept: string;\n        /** 是否允许多文件上传。 */\n        multiple: boolean;\n        /** 上传表单字段名。 */\n        fieldName: string;\n        /** 上传前字段中的当前值。 */\n        currentValue: string;\n    }) => Promise<PageUploadedFile[]>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "updateValue",
-          "jsdoc": "将浏览或上传后的字符串值写回字段。",
-          "schema": {
-            "type": "object",
-            "title": "(value: string) => void | Promise<void>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "browseWritesValue",
           "jsdoc": "浏览文件后是否把选择结果写回字段值。",
           "schema": {
@@ -238,7 +208,134 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "browseFiles",
+          "jsdoc": "打开文件浏览器并返回用户选择的文件。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        /** 文件选择窗口标题。 */\n        title: string;\n        /** 文件过滤规则。 */\n        accept: string;\n        /** 是否允许多选。 */\n        multiple: boolean;\n        /** 打开对话框前字段中的当前值。 */\n        currentValue: string;\n    }"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "unknown"
+                }
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageSelectedFile[]>"
+          }
+        },
+        {
+          "name": "uploadFiles",
+          "jsdoc": "上传用户选择的文件并返回上传结果。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        /** 上传动作地址或上传能力标识。 */\n        action: NonNullable<SparkFileUploadActionProps['action']>;\n        /** 文件过滤规则。 */\n        accept: string;\n        /** 是否允许多文件上传。 */\n        multiple: boolean;\n        /** 上传表单字段名。 */\n        fieldName: string;\n        /** 上传前字段中的当前值。 */\n        currentValue: string;\n    }"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "unknown"
+                }
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageUploadedFile[]>"
+          }
+        },
+        {
+          "name": "updateValue",
+          "jsdoc": "将浏览或上传后的字符串值写回字段。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        }
+      ]
     },
     "FileBrowserFieldStateOptions": {
       "kind": "FileBrowserFieldStateOptions",
@@ -335,32 +432,99 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "browseFiles",
           "jsdoc": "打开文件浏览器并返回用户选择的文件。",
-          "schema": {
-            "type": "object",
-            "title": "(options: {\n        /** 文件选择窗口标题。 */\n        title: string;\n        /** 文件过滤规则。 */\n        accept: string;\n        /** 是否允许多选。 */\n        multiple: boolean;\n        /** 打开对话框前字段中的当前值。 */\n        currentValue: string;\n    }) => Promise<PageSelectedFile[]>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        /** 文件选择窗口标题。 */\n        title: string;\n        /** 文件过滤规则。 */\n        accept: string;\n        /** 是否允许多选。 */\n        multiple: boolean;\n        /** 打开对话框前字段中的当前值。 */\n        currentValue: string;\n    }"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "unknown"
+                }
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageSelectedFile[]>"
+          }
         },
         {
           "name": "updateValue",
           "jsdoc": "将浏览后的文件名字符串写回字段。",
-          "schema": {
-            "type": "object",
-            "title": "(value: string) => void | Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.739Z",
+  "generatedAt": "2026-06-13T06:21:06.930Z",
   "$defs": {
     "UploadBrowseFieldStateOptions": {
       "type": "object",
@@ -423,18 +587,6 @@
           "type": "object",
           "title": "ValueRef<NonNullable<SparkFileFieldProps['separator']>>"
         },
-        "browseFiles": {
-          "type": "object",
-          "title": "(options: {\n        /** 文件选择窗口标题。 */\n        title: string;\n        /** 文件过滤规则。 */\n        accept: string;\n        /** 是否允许多选。 */\n        multiple: boolean;\n        /** 打开对话框前字段中的当前值。 */\n        currentValue: string;\n    }) => Promise<PageSelectedFile[]>"
-        },
-        "uploadFiles": {
-          "type": "object",
-          "title": "(options: {\n        /** 上传动作地址或上传能力标识。 */\n        action: NonNullable<SparkFileUploadActionProps['action']>;\n        /** 文件过滤规则。 */\n        accept: string;\n        /** 是否允许多文件上传。 */\n        multiple: boolean;\n        /** 上传表单字段名。 */\n        fieldName: string;\n        /** 上传前字段中的当前值。 */\n        currentValue: string;\n    }) => Promise<PageUploadedFile[]>"
-        },
-        "updateValue": {
-          "type": "object",
-          "title": "(value: string) => void | Promise<void>"
-        },
         "browseWritesValue": {
           "type": "boolean"
         },
@@ -484,14 +636,6 @@
         "canClear": {
           "type": "object",
           "title": "ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>"
-        },
-        "browseFiles": {
-          "type": "object",
-          "title": "(options: {\n        /** 文件选择窗口标题。 */\n        title: string;\n        /** 文件过滤规则。 */\n        accept: string;\n        /** 是否允许多选。 */\n        multiple: boolean;\n        /** 打开对话框前字段中的当前值。 */\n        currentValue: string;\n    }) => Promise<PageSelectedFile[]>"
-        },
-        "updateValue": {
-          "type": "object",
-          "title": "(value: string) => void | Promise<void>"
         }
       }
     }

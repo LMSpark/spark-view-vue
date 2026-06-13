@@ -68,14 +68,6 @@
                 "type": "number"
               }
             ]
-          },
-          "onTabChange": {
-            "type": "object",
-            "title": "(name: string | number) => void"
-          },
-          "onTabClick": {
-            "type": "object",
-            "title": "(pane: TabsClickEvent, event: Event) => void"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -110,43 +102,31 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/fa6058389eb59f9b3f6cb12d7452683e841b9b41fa67a65312388359091cd0f7": {
-      "ref": "spark-class-model://schema/shared/fa6058389eb59f9b3f6cb12d7452683e841b9b41fa67a65312388359091cd0f7",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(name: string | number) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/fa6058389eb59f9b3f6cb12d7452683e841b9b41fa67a65312388359091cd0f7"
-      }
-    },
-    "spark-class-model://model/RTabsProps/attributes/onTabChange/2": {
-      "ref": "spark-class-model://model/RTabsProps/attributes/onTabChange/2",
-      "kind": "attribute",
+    "spark-class-model://model/RTabsProps/methods/onTabChange/0": {
+      "ref": "spark-class-model://model/RTabsProps/methods/onTabChange/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/RTabsProps",
       "name": "onTabChange",
-      "schemaRef": "spark-class-model://schema/shared/fa6058389eb59f9b3f6cb12d7452683e841b9b41fa67a65312388359091cd0f7",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://schema/shared/96392f862301598f0c687688b4f2961bcbaf12ccff7e02d2332e120164fe1c1b": {
-      "ref": "spark-class-model://schema/shared/96392f862301598f0c687688b4f2961bcbaf12ccff7e02d2332e120164fe1c1b",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(pane: TabsClickEvent, event: Event) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/96392f862301598f0c687688b4f2961bcbaf12ccff7e02d2332e120164fe1c1b"
-      }
-    },
-    "spark-class-model://model/RTabsProps/attributes/onTabClick/3": {
-      "ref": "spark-class-model://model/RTabsProps/attributes/onTabClick/3",
-      "kind": "attribute",
+    "spark-class-model://model/RTabsProps/methods/onTabClick/1": {
+      "ref": "spark-class-model://model/RTabsProps/methods/onTabClick/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/RTabsProps",
       "name": "onTabClick",
-      "schemaRef": "spark-class-model://schema/shared/96392f862301598f0c687688b4f2961bcbaf12ccff7e02d2332e120164fe1c1b",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRTabsProps%2Fmethods%2FonTabClick%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FTabsClickEvent": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRTabsProps%2Fmethods%2FonTabClick%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FTabsClickEvent",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RTabsProps/methods/onTabClick/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/TabsClickEvent",
+      "targetClassName": "TabsClickEvent",
+      "targetFile": "files/declarations/packages/spark-component/src/components/containers/layout/RendererTabs/RendererTabs.props.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/TabsClickEvent"
     },
     "spark-class-model://model/RTabsProps": {
       "ref": "spark-class-model://model/RTabsProps",
@@ -155,13 +135,15 @@
       "schemaRef": "spark-class-model://schema/RTabsProps",
       "attributeRefs": [
         "spark-class-model://model/RTabsProps/attributes/toolbar/0",
-        "spark-class-model://model/RTabsProps/attributes/modelValue/1",
-        "spark-class-model://model/RTabsProps/attributes/onTabChange/2",
-        "spark-class-model://model/RTabsProps/attributes/onTabClick/3"
+        "spark-class-model://model/RTabsProps/attributes/modelValue/1"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/RTabsProps/methods/onTabChange/0",
+        "spark-class-model://model/RTabsProps/methods/onTabClick/1"
+      ],
       "linkRefs": [
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRTabsProps%2Fattributes%2Ftoolbar%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRTabsProps%2Fattributes%2Ftoolbar%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRTabsProps%2Fmethods%2FonTabClick%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FTabsClickEvent"
       ]
     }
   }

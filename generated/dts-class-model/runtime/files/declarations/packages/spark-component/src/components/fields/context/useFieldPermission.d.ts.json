@@ -85,15 +85,7 @@
           "type": {
             "type": "string"
           },
-          "fallbackValue": true,
-          "formatDisplay": {
-            "type": "object",
-            "title": "(value: unknown) => string"
-          },
-          "coerce": {
-            "type": "object",
-            "title": "(rawValue: unknown) => TValue"
-          }
+          "fallbackValue": true
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/UseFieldPermissionOptions"
@@ -146,43 +138,36 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://schema/shared/47dc07fc3ebab6f00d7befe88a4a55746d799a4110b813da9c5edaf6787573b1": {
-      "ref": "spark-class-model://schema/shared/47dc07fc3ebab6f00d7befe88a4a55746d799a4110b813da9c5edaf6787573b1",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(value: unknown) => string",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/47dc07fc3ebab6f00d7befe88a4a55746d799a4110b813da9c5edaf6787573b1"
-      }
-    },
-    "spark-class-model://model/UseFieldPermissionOptions/attributes/formatDisplay/3": {
-      "ref": "spark-class-model://model/UseFieldPermissionOptions/attributes/formatDisplay/3",
-      "kind": "attribute",
+    "spark-class-model://model/UseFieldPermissionOptions/methods/formatDisplay/0": {
+      "ref": "spark-class-model://model/UseFieldPermissionOptions/methods/formatDisplay/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseFieldPermissionOptions",
       "name": "formatDisplay",
-      "schemaRef": "spark-class-model://schema/shared/47dc07fc3ebab6f00d7befe88a4a55746d799a4110b813da9c5edaf6787573b1",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96"
     },
-    "spark-class-model://schema/shared/4bb76035769a6ea18d138d5f288016f11a0a879f6b9fcad3500c968b84b53bd3": {
-      "ref": "spark-class-model://schema/shared/4bb76035769a6ea18d138d5f288016f11a0a879f6b9fcad3500c968b84b53bd3",
+    "spark-class-model://model/UseFieldPermissionOptions/methods/coerce/1": {
+      "ref": "spark-class-model://model/UseFieldPermissionOptions/methods/coerce/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseFieldPermissionOptions",
+      "name": "coerce",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/6aea3eb0522caaaf8be995e13fea238cd5aa8fea2389fa416946e5230f8d0dd2",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://schema/shared/6aea3eb0522caaaf8be995e13fea238cd5aa8fea2389fa416946e5230f8d0dd2": {
+      "ref": "spark-class-model://schema/shared/6aea3eb0522caaaf8be995e13fea238cd5aa8fea2389fa416946e5230f8d0dd2",
       "kind": "schema",
       "schema": {
         "type": "object",
-        "title": "(rawValue: unknown) => TValue",
+        "properties": {
+          "rawValue": true
+        },
+        "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/4bb76035769a6ea18d138d5f288016f11a0a879f6b9fcad3500c968b84b53bd3"
+        "$id": "spark-class-model://schema/shared/6aea3eb0522caaaf8be995e13fea238cd5aa8fea2389fa416946e5230f8d0dd2"
       }
-    },
-    "spark-class-model://model/UseFieldPermissionOptions/attributes/coerce/4": {
-      "ref": "spark-class-model://model/UseFieldPermissionOptions/attributes/coerce/4",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/UseFieldPermissionOptions",
-      "name": "coerce",
-      "schemaRef": "spark-class-model://schema/shared/4bb76035769a6ea18d138d5f288016f11a0a879f6b9fcad3500c968b84b53bd3",
-      "readable": true,
-      "writable": true
     },
     "spark-class-model://model/UseFieldPermissionOptions": {
       "ref": "spark-class-model://model/UseFieldPermissionOptions",
@@ -192,11 +177,12 @@
       "attributeRefs": [
         "spark-class-model://model/UseFieldPermissionOptions/attributes/props/0",
         "spark-class-model://model/UseFieldPermissionOptions/attributes/type/1",
-        "spark-class-model://model/UseFieldPermissionOptions/attributes/fallbackValue/2",
-        "spark-class-model://model/UseFieldPermissionOptions/attributes/formatDisplay/3",
-        "spark-class-model://model/UseFieldPermissionOptions/attributes/coerce/4"
+        "spark-class-model://model/UseFieldPermissionOptions/attributes/fallbackValue/2"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UseFieldPermissionOptions/methods/formatDisplay/0",
+        "spark-class-model://model/UseFieldPermissionOptions/methods/coerce/1"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseFieldPermissionOptions%2Fattributes%2Fprops%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FFieldPermissionProps"
       ]

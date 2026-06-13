@@ -107,6 +107,7 @@ export type DtsClassModelRuntimeManifest = Readonly<{
 /** Dts Class Model Runtime Link Relation 的语义模型。 */
 export type DtsClassModelRuntimeLinkRelation =
   | 'attribute'
+  | 'constructor-parameter'
   | 'method-parameter'
   | 'method-return'
 
@@ -144,12 +145,22 @@ export type DtsClassModelRuntimeMethod = Readonly<{
   returnSchemaRef?: string
 }>
 
+/** Dts Class Model Runtime Constructor 的语义模型。 */
+export type DtsClassModelRuntimeConstructor = Readonly<{
+  ref: string
+  kind: 'constructor'
+  ownerRef: string
+  parameterStyle: MethodParameterStyle
+  paramsSchemaRef: string
+}>
+
 /** Dts Class Model Runtime Model 的语义模型。 */
 export type DtsClassModelRuntimeModel = Readonly<{
   ref: string
   kind: 'model'
   className: string
   schemaRef: string
+  constructorRef?: string
   attributeRefs: readonly string[]
   methodRefs: readonly string[]
   linkRefs: readonly string[]
@@ -165,6 +176,7 @@ export type DtsClassModelRuntimeSchemaRef = Readonly<{
 /** Dts Class Model Runtime Ref 的语义模型。 */
 export type DtsClassModelRuntimeRef =
   | DtsClassModelRuntimeModel
+  | DtsClassModelRuntimeConstructor
   | DtsClassModelRuntimeAttribute
   | DtsClassModelRuntimeMethod
   | DtsClassModelRuntimeSchemaRef

@@ -25,10 +25,6 @@
                 "type": "number"
               }
             ]
-          },
-          "onStepChange": {
-            "type": "object",
-            "title": "(value: string | number, step: SparkNode, index: number) => void"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -63,24 +59,13 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/9971033630b4c79a37ac4d9abdf74e613641b2effd30203a4e64310907e07f0e": {
-      "ref": "spark-class-model://schema/shared/9971033630b4c79a37ac4d9abdf74e613641b2effd30203a4e64310907e07f0e",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(value: string | number, step: SparkNode, index: number) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/9971033630b4c79a37ac4d9abdf74e613641b2effd30203a4e64310907e07f0e"
-      }
-    },
-    "spark-class-model://model/RStepsProps/attributes/onStepChange/2": {
-      "ref": "spark-class-model://model/RStepsProps/attributes/onStepChange/2",
-      "kind": "attribute",
+    "spark-class-model://model/RStepsProps/methods/onStepChange/0": {
+      "ref": "spark-class-model://model/RStepsProps/methods/onStepChange/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/RStepsProps",
       "name": "onStepChange",
-      "schemaRef": "spark-class-model://schema/shared/9971033630b4c79a37ac4d9abdf74e613641b2effd30203a4e64310907e07f0e",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
     "spark-class-model://model/RStepsProps": {
       "ref": "spark-class-model://model/RStepsProps",
@@ -89,10 +74,11 @@
       "schemaRef": "spark-class-model://schema/RStepsProps",
       "attributeRefs": [
         "spark-class-model://model/RStepsProps/attributes/toolbar/0",
-        "spark-class-model://model/RStepsProps/attributes/modelValue/1",
-        "spark-class-model://model/RStepsProps/attributes/onStepChange/2"
+        "spark-class-model://model/RStepsProps/attributes/modelValue/1"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/RStepsProps/methods/onStepChange/0"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRStepsProps%2Fattributes%2Ftoolbar%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps"
       ]

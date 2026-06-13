@@ -16,13 +16,97 @@
         "$id": "spark-class-model://schema/RendererFormApi"
       }
     },
+    "spark-class-model://model/RendererFormApi/methods/getFormData/0": {
+      "ref": "spark-class-model://model/RendererFormApi/methods/getFormData/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererFormApi",
+      "name": "getFormData",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9"
+    },
+    "spark-class-model://model/RendererFormApi/methods/getNativeForm/1": {
+      "ref": "spark-class-model://model/RendererFormApi/methods/getNativeForm/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererFormApi",
+      "name": "getNativeForm",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://model/RendererFormApi/methods/validate/2": {
+      "ref": "spark-class-model://model/RendererFormApi/methods/validate/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererFormApi",
+      "name": "validate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/2eace0f0f7d07333322b498cb46261125daca0579dab53d3ca347f749df86775"
+    },
+    "spark-class-model://model/RendererFormApi/methods/resetFields/3": {
+      "ref": "spark-class-model://model/RendererFormApi/methods/resetFields/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererFormApi",
+      "name": "resetFields",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/RendererFormApi/methods/clearValidate/4": {
+      "ref": "spark-class-model://model/RendererFormApi/methods/clearValidate/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererFormApi",
+      "name": "clearValidate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/RendererFormApi/methods/getFieldValue/5": {
+      "ref": "spark-class-model://model/RendererFormApi/methods/getFieldValue/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererFormApi",
+      "name": "getFieldValue",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3d9bbe1a47d5615cd2f9d09b3399d41d56fc559d5bacca2fd4ba6a6d6e103a3a",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://model/RendererFormApi/methods/setFieldValue/6": {
+      "ref": "spark-class-model://model/RendererFormApi/methods/setFieldValue/6",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererFormApi",
+      "name": "setFieldValue",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/8b6bd6d9640d843b802527ce354022b77c556378d895344120002345dd82b720"
+    },
+    "spark-class-model://schema/shared/8b6bd6d9640d843b802527ce354022b77c556378d895344120002345dd82b720": {
+      "ref": "spark-class-model://schema/shared/8b6bd6d9640d843b802527ce354022b77c556378d895344120002345dd82b720",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "value": true
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8b6bd6d9640d843b802527ce354022b77c556378d895344120002345dd82b720"
+      }
+    },
     "spark-class-model://model/RendererFormApi": {
       "ref": "spark-class-model://model/RendererFormApi",
       "kind": "model",
       "className": "RendererFormApi",
       "schemaRef": "spark-class-model://schema/RendererFormApi",
       "attributeRefs": [],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/RendererFormApi/methods/getFormData/0",
+        "spark-class-model://model/RendererFormApi/methods/getNativeForm/1",
+        "spark-class-model://model/RendererFormApi/methods/validate/2",
+        "spark-class-model://model/RendererFormApi/methods/resetFields/3",
+        "spark-class-model://model/RendererFormApi/methods/clearValidate/4",
+        "spark-class-model://model/RendererFormApi/methods/getFieldValue/5",
+        "spark-class-model://model/RendererFormApi/methods/setFieldValue/6"
+      ],
       "linkRefs": []
     }
   }

@@ -695,14 +695,6 @@
           },
           "themeService": {
             "$ref": "spark-class-model://schema/ThemeCapability"
-          },
-          "beforeMount": {
-            "type": "object",
-            "title": "(context: BootstrapContext) => void | Promise<void>"
-          },
-          "afterMount": {
-            "type": "object",
-            "title": "(context: BootstrapContext) => void | Promise<void>"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -811,33 +803,43 @@
       "targetFile": "files/declarations/packages/spark-component/src/core/capability-keys.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/ThemeCapability"
     },
-    "spark-class-model://schema/shared/e28a16d6ca0108814b87b41443e577f1c4a106e645b52cb5c288d45a7e24ff81": {
-      "ref": "spark-class-model://schema/shared/e28a16d6ca0108814b87b41443e577f1c4a106e645b52cb5c288d45a7e24ff81",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(context: BootstrapContext) => void | Promise<void>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/e28a16d6ca0108814b87b41443e577f1c4a106e645b52cb5c288d45a7e24ff81"
-      }
-    },
-    "spark-class-model://model/BootstrapOptions/attributes/beforeMount/6": {
-      "ref": "spark-class-model://model/BootstrapOptions/attributes/beforeMount/6",
-      "kind": "attribute",
+    "spark-class-model://model/BootstrapOptions/methods/beforeMount/0": {
+      "ref": "spark-class-model://model/BootstrapOptions/methods/beforeMount/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/BootstrapOptions",
       "name": "beforeMount",
-      "schemaRef": "spark-class-model://schema/shared/e28a16d6ca0108814b87b41443e577f1c4a106e645b52cb5c288d45a7e24ff81",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
     },
-    "spark-class-model://model/BootstrapOptions/attributes/afterMount/7": {
-      "ref": "spark-class-model://model/BootstrapOptions/attributes/afterMount/7",
-      "kind": "attribute",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBootstrapOptions%2Fmethods%2FbeforeMount%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FBootstrapContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBootstrapOptions%2Fmethods%2FbeforeMount%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FBootstrapContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/BootstrapOptions/methods/beforeMount/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/BootstrapContext",
+      "targetClassName": "BootstrapContext",
+      "targetFile": "files/declarations/packages/spark-app/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/BootstrapContext"
+    },
+    "spark-class-model://model/BootstrapOptions/methods/afterMount/1": {
+      "ref": "spark-class-model://model/BootstrapOptions/methods/afterMount/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/BootstrapOptions",
       "name": "afterMount",
-      "schemaRef": "spark-class-model://schema/shared/e28a16d6ca0108814b87b41443e577f1c4a106e645b52cb5c288d45a7e24ff81",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBootstrapOptions%2Fmethods%2FafterMount%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FBootstrapContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBootstrapOptions%2Fmethods%2FafterMount%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FBootstrapContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/BootstrapOptions/methods/afterMount/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/BootstrapContext",
+      "targetClassName": "BootstrapContext",
+      "targetFile": "files/declarations/packages/spark-app/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/BootstrapContext"
     },
     "spark-class-model://model/BootstrapOptions": {
       "ref": "spark-class-model://model/BootstrapOptions",
@@ -850,15 +852,18 @@
         "spark-class-model://model/BootstrapOptions/attributes/config/2",
         "spark-class-model://model/BootstrapOptions/attributes/auth/3",
         "spark-class-model://model/BootstrapOptions/attributes/mountTarget/4",
-        "spark-class-model://model/BootstrapOptions/attributes/themeService/5",
-        "spark-class-model://model/BootstrapOptions/attributes/beforeMount/6",
-        "spark-class-model://model/BootstrapOptions/attributes/afterMount/7"
+        "spark-class-model://model/BootstrapOptions/attributes/themeService/5"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/BootstrapOptions/methods/beforeMount/0",
+        "spark-class-model://model/BootstrapOptions/methods/afterMount/1"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBootstrapOptions%2Fattributes%2Fconfig%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAppConfig",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBootstrapOptions%2Fattributes%2Fauth%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAuthConfig",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBootstrapOptions%2Fattributes%2FthemeService%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FThemeCapability"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBootstrapOptions%2Fattributes%2FthemeService%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FThemeCapability",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBootstrapOptions%2Fmethods%2FbeforeMount%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FBootstrapContext",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FBootstrapOptions%2Fmethods%2FafterMount%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FBootstrapContext"
       ]
     },
     "spark-class-model://schema/RouterGuardOptions": {
@@ -867,44 +872,28 @@
       "schema": {
         "type": "object",
         "title": "RouterGuardOptions",
-        "properties": {
-          "checkPermission": {
-            "type": "object",
-            "title": "(permissions: string[], required: string[]) => boolean"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/RouterGuardOptions"
       }
     },
-    "spark-class-model://schema/shared/d618e3885f62af1e8fa0940204c78d8efb52f49b2aba205a9d2403373412b3ce": {
-      "ref": "spark-class-model://schema/shared/d618e3885f62af1e8fa0940204c78d8efb52f49b2aba205a9d2403373412b3ce",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(permissions: string[], required: string[]) => boolean",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/d618e3885f62af1e8fa0940204c78d8efb52f49b2aba205a9d2403373412b3ce"
-      }
-    },
-    "spark-class-model://model/RouterGuardOptions/attributes/checkPermission/0": {
-      "ref": "spark-class-model://model/RouterGuardOptions/attributes/checkPermission/0",
-      "kind": "attribute",
+    "spark-class-model://model/RouterGuardOptions/methods/checkPermission/0": {
+      "ref": "spark-class-model://model/RouterGuardOptions/methods/checkPermission/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/RouterGuardOptions",
       "name": "checkPermission",
-      "schemaRef": "spark-class-model://schema/shared/d618e3885f62af1e8fa0940204c78d8efb52f49b2aba205a9d2403373412b3ce",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
     },
     "spark-class-model://model/RouterGuardOptions": {
       "ref": "spark-class-model://model/RouterGuardOptions",
       "kind": "model",
       "className": "RouterGuardOptions",
       "schemaRef": "spark-class-model://schema/RouterGuardOptions",
-      "attributeRefs": [
-        "spark-class-model://model/RouterGuardOptions/attributes/checkPermission/0"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/RouterGuardOptions/methods/checkPermission/0"
       ],
-      "methodRefs": [],
       "linkRefs": []
     },
     "spark-class-model://schema/ErrorHandlerOptions": {
@@ -913,93 +902,90 @@
       "schema": {
         "type": "object",
         "title": "ErrorHandlerOptions",
-        "properties": {
-          "onError": {
-            "type": "object",
-            "title": "(error: Error, context: ErrorContext) => void"
-          },
-          "errorClassifier": {
-            "type": "object",
-            "title": "(error: Error) => ErrorType"
-          },
-          "onErrorByType": {
-            "type": "object",
-            "title": "(type: ErrorType, error: Error) => void"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/ErrorHandlerOptions"
       }
     },
-    "spark-class-model://schema/shared/26b411769eb789f2092b4c5a47e97ab152c49c7219d7008e9306fc8815b43a6f": {
-      "ref": "spark-class-model://schema/shared/26b411769eb789f2092b4c5a47e97ab152c49c7219d7008e9306fc8815b43a6f",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(error: Error, context: ErrorContext) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/26b411769eb789f2092b4c5a47e97ab152c49c7219d7008e9306fc8815b43a6f"
-      }
-    },
-    "spark-class-model://model/ErrorHandlerOptions/attributes/onError/0": {
-      "ref": "spark-class-model://model/ErrorHandlerOptions/attributes/onError/0",
-      "kind": "attribute",
+    "spark-class-model://model/ErrorHandlerOptions/methods/onError/0": {
+      "ref": "spark-class-model://model/ErrorHandlerOptions/methods/onError/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ErrorHandlerOptions",
       "name": "onError",
-      "schemaRef": "spark-class-model://schema/shared/26b411769eb789f2092b4c5a47e97ab152c49c7219d7008e9306fc8815b43a6f",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://schema/shared/8b7e8a62c955dec44315d2ecda6f41441c45ee9b7bef267cfebbae22db3a7e6e": {
-      "ref": "spark-class-model://schema/shared/8b7e8a62c955dec44315d2ecda6f41441c45ee9b7bef267cfebbae22db3a7e6e",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(error: Error) => ErrorType",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/8b7e8a62c955dec44315d2ecda6f41441c45ee9b7bef267cfebbae22db3a7e6e"
-      }
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FErrorHandlerOptions%2Fmethods%2FonError%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FErrorContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FErrorHandlerOptions%2Fmethods%2FonError%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FErrorContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ErrorHandlerOptions/methods/onError/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/ErrorContext",
+      "targetClassName": "ErrorContext",
+      "targetFile": "files/declarations/packages/spark-app/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ErrorContext"
     },
-    "spark-class-model://model/ErrorHandlerOptions/attributes/errorClassifier/1": {
-      "ref": "spark-class-model://model/ErrorHandlerOptions/attributes/errorClassifier/1",
-      "kind": "attribute",
+    "spark-class-model://model/ErrorHandlerOptions/methods/errorClassifier/1": {
+      "ref": "spark-class-model://model/ErrorHandlerOptions/methods/errorClassifier/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ErrorHandlerOptions",
       "name": "errorClassifier",
-      "schemaRef": "spark-class-model://schema/shared/8b7e8a62c955dec44315d2ecda6f41441c45ee9b7bef267cfebbae22db3a7e6e",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/8968c16002fdda890a9bd764af9fd143804b906d9194d0fca90a8f33cc38f691"
     },
-    "spark-class-model://schema/shared/c58ddc582698abf523e4a0ceb83fc94621ec59c922b02fbfe0cb9d5d176d026f": {
-      "ref": "spark-class-model://schema/shared/c58ddc582698abf523e4a0ceb83fc94621ec59c922b02fbfe0cb9d5d176d026f",
+    "spark-class-model://schema/shared/8968c16002fdda890a9bd764af9fd143804b906d9194d0fca90a8f33cc38f691": {
+      "ref": "spark-class-model://schema/shared/8968c16002fdda890a9bd764af9fd143804b906d9194d0fca90a8f33cc38f691",
       "kind": "schema",
       "schema": {
-        "type": "object",
-        "title": "(type: ErrorType, error: Error) => void",
+        "$ref": "spark-class-model://schema/ErrorType",
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/c58ddc582698abf523e4a0ceb83fc94621ec59c922b02fbfe0cb9d5d176d026f"
+        "$id": "spark-class-model://schema/shared/8968c16002fdda890a9bd764af9fd143804b906d9194d0fca90a8f33cc38f691"
       }
     },
-    "spark-class-model://model/ErrorHandlerOptions/attributes/onErrorByType/2": {
-      "ref": "spark-class-model://model/ErrorHandlerOptions/attributes/onErrorByType/2",
-      "kind": "attribute",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FErrorHandlerOptions%2Fmethods%2FerrorClassifier%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FErrorType": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FErrorHandlerOptions%2Fmethods%2FerrorClassifier%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FErrorType",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ErrorHandlerOptions/methods/errorClassifier/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/ErrorType",
+      "targetClassName": "ErrorType",
+      "targetFile": "files/declarations/packages/spark-app/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ErrorType"
+    },
+    "spark-class-model://model/ErrorHandlerOptions/methods/onErrorByType/2": {
+      "ref": "spark-class-model://model/ErrorHandlerOptions/methods/onErrorByType/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ErrorHandlerOptions",
       "name": "onErrorByType",
-      "schemaRef": "spark-class-model://schema/shared/c58ddc582698abf523e4a0ceb83fc94621ec59c922b02fbfe0cb9d5d176d026f",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FErrorHandlerOptions%2Fmethods%2FonErrorByType%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FErrorType": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FErrorHandlerOptions%2Fmethods%2FonErrorByType%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FErrorType",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ErrorHandlerOptions/methods/onErrorByType/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/ErrorType",
+      "targetClassName": "ErrorType",
+      "targetFile": "files/declarations/packages/spark-app/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ErrorType"
     },
     "spark-class-model://model/ErrorHandlerOptions": {
       "ref": "spark-class-model://model/ErrorHandlerOptions",
       "kind": "model",
       "className": "ErrorHandlerOptions",
       "schemaRef": "spark-class-model://schema/ErrorHandlerOptions",
-      "attributeRefs": [
-        "spark-class-model://model/ErrorHandlerOptions/attributes/onError/0",
-        "spark-class-model://model/ErrorHandlerOptions/attributes/errorClassifier/1",
-        "spark-class-model://model/ErrorHandlerOptions/attributes/onErrorByType/2"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ErrorHandlerOptions/methods/onError/0",
+        "spark-class-model://model/ErrorHandlerOptions/methods/errorClassifier/1",
+        "spark-class-model://model/ErrorHandlerOptions/methods/onErrorByType/2"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FErrorHandlerOptions%2Fmethods%2FonError%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FErrorContext",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FErrorHandlerOptions%2Fmethods%2FerrorClassifier%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FErrorType",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FErrorHandlerOptions%2Fmethods%2FonErrorByType%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FErrorType"
+      ]
     },
     "spark-class-model://schema/ErrorContext": {
       "ref": "spark-class-model://schema/ErrorContext",

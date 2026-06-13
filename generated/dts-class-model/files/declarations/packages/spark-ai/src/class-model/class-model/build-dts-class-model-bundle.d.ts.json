@@ -87,7 +87,44 @@
         "className": "BuildDtsClassModelBundleProgress",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "phase",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/BuildDtsClassModelBundleProgressPhase"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "current",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "total",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "sourcePath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "BuildDtsClassModelBundleOptions": {
@@ -109,8 +146,85 @@
         "className": "BuildDtsClassModelBundleOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
-      "methods": []
+      "attributes": [
+        {
+          "name": "repoRoot",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rootFiles",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "outputDir",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "compilerHost",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ts.CompilerHost"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "exportedOnly",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "progressInterval",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "onProgress",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "event",
+              "type": {
+                "type": "reference",
+                "name": "BuildDtsClassModelBundleProgress",
+                "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "BuildDtsClassModelBundleResult": {
       "kind": "BuildDtsClassModelBundleResult",
@@ -131,11 +245,95 @@
         "className": "BuildDtsClassModelBundleResult",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "manifest",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "DtsClassModelBundleManifest"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "manifestPath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "runtimeManifest",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "DtsClassModelRuntimeManifest"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "runtimeManifestPath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "semanticLogPath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "semanticLogJsonPath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "semanticGapCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "fileCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "modelCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.576Z",
+  "generatedAt": "2026-06-13T06:21:06.610Z",
   "$defs": {
     "BuildDtsClassModelBundleProgressPhase": {
       "type": "object",
@@ -145,17 +343,83 @@
     "BuildDtsClassModelBundleProgress": {
       "type": "object",
       "title": "BuildDtsClassModelBundleProgress",
-      "description": "Build Dts Class Model Bundle Progress 的语义模型。"
+      "description": "Build Dts Class Model Bundle Progress 的语义模型。",
+      "properties": {
+        "phase": {
+          "$ref": "#/$defs/BuildDtsClassModelBundleProgressPhase"
+        },
+        "current": {
+          "type": "number"
+        },
+        "total": {
+          "type": "number"
+        },
+        "sourcePath": {
+          "type": "string"
+        }
+      }
     },
     "BuildDtsClassModelBundleOptions": {
       "type": "object",
       "title": "BuildDtsClassModelBundleOptions",
-      "description": "Build Dts Class Model Bundle Options 的调用配置。"
+      "description": "Build Dts Class Model Bundle Options 的调用配置。",
+      "properties": {
+        "repoRoot": {
+          "type": "string"
+        },
+        "rootFiles": {
+          "type": "array"
+        },
+        "outputDir": {
+          "type": "string"
+        },
+        "compilerHost": {
+          "type": "object",
+          "title": "ts.CompilerHost"
+        },
+        "exportedOnly": {
+          "type": "boolean"
+        },
+        "progressInterval": {
+          "type": "number"
+        }
+      }
     },
     "BuildDtsClassModelBundleResult": {
       "type": "object",
       "title": "BuildDtsClassModelBundleResult",
-      "description": "Build Dts Class Model Bundle Result 的返回结果。"
+      "description": "Build Dts Class Model Bundle Result 的返回结果。",
+      "properties": {
+        "manifest": {
+          "type": "object",
+          "title": "DtsClassModelBundleManifest"
+        },
+        "manifestPath": {
+          "type": "string"
+        },
+        "runtimeManifest": {
+          "type": "object",
+          "title": "DtsClassModelRuntimeManifest"
+        },
+        "runtimeManifestPath": {
+          "type": "string"
+        },
+        "semanticLogPath": {
+          "type": "string"
+        },
+        "semanticLogJsonPath": {
+          "type": "string"
+        },
+        "semanticGapCount": {
+          "type": "number"
+        },
+        "fileCount": {
+          "type": "number"
+        },
+        "modelCount": {
+          "type": "number"
+        }
+      }
     }
   }
 }

@@ -18,13 +18,58 @@
         "$id": "spark-class-model://schema/VirtualCardViewportExpose"
       }
     },
+    "spark-class-model://model/VirtualCardViewportExpose/methods/setScrollTop/0": {
+      "ref": "spark-class-model://model/VirtualCardViewportExpose/methods/setScrollTop/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/VirtualCardViewportExpose",
+      "name": "setScrollTop",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/8836e3a881efad6e9ccece1859f3902106745ffe5546048f4f828d826649f531"
+    },
+    "spark-class-model://schema/shared/8836e3a881efad6e9ccece1859f3902106745ffe5546048f4f828d826649f531": {
+      "ref": "spark-class-model://schema/shared/8836e3a881efad6e9ccece1859f3902106745ffe5546048f4f828d826649f531",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8836e3a881efad6e9ccece1859f3902106745ffe5546048f4f828d826649f531"
+      }
+    },
+    "spark-class-model://model/VirtualCardViewportExpose/methods/viewportHeight/1": {
+      "ref": "spark-class-model://model/VirtualCardViewportExpose/methods/viewportHeight/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/VirtualCardViewportExpose",
+      "name": "viewportHeight",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
+    },
+    "spark-class-model://model/VirtualCardViewportExpose/methods/viewportScrollTop/2": {
+      "ref": "spark-class-model://model/VirtualCardViewportExpose/methods/viewportScrollTop/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/VirtualCardViewportExpose",
+      "name": "viewportScrollTop",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
+    },
     "spark-class-model://model/VirtualCardViewportExpose": {
       "ref": "spark-class-model://model/VirtualCardViewportExpose",
       "kind": "model",
       "className": "VirtualCardViewportExpose",
       "schemaRef": "spark-class-model://schema/VirtualCardViewportExpose",
       "attributeRefs": [],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/VirtualCardViewportExpose/methods/setScrollTop/0",
+        "spark-class-model://model/VirtualCardViewportExpose/methods/viewportHeight/1",
+        "spark-class-model://model/VirtualCardViewportExpose/methods/viewportScrollTop/2"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/WheelPageEvent": {
@@ -96,46 +141,6 @@
           "requestState": {
             "type": "object",
             "title": "ComputedRef<RequestState>"
-          },
-          "pageHeight": {
-            "type": "object",
-            "title": "() => number"
-          },
-          "mobilePageHeight": {
-            "type": "object",
-            "title": "() => number"
-          },
-          "mobileBreakpoint": {
-            "type": "object",
-            "title": "() => number"
-          },
-          "overscanPages": {
-            "type": "object",
-            "title": "() => number"
-          },
-          "prefetchPages": {
-            "type": "object",
-            "title": "() => number"
-          },
-          "maxCachedPages": {
-            "type": "object",
-            "title": "() => number"
-          },
-          "settleDelay": {
-            "type": "object",
-            "title": "() => number"
-          },
-          "wheelStepPx": {
-            "type": "object",
-            "title": "() => number"
-          },
-          "maxWheelJumpPages": {
-            "type": "object",
-            "title": "() => number"
-          },
-          "dispatchPageChange": {
-            "type": "object",
-            "title": "(page: number) => Promise<void>"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -255,115 +260,95 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503": {
-      "ref": "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => number",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503"
-      }
-    },
-    "spark-class-model://model/VirtualCardPagingOptions/attributes/pageHeight/7": {
-      "ref": "spark-class-model://model/VirtualCardPagingOptions/attributes/pageHeight/7",
-      "kind": "attribute",
+    "spark-class-model://model/VirtualCardPagingOptions/methods/pageHeight/0": {
+      "ref": "spark-class-model://model/VirtualCardPagingOptions/methods/pageHeight/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/VirtualCardPagingOptions",
       "name": "pageHeight",
-      "schemaRef": "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
-    "spark-class-model://model/VirtualCardPagingOptions/attributes/mobilePageHeight/8": {
-      "ref": "spark-class-model://model/VirtualCardPagingOptions/attributes/mobilePageHeight/8",
-      "kind": "attribute",
+    "spark-class-model://model/VirtualCardPagingOptions/methods/mobilePageHeight/1": {
+      "ref": "spark-class-model://model/VirtualCardPagingOptions/methods/mobilePageHeight/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/VirtualCardPagingOptions",
       "name": "mobilePageHeight",
-      "schemaRef": "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
-    "spark-class-model://model/VirtualCardPagingOptions/attributes/mobileBreakpoint/9": {
-      "ref": "spark-class-model://model/VirtualCardPagingOptions/attributes/mobileBreakpoint/9",
-      "kind": "attribute",
+    "spark-class-model://model/VirtualCardPagingOptions/methods/mobileBreakpoint/2": {
+      "ref": "spark-class-model://model/VirtualCardPagingOptions/methods/mobileBreakpoint/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/VirtualCardPagingOptions",
       "name": "mobileBreakpoint",
-      "schemaRef": "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
-    "spark-class-model://model/VirtualCardPagingOptions/attributes/overscanPages/10": {
-      "ref": "spark-class-model://model/VirtualCardPagingOptions/attributes/overscanPages/10",
-      "kind": "attribute",
+    "spark-class-model://model/VirtualCardPagingOptions/methods/overscanPages/3": {
+      "ref": "spark-class-model://model/VirtualCardPagingOptions/methods/overscanPages/3",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/VirtualCardPagingOptions",
       "name": "overscanPages",
-      "schemaRef": "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
-    "spark-class-model://model/VirtualCardPagingOptions/attributes/prefetchPages/11": {
-      "ref": "spark-class-model://model/VirtualCardPagingOptions/attributes/prefetchPages/11",
-      "kind": "attribute",
+    "spark-class-model://model/VirtualCardPagingOptions/methods/prefetchPages/4": {
+      "ref": "spark-class-model://model/VirtualCardPagingOptions/methods/prefetchPages/4",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/VirtualCardPagingOptions",
       "name": "prefetchPages",
-      "schemaRef": "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
-    "spark-class-model://model/VirtualCardPagingOptions/attributes/maxCachedPages/12": {
-      "ref": "spark-class-model://model/VirtualCardPagingOptions/attributes/maxCachedPages/12",
-      "kind": "attribute",
+    "spark-class-model://model/VirtualCardPagingOptions/methods/maxCachedPages/5": {
+      "ref": "spark-class-model://model/VirtualCardPagingOptions/methods/maxCachedPages/5",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/VirtualCardPagingOptions",
       "name": "maxCachedPages",
-      "schemaRef": "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
-    "spark-class-model://model/VirtualCardPagingOptions/attributes/settleDelay/13": {
-      "ref": "spark-class-model://model/VirtualCardPagingOptions/attributes/settleDelay/13",
-      "kind": "attribute",
+    "spark-class-model://model/VirtualCardPagingOptions/methods/settleDelay/6": {
+      "ref": "spark-class-model://model/VirtualCardPagingOptions/methods/settleDelay/6",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/VirtualCardPagingOptions",
       "name": "settleDelay",
-      "schemaRef": "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
-    "spark-class-model://model/VirtualCardPagingOptions/attributes/wheelStepPx/14": {
-      "ref": "spark-class-model://model/VirtualCardPagingOptions/attributes/wheelStepPx/14",
-      "kind": "attribute",
+    "spark-class-model://model/VirtualCardPagingOptions/methods/wheelStepPx/7": {
+      "ref": "spark-class-model://model/VirtualCardPagingOptions/methods/wheelStepPx/7",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/VirtualCardPagingOptions",
       "name": "wheelStepPx",
-      "schemaRef": "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
-    "spark-class-model://model/VirtualCardPagingOptions/attributes/maxWheelJumpPages/15": {
-      "ref": "spark-class-model://model/VirtualCardPagingOptions/attributes/maxWheelJumpPages/15",
-      "kind": "attribute",
+    "spark-class-model://model/VirtualCardPagingOptions/methods/maxWheelJumpPages/8": {
+      "ref": "spark-class-model://model/VirtualCardPagingOptions/methods/maxWheelJumpPages/8",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/VirtualCardPagingOptions",
       "name": "maxWheelJumpPages",
-      "schemaRef": "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
-    "spark-class-model://schema/shared/4a7d0db128e177f39d1ee436e1a38f63c6722c81a756076876402f272e83c121": {
-      "ref": "spark-class-model://schema/shared/4a7d0db128e177f39d1ee436e1a38f63c6722c81a756076876402f272e83c121",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(page: number) => Promise<void>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/4a7d0db128e177f39d1ee436e1a38f63c6722c81a756076876402f272e83c121"
-      }
-    },
-    "spark-class-model://model/VirtualCardPagingOptions/attributes/dispatchPageChange/16": {
-      "ref": "spark-class-model://model/VirtualCardPagingOptions/attributes/dispatchPageChange/16",
-      "kind": "attribute",
+    "spark-class-model://model/VirtualCardPagingOptions/methods/dispatchPageChange/9": {
+      "ref": "spark-class-model://model/VirtualCardPagingOptions/methods/dispatchPageChange/9",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/VirtualCardPagingOptions",
       "name": "dispatchPageChange",
-      "schemaRef": "spark-class-model://schema/shared/4a7d0db128e177f39d1ee436e1a38f63c6722c81a756076876402f272e83c121",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/17cca34214f2289596985f4b14900413ca1efacc45c24678839a262102ac403e",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
     },
     "spark-class-model://model/VirtualCardPagingOptions": {
       "ref": "spark-class-model://model/VirtualCardPagingOptions",
@@ -377,19 +362,20 @@
         "spark-class-model://model/VirtualCardPagingOptions/attributes/total/3",
         "spark-class-model://model/VirtualCardPagingOptions/attributes/page/4",
         "spark-class-model://model/VirtualCardPagingOptions/attributes/pageSize/5",
-        "spark-class-model://model/VirtualCardPagingOptions/attributes/requestState/6",
-        "spark-class-model://model/VirtualCardPagingOptions/attributes/pageHeight/7",
-        "spark-class-model://model/VirtualCardPagingOptions/attributes/mobilePageHeight/8",
-        "spark-class-model://model/VirtualCardPagingOptions/attributes/mobileBreakpoint/9",
-        "spark-class-model://model/VirtualCardPagingOptions/attributes/overscanPages/10",
-        "spark-class-model://model/VirtualCardPagingOptions/attributes/prefetchPages/11",
-        "spark-class-model://model/VirtualCardPagingOptions/attributes/maxCachedPages/12",
-        "spark-class-model://model/VirtualCardPagingOptions/attributes/settleDelay/13",
-        "spark-class-model://model/VirtualCardPagingOptions/attributes/wheelStepPx/14",
-        "spark-class-model://model/VirtualCardPagingOptions/attributes/maxWheelJumpPages/15",
-        "spark-class-model://model/VirtualCardPagingOptions/attributes/dispatchPageChange/16"
+        "spark-class-model://model/VirtualCardPagingOptions/attributes/requestState/6"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/VirtualCardPagingOptions/methods/pageHeight/0",
+        "spark-class-model://model/VirtualCardPagingOptions/methods/mobilePageHeight/1",
+        "spark-class-model://model/VirtualCardPagingOptions/methods/mobileBreakpoint/2",
+        "spark-class-model://model/VirtualCardPagingOptions/methods/overscanPages/3",
+        "spark-class-model://model/VirtualCardPagingOptions/methods/prefetchPages/4",
+        "spark-class-model://model/VirtualCardPagingOptions/methods/maxCachedPages/5",
+        "spark-class-model://model/VirtualCardPagingOptions/methods/settleDelay/6",
+        "spark-class-model://model/VirtualCardPagingOptions/methods/wheelStepPx/7",
+        "spark-class-model://model/VirtualCardPagingOptions/methods/maxWheelJumpPages/8",
+        "spark-class-model://model/VirtualCardPagingOptions/methods/dispatchPageChange/9"
+      ],
       "linkRefs": []
     }
   }

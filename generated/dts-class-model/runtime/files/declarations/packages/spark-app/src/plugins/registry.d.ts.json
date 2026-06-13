@@ -101,10 +101,6 @@
           "module": {
             "type": "string"
           },
-          "loader": {
-            "type": "object",
-            "title": "() => Promise<{\n        default: Plugin;\n    }>"
-          },
           "defaultOptions": {
             "type": "object",
             "title": "Record<string, unknown>"
@@ -147,27 +143,8 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://schema/shared/9d10a4d6f56c75e6ef815446ce56749ff781236d1315cc6f4ddf490498f23aef": {
-      "ref": "spark-class-model://schema/shared/9d10a4d6f56c75e6ef815446ce56749ff781236d1315cc6f4ddf490498f23aef",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => Promise<{\n        default: Plugin;\n    }>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/9d10a4d6f56c75e6ef815446ce56749ff781236d1315cc6f4ddf490498f23aef"
-      }
-    },
-    "spark-class-model://model/PluginLoader/attributes/loader/3": {
-      "ref": "spark-class-model://model/PluginLoader/attributes/loader/3",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/PluginLoader",
-      "name": "loader",
-      "schemaRef": "spark-class-model://schema/shared/9d10a4d6f56c75e6ef815446ce56749ff781236d1315cc6f4ddf490498f23aef",
-      "readable": true,
-      "writable": true
-    },
-    "spark-class-model://model/PluginLoader/attributes/defaultOptions/4": {
-      "ref": "spark-class-model://model/PluginLoader/attributes/defaultOptions/4",
+    "spark-class-model://model/PluginLoader/attributes/defaultOptions/3": {
+      "ref": "spark-class-model://model/PluginLoader/attributes/defaultOptions/3",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/PluginLoader",
       "name": "defaultOptions",
@@ -175,8 +152,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/PluginLoader/attributes/description/5": {
-      "ref": "spark-class-model://model/PluginLoader/attributes/description/5",
+    "spark-class-model://model/PluginLoader/attributes/description/4": {
+      "ref": "spark-class-model://model/PluginLoader/attributes/description/4",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/PluginLoader",
       "name": "description",
@@ -184,14 +161,33 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/PluginLoader/attributes/version/6": {
-      "ref": "spark-class-model://model/PluginLoader/attributes/version/6",
+    "spark-class-model://model/PluginLoader/attributes/version/5": {
+      "ref": "spark-class-model://model/PluginLoader/attributes/version/5",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/PluginLoader",
       "name": "version",
       "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
       "readable": true,
       "writable": false
+    },
+    "spark-class-model://model/PluginLoader/methods/loader/0": {
+      "ref": "spark-class-model://model/PluginLoader/methods/loader/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PluginLoader",
+      "name": "loader",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b357b09954cc9d205782b1a34146a7e629decccdd83f3824d8c1ef6a93c24075"
+    },
+    "spark-class-model://schema/shared/b357b09954cc9d205782b1a34146a7e629decccdd83f3824d8c1ef6a93c24075": {
+      "ref": "spark-class-model://schema/shared/b357b09954cc9d205782b1a34146a7e629decccdd83f3824d8c1ef6a93c24075",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<{\n        default: Plugin;\n    }>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b357b09954cc9d205782b1a34146a7e629decccdd83f3824d8c1ef6a93c24075"
+      }
     },
     "spark-class-model://model/PluginLoader": {
       "ref": "spark-class-model://model/PluginLoader",
@@ -202,12 +198,13 @@
         "spark-class-model://model/PluginLoader/attributes/id/0",
         "spark-class-model://model/PluginLoader/attributes/name/1",
         "spark-class-model://model/PluginLoader/attributes/module/2",
-        "spark-class-model://model/PluginLoader/attributes/loader/3",
-        "spark-class-model://model/PluginLoader/attributes/defaultOptions/4",
-        "spark-class-model://model/PluginLoader/attributes/description/5",
-        "spark-class-model://model/PluginLoader/attributes/version/6"
+        "spark-class-model://model/PluginLoader/attributes/defaultOptions/3",
+        "spark-class-model://model/PluginLoader/attributes/description/4",
+        "spark-class-model://model/PluginLoader/attributes/version/5"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/PluginLoader/methods/loader/0"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/PluginInstance": {

@@ -269,6 +269,38 @@
         "$id": "spark-class-model://schema/DataValidator"
       }
     },
+    "spark-class-model://model/DataValidator/constructors/0": {
+      "ref": "spark-class-model://model/DataValidator/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/DataValidator",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e9f773165cc665f36bfc39a3933e922215a6afa703369b27637c5c87a42dee93"
+    },
+    "spark-class-model://schema/shared/e9f773165cc665f36bfc39a3933e922215a6afa703369b27637c5c87a42dee93": {
+      "ref": "spark-class-model://schema/shared/e9f773165cc665f36bfc39a3933e922215a6afa703369b27637c5c87a42dee93",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "$ref": "spark-class-model://schema/DataSchema"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e9f773165cc665f36bfc39a3933e922215a6afa703369b27637c5c87a42dee93"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSchema": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSchema",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataValidator/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/DataSchema",
+      "targetClassName": "DataSchema",
+      "targetFile": "files/declarations/packages/spark-data/src/validation.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataSchema"
+    },
     "spark-class-model://model/DataValidator/methods/validate/0": {
       "ref": "spark-class-model://model/DataValidator/methods/validate/0",
       "kind": "method",
@@ -417,6 +449,7 @@
       "kind": "model",
       "className": "DataValidator",
       "schemaRef": "spark-class-model://schema/DataValidator",
+      "constructorRef": "spark-class-model://model/DataValidator/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/DataValidator/methods/validate/0",
@@ -425,6 +458,7 @@
         "spark-class-model://model/DataValidator/methods/getFirstError/3"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSchema",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2Fvalidate%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FValidationResult",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2Fvalidate%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataValidator%2Fmethods%2FvalidateBatch%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FValidationResult",

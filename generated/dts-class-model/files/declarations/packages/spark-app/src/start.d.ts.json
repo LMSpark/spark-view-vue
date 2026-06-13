@@ -104,26 +104,6 @@
           "writable": false
         },
         {
-          "name": "getHeaders",
-          "jsdoc": "动态请求头回调（每次请求时调用，注入租户上下文）",
-          "schema": {
-            "type": "object",
-            "title": "() => Record<string, string>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "isAuthenticated",
-          "jsdoc": "认证状态检查（DynamicRouter 据此决定使用远程导航树还是 preAuthNavTree）",
-          "schema": {
-            "type": "object",
-            "title": "() => boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "pageComponent",
           "jsdoc": "页面组件（默认使用 PageRenderer）",
           "schema": {
@@ -153,36 +133,6 @@
           "writable": false
         },
         {
-          "name": "loadNavigation",
-          "jsdoc": "导航数据加载函数 — 导航树作为路由的唯一来源。\n已认证时 DynamicRouter 使用此函数加载远程导航树并派生路由。\nrefreshRoutes() 返回加载后的导航树供 UI 直接消费。",
-          "schema": {
-            "type": "object",
-            "title": "() => Promise<ProjectModelData>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "loadPlatformNavigation",
-          "jsdoc": "平台工作台导航加载函数；节点路径会注册到 /platform 前缀下。",
-          "schema": {
-            "type": "object",
-            "title": "() => Promise<ProjectModelData>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "isPlatformNavigationEnabled",
-          "jsdoc": "是否启用平台工作台导航注册。",
-          "schema": {
-            "type": "object",
-            "title": "() => boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "platformPathPrefix",
           "jsdoc": "平台工作台路由前缀，默认 /platform。",
           "schema": {
@@ -202,7 +152,98 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "getHeaders",
+          "jsdoc": "动态请求头回调（每次请求时调用，注入租户上下文）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, string>"
+          }
+        },
+        {
+          "name": "isAuthenticated",
+          "jsdoc": "认证状态检查（DynamicRouter 据此决定使用远程导航树还是 preAuthNavTree）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "loadNavigation",
+          "jsdoc": "导航数据加载函数 — 导航树作为路由的唯一来源。\n已认证时 DynamicRouter 使用此函数加载远程导航树并派生路由。\nrefreshRoutes() 返回加载后的导航树供 UI 直接消费。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "ProjectModelData"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectModelData>"
+          }
+        },
+        {
+          "name": "loadPlatformNavigation",
+          "jsdoc": "平台工作台导航加载函数；节点路径会注册到 /platform 前缀下。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "ProjectModelData"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectModelData>"
+          }
+        },
+        {
+          "name": "isPlatformNavigationEnabled",
+          "jsdoc": "是否启用平台工作台导航注册。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        }
+      ]
     },
     "StartOptions": {
       "kind": "StartOptions",
@@ -316,32 +357,79 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "onBeforeStart",
           "jsdoc": "启动前钩子",
-          "schema": {
-            "type": "object",
-            "title": "() => void | Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         },
         {
           "name": "onStartError",
           "jsdoc": "启动失败钩子（如果提供，将完全接管错误处理）",
-          "schema": {
-            "type": "object",
-            "title": "(error: Error) => void | Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "error",
+              "type": {
+                "type": "reference",
+                "name": "Error"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.625Z",
+  "generatedAt": "2026-06-13T06:21:06.716Z",
   "$defs": {
     "SparkOptions": {
       "type": "object",
@@ -378,14 +466,6 @@
         "timeout": {
           "type": "number"
         },
-        "getHeaders": {
-          "type": "object",
-          "title": "() => Record<string, string>"
-        },
-        "isAuthenticated": {
-          "type": "object",
-          "title": "() => boolean"
-        },
         "pageComponent": {
           "type": "object",
           "title": "Component"
@@ -396,18 +476,6 @@
         },
         "tenantPathPrefix": {
           "type": "string"
-        },
-        "loadNavigation": {
-          "type": "object",
-          "title": "() => Promise<ProjectModelData>"
-        },
-        "loadPlatformNavigation": {
-          "type": "object",
-          "title": "() => Promise<ProjectModelData>"
-        },
-        "isPlatformNavigationEnabled": {
-          "type": "object",
-          "title": "() => boolean"
         },
         "platformPathPrefix": {
           "type": "string"
@@ -469,14 +537,6 @@
               "title": "ThemeServiceOptions"
             }
           ]
-        },
-        "onBeforeStart": {
-          "type": "object",
-          "title": "() => void | Promise<void>"
-        },
-        "onStartError": {
-          "type": "object",
-          "title": "(error: Error) => void | Promise<void>"
         }
       }
     }

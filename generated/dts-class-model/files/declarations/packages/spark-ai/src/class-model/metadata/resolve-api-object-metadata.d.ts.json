@@ -60,11 +60,31 @@
         "className": "ResolveRuntimeApiMetadataJsonOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "schemaDefs",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, JsonSchemaObject>>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "inlineSchemaRefs",
+          "jsdoc": "@default false — true 时在注册前 inline #/$defs/*；false 时留给 AJV 2020 解析。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.593Z",
+  "generatedAt": "2026-06-13T06:21:06.670Z",
   "$defs": {
     "JsonSchemaObject": {
       "type": "object",
@@ -74,7 +94,16 @@
     "ResolveRuntimeApiMetadataJsonOptions": {
       "type": "object",
       "title": "ResolveRuntimeApiMetadataJsonOptions",
-      "description": "Resolve Runtime API Metadata Json Options 的调用配置。"
+      "description": "Resolve Runtime API Metadata Json Options 的调用配置。",
+      "properties": {
+        "schemaDefs": {
+          "type": "object",
+          "title": "Readonly<Record<string, JsonSchemaObject>>"
+        },
+        "inlineSchemaRefs": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }

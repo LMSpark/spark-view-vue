@@ -43,7 +43,139 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "has",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "alias",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "alias": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "dryRun",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "alias",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "args",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "alias": {
+                "type": "string"
+              },
+              "args": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentHostDryRunResult"
+          }
+        },
+        {
+          "name": "run",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "alias",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "args",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "chat",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "alias": {
+                "type": "string"
+              },
+              "args": {
+                "type": "object",
+                "title": "AiJsonParams"
+              },
+              "chat": {
+                "type": "object",
+                "title": "AiAgentTaskChatOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiAgentHostRunResult>"
+          }
+        }
+      ]
     },
     "AiHostRunPrepare": {
       "kind": "AiHostRunPrepare",
@@ -79,7 +211,43 @@
         "className": "AiHostRunBridgeOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "host",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "prepareRun",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiHostRunPrepare",
+            "title": "AiHostRunPrepare<THost>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "defaultTimeoutMs",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "maxParallelRuns",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiHostRunBridge": {
@@ -102,10 +270,40 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "start",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "signatures": [
+                {
+                  "parameters": [],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                }
+              ]
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "() => void"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.921Z",
+  "generatedAt": "2026-06-13T06:21:07.192Z",
   "$defs": {
     "AiHostRunTarget": {
       "type": "object",
@@ -120,7 +318,20 @@
     "AiHostRunBridgeOptions": {
       "type": "object",
       "title": "AiHostRunBridgeOptions",
-      "description": "Ai Host Run Bridge Options 的调用配置。"
+      "description": "Ai Host Run Bridge Options 的调用配置。",
+      "properties": {
+        "host": true,
+        "prepareRun": {
+          "$ref": "#/$defs/AiHostRunPrepare",
+          "title": "AiHostRunPrepare<THost>"
+        },
+        "defaultTimeoutMs": {
+          "type": "number"
+        },
+        "maxParallelRuns": {
+          "type": "number"
+        }
+      }
     },
     "AiHostRunBridge": {
       "type": "object",

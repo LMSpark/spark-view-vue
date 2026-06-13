@@ -32,10 +32,6 @@
           },
           "pageRuntimeServices": {
             "$ref": "spark-class-model://schema/PageRuntimeServicesCapability"
-          },
-          "runLoad": {
-            "type": "object",
-            "title": "(fn: (isStale: () => boolean) => Promise<void>, onError?: (err: Error) => void) => Promise<void>"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -163,24 +159,34 @@
       "targetFile": "files/declarations/packages/spark-component/src/runtime/app-services.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/PageRuntimeServicesCapability"
     },
-    "spark-class-model://schema/shared/5433761fb251ffc6a942931f089c3d9e0252adc6cb9c4e822dba3cb047ccbc32": {
-      "ref": "spark-class-model://schema/shared/5433761fb251ffc6a942931f089c3d9e0252adc6cb9c4e822dba3cb047ccbc32",
+    "spark-class-model://model/RendererSetupReturn/methods/runLoad/0": {
+      "ref": "spark-class-model://model/RendererSetupReturn/methods/runLoad/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererSetupReturn",
+      "name": "runLoad",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/9912a127781c29b1649ce69c4b1bb6605ae4dc89c0d1b14f71ddec1d92b15f44",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://schema/shared/9912a127781c29b1649ce69c4b1bb6605ae4dc89c0d1b14f71ddec1d92b15f44": {
+      "ref": "spark-class-model://schema/shared/9912a127781c29b1649ce69c4b1bb6605ae4dc89c0d1b14f71ddec1d92b15f44",
       "kind": "schema",
       "schema": {
         "type": "object",
-        "title": "(fn: (isStale: () => boolean) => Promise<void>, onError?: (err: Error) => void) => Promise<void>",
+        "properties": {
+          "fn": {
+            "type": "object",
+            "title": "(isStale: () => boolean) => Promise<void>"
+          },
+          "onError": {
+            "type": "object",
+            "title": "(err: Error) => void"
+          }
+        },
+        "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/5433761fb251ffc6a942931f089c3d9e0252adc6cb9c4e822dba3cb047ccbc32"
+        "$id": "spark-class-model://schema/shared/9912a127781c29b1649ce69c4b1bb6605ae4dc89c0d1b14f71ddec1d92b15f44"
       }
-    },
-    "spark-class-model://model/RendererSetupReturn/attributes/runLoad/7": {
-      "ref": "spark-class-model://model/RendererSetupReturn/attributes/runLoad/7",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/RendererSetupReturn",
-      "name": "runLoad",
-      "schemaRef": "spark-class-model://schema/shared/5433761fb251ffc6a942931f089c3d9e0252adc6cb9c4e822dba3cb047ccbc32",
-      "readable": true,
-      "writable": true
     },
     "spark-class-model://model/RendererSetupReturn": {
       "ref": "spark-class-model://model/RendererSetupReturn",
@@ -194,10 +200,11 @@
         "spark-class-model://model/RendererSetupReturn/attributes/loading/3",
         "spark-class-model://model/RendererSetupReturn/attributes/error/4",
         "spark-class-model://model/RendererSetupReturn/attributes/componentRegistry/5",
-        "spark-class-model://model/RendererSetupReturn/attributes/pageRuntimeServices/6",
-        "spark-class-model://model/RendererSetupReturn/attributes/runLoad/7"
+        "spark-class-model://model/RendererSetupReturn/attributes/pageRuntimeServices/6"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/RendererSetupReturn/methods/runLoad/0"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererSetupReturn%2Fattributes%2FcomponentRegistry%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FPageComponentRegistry",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererSetupReturn%2Fattributes%2FpageRuntimeServices%2F6/attribute/spark-class-model%3A%2F%2Fmodel%2FPageRuntimeServicesCapability"

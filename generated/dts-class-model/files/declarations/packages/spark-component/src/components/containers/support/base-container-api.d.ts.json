@@ -34,7 +34,259 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "getDataSource",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "DataView"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "addRow",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "Partial",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "CrudResult",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "DataRow"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "Partial<DataRow>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<DataRow | CrudResult<DataRow> | null>"
+          }
+        },
+        {
+          "name": "editRowById",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "patch",
+              "type": {
+                "type": "reference",
+                "name": "Partial",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "boolean"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "CrudResult",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "DataRow"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "patch": {
+                "type": "object",
+                "title": "Partial<DataRow>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<boolean | CrudResult<DataRow>>"
+          }
+        },
+        {
+          "name": "removeRow",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "boolean"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "CrudResult",
+                    "typeArguments": [
+                      {
+                        "type": "intrinsic",
+                        "name": "boolean"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<boolean | CrudResult<boolean>>"
+          }
+        }
+      ]
     },
     "BaseContainerApi": {
       "kind": "BaseContainerApi",
@@ -60,7 +312,304 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "getCurrentRow",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "DataRow"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "refresh",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "appendRow",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "updateRowById",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "patch",
+              "type": {
+                "type": "reference",
+                "name": "Partial",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "patch": {
+                "type": "object",
+                "title": "Partial<DataRow>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "deleteRowById",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "setCurrentRow",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "DataRow"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "setCurrentRowById",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        }
+      ]
     },
     "VisibilityContainerApi": {
       "kind": "VisibilityContainerApi",
@@ -75,10 +624,77 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "open",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "close",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "isVisible",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "toggle",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.697Z",
+  "generatedAt": "2026-06-13T06:21:06.854Z",
   "$defs": {
     "BaseCrudContainerApi": {
       "type": "object",

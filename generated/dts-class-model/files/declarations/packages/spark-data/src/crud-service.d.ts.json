@@ -95,7 +95,33 @@
               "isOptional": true
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "api": {
+              "type": "object",
+              "title": "CrudApi"
+            },
+            "httpConfigOrClient": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "title": "Partial<RequestConfig>"
+                },
+                {
+                  "type": "object",
+                  "title": "HttpClientBase"
+                }
+              ]
+            },
+            "endpointContextProvider": {
+              "type": "object",
+              "title": "() => Record<string, unknown>"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -107,6 +133,15 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "HttpClientBase"
           }
         },
         {
@@ -155,6 +190,24 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "title": "Partial<T>"
+              },
+              "config": {
+                "type": "object",
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<T>>"
           }
         },
         {
@@ -206,6 +259,24 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pk": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              },
+              "config": {
+                "type": "object",
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<T>>"
           }
         },
         {
@@ -271,6 +342,28 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pk": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              },
+              "data": {
+                "type": "object",
+                "title": "Partial<T>"
+              },
+              "config": {
+                "type": "object",
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<T>>"
           }
         },
         {
@@ -321,6 +414,24 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pk": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              },
+              "config": {
+                "type": "object",
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<boolean>>"
           }
         },
         {
@@ -365,6 +476,24 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "type": "object",
+                "title": "QueryParams"
+              },
+              "config": {
+                "type": "object",
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<T>>"
           }
         },
         {
@@ -416,6 +545,28 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "request": {
+                "type": "object",
+                "title": "DataSetTransactionRequest"
+              },
+              "endpoint": {
+                "type": "object",
+                "title": "HttpEndpoint"
+              },
+              "config": {
+                "type": "object",
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<T>>"
           }
         },
         {
@@ -466,6 +617,27 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "Partial<T>"
+                }
+              },
+              "config": {
+                "type": "object",
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<BatchResult>>"
           }
         },
         {
@@ -516,6 +688,27 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "Partial<T>"
+                }
+              },
+              "config": {
+                "type": "object",
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<BatchResult>>"
           }
         },
         {
@@ -569,6 +762,27 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "Record<string, unknown>"
+                }
+              },
+              "config": {
+                "type": "object",
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<BatchResult>>"
           }
         },
         {
@@ -615,6 +829,24 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "file": {
+                "type": "object",
+                "title": "File"
+              },
+              "config": {
+                "type": "object",
+                "title": "Partial<RequestConfig>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<{\n        imported: number;\n        failed: number;\n    }>>"
           }
         },
         {
@@ -658,12 +890,30 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "type": "object",
+                "title": "QueryParams"
+              },
+              "config": {
+                "type": "object",
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<Blob>>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.808Z",
+  "generatedAt": "2026-06-13T06:21:07.023Z",
   "$defs": {
     "CrudService": {
       "type": "object",

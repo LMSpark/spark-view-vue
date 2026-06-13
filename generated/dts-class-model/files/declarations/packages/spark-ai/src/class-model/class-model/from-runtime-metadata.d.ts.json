@@ -36,16 +36,45 @@
         "className": "RuntimeDocumentInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "$defs",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "modules",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.582Z",
+  "generatedAt": "2026-06-13T06:21:06.634Z",
   "$defs": {
     "RuntimeDocumentInput": {
       "type": "object",
       "title": "RuntimeDocumentInput",
-      "description": "Runtime Document Input 的输入数据。"
+      "description": "Runtime Document Input 的输入数据。",
+      "properties": {
+        "$defs": {
+          "type": "object",
+          "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+        },
+        "modules": {
+          "type": "array"
+        }
+      }
     }
   }
 }

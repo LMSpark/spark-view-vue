@@ -16,6 +16,38 @@
         "$id": "spark-class-model://schema/CascadeDelegate"
       }
     },
+    "spark-class-model://model/CascadeDelegate/constructors/0": {
+      "ref": "spark-class-model://model/CascadeDelegate/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/CascadeDelegate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/6b6a8bb9d230c750b934a3757fda56ea4438cec61f6d3a2d3fd774309ff70fe9"
+    },
+    "spark-class-model://schema/shared/6b6a8bb9d230c750b934a3757fda56ea4438cec61f6d3a2d3fd774309ff70fe9": {
+      "ref": "spark-class-model://schema/shared/6b6a8bb9d230c750b934a3757fda56ea4438cec61f6d3a2d3fd774309ff70fe9",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "$ref": "spark-class-model://schema/DataView"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6b6a8bb9d230c750b934a3757fda56ea4438cec61f6d3a2d3fd774309ff70fe9"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCascadeDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCascadeDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CascadeDelegate/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/declarations/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
+    },
     "spark-class-model://model/CascadeDelegate/methods/setupCascade/0": {
       "ref": "spark-class-model://model/CascadeDelegate/methods/setupCascade/0",
       "kind": "method",
@@ -53,6 +85,7 @@
       "kind": "model",
       "className": "CascadeDelegate",
       "schemaRef": "spark-class-model://schema/CascadeDelegate",
+      "constructorRef": "spark-class-model://model/CascadeDelegate/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/CascadeDelegate/methods/setupCascade/0",
@@ -60,7 +93,9 @@
         "spark-class-model://model/CascadeDelegate/methods/cancelPendingRequest/2",
         "spark-class-model://model/CascadeDelegate/methods/destroy/3"
       ],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCascadeDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView"
+      ]
     }
   }
 }

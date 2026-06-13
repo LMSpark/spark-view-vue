@@ -17,22 +17,6 @@
           "currentNode": {
             "type": "object",
             "title": "ComputedRef<SparkNode>"
-          },
-          "resolveView": {
-            "type": "object",
-            "title": "() => DataView | null"
-          },
-          "resolveScopedRow": {
-            "type": "object",
-            "title": "() => DataRow | undefined"
-          },
-          "resolveContext": {
-            "type": "object",
-            "title": "() => ActionExecutionContext"
-          },
-          "warn": {
-            "type": "object",
-            "title": "(msg: string) => void"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -58,81 +42,94 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://schema/shared/a99b7b9f86765c03009d36803526142ff57487dc2ee96a1a1b9de394ef35e72a": {
-      "ref": "spark-class-model://schema/shared/a99b7b9f86765c03009d36803526142ff57487dc2ee96a1a1b9de394ef35e72a",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => DataView | null",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/a99b7b9f86765c03009d36803526142ff57487dc2ee96a1a1b9de394ef35e72a"
-      }
-    },
-    "spark-class-model://model/ActionButtonRuntimeOptions/attributes/resolveView/1": {
-      "ref": "spark-class-model://model/ActionButtonRuntimeOptions/attributes/resolveView/1",
-      "kind": "attribute",
+    "spark-class-model://model/ActionButtonRuntimeOptions/methods/resolveView/0": {
+      "ref": "spark-class-model://model/ActionButtonRuntimeOptions/methods/resolveView/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ActionButtonRuntimeOptions",
       "name": "resolveView",
-      "schemaRef": "spark-class-model://schema/shared/a99b7b9f86765c03009d36803526142ff57487dc2ee96a1a1b9de394ef35e72a",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/de198bbc656283f2c9813b1de32a14906b73742a8dcad13d3d0d4dc61fb90390"
     },
-    "spark-class-model://schema/shared/31e38c5db8e5f86394024af1a0aa3b18e55a0f03cb86b85514358c565621d24b": {
-      "ref": "spark-class-model://schema/shared/31e38c5db8e5f86394024af1a0aa3b18e55a0f03cb86b85514358c565621d24b",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => DataRow | undefined",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/31e38c5db8e5f86394024af1a0aa3b18e55a0f03cb86b85514358c565621d24b"
-      }
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionButtonRuntimeOptions%2Fmethods%2FresolveView%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionButtonRuntimeOptions%2Fmethods%2FresolveView%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ActionButtonRuntimeOptions/methods/resolveView/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/declarations/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
     },
-    "spark-class-model://model/ActionButtonRuntimeOptions/attributes/resolveScopedRow/2": {
-      "ref": "spark-class-model://model/ActionButtonRuntimeOptions/attributes/resolveScopedRow/2",
-      "kind": "attribute",
+    "spark-class-model://model/ActionButtonRuntimeOptions/methods/resolveScopedRow/1": {
+      "ref": "spark-class-model://model/ActionButtonRuntimeOptions/methods/resolveScopedRow/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ActionButtonRuntimeOptions",
       "name": "resolveScopedRow",
-      "schemaRef": "spark-class-model://schema/shared/31e38c5db8e5f86394024af1a0aa3b18e55a0f03cb86b85514358c565621d24b",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/d6da516bf1ead8be0d121529135c994dc180abc194ff65cda45b488c54e1f495"
     },
-    "spark-class-model://schema/shared/18c6fc9fde371bce6a30bfc11c04c46b611738c35e226a89510c409653e767cb": {
-      "ref": "spark-class-model://schema/shared/18c6fc9fde371bce6a30bfc11c04c46b611738c35e226a89510c409653e767cb",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => ActionExecutionContext",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/18c6fc9fde371bce6a30bfc11c04c46b611738c35e226a89510c409653e767cb"
-      }
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionButtonRuntimeOptions%2Fmethods%2FresolveScopedRow%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionButtonRuntimeOptions%2Fmethods%2FresolveScopedRow%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ActionButtonRuntimeOptions/methods/resolveScopedRow/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
     },
-    "spark-class-model://model/ActionButtonRuntimeOptions/attributes/resolveContext/3": {
-      "ref": "spark-class-model://model/ActionButtonRuntimeOptions/attributes/resolveContext/3",
-      "kind": "attribute",
+    "spark-class-model://model/ActionButtonRuntimeOptions/methods/resolveContext/2": {
+      "ref": "spark-class-model://model/ActionButtonRuntimeOptions/methods/resolveContext/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ActionButtonRuntimeOptions",
       "name": "resolveContext",
-      "schemaRef": "spark-class-model://schema/shared/18c6fc9fde371bce6a30bfc11c04c46b611738c35e226a89510c409653e767cb",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/398d8ffcd3752838581a8a3e5a1b31f0ee34ac3cb4836e14e82df9783efb4935"
     },
-    "spark-class-model://schema/shared/29c47f412ba05a292c707a10b682ae859db8595f49c7b5850f2668e4b470afe7": {
-      "ref": "spark-class-model://schema/shared/29c47f412ba05a292c707a10b682ae859db8595f49c7b5850f2668e4b470afe7",
+    "spark-class-model://schema/shared/398d8ffcd3752838581a8a3e5a1b31f0ee34ac3cb4836e14e82df9783efb4935": {
+      "ref": "spark-class-model://schema/shared/398d8ffcd3752838581a8a3e5a1b31f0ee34ac3cb4836e14e82df9783efb4935",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ActionExecutionContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/398d8ffcd3752838581a8a3e5a1b31f0ee34ac3cb4836e14e82df9783efb4935"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionButtonRuntimeOptions%2Fmethods%2FresolveContext%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionButtonRuntimeOptions%2Fmethods%2FresolveContext%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ActionButtonRuntimeOptions/methods/resolveContext/2",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/ActionExecutionContext",
+      "targetClassName": "ActionExecutionContext",
+      "targetFile": "files/declarations/packages/spark-component/src/page/actions/action-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ActionExecutionContext"
+    },
+    "spark-class-model://model/ActionButtonRuntimeOptions/methods/warn/3": {
+      "ref": "spark-class-model://model/ActionButtonRuntimeOptions/methods/warn/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ActionButtonRuntimeOptions",
+      "name": "warn",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f7e9989f7492749aa8ea157843ea3158ea2995b87bf98fda26ed2c8131281f56"
+    },
+    "spark-class-model://schema/shared/f7e9989f7492749aa8ea157843ea3158ea2995b87bf98fda26ed2c8131281f56": {
+      "ref": "spark-class-model://schema/shared/f7e9989f7492749aa8ea157843ea3158ea2995b87bf98fda26ed2c8131281f56",
       "kind": "schema",
       "schema": {
         "type": "object",
-        "title": "(msg: string) => void",
+        "properties": {
+          "msg": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/29c47f412ba05a292c707a10b682ae859db8595f49c7b5850f2668e4b470afe7"
+        "$id": "spark-class-model://schema/shared/f7e9989f7492749aa8ea157843ea3158ea2995b87bf98fda26ed2c8131281f56"
       }
-    },
-    "spark-class-model://model/ActionButtonRuntimeOptions/attributes/warn/4": {
-      "ref": "spark-class-model://model/ActionButtonRuntimeOptions/attributes/warn/4",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/ActionButtonRuntimeOptions",
-      "name": "warn",
-      "schemaRef": "spark-class-model://schema/shared/29c47f412ba05a292c707a10b682ae859db8595f49c7b5850f2668e4b470afe7",
-      "readable": true,
-      "writable": true
     },
     "spark-class-model://model/ActionButtonRuntimeOptions": {
       "ref": "spark-class-model://model/ActionButtonRuntimeOptions",
@@ -140,14 +137,19 @@
       "className": "ActionButtonRuntimeOptions",
       "schemaRef": "spark-class-model://schema/ActionButtonRuntimeOptions",
       "attributeRefs": [
-        "spark-class-model://model/ActionButtonRuntimeOptions/attributes/currentNode/0",
-        "spark-class-model://model/ActionButtonRuntimeOptions/attributes/resolveView/1",
-        "spark-class-model://model/ActionButtonRuntimeOptions/attributes/resolveScopedRow/2",
-        "spark-class-model://model/ActionButtonRuntimeOptions/attributes/resolveContext/3",
-        "spark-class-model://model/ActionButtonRuntimeOptions/attributes/warn/4"
+        "spark-class-model://model/ActionButtonRuntimeOptions/attributes/currentNode/0"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/ActionButtonRuntimeOptions/methods/resolveView/0",
+        "spark-class-model://model/ActionButtonRuntimeOptions/methods/resolveScopedRow/1",
+        "spark-class-model://model/ActionButtonRuntimeOptions/methods/resolveContext/2",
+        "spark-class-model://model/ActionButtonRuntimeOptions/methods/warn/3"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionButtonRuntimeOptions%2Fmethods%2FresolveView%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FDataView",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionButtonRuntimeOptions%2Fmethods%2FresolveScopedRow%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionButtonRuntimeOptions%2Fmethods%2FresolveContext%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext"
+      ]
     },
     "spark-class-model://schema/ActionButtonRuntime": {
       "ref": "spark-class-model://schema/ActionButtonRuntime",
@@ -167,10 +169,6 @@
           "hostActionDisabled": {
             "type": "object",
             "title": "ComputedRef<boolean>"
-          },
-          "executeAction": {
-            "type": "object",
-            "title": "() => Promise<void>"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -214,24 +212,14 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://schema/shared/4118b6a6f43f6cebd6f644795b03633db42affce8192daee90f77a33859360e5": {
-      "ref": "spark-class-model://schema/shared/4118b6a6f43f6cebd6f644795b03633db42affce8192daee90f77a33859360e5",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => Promise<void>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/4118b6a6f43f6cebd6f644795b03633db42affce8192daee90f77a33859360e5"
-      }
-    },
-    "spark-class-model://model/ActionButtonRuntime/attributes/executeAction/3": {
-      "ref": "spark-class-model://model/ActionButtonRuntime/attributes/executeAction/3",
-      "kind": "attribute",
+    "spark-class-model://model/ActionButtonRuntime/methods/executeAction/0": {
+      "ref": "spark-class-model://model/ActionButtonRuntime/methods/executeAction/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ActionButtonRuntime",
       "name": "executeAction",
-      "schemaRef": "spark-class-model://schema/shared/4118b6a6f43f6cebd6f644795b03633db42affce8192daee90f77a33859360e5",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
     },
     "spark-class-model://model/ActionButtonRuntime": {
       "ref": "spark-class-model://model/ActionButtonRuntime",
@@ -241,10 +229,11 @@
       "attributeRefs": [
         "spark-class-model://model/ActionButtonRuntime/attributes/hasBuiltinAction/0",
         "spark-class-model://model/ActionButtonRuntime/attributes/actionDescriptor/1",
-        "spark-class-model://model/ActionButtonRuntime/attributes/hostActionDisabled/2",
-        "spark-class-model://model/ActionButtonRuntime/attributes/executeAction/3"
+        "spark-class-model://model/ActionButtonRuntime/attributes/hostActionDisabled/2"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ActionButtonRuntime/methods/executeAction/0"
+      ],
       "linkRefs": []
     }
   }

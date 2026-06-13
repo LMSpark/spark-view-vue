@@ -228,7 +228,25 @@
               }
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "getColumns": {
+              "type": "object",
+              "title": "() => readonly DataColumn[] | undefined"
+            },
+            "getComputedColumnNames": {
+              "type": "object",
+              "title": "() => ReadonlySet<string>"
+            },
+            "getPrimaryKeyFields": {
+              "type": "object",
+              "title": "() => string[]"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -264,7 +282,28 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "cancelCreate",
@@ -291,6 +330,25 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -325,7 +383,28 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "original": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "clearDirty",
@@ -355,7 +434,24 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "trackDelete",
@@ -389,7 +485,28 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "snapshot": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "cancelDelete",
@@ -419,7 +536,24 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "clearAll",
@@ -429,7 +563,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "hasPendingChanges",
@@ -459,6 +599,25 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -489,6 +648,25 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -516,6 +694,25 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -543,6 +740,25 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -573,6 +789,26 @@
               "type": "reference",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataRow"
           }
         },
         {
@@ -603,6 +839,26 @@
               "type": "reference",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataRow"
           }
         },
         {
@@ -638,6 +894,29 @@
             "type": "reference",
             "name": "RowDiff",
             "sourcePath": "declarations/packages/spark-data/src/strategies/dirty-tracking-delegate.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "current": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/RowDiff"
           }
         },
         {
@@ -698,6 +977,37 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "host": {
+                "type": "object",
+                "title": "DataView"
+              },
+              "crud": {
+                "type": "object",
+                "title": "CrudDelegate"
+              },
+              "ids": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<SaveChangesData>>"
           }
         },
         {
@@ -708,12 +1018,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.839Z",
+  "generatedAt": "2026-06-13T06:21:07.075Z",
   "$defs": {
     "FieldChange": {
       "type": "object",

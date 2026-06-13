@@ -52,7 +52,29 @@
         "className": "AiAgentTransportToolSpec",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "type",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "function"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "function",
+          "jsdoc": "",
+          "schema": {
+            "type": "object"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentTransportMessage": {
@@ -74,7 +96,69 @@
         "className": "AiAgentTransportMessage",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "role",
+          "jsdoc": "system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiAgentStreamTurnInput.systemPrompt",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "user"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "assistant"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "system"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "tool"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "content",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "tool_call_id",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "tool_calls",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentTransportToolCall": {
@@ -96,7 +180,38 @@
         "className": "AiAgentTransportToolCall",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "id",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "type",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "function"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "function",
+          "jsdoc": "",
+          "schema": {
+            "type": "object"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentStreamTurnInput": {
@@ -118,8 +233,162 @@
         "className": "AiAgentStreamTurnInput",
         "declarationKind": "type"
       },
-      "attributes": [],
-      "methods": []
+      "attributes": [
+        {
+          "name": "sessionId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "scope",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentScope"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "turn",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTurnMeta"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "systemPrompt",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "tools",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "messages",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "signal",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AbortSignal"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "onStreamEvent",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "event",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "onDelta",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "delta",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "onReasoning",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "reasoning",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "onUsage",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "usage",
+              "type": {
+                "type": "reference",
+                "name": "Record",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "AiAgentPrepareSessionInput": {
       "kind": "AiAgentPrepareSessionInput",
@@ -140,7 +409,55 @@
         "className": "AiAgentPrepareSessionInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "sessionId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "scope",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentScope"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "systemPrompt",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "tools",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "signal",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AbortSignal"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentStreamTurnResult": {
@@ -162,7 +479,44 @@
         "className": "AiAgentStreamTurnResult",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "text",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "reasoning",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "toolCalls",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "assistantMessagePersisted",
+          "jsdoc": "true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentAppendMessagesInput": {
@@ -184,7 +538,46 @@
         "className": "AiAgentAppendMessagesInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "sessionId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "scope",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentScope"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "turn",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTurnMeta"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "messages",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentAppSseEventSource": {
@@ -207,7 +600,79 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "on",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "name",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "listener",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "event",
+                          "type": {
+                            "type": "reference",
+                            "name": "unknown"
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reflection",
+            "declaration": {
+              "signatures": [
+                {
+                  "parameters": [],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                }
+              ]
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "object",
+                "title": "AiAgentAppSseEventName"
+              },
+              "listener": {
+                "type": "object",
+                "title": "(event: AiAgentAppSseEvent) => void"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "() => void"
+          }
+        }
+      ]
     },
     "AiAgentTurnCallbacks": {
       "kind": "AiAgentTurnCallbacks",
@@ -229,45 +694,291 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "prepareSession",
+          "jsdoc": "可选：在 turn 前显式准备后端 session。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "AiAgentPrepareSessionInput",
+                "sourcePath": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "executeTurn",
+          "jsdoc": "启动一次模型 turn，聚合 APP SSE 事件后返回结果。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "AiAgentStreamTurnInput",
+                "sourcePath": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "AiAgentStreamTurnResult",
+                "sourcePath": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/AiAgentStreamTurnInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiAgentStreamTurnResult>"
+          }
+        },
+        {
+          "name": "appendMessages",
+          "jsdoc": "将工具调用结果同步到后端会话。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "AiAgentAppendMessagesInput",
+                "sourcePath": "declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/AiAgentAppendMessagesInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.574Z",
+  "generatedAt": "2026-06-13T06:21:06.607Z",
   "$defs": {
     "AiAgentTransportToolSpec": {
       "type": "object",
       "title": "AiAgentTransportToolSpec",
-      "description": "传输层工具规约（对齐 OpenAI function tool spec）"
+      "description": "传输层工具规约（对齐 OpenAI function tool spec）",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "function"
+          ]
+        },
+        "function": {
+          "type": "object"
+        }
+      }
     },
     "AiAgentTransportMessage": {
       "type": "object",
       "title": "AiAgentTransportMessage",
-      "description": "传输层消息（对齐 OpenAI message 格式，支持 tool_calls）"
+      "description": "传输层消息（对齐 OpenAI message 格式，支持 tool_calls）",
+      "properties": {
+        "role": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "user"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "assistant"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "system"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "tool"
+              ]
+            }
+          ]
+        },
+        "content": {
+          "type": "string"
+        },
+        "tool_call_id": {
+          "type": "string"
+        },
+        "tool_calls": {
+          "type": "array"
+        }
+      }
     },
     "AiAgentTransportToolCall": {
       "type": "object",
       "title": "AiAgentTransportToolCall",
-      "description": "传输层工具调用"
+      "description": "传输层工具调用",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "function"
+          ]
+        },
+        "function": {
+          "type": "object"
+        }
+      }
     },
     "AiAgentStreamTurnInput": {
       "type": "object",
       "title": "AiAgentStreamTurnInput",
-      "description": "AI turn 启动输入（模型事件通过 APP 公共 SSE 返回）"
+      "description": "AI turn 启动输入（模型事件通过 APP 公共 SSE 返回）",
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "turn": {
+          "type": "object",
+          "title": "AiAgentTurnMeta"
+        },
+        "systemPrompt": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "array"
+        },
+        "messages": {
+          "type": "array"
+        },
+        "signal": {
+          "type": "object",
+          "title": "AbortSignal"
+        }
+      }
     },
     "AiAgentPrepareSessionInput": {
       "type": "object",
       "title": "AiAgentPrepareSessionInput",
-      "description": "后端 V4 会话准备输入；用于在 executeTurn 前显式确保 session 存在且 scope 正确。"
+      "description": "后端 V4 会话准备输入；用于在 executeTurn 前显式确保 session 存在且 scope 正确。",
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "systemPrompt": {
+          "type": "string"
+        },
+        "tools": {
+          "type": "array"
+        },
+        "signal": {
+          "type": "object",
+          "title": "AbortSignal"
+        }
+      }
     },
     "AiAgentStreamTurnResult": {
       "type": "object",
       "title": "AiAgentStreamTurnResult",
-      "description": "AI turn 汇总结果"
+      "description": "AI turn 汇总结果",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "reasoning": {
+          "type": "string"
+        },
+        "toolCalls": {
+          "type": "array"
+        },
+        "assistantMessagePersisted": {
+          "type": "boolean"
+        }
+      }
     },
     "AiAgentAppendMessagesInput": {
       "type": "object",
       "title": "AiAgentAppendMessagesInput",
-      "description": "追加消息请求输入"
+      "description": "追加消息请求输入",
+      "properties": {
+        "sessionId": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "turn": {
+          "type": "object",
+          "title": "AiAgentTurnMeta"
+        },
+        "messages": {
+          "type": "array"
+        }
+      }
     },
     "AiAgentAppSseEventSource": {
       "type": "object",

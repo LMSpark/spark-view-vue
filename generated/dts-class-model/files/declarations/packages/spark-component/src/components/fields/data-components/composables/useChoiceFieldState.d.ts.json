@@ -61,32 +61,67 @@
           "schema": true,
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "emitUpdate",
           "jsdoc": "emit Update 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(value: TValue) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "reference",
+                "name": "TValue",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "coerce",
           "jsdoc": "coerce 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(rawValue: unknown) => TValue"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rawValue",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "TValue",
+            "refersToTypeParameter": true
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rawValue": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.735Z",
+  "generatedAt": "2026-06-13T06:21:06.922Z",
   "$defs": {
     "UseChoiceFieldStateOptions": {
       "type": "object",
@@ -100,15 +135,7 @@
         "fieldType": {
           "type": "string"
         },
-        "fallbackValue": true,
-        "emitUpdate": {
-          "type": "object",
-          "title": "(value: TValue) => void"
-        },
-        "coerce": {
-          "type": "object",
-          "title": "(rawValue: unknown) => TValue"
-        }
+        "fallbackValue": true
       }
     }
   }

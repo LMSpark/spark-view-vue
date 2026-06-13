@@ -1395,7 +1395,16 @@
               "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "params": {
+              "$ref": "#/$defs/SparkNodeTreeRootParams"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -1450,6 +1459,33 @@
             "type": "reference",
             "name": "SparkNodeTree",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "json": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "SparkNode"
+                  },
+                  {
+                    "type": "object",
+                    "title": "Record<string, unknown>"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "options": {
+                "$ref": "#/$defs/SparkNodeTreeFromJsonOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeTree"
           }
         },
         {
@@ -1481,6 +1517,21 @@
             "type": "reference",
             "name": "SparkNodeTree",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "json": {
+                "$ref": "#/$defs/SparkNodeTreeRuleJsonInput"
+              },
+              "options": {
+                "$ref": "#/$defs/SparkNodeTreeFromJsonOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeTree"
           }
         },
         {
@@ -1511,6 +1562,21 @@
             "type": "reference",
             "name": "SparkNodeTree",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "children": {
+                "type": "array"
+              },
+              "options": {
+                "$ref": "#/$defs/SparkNodeTreeFromJsonOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeTree"
           }
         },
         {
@@ -1521,6 +1587,15 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "SparkNode"
           }
         },
         {
@@ -1531,6 +1606,15 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "SparkNode"
           }
         },
         {
@@ -1548,6 +1632,22 @@
               {
                 "type": "literal",
                 "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "SparkNode"
+              },
+              {
+                "type": "null"
               }
             ]
           }
@@ -1569,6 +1669,22 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "SparkNode"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -1579,7 +1695,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "estimateHistorySize",
@@ -1589,6 +1711,14 @@
           "type": {
             "type": "intrinsic",
             "name": "number"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
           }
         },
         {
@@ -1600,6 +1730,14 @@
             "type": "reference",
             "name": "SparkNodeTreeHistoryStats",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeTreeHistoryStats"
           }
         },
         {
@@ -1618,7 +1756,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "newRoot": {
+                "type": "object",
+                "title": "SparkNode"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "replaceRoot",
@@ -1636,7 +1785,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "newRoot": {
+                "type": "object",
+                "title": "SparkNode"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "getNode",
@@ -1662,6 +1822,26 @@
               {
                 "type": "literal",
                 "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeLookupParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "SparkNode"
+              },
+              {
+                "type": "null"
               }
             ]
           }
@@ -1693,6 +1873,25 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeLookupParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/SparkNodeLocation"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -1712,6 +1911,18 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeLookupParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -1740,6 +1951,26 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeLookupParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "SparkNode"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -1762,6 +1993,19 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeChildrenParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "SparkNodeChildren"
           }
         },
         {
@@ -1772,6 +2016,14 @@
           "type": {
             "type": "intrinsic",
             "name": "number"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
           }
         },
         {
@@ -1788,6 +2040,15 @@
                 "name": "string"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Set<string>"
           }
         },
         {
@@ -1804,6 +2065,15 @@
                 "name": "string"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Set<string>"
           }
         },
         {
@@ -1824,6 +2094,18 @@
             "type": "reference",
             "name": "SparkNodeFindByTypeResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeFindByTypeParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeFindByTypeResult"
           }
         },
         {
@@ -1844,6 +2126,18 @@
             "type": "reference",
             "name": "SparkNodeAddResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeAddParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeAddResult"
           }
         },
         {
@@ -1864,6 +2158,18 @@
             "type": "reference",
             "name": "SparkNodeAddNodesResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeAddNodesParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeAddNodesResult"
           }
         },
         {
@@ -1884,6 +2190,18 @@
             "type": "reference",
             "name": "SparkNodeMoveResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeMoveParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeMoveResult"
           }
         },
         {
@@ -1904,6 +2222,18 @@
             "type": "reference",
             "name": "SparkNodeSetPropsResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeSetPropsParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeSetPropsResult"
           }
         },
         {
@@ -1924,6 +2254,18 @@
             "type": "reference",
             "name": "SparkNodeSetPropsBatchResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeSetPropsBatchParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeSetPropsBatchResult"
           }
         },
         {
@@ -1944,6 +2286,18 @@
             "type": "reference",
             "name": "SparkNodeReplaceResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeReplaceParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeReplaceResult"
           }
         },
         {
@@ -1964,6 +2318,18 @@
             "type": "reference",
             "name": "SparkNodeReplaceNodesResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeReplaceNodesParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeReplaceNodesResult"
           }
         },
         {
@@ -1984,6 +2350,18 @@
             "type": "reference",
             "name": "SparkNodeRemoveResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeRemoveParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeRemoveResult"
           }
         },
         {
@@ -2004,12 +2382,24 @@
             "type": "reference",
             "name": "SparkNodeRemoveNodesResult",
             "sourcePath": "declarations/packages/spark-data/src/node-tree/spark-node-tree.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/SparkNodeTreeRemoveNodesParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/SparkNodeRemoveNodesResult"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.835Z",
+  "generatedAt": "2026-06-13T06:21:07.064Z",
   "$defs": {
     "SparkNodeTreeJsonInput": {
       "type": "object",

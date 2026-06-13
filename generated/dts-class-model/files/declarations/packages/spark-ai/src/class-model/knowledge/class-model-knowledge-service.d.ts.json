@@ -48,7 +48,35 @@
         "className": "ClassModelKnowledgeQueryInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "keyword",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "includeMembers",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ClassModelModelGuideInput": {
@@ -70,7 +98,17 @@
         "className": "ClassModelModelGuideInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ClassModelAttributeGuideInput": {
@@ -92,7 +130,26 @@
         "className": "ClassModelAttributeGuideInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "attributeName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ClassModelMethodGuideInput": {
@@ -114,7 +171,26 @@
         "className": "ClassModelMethodGuideInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "methodName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ClassModelKnowledgeProvider": {
@@ -137,7 +213,225 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "query",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "ClassModelKnowledgeQueryInput",
+                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/ClassModelKnowledgeQueryInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "AiJsonValue"
+              },
+              {
+                "type": "object",
+                "title": "Promise<AiJsonValue>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "modelGuide",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "ClassModelModelGuideInput",
+                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/ClassModelModelGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "title": "Promise<string>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "attributeGuide",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "ClassModelAttributeGuideInput",
+                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/ClassModelAttributeGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "title": "Promise<string>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "methodGuide",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "ClassModelMethodGuideInput",
+                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/ClassModelMethodGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "title": "Promise<string>"
+              }
+            ]
+          }
+        }
+      ]
     },
     "ClassModelKnowledgeServiceOptions": {
       "kind": "ClassModelKnowledgeServiceOptions",
@@ -158,7 +452,37 @@
         "className": "ClassModelKnowledgeServiceOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "document",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ClassModelDocument"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "surface",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "DtsClassModelSurfaceDocument"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "rootClassName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ClassModelKnowledgeService": {
@@ -192,7 +516,16 @@
               "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/class-model-knowledge-service.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/ClassModelKnowledgeServiceOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -213,6 +546,19 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/ClassModelKnowledgeQueryInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiJsonValue"
           }
         },
         {
@@ -232,6 +578,18 @@
           "type": {
             "type": "intrinsic",
             "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/ClassModelModelGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
           }
         },
         {
@@ -251,6 +609,18 @@
           "type": {
             "type": "intrinsic",
             "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/ClassModelAttributeGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
           }
         },
         {
@@ -270,32 +640,76 @@
           "type": {
             "type": "intrinsic",
             "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/ClassModelMethodGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.588Z",
+  "generatedAt": "2026-06-13T06:21:06.649Z",
   "$defs": {
     "ClassModelKnowledgeQueryInput": {
       "type": "object",
       "title": "ClassModelKnowledgeQueryInput",
-      "description": "Class Model Knowledge Query Input 的输入数据。"
+      "description": "Class Model Knowledge Query Input 的输入数据。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "keyword": {
+          "type": "string"
+        },
+        "includeMembers": {
+          "type": "boolean"
+        }
+      }
     },
     "ClassModelModelGuideInput": {
       "type": "object",
       "title": "ClassModelModelGuideInput",
-      "description": "Class Model Model Guide Input 的输入数据。"
+      "description": "Class Model Model Guide Input 的输入数据。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        }
+      }
     },
     "ClassModelAttributeGuideInput": {
       "type": "object",
       "title": "ClassModelAttributeGuideInput",
-      "description": "Class Model Attribute Guide Input 的输入数据。"
+      "description": "Class Model Attribute Guide Input 的输入数据。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "attributeName": {
+          "type": "string"
+        }
+      }
     },
     "ClassModelMethodGuideInput": {
       "type": "object",
       "title": "ClassModelMethodGuideInput",
-      "description": "Class Model Method Guide Input 的输入数据。"
+      "description": "Class Model Method Guide Input 的输入数据。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "methodName": {
+          "type": "string"
+        }
+      }
     },
     "ClassModelKnowledgeProvider": {
       "type": "object",
@@ -305,7 +719,20 @@
     "ClassModelKnowledgeServiceOptions": {
       "type": "object",
       "title": "ClassModelKnowledgeServiceOptions",
-      "description": "Class Model Knowledge Service Options 的调用配置。"
+      "description": "Class Model Knowledge Service Options 的调用配置。",
+      "properties": {
+        "document": {
+          "type": "object",
+          "title": "ClassModelDocument"
+        },
+        "surface": {
+          "type": "object",
+          "title": "DtsClassModelSurfaceDocument"
+        },
+        "rootClassName": {
+          "type": "string"
+        }
+      }
     },
     "ClassModelKnowledgeService": {
       "type": "object",

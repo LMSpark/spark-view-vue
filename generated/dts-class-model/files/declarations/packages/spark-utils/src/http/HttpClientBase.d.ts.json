@@ -59,7 +59,20 @@
               "isOptional": true
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "title": "Partial<RequestConfig>"
+            },
+            "loggerName": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -121,6 +134,20 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "title": "RequestConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<HttpResponse<unknown>>"
           }
         },
         {
@@ -149,6 +176,21 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "err": true,
+              "config": {
+                "type": "object",
+                "title": "RequestConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "RequestError"
           }
         },
         {
@@ -177,6 +219,21 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "err": true,
+              "config": {
+                "type": "object",
+                "title": "RequestConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "RequestError"
           }
         },
         {
@@ -202,6 +259,20 @@
                 "refersToTypeParameter": true
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "title": "RequestConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<T>"
           }
         },
         {
@@ -233,6 +304,20 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "title": "RequestConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<HttpResponse<T>>"
           }
         },
         {
@@ -294,6 +379,27 @@
                 "refersToTypeParameter": true
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "params": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              },
+              "config": {
+                "type": "object",
+                "title": "Partial<RequestConfig>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<T>"
           }
         },
         {
@@ -345,6 +451,24 @@
                 "refersToTypeParameter": true
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "data": true,
+              "config": {
+                "type": "object",
+                "title": "Partial<RequestConfig>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<T>"
           }
         },
         {
@@ -396,6 +520,24 @@
                 "refersToTypeParameter": true
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "data": true,
+              "config": {
+                "type": "object",
+                "title": "Partial<RequestConfig>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<T>"
           }
         },
         {
@@ -447,6 +589,24 @@
                 "refersToTypeParameter": true
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "data": true,
+              "config": {
+                "type": "object",
+                "title": "Partial<RequestConfig>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<T>"
           }
         },
         {
@@ -508,6 +668,27 @@
                 "refersToTypeParameter": true
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "params": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              },
+              "config": {
+                "type": "object",
+                "title": "Partial<RequestConfig>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<T>"
           }
         },
         {
@@ -529,7 +710,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "applyRequestInterceptors",
@@ -553,6 +744,20 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "title": "RequestConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<RequestConfig>"
           }
         },
         {
@@ -591,6 +796,20 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "response": {
+                "type": "object",
+                "title": "HttpResponse<T>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<HttpResponse<T>>"
           }
         },
         {
@@ -615,6 +834,20 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "type": "object",
+                "title": "RequestError"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<RequestError>"
           }
         },
         {
@@ -633,6 +866,20 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "title": "RequestConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "RequestConfig"
           }
         },
         {
@@ -651,6 +898,16 @@
           "type": {
             "type": "unknown",
             "name": "err is RequestError"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "err": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -686,6 +943,26 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "config": {
+                "type": "object",
+                "title": "RequestConfig"
+              },
+              "opts": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "RequestError"
           }
         },
         {
@@ -707,6 +984,16 @@
               "type": "intrinsic",
               "name": "string"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "body": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
           }
         },
         {
@@ -741,12 +1028,29 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ms": {
+                "type": "number"
+              },
+              "signal": {
+                "type": "object",
+                "title": "AbortSignal"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.909Z",
+  "generatedAt": "2026-06-13T06:21:07.175Z",
   "$defs": {
     "HttpClientBase": {
       "type": "object",

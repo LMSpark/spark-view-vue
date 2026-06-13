@@ -16,11 +16,10 @@
         "$id": "spark-class-model://schema/AuthService"
       }
     },
-    "spark-class-model://model/AuthService/methods/initialize/0": {
-      "ref": "spark-class-model://model/AuthService/methods/initialize/0",
-      "kind": "method",
+    "spark-class-model://model/AuthService/constructors/0": {
+      "ref": "spark-class-model://model/AuthService/constructors/0",
+      "kind": "constructor",
       "ownerRef": "spark-class-model://model/AuthService",
-      "name": "initialize",
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/c8dcd323edc71e18b80f78b4442aa852d997fbfb095f55605ff71d68eb8e750b"
     },
@@ -38,6 +37,24 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/shared/c8dcd323edc71e18b80f78b4442aa852d997fbfb095f55605ff71d68eb8e750b"
       }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAuthConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAuthConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AuthService/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/AuthConfig",
+      "targetClassName": "AuthConfig",
+      "targetFile": "files/declarations/packages/spark-app/src/auth/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AuthConfig"
+    },
+    "spark-class-model://model/AuthService/methods/initialize/0": {
+      "ref": "spark-class-model://model/AuthService/methods/initialize/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AuthService",
+      "name": "initialize",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/c8dcd323edc71e18b80f78b4442aa852d997fbfb095f55605ff71d68eb8e750b"
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fmethods%2Finitialize%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAuthConfig": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fmethods%2Finitialize%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAuthConfig",
@@ -139,22 +156,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
       "returnSchemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
     },
-    "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd": {
-      "ref": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
-      "kind": "schema",
-      "schema": {
-        "anyOf": [
-          {
-            "type": "string"
-          },
-          {
-            "type": "null"
-          }
-        ],
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
-      }
-    },
     "spark-class-model://model/AuthService/methods/setToken/6": {
       "ref": "spark-class-model://model/AuthService/methods/setToken/6",
       "kind": "method",
@@ -208,6 +209,7 @@
       "kind": "model",
       "className": "AuthService",
       "schemaRef": "spark-class-model://schema/AuthService",
+      "constructorRef": "spark-class-model://model/AuthService/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/AuthService/methods/initialize/0",
@@ -222,6 +224,7 @@
         "spark-class-model://model/AuthService/methods/refreshToken/9"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAuthConfig",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fmethods%2Finitialize%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAuthConfig",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAuthService%2Fmethods%2Flogin%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FLoginCredentials"
       ]

@@ -169,10 +169,6 @@
             "type": "object",
             "title": "ComputedRef<CSSProperties>"
           },
-          "getChildGridStyle": {
-            "type": "object",
-            "title": "(child: SparkNode, index?: number) => CSSProperties"
-          },
           "gridChildren": {
             "type": "object",
             "title": "ComputedRef<SparkNode[]>"
@@ -201,33 +197,51 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://schema/shared/acb8a0e4e01a02873ab698b95d684ccecd1307770ca2f5aa7bdaaf41c65111db": {
-      "ref": "spark-class-model://schema/shared/acb8a0e4e01a02873ab698b95d684ccecd1307770ca2f5aa7bdaaf41c65111db",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(child: SparkNode, index?: number) => CSSProperties",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/acb8a0e4e01a02873ab698b95d684ccecd1307770ca2f5aa7bdaaf41c65111db"
-      }
-    },
-    "spark-class-model://model/ContainerGridState/attributes/getChildGridStyle/1": {
-      "ref": "spark-class-model://model/ContainerGridState/attributes/getChildGridStyle/1",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/ContainerGridState",
-      "name": "getChildGridStyle",
-      "schemaRef": "spark-class-model://schema/shared/acb8a0e4e01a02873ab698b95d684ccecd1307770ca2f5aa7bdaaf41c65111db",
-      "readable": true,
-      "writable": true
-    },
-    "spark-class-model://model/ContainerGridState/attributes/gridChildren/2": {
-      "ref": "spark-class-model://model/ContainerGridState/attributes/gridChildren/2",
+    "spark-class-model://model/ContainerGridState/attributes/gridChildren/1": {
+      "ref": "spark-class-model://model/ContainerGridState/attributes/gridChildren/1",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/ContainerGridState",
       "name": "gridChildren",
       "schemaRef": "spark-class-model://schema/shared/98a1170b082c24118b7522d24ec7c2d3ef6348e0767eccbe1a587f4c6765da5d",
       "readable": true,
       "writable": true
+    },
+    "spark-class-model://model/ContainerGridState/methods/getChildGridStyle/0": {
+      "ref": "spark-class-model://model/ContainerGridState/methods/getChildGridStyle/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ContainerGridState",
+      "name": "getChildGridStyle",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/bce7f284d05f7e991fd0ceb47bd3194f157d39f4718ba0c5a40c61452f2d5d87",
+      "returnSchemaRef": "spark-class-model://schema/shared/1859dcab515acd103a9939b6d74840ad0aaf06a95da104d59ae6daa56aaa73f1"
+    },
+    "spark-class-model://schema/shared/bce7f284d05f7e991fd0ceb47bd3194f157d39f4718ba0c5a40c61452f2d5d87": {
+      "ref": "spark-class-model://schema/shared/bce7f284d05f7e991fd0ceb47bd3194f157d39f4718ba0c5a40c61452f2d5d87",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "child": {
+            "$ref": "spark-class-model://schema/SparkNode"
+          },
+          "index": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/bce7f284d05f7e991fd0ceb47bd3194f157d39f4718ba0c5a40c61452f2d5d87"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FContainerGridState%2Fmethods%2FgetChildGridStyle%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FContainerGridState%2Fmethods%2FgetChildGridStyle%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ContainerGridState/methods/getChildGridStyle/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/SparkNode",
+      "targetClassName": "SparkNode",
+      "targetFile": "files/declarations/packages/spark-data/src/node-tree/spark-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SparkNode"
     },
     "spark-class-model://model/ContainerGridState": {
       "ref": "spark-class-model://model/ContainerGridState",
@@ -236,11 +250,14 @@
       "schemaRef": "spark-class-model://schema/ContainerGridState",
       "attributeRefs": [
         "spark-class-model://model/ContainerGridState/attributes/gridStyle/0",
-        "spark-class-model://model/ContainerGridState/attributes/getChildGridStyle/1",
-        "spark-class-model://model/ContainerGridState/attributes/gridChildren/2"
+        "spark-class-model://model/ContainerGridState/attributes/gridChildren/1"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/ContainerGridState/methods/getChildGridStyle/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FContainerGridState%2Fmethods%2FgetChildGridStyle%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNode"
+      ]
     },
     "spark-class-model://schema/UseCompositeItemGridOptions": {
       "ref": "spark-class-model://schema/UseCompositeItemGridOptions",
@@ -248,120 +265,68 @@
       "schema": {
         "type": "object",
         "title": "UseCompositeItemGridOptions",
-        "properties": {
-          "children": {
-            "type": "object",
-            "title": "() => SparkNode['children'] | undefined"
-          },
-          "bodyClass": {
-            "type": "object",
-            "title": "() => string | null | undefined"
-          },
-          "gridColumns": {
-            "type": "object",
-            "title": "() => string | number | null | undefined"
-          },
-          "gridAutoRows": {
-            "type": "object",
-            "title": "() => string | null | undefined"
-          },
-          "gridGap": {
-            "type": "object",
-            "title": "() => string | number | null | undefined"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/UseCompositeItemGridOptions"
       }
     },
-    "spark-class-model://schema/shared/4bb40d8b463ffaf1fdc25af4e822c5598f0228618bdebe79804c533c10bafd13": {
-      "ref": "spark-class-model://schema/shared/4bb40d8b463ffaf1fdc25af4e822c5598f0228618bdebe79804c533c10bafd13",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => SparkNode['children'] | undefined",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/4bb40d8b463ffaf1fdc25af4e822c5598f0228618bdebe79804c533c10bafd13"
-      }
-    },
-    "spark-class-model://model/UseCompositeItemGridOptions/attributes/children/0": {
-      "ref": "spark-class-model://model/UseCompositeItemGridOptions/attributes/children/0",
-      "kind": "attribute",
+    "spark-class-model://model/UseCompositeItemGridOptions/methods/children/0": {
+      "ref": "spark-class-model://model/UseCompositeItemGridOptions/methods/children/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseCompositeItemGridOptions",
       "name": "children",
-      "schemaRef": "spark-class-model://schema/shared/4bb40d8b463ffaf1fdc25af4e822c5598f0228618bdebe79804c533c10bafd13",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
     },
-    "spark-class-model://schema/shared/acdb45bce39fc392f02246bf9866bb5e10b664f1280ac5e1f5551f0469cf959b": {
-      "ref": "spark-class-model://schema/shared/acdb45bce39fc392f02246bf9866bb5e10b664f1280ac5e1f5551f0469cf959b",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => string | null | undefined",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/acdb45bce39fc392f02246bf9866bb5e10b664f1280ac5e1f5551f0469cf959b"
-      }
-    },
-    "spark-class-model://model/UseCompositeItemGridOptions/attributes/bodyClass/1": {
-      "ref": "spark-class-model://model/UseCompositeItemGridOptions/attributes/bodyClass/1",
-      "kind": "attribute",
+    "spark-class-model://model/UseCompositeItemGridOptions/methods/bodyClass/1": {
+      "ref": "spark-class-model://model/UseCompositeItemGridOptions/methods/bodyClass/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseCompositeItemGridOptions",
       "name": "bodyClass",
-      "schemaRef": "spark-class-model://schema/shared/acdb45bce39fc392f02246bf9866bb5e10b664f1280ac5e1f5551f0469cf959b",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
     },
-    "spark-class-model://schema/shared/cdd8180409bb11d8c83df394d085bf67ad5b84fcb0287cd6568cf54f2155ffec": {
-      "ref": "spark-class-model://schema/shared/cdd8180409bb11d8c83df394d085bf67ad5b84fcb0287cd6568cf54f2155ffec",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => string | number | null | undefined",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/cdd8180409bb11d8c83df394d085bf67ad5b84fcb0287cd6568cf54f2155ffec"
-      }
-    },
-    "spark-class-model://model/UseCompositeItemGridOptions/attributes/gridColumns/2": {
-      "ref": "spark-class-model://model/UseCompositeItemGridOptions/attributes/gridColumns/2",
-      "kind": "attribute",
+    "spark-class-model://model/UseCompositeItemGridOptions/methods/gridColumns/2": {
+      "ref": "spark-class-model://model/UseCompositeItemGridOptions/methods/gridColumns/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseCompositeItemGridOptions",
       "name": "gridColumns",
-      "schemaRef": "spark-class-model://schema/shared/cdd8180409bb11d8c83df394d085bf67ad5b84fcb0287cd6568cf54f2155ffec",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/a4de3d015ab7310e281e9516ea51a2ff94b8a8688fe2ae47112f9bddb375248f"
     },
-    "spark-class-model://model/UseCompositeItemGridOptions/attributes/gridAutoRows/3": {
-      "ref": "spark-class-model://model/UseCompositeItemGridOptions/attributes/gridAutoRows/3",
-      "kind": "attribute",
+    "spark-class-model://model/UseCompositeItemGridOptions/methods/gridAutoRows/3": {
+      "ref": "spark-class-model://model/UseCompositeItemGridOptions/methods/gridAutoRows/3",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseCompositeItemGridOptions",
       "name": "gridAutoRows",
-      "schemaRef": "spark-class-model://schema/shared/acdb45bce39fc392f02246bf9866bb5e10b664f1280ac5e1f5551f0469cf959b",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd"
     },
-    "spark-class-model://model/UseCompositeItemGridOptions/attributes/gridGap/4": {
-      "ref": "spark-class-model://model/UseCompositeItemGridOptions/attributes/gridGap/4",
-      "kind": "attribute",
+    "spark-class-model://model/UseCompositeItemGridOptions/methods/gridGap/4": {
+      "ref": "spark-class-model://model/UseCompositeItemGridOptions/methods/gridGap/4",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseCompositeItemGridOptions",
       "name": "gridGap",
-      "schemaRef": "spark-class-model://schema/shared/cdd8180409bb11d8c83df394d085bf67ad5b84fcb0287cd6568cf54f2155ffec",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/a4de3d015ab7310e281e9516ea51a2ff94b8a8688fe2ae47112f9bddb375248f"
     },
     "spark-class-model://model/UseCompositeItemGridOptions": {
       "ref": "spark-class-model://model/UseCompositeItemGridOptions",
       "kind": "model",
       "className": "UseCompositeItemGridOptions",
       "schemaRef": "spark-class-model://schema/UseCompositeItemGridOptions",
-      "attributeRefs": [
-        "spark-class-model://model/UseCompositeItemGridOptions/attributes/children/0",
-        "spark-class-model://model/UseCompositeItemGridOptions/attributes/bodyClass/1",
-        "spark-class-model://model/UseCompositeItemGridOptions/attributes/gridColumns/2",
-        "spark-class-model://model/UseCompositeItemGridOptions/attributes/gridAutoRows/3",
-        "spark-class-model://model/UseCompositeItemGridOptions/attributes/gridGap/4"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UseCompositeItemGridOptions/methods/children/0",
+        "spark-class-model://model/UseCompositeItemGridOptions/methods/bodyClass/1",
+        "spark-class-model://model/UseCompositeItemGridOptions/methods/gridColumns/2",
+        "spark-class-model://model/UseCompositeItemGridOptions/methods/gridAutoRows/3",
+        "spark-class-model://model/UseCompositeItemGridOptions/methods/gridGap/4"
       ],
-      "methodRefs": [],
       "linkRefs": []
     },
     "spark-class-model://schema/CompositeItemGridState": {
@@ -382,10 +347,6 @@
           "contentGridStyle": {
             "type": "object",
             "title": "ComputedRef<CSSProperties>"
-          },
-          "getContentChildGridStyle": {
-            "type": "object",
-            "title": "(child: SparkNode, index?: number) => CSSProperties"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -419,14 +380,24 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://model/CompositeItemGridState/attributes/getContentChildGridStyle/3": {
-      "ref": "spark-class-model://model/CompositeItemGridState/attributes/getContentChildGridStyle/3",
-      "kind": "attribute",
+    "spark-class-model://model/CompositeItemGridState/methods/getContentChildGridStyle/0": {
+      "ref": "spark-class-model://model/CompositeItemGridState/methods/getContentChildGridStyle/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/CompositeItemGridState",
       "name": "getContentChildGridStyle",
-      "schemaRef": "spark-class-model://schema/shared/acb8a0e4e01a02873ab698b95d684ccecd1307770ca2f5aa7bdaaf41c65111db",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/bce7f284d05f7e991fd0ceb47bd3194f157d39f4718ba0c5a40c61452f2d5d87",
+      "returnSchemaRef": "spark-class-model://schema/shared/1859dcab515acd103a9939b6d74840ad0aaf06a95da104d59ae6daa56aaa73f1"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCompositeItemGridState%2Fmethods%2FgetContentChildGridStyle%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCompositeItemGridState%2Fmethods%2FgetContentChildGridStyle%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CompositeItemGridState/methods/getContentChildGridStyle/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/SparkNode",
+      "targetClassName": "SparkNode",
+      "targetFile": "files/declarations/packages/spark-data/src/node-tree/spark-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SparkNode"
     },
     "spark-class-model://model/CompositeItemGridState": {
       "ref": "spark-class-model://model/CompositeItemGridState",
@@ -436,11 +407,14 @@
       "attributeRefs": [
         "spark-class-model://model/CompositeItemGridState/attributes/contentChildren/0",
         "spark-class-model://model/CompositeItemGridState/attributes/contentBodyClass/1",
-        "spark-class-model://model/CompositeItemGridState/attributes/contentGridStyle/2",
-        "spark-class-model://model/CompositeItemGridState/attributes/getContentChildGridStyle/3"
+        "spark-class-model://model/CompositeItemGridState/attributes/contentGridStyle/2"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/CompositeItemGridState/methods/getContentChildGridStyle/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCompositeItemGridState%2Fmethods%2FgetContentChildGridStyle%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNode"
+      ]
     }
   }
 }

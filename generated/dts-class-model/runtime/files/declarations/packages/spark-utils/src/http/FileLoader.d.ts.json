@@ -68,16 +68,69 @@
       "schema": {
         "type": "object",
         "title": "FileLoaderStoreInput",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "data": true,
+          "sourceTimestamp": {
+            "type": "string"
+          },
+          "expirationLevel": {
+            "type": "number"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/FileLoaderStoreInput"
       }
+    },
+    "spark-class-model://model/FileLoaderStoreInput/attributes/key/0": {
+      "ref": "spark-class-model://model/FileLoaderStoreInput/attributes/key/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileLoaderStoreInput",
+      "name": "key",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/FileLoaderStoreInput/attributes/data/1": {
+      "ref": "spark-class-model://model/FileLoaderStoreInput/attributes/data/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileLoaderStoreInput",
+      "name": "data",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/FileLoaderStoreInput/attributes/sourceTimestamp/2": {
+      "ref": "spark-class-model://model/FileLoaderStoreInput/attributes/sourceTimestamp/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileLoaderStoreInput",
+      "name": "sourceTimestamp",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/FileLoaderStoreInput/attributes/expirationLevel/3": {
+      "ref": "spark-class-model://model/FileLoaderStoreInput/attributes/expirationLevel/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FileLoaderStoreInput",
+      "name": "expirationLevel",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
     },
     "spark-class-model://model/FileLoaderStoreInput": {
       "ref": "spark-class-model://model/FileLoaderStoreInput",
       "kind": "model",
       "className": "FileLoaderStoreInput",
       "schemaRef": "spark-class-model://schema/FileLoaderStoreInput",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/FileLoaderStoreInput/attributes/key/0",
+        "spark-class-model://model/FileLoaderStoreInput/attributes/data/1",
+        "spark-class-model://model/FileLoaderStoreInput/attributes/sourceTimestamp/2",
+        "spark-class-model://model/FileLoaderStoreInput/attributes/expirationLevel/3"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },
@@ -149,18 +202,6 @@
         "$id": "spark-class-model://schema/TextLoadOptions"
       }
     },
-    "spark-class-model://schema/shared/4555c8229f3513646a1b44f38cd04e9b031698050291848a7681fdbec11af307": {
-      "ref": "spark-class-model://schema/shared/4555c8229f3513646a1b44f38cd04e9b031698050291848a7681fdbec11af307",
-      "kind": "schema",
-      "schema": {
-        "type": "boolean",
-        "enum": [
-          false
-        ],
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/4555c8229f3513646a1b44f38cd04e9b031698050291848a7681fdbec11af307"
-      }
-    },
     "spark-class-model://model/TextLoadOptions/attributes/parseJSON/0": {
       "ref": "spark-class-model://model/TextLoadOptions/attributes/parseJSON/0",
       "kind": "attribute",
@@ -187,44 +228,43 @@
       "schema": {
         "type": "object",
         "title": "TransformLoadOptions",
-        "properties": {
-          "transform": {
-            "type": "object",
-            "title": "(rawContent: string) => T | Promise<T>"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/TransformLoadOptions"
       }
     },
-    "spark-class-model://schema/shared/ea1d4521eb246dd77bad67a530ab2d29108dd49fe4d4b274954c2d4173fa1a58": {
-      "ref": "spark-class-model://schema/shared/ea1d4521eb246dd77bad67a530ab2d29108dd49fe4d4b274954c2d4173fa1a58",
+    "spark-class-model://model/TransformLoadOptions/methods/transform/0": {
+      "ref": "spark-class-model://model/TransformLoadOptions/methods/transform/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/TransformLoadOptions",
+      "name": "transform",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/64122f61f874afde8edf1688bf60c9b6a1259f6409e8e8fa0f7ca1c7982a8677",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://schema/shared/64122f61f874afde8edf1688bf60c9b6a1259f6409e8e8fa0f7ca1c7982a8677": {
+      "ref": "spark-class-model://schema/shared/64122f61f874afde8edf1688bf60c9b6a1259f6409e8e8fa0f7ca1c7982a8677",
       "kind": "schema",
       "schema": {
         "type": "object",
-        "title": "(rawContent: string) => T | Promise<T>",
+        "properties": {
+          "rawContent": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/ea1d4521eb246dd77bad67a530ab2d29108dd49fe4d4b274954c2d4173fa1a58"
+        "$id": "spark-class-model://schema/shared/64122f61f874afde8edf1688bf60c9b6a1259f6409e8e8fa0f7ca1c7982a8677"
       }
-    },
-    "spark-class-model://model/TransformLoadOptions/attributes/transform/0": {
-      "ref": "spark-class-model://model/TransformLoadOptions/attributes/transform/0",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/TransformLoadOptions",
-      "name": "transform",
-      "schemaRef": "spark-class-model://schema/shared/ea1d4521eb246dd77bad67a530ab2d29108dd49fe4d4b274954c2d4173fa1a58",
-      "readable": true,
-      "writable": true
     },
     "spark-class-model://model/TransformLoadOptions": {
       "ref": "spark-class-model://model/TransformLoadOptions",
       "kind": "model",
       "className": "TransformLoadOptions",
       "schemaRef": "spark-class-model://schema/TransformLoadOptions",
-      "attributeRefs": [
-        "spark-class-model://model/TransformLoadOptions/attributes/transform/0"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/TransformLoadOptions/methods/transform/0"
       ],
-      "methodRefs": [],
       "linkRefs": []
     },
     "spark-class-model://schema/LoadOptions": {
@@ -274,6 +314,42 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/TransformedFileLoader"
       }
+    },
+    "spark-class-model://model/TransformedFileLoader/constructors/0": {
+      "ref": "spark-class-model://model/TransformedFileLoader/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/TransformedFileLoader",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e1e6d63eaf20f797611df91b38b0aa807497c6cf2329da424cf71103aea5f8dd"
+    },
+    "spark-class-model://schema/shared/e1e6d63eaf20f797611df91b38b0aa807497c6cf2329da424cf71103aea5f8dd": {
+      "ref": "spark-class-model://schema/shared/e1e6d63eaf20f797611df91b38b0aa807497c6cf2329da424cf71103aea5f8dd",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "$ref": "spark-class-model://schema/FileLoader"
+          },
+          "transform": {
+            "type": "object",
+            "title": "(rawContent: string) => T | Promise<T>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e1e6d63eaf20f797611df91b38b0aa807497c6cf2329da424cf71103aea5f8dd"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTransformedFileLoader%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FFileLoader": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTransformedFileLoader%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FFileLoader",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/TransformedFileLoader/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/FileLoader",
+      "targetClassName": "FileLoader",
+      "targetFile": "files/declarations/packages/spark-utils/src/http/FileLoader.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/FileLoader"
     },
     "spark-class-model://model/TransformedFileLoader/methods/load/0": {
       "ref": "spark-class-model://model/TransformedFileLoader/methods/load/0",
@@ -377,12 +453,14 @@
       "kind": "model",
       "className": "TransformedFileLoader",
       "schemaRef": "spark-class-model://schema/TransformedFileLoader",
+      "constructorRef": "spark-class-model://model/TransformedFileLoader/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/TransformedFileLoader/methods/load/0",
         "spark-class-model://model/TransformedFileLoader/methods/loadBatch/1"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTransformedFileLoader%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FFileLoader",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTransformedFileLoader%2Fmethods%2Fload%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FTransformedFileLoadOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTransformedFileLoader%2Fmethods%2FloadBatch%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FTransformedFileLoadOptions"
       ]
@@ -396,6 +474,38 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/FileLoader"
       }
+    },
+    "spark-class-model://model/FileLoader/constructors/0": {
+      "ref": "spark-class-model://model/FileLoader/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/FileLoader",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ddbd685a901d48b04537e9e6481f8b07b1e4c891409455e1f579d8ac5e4b901f"
+    },
+    "spark-class-model://schema/shared/ddbd685a901d48b04537e9e6481f8b07b1e4c891409455e1f579d8ac5e4b901f": {
+      "ref": "spark-class-model://schema/shared/ddbd685a901d48b04537e9e6481f8b07b1e4c891409455e1f579d8ac5e4b901f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/FileLoadOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ddbd685a901d48b04537e9e6481f8b07b1e4c891409455e1f579d8ac5e4b901f"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoader%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FFileLoadOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoader%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FFileLoadOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/FileLoader/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/FileLoadOptions",
+      "targetClassName": "FileLoadOptions",
+      "targetFile": "files/declarations/packages/spark-utils/src/http/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/FileLoadOptions"
     },
     "spark-class-model://model/FileLoader/methods/on/0": {
       "ref": "spark-class-model://model/FileLoader/methods/on/0",
@@ -878,6 +988,7 @@
       "kind": "model",
       "className": "FileLoader",
       "schemaRef": "spark-class-model://schema/FileLoader",
+      "constructorRef": "spark-class-model://model/FileLoader/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/FileLoader/methods/on/0",
@@ -897,6 +1008,7 @@
         "spark-class-model://model/FileLoader/methods/getTimestamp/14"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoader%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FFileLoadOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoader%2Fmethods%2FloadText%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FTransformedFileLoadOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoader%2Fmethods%2Fload%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FTransformLoadOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoader%2Fmethods%2Fload%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FTextLoadOptions",

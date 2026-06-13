@@ -80,10 +80,6 @@
           "fieldName": {
             "$ref": "spark-class-model://schema/ValueRef",
             "title": "ValueRef<string>"
-          },
-          "syncValue": {
-            "type": "object",
-            "title": "(value: boolean | null) => void"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -166,24 +162,35 @@
       "targetFile": "files/declarations/packages/spark-component/src/components/shared-types.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/ValueRef"
     },
-    "spark-class-model://schema/shared/588ed4d161bcc2669a8f706a2b16f2e11de0e57a61b2054f55705cb5cffd6390": {
-      "ref": "spark-class-model://schema/shared/588ed4d161bcc2669a8f706a2b16f2e11de0e57a61b2054f55705cb5cffd6390",
+    "spark-class-model://model/UseSwitchNullValueOptions/methods/syncValue/0": {
+      "ref": "spark-class-model://model/UseSwitchNullValueOptions/methods/syncValue/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseSwitchNullValueOptions",
+      "name": "syncValue",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ace23d1cd20d81b2e4333b4dfd88e8ea0d7e692467458c54df01e8b946a6cddd"
+    },
+    "spark-class-model://schema/shared/ace23d1cd20d81b2e4333b4dfd88e8ea0d7e692467458c54df01e8b946a6cddd": {
+      "ref": "spark-class-model://schema/shared/ace23d1cd20d81b2e4333b4dfd88e8ea0d7e692467458c54df01e8b946a6cddd",
       "kind": "schema",
       "schema": {
         "type": "object",
-        "title": "(value: boolean | null) => void",
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/588ed4d161bcc2669a8f706a2b16f2e11de0e57a61b2054f55705cb5cffd6390"
+        "$id": "spark-class-model://schema/shared/ace23d1cd20d81b2e4333b4dfd88e8ea0d7e692467458c54df01e8b946a6cddd"
       }
-    },
-    "spark-class-model://model/UseSwitchNullValueOptions/attributes/syncValue/4": {
-      "ref": "spark-class-model://model/UseSwitchNullValueOptions/attributes/syncValue/4",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/UseSwitchNullValueOptions",
-      "name": "syncValue",
-      "schemaRef": "spark-class-model://schema/shared/588ed4d161bcc2669a8f706a2b16f2e11de0e57a61b2054f55705cb5cffd6390",
-      "readable": true,
-      "writable": true
     },
     "spark-class-model://model/UseSwitchNullValueOptions": {
       "ref": "spark-class-model://model/UseSwitchNullValueOptions",
@@ -194,10 +201,11 @@
         "spark-class-model://model/UseSwitchNullValueOptions/attributes/boundColumn/0",
         "spark-class-model://model/UseSwitchNullValueOptions/attributes/contextData/1",
         "spark-class-model://model/UseSwitchNullValueOptions/attributes/dataSource/2",
-        "spark-class-model://model/UseSwitchNullValueOptions/attributes/fieldName/3",
-        "spark-class-model://model/UseSwitchNullValueOptions/attributes/syncValue/4"
+        "spark-class-model://model/UseSwitchNullValueOptions/attributes/fieldName/3"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UseSwitchNullValueOptions/methods/syncValue/0"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSwitchNullValueOptions%2Fattributes%2FboundColumn%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseSwitchNullValueOptions%2Fattributes%2FcontextData%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FDataRow",

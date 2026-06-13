@@ -499,6 +499,38 @@
       "readable": true,
       "writable": true
     },
+    "spark-class-model://model/DataSet/constructors/0": {
+      "ref": "spark-class-model://model/DataSet/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/DataSet",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f08f320b2308ca5d2e7deb7f7aeb20a1790933d7c0e3d786c526acbf5ff03d01"
+    },
+    "spark-class-model://schema/shared/f08f320b2308ca5d2e7deb7f7aeb20a1790933d7c0e3d786c526acbf5ff03d01": {
+      "ref": "spark-class-model://schema/shared/f08f320b2308ca5d2e7deb7f7aeb20a1790933d7c0e3d786c526acbf5ff03d01",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "config": {
+            "$ref": "spark-class-model://schema/DataSetConfig"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f08f320b2308ca5d2e7deb7f7aeb20a1790933d7c0e3d786c526acbf5ff03d01"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSetConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSetConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataSet/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/DataSetConfig",
+      "targetClassName": "DataSetConfig",
+      "targetFile": "files/declarations/packages/spark-data/src/dataset.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataSetConfig"
+    },
     "spark-class-model://model/DataSet/methods/initAutoSelection/0": {
       "ref": "spark-class-model://model/DataSet/methods/initAutoSelection/0",
       "kind": "method",
@@ -685,21 +717,6 @@
       "name": "_subscribeNewView",
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/9a498ca914eaf2c79b97f0fd5687dad6e7c4be7a3d06f6f05465330d9a37a165"
-    },
-    "spark-class-model://schema/shared/9a498ca914eaf2c79b97f0fd5687dad6e7c4be7a3d06f6f05465330d9a37a165": {
-      "ref": "spark-class-model://schema/shared/9a498ca914eaf2c79b97f0fd5687dad6e7c4be7a3d06f6f05465330d9a37a165",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "view": {
-            "$ref": "spark-class-model://schema/DataView"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/9a498ca914eaf2c79b97f0fd5687dad6e7c4be7a3d06f6f05465330d9a37a165"
-      }
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fmethods%2F_subscribeNewView%2F7/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fmethods%2F_subscribeNewView%2F7/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView",
@@ -1169,27 +1186,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/900b8c8c0e3d32dc52111137e812cdb672bcc8cb5c6555856418779d96d18428",
       "returnSchemaRef": "spark-class-model://schema/shared/1b02b610245a61762dbdaa2d539b69409dfa206b05852221fd56c533efb1fbee"
     },
-    "spark-class-model://schema/shared/900b8c8c0e3d32dc52111137e812cdb672bcc8cb5c6555856418779d96d18428": {
-      "ref": "spark-class-model://schema/shared/900b8c8c0e3d32dc52111137e812cdb672bcc8cb5c6555856418779d96d18428",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "tableName": {
-            "type": "string"
-          },
-          "columns": {
-            "type": "array",
-            "items": {
-              "$ref": "spark-class-model://schema/DataColumn"
-            }
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/900b8c8c0e3d32dc52111137e812cdb672bcc8cb5c6555856418779d96d18428"
-      }
-    },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fmethods%2FaddTable%2F19/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataColumn": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fmethods%2FaddTable%2F19/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataColumn",
       "kind": "link",
@@ -1453,24 +1449,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/57229d0e4873ca1a3556197a4d57539f6746524fe1db3c8696603dee20d84443",
       "returnSchemaRef": "spark-class-model://schema/shared/26422d000505dc4310895bf07a58f20f12afe485aad929313bf1e59d8fa876c9"
     },
-    "spark-class-model://schema/shared/57229d0e4873ca1a3556197a4d57539f6746524fe1db3c8696603dee20d84443": {
-      "ref": "spark-class-model://schema/shared/57229d0e4873ca1a3556197a4d57539f6746524fe1db3c8696603dee20d84443",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "tableName": {
-            "type": "string"
-          },
-          "viewId": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/57229d0e4873ca1a3556197a4d57539f6746524fe1db3c8696603dee20d84443"
-      }
-    },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fmethods%2FgetView%2F29/method-return/spark-class-model%3A%2F%2Fmodel%2FDataView": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fmethods%2FgetView%2F29/method-return/spark-class-model%3A%2F%2Fmodel%2FDataView",
       "kind": "link",
@@ -1578,6 +1556,7 @@
       "kind": "model",
       "className": "DataSet",
       "schemaRef": "spark-class-model://schema/DataSet",
+      "constructorRef": "spark-class-model://model/DataSet/constructors/0",
       "attributeRefs": [
         "spark-class-model://model/DataSet/attributes/dataSetName/0",
         "spark-class-model://model/DataSet/attributes/tables/1",
@@ -1637,6 +1616,7 @@
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fattributes%2FsaveChangesConfig%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSetSaveChangesConfig",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fattributes%2F_sharedHttpClient%2F10/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fattributes%2F_appServices%2F11/attribute/spark-class-model%3A%2F%2Fmodel%2FDataSetAppServices",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSetConfig",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fmethods%2FsetSharedHttpClient%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fmethods%2FsetAppServices%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSetAppServices",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataSet%2Fmethods%2FonAnyViewChange%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FViewChangeHandlers",

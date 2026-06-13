@@ -687,7 +687,509 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "showMessage",
+          "jsdoc": "显示提示消息",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "type",
+              "type": {
+                "type": "reference",
+                "name": "PageMessageType",
+                "sourcePath": "declarations/packages/spark-component/src/runtime/app-services.d.ts"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "type": {
+                "$ref": "#/$defs/PageMessageType"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "showConfirm",
+          "jsdoc": "显示确认对话框，返回用户操作结果",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "title",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            },
+            {
+              "name": "options",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        confirmText?: string;\n        cancelText?: string;\n        type?: PageMessageType;\n    }"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<boolean>"
+          }
+        },
+        {
+          "name": "showPrompt",
+          "jsdoc": "显示输入弹窗",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "title",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            },
+            {
+              "name": "options",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        placeholder?: string;\n        defaultValue?: string;\n    }"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<string | null>"
+          }
+        },
+        {
+          "name": "showAlert",
+          "jsdoc": "显示提示框（无取消操作）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "title",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            },
+            {
+              "name": "options",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        type?: PageMessageType;\n    }"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "showDialog",
+          "jsdoc": "显示自定义对话框",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "PageDialogOptions",
+                "sourcePath": "declarations/packages/spark-component/src/runtime/app-services.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "PageDialogResult",
+                "sourcePath": "declarations/packages/spark-component/src/runtime/app-services.d.ts"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "$ref": "#/$defs/PageDialogOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageDialogResult>"
+          }
+        },
+        {
+          "name": "selectEntities",
+          "jsdoc": "打开实体选择器",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "PageSelectEntitiesOptions",
+                "sourcePath": "declarations/packages/spark-component/src/runtime/app-services.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "PageSelectorOption",
+                  "sourcePath": "declarations/packages/spark-component/src/runtime/app-services.d.ts"
+                }
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "$ref": "#/$defs/PageSelectEntitiesOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageSelectorOption[]>"
+          }
+        },
+        {
+          "name": "browseFiles",
+          "jsdoc": "打开文件浏览对话框",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "PageBrowseFilesOptions",
+                "sourcePath": "declarations/packages/spark-component/src/runtime/app-services.d.ts"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "PageSelectedFile",
+                  "sourcePath": "declarations/packages/spark-component/src/runtime/app-services.d.ts"
+                }
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "$ref": "#/$defs/PageBrowseFilesOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageSelectedFile[]>"
+          }
+        },
+        {
+          "name": "uploadFiles",
+          "jsdoc": "上传文件",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "PageUploadFilesOptions",
+                "sourcePath": "declarations/packages/spark-component/src/runtime/app-services.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "PageUploadedFile",
+                  "sourcePath": "declarations/packages/spark-component/src/runtime/app-services.d.ts"
+                }
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "$ref": "#/$defs/PageUploadFilesOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageUploadedFile[]>"
+          }
+        },
+        {
+          "name": "showLoading",
+          "jsdoc": "显示 / 隐藏全局 Loading",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "show",
+              "type": {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            },
+            {
+              "name": "text",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "show": {
+                "type": "boolean"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "navigate",
+          "jsdoc": "路由跳转",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "path",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "params",
+              "type": {
+                "type": "reference",
+                "name": "Record",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                ]
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "params": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "PageRouterService": {
       "kind": "PageRouterService",
@@ -710,7 +1212,130 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "push",
+          "jsdoc": "导航到目标（字符串路径或路由对象）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "to",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "unknown",
+                    "name": "{\n        path: string;\n        query?: Record<string, unknown>;\n    }"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<unknown>"
+          }
+        },
+        {
+          "name": "replace",
+          "jsdoc": "替换当前路由",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "to",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "unknown",
+                    "name": "{\n        path: string;\n        query?: Record<string, unknown>;\n    }"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<unknown>"
+          }
+        },
+        {
+          "name": "back",
+          "jsdoc": "后退",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "PageRuntimeServicesCapability": {
       "kind": "PageRuntimeServicesCapability",
@@ -774,7 +1399,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.799Z",
+  "generatedAt": "2026-06-13T06:21:07.011Z",
   "$defs": {
     "PageMessageType": {
       "type": "object",

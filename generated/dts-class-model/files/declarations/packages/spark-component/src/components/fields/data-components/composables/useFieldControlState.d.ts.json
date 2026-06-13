@@ -95,26 +95,6 @@
           "writable": true
         },
         {
-          "name": "isTableCellHidden",
-          "jsdoc": "指定表格行中的该字段单元格是否隐藏。",
-          "schema": {
-            "type": "object",
-            "title": "(row: DataRow) => boolean"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "getTableCellDisplayValue",
-          "jsdoc": "指定表格行中的该字段单元格展示文本。",
-          "schema": {
-            "type": "object",
-            "title": "(row: DataRow) => string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "validationRules",
           "jsdoc": "当前字段的表单校验规则。",
           "schema": {
@@ -125,7 +105,70 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "isTableCellHidden",
+          "jsdoc": "指定表格行中的该字段单元格是否隐藏。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "getTableCellDisplayValue",
+          "jsdoc": "指定表格行中的该字段单元格展示文本。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        }
+      ]
     },
     "ControlledFieldStateLike": {
       "kind": "ControlledFieldStateLike",
@@ -197,19 +240,37 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "syncValue",
           "jsdoc": "将控件值同步回字段状态。",
-          "schema": {
-            "type": "object",
-            "title": "(value: TValue) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "reference",
+                "name": "TValue",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     },
     "OptionalWithUndefined": {
       "kind": "OptionalWithUndefined",
@@ -302,22 +363,40 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "emitUpdate",
           "jsdoc": "向 Vue v-model/update 事件发出新值。",
-          "schema": {
-            "type": "object",
-            "title": "(value: TValue) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "reference",
+                "name": "TValue",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.738Z",
+  "generatedAt": "2026-06-13T06:21:06.928Z",
   "$defs": {
     "FieldContextStateLike": {
       "type": "object",
@@ -343,14 +422,6 @@
         "currentDisplayValue": {
           "type": "object",
           "title": "ComputedRef<string>"
-        },
-        "isTableCellHidden": {
-          "type": "object",
-          "title": "(row: DataRow) => boolean"
-        },
-        "getTableCellDisplayValue": {
-          "type": "object",
-          "title": "(row: DataRow) => string"
         },
         "validationRules": {
           "type": "object",
@@ -382,10 +453,6 @@
         "currentRow": {
           "type": "object",
           "title": "ComputedRef<DataRow | null>"
-        },
-        "syncValue": {
-          "type": "object",
-          "title": "(value: TValue) => void"
         }
       }
     },
@@ -413,10 +480,6 @@
         "state": {
           "$ref": "#/$defs/ControlledFieldStateLike",
           "title": "ControlledFieldStateLike<TValue>"
-        },
-        "emitUpdate": {
-          "type": "object",
-          "title": "(value: TValue) => void"
         }
       }
     }

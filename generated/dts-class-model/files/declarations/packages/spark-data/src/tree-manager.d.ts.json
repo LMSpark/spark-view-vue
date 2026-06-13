@@ -76,19 +76,34 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "endpointContextProvider",
           "jsdoc": "endpoint Context Provider 回调。",
-          "schema": {
-            "type": "object",
-            "title": "() => Record<string, unknown>"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
         }
-      ],
-      "methods": []
+      ]
     },
     "FetchNestedInput": {
       "kind": "FetchNestedInput",
@@ -109,7 +124,67 @@
         "className": "FetchNestedInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "rootId",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "limit",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "depthLimit",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "treeMode",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "flat"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "nested"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "TreeManager": {
@@ -136,7 +211,16 @@
               "sourcePath": "declarations/packages/spark-data/src/tree-manager.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/TreeManagerOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -148,6 +232,15 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "TreeConfig"
           }
         },
         {
@@ -169,7 +262,21 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "FlatTreeNode"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "clear",
@@ -179,7 +286,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "getAllNodes",
@@ -191,6 +304,18 @@
             "elementType": {
               "type": "reference",
               "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "FlatTreeNode"
             }
           }
         },
@@ -245,6 +370,36 @@
             "type": "reference",
             "name": "TreeManager",
             "sourcePath": "declarations/packages/spark-data/src/tree-manager.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "json": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "title": "FlatTreeNode"
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "title": "Record<string, unknown>"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "options": {
+                "$ref": "#/$defs/TreeManagerOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/TreeManager"
           }
         },
         {
@@ -255,6 +410,14 @@
           "type": {
             "type": "intrinsic",
             "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
           }
         },
         {
@@ -285,6 +448,26 @@
               "type": "reference",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "FlatTreeNode"
           }
         },
         {
@@ -319,6 +502,32 @@
               "type": "reference",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "FlatTreeNode"
+            }
           }
         },
         {
@@ -331,6 +540,18 @@
             "elementType": {
               "type": "reference",
               "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "FlatTreeNode"
             }
           }
         },
@@ -382,6 +603,32 @@
                 }
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "limit": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<FlatTreeNode[]>"
           }
         },
         {
@@ -415,6 +662,26 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<TreePath>"
           }
         },
         {
@@ -448,6 +715,26 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "targetId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -511,6 +798,42 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "newParentId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<FlatTreeNode>"
           }
         },
         {
@@ -548,6 +871,22 @@
                 }
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "keyword": {
+                "type": "string"
+              },
+              "limit": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<NestedTreeSearchResult[]>"
           }
         },
         {
@@ -579,6 +918,19 @@
                 }
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/FetchNestedInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<NestedTreeNode[]>"
           }
         },
         {
@@ -634,6 +986,26 @@
             "elementType": {
               "type": "reference",
               "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "keyword": {
+                "type": "string"
+              },
+              "matchFn": {
+                "type": "object",
+                "title": "(node: FlatTreeNode, keyword: string) => boolean"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "FlatTreeNode"
             }
           }
         },
@@ -701,6 +1073,29 @@
               "type": "reference",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "keyword": {
+                "type": "string"
+              },
+              "matchFn": {
+                "type": "object",
+                "title": "(node: FlatTreeNode, keyword: string) => boolean"
+              },
+              "limit": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "NestedTreeSearchResult"
+            }
           }
         },
         {
@@ -728,6 +1123,26 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "TreePath"
           }
         },
         {
@@ -765,6 +1180,32 @@
               "type": "reference",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rootId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "NestedTreeNode"
+            }
           }
         },
         {
@@ -801,12 +1242,39 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rootId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "NestedTreeNode"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.845Z",
+  "generatedAt": "2026-06-13T06:21:07.084Z",
   "$defs": {
     "TreeManagerOptions": {
       "type": "object",
@@ -831,17 +1299,50 @@
         "httpClient": {
           "type": "object",
           "title": "HttpClientBase"
-        },
-        "endpointContextProvider": {
-          "type": "object",
-          "title": "() => Record<string, unknown>"
         }
       }
     },
     "FetchNestedInput": {
       "type": "object",
       "title": "FetchNestedInput",
-      "description": "Fetch Nested Input 的输入数据。"
+      "description": "Fetch Nested Input 的输入数据。",
+      "properties": {
+        "rootId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "limit": {
+          "type": "number"
+        },
+        "depthLimit": {
+          "type": "number"
+        },
+        "treeMode": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "flat"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "nested"
+              ]
+            }
+          ]
+        }
+      }
     },
     "TreeManager": {
       "type": "object",

@@ -47,49 +47,114 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "resolveView",
           "jsdoc": "解析关联 DataView",
-          "schema": {
-            "type": "object",
-            "title": "() => DataView | null"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "DataView"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
         },
         {
           "name": "resolveScopedRow",
           "jsdoc": "解析作用域行（行内按钮 / currentRow）",
-          "schema": {
-            "type": "object",
-            "title": "() => DataRow | undefined"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "DataRow"
+            }
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataRow"
+          }
         },
         {
           "name": "resolveContext",
           "jsdoc": "构造执行上下文",
-          "schema": {
-            "type": "object",
-            "title": "() => ActionExecutionContext"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ActionExecutionContext"
+          }
         },
         {
           "name": "warn",
           "jsdoc": "日志警告",
-          "schema": {
-            "type": "object",
-            "title": "(msg: string) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "msg",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "msg": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     },
     "ActionButtonRuntime": {
       "kind": "ActionButtonRuntime",
@@ -136,22 +201,38 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "executeAction",
           "jsdoc": "执行内置动作",
-          "schema": {
-            "type": "object",
-            "title": "() => Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.688Z",
+  "generatedAt": "2026-06-13T06:21:06.837Z",
   "$defs": {
     "ActionButtonRuntimeOptions": {
       "type": "object",
@@ -161,22 +242,6 @@
         "currentNode": {
           "type": "object",
           "title": "ComputedRef<SparkNode>"
-        },
-        "resolveView": {
-          "type": "object",
-          "title": "() => DataView | null"
-        },
-        "resolveScopedRow": {
-          "type": "object",
-          "title": "() => DataRow | undefined"
-        },
-        "resolveContext": {
-          "type": "object",
-          "title": "() => ActionExecutionContext"
-        },
-        "warn": {
-          "type": "object",
-          "title": "(msg: string) => void"
         }
       }
     },
@@ -196,10 +261,6 @@
         "hostActionDisabled": {
           "type": "object",
           "title": "ComputedRef<boolean>"
-        },
-        "executeAction": {
-          "type": "object",
-          "title": "() => Promise<void>"
         }
       }
     }

@@ -48,10 +48,6 @@
             "$ref": "spark-class-model://schema/ValueRef",
             "title": "ValueRef<number>"
           },
-          "getStepName": {
-            "type": "object",
-            "title": "(step: SparkNode, index: number) => string | number"
-          },
           "onStepChange": {
             "type": "object",
             "title": "(value: string | number, step: SparkNode, index: number) => void"
@@ -156,33 +152,61 @@
       "targetFile": "files/declarations/packages/spark-component/src/components/shared-types.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/ValueRef"
     },
-    "spark-class-model://schema/shared/c98ec813bf7781b59e8d11f77f8f887aae0f87d72d1cecb8349e18a13562de28": {
-      "ref": "spark-class-model://schema/shared/c98ec813bf7781b59e8d11f77f8f887aae0f87d72d1cecb8349e18a13562de28",
+    "spark-class-model://schema/shared/9971033630b4c79a37ac4d9abdf74e613641b2effd30203a4e64310907e07f0e": {
+      "ref": "spark-class-model://schema/shared/9971033630b4c79a37ac4d9abdf74e613641b2effd30203a4e64310907e07f0e",
       "kind": "schema",
       "schema": {
         "type": "object",
-        "title": "(step: SparkNode, index: number) => string | number",
+        "title": "(value: string | number, step: SparkNode, index: number) => void",
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/c98ec813bf7781b59e8d11f77f8f887aae0f87d72d1cecb8349e18a13562de28"
+        "$id": "spark-class-model://schema/shared/9971033630b4c79a37ac4d9abdf74e613641b2effd30203a4e64310907e07f0e"
       }
     },
-    "spark-class-model://model/RendererStepsZeroCodeOptions/attributes/getStepName/4": {
-      "ref": "spark-class-model://model/RendererStepsZeroCodeOptions/attributes/getStepName/4",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/RendererStepsZeroCodeOptions",
-      "name": "getStepName",
-      "schemaRef": "spark-class-model://schema/shared/c98ec813bf7781b59e8d11f77f8f887aae0f87d72d1cecb8349e18a13562de28",
-      "readable": true,
-      "writable": true
-    },
-    "spark-class-model://model/RendererStepsZeroCodeOptions/attributes/onStepChange/5": {
-      "ref": "spark-class-model://model/RendererStepsZeroCodeOptions/attributes/onStepChange/5",
+    "spark-class-model://model/RendererStepsZeroCodeOptions/attributes/onStepChange/4": {
+      "ref": "spark-class-model://model/RendererStepsZeroCodeOptions/attributes/onStepChange/4",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/RendererStepsZeroCodeOptions",
       "name": "onStepChange",
       "schemaRef": "spark-class-model://schema/shared/9971033630b4c79a37ac4d9abdf74e613641b2effd30203a4e64310907e07f0e",
       "readable": true,
       "writable": true
+    },
+    "spark-class-model://model/RendererStepsZeroCodeOptions/methods/getStepName/0": {
+      "ref": "spark-class-model://model/RendererStepsZeroCodeOptions/methods/getStepName/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererStepsZeroCodeOptions",
+      "name": "getStepName",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/77fab4c4d4df047d9c355c4820d575baf96dcccb52f4f55184057af5b5f5b387",
+      "returnSchemaRef": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8"
+    },
+    "spark-class-model://schema/shared/77fab4c4d4df047d9c355c4820d575baf96dcccb52f4f55184057af5b5f5b387": {
+      "ref": "spark-class-model://schema/shared/77fab4c4d4df047d9c355c4820d575baf96dcccb52f4f55184057af5b5f5b387",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "step": {
+            "$ref": "spark-class-model://schema/SparkNode"
+          },
+          "index": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/77fab4c4d4df047d9c355c4820d575baf96dcccb52f4f55184057af5b5f5b387"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererStepsZeroCodeOptions%2Fmethods%2FgetStepName%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNode": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererStepsZeroCodeOptions%2Fmethods%2FgetStepName%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNode",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererStepsZeroCodeOptions/methods/getStepName/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/SparkNode",
+      "targetClassName": "SparkNode",
+      "targetFile": "files/declarations/packages/spark-data/src/node-tree/spark-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/SparkNode"
     },
     "spark-class-model://model/RendererStepsZeroCodeOptions": {
       "ref": "spark-class-model://model/RendererStepsZeroCodeOptions",
@@ -194,15 +218,17 @@
         "spark-class-model://model/RendererStepsZeroCodeOptions/attributes/stepConfigs/1",
         "spark-class-model://model/RendererStepsZeroCodeOptions/attributes/activeStepName/2",
         "spark-class-model://model/RendererStepsZeroCodeOptions/attributes/activeStepIndex/3",
-        "spark-class-model://model/RendererStepsZeroCodeOptions/attributes/getStepName/4",
-        "spark-class-model://model/RendererStepsZeroCodeOptions/attributes/onStepChange/5"
+        "spark-class-model://model/RendererStepsZeroCodeOptions/attributes/onStepChange/4"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/RendererStepsZeroCodeOptions/methods/getStepName/0"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererStepsZeroCodeOptions%2Fattributes%2Femit%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FStepsEmit",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererStepsZeroCodeOptions%2Fattributes%2FstepConfigs%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererStepsZeroCodeOptions%2Fattributes%2FactiveStepName%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererStepsZeroCodeOptions%2Fattributes%2FactiveStepIndex%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererStepsZeroCodeOptions%2Fattributes%2FactiveStepIndex%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererStepsZeroCodeOptions%2Fmethods%2FgetStepName%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FSparkNode"
       ]
     }
   }

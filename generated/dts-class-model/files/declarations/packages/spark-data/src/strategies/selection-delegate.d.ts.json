@@ -90,7 +90,23 @@
               "sourcePath": "declarations/packages/spark-data/src/strategies/selection-delegate.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "host": {
+              "type": "object",
+              "title": "DataView"
+            },
+            "emitCurrentRowChanged": {
+              "$ref": "#/$defs/EmitCurrentRowChangedFn"
+            },
+            "emitSelectedRowsChanged": {
+              "$ref": "#/$defs/EmitSelectedRowsChangedFn"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -102,7 +118,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "setCurrentRow",
@@ -139,7 +161,28 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "DataRow"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "originatorId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "setSelectedRows",
@@ -170,7 +213,24 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              },
+              "originatorId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "setCurrentRowById",
@@ -211,6 +271,31 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "originatorId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -261,6 +346,34 @@
           "type": {
             "type": "intrinsic",
             "name": "number"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ids": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              },
+              "originatorId": {
+                "type": "string"
+              },
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
           }
         },
         {
@@ -271,7 +384,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "addSelectedRows",
@@ -292,6 +411,22 @@
           "type": {
             "type": "intrinsic",
             "name": "number"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
           }
         },
         {
@@ -313,6 +448,22 @@
           "type": {
             "type": "intrinsic",
             "name": "number"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
           }
         },
         {
@@ -353,6 +504,31 @@
           "type": {
             "type": "intrinsic",
             "name": "number"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ids": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              },
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
           }
         },
         {
@@ -383,6 +559,28 @@
           "type": {
             "type": "intrinsic",
             "name": "number"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ids": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
           }
         },
         {
@@ -393,12 +591,20 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.843Z",
+  "generatedAt": "2026-06-13T06:21:07.079Z",
   "$defs": {
     "EmitCurrentRowChangedFn": {
       "type": "object",

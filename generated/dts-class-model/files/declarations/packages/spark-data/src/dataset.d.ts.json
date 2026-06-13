@@ -160,7 +160,16 @@
               "sourcePath": "declarations/packages/spark-data/src/dataset.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "config": {
+              "$ref": "#/$defs/DataSetConfig"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -326,7 +335,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "setSharedHttpClient",
@@ -344,7 +359,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "client": {
+                "type": "object",
+                "title": "HttpClientBase"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "setAppServices",
@@ -362,7 +388,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "appServices": {
+                "type": "object",
+                "title": "DataSetAppServices"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "setPageRoute",
@@ -380,7 +417,15 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "route": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "getRequestTemplateParams",
@@ -400,6 +445,15 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
           }
         },
         {
@@ -462,6 +516,36 @@
                 }
               ]
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "event": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "loadSuccess"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "loadError"
+                    ]
+                  }
+                ]
+              },
+              "handler": {
+                "type": "object",
+                "title": "(payload: {\n        tableName: string;\n        viewId: string;\n        error?: Error;\n    }) => void"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "() => void"
           }
         },
         {
@@ -490,6 +574,20 @@
                 }
               ]
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "handlers": {
+                "type": "object",
+                "title": "ViewChangeHandlers"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "() => void"
           }
         },
         {
@@ -508,7 +606,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "view": {
+                "type": "object",
+                "title": "DataView"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "triggerAutoLoad",
@@ -518,7 +627,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "getChildRelations",
@@ -545,6 +660,25 @@
             "elementType": {
               "type": "reference",
               "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentTable": {
+                "type": "string"
+              },
+              "parentViewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "DataRelation"
             }
           }
         },
@@ -573,6 +707,25 @@
             "elementType": {
               "type": "reference",
               "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "childTable": {
+                "type": "string"
+              },
+              "childViewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "DataRelation"
             }
           }
         },
@@ -605,6 +758,27 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rel": {
+                "type": "object",
+                "title": "DataRelation"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "FilterExpression"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -626,6 +800,22 @@
               "type": "reference",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentTable": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "TableRelation"
+            }
           }
         },
         {
@@ -646,6 +836,22 @@
             "elementType": {
               "type": "reference",
               "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "childTable": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "TableRelation"
             }
           }
         },
@@ -688,7 +894,29 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "json": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "DataSetMetadata"
+                  },
+                  {
+                    "type": "object",
+                    "title": "Record<string, unknown>"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "listSnapshots",
@@ -711,6 +939,23 @@
             "elementType": {
               "type": "reference",
               "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object",
+                "title": "DataSetHistoryListOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "DataSetHistorySnapshot"
             }
           }
         },
@@ -749,6 +994,31 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "type": "object",
+                "title": "DataSetSnapshotSelector"
+              },
+              "options": {
+                "type": "object",
+                "title": "DataSetHistoryListOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataSetHistorySnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -770,6 +1040,20 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object",
+                "title": "DataSetCommitSnapshotOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataSetHistorySnapshot"
           }
         },
         {
@@ -807,6 +1091,31 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "type": "object",
+                "title": "DataSetSnapshotSelector"
+              },
+              "options": {
+                "type": "object",
+                "title": "DataSetHistoryListOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataSetHistorySnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -835,6 +1144,26 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "columns": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataColumn"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataTable"
           }
         },
         {
@@ -853,7 +1182,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "addRelation",
@@ -871,7 +1210,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "updateRelation",
@@ -902,6 +1251,23 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "type": "object"
+              },
+              "updates": {
+                "type": "object",
+                "title": "Partial<TableRelation>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "TableRelation"
           }
         },
         {
@@ -920,7 +1286,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "addDependency",
@@ -938,7 +1314,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "dependency": {
+                "type": "object",
+                "title": "ViewDependency"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "updateDependency",
@@ -976,6 +1363,26 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentTable": {
+                "type": "string"
+              },
+              "childTable": {
+                "type": "string"
+              },
+              "updates": {
+                "type": "object",
+                "title": "Partial<ViewDependency>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ViewDependency"
           }
         },
         {
@@ -1001,7 +1408,20 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentTable": {
+                "type": "string"
+              },
+              "childTable": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "destroy",
@@ -1011,7 +1431,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "getTable",
@@ -1032,6 +1458,19 @@
               "type": "reference",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataTable"
           }
         },
         {
@@ -1063,6 +1502,22 @@
               "type": "reference",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataView"
           }
         },
         {
@@ -1096,6 +1551,20 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object",
+                "title": "DataSetSaveChangesOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<CrudResult<DataSetSaveChangesResult>>"
           }
         },
         {
@@ -1106,6 +1575,15 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataSetMetadata"
           }
         },
         {
@@ -1148,12 +1626,36 @@
             "type": "reference",
             "name": "DataSet",
             "sourcePath": "declarations/packages/spark-data/src/dataset.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "json": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "DataSetMetadata"
+                  },
+                  {
+                    "type": "object",
+                    "title": "Record<string, unknown>"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/DataSet"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.830Z",
+  "generatedAt": "2026-06-13T06:21:07.058Z",
   "$defs": {
     "DataSetConfig": {
       "type": "object",

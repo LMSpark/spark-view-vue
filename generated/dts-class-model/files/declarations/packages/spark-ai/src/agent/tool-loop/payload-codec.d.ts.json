@@ -70,7 +70,35 @@
               "name": "string"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "TOOL_ARGS_INVALID_JSON"
+                  ]
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "TOOL_ARGS_NOT_OBJECT"
+                  ]
+                }
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "raw": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -108,7 +136,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.569Z",
+  "generatedAt": "2026-06-13T06:21:06.591Z",
   "$defs": {
     "ToolArgsParseError": {
       "type": "object",

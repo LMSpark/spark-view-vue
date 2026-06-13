@@ -35,19 +35,50 @@
         "className": "EventDefaultDeclaration",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "systemDefault",
           "jsdoc": "系统默认处理方法 (A)\n有值时：dispatch 走完整 A/B/C 流程（B 不取消 → 执行 A）\n无值时：dispatch 仅执行 B 并返回 cancel 控制器",
-          "schema": {
-            "type": "object",
-            "title": "(...args: TArgs) => void | Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "args",
+              "type": {
+                "type": "rest",
+                "elementType": {
+                  "type": "reference",
+                  "name": "TArgs",
+                  "refersToTypeParameter": true
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         }
-      ],
-      "methods": []
+      ]
     },
     "EventArgsMap": {
       "kind": "EventArgsMap",
@@ -102,18 +133,12 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.701Z",
+  "generatedAt": "2026-06-13T06:21:06.859Z",
   "$defs": {
     "EventDefaultDeclaration": {
       "type": "object",
       "title": "EventDefaultDeclaration",
-      "description": "事件默认行为声明",
-      "properties": {
-        "systemDefault": {
-          "type": "object",
-          "title": "(...args: TArgs) => void | Promise<void>"
-        }
-      }
+      "description": "事件默认行为声明"
     },
     "EventArgsMap": {
       "type": "object",

@@ -24,6 +24,7 @@
       "DtsClassModelRuntimeLink",
       "DtsClassModelRuntimeAttribute",
       "DtsClassModelRuntimeMethod",
+      "DtsClassModelRuntimeConstructor",
       "DtsClassModelRuntimeModel",
       "DtsClassModelRuntimeSchemaRef",
       "DtsClassModelRuntimeRef",
@@ -50,6 +51,7 @@
     "DtsClassModelRuntimeLink",
     "DtsClassModelRuntimeAttribute",
     "DtsClassModelRuntimeMethod",
+    "DtsClassModelRuntimeConstructor",
     "DtsClassModelRuntimeModel",
     "DtsClassModelRuntimeSchemaRef",
     "DtsClassModelRuntimeRef",
@@ -80,7 +82,73 @@
         "className": "DtsFileProjectionDocument",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "schemaVersion",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "sourcePath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "module",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/DtsFileModuleSemanticMeta"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "symbols",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "$defs",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "models",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, ClassModel>>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "generatedAt",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "DtsFileModuleJsDocSource": {
@@ -131,7 +199,127 @@
         "className": "DtsFileModuleSemanticMeta",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "name",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "sourcePath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "sourceFile",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "packageName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "modulePath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "jsdoc",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "jsdocSource",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/DtsFileModuleJsDocSource"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "symbols",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "componentName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentType",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentLevel",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ComponentClassModelLevel"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentLayer",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ComponentClassModelLayer"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentDirectory",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "DtsClassModelBundleFileEntry": {
@@ -153,7 +341,26 @@
         "className": "DtsClassModelBundleFileEntry",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "file",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "module",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/DtsFileModuleSemanticMeta"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelBundleClassEntry": {
@@ -175,7 +382,26 @@
         "className": "DtsClassModelBundleClassEntry",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "sourcePath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "file",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelBundleManifest": {
@@ -197,7 +423,73 @@
         "className": "DtsClassModelBundleManifest",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "schemaVersion",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "protocol",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "generatedAt",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "scannedFileCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "files",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, DtsClassModelBundleFileEntry>>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "classIndex",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, DtsClassModelBundleClassEntry>>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "duplicates",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "DtsClassModelRuntimeFileEntry": {
@@ -219,7 +511,26 @@
         "className": "DtsClassModelRuntimeFileEntry",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "file",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "symbols",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelRuntimeClassEntry": {
@@ -241,7 +552,44 @@
         "className": "DtsClassModelRuntimeClassEntry",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "sourcePath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "file",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "modelRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "schemaRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelRuntimeRefEntry": {
@@ -263,7 +611,17 @@
         "className": "DtsClassModelRuntimeRefEntry",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "file",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelRuntimeManifest": {
@@ -285,7 +643,56 @@
         "className": "DtsClassModelRuntimeManifest",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "schemaVersion",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "protocol",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "files",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, DtsClassModelRuntimeFileEntry>>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "classIndex",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, DtsClassModelRuntimeClassEntry>>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "refIndex",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, DtsClassModelRuntimeRefEntry>>"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelRuntimeLinkRelation": {
@@ -293,11 +700,15 @@
       "className": "DtsClassModelRuntimeLinkRelation",
       "jsdoc": "Dts Class Model Runtime Link Relation 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "'attribute' | 'method-parameter' | 'method-return'",
+      "declarationTypeText": "'attribute' | 'constructor-parameter' | 'method-parameter' | 'method-return'",
       "declarationRelations": [
         {
           "kind": "union",
           "typeText": "'attribute'"
+        },
+        {
+          "kind": "union",
+          "typeText": "'constructor-parameter'"
         },
         {
           "kind": "union",
@@ -336,7 +747,83 @@
         "className": "DtsClassModelRuntimeLink",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "ref",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "link"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "fromRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "relation",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/DtsClassModelRuntimeLinkRelation"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "targetModelRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "targetClassName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "targetFile",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "targetSchemaRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelRuntimeAttribute": {
@@ -358,7 +845,74 @@
         "className": "DtsClassModelRuntimeAttribute",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "ref",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "attribute"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "ownerRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "name",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "schemaRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "readable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "writable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelRuntimeMethod": {
@@ -380,7 +934,147 @@
         "className": "DtsClassModelRuntimeMethod",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "ref",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "method"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "ownerRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "name",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "parameterStyle",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "MethodParameterStyle"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "paramsSchemaRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "returnSchemaRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": []
+    },
+    "DtsClassModelRuntimeConstructor": {
+      "kind": "DtsClassModelRuntimeConstructor",
+      "className": "DtsClassModelRuntimeConstructor",
+      "jsdoc": "Dts Class Model Runtime Constructor 的语义模型。",
+      "shapeKind": "type",
+      "declarationTypeText": "Readonly<{\n    ref: string;\n    kind: 'constructor';\n    ownerRef: string;\n    parameterStyle: MethodParameterStyle;\n    paramsSchemaRef: string;\n}>",
+      "declarationRelations": [
+        {
+          "kind": "alias",
+          "typeText": "Readonly<{\n    ref: string;\n    kind: 'constructor';\n    ownerRef: string;\n    parameterStyle: MethodParameterStyle;\n    paramsSchemaRef: string;\n}>",
+          "targetName": "Readonly"
+        }
+      ],
+      "provenance": {
+        "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+        "line": 120,
+        "className": "DtsClassModelRuntimeConstructor",
+        "declarationKind": "type"
+      },
+      "attributes": [
+        {
+          "name": "ref",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "constructor"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "ownerRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "parameterStyle",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "MethodParameterStyle"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "paramsSchemaRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelRuntimeModel": {
@@ -388,21 +1082,97 @@
       "className": "DtsClassModelRuntimeModel",
       "jsdoc": "Dts Class Model Runtime Model 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    ref: string;\n    kind: 'model';\n    className: string;\n    schemaRef: string;\n    attributeRefs: readonly string[];\n    methodRefs: readonly string[];\n    linkRefs: readonly string[];\n}>",
+      "declarationTypeText": "Readonly<{\n    ref: string;\n    kind: 'model';\n    className: string;\n    schemaRef: string;\n    constructorRef?: string;\n    attributeRefs: readonly string[];\n    methodRefs: readonly string[];\n    linkRefs: readonly string[];\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    ref: string;\n    kind: 'model';\n    className: string;\n    schemaRef: string;\n    attributeRefs: readonly string[];\n    methodRefs: readonly string[];\n    linkRefs: readonly string[];\n}>",
+          "typeText": "Readonly<{\n    ref: string;\n    kind: 'model';\n    className: string;\n    schemaRef: string;\n    constructorRef?: string;\n    attributeRefs: readonly string[];\n    methodRefs: readonly string[];\n    linkRefs: readonly string[];\n}>",
           "targetName": "Readonly"
         }
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 120,
+        "line": 128,
         "className": "DtsClassModelRuntimeModel",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "ref",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "model"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "className",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "schemaRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "constructorRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "attributeRefs",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "methodRefs",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "linkRefs",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelRuntimeSchemaRef": {
@@ -420,11 +1190,43 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 130,
+        "line": 139,
         "className": "DtsClassModelRuntimeSchemaRef",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "ref",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "schema"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "schema",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchema"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelRuntimeRef": {
@@ -432,12 +1234,17 @@
       "className": "DtsClassModelRuntimeRef",
       "jsdoc": "Dts Class Model Runtime Ref 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "DtsClassModelRuntimeModel | DtsClassModelRuntimeAttribute | DtsClassModelRuntimeMethod | DtsClassModelRuntimeSchemaRef | DtsClassModelRuntimeLink",
+      "declarationTypeText": "DtsClassModelRuntimeModel | DtsClassModelRuntimeConstructor | DtsClassModelRuntimeAttribute | DtsClassModelRuntimeMethod | DtsClassModelRuntimeSchemaRef | DtsClassModelRuntimeLink",
       "declarationRelations": [
         {
           "kind": "union",
           "typeText": "DtsClassModelRuntimeModel",
           "targetName": "DtsClassModelRuntimeModel"
+        },
+        {
+          "kind": "union",
+          "typeText": "DtsClassModelRuntimeConstructor",
+          "targetName": "DtsClassModelRuntimeConstructor"
         },
         {
           "kind": "union",
@@ -462,7 +1269,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 136,
+        "line": 145,
         "className": "DtsClassModelRuntimeRef",
         "declarationKind": "type"
       },
@@ -484,11 +1291,58 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 138,
+        "line": 147,
         "className": "DtsClassModelRuntimeShard",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "schemaVersion",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "protocol",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "sourcePath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "symbols",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "@refs",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, DtsClassModelRuntimeRef>>"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelDuplicateRecord": {
@@ -506,11 +1360,39 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 146,
+        "line": 155,
         "className": "DtsClassModelDuplicateRecord",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "className",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "keptFile",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "skippedFile",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsClassModelSemanticGapKind": {
@@ -543,7 +1425,7 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 152,
+        "line": 161,
         "className": "DtsClassModelSemanticGapKind",
         "declarationKind": "type"
       },
@@ -565,11 +1447,178 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 154,
+        "line": 163,
         "className": "DtsClassModelSemanticGap",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/DtsClassModelSemanticGapKind"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "className",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "memberName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "reason",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "missing-jsdoc"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "inferred-module-jsdoc"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "weak-module-jsdoc"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "chainBreak",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "fixHint",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "declarationFile",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "declarationLine",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "sourceFile",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "componentName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentType",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentLevel",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ComponentClassModelLevel"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentLayer",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ComponentClassModelLayer"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentDirectory",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "declarationKind",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "NonNullable<SourceProvenanceMeta['declarationKind']>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "DtsClassModelSemanticGapReport": {
@@ -587,11 +1636,48 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 173,
+        "line": 182,
         "className": "DtsClassModelSemanticGapReport",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "generatedAt",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "gapCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "notes",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "gaps",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ProjectDtsFileProjectionOptions": {
@@ -609,20 +1695,73 @@
       ],
       "provenance": {
         "file": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-        "line": 180,
+        "line": 189,
         "className": "ProjectDtsFileProjectionOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "repoRoot",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "absolutePath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "exportedOnly",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.579Z",
+  "generatedAt": "2026-06-13T06:21:06.622Z",
   "$defs": {
     "DtsFileProjectionDocument": {
       "type": "object",
       "title": "DtsFileProjectionDocument",
-      "description": "Dts File Projection Document 的语义模型。"
+      "description": "Dts File Projection Document 的语义模型。",
+      "properties": {
+        "schemaVersion": {
+          "type": "number"
+        },
+        "sourcePath": {
+          "type": "string"
+        },
+        "module": {
+          "$ref": "#/$defs/DtsFileModuleSemanticMeta"
+        },
+        "symbols": {
+          "type": "array"
+        },
+        "$defs": {
+          "type": "object",
+          "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+        },
+        "models": {
+          "type": "object",
+          "title": "Readonly<Record<string, ClassModel>>"
+        },
+        "generatedAt": {
+          "type": "string"
+        }
+      }
     },
     "DtsFileModuleJsDocSource": {
       "type": "object",
@@ -632,42 +1771,173 @@
     "DtsFileModuleSemanticMeta": {
       "type": "object",
       "title": "DtsFileModuleSemanticMeta",
-      "description": "Dts File Module Semantic Meta 描述单个 DTS shard 的模块级入口语义。"
+      "description": "Dts File Module Semantic Meta 描述单个 DTS shard 的模块级入口语义。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceFile": {
+          "type": "string"
+        },
+        "packageName": {
+          "type": "string"
+        },
+        "modulePath": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "type": "string"
+        },
+        "jsdocSource": {
+          "$ref": "#/$defs/DtsFileModuleJsDocSource"
+        },
+        "symbols": {
+          "type": "array"
+        },
+        "componentName": {
+          "type": "string"
+        },
+        "componentType": {
+          "type": "string"
+        },
+        "componentLevel": {
+          "type": "object",
+          "title": "ComponentClassModelLevel"
+        },
+        "componentLayer": {
+          "type": "object",
+          "title": "ComponentClassModelLayer"
+        },
+        "componentDirectory": {
+          "type": "string"
+        }
+      }
     },
     "DtsClassModelBundleFileEntry": {
       "type": "object",
       "title": "DtsClassModelBundleFileEntry",
-      "description": "Dts Class Model Bundle File Entry 的语义模型。"
+      "description": "Dts Class Model Bundle File Entry 的语义模型。",
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "module": {
+          "$ref": "#/$defs/DtsFileModuleSemanticMeta"
+        }
+      }
     },
     "DtsClassModelBundleClassEntry": {
       "type": "object",
       "title": "DtsClassModelBundleClassEntry",
-      "description": "Dts Class Model Bundle Class Entry 的语义模型。"
+      "description": "Dts Class Model Bundle Class Entry 的语义模型。",
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        }
+      }
     },
     "DtsClassModelBundleManifest": {
       "type": "object",
       "title": "DtsClassModelBundleManifest",
-      "description": "Dts Class Model Bundle Manifest 的语义模型。"
+      "description": "Dts Class Model Bundle Manifest 的语义模型。",
+      "properties": {
+        "schemaVersion": {
+          "type": "number"
+        },
+        "protocol": {
+          "type": "string"
+        },
+        "generatedAt": {
+          "type": "string"
+        },
+        "scannedFileCount": {
+          "type": "number"
+        },
+        "files": {
+          "type": "object",
+          "title": "Readonly<Record<string, DtsClassModelBundleFileEntry>>"
+        },
+        "classIndex": {
+          "type": "object",
+          "title": "Readonly<Record<string, DtsClassModelBundleClassEntry>>"
+        },
+        "duplicates": {
+          "type": "array"
+        }
+      }
     },
     "DtsClassModelRuntimeFileEntry": {
       "type": "object",
       "title": "DtsClassModelRuntimeFileEntry",
-      "description": "Dts Class Model Runtime File Entry 的语义模型。"
+      "description": "Dts Class Model Runtime File Entry 的语义模型。",
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "symbols": {
+          "type": "array"
+        }
+      }
     },
     "DtsClassModelRuntimeClassEntry": {
       "type": "object",
       "title": "DtsClassModelRuntimeClassEntry",
-      "description": "Dts Class Model Runtime Class Entry 的语义模型。"
+      "description": "Dts Class Model Runtime Class Entry 的语义模型。",
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "modelRef": {
+          "type": "string"
+        },
+        "schemaRef": {
+          "type": "string"
+        }
+      }
     },
     "DtsClassModelRuntimeRefEntry": {
       "type": "object",
       "title": "DtsClassModelRuntimeRefEntry",
-      "description": "Dts Class Model Runtime Ref Entry 的语义模型。"
+      "description": "Dts Class Model Runtime Ref Entry 的语义模型。",
+      "properties": {
+        "file": {
+          "type": "string"
+        }
+      }
     },
     "DtsClassModelRuntimeManifest": {
       "type": "object",
       "title": "DtsClassModelRuntimeManifest",
-      "description": "Dts Class Model Runtime Manifest 的语义模型。"
+      "description": "Dts Class Model Runtime Manifest 的语义模型。",
+      "properties": {
+        "schemaVersion": {
+          "type": "number"
+        },
+        "protocol": {
+          "type": "string"
+        },
+        "files": {
+          "type": "object",
+          "title": "Readonly<Record<string, DtsClassModelRuntimeFileEntry>>"
+        },
+        "classIndex": {
+          "type": "object",
+          "title": "Readonly<Record<string, DtsClassModelRuntimeClassEntry>>"
+        },
+        "refIndex": {
+          "type": "object",
+          "title": "Readonly<Record<string, DtsClassModelRuntimeRefEntry>>"
+        }
+      }
     },
     "DtsClassModelRuntimeLinkRelation": {
       "type": "object",
@@ -677,27 +1947,179 @@
     "DtsClassModelRuntimeLink": {
       "type": "object",
       "title": "DtsClassModelRuntimeLink",
-      "description": "Dts Class Model Runtime Link 的语义模型。"
+      "description": "Dts Class Model Runtime Link 的语义模型。",
+      "properties": {
+        "ref": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "link"
+          ]
+        },
+        "fromRef": {
+          "type": "string"
+        },
+        "relation": {
+          "$ref": "#/$defs/DtsClassModelRuntimeLinkRelation"
+        },
+        "targetModelRef": {
+          "type": "string"
+        },
+        "targetClassName": {
+          "type": "string"
+        },
+        "targetFile": {
+          "type": "string"
+        },
+        "targetSchemaRef": {
+          "type": "string"
+        }
+      }
     },
     "DtsClassModelRuntimeAttribute": {
       "type": "object",
       "title": "DtsClassModelRuntimeAttribute",
-      "description": "Dts Class Model Runtime Attribute 的语义模型。"
+      "description": "Dts Class Model Runtime Attribute 的语义模型。",
+      "properties": {
+        "ref": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "attribute"
+          ]
+        },
+        "ownerRef": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "schemaRef": {
+          "type": "string"
+        },
+        "readable": {
+          "type": "boolean"
+        },
+        "writable": {
+          "type": "boolean"
+        }
+      }
     },
     "DtsClassModelRuntimeMethod": {
       "type": "object",
       "title": "DtsClassModelRuntimeMethod",
-      "description": "Dts Class Model Runtime Method 的语义模型。"
+      "description": "Dts Class Model Runtime Method 的语义模型。",
+      "properties": {
+        "ref": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "method"
+          ]
+        },
+        "ownerRef": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "parameterStyle": {
+          "type": "object",
+          "title": "MethodParameterStyle"
+        },
+        "paramsSchemaRef": {
+          "type": "string"
+        },
+        "returnSchemaRef": {
+          "type": "string"
+        }
+      }
+    },
+    "DtsClassModelRuntimeConstructor": {
+      "type": "object",
+      "title": "DtsClassModelRuntimeConstructor",
+      "description": "Dts Class Model Runtime Constructor 的语义模型。",
+      "properties": {
+        "ref": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "constructor"
+          ]
+        },
+        "ownerRef": {
+          "type": "string"
+        },
+        "parameterStyle": {
+          "type": "object",
+          "title": "MethodParameterStyle"
+        },
+        "paramsSchemaRef": {
+          "type": "string"
+        }
+      }
     },
     "DtsClassModelRuntimeModel": {
       "type": "object",
       "title": "DtsClassModelRuntimeModel",
-      "description": "Dts Class Model Runtime Model 的语义模型。"
+      "description": "Dts Class Model Runtime Model 的语义模型。",
+      "properties": {
+        "ref": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "model"
+          ]
+        },
+        "className": {
+          "type": "string"
+        },
+        "schemaRef": {
+          "type": "string"
+        },
+        "constructorRef": {
+          "type": "string"
+        },
+        "attributeRefs": {
+          "type": "array"
+        },
+        "methodRefs": {
+          "type": "array"
+        },
+        "linkRefs": {
+          "type": "array"
+        }
+      }
     },
     "DtsClassModelRuntimeSchemaRef": {
       "type": "object",
       "title": "DtsClassModelRuntimeSchemaRef",
-      "description": "Dts Class Model Runtime Schema Ref 的语义模型。"
+      "description": "Dts Class Model Runtime Schema Ref 的语义模型。",
+      "properties": {
+        "ref": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "schema"
+          ]
+        },
+        "schema": {
+          "type": "object",
+          "title": "AiJsonSchema"
+        }
+      }
     },
     "DtsClassModelRuntimeRef": {
       "type": "object",
@@ -707,12 +2129,41 @@
     "DtsClassModelRuntimeShard": {
       "type": "object",
       "title": "DtsClassModelRuntimeShard",
-      "description": "Dts Class Model Runtime Shard 的语义模型。"
+      "description": "Dts Class Model Runtime Shard 的语义模型。",
+      "properties": {
+        "schemaVersion": {
+          "type": "number"
+        },
+        "protocol": {
+          "type": "string"
+        },
+        "sourcePath": {
+          "type": "string"
+        },
+        "symbols": {
+          "type": "array"
+        },
+        "@refs": {
+          "type": "object",
+          "title": "Readonly<Record<string, DtsClassModelRuntimeRef>>"
+        }
+      }
     },
     "DtsClassModelDuplicateRecord": {
       "type": "object",
       "title": "DtsClassModelDuplicateRecord",
-      "description": "Dts Class Model Duplicate Record 的记录结构。"
+      "description": "Dts Class Model Duplicate Record 的记录结构。",
+      "properties": {
+        "className": {
+          "type": "string"
+        },
+        "keptFile": {
+          "type": "string"
+        },
+        "skippedFile": {
+          "type": "string"
+        }
+      }
     },
     "DtsClassModelSemanticGapKind": {
       "type": "object",
@@ -722,17 +2173,114 @@
     "DtsClassModelSemanticGap": {
       "type": "object",
       "title": "DtsClassModelSemanticGap",
-      "description": "Dts Class Model Semantic Gap 的语义模型。"
+      "description": "Dts Class Model Semantic Gap 的语义模型。",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/DtsClassModelSemanticGapKind"
+        },
+        "className": {
+          "type": "string"
+        },
+        "moduleName": {
+          "type": "string"
+        },
+        "memberName": {
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "missing-jsdoc"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "inferred-module-jsdoc"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "weak-module-jsdoc"
+              ]
+            }
+          ]
+        },
+        "chainBreak": {
+          "type": "string"
+        },
+        "fixHint": {
+          "type": "string"
+        },
+        "declarationFile": {
+          "type": "string"
+        },
+        "declarationLine": {
+          "type": "number"
+        },
+        "sourceFile": {
+          "type": "string"
+        },
+        "componentName": {
+          "type": "string"
+        },
+        "componentType": {
+          "type": "string"
+        },
+        "componentLevel": {
+          "type": "object",
+          "title": "ComponentClassModelLevel"
+        },
+        "componentLayer": {
+          "type": "object",
+          "title": "ComponentClassModelLayer"
+        },
+        "componentDirectory": {
+          "type": "string"
+        },
+        "declarationKind": {
+          "type": "object",
+          "title": "NonNullable<SourceProvenanceMeta['declarationKind']>"
+        }
+      }
     },
     "DtsClassModelSemanticGapReport": {
       "type": "object",
       "title": "DtsClassModelSemanticGapReport",
-      "description": "Dts Class Model Semantic Gap Report 的语义模型。"
+      "description": "Dts Class Model Semantic Gap Report 的语义模型。",
+      "properties": {
+        "generatedAt": {
+          "type": "string"
+        },
+        "gapCount": {
+          "type": "number"
+        },
+        "notes": {
+          "type": "array"
+        },
+        "gaps": {
+          "type": "array"
+        }
+      }
     },
     "ProjectDtsFileProjectionOptions": {
       "type": "object",
       "title": "ProjectDtsFileProjectionOptions",
-      "description": "Project Dts File Projection Options 的调用配置。"
+      "description": "Project Dts File Projection Options 的调用配置。",
+      "properties": {
+        "repoRoot": {
+          "type": "string"
+        },
+        "absolutePath": {
+          "type": "string"
+        },
+        "exportedOnly": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }

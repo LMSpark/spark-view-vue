@@ -51,31 +51,11 @@
           "writable": true
         },
         {
-          "name": "commitCollapseValue",
-          "jsdoc": "commit Collapse Value 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(value: string | number | Array<string | number>, options?: {\n        emit?: boolean;\n    }) => void"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "itemConfigs",
           "jsdoc": "item Configs 字段。",
           "schema": {
             "type": "object",
             "title": "ValueRef<SparkNode[]>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "getItemName",
-          "jsdoc": "get Item Name 名称。",
-          "schema": {
-            "type": "object",
-            "title": "(item: SparkNode, index: number) => string | number"
           },
           "readable": true,
           "writable": true
@@ -91,10 +71,154 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "commitCollapseValue",
+          "jsdoc": "commit Collapse Value 回调。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  {
+                    "type": "array",
+                    "elementType": {
+                      "type": "union",
+                      "types": [
+                        {
+                          "type": "intrinsic",
+                          "name": "string"
+                        },
+                        {
+                          "type": "intrinsic",
+                          "name": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "name": "options",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        emit?: boolean;\n    }"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "getItemName",
+          "jsdoc": "get Item Name 名称。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "item",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "index",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "item": {
+                "type": "object",
+                "title": "SparkNode"
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.671Z",
+  "generatedAt": "2026-06-13T06:21:06.805Z",
   "$defs": {
     "RendererCollapseZeroCodeOptions": {
       "type": "object",
@@ -105,17 +229,9 @@
           "type": "object",
           "title": "ValueRef<string | number | Array<string | number> | undefined>"
         },
-        "commitCollapseValue": {
-          "type": "object",
-          "title": "(value: string | number | Array<string | number>, options?: {\n        emit?: boolean;\n    }) => void"
-        },
         "itemConfigs": {
           "type": "object",
           "title": "ValueRef<SparkNode[]>"
-        },
-        "getItemName": {
-          "type": "object",
-          "title": "(item: SparkNode, index: number) => string | number"
         },
         "onChange": {
           "type": "object",

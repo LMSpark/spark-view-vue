@@ -155,14 +155,63 @@
         "$id": "spark-class-model://schema/ActionNotifier"
       }
     },
+    "spark-class-model://model/ActionNotifier/methods/notify/0": {
+      "ref": "spark-class-model://model/ActionNotifier/methods/notify/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ActionNotifier",
+      "name": "notify",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/5f49235b6210828590336647cbd94e4a0c9e3a8d316f85a1a56e609838505f46"
+    },
+    "spark-class-model://schema/shared/5f49235b6210828590336647cbd94e4a0c9e3a8d316f85a1a56e609838505f46": {
+      "ref": "spark-class-model://schema/shared/5f49235b6210828590336647cbd94e4a0c9e3a8d316f85a1a56e609838505f46",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "spark-class-model://schema/PageMessageType"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5f49235b6210828590336647cbd94e4a0c9e3a8d316f85a1a56e609838505f46"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionNotifier%2Fmethods%2Fnotify%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FPageMessageType": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionNotifier%2Fmethods%2Fnotify%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FPageMessageType",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ActionNotifier/methods/notify/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/PageMessageType",
+      "targetClassName": "PageMessageType",
+      "targetFile": "files/declarations/packages/spark-component/src/runtime/app-services.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageMessageType"
+    },
+    "spark-class-model://model/ActionNotifier/methods/notifyError/1": {
+      "ref": "spark-class-model://model/ActionNotifier/methods/notifyError/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ActionNotifier",
+      "name": "notifyError",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/231d6d620221bfb92feadbe3f77bf3a4ef9a1775ef990e4da4738ee0852ec9b6"
+    },
     "spark-class-model://model/ActionNotifier": {
       "ref": "spark-class-model://model/ActionNotifier",
       "kind": "model",
       "className": "ActionNotifier",
       "schemaRef": "spark-class-model://schema/ActionNotifier",
       "attributeRefs": [],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/ActionNotifier/methods/notify/0",
+        "spark-class-model://model/ActionNotifier/methods/notifyError/1"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionNotifier%2Fmethods%2Fnotify%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FPageMessageType"
+      ]
     },
     "spark-class-model://schema/ConfirmationInput": {
       "ref": "spark-class-model://schema/ConfirmationInput",
@@ -170,16 +219,45 @@
       "schema": {
         "type": "object",
         "title": "ConfirmationInput",
+        "properties": {
+          "fallbackMessage": {
+            "type": "string"
+          },
+          "fallbackTitle": {
+            "type": "string"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/ConfirmationInput"
       }
+    },
+    "spark-class-model://model/ConfirmationInput/attributes/fallbackMessage/0": {
+      "ref": "spark-class-model://model/ConfirmationInput/attributes/fallbackMessage/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ConfirmationInput",
+      "name": "fallbackMessage",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ConfirmationInput/attributes/fallbackTitle/1": {
+      "ref": "spark-class-model://model/ConfirmationInput/attributes/fallbackTitle/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ConfirmationInput",
+      "name": "fallbackTitle",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
     },
     "spark-class-model://model/ConfirmationInput": {
       "ref": "spark-class-model://model/ConfirmationInput",
       "kind": "model",
       "className": "ConfirmationInput",
       "schemaRef": "spark-class-model://schema/ConfirmationInput",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/ConfirmationInput/attributes/fallbackMessage/0",
+        "spark-class-model://model/ConfirmationInput/attributes/fallbackTitle/1"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },

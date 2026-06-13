@@ -87,46 +87,6 @@
       },
       "attributes": [
         {
-          "name": "getValue",
-          "jsdoc": "get Value 回调。",
-          "schema": {
-            "type": "object",
-            "title": "() => TValue"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "emitUpdate",
-          "jsdoc": "emit Update 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(value: TValue) => void"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "syncValue",
-          "jsdoc": "sync Value 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(value: TValue) => void"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "afterDefault",
-          "jsdoc": "after Default 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(nextValue: TValue, previousValue: TValue) => void | Promise<void>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "handlerSource",
           "jsdoc": "handler Source 字段。",
           "schema": {
@@ -137,10 +97,128 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "getValue",
+          "jsdoc": "get Value 回调。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "TValue",
+            "refersToTypeParameter": true
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "emitUpdate",
+          "jsdoc": "emit Update 回调。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "reference",
+                "name": "TValue",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "syncValue",
+          "jsdoc": "sync Value 回调。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "reference",
+                "name": "TValue",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "afterDefault",
+          "jsdoc": "after Default 回调。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "nextValue",
+              "type": {
+                "type": "reference",
+                "name": "TValue",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "previousValue",
+              "type": {
+                "type": "reference",
+                "name": "TValue",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.736Z",
+  "generatedAt": "2026-06-13T06:21:06.924Z",
   "$defs": {
     "FieldValueUpdateEmitter": {
       "type": "object",
@@ -162,22 +240,6 @@
       "title": "UseControlledFieldChangeOptions",
       "description": "Use Controlled Field Change Options 的调用配置。",
       "properties": {
-        "getValue": {
-          "type": "object",
-          "title": "() => TValue"
-        },
-        "emitUpdate": {
-          "type": "object",
-          "title": "(value: TValue) => void"
-        },
-        "syncValue": {
-          "type": "object",
-          "title": "(value: TValue) => void"
-        },
-        "afterDefault": {
-          "type": "object",
-          "title": "(nextValue: TValue, previousValue: TValue) => void | Promise<void>"
-        },
         "handlerSource": {
           "type": "object",
           "title": "Readonly<Record<string, unknown>>"

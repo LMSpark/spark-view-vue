@@ -50,7 +50,24 @@
         "className": "ClassModelScriptCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "script",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "host",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ClassModelRuntimeOptions": {
@@ -72,7 +89,37 @@
         "className": "ClassModelRuntimeOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "document",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ClassModelDocument"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "knowledge",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ClassModelKnowledgeProvider"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "scriptExecutor",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ClassModelScriptExecutor"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ClassModelToolArgs": {
@@ -116,7 +163,46 @@
         "className": "ClassModelToolResult",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "ok",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "data",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonValue"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "checks",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "state",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, unknown>>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ClassModelToolCheck": {
@@ -138,7 +224,63 @@
         "className": "ClassModelToolCheck",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "level",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warn"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "code",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "message",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "hint",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ClassModelScriptExecutorResult": {
@@ -207,7 +349,16 @@
               "sourcePath": "declarations/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/ClassModelRuntimeOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -219,6 +370,14 @@
           "type": {
             "type": "unknown",
             "name": "readonly ClassModelToolSpec[]"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array"
           }
         },
         {
@@ -262,22 +421,58 @@
                 "sourcePath": "declarations/packages/spark-ai/src/class-model/runtime/class-model-runtime.d.ts"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "toolName": {
+                "type": "string"
+              },
+              "rawArgs": {
+                "$ref": "#/$defs/ClassModelToolArgs"
+              },
+              "host": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ClassModelToolResult>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.595Z",
+  "generatedAt": "2026-06-13T06:21:06.675Z",
   "$defs": {
     "ClassModelScriptCommand": {
       "type": "object",
       "title": "ClassModelScriptCommand",
-      "description": "Class Model Script Command 的命令参数。"
+      "description": "Class Model Script Command 的命令参数。",
+      "properties": {
+        "script": {
+          "type": "string"
+        },
+        "host": true
+      }
     },
     "ClassModelRuntimeOptions": {
       "type": "object",
       "title": "ClassModelRuntimeOptions",
-      "description": "Class Model Runtime Options 的调用配置。"
+      "description": "Class Model Runtime Options 的调用配置。",
+      "properties": {
+        "document": {
+          "type": "object",
+          "title": "ClassModelDocument"
+        },
+        "knowledge": {
+          "type": "object",
+          "title": "ClassModelKnowledgeProvider"
+        },
+        "scriptExecutor": {
+          "$ref": "#/$defs/ClassModelScriptExecutor"
+        }
+      }
     },
     "ClassModelToolArgs": {
       "type": "object",
@@ -287,12 +482,61 @@
     "ClassModelToolResult": {
       "type": "object",
       "title": "ClassModelToolResult",
-      "description": "Class Model Tool Result 的返回结果。"
+      "description": "Class Model Tool Result 的返回结果。",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "type": "object",
+          "title": "AiJsonValue"
+        },
+        "checks": {
+          "type": "array"
+        },
+        "state": {
+          "type": "object",
+          "title": "Readonly<Record<string, unknown>>"
+        }
+      }
     },
     "ClassModelToolCheck": {
       "type": "object",
       "title": "ClassModelToolCheck",
-      "description": "Class Model Tool Check 的语义模型。"
+      "description": "Class Model Tool Check 的语义模型。",
+      "properties": {
+        "level": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warn"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            }
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        }
+      }
     },
     "ClassModelScriptExecutorResult": {
       "type": "object",

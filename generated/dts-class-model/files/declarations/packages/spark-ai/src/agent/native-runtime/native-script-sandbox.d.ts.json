@@ -40,7 +40,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.563Z",
+  "generatedAt": "2026-06-13T06:21:06.576Z",
   "$defs": {
     "AiNativeScriptSandboxContext": {
       "type": "object",

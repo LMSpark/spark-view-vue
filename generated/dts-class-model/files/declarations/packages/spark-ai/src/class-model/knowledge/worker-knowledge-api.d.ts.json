@@ -38,7 +38,26 @@
         "className": "ClassModelKnowledgeWorkerInitInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "dtsClassModelManifestUrl",
+          "jsdoc": "declarations 分片 class-model manifest.json。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rootClassName",
+          "jsdoc": "业务根 className；DTS 模型里 kind 与 className 同值。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ClassModelKnowledgeWorkerApi": {
@@ -61,15 +80,214 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "init",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "ClassModelKnowledgeWorkerInitInput",
+                "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "unknown",
+                "name": "{\n        initialized: true;\n    }"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/ClassModelKnowledgeWorkerInitInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<{\n        initialized: true;\n    }>"
+          }
+        },
+        {
+          "name": "query",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ClassModelKnowledgeQueryInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiJsonValue>"
+          }
+        },
+        {
+          "name": "modelGuide",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ClassModelModelGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<string>"
+          }
+        },
+        {
+          "name": "attributeGuide",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ClassModelAttributeGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<string>"
+          }
+        },
+        {
+          "name": "methodGuide",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ClassModelMethodGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<string>"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.589Z",
+  "generatedAt": "2026-06-13T06:21:06.652Z",
   "$defs": {
     "ClassModelKnowledgeWorkerInitInput": {
       "type": "object",
       "title": "ClassModelKnowledgeWorkerInitInput",
-      "description": "Class Model Knowledge Worker Init Input 的输入数据。"
+      "description": "Class Model Knowledge Worker Init Input 的输入数据。",
+      "properties": {
+        "dtsClassModelManifestUrl": {
+          "type": "string"
+        },
+        "rootClassName": {
+          "type": "string"
+        }
+      }
     },
     "ClassModelKnowledgeWorkerApi": {
       "type": "object",

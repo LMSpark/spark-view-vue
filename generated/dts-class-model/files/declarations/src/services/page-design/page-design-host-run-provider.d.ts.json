@@ -38,7 +38,27 @@
         "className": "PageDesignDeliveryContext",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "editor",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ProjectWorkspace"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "pageId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "CreatePageDesignDeliveryPortOptions": {
@@ -60,20 +80,108 @@
         "className": "CreatePageDesignDeliveryPortOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "mode",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiDeliveryMode"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "shouldSave",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rollbackStatus",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "skipped"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "rolledBack"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "saveFileNames",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.926Z",
+  "generatedAt": "2026-06-13T06:21:07.202Z",
   "$defs": {
     "PageDesignDeliveryContext": {
       "type": "object",
-      "title": "PageDesignDeliveryContext"
+      "title": "PageDesignDeliveryContext",
+      "properties": {
+        "editor": {
+          "type": "object",
+          "title": "ProjectWorkspace"
+        },
+        "pageId": {
+          "type": "string"
+        }
+      }
     },
     "CreatePageDesignDeliveryPortOptions": {
       "type": "object",
       "title": "CreatePageDesignDeliveryPortOptions",
-      "description": "Create Page Design Delivery Port Options 的调用配置。"
+      "description": "Create Page Design Delivery Port Options 的调用配置。",
+      "properties": {
+        "mode": {
+          "type": "object",
+          "title": "AiDeliveryMode"
+        },
+        "shouldSave": {
+          "type": "boolean"
+        },
+        "rollbackStatus": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "skipped"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "rolledBack"
+              ]
+            }
+          ]
+        },
+        "saveFileNames": {
+          "type": "array"
+        }
+      }
     }
   }
 }

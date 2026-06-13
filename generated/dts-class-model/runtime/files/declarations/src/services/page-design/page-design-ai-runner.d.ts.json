@@ -143,44 +143,27 @@
       "schema": {
         "type": "object",
         "title": "PageDesignAiRunEvents",
-        "properties": {
-          "onToolCall": {
-            "type": "object",
-            "title": "(record: AiAgentToolCallRecord) => void"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/PageDesignAiRunEvents"
       }
     },
-    "spark-class-model://schema/shared/28c8b3eff6d9f658be452dd7fea3703beecb6c9d9127ad35ba803291b6bfa414": {
-      "ref": "spark-class-model://schema/shared/28c8b3eff6d9f658be452dd7fea3703beecb6c9d9127ad35ba803291b6bfa414",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(record: AiAgentToolCallRecord) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/28c8b3eff6d9f658be452dd7fea3703beecb6c9d9127ad35ba803291b6bfa414"
-      }
-    },
-    "spark-class-model://model/PageDesignAiRunEvents/attributes/onToolCall/0": {
-      "ref": "spark-class-model://model/PageDesignAiRunEvents/attributes/onToolCall/0",
-      "kind": "attribute",
+    "spark-class-model://model/PageDesignAiRunEvents/methods/onToolCall/0": {
+      "ref": "spark-class-model://model/PageDesignAiRunEvents/methods/onToolCall/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/PageDesignAiRunEvents",
       "name": "onToolCall",
-      "schemaRef": "spark-class-model://schema/shared/28c8b3eff6d9f658be452dd7fea3703beecb6c9d9127ad35ba803291b6bfa414",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
     "spark-class-model://model/PageDesignAiRunEvents": {
       "ref": "spark-class-model://model/PageDesignAiRunEvents",
       "kind": "model",
       "className": "PageDesignAiRunEvents",
       "schemaRef": "spark-class-model://schema/PageDesignAiRunEvents",
-      "attributeRefs": [
-        "spark-class-model://model/PageDesignAiRunEvents/attributes/onToolCall/0"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/PageDesignAiRunEvents/methods/onToolCall/0"
       ],
-      "methodRefs": [],
       "linkRefs": []
     },
     "spark-class-model://schema/PageDesignAiRunCommand": {
@@ -335,15 +318,6 @@
       "targetFile": "files/declarations/src/services/page-design/page-design-ai-runner.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/PageDesignAiRunEvents"
     },
-    "spark-class-model://schema/shared/8a2d9c40878cb427f3bbd62dc6e184bd0f05587c318bc9629a47c7c0f04a7464": {
-      "ref": "spark-class-model://schema/shared/8a2d9c40878cb427f3bbd62dc6e184bd0f05587c318bc9629a47c7c0f04a7464",
-      "kind": "schema",
-      "schema": {
-        "$ref": "spark-class-model://schema/AiRunTraceSink",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/8a2d9c40878cb427f3bbd62dc6e184bd0f05587c318bc9629a47c7c0f04a7464"
-      }
-    },
     "spark-class-model://model/PageDesignAiRunCommand/attributes/trace/4": {
       "ref": "spark-class-model://model/PageDesignAiRunCommand/attributes/trace/4",
       "kind": "attribute",
@@ -391,15 +365,6 @@
       "targetFile": "files/declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/AiRunAdapterState"
     },
-    "spark-class-model://schema/shared/6460d6d7d851fb2b7d77d63432b4cd2ff52b4cba68edd38f87c9ee927fe6bb73": {
-      "ref": "spark-class-model://schema/shared/6460d6d7d851fb2b7d77d63432b4cd2ff52b4cba68edd38f87c9ee927fe6bb73",
-      "kind": "schema",
-      "schema": {
-        "$ref": "spark-class-model://schema/AiRunBeforeFunctionCall",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/6460d6d7d851fb2b7d77d63432b4cd2ff52b4cba68edd38f87c9ee927fe6bb73"
-      }
-    },
     "spark-class-model://model/PageDesignAiRunCommand/attributes/beforeFunctionCall/6": {
       "ref": "spark-class-model://model/PageDesignAiRunCommand/attributes/beforeFunctionCall/6",
       "kind": "attribute",
@@ -418,15 +383,6 @@
       "targetClassName": "AiRunBeforeFunctionCall",
       "targetFile": "files/declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/AiRunBeforeFunctionCall"
-    },
-    "spark-class-model://schema/shared/096a6245fdec93e09666d7fd400464052fdd407b1aae6c8c0d6b051cb719b579": {
-      "ref": "spark-class-model://schema/shared/096a6245fdec93e09666d7fd400464052fdd407b1aae6c8c0d6b051cb719b579",
-      "kind": "schema",
-      "schema": {
-        "$ref": "spark-class-model://schema/AiRunAbortHandler",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/096a6245fdec93e09666d7fd400464052fdd407b1aae6c8c0d6b051cb719b579"
-      }
     },
     "spark-class-model://model/PageDesignAiRunCommand/attributes/onAbort/7": {
       "ref": "spark-class-model://model/PageDesignAiRunCommand/attributes/onAbort/7",

@@ -56,6 +56,64 @@
         "$id": "spark-class-model://schema/LocalMutationDelegate"
       }
     },
+    "spark-class-model://model/LocalMutationDelegate/constructors/0": {
+      "ref": "spark-class-model://model/LocalMutationDelegate/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/LocalMutationDelegate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/9c1d9203361055f368703dc9713a7180b4d2ed25daf5f4b87e51762a69f83ab2"
+    },
+    "spark-class-model://schema/shared/9c1d9203361055f368703dc9713a7180b4d2ed25daf5f4b87e51762a69f83ab2": {
+      "ref": "spark-class-model://schema/shared/9c1d9203361055f368703dc9713a7180b4d2ed25daf5f4b87e51762a69f83ab2",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "$ref": "spark-class-model://schema/DataView"
+          },
+          "emitRowsChanged": {
+            "$ref": "spark-class-model://schema/EmitRowsChangedFn"
+          },
+          "postMutation": {
+            "$ref": "spark-class-model://schema/PostMutationFn"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9c1d9203361055f368703dc9713a7180b4d2ed25daf5f4b87e51762a69f83ab2"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FEmitRowsChangedFn": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FEmitRowsChangedFn",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/LocalMutationDelegate/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/EmitRowsChangedFn",
+      "targetClassName": "EmitRowsChangedFn",
+      "targetFile": "files/declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/EmitRowsChangedFn"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FPostMutationFn": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FPostMutationFn",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/LocalMutationDelegate/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/PostMutationFn",
+      "targetClassName": "PostMutationFn",
+      "targetFile": "files/declarations/packages/spark-data/src/strategies/local-mutation-delegate.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PostMutationFn"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/LocalMutationDelegate/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/declarations/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
+    },
     "spark-class-model://model/LocalMutationDelegate/methods/buildRowIndexMap/0": {
       "ref": "spark-class-model://model/LocalMutationDelegate/methods/buildRowIndexMap/0",
       "kind": "method",
@@ -177,6 +235,7 @@
       "kind": "model",
       "className": "LocalMutationDelegate",
       "schemaRef": "spark-class-model://schema/LocalMutationDelegate",
+      "constructorRef": "spark-class-model://model/LocalMutationDelegate/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/LocalMutationDelegate/methods/buildRowIndexMap/0",
@@ -187,6 +246,9 @@
         "spark-class-model://model/LocalMutationDelegate/methods/replaceRows/5"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FEmitRowsChangedFn",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FPostMutationFn",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FbuildRowIndexMap%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FupdateFromServer%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FLocalMutationDelegate%2Fmethods%2FappendRow%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",

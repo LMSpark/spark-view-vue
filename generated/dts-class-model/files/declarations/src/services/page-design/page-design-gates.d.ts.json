@@ -52,7 +52,53 @@
         "className": "PageDesignAllowedOperations",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "nodeTree",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "dataSet",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "script",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "style",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "navigation",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "PageDesignRunContext": {
@@ -74,7 +120,26 @@
         "className": "PageDesignRunContext",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "allowedOperations",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/PageDesignAllowedOperations"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "deliverySaveFileNames",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "PageDesignRunMode": {
@@ -150,7 +215,44 @@
         "className": "PageDesignGateState",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "pageId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "planningReady",
+          "jsdoc": "effectiveDescription 非空即视为策划就绪。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "implGate",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/PageDesignImplGate"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "upstreamContractsSatisfied",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ReadPageDesignGateStateOptions": {
@@ -172,7 +274,17 @@
         "className": "ReadPageDesignGateStateOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "strictImplGate",
+          "jsdoc": "未声明 implGate 时是否视为 closed；默认 false（过渡兼容）。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "PageDesignGateValidationResult": {
@@ -194,7 +306,44 @@
         "className": "PageDesignGateValidationResult",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "ok",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "code",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "reason",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "fix",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "EvaluatePageDesignMutationToolGateOptions": {
@@ -216,7 +365,64 @@
         "className": "EvaluatePageDesignMutationToolGateOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "toolName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "summary",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ProjectPageNodeSummary"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "mode",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/PageDesignRunMode"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "gateOptions",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ReadPageDesignGateStateOptions"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "allowedOperations",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/PageDesignAllowedOperations"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "toolArgs",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonParams"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "EvaluatePageDesignScriptOperationGateOptions": {
@@ -238,21 +444,75 @@
         "className": "EvaluatePageDesignScriptOperationGateOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "toolName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "args",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonParams"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "allowedOperations",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/PageDesignAllowedOperations"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.926Z",
+  "generatedAt": "2026-06-13T06:21:07.200Z",
   "$defs": {
     "PageDesignAllowedOperations": {
       "type": "object",
       "title": "PageDesignAllowedOperations",
-      "description": "Page Design Allowed Operations 的语义模型。"
+      "description": "Page Design Allowed Operations 的语义模型。",
+      "properties": {
+        "nodeTree": {
+          "type": "boolean"
+        },
+        "dataSet": {
+          "type": "boolean"
+        },
+        "script": {
+          "type": "boolean"
+        },
+        "style": {
+          "type": "boolean"
+        },
+        "navigation": {
+          "type": "boolean"
+        }
+      }
     },
     "PageDesignRunContext": {
       "type": "object",
       "title": "PageDesignRunContext",
-      "description": "Page Design Run Context 的运行上下文。"
+      "description": "Page Design Run Context 的运行上下文。",
+      "properties": {
+        "allowedOperations": {
+          "$ref": "#/$defs/PageDesignAllowedOperations"
+        },
+        "deliverySaveFileNames": {
+          "type": "array"
+        }
+      }
     },
     "PageDesignRunMode": {
       "type": "object",
@@ -267,27 +527,94 @@
     "PageDesignGateState": {
       "type": "object",
       "title": "PageDesignGateState",
-      "description": "Page Design Gate State 的运行状态。"
+      "description": "Page Design Gate State 的运行状态。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "planningReady": {
+          "type": "boolean"
+        },
+        "implGate": {
+          "$ref": "#/$defs/PageDesignImplGate"
+        },
+        "upstreamContractsSatisfied": {
+          "type": "boolean"
+        }
+      }
     },
     "ReadPageDesignGateStateOptions": {
       "type": "object",
       "title": "ReadPageDesignGateStateOptions",
-      "description": "Read Page Design Gate State Options 的调用配置。"
+      "description": "Read Page Design Gate State Options 的调用配置。",
+      "properties": {
+        "strictImplGate": {
+          "type": "boolean"
+        }
+      }
     },
     "PageDesignGateValidationResult": {
       "type": "object",
       "title": "PageDesignGateValidationResult",
-      "description": "Page Design Gate Validation Result 的返回结果。"
+      "description": "Page Design Gate Validation Result 的返回结果。",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "code": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        }
+      }
     },
     "EvaluatePageDesignMutationToolGateOptions": {
       "type": "object",
       "title": "EvaluatePageDesignMutationToolGateOptions",
-      "description": "Evaluate Page Design Mutation Tool Gate Options 的调用配置。"
+      "description": "Evaluate Page Design Mutation Tool Gate Options 的调用配置。",
+      "properties": {
+        "toolName": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "object",
+          "title": "ProjectPageNodeSummary"
+        },
+        "mode": {
+          "$ref": "#/$defs/PageDesignRunMode"
+        },
+        "gateOptions": {
+          "$ref": "#/$defs/ReadPageDesignGateStateOptions"
+        },
+        "allowedOperations": {
+          "$ref": "#/$defs/PageDesignAllowedOperations"
+        },
+        "toolArgs": {
+          "type": "object",
+          "title": "AiJsonParams"
+        }
+      }
     },
     "EvaluatePageDesignScriptOperationGateOptions": {
       "type": "object",
       "title": "EvaluatePageDesignScriptOperationGateOptions",
-      "description": "Evaluate Page Design Script Operation Gate Options 的调用配置。"
+      "description": "Evaluate Page Design Script Operation Gate Options 的调用配置。",
+      "properties": {
+        "toolName": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "AiJsonParams"
+        },
+        "allowedOperations": {
+          "$ref": "#/$defs/PageDesignAllowedOperations"
+        }
+      }
     }
   }
 }

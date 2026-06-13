@@ -15,10 +15,6 @@
         "type": "object",
         "title": "NavigationClientOptions",
         "properties": {
-          "getNavigationApi": {
-            "type": "object",
-            "title": "() => string"
-          },
           "http": {
             "$ref": "spark-class-model://schema/HttpClientBase"
           }
@@ -27,27 +23,8 @@
         "$id": "spark-class-model://schema/NavigationClientOptions"
       }
     },
-    "spark-class-model://schema/shared/50499ab0cf7653249c6352eb43acf225b14d3a9d43f5168438c0492452a97287": {
-      "ref": "spark-class-model://schema/shared/50499ab0cf7653249c6352eb43acf225b14d3a9d43f5168438c0492452a97287",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => string",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/50499ab0cf7653249c6352eb43acf225b14d3a9d43f5168438c0492452a97287"
-      }
-    },
-    "spark-class-model://model/NavigationClientOptions/attributes/getNavigationApi/0": {
-      "ref": "spark-class-model://model/NavigationClientOptions/attributes/getNavigationApi/0",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/NavigationClientOptions",
-      "name": "getNavigationApi",
-      "schemaRef": "spark-class-model://schema/shared/50499ab0cf7653249c6352eb43acf225b14d3a9d43f5168438c0492452a97287",
-      "readable": true,
-      "writable": true
-    },
-    "spark-class-model://model/NavigationClientOptions/attributes/http/1": {
-      "ref": "spark-class-model://model/NavigationClientOptions/attributes/http/1",
+    "spark-class-model://model/NavigationClientOptions/attributes/http/0": {
+      "ref": "spark-class-model://model/NavigationClientOptions/attributes/http/0",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/NavigationClientOptions",
       "name": "http",
@@ -55,15 +32,24 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationClientOptions%2Fattributes%2Fhttp%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationClientOptions%2Fattributes%2Fhttp%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationClientOptions%2Fattributes%2Fhttp%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationClientOptions%2Fattributes%2Fhttp%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
       "kind": "link",
-      "fromRef": "spark-class-model://model/NavigationClientOptions/attributes/http/1",
+      "fromRef": "spark-class-model://model/NavigationClientOptions/attributes/http/0",
       "relation": "attribute",
       "targetModelRef": "spark-class-model://model/HttpClientBase",
       "targetClassName": "HttpClientBase",
       "targetFile": "files/declarations/packages/spark-utils/src/http/HttpClientBase.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/HttpClientBase"
+    },
+    "spark-class-model://model/NavigationClientOptions/methods/getNavigationApi/0": {
+      "ref": "spark-class-model://model/NavigationClientOptions/methods/getNavigationApi/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationClientOptions",
+      "name": "getNavigationApi",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96"
     },
     "spark-class-model://model/NavigationClientOptions": {
       "ref": "spark-class-model://model/NavigationClientOptions",
@@ -71,12 +57,13 @@
       "className": "NavigationClientOptions",
       "schemaRef": "spark-class-model://schema/NavigationClientOptions",
       "attributeRefs": [
-        "spark-class-model://model/NavigationClientOptions/attributes/getNavigationApi/0",
-        "spark-class-model://model/NavigationClientOptions/attributes/http/1"
+        "spark-class-model://model/NavigationClientOptions/attributes/http/0"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/NavigationClientOptions/methods/getNavigationApi/0"
+      ],
       "linkRefs": [
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationClientOptions%2Fattributes%2Fhttp%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationClientOptions%2Fattributes%2Fhttp%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase"
       ]
     },
     "spark-class-model://schema/LinkProbeResult": {
@@ -137,6 +124,38 @@
         "$id": "spark-class-model://schema/NavigationClient"
       }
     },
+    "spark-class-model://model/NavigationClient/constructors/0": {
+      "ref": "spark-class-model://model/NavigationClient/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/NavigationClient",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/5ab22902445e96ef580096c2b96ecc6546f0e61f5b605a5647776046a7c3fb7a"
+    },
+    "spark-class-model://schema/shared/5ab22902445e96ef580096c2b96ecc6546f0e61f5b605a5647776046a7c3fb7a": {
+      "ref": "spark-class-model://schema/shared/5ab22902445e96ef580096c2b96ecc6546f0e61f5b605a5647776046a7c3fb7a",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/NavigationClientOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5ab22902445e96ef580096c2b96ecc6546f0e61f5b605a5647776046a7c3fb7a"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationClient%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationClientOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationClient%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationClientOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavigationClient/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/NavigationClientOptions",
+      "targetClassName": "NavigationClientOptions",
+      "targetFile": "files/declarations/packages/spark-project-model/src/io/navigation-client.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavigationClientOptions"
+    },
     "spark-class-model://model/NavigationClient/methods/loadRoot/0": {
       "ref": "spark-class-model://model/NavigationClient/methods/loadRoot/0",
       "kind": "method",
@@ -145,16 +164,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
       "returnSchemaRef": "spark-class-model://schema/shared/d2155bd5a53d85710fecb9892641d8940c6f16a61eab80a2624709fab33a4567"
-    },
-    "spark-class-model://schema/shared/d2155bd5a53d85710fecb9892641d8940c6f16a61eab80a2624709fab33a4567": {
-      "ref": "spark-class-model://schema/shared/d2155bd5a53d85710fecb9892641d8940c6f16a61eab80a2624709fab33a4567",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "Promise<ProjectModelData>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/d2155bd5a53d85710fecb9892641d8940c6f16a61eab80a2624709fab33a4567"
-      }
     },
     "spark-class-model://model/NavigationClient/methods/addNode/1": {
       "ref": "spark-class-model://model/NavigationClient/methods/addNode/1",
@@ -317,6 +326,7 @@
       "kind": "model",
       "className": "NavigationClient",
       "schemaRef": "spark-class-model://schema/NavigationClient",
+      "constructorRef": "spark-class-model://model/NavigationClient/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/NavigationClient/methods/loadRoot/0",
@@ -327,6 +337,7 @@
         "spark-class-model://model/NavigationClient/methods/probeLink/5"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationClient%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationClientOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationClient%2Fmethods%2FupdateNode%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationNodePatch",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationClient%2Fmethods%2FprobeLink%2F5/method-return/spark-class-model%3A%2F%2Fmodel%2FLinkProbeResult"
       ]

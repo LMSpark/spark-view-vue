@@ -52,7 +52,53 @@
         "className": "ProjectPlanningRunInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "projectId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "requirement",
+          "jsdoc": "项目级短需求；来自 readProjectPlanningInput().requirement。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "planningAttachmentRef",
+          "jsdoc": "项目级策划详细说明附件引用。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "planningAttachmentText",
+          "jsdoc": "项目级附件解析正文；runner 在调用 LLM 前由工作区填充。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "navigationNodes",
+          "jsdoc": "各导航节点策划输入（含模块/页面）。",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ProjectPlanningAgentInput": {
@@ -74,7 +120,65 @@
         "className": "ProjectPlanningAgentInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "projectScopeKey",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "projectId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "requirement",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "planningAttachmentRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "planningAttachmentText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "navigationNodes",
+          "jsdoc": "",
+          "schema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/NavigationPlanningAgentInput"
+            }
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "NavigationPlanningAgentInput": {
@@ -96,7 +200,62 @@
         "className": "NavigationPlanningAgentInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "nodeId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "title",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "nodeKind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "requirement",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "planningAttachmentRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "planningAttachmentText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "NavigationPlanningRunInput": {
@@ -118,7 +277,62 @@
         "className": "NavigationPlanningRunInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "nodeId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "title",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "nodeKind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "requirement",
+          "jsdoc": "节点短需求，即 navigation description。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "planningAttachmentRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "planningAttachmentText",
+          "jsdoc": "节点附件解析正文；runner 在调用 LLM 前由工作区填充。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ResolveProjectPlanningRunInputOptions": {
@@ -140,7 +354,36 @@
         "className": "ResolveProjectPlanningRunInputOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "requirementOverride",
+          "jsdoc": "Host Run 可注入一次性需求，不写回 ProjectModel。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "planningAttachmentText",
+          "jsdoc": "项目级附件正文。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "navigationAttachmentTextByNodeId",
+          "jsdoc": "按 nodeId 提供节点附件正文。",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, string>>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "FilterNavigationPlanningNodesOptions": {
@@ -162,7 +405,26 @@
         "className": "FilterNavigationPlanningNodesOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "scopeNodeIds",
+          "jsdoc": "仅包含这些 nodeId；未传则按 includeEmptyRequirement 规则过滤。",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "includeEmptyRequirement",
+          "jsdoc": "默认 false：跳过 requirement 与 planningAttachmentRef 均为空的节点。",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ResolveScopedProjectPlanningRunInputOptions": {
@@ -211,8 +473,51 @@
         "className": "EnsureProjectPlanningBusinessOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
-      "methods": []
+      "attributes": [
+        {
+          "name": "host",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentHost"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "getProjectPlanningEditor",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "context",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        moduleInstanceId: string;\n    }"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "ProjectWorkspace"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectWorkspace"
+          }
+        }
+      ]
     },
     "ProjectPlanningGateValidationResult": {
       "kind": "ProjectPlanningGateValidationResult",
@@ -233,41 +538,169 @@
         "className": "ProjectPlanningGateValidationResult",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "ok",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "reason",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "fix",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.929Z",
+  "generatedAt": "2026-06-13T06:21:07.207Z",
   "$defs": {
     "ProjectPlanningRunInput": {
       "type": "object",
       "title": "ProjectPlanningRunInput",
-      "description": "Project Planning Run Input 的输入数据。"
+      "description": "Project Planning Run Input 的输入数据。",
+      "properties": {
+        "projectId": {
+          "type": "string"
+        },
+        "requirement": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "planningAttachmentText": {
+          "type": "string"
+        },
+        "navigationNodes": {
+          "type": "array"
+        }
+      }
     },
     "ProjectPlanningAgentInput": {
       "type": "object",
       "title": "ProjectPlanningAgentInput",
-      "description": "Host inputContract 用可变数组，满足 AiJsonParams。"
+      "description": "Host inputContract 用可变数组，满足 AiJsonParams。",
+      "properties": {
+        "projectScopeKey": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "requirement": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "planningAttachmentText": {
+          "type": "string"
+        },
+        "navigationNodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NavigationPlanningAgentInput"
+          }
+        }
+      }
     },
     "NavigationPlanningAgentInput": {
       "type": "object",
       "title": "NavigationPlanningAgentInput",
-      "description": "Navigation Planning Agent Input 的输入数据。"
+      "description": "Navigation Planning Agent Input 的输入数据。",
+      "properties": {
+        "nodeId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "type": "string"
+        },
+        "requirement": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "planningAttachmentText": {
+          "type": "string"
+        }
+      }
     },
     "NavigationPlanningRunInput": {
       "type": "object",
       "title": "NavigationPlanningRunInput",
-      "description": "Navigation Planning Run Input 的输入数据。"
+      "description": "Navigation Planning Run Input 的输入数据。",
+      "properties": {
+        "nodeId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "type": "string"
+        },
+        "requirement": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        },
+        "planningAttachmentText": {
+          "type": "string"
+        }
+      }
     },
     "ResolveProjectPlanningRunInputOptions": {
       "type": "object",
       "title": "ResolveProjectPlanningRunInputOptions",
-      "description": "Resolve Project Planning Run Input Options 的调用配置。"
+      "description": "Resolve Project Planning Run Input Options 的调用配置。",
+      "properties": {
+        "requirementOverride": {
+          "type": "string"
+        },
+        "planningAttachmentText": {
+          "type": "string"
+        },
+        "navigationAttachmentTextByNodeId": {
+          "type": "object",
+          "title": "Readonly<Record<string, string>>"
+        }
+      }
     },
     "FilterNavigationPlanningNodesOptions": {
       "type": "object",
       "title": "FilterNavigationPlanningNodesOptions",
-      "description": "Filter Navigation Planning Nodes Options 的调用配置。"
+      "description": "Filter Navigation Planning Nodes Options 的调用配置。",
+      "properties": {
+        "scopeNodeIds": {
+          "type": "array"
+        },
+        "includeEmptyRequirement": {
+          "type": "boolean"
+        }
+      }
     },
     "ResolveScopedProjectPlanningRunInputOptions": {
       "type": "object",
@@ -277,12 +710,29 @@
     "EnsureProjectPlanningBusinessOptions": {
       "type": "object",
       "title": "EnsureProjectPlanningBusinessOptions",
-      "description": "Ensure Project Planning Business Options 的调用配置。"
+      "description": "Ensure Project Planning Business Options 的调用配置。",
+      "properties": {
+        "host": {
+          "type": "object",
+          "title": "AiAgentHost"
+        }
+      }
     },
     "ProjectPlanningGateValidationResult": {
       "type": "object",
       "title": "ProjectPlanningGateValidationResult",
-      "description": "Project Planning Gate Validation Result 的返回结果。"
+      "description": "Project Planning Gate Validation Result 的返回结果。",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        }
+      }
     }
   }
 }

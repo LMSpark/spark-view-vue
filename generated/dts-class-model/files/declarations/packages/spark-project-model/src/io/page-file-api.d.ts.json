@@ -71,16 +71,6 @@
       },
       "attributes": [
         {
-          "name": "getPageFilesApi",
-          "jsdoc": "get Page Files Api 回调。",
-          "schema": {
-            "type": "object",
-            "title": "() => string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "http",
           "jsdoc": "http 字段。",
           "schema": {
@@ -91,7 +81,26 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "getPageFilesApi",
+          "jsdoc": "get Page Files Api 回调。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        }
+      ]
     },
     "PageFileApi": {
       "kind": "PageFileApi",
@@ -117,7 +126,16 @@
               "sourcePath": "declarations/packages/spark-project-model/src/io/page-file-api.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/PageFileApiOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -157,6 +175,26 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              },
+              "filename": {
+                "type": "object",
+                "title": "PageNodeFileName"
+              },
+              "content": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -192,6 +230,19 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/PageFileCreateParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<Record<string, unknown>>"
           }
         },
         {
@@ -216,6 +267,19 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -250,6 +314,23 @@
                 }
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              },
+              "filename": {
+                "type": "object",
+                "title": "PageNodeFileName"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageNodeFileVersionSummary[]>"
           }
         },
         {
@@ -288,6 +369,26 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              },
+              "filename": {
+                "type": "object",
+                "title": "PageNodeFileName"
+              },
+              "version": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -319,6 +420,23 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              },
+              "filename": {
+                "type": "object",
+                "title": "PageNodeFileName"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -357,12 +475,32 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              },
+              "filename": {
+                "type": "object",
+                "title": "PageNodeFileName"
+              },
+              "version": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.870Z",
+  "generatedAt": "2026-06-13T06:21:07.126Z",
   "$defs": {
     "PageFileCreateParams": {
       "type": "object",
@@ -379,10 +517,6 @@
       "title": "PageFileApiOptions",
       "description": "Page File Api Options 的调用配置。",
       "properties": {
-        "getPageFilesApi": {
-          "type": "object",
-          "title": "() => string"
-        },
         "http": {
           "type": "object",
           "title": "HttpClientBase"

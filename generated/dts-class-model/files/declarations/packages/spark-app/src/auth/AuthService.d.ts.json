@@ -43,7 +43,17 @@
               "isOptional": true
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "config": {
+              "type": "object",
+              "title": "AuthConfig"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -63,7 +73,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "title": "AuthConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "login",
@@ -87,6 +108,20 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "credentials": {
+                "type": "object",
+                "title": "LoginCredentials"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AuthResult>"
           }
         },
         {
@@ -103,6 +138,15 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -128,6 +172,15 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AuthResult | null>"
           }
         },
         {
@@ -138,6 +191,14 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -155,6 +216,21 @@
               {
                 "type": "literal",
                 "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
               }
             ]
           }
@@ -175,7 +251,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "token": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "clearToken",
@@ -185,7 +271,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "destroy",
@@ -195,7 +287,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "refreshToken",
@@ -211,12 +309,21 @@
                 "name": "string"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<string>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.600Z",
+  "generatedAt": "2026-06-13T06:21:06.684Z",
   "$defs": {
     "AuthService": {
       "type": "object",

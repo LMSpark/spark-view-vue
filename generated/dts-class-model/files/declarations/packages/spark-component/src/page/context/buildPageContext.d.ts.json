@@ -31,16 +31,6 @@
       },
       "attributes": [
         {
-          "name": "getDataSet",
-          "jsdoc": "DataSet getter（闭包引用，每次调用返回最新值）",
-          "schema": {
-            "type": "object",
-            "title": "() => DataSet | null"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "pageRoute",
           "jsdoc": "page Route 字段。",
           "schema": {
@@ -69,42 +59,114 @@
           },
           "readable": true,
           "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "getDataSet",
+          "jsdoc": "DataSet getter（闭包引用，每次调用返回最新值）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "DataSet"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataSet"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
         },
         {
           "name": "getComponentRegistry",
           "jsdoc": "页面级组件注册中心 getter（可选）",
-          "schema": {
-            "type": "object",
-            "title": "() => PageComponentRegistry | null"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "PageComponentRegistry"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
         },
         {
           "name": "getModuleContext",
           "jsdoc": "模块上下文 getter（可选，每次调用返回最新快照）",
-          "schema": {
-            "type": "object",
-            "title": "() => ModuleContext | null"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ModuleContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.792Z",
+  "generatedAt": "2026-06-13T06:21:06.997Z",
   "$defs": {
     "PageContextDeps": {
       "type": "object",
       "title": "PageContextDeps",
       "description": "buildPageContext 所需的依赖引用",
       "properties": {
-        "getDataSet": {
-          "type": "object",
-          "title": "() => DataSet | null"
-        },
         "pageRoute": {
           "type": "object",
           "title": "PageRoute"
@@ -116,14 +178,6 @@
         "pageService": {
           "type": "object",
           "title": "PageServiceCapability"
-        },
-        "getComponentRegistry": {
-          "type": "object",
-          "title": "() => PageComponentRegistry | null"
-        },
-        "getModuleContext": {
-          "type": "object",
-          "title": "() => ModuleContext | null"
         }
       }
     }

@@ -36,16 +36,55 @@
         "className": "AiAgentTransportTurn",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "turnId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "turnKey",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "streamKey",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.573Z",
+  "generatedAt": "2026-06-13T06:21:06.602Z",
   "$defs": {
     "AiAgentTransportTurn": {
       "type": "object",
       "title": "AiAgentTransportTurn",
-      "description": "Turn 标识结构：含 turnId（唯一 ID）、turnKey（业务键）、可选 streamKey（流式键）"
+      "description": "Turn 标识结构：含 turnId（唯一 ID）、turnKey（业务键）、可选 streamKey（流式键）",
+      "properties": {
+        "turnId": {
+          "type": "string"
+        },
+        "turnKey": {
+          "type": "string"
+        },
+        "streamKey": {
+          "type": "string"
+        }
+      }
     }
   }
 }

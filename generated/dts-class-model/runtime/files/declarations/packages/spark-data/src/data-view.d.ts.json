@@ -716,15 +716,6 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://schema/shared/fa748c8449becd6d9fda8ae16d02d9aaf05f84295c1e6c7e0ceaa39245bae2f9": {
-      "ref": "spark-class-model://schema/shared/fa748c8449becd6d9fda8ae16d02d9aaf05f84295c1e6c7e0ceaa39245bae2f9",
-      "kind": "schema",
-      "schema": {
-        "$ref": "spark-class-model://schema/TreeConfig",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/fa748c8449becd6d9fda8ae16d02d9aaf05f84295c1e6c7e0ceaa39245bae2f9"
-      }
-    },
     "spark-class-model://model/DataView/attributes/treeConfig/19": {
       "ref": "spark-class-model://model/DataView/attributes/treeConfig/19",
       "kind": "attribute",
@@ -893,6 +884,31 @@
       "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
       "readable": true,
       "writable": true
+    },
+    "spark-class-model://model/DataView/constructors/0": {
+      "ref": "spark-class-model://model/DataView/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/DataView",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/57229d0e4873ca1a3556197a4d57539f6746524fe1db3c8696603dee20d84443"
+    },
+    "spark-class-model://schema/shared/57229d0e4873ca1a3556197a4d57539f6746524fe1db3c8696603dee20d84443": {
+      "ref": "spark-class-model://schema/shared/57229d0e4873ca1a3556197a4d57539f6746524fe1db3c8696603dee20d84443",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "tableName": {
+            "type": "string"
+          },
+          "viewId": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/57229d0e4873ca1a3556197a4d57539f6746524fe1db3c8696603dee20d84443"
+      }
     },
     "spark-class-model://model/DataView/methods/resetPrimaryKey/0": {
       "ref": "spark-class-model://model/DataView/methods/resetPrimaryKey/0",
@@ -1068,31 +1084,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/a35b3845295b03344239e4370ef4d4dcfccc93f4b5a87b7c9f8731db1ff5c994",
       "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
-    "spark-class-model://schema/shared/a35b3845295b03344239e4370ef4d4dcfccc93f4b5a87b7c9f8731db1ff5c994": {
-      "ref": "spark-class-model://schema/shared/a35b3845295b03344239e4370ef4d4dcfccc93f4b5a87b7c9f8731db1ff5c994",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "ids": {
-            "type": "array",
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "number"
-                }
-              ]
-            }
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/a35b3845295b03344239e4370ef4d4dcfccc93f4b5a87b7c9f8731db1ff5c994"
-      }
-    },
     "spark-class-model://model/DataView/methods/clearSelectedRows/7": {
       "ref": "spark-class-model://model/DataView/methods/clearSelectedRows/7",
       "kind": "method",
@@ -1256,21 +1247,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/62c0720f121a1bc7746bb80e7db15f9bc9fbf5e3baaf35ef6ef6223604d1cfe1",
       "returnSchemaRef": "spark-class-model://schema/shared/10d27daf041f84df6789ee680bb888e758c8264d380a6aef43ecd0a70c91a6e8"
-    },
-    "spark-class-model://schema/shared/62c0720f121a1bc7746bb80e7db15f9bc9fbf5e3baaf35ef6ef6223604d1cfe1": {
-      "ref": "spark-class-model://schema/shared/62c0720f121a1bc7746bb80e7db15f9bc9fbf5e3baaf35ef6ef6223604d1cfe1",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "row": {
-            "$ref": "spark-class-model://schema/DataRow"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/62c0720f121a1bc7746bb80e7db15f9bc9fbf5e3baaf35ef6ef6223604d1cfe1"
-      }
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataView%2Fmethods%2FgetPkKey%2F14/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataView%2Fmethods%2FgetPkKey%2F14/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
@@ -1455,37 +1431,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/b7c156f552065668bce159202b1acc1ac942fdafdf9bf2fc3c9c5489ec071c8e",
       "returnSchemaRef": "spark-class-model://schema/shared/741aa770142450b4409a0fa3fc16dfad9b88271bec3b6f9436adb981f3f728d2"
     },
-    "spark-class-model://schema/shared/b7c156f552065668bce159202b1acc1ac942fdafdf9bf2fc3c9c5489ec071c8e": {
-      "ref": "spark-class-model://schema/shared/b7c156f552065668bce159202b1acc1ac942fdafdf9bf2fc3c9c5489ec071c8e",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "rootId": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "limit": {
-            "type": "number"
-          },
-          "depthLimit": {
-            "type": "number"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/b7c156f552065668bce159202b1acc1ac942fdafdf9bf2fc3c9c5489ec071c8e"
-      }
-    },
     "spark-class-model://schema/shared/741aa770142450b4409a0fa3fc16dfad9b88271bec3b6f9436adb981f3f728d2": {
       "ref": "spark-class-model://schema/shared/741aa770142450b4409a0fa3fc16dfad9b88271bec3b6f9436adb981f3f728d2",
       "kind": "schema",
@@ -1656,28 +1601,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/38050d2692556503c71999c039cd4ae603075a44ab689839c91869ad56b38ba7",
       "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
     },
-    "spark-class-model://schema/shared/38050d2692556503c71999c039cd4ae603075a44ab689839c91869ad56b38ba7": {
-      "ref": "spark-class-model://schema/shared/38050d2692556503c71999c039cd4ae603075a44ab689839c91869ad56b38ba7",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/38050d2692556503c71999c039cd4ae603075a44ab689839c91869ad56b38ba7"
-      }
-    },
     "spark-class-model://model/DataView/methods/replaceRows/27": {
       "ref": "spark-class-model://model/DataView/methods/replaceRows/27",
       "kind": "method",
@@ -1741,32 +1664,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/80cae6593eec12d1b93dfaf59c56434d61a58470a6cd89199b5727cd798fa4c7",
       "returnSchemaRef": "spark-class-model://schema/shared/d6da516bf1ead8be0d121529135c994dc180abc194ff65cda45b488c54e1f495"
-    },
-    "spark-class-model://schema/shared/80cae6593eec12d1b93dfaf59c56434d61a58470a6cd89199b5727cd798fa4c7": {
-      "ref": "spark-class-model://schema/shared/80cae6593eec12d1b93dfaf59c56434d61a58470a6cd89199b5727cd798fa4c7",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          },
-          "field": {
-            "type": "string"
-          },
-          "value": true
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/80cae6593eec12d1b93dfaf59c56434d61a58470a6cd89199b5727cd798fa4c7"
-      }
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataView%2Fmethods%2FupdateEditingValue%2F31/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataView%2Fmethods%2FupdateEditingValue%2F31/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
@@ -1834,16 +1731,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/38050d2692556503c71999c039cd4ae603075a44ab689839c91869ad56b38ba7",
       "returnSchemaRef": "spark-class-model://schema/shared/d4d7b633ce0c3a070329b08e2b651331127c17370dad4c7a3162fbf46165b2c8"
     },
-    "spark-class-model://schema/shared/d4d7b633ce0c3a070329b08e2b651331127c17370dad4c7a3162fbf46165b2c8": {
-      "ref": "spark-class-model://schema/shared/d4d7b633ce0c3a070329b08e2b651331127c17370dad4c7a3162fbf46165b2c8",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "Promise<boolean | CrudResult<boolean>>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/d4d7b633ce0c3a070329b08e2b651331127c17370dad4c7a3162fbf46165b2c8"
-      }
-    },
     "spark-class-model://model/DataView/methods/editRowById/36": {
       "ref": "spark-class-model://model/DataView/methods/editRowById/36",
       "kind": "method",
@@ -1852,16 +1739,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/3767123d4d4947ba5c41d0a3ce5cbd2b0400a1f6aab3df9ae976c2e3f70e6c43",
       "returnSchemaRef": "spark-class-model://schema/shared/1d0eea6255e70652be2b2757fdd158190ab7bf7ca47ccf6692ca3cd65dac6d11"
-    },
-    "spark-class-model://schema/shared/1d0eea6255e70652be2b2757fdd158190ab7bf7ca47ccf6692ca3cd65dac6d11": {
-      "ref": "spark-class-model://schema/shared/1d0eea6255e70652be2b2757fdd158190ab7bf7ca47ccf6692ca3cd65dac6d11",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "Promise<boolean | CrudResult<DataRow>>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/1d0eea6255e70652be2b2757fdd158190ab7bf7ca47ccf6692ca3cd65dac6d11"
-      }
     },
     "spark-class-model://model/DataView/methods/getDirtyChanges/37": {
       "ref": "spark-class-model://model/DataView/methods/getDirtyChanges/37",
@@ -1944,34 +1821,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/91c9402954a0aa455376444532bb79f52791b3b0111e81f017899b127f110cdf",
       "returnSchemaRef": "spark-class-model://schema/shared/a2f317d28f6c2065ef68f4fc3947764138ceb57bb082070cbae3f1e1bc68bf6a"
     },
-    "spark-class-model://schema/shared/91c9402954a0aa455376444532bb79f52791b3b0111e81f017899b127f110cdf": {
-      "ref": "spark-class-model://schema/shared/91c9402954a0aa455376444532bb79f52791b3b0111e81f017899b127f110cdf",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "parentId": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "limit": {
-            "type": "number"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/91c9402954a0aa455376444532bb79f52791b3b0111e81f017899b127f110cdf"
-      }
-    },
     "spark-class-model://schema/shared/a2f317d28f6c2065ef68f4fc3947764138ceb57bb082070cbae3f1e1bc68bf6a": {
       "ref": "spark-class-model://schema/shared/a2f317d28f6c2065ef68f4fc3947764138ceb57bb082070cbae3f1e1bc68bf6a",
       "kind": "schema",
@@ -2041,54 +1890,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/ab1ffaffec9f328ec8005ca597c173423a141dabfa68df2a92e187ce2b69a41c",
       "returnSchemaRef": "spark-class-model://schema/shared/f3e18958d35e88cdc5d23683f5f47524a5375da6c31eb3a5473b0eb0848b1bd2"
     },
-    "spark-class-model://schema/shared/ab1ffaffec9f328ec8005ca597c173423a141dabfa68df2a92e187ce2b69a41c": {
-      "ref": "spark-class-model://schema/shared/ab1ffaffec9f328ec8005ca597c173423a141dabfa68df2a92e187ce2b69a41c",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "nodeId": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              }
-            ]
-          },
-          "newParentId": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "index": {
-            "type": "number"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/ab1ffaffec9f328ec8005ca597c173423a141dabfa68df2a92e187ce2b69a41c"
-      }
-    },
-    "spark-class-model://schema/shared/f3e18958d35e88cdc5d23683f5f47524a5375da6c31eb3a5473b0eb0848b1bd2": {
-      "ref": "spark-class-model://schema/shared/f3e18958d35e88cdc5d23683f5f47524a5375da6c31eb3a5473b0eb0848b1bd2",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "Promise<DataRow | null>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/f3e18958d35e88cdc5d23683f5f47524a5375da6c31eb3a5473b0eb0848b1bd2"
-      }
-    },
     "spark-class-model://model/DataView/methods/searchTreeNested/46": {
       "ref": "spark-class-model://model/DataView/methods/searchTreeNested/46",
       "kind": "method",
@@ -2098,34 +1899,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/cd50774ef7fe0dcbe860b1f019d024328b0383d3bca4bc0ffeab8b5bb47ac39d",
       "returnSchemaRef": "spark-class-model://schema/shared/bfebf09cd5a2d13001fe70b138cf527f9b4527559768b9edeb7bfabb57102fc2"
     },
-    "spark-class-model://schema/shared/cd50774ef7fe0dcbe860b1f019d024328b0383d3bca4bc0ffeab8b5bb47ac39d": {
-      "ref": "spark-class-model://schema/shared/cd50774ef7fe0dcbe860b1f019d024328b0383d3bca4bc0ffeab8b5bb47ac39d",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "keyword": {
-            "type": "string"
-          },
-          "limit": {
-            "type": "number"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/cd50774ef7fe0dcbe860b1f019d024328b0383d3bca4bc0ffeab8b5bb47ac39d"
-      }
-    },
-    "spark-class-model://schema/shared/bfebf09cd5a2d13001fe70b138cf527f9b4527559768b9edeb7bfabb57102fc2": {
-      "ref": "spark-class-model://schema/shared/bfebf09cd5a2d13001fe70b138cf527f9b4527559768b9edeb7bfabb57102fc2",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "Promise<NestedTreeSearchResult[]>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/bfebf09cd5a2d13001fe70b138cf527f9b4527559768b9edeb7bfabb57102fc2"
-      }
-    },
     "spark-class-model://model/DataView/methods/setPage/47": {
       "ref": "spark-class-model://model/DataView/methods/setPage/47",
       "kind": "method",
@@ -2134,21 +1907,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/17cca34214f2289596985f4b14900413ca1efacc45c24678839a262102ac403e",
       "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
-    },
-    "spark-class-model://schema/shared/17cca34214f2289596985f4b14900413ca1efacc45c24678839a262102ac403e": {
-      "ref": "spark-class-model://schema/shared/17cca34214f2289596985f4b14900413ca1efacc45c24678839a262102ac403e",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "page": {
-            "type": "number"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/17cca34214f2289596985f4b14900413ca1efacc45c24678839a262102ac403e"
-      }
     },
     "spark-class-model://model/DataView/methods/setPageSize/48": {
       "ref": "spark-class-model://model/DataView/methods/setPageSize/48",
@@ -2485,6 +2243,7 @@
       "kind": "model",
       "className": "DataView",
       "schemaRef": "spark-class-model://schema/DataView",
+      "constructorRef": "spark-class-model://model/DataView/constructors/0",
       "attributeRefs": [
         "spark-class-model://model/DataView/attributes/tableName/0",
         "spark-class-model://model/DataView/attributes/viewId/1",

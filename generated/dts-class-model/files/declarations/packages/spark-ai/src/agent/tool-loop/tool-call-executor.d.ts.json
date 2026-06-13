@@ -57,7 +57,86 @@
         "className": "AiAgentToolCallExecutionInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "registration",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentRegistration<TInput>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "scope",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentScope"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "turn",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTurnMeta"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "round",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "resolveToolName",
+          "jsdoc": "transport toolName → runtime toolName 的解析函数",
+          "schema": {
+            "$ref": "#/$defs/AiAgentToolNameResolver"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "call",
+          "jsdoc": "LLM 返回的原始 transport tool_call",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTransportToolCall"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "request",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentChatRequest"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "sessionStore",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentSessionStore"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentToolCallExecutionOutput": {
@@ -79,7 +158,28 @@
         "className": "AiAgentToolCallExecutionOutput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "toolMessage",
+          "jsdoc": "发回 LLM 的工具消息（role: 'tool'）",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTransportMessage"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "directive",
+          "jsdoc": "业务生命周期指令（continue / complete / abort）",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentLifecycleDirective"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentToolCallExecutor": {
@@ -135,12 +235,26 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/AiAgentToolCallExecutionInput",
+                "title": "AiAgentToolCallExecutionInput<TInput>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiAgentToolCallExecutionOutput | null>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.570Z",
+  "generatedAt": "2026-06-13T06:21:06.593Z",
   "$defs": {
     "AiAgentToolNameResolver": {
       "type": "object",
@@ -150,12 +264,54 @@
     "AiAgentToolCallExecutionInput": {
       "type": "object",
       "title": "AiAgentToolCallExecutionInput",
-      "description": "工具调用执行的输入参数"
+      "description": "工具调用执行的输入参数",
+      "properties": {
+        "registration": {
+          "type": "object",
+          "title": "AiAgentRegistration<TInput>"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "turn": {
+          "type": "object",
+          "title": "AiAgentTurnMeta"
+        },
+        "round": {
+          "type": "number"
+        },
+        "resolveToolName": {
+          "$ref": "#/$defs/AiAgentToolNameResolver"
+        },
+        "call": {
+          "type": "object",
+          "title": "AiAgentTransportToolCall"
+        },
+        "request": {
+          "type": "object",
+          "title": "AiAgentChatRequest"
+        },
+        "sessionStore": {
+          "type": "object",
+          "title": "AiAgentSessionStore"
+        }
+      }
     },
     "AiAgentToolCallExecutionOutput": {
       "type": "object",
       "title": "AiAgentToolCallExecutionOutput",
-      "description": "工具调用执行的输出"
+      "description": "工具调用执行的输出",
+      "properties": {
+        "toolMessage": {
+          "type": "object",
+          "title": "AiAgentTransportMessage"
+        },
+        "directive": {
+          "type": "object",
+          "title": "AiAgentLifecycleDirective"
+        }
+      }
     },
     "AiAgentToolCallExecutor": {
       "type": "object",

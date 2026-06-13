@@ -202,14 +202,57 @@
         "$id": "spark-class-model://schema/ActionFormApi"
       }
     },
+    "spark-class-model://model/ActionFormApi/methods/getCurrentRow/0": {
+      "ref": "spark-class-model://model/ActionFormApi/methods/getCurrentRow/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ActionFormApi",
+      "name": "getCurrentRow",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/3fca7935715ce1bc7a9eb176303d6946df39828f4b54088be9fd2f262735b5a8"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionFormApi%2Fmethods%2FgetCurrentRow%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionFormApi%2Fmethods%2FgetCurrentRow%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ActionFormApi/methods/getCurrentRow/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/ActionFormApi/methods/getFormData/1": {
+      "ref": "spark-class-model://model/ActionFormApi/methods/getFormData/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ActionFormApi",
+      "name": "getFormData",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9"
+    },
+    "spark-class-model://model/ActionFormApi/methods/validate/2": {
+      "ref": "spark-class-model://model/ActionFormApi/methods/validate/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ActionFormApi",
+      "name": "validate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/2eace0f0f7d07333322b498cb46261125daca0579dab53d3ca347f749df86775"
+    },
     "spark-class-model://model/ActionFormApi": {
       "ref": "spark-class-model://model/ActionFormApi",
       "kind": "model",
       "className": "ActionFormApi",
       "schemaRef": "spark-class-model://schema/ActionFormApi",
       "attributeRefs": [],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/ActionFormApi/methods/getCurrentRow/0",
+        "spark-class-model://model/ActionFormApi/methods/getFormData/1",
+        "spark-class-model://model/ActionFormApi/methods/validate/2"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionFormApi%2Fmethods%2FgetCurrentRow%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow"
+      ]
     },
     "spark-class-model://schema/ActionExecutionScope": {
       "ref": "spark-class-model://schema/ActionExecutionScope",
@@ -2282,107 +2325,136 @@
       "schema": {
         "type": "object",
         "title": "ActionExecutionContext",
-        "properties": {
-          "getDataSet": {
-            "type": "object",
-            "title": "() => DataSetContract | null"
-          },
-          "getDataSource": {
-            "type": "object",
-            "title": "() => DataView | null"
-          },
-          "getPageService": {
-            "type": "object",
-            "title": "() => PageServiceCapability | null"
-          },
-          "getRouter": {
-            "type": "object",
-            "title": "() => RouterLike | null"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/ActionExecutionContext"
       }
     },
-    "spark-class-model://schema/shared/50b7d00fcec2971306f6e9023c9ef9f2a8deb4f8f455a1ffa614e2b49359aaec": {
-      "ref": "spark-class-model://schema/shared/50b7d00fcec2971306f6e9023c9ef9f2a8deb4f8f455a1ffa614e2b49359aaec",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => DataSetContract | null",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/50b7d00fcec2971306f6e9023c9ef9f2a8deb4f8f455a1ffa614e2b49359aaec"
-      }
-    },
-    "spark-class-model://model/ActionExecutionContext/attributes/getDataSet/0": {
-      "ref": "spark-class-model://model/ActionExecutionContext/attributes/getDataSet/0",
-      "kind": "attribute",
+    "spark-class-model://model/ActionExecutionContext/methods/getDataSet/0": {
+      "ref": "spark-class-model://model/ActionExecutionContext/methods/getDataSet/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ActionExecutionContext",
       "name": "getDataSet",
-      "schemaRef": "spark-class-model://schema/shared/50b7d00fcec2971306f6e9023c9ef9f2a8deb4f8f455a1ffa614e2b49359aaec",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/084deb2c5e8976ed2b7515fe5fa7c74e5ce1a981ad88193703272922900bfec9"
     },
-    "spark-class-model://model/ActionExecutionContext/attributes/getDataSource/1": {
-      "ref": "spark-class-model://model/ActionExecutionContext/attributes/getDataSource/1",
-      "kind": "attribute",
+    "spark-class-model://schema/shared/084deb2c5e8976ed2b7515fe5fa7c74e5ce1a981ad88193703272922900bfec9": {
+      "ref": "spark-class-model://schema/shared/084deb2c5e8976ed2b7515fe5fa7c74e5ce1a981ad88193703272922900bfec9",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/DataSetContract"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/084deb2c5e8976ed2b7515fe5fa7c74e5ce1a981ad88193703272922900bfec9"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext%2Fmethods%2FgetDataSet%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FDataSetContract": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext%2Fmethods%2FgetDataSet%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FDataSetContract",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ActionExecutionContext/methods/getDataSet/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DataSetContract",
+      "targetClassName": "DataSetContract",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataSetContract"
+    },
+    "spark-class-model://model/ActionExecutionContext/methods/getDataSource/1": {
+      "ref": "spark-class-model://model/ActionExecutionContext/methods/getDataSource/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ActionExecutionContext",
       "name": "getDataSource",
-      "schemaRef": "spark-class-model://schema/shared/a99b7b9f86765c03009d36803526142ff57487dc2ee96a1a1b9de394ef35e72a",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/de198bbc656283f2c9813b1de32a14906b73742a8dcad13d3d0d4dc61fb90390"
     },
-    "spark-class-model://schema/shared/31cef7c4bd7e98fdf524314d010b1bb3cfc10861362e7c5324d8d76c4629ed28": {
-      "ref": "spark-class-model://schema/shared/31cef7c4bd7e98fdf524314d010b1bb3cfc10861362e7c5324d8d76c4629ed28",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => PageServiceCapability | null",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/31cef7c4bd7e98fdf524314d010b1bb3cfc10861362e7c5324d8d76c4629ed28"
-      }
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext%2Fmethods%2FgetDataSource%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext%2Fmethods%2FgetDataSource%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ActionExecutionContext/methods/getDataSource/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/declarations/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
     },
-    "spark-class-model://model/ActionExecutionContext/attributes/getPageService/2": {
-      "ref": "spark-class-model://model/ActionExecutionContext/attributes/getPageService/2",
-      "kind": "attribute",
+    "spark-class-model://model/ActionExecutionContext/methods/getPageService/2": {
+      "ref": "spark-class-model://model/ActionExecutionContext/methods/getPageService/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ActionExecutionContext",
       "name": "getPageService",
-      "schemaRef": "spark-class-model://schema/shared/31cef7c4bd7e98fdf524314d010b1bb3cfc10861362e7c5324d8d76c4629ed28",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/d7dc05408c4d3edf93ae7620ed472d41911388af320c60fa5b54c7f52a631a48"
     },
-    "spark-class-model://schema/shared/fd99d4df0cbd0ce3dca53a2dcdc4935166864fbe7ff39fd10d60e13c41329fbd": {
-      "ref": "spark-class-model://schema/shared/fd99d4df0cbd0ce3dca53a2dcdc4935166864fbe7ff39fd10d60e13c41329fbd",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => RouterLike | null",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/fd99d4df0cbd0ce3dca53a2dcdc4935166864fbe7ff39fd10d60e13c41329fbd"
-      }
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext%2Fmethods%2FgetPageService%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FPageServiceCapability": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext%2Fmethods%2FgetPageService%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FPageServiceCapability",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ActionExecutionContext/methods/getPageService/2",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/PageServiceCapability",
+      "targetClassName": "PageServiceCapability",
+      "targetFile": "files/declarations/packages/spark-component/src/runtime/app-services.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageServiceCapability"
     },
-    "spark-class-model://model/ActionExecutionContext/attributes/getRouter/3": {
-      "ref": "spark-class-model://model/ActionExecutionContext/attributes/getRouter/3",
-      "kind": "attribute",
+    "spark-class-model://model/ActionExecutionContext/methods/getRouter/3": {
+      "ref": "spark-class-model://model/ActionExecutionContext/methods/getRouter/3",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ActionExecutionContext",
       "name": "getRouter",
-      "schemaRef": "spark-class-model://schema/shared/fd99d4df0cbd0ce3dca53a2dcdc4935166864fbe7ff39fd10d60e13c41329fbd",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/1fcc884cb20492bb1e98b8885fc954bf48e73791199b94f660ea59066933f60c"
+    },
+    "spark-class-model://schema/shared/1fcc884cb20492bb1e98b8885fc954bf48e73791199b94f660ea59066933f60c": {
+      "ref": "spark-class-model://schema/shared/1fcc884cb20492bb1e98b8885fc954bf48e73791199b94f660ea59066933f60c",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/RouterLike"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/1fcc884cb20492bb1e98b8885fc954bf48e73791199b94f660ea59066933f60c"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext%2Fmethods%2FgetRouter%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FRouterLike": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext%2Fmethods%2FgetRouter%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FRouterLike",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ActionExecutionContext/methods/getRouter/3",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/RouterLike",
+      "targetClassName": "RouterLike",
+      "targetFile": "files/declarations/packages/spark-component/src/page/actions/action-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RouterLike"
     },
     "spark-class-model://model/ActionExecutionContext": {
       "ref": "spark-class-model://model/ActionExecutionContext",
       "kind": "model",
       "className": "ActionExecutionContext",
       "schemaRef": "spark-class-model://schema/ActionExecutionContext",
-      "attributeRefs": [
-        "spark-class-model://model/ActionExecutionContext/attributes/getDataSet/0",
-        "spark-class-model://model/ActionExecutionContext/attributes/getDataSource/1",
-        "spark-class-model://model/ActionExecutionContext/attributes/getPageService/2",
-        "spark-class-model://model/ActionExecutionContext/attributes/getRouter/3"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ActionExecutionContext/methods/getDataSet/0",
+        "spark-class-model://model/ActionExecutionContext/methods/getDataSource/1",
+        "spark-class-model://model/ActionExecutionContext/methods/getPageService/2",
+        "spark-class-model://model/ActionExecutionContext/methods/getRouter/3"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext%2Fmethods%2FgetDataSet%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FDataSetContract",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext%2Fmethods%2FgetDataSource%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FDataView",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext%2Fmethods%2FgetPageService%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FPageServiceCapability",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FActionExecutionContext%2Fmethods%2FgetRouter%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FRouterLike"
+      ]
     },
     "spark-class-model://schema/ActionExecutionControl": {
       "ref": "spark-class-model://schema/ActionExecutionControl",
@@ -2427,13 +2499,46 @@
         "$id": "spark-class-model://schema/RouterLike"
       }
     },
+    "spark-class-model://model/RouterLike/methods/push/0": {
+      "ref": "spark-class-model://model/RouterLike/methods/push/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RouterLike",
+      "name": "push",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4687856a81225a3c2e283312aba7fc5535fb2eae1ae804d4b124b991dcff1660",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://schema/shared/4687856a81225a3c2e283312aba7fc5535fb2eae1ae804d4b124b991dcff1660": {
+      "ref": "spark-class-model://schema/shared/4687856a81225a3c2e283312aba7fc5535fb2eae1ae804d4b124b991dcff1660",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4687856a81225a3c2e283312aba7fc5535fb2eae1ae804d4b124b991dcff1660"
+      }
+    },
     "spark-class-model://model/RouterLike": {
       "ref": "spark-class-model://model/RouterLike",
       "kind": "model",
       "className": "RouterLike",
       "schemaRef": "spark-class-model://schema/RouterLike",
       "attributeRefs": [],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/RouterLike/methods/push/0"
+      ],
       "linkRefs": []
     }
   }

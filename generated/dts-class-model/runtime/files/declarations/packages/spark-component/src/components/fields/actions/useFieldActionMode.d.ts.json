@@ -73,10 +73,6 @@
           "actionMode": {
             "type": "object",
             "title": "ComputedRef<FieldActionMode>"
-          },
-          "chooseByMode": {
-            "type": "object",
-            "title": "<T>(editableValue: T, readonlyValue: T) => ComputedRef<T>"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -102,24 +98,38 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://schema/shared/48ebfb13f904187d54fe933b80137009925655cda71d7099d5a2c7e555f3ae15": {
-      "ref": "spark-class-model://schema/shared/48ebfb13f904187d54fe933b80137009925655cda71d7099d5a2c7e555f3ae15",
+    "spark-class-model://model/UseFieldActionModeReturn/methods/chooseByMode/0": {
+      "ref": "spark-class-model://model/UseFieldActionModeReturn/methods/chooseByMode/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseFieldActionModeReturn",
+      "name": "chooseByMode",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/14d0876923a71f86de6f0a892ad0910397e17211b3765fc0afd388e7efa963d5",
+      "returnSchemaRef": "spark-class-model://schema/shared/eb26d8552c18b648790f3862d919045ad2391927b8892bf112a86ce4135b0dd2"
+    },
+    "spark-class-model://schema/shared/14d0876923a71f86de6f0a892ad0910397e17211b3765fc0afd388e7efa963d5": {
+      "ref": "spark-class-model://schema/shared/14d0876923a71f86de6f0a892ad0910397e17211b3765fc0afd388e7efa963d5",
       "kind": "schema",
       "schema": {
         "type": "object",
-        "title": "<T>(editableValue: T, readonlyValue: T) => ComputedRef<T>",
+        "properties": {
+          "editableValue": true,
+          "readonlyValue": true
+        },
+        "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/48ebfb13f904187d54fe933b80137009925655cda71d7099d5a2c7e555f3ae15"
+        "$id": "spark-class-model://schema/shared/14d0876923a71f86de6f0a892ad0910397e17211b3765fc0afd388e7efa963d5"
       }
     },
-    "spark-class-model://model/UseFieldActionModeReturn/attributes/chooseByMode/1": {
-      "ref": "spark-class-model://model/UseFieldActionModeReturn/attributes/chooseByMode/1",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/UseFieldActionModeReturn",
-      "name": "chooseByMode",
-      "schemaRef": "spark-class-model://schema/shared/48ebfb13f904187d54fe933b80137009925655cda71d7099d5a2c7e555f3ae15",
-      "readable": true,
-      "writable": true
+    "spark-class-model://schema/shared/eb26d8552c18b648790f3862d919045ad2391927b8892bf112a86ce4135b0dd2": {
+      "ref": "spark-class-model://schema/shared/eb26d8552c18b648790f3862d919045ad2391927b8892bf112a86ce4135b0dd2",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "ComputedRef<T>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/eb26d8552c18b648790f3862d919045ad2391927b8892bf112a86ce4135b0dd2"
+      }
     },
     "spark-class-model://model/UseFieldActionModeReturn": {
       "ref": "spark-class-model://model/UseFieldActionModeReturn",
@@ -127,10 +137,11 @@
       "className": "UseFieldActionModeReturn",
       "schemaRef": "spark-class-model://schema/UseFieldActionModeReturn",
       "attributeRefs": [
-        "spark-class-model://model/UseFieldActionModeReturn/attributes/actionMode/0",
-        "spark-class-model://model/UseFieldActionModeReturn/attributes/chooseByMode/1"
+        "spark-class-model://model/UseFieldActionModeReturn/attributes/actionMode/0"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UseFieldActionModeReturn/methods/chooseByMode/0"
+      ],
       "linkRefs": []
     }
   }

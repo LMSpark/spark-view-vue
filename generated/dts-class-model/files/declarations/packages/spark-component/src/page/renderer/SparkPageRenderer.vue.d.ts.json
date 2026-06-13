@@ -202,52 +202,126 @@
           "schema": true,
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "beforeLoad",
           "jsdoc": "页面加载前钩子（loadNodeProps 之前）",
-          "schema": {
-            "type": "object",
-            "title": "(pageId: string) => void | Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "pageId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         },
         {
           "name": "afterLoad",
           "jsdoc": "页面加载后钩子（applyNodeProps 之后）",
-          "schema": {
-            "type": "object",
-            "title": "(state: PageNodeRenderConfig) => void | Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "state",
+              "type": {
+                "type": "reference",
+                "name": "PageNodeRenderConfig"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         },
         {
           "name": "onError",
           "jsdoc": "错误处理函数",
-          "schema": {
-            "type": "object",
-            "title": "(error: Error) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "error",
+              "type": {
+                "type": "reference",
+                "name": "Error"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "onRuntimeError",
           "jsdoc": "运行时错误回调（供外层采集脚本编译/初始化/加载错误）。",
-          "schema": {
-            "type": "object",
-            "title": "(payload: PageRuntimeErrorPayload) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "payload",
+              "type": {
+                "type": "reference",
+                "name": "PageRuntimeErrorPayload",
+                "sourcePath": "declarations/packages/spark-component/src/page/renderer/SparkPageRenderer.vue.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.794Z",
+  "generatedAt": "2026-06-13T06:21:07.002Z",
   "$defs": {
     "PageRuntimeErrorPhase": {
       "type": "object",
@@ -298,23 +372,7 @@
           "type": "boolean"
         },
         "messageService": true,
-        "confirmService": true,
-        "beforeLoad": {
-          "type": "object",
-          "title": "(pageId: string) => void | Promise<void>"
-        },
-        "afterLoad": {
-          "type": "object",
-          "title": "(state: PageNodeRenderConfig) => void | Promise<void>"
-        },
-        "onError": {
-          "type": "object",
-          "title": "(error: Error) => void"
-        },
-        "onRuntimeError": {
-          "type": "object",
-          "title": "(payload: PageRuntimeErrorPayload) => void"
-        }
+        "confirmService": true
       }
     }
   }

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "protocol": "spark-appworks.dts-class-model.bundle",
-  "generatedAt": "2026-06-13T04:00:59.863Z",
+  "generatedAt": "2026-06-13T06:21:10.552Z",
   "scannedFileCount": 659,
   "files": {
     "declarations/packages/spark-ai/src/agent/business/ai-host.d.ts": {
@@ -680,6 +680,7 @@
           "DtsClassModelRuntimeLink",
           "DtsClassModelRuntimeAttribute",
           "DtsClassModelRuntimeMethod",
+          "DtsClassModelRuntimeConstructor",
           "DtsClassModelRuntimeModel",
           "DtsClassModelRuntimeSchemaRef",
           "DtsClassModelRuntimeRef",
@@ -734,6 +735,12 @@
         "symbols": [
           "DtsClassModelRuntimeLoaderOptions",
           "DtsClassModelRuntimeSchemaClosure",
+          "DtsClassModelRuntimeMethodContractQuery",
+          "DtsClassModelRuntimeAttributeContractQuery",
+          "DtsClassModelRuntimeConstructorContractQuery",
+          "DtsClassModelRuntimeConstructorContract",
+          "DtsClassModelRuntimeMethodContract",
+          "DtsClassModelRuntimeAttributeContract",
           "DtsClassModelRuntimeLoader"
         ]
       }
@@ -11834,6 +11841,10 @@
       "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
       "file": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
     },
+    "DtsClassModelRuntimeConstructor": {
+      "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
+      "file": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
+    },
     "DtsClassModelRuntimeModel": {
       "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
       "file": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
@@ -11883,6 +11894,30 @@
       "file": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
     },
     "DtsClassModelRuntimeSchemaClosure": {
+      "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
+      "file": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
+    },
+    "DtsClassModelRuntimeMethodContractQuery": {
+      "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
+      "file": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
+    },
+    "DtsClassModelRuntimeAttributeContractQuery": {
+      "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
+      "file": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
+    },
+    "DtsClassModelRuntimeConstructorContractQuery": {
+      "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
+      "file": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
+    },
+    "DtsClassModelRuntimeConstructorContract": {
+      "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
+      "file": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
+    },
+    "DtsClassModelRuntimeMethodContract": {
+      "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
+      "file": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
+    },
+    "DtsClassModelRuntimeAttributeContract": {
       "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
       "file": "files/declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
     },

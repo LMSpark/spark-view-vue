@@ -372,6 +372,16 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://schema/shared/f66b0cfb3c680ed9d3a261a878922bc038d5090e2c8879a0dd331f9916303431": {
+      "ref": "spark-class-model://schema/shared/f66b0cfb3c680ed9d3a261a878922bc038d5090e2c8879a0dd331f9916303431",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(row: DataRow) => boolean",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f66b0cfb3c680ed9d3a261a878922bc038d5090e2c8879a0dd331f9916303431"
+      }
+    },
     "spark-class-model://model/Props/attributes/isTableCellHidden/14": {
       "ref": "spark-class-model://model/Props/attributes/isTableCellHidden/14",
       "kind": "attribute",
@@ -380,6 +390,16 @@
       "schemaRef": "spark-class-model://schema/shared/f66b0cfb3c680ed9d3a261a878922bc038d5090e2c8879a0dd331f9916303431",
       "readable": true,
       "writable": false
+    },
+    "spark-class-model://schema/shared/5474285cba5ffdc63fa564c040ee97bbed63abc5d53618f8c4e89003bb2265a2": {
+      "ref": "spark-class-model://schema/shared/5474285cba5ffdc63fa564c040ee97bbed63abc5d53618f8c4e89003bb2265a2",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "(row: DataRow) => string",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5474285cba5ffdc63fa564c040ee97bbed63abc5d53618f8c4e89003bb2265a2"
+      }
     },
     "spark-class-model://model/Props/attributes/getTableCellDisplayValue/15": {
       "ref": "spark-class-model://model/Props/attributes/getTableCellDisplayValue/15",

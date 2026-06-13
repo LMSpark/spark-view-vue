@@ -720,9 +720,9 @@ function typeLiteralMethods(command: TypeLiteralMethodsCommand): MethodMeta[] {
   const { site, typeNode } = command
   const methods: MethodMeta[] = []
   for (const member of typeNode.members) {
-    const memberName = readMemberName(member.name)
-    if (memberName === undefined) continue
     if (ts.isMethodSignature(member)) {
+      const memberName = readMemberName(member.name)
+      if (memberName === undefined) continue
       methods.push(projectMethodSignature({
         site,
         memberName,
@@ -731,6 +731,8 @@ function typeLiteralMethods(command: TypeLiteralMethodsCommand): MethodMeta[] {
       continue
     }
     if (ts.isPropertySignature(member) && isFunctionPropertySignature(member)) {
+      const memberName = readMemberName(member.name)
+      if (memberName === undefined) continue
       methods.push(projectFunctionPropertySignature({
         site,
         memberName,

@@ -56,6 +56,64 @@
         "$id": "spark-class-model://schema/CrudDelegate"
       }
     },
+    "spark-class-model://model/CrudDelegate/constructors/0": {
+      "ref": "spark-class-model://model/CrudDelegate/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/CrudDelegate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e9dfb9c36ab321bbcf6f5e7684d6a3d29798775879a69b4da96d32b4226ade8b"
+    },
+    "spark-class-model://schema/shared/e9dfb9c36ab321bbcf6f5e7684d6a3d29798775879a69b4da96d32b4226ade8b": {
+      "ref": "spark-class-model://schema/shared/e9dfb9c36ab321bbcf6f5e7684d6a3d29798775879a69b4da96d32b4226ade8b",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "$ref": "spark-class-model://schema/DataView"
+          },
+          "emitCrudLifecycle": {
+            "$ref": "spark-class-model://schema/EmitCrudLifecycleFn"
+          },
+          "emitMutating": {
+            "$ref": "spark-class-model://schema/MutatingFn"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e9dfb9c36ab321bbcf6f5e7684d6a3d29798775879a69b4da96d32b4226ade8b"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FEmitCrudLifecycleFn": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FEmitCrudLifecycleFn",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudDelegate/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/EmitCrudLifecycleFn",
+      "targetClassName": "EmitCrudLifecycleFn",
+      "targetFile": "files/declarations/packages/spark-data/src/strategies/crud-delegate.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/EmitCrudLifecycleFn"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FMutatingFn": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FMutatingFn",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudDelegate/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/MutatingFn",
+      "targetClassName": "MutatingFn",
+      "targetFile": "files/declarations/packages/spark-data/src/strategies/crud-delegate.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/MutatingFn"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudDelegate/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/DataView",
+      "targetClassName": "DataView",
+      "targetFile": "files/declarations/packages/spark-data/src/data-view.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataView"
+    },
     "spark-class-model://model/CrudDelegate/methods/ensureCrudService/0": {
       "ref": "spark-class-model://model/CrudDelegate/methods/ensureCrudService/0",
       "kind": "method",
@@ -333,6 +391,7 @@
       "kind": "model",
       "className": "CrudDelegate",
       "schemaRef": "spark-class-model://schema/CrudDelegate",
+      "constructorRef": "spark-class-model://model/CrudDelegate/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/CrudDelegate/methods/ensureCrudService/0",
@@ -350,6 +409,9 @@
         "spark-class-model://model/CrudDelegate/methods/destroy/12"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FEmitCrudLifecycleFn",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FMutatingFn",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataView",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudDelegate%2Fmethods%2FensureCrudService%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FCrudService",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudDelegate%2Fmethods%2FgetCrudConfig%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudDelegate%2Fmethods%2Flist%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FQueryParams",

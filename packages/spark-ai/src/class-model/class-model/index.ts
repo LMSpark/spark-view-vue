@@ -92,6 +92,7 @@ export type {
   DtsClassModelBundleFileEntry,
   DtsClassModelRuntimeAttribute,
   DtsClassModelRuntimeClassEntry,
+  DtsClassModelRuntimeConstructor,
   DtsClassModelRuntimeFileEntry,
   DtsClassModelRuntimeLink,
   DtsClassModelRuntimeLinkRelation,
@@ -115,7 +116,14 @@ export type {
 } from './dts-class-model-bundle-loader'
 
 export type {
+  DtsClassModelRuntimeConstructorContract,
+  DtsClassModelRuntimeConstructorContractQuery,
+  DtsClassModelRuntimeAttributeContract,
+  DtsClassModelRuntimeAttributeContractQuery,
   DtsClassModelRuntimeLoaderOptions,
+  DtsClassModelRuntimeMethodContract,
+  DtsClassModelRuntimeMethodContractQuery,
+  DtsClassModelRuntimeSchemaClosure,
 } from './dts-class-model-runtime-loader'
 
 export type {

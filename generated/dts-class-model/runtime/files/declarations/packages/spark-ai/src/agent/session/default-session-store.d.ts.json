@@ -17,13 +17,24 @@
         "$id": "spark-class-model://schema/DefaultAiAgentSessionStoreOptions"
       }
     },
+    "spark-class-model://model/DefaultAiAgentSessionStoreOptions/methods/now/0": {
+      "ref": "spark-class-model://model/DefaultAiAgentSessionStoreOptions/methods/now/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DefaultAiAgentSessionStoreOptions",
+      "name": "now",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
+    },
     "spark-class-model://model/DefaultAiAgentSessionStoreOptions": {
       "ref": "spark-class-model://model/DefaultAiAgentSessionStoreOptions",
       "kind": "model",
       "className": "DefaultAiAgentSessionStoreOptions",
       "schemaRef": "spark-class-model://schema/DefaultAiAgentSessionStoreOptions",
       "attributeRefs": [],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/DefaultAiAgentSessionStoreOptions/methods/now/0"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/DefaultAiAgentSessionStore": {
@@ -35,6 +46,38 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/DefaultAiAgentSessionStore"
       }
+    },
+    "spark-class-model://model/DefaultAiAgentSessionStore/constructors/0": {
+      "ref": "spark-class-model://model/DefaultAiAgentSessionStore/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/DefaultAiAgentSessionStore",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3ab741d709694df4d15e29307b5f06fe588a1a71021bf359957e832d32268323"
+    },
+    "spark-class-model://schema/shared/3ab741d709694df4d15e29307b5f06fe588a1a71021bf359957e832d32268323": {
+      "ref": "spark-class-model://schema/shared/3ab741d709694df4d15e29307b5f06fe588a1a71021bf359957e832d32268323",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/DefaultAiAgentSessionStoreOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3ab741d709694df4d15e29307b5f06fe588a1a71021bf359957e832d32268323"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDefaultAiAgentSessionStore%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDefaultAiAgentSessionStoreOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDefaultAiAgentSessionStore%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDefaultAiAgentSessionStoreOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DefaultAiAgentSessionStore/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/DefaultAiAgentSessionStoreOptions",
+      "targetClassName": "DefaultAiAgentSessionStoreOptions",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/session/default-session-store.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DefaultAiAgentSessionStoreOptions"
     },
     "spark-class-model://model/DefaultAiAgentSessionStore/methods/startSession/0": {
       "ref": "spark-class-model://model/DefaultAiAgentSessionStore/methods/startSession/0",
@@ -304,6 +347,7 @@
       "kind": "model",
       "className": "DefaultAiAgentSessionStore",
       "schemaRef": "spark-class-model://schema/DefaultAiAgentSessionStore",
+      "constructorRef": "spark-class-model://model/DefaultAiAgentSessionStore/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/DefaultAiAgentSessionStore/methods/startSession/0",
@@ -315,6 +359,7 @@
         "spark-class-model://model/DefaultAiAgentSessionStore/methods/appendFunctionCall/6"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDefaultAiAgentSessionStore%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDefaultAiAgentSessionStoreOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDefaultAiAgentSessionStore%2Fmethods%2FstartSession%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDefaultAiAgentSessionStore%2Fmethods%2FstartSession%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentSessionRecord",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDefaultAiAgentSessionStore%2Fmethods%2FstopSession%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeContext",

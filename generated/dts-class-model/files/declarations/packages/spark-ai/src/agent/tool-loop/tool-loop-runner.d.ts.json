@@ -38,8 +38,66 @@
         "className": "AiAgentToolLoopInput",
         "declarationKind": "type"
       },
-      "attributes": [],
-      "methods": []
+      "attributes": [
+        {
+          "name": "registration",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentRegistration<TInput>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "scope",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentScope"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "request",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentChatRequest"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "turn",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTurnMeta"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "clearSelected",
+          "jsdoc": "清除 session 选中缓存（业务切换时由 session 层传入）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "AiAgentToolLoopRunner": {
       "kind": "AiAgentToolLoopRunner",
@@ -74,7 +132,20 @@
               }
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "callbacks": {
+              "type": "object",
+              "title": "AiAgentTurnCallbacks"
+            },
+            "maxToolRounds": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -108,17 +179,49 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/AiAgentToolLoopInput",
+                "title": "AiAgentToolLoopInput<TInput>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.570Z",
+  "generatedAt": "2026-06-13T06:21:06.594Z",
   "$defs": {
     "AiAgentToolLoopInput": {
       "type": "object",
       "title": "AiAgentToolLoopInput",
-      "description": "工具循环的输入参数"
+      "description": "工具循环的输入参数",
+      "properties": {
+        "registration": {
+          "type": "object",
+          "title": "AiAgentRegistration<TInput>"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "request": {
+          "type": "object",
+          "title": "AiAgentChatRequest"
+        },
+        "turn": {
+          "type": "object",
+          "title": "AiAgentTurnMeta"
+        }
+      }
     },
     "AiAgentToolLoopRunner": {
       "type": "object",

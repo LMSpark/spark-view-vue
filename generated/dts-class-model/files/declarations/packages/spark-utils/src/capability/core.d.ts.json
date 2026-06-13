@@ -80,7 +80,20 @@
               ]
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "reader": {
+              "$ref": "#/$defs/CapabilityReader",
+              "title": "CapabilityReader<T>"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -127,7 +140,15 @@
                 "value": null
               }
             ]
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "toString",
@@ -137,6 +158,14 @@
           "type": {
             "type": "intrinsic",
             "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
           }
         }
       ]
@@ -246,7 +275,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.901Z",
+  "generatedAt": "2026-06-13T06:21:07.169Z",
   "$defs": {
     "CapabilityReader": {
       "type": "object",

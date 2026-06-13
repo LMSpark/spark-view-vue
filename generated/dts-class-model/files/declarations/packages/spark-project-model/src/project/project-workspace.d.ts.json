@@ -378,56 +378,6 @@
           "writable": true
         },
         {
-          "name": "getPageFilesApi",
-          "jsdoc": "get Page Files Api 回调。",
-          "schema": {
-            "type": "object",
-            "title": "() => string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "getNavigationApi",
-          "jsdoc": "get Navigation Api 回调。",
-          "schema": {
-            "type": "object",
-            "title": "() => string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "getProjectsApi",
-          "jsdoc": "get Projects Api 回调。",
-          "schema": {
-            "type": "object",
-            "title": "() => string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "getProjectNavigationApi",
-          "jsdoc": "get Project Navigation Api 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(projectId: string) => string"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "getHeaders",
-          "jsdoc": "get Headers 回调。",
-          "schema": {
-            "type": "object",
-            "title": "() => Record<string, string>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "fileStorage",
           "jsdoc": "file Storage 字段。",
           "schema": {
@@ -438,7 +388,102 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "getPageFilesApi",
+          "jsdoc": "get Page Files Api 回调。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "getNavigationApi",
+          "jsdoc": "get Navigation Api 回调。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "getProjectsApi",
+          "jsdoc": "get Projects Api 回调。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "getProjectNavigationApi",
+          "jsdoc": "get Project Navigation Api 回调。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "projectId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "getHeaders",
+          "jsdoc": "get Headers 回调。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, string>"
+          }
+        }
+      ]
     },
     "ProjectWorkspace": {
       "kind": "ProjectWorkspace",
@@ -464,7 +509,16 @@
               "sourcePath": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/ProjectWorkspaceOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -496,6 +550,22 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "PageNodeLike"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -512,6 +582,15 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectModelData>"
           }
         },
         {
@@ -540,6 +619,23 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "root": {
+                "type": "object",
+                "title": "ProjectModelData"
+              },
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectModelData"
           }
         },
         {
@@ -575,6 +671,22 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              },
+              "options": {
+                "$ref": "#/$defs/ProjectPageLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -603,6 +715,19 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "$ref": "#/$defs/ProjectPageLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -630,6 +755,19 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -657,6 +795,19 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -685,6 +836,19 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "$ref": "#/$defs/ProjectPageLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -720,6 +884,23 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "object",
+                "title": "PageNodeFileName"
+              },
+              "options": {
+                "$ref": "#/$defs/ProjectPageLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -744,6 +925,20 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "object",
+                "title": "PageNodeFileName"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -760,6 +955,15 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -776,6 +980,15 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -800,6 +1013,19 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectNodeData>"
           }
         },
         {
@@ -833,6 +1059,19 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectNodeData | null>"
           }
         },
         {
@@ -859,6 +1098,19 @@
                 "sourcePath": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/CreatePageForSelectedNodeParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageNodeCreateMountedResult>"
           }
         },
         {
@@ -885,6 +1137,19 @@
                 "sourcePath": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/CreateMountedPageParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageNodeCreateMountedResult>"
           }
         },
         {
@@ -920,6 +1185,19 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/CreatePageFilesParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<Record<string, unknown>>"
           }
         },
         {
@@ -944,6 +1222,19 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -970,6 +1261,19 @@
                 "sourcePath": "declarations/packages/spark-project-model/src/project/project-workspace.d.ts"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "$ref": "#/$defs/RemoveMountedPageParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageNodeRemoveMountedResult>"
           }
         },
         {
@@ -1017,6 +1321,32 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              },
+              "newParentId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectNodeData>"
           }
         },
         {
@@ -1044,6 +1374,20 @@
                 }
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "filename": {
+                "type": "object",
+                "title": "PageNodeFileName"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageNodeFileVersionSummary[]>"
           }
         },
         {
@@ -1075,6 +1419,23 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "number"
+              },
+              "filename": {
+                "type": "object",
+                "title": "PageNodeFileName"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -1099,6 +1460,20 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "filename": {
+                "type": "object",
+                "title": "PageNodeFileName"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -1130,6 +1505,23 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "number"
+              },
+              "filename": {
+                "type": "object",
+                "title": "PageNodeFileName"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -1172,7 +1564,43 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              },
+              "filename": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "PageNodeFileName"
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "__created"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "__deleted"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "__bulk"
+                    ]
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "probeLink",
@@ -1196,6 +1624,19 @@
                 "name": "{\n        embeddable: boolean;\n        reason: string;\n    }"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<{\n        embeddable: boolean;\n        reason: string;\n    }>"
           }
         },
         {
@@ -1215,6 +1656,15 @@
                 }
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectSummary[]>"
           }
         },
         {
@@ -1242,12 +1692,25 @@
                 }
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectPageReference[]>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.899Z",
+  "generatedAt": "2026-06-13T06:21:07.167Z",
   "$defs": {
     "ProjectPageLoadOptions": {
       "type": "object",
@@ -1384,26 +1847,6 @@
         "http": {
           "type": "object",
           "title": "HttpClientBase"
-        },
-        "getPageFilesApi": {
-          "type": "object",
-          "title": "() => string"
-        },
-        "getNavigationApi": {
-          "type": "object",
-          "title": "() => string"
-        },
-        "getProjectsApi": {
-          "type": "object",
-          "title": "() => string"
-        },
-        "getProjectNavigationApi": {
-          "type": "object",
-          "title": "(projectId: string) => string"
-        },
-        "getHeaders": {
-          "type": "object",
-          "title": "() => Record<string, string>"
         },
         "fileStorage": {
           "type": "object",

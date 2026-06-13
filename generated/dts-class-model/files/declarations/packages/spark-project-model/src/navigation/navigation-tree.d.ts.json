@@ -201,10 +201,30 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "toNodeData",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectNodeData"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.879Z",
+  "generatedAt": "2026-06-13T06:21:07.134Z",
   "$defs": {
     "NormalizeNavRootInput": {
       "type": "object",

@@ -88,7 +88,27 @@
         "className": "AiNativePathContext",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "segments",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "host",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentRuntimeHostContext"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiApiScriptContextCommand": {
@@ -110,7 +130,44 @@
         "className": "AiApiScriptContextCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "instance",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "api",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiApiObjectMetadata"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "ctx",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiNativePathContext"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "validateOptions",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchemaValidateOptions"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ExecuteAiApiActionCommand": {
@@ -132,7 +189,53 @@
         "className": "ExecuteAiApiActionCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "target",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "action",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiApiActionMetadata"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "args",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ScriptActionArg"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "ctx",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiNativePathContext"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "validateOptions",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchemaValidateOptions"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiApiScriptActionFailure": {
@@ -178,7 +281,20 @@
               ]
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "actionName": {
+              "type": "string"
+            },
+            "result": {
+              "type": "object",
+              "title": "AiAgentToolResult<unknown>"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -204,7 +320,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.562Z",
+  "generatedAt": "2026-06-13T06:21:06.574Z",
   "$defs": {
     "ScriptCallback": {
       "type": "object",
@@ -219,17 +335,57 @@
     "AiNativePathContext": {
       "type": "object",
       "title": "AiNativePathContext",
-      "description": "Ai Native Path Context 的运行上下文。"
+      "description": "Ai Native Path Context 的运行上下文。",
+      "properties": {
+        "segments": {
+          "type": "array"
+        },
+        "host": {
+          "type": "object",
+          "title": "AiAgentRuntimeHostContext"
+        }
+      }
     },
     "AiApiScriptContextCommand": {
       "type": "object",
       "title": "AiApiScriptContextCommand",
-      "description": "Ai Api Script Context Command 的命令参数。"
+      "description": "Ai Api Script Context Command 的命令参数。",
+      "properties": {
+        "instance": true,
+        "api": {
+          "type": "object",
+          "title": "AiApiObjectMetadata"
+        },
+        "ctx": {
+          "$ref": "#/$defs/AiNativePathContext"
+        },
+        "validateOptions": {
+          "type": "object",
+          "title": "AiJsonSchemaValidateOptions"
+        }
+      }
     },
     "ExecuteAiApiActionCommand": {
       "type": "object",
       "title": "ExecuteAiApiActionCommand",
-      "description": "Execute Ai Api Action Command 的命令参数。"
+      "description": "Execute Ai Api Action Command 的命令参数。",
+      "properties": {
+        "target": true,
+        "action": {
+          "type": "object",
+          "title": "AiApiActionMetadata"
+        },
+        "args": {
+          "$ref": "#/$defs/ScriptActionArg"
+        },
+        "ctx": {
+          "$ref": "#/$defs/AiNativePathContext"
+        },
+        "validateOptions": {
+          "type": "object",
+          "title": "AiJsonSchemaValidateOptions"
+        }
+      }
     },
     "AiApiScriptActionFailure": {
       "type": "object",

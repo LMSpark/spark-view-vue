@@ -195,16 +195,6 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730": {
-      "ref": "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "Record<string, string>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730"
-      }
-    },
     "spark-class-model://model/RButtonProps/attributes/inheritFieldMap/5": {
       "ref": "spark-class-model://model/RButtonProps/attributes/inheritFieldMap/5",
       "kind": "attribute",

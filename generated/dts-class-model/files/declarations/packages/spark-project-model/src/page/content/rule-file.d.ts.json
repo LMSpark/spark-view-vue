@@ -40,7 +40,16 @@
               "name": "string"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "pageId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -72,6 +81,14 @@
           "type": {
             "type": "intrinsic",
             "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
           }
         },
         {
@@ -90,7 +107,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "loadText",
@@ -108,7 +135,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "markSaved",
@@ -118,7 +155,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "getTree",
@@ -128,6 +171,15 @@
           "type": {
             "type": "reference",
             "name": "SparkNodeTree"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "SparkNodeTreeModel"
           }
         },
         {
@@ -146,7 +198,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tree": {
+                "type": "object",
+                "title": "SparkNodeTreeModel"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "editTree",
@@ -203,6 +266,20 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "run": {
+                "type": "object",
+                "title": "(tree: SparkNodeTreeModel) => void | Promise<void>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -213,6 +290,14 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -223,12 +308,20 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.885Z",
+  "generatedAt": "2026-06-13T06:21:07.149Z",
   "$defs": {
     "PageRuleFile": {
       "type": "object",

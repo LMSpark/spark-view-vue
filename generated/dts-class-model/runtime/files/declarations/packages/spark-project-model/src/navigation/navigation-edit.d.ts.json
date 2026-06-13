@@ -697,6 +697,39 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://model/NavigationNodePatchTarget/methods/applyNavigationPatch/0": {
+      "ref": "spark-class-model://model/NavigationNodePatchTarget/methods/applyNavigationPatch/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationNodePatchTarget",
+      "name": "applyNavigationPatch",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0af1fbe165087ce5fc0fe6eb727214fc17e345c89c03c455060c1d7302a83e93"
+    },
+    "spark-class-model://schema/shared/0af1fbe165087ce5fc0fe6eb727214fc17e345c89c03c455060c1d7302a83e93": {
+      "ref": "spark-class-model://schema/shared/0af1fbe165087ce5fc0fe6eb727214fc17e345c89c03c455060c1d7302a83e93",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "patch": {
+            "$ref": "spark-class-model://schema/ProjectNodeNavigationPatch"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/0af1fbe165087ce5fc0fe6eb727214fc17e345c89c03c455060c1d7302a83e93"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationNodePatchTarget%2Fmethods%2FapplyNavigationPatch%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationNodePatchTarget%2Fmethods%2FapplyNavigationPatch%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavigationNodePatchTarget/methods/applyNavigationPatch/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/ProjectNodeNavigationPatch",
+      "targetClassName": "ProjectNodeNavigationPatch",
+      "targetFile": "files/declarations/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeNavigationPatch"
+    },
     "spark-class-model://model/NavigationNodePatchTarget": {
       "ref": "spark-class-model://model/NavigationNodePatchTarget",
       "kind": "model",
@@ -705,8 +738,12 @@
       "attributeRefs": [
         "spark-class-model://model/NavigationNodePatchTarget/attributes/id/0"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/NavigationNodePatchTarget/methods/applyNavigationPatch/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationNodePatchTarget%2Fmethods%2FapplyNavigationPatch%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch"
+      ]
     }
   }
 }

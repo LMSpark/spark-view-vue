@@ -72,14 +72,6 @@
           "primaryAction": {
             "$ref": "spark-class-model://schema/ValueRef",
             "title": "ValueRef<'select' | 'view'>"
-          },
-          "selectEntities": {
-            "type": "object",
-            "title": "(options: {\n        /** 选择器标题。 */\n        title: string;\n        /** 选择器展示的实体名称。 */\n        entityName: string;\n        /** 搜索框或空值占位文本。 */\n        placeholder: string;\n        /** 是否允许多选。 */\n        multiple: boolean;\n        /** 是否允许搜索。 */\n        searchable: boolean;\n        /** 打开选择器前的当前值。 */\n        currentValue: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string;\n        /** 当前可选实体集合。 */\n        options: Array<{\n            label: string;\n            value: PageSelectorOption['value'];\n            disabled?: boolean;\n        }>;\n    }) => Promise<Array<{\n        label: string;\n        value: PageSelectorOption['value'];\n    }>>"
-          },
-          "updateValue": {
-            "type": "object",
-            "title": "(value: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string) => void | Promise<void>"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -471,43 +463,48 @@
       "targetFile": "files/declarations/packages/spark-component/src/components/shared-types.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/ValueRef"
     },
-    "spark-class-model://schema/shared/44d012555e52080f76883756d6f113afcdc0900175a973b74fce4f4fefd8e3ba": {
-      "ref": "spark-class-model://schema/shared/44d012555e52080f76883756d6f113afcdc0900175a973b74fce4f4fefd8e3ba",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(options: {\n        /** 选择器标题。 */\n        title: string;\n        /** 选择器展示的实体名称。 */\n        entityName: string;\n        /** 搜索框或空值占位文本。 */\n        placeholder: string;\n        /** 是否允许多选。 */\n        multiple: boolean;\n        /** 是否允许搜索。 */\n        searchable: boolean;\n        /** 打开选择器前的当前值。 */\n        currentValue: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string;\n        /** 当前可选实体集合。 */\n        options: Array<{\n            label: string;\n            value: PageSelectorOption['value'];\n            disabled?: boolean;\n        }>;\n    }) => Promise<Array<{\n        label: string;\n        value: PageSelectorOption['value'];\n    }>>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/44d012555e52080f76883756d6f113afcdc0900175a973b74fce4f4fefd8e3ba"
-      }
-    },
-    "spark-class-model://model/UseEntityPickerStateOptions/attributes/selectEntities/15": {
-      "ref": "spark-class-model://model/UseEntityPickerStateOptions/attributes/selectEntities/15",
-      "kind": "attribute",
+    "spark-class-model://model/UseEntityPickerStateOptions/methods/selectEntities/0": {
+      "ref": "spark-class-model://model/UseEntityPickerStateOptions/methods/selectEntities/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseEntityPickerStateOptions",
       "name": "selectEntities",
-      "schemaRef": "spark-class-model://schema/shared/44d012555e52080f76883756d6f113afcdc0900175a973b74fce4f4fefd8e3ba",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/cc433b9929a1657135eebaa95fc21a2353efa0ceb1f9738cf7014d3d8a573e58",
+      "returnSchemaRef": "spark-class-model://schema/shared/6400e73cc2189e4e9bc01df174f684864c3cab636c89369c7452b58a60285056"
     },
-    "spark-class-model://schema/shared/e774713166da48758085ff4aa549605565a9668dc2508471554e036f2d935d3b": {
-      "ref": "spark-class-model://schema/shared/e774713166da48758085ff4aa549605565a9668dc2508471554e036f2d935d3b",
+    "spark-class-model://schema/shared/cc433b9929a1657135eebaa95fc21a2353efa0ceb1f9738cf7014d3d8a573e58": {
+      "ref": "spark-class-model://schema/shared/cc433b9929a1657135eebaa95fc21a2353efa0ceb1f9738cf7014d3d8a573e58",
       "kind": "schema",
       "schema": {
         "type": "object",
-        "title": "(value: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string) => void | Promise<void>",
+        "properties": {
+          "options": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/e774713166da48758085ff4aa549605565a9668dc2508471554e036f2d935d3b"
+        "$id": "spark-class-model://schema/shared/cc433b9929a1657135eebaa95fc21a2353efa0ceb1f9738cf7014d3d8a573e58"
       }
     },
-    "spark-class-model://model/UseEntityPickerStateOptions/attributes/updateValue/16": {
-      "ref": "spark-class-model://model/UseEntityPickerStateOptions/attributes/updateValue/16",
-      "kind": "attribute",
+    "spark-class-model://schema/shared/6400e73cc2189e4e9bc01df174f684864c3cab636c89369c7452b58a60285056": {
+      "ref": "spark-class-model://schema/shared/6400e73cc2189e4e9bc01df174f684864c3cab636c89369c7452b58a60285056",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<Array<{\n        label: string;\n        value: PageSelectorOption['value'];\n    }>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6400e73cc2189e4e9bc01df174f684864c3cab636c89369c7452b58a60285056"
+      }
+    },
+    "spark-class-model://model/UseEntityPickerStateOptions/methods/updateValue/1": {
+      "ref": "spark-class-model://model/UseEntityPickerStateOptions/methods/updateValue/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseEntityPickerStateOptions",
       "name": "updateValue",
-      "schemaRef": "spark-class-model://schema/shared/e774713166da48758085ff4aa549605565a9668dc2508471554e036f2d935d3b",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
     },
     "spark-class-model://model/UseEntityPickerStateOptions": {
       "ref": "spark-class-model://model/UseEntityPickerStateOptions",
@@ -529,11 +526,12 @@
         "spark-class-model://model/UseEntityPickerStateOptions/attributes/currentRawStringValue/11",
         "spark-class-model://model/UseEntityPickerStateOptions/attributes/isCurrentFieldEditable/12",
         "spark-class-model://model/UseEntityPickerStateOptions/attributes/hasSelectorCapability/13",
-        "spark-class-model://model/UseEntityPickerStateOptions/attributes/primaryAction/14",
-        "spark-class-model://model/UseEntityPickerStateOptions/attributes/selectEntities/15",
-        "spark-class-model://model/UseEntityPickerStateOptions/attributes/updateValue/16"
+        "spark-class-model://model/UseEntityPickerStateOptions/attributes/primaryAction/14"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UseEntityPickerStateOptions/methods/selectEntities/0",
+        "spark-class-model://model/UseEntityPickerStateOptions/methods/updateValue/1"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseEntityPickerStateOptions%2Fattributes%2FbuttonText%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseEntityPickerStateOptions%2Fattributes%2FreadonlyButtonText%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",

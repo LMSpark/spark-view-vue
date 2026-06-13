@@ -178,14 +178,150 @@
         "$id": "spark-class-model://schema/NavigationActionRegistry"
       }
     },
+    "spark-class-model://model/NavigationActionRegistry/methods/register/0": {
+      "ref": "spark-class-model://model/NavigationActionRegistry/methods/register/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationActionRegistry",
+      "name": "register",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/23b3eb7657334e9a149bd454b49aaad1b41816297c0bf75e00903778ba488f74",
+      "returnSchemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839"
+    },
+    "spark-class-model://schema/shared/23b3eb7657334e9a149bd454b49aaad1b41816297c0bf75e00903778ba488f74": {
+      "ref": "spark-class-model://schema/shared/23b3eb7657334e9a149bd454b49aaad1b41816297c0bf75e00903778ba488f74",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "handler": {
+            "$ref": "spark-class-model://schema/NavigationActionHandler"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/23b3eb7657334e9a149bd454b49aaad1b41816297c0bf75e00903778ba488f74"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationActionRegistry%2Fmethods%2Fregister%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationActionHandler": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationActionRegistry%2Fmethods%2Fregister%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationActionHandler",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavigationActionRegistry/methods/register/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/NavigationActionHandler",
+      "targetClassName": "NavigationActionHandler",
+      "targetFile": "files/declarations/packages/spark-app/src/navigation/action-registry.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavigationActionHandler"
+    },
+    "spark-class-model://model/NavigationActionRegistry/methods/unregister/1": {
+      "ref": "spark-class-model://model/NavigationActionRegistry/methods/unregister/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationActionRegistry",
+      "name": "unregister",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/6cf369fdb08e563b805efc570959b943ee14a437ec2e6353ed3a99815f9a7fd1",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://schema/shared/6cf369fdb08e563b805efc570959b943ee14a437ec2e6353ed3a99815f9a7fd1": {
+      "ref": "spark-class-model://schema/shared/6cf369fdb08e563b805efc570959b943ee14a437ec2e6353ed3a99815f9a7fd1",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6cf369fdb08e563b805efc570959b943ee14a437ec2e6353ed3a99815f9a7fd1"
+      }
+    },
+    "spark-class-model://model/NavigationActionRegistry/methods/has/2": {
+      "ref": "spark-class-model://model/NavigationActionRegistry/methods/has/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationActionRegistry",
+      "name": "has",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/6cf369fdb08e563b805efc570959b943ee14a437ec2e6353ed3a99815f9a7fd1",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://model/NavigationActionRegistry/methods/execute/3": {
+      "ref": "spark-class-model://model/NavigationActionRegistry/methods/execute/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationActionRegistry",
+      "name": "execute",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/396a16f525671810c647d950179551d493007acaf89c1115c365a1f70b3e2467",
+      "returnSchemaRef": "spark-class-model://schema/shared/2eace0f0f7d07333322b498cb46261125daca0579dab53d3ca347f749df86775"
+    },
+    "spark-class-model://schema/shared/396a16f525671810c647d950179551d493007acaf89c1115c365a1f70b3e2467": {
+      "ref": "spark-class-model://schema/shared/396a16f525671810c647d950179551d493007acaf89c1115c365a1f70b3e2467",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "context": {
+            "type": "object",
+            "title": "Omit<NavigationActionContext, 'command'>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/396a16f525671810c647d950179551d493007acaf89c1115c365a1f70b3e2467"
+      }
+    },
+    "spark-class-model://schema/shared/2eace0f0f7d07333322b498cb46261125daca0579dab53d3ca347f749df86775": {
+      "ref": "spark-class-model://schema/shared/2eace0f0f7d07333322b498cb46261125daca0579dab53d3ca347f749df86775",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<boolean>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/2eace0f0f7d07333322b498cb46261125daca0579dab53d3ca347f749df86775"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationActionRegistry%2Fmethods%2Fexecute%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationActionContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationActionRegistry%2Fmethods%2Fexecute%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationActionContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavigationActionRegistry/methods/execute/3",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/NavigationActionContext",
+      "targetClassName": "NavigationActionContext",
+      "targetFile": "files/declarations/packages/spark-app/src/navigation/action-registry.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/NavigationActionContext"
+    },
+    "spark-class-model://model/NavigationActionRegistry/methods/getCommands/4": {
+      "ref": "spark-class-model://model/NavigationActionRegistry/methods/getCommands/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationActionRegistry",
+      "name": "getCommands",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/681004346c78d5f384b654c986b4eda8fea28010db3be7da70b19aa0080f3ff9"
+    },
     "spark-class-model://model/NavigationActionRegistry": {
       "ref": "spark-class-model://model/NavigationActionRegistry",
       "kind": "model",
       "className": "NavigationActionRegistry",
       "schemaRef": "spark-class-model://schema/NavigationActionRegistry",
       "attributeRefs": [],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/NavigationActionRegistry/methods/register/0",
+        "spark-class-model://model/NavigationActionRegistry/methods/unregister/1",
+        "spark-class-model://model/NavigationActionRegistry/methods/has/2",
+        "spark-class-model://model/NavigationActionRegistry/methods/execute/3",
+        "spark-class-model://model/NavigationActionRegistry/methods/getCommands/4"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationActionRegistry%2Fmethods%2Fregister%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationActionHandler",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationActionRegistry%2Fmethods%2Fexecute%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FNavigationActionContext"
+      ]
     }
   }
 }

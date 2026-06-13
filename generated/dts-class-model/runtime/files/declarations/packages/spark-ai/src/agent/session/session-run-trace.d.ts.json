@@ -18,16 +18,150 @@
       "schema": {
         "type": "object",
         "title": "AiAgentRunTraceToolCall",
+        "properties": {
+          "toolName": {
+            "type": "string"
+          },
+          "argsPreview": {
+            "type": "string"
+          },
+          "turnId": {
+            "type": "string"
+          },
+          "round": {
+            "type": "number"
+          },
+          "callId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "success"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              }
+            ]
+          },
+          "resultSummary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "durationMs": {
+            "type": "number"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiAgentRunTraceToolCall"
       }
+    },
+    "spark-class-model://model/AiAgentRunTraceToolCall/attributes/toolName/0": {
+      "ref": "spark-class-model://model/AiAgentRunTraceToolCall/attributes/toolName/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceToolCall",
+      "name": "toolName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceToolCall/attributes/argsPreview/1": {
+      "ref": "spark-class-model://model/AiAgentRunTraceToolCall/attributes/argsPreview/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceToolCall",
+      "name": "argsPreview",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceToolCall/attributes/turnId/2": {
+      "ref": "spark-class-model://model/AiAgentRunTraceToolCall/attributes/turnId/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceToolCall",
+      "name": "turnId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceToolCall/attributes/round/3": {
+      "ref": "spark-class-model://model/AiAgentRunTraceToolCall/attributes/round/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceToolCall",
+      "name": "round",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceToolCall/attributes/callId/4": {
+      "ref": "spark-class-model://model/AiAgentRunTraceToolCall/attributes/callId/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceToolCall",
+      "name": "callId",
+      "schemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceToolCall/attributes/status/5": {
+      "ref": "spark-class-model://model/AiAgentRunTraceToolCall/attributes/status/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceToolCall",
+      "name": "status",
+      "schemaRef": "spark-class-model://schema/shared/df8535c7b20e8e0a68a672295ed02a894941831fe734dddcf5b1f71647ab1c9b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceToolCall/attributes/resultSummary/6": {
+      "ref": "spark-class-model://model/AiAgentRunTraceToolCall/attributes/resultSummary/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceToolCall",
+      "name": "resultSummary",
+      "schemaRef": "spark-class-model://schema/shared/f090cb615c84d7324e2e4975c584267473e030c801e11713a3ec1d99192db7bd",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceToolCall/attributes/durationMs/7": {
+      "ref": "spark-class-model://model/AiAgentRunTraceToolCall/attributes/durationMs/7",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceToolCall",
+      "name": "durationMs",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
     },
     "spark-class-model://model/AiAgentRunTraceToolCall": {
       "ref": "spark-class-model://model/AiAgentRunTraceToolCall",
       "kind": "model",
       "className": "AiAgentRunTraceToolCall",
       "schemaRef": "spark-class-model://schema/AiAgentRunTraceToolCall",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentRunTraceToolCall/attributes/toolName/0",
+        "spark-class-model://model/AiAgentRunTraceToolCall/attributes/argsPreview/1",
+        "spark-class-model://model/AiAgentRunTraceToolCall/attributes/turnId/2",
+        "spark-class-model://model/AiAgentRunTraceToolCall/attributes/round/3",
+        "spark-class-model://model/AiAgentRunTraceToolCall/attributes/callId/4",
+        "spark-class-model://model/AiAgentRunTraceToolCall/attributes/status/5",
+        "spark-class-model://model/AiAgentRunTraceToolCall/attributes/resultSummary/6",
+        "spark-class-model://model/AiAgentRunTraceToolCall/attributes/durationMs/7"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },
@@ -37,16 +171,58 @@
       "schema": {
         "type": "object",
         "title": "AiAgentRunTraceReasoning",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "turnId": {
+            "type": "string"
+          },
+          "collapsed": {
+            "type": "boolean"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiAgentRunTraceReasoning"
       }
+    },
+    "spark-class-model://model/AiAgentRunTraceReasoning/attributes/text/0": {
+      "ref": "spark-class-model://model/AiAgentRunTraceReasoning/attributes/text/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceReasoning",
+      "name": "text",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceReasoning/attributes/turnId/1": {
+      "ref": "spark-class-model://model/AiAgentRunTraceReasoning/attributes/turnId/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceReasoning",
+      "name": "turnId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceReasoning/attributes/collapsed/2": {
+      "ref": "spark-class-model://model/AiAgentRunTraceReasoning/attributes/collapsed/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceReasoning",
+      "name": "collapsed",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
     },
     "spark-class-model://model/AiAgentRunTraceReasoning": {
       "ref": "spark-class-model://model/AiAgentRunTraceReasoning",
       "kind": "model",
       "className": "AiAgentRunTraceReasoning",
       "schemaRef": "spark-class-model://schema/AiAgentRunTraceReasoning",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentRunTraceReasoning/attributes/text/0",
+        "spark-class-model://model/AiAgentRunTraceReasoning/attributes/turnId/1",
+        "spark-class-model://model/AiAgentRunTraceReasoning/attributes/collapsed/2"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },
@@ -75,16 +251,97 @@
       "schema": {
         "type": "object",
         "title": "AiAgentRunTraceSnapshot",
+        "properties": {
+          "streamText": {
+            "type": "string"
+          },
+          "reasoningText": {
+            "type": "string"
+          },
+          "isStreaming": {
+            "type": "boolean"
+          },
+          "isReasoning": {
+            "type": "boolean"
+          },
+          "entries": {
+            "type": "array"
+          },
+          "toolCalls": {
+            "type": "array"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiAgentRunTraceSnapshot"
       }
+    },
+    "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/streamText/0": {
+      "ref": "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/streamText/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceSnapshot",
+      "name": "streamText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/reasoningText/1": {
+      "ref": "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/reasoningText/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceSnapshot",
+      "name": "reasoningText",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/isStreaming/2": {
+      "ref": "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/isStreaming/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceSnapshot",
+      "name": "isStreaming",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/isReasoning/3": {
+      "ref": "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/isReasoning/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceSnapshot",
+      "name": "isReasoning",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/entries/4": {
+      "ref": "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/entries/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceSnapshot",
+      "name": "entries",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/toolCalls/5": {
+      "ref": "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/toolCalls/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceSnapshot",
+      "name": "toolCalls",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
     },
     "spark-class-model://model/AiAgentRunTraceSnapshot": {
       "ref": "spark-class-model://model/AiAgentRunTraceSnapshot",
       "kind": "model",
       "className": "AiAgentRunTraceSnapshot",
       "schemaRef": "spark-class-model://schema/AiAgentRunTraceSnapshot",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/streamText/0",
+        "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/reasoningText/1",
+        "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/isStreaming/2",
+        "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/isReasoning/3",
+        "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/entries/4",
+        "spark-class-model://model/AiAgentRunTraceSnapshot/attributes/toolCalls/5"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },
@@ -94,17 +351,57 @@
       "schema": {
         "type": "object",
         "title": "AiAgentRunTraceOptions",
+        "properties": {
+          "argsPreviewLimit": {
+            "type": "number"
+          },
+          "resultPreviewLimit": {
+            "type": "number"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiAgentRunTraceOptions"
       }
+    },
+    "spark-class-model://model/AiAgentRunTraceOptions/attributes/argsPreviewLimit/0": {
+      "ref": "spark-class-model://model/AiAgentRunTraceOptions/attributes/argsPreviewLimit/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceOptions",
+      "name": "argsPreviewLimit",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentRunTraceOptions/attributes/resultPreviewLimit/1": {
+      "ref": "spark-class-model://model/AiAgentRunTraceOptions/attributes/resultPreviewLimit/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceOptions",
+      "name": "resultPreviewLimit",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentRunTraceOptions/methods/now/0": {
+      "ref": "spark-class-model://model/AiAgentRunTraceOptions/methods/now/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRunTraceOptions",
+      "name": "now",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
     "spark-class-model://model/AiAgentRunTraceOptions": {
       "ref": "spark-class-model://model/AiAgentRunTraceOptions",
       "kind": "model",
       "className": "AiAgentRunTraceOptions",
       "schemaRef": "spark-class-model://schema/AiAgentRunTraceOptions",
-      "attributeRefs": [],
-      "methodRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentRunTraceOptions/attributes/argsPreviewLimit/0",
+        "spark-class-model://model/AiAgentRunTraceOptions/attributes/resultPreviewLimit/1"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/AiAgentRunTraceOptions/methods/now/0"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/AiAgentRunTraceListener": {
@@ -136,14 +433,285 @@
         "$id": "spark-class-model://schema/AiAgentRunTrace"
       }
     },
+    "spark-class-model://model/AiAgentRunTrace/methods/snapshot/0": {
+      "ref": "spark-class-model://model/AiAgentRunTrace/methods/snapshot/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRunTrace",
+      "name": "snapshot",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/764b9b61cfeaffec4062a19f9a056afed2831d4936e4fc7a6be01f2eff0894f6"
+    },
+    "spark-class-model://schema/shared/764b9b61cfeaffec4062a19f9a056afed2831d4936e4fc7a6be01f2eff0894f6": {
+      "ref": "spark-class-model://schema/shared/764b9b61cfeaffec4062a19f9a056afed2831d4936e4fc7a6be01f2eff0894f6",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentRunTraceSnapshot",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/764b9b61cfeaffec4062a19f9a056afed2831d4936e4fc7a6be01f2eff0894f6"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTrace%2Fmethods%2Fsnapshot%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTraceSnapshot": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTrace%2Fmethods%2Fsnapshot%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTraceSnapshot",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentRunTrace/methods/snapshot/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentRunTraceSnapshot",
+      "targetClassName": "AiAgentRunTraceSnapshot",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/session/session-run-trace.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRunTraceSnapshot"
+    },
+    "spark-class-model://model/AiAgentRunTrace/methods/subscribe/1": {
+      "ref": "spark-class-model://model/AiAgentRunTrace/methods/subscribe/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRunTrace",
+      "name": "subscribe",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/5f8bc7a80d0bff4f4dac6d4621207ed48a5c3404ea804e67412b359540bf21ec",
+      "returnSchemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839"
+    },
+    "spark-class-model://schema/shared/5f8bc7a80d0bff4f4dac6d4621207ed48a5c3404ea804e67412b359540bf21ec": {
+      "ref": "spark-class-model://schema/shared/5f8bc7a80d0bff4f4dac6d4621207ed48a5c3404ea804e67412b359540bf21ec",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "listener": {
+            "$ref": "spark-class-model://schema/AiAgentRunTraceListener"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5f8bc7a80d0bff4f4dac6d4621207ed48a5c3404ea804e67412b359540bf21ec"
+      }
+    },
+    "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839": {
+      "ref": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "() => void",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTrace%2Fmethods%2Fsubscribe%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTraceListener": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTrace%2Fmethods%2Fsubscribe%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTraceListener",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentRunTrace/methods/subscribe/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentRunTraceListener",
+      "targetClassName": "AiAgentRunTraceListener",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/session/session-run-trace.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRunTraceListener"
+    },
+    "spark-class-model://model/AiAgentRunTrace/methods/appendUserMessage/2": {
+      "ref": "spark-class-model://model/AiAgentRunTrace/methods/appendUserMessage/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRunTrace",
+      "name": "appendUserMessage",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1"
+    },
+    "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1": {
+      "ref": "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1"
+      }
+    },
+    "spark-class-model://model/AiAgentRunTrace/methods/appendDelta/3": {
+      "ref": "spark-class-model://model/AiAgentRunTrace/methods/appendDelta/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRunTrace",
+      "name": "appendDelta",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/41a40836bfcfaba8948a1c809b2ec5f880d4132bb38c4d16a1870077dbe2c781"
+    },
+    "spark-class-model://schema/shared/41a40836bfcfaba8948a1c809b2ec5f880d4132bb38c4d16a1870077dbe2c781": {
+      "ref": "spark-class-model://schema/shared/41a40836bfcfaba8948a1c809b2ec5f880d4132bb38c4d16a1870077dbe2c781",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "delta": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/41a40836bfcfaba8948a1c809b2ec5f880d4132bb38c4d16a1870077dbe2c781"
+      }
+    },
+    "spark-class-model://model/AiAgentRunTrace/methods/appendReasoning/4": {
+      "ref": "spark-class-model://model/AiAgentRunTrace/methods/appendReasoning/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRunTrace",
+      "name": "appendReasoning",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3ec81bb53941037d55d87a09e2808d970bbb5ce6785d0ca4c9eab74b43acdad3"
+    },
+    "spark-class-model://schema/shared/3ec81bb53941037d55d87a09e2808d970bbb5ce6785d0ca4c9eab74b43acdad3": {
+      "ref": "spark-class-model://schema/shared/3ec81bb53941037d55d87a09e2808d970bbb5ce6785d0ca4c9eab74b43acdad3",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3ec81bb53941037d55d87a09e2808d970bbb5ce6785d0ca4c9eab74b43acdad3"
+      }
+    },
+    "spark-class-model://model/AiAgentRunTrace/methods/appendEvent/5": {
+      "ref": "spark-class-model://model/AiAgentRunTrace/methods/appendEvent/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRunTrace",
+      "name": "appendEvent",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3432d3689876c2972f062d28e82e44fca934451d5492b3bbbcbb3c2edf270d41"
+    },
+    "spark-class-model://schema/shared/3432d3689876c2972f062d28e82e44fca934451d5492b3bbbcbb3c2edf270d41": {
+      "ref": "spark-class-model://schema/shared/3432d3689876c2972f062d28e82e44fca934451d5492b3bbbcbb3c2edf270d41",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "$ref": "spark-class-model://schema/AiAgentStreamEvent"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3432d3689876c2972f062d28e82e44fca934451d5492b3bbbcbb3c2edf270d41"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTrace%2Fmethods%2FappendEvent%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentStreamEvent": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTrace%2Fmethods%2FappendEvent%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentStreamEvent",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentRunTrace/methods/appendEvent/5",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentStreamEvent",
+      "targetClassName": "AiAgentStreamEvent",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/chat/chat-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentStreamEvent"
+    },
+    "spark-class-model://model/AiAgentRunTrace/methods/appendToolCall/6": {
+      "ref": "spark-class-model://model/AiAgentRunTrace/methods/appendToolCall/6",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRunTrace",
+      "name": "appendToolCall",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/52725675169490c65421cef3b8a00a198dfe6ca48afc68be5e7fa35e71e5b2b6"
+    },
+    "spark-class-model://schema/shared/52725675169490c65421cef3b8a00a198dfe6ca48afc68be5e7fa35e71e5b2b6": {
+      "ref": "spark-class-model://schema/shared/52725675169490c65421cef3b8a00a198dfe6ca48afc68be5e7fa35e71e5b2b6",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "record": {
+            "$ref": "spark-class-model://schema/AiAgentToolCallRecord"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/52725675169490c65421cef3b8a00a198dfe6ca48afc68be5e7fa35e71e5b2b6"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTrace%2Fmethods%2FappendToolCall%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallRecord": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTrace%2Fmethods%2FappendToolCall%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallRecord",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentRunTrace/methods/appendToolCall/6",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentToolCallRecord",
+      "targetClassName": "AiAgentToolCallRecord",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/chat/chat-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolCallRecord"
+    },
+    "spark-class-model://model/AiAgentRunTrace/methods/appendError/7": {
+      "ref": "spark-class-model://model/AiAgentRunTrace/methods/appendError/7",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRunTrace",
+      "name": "appendError",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/231d6d620221bfb92feadbe3f77bf3a4ef9a1775ef990e4da4738ee0852ec9b6"
+    },
+    "spark-class-model://schema/shared/231d6d620221bfb92feadbe3f77bf3a4ef9a1775ef990e4da4738ee0852ec9b6": {
+      "ref": "spark-class-model://schema/shared/231d6d620221bfb92feadbe3f77bf3a4ef9a1775ef990e4da4738ee0852ec9b6",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/231d6d620221bfb92feadbe3f77bf3a4ef9a1775ef990e4da4738ee0852ec9b6"
+      }
+    },
+    "spark-class-model://model/AiAgentRunTrace/methods/markAborted/8": {
+      "ref": "spark-class-model://model/AiAgentRunTrace/methods/markAborted/8",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRunTrace",
+      "name": "markAborted",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/231d6d620221bfb92feadbe3f77bf3a4ef9a1775ef990e4da4738ee0852ec9b6"
+    },
+    "spark-class-model://model/AiAgentRunTrace/methods/finish/9": {
+      "ref": "spark-class-model://model/AiAgentRunTrace/methods/finish/9",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRunTrace",
+      "name": "finish",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/AiAgentRunTrace/methods/reset/10": {
+      "ref": "spark-class-model://model/AiAgentRunTrace/methods/reset/10",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentRunTrace",
+      "name": "reset",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
     "spark-class-model://model/AiAgentRunTrace": {
       "ref": "spark-class-model://model/AiAgentRunTrace",
       "kind": "model",
       "className": "AiAgentRunTrace",
       "schemaRef": "spark-class-model://schema/AiAgentRunTrace",
       "attributeRefs": [],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/AiAgentRunTrace/methods/snapshot/0",
+        "spark-class-model://model/AiAgentRunTrace/methods/subscribe/1",
+        "spark-class-model://model/AiAgentRunTrace/methods/appendUserMessage/2",
+        "spark-class-model://model/AiAgentRunTrace/methods/appendDelta/3",
+        "spark-class-model://model/AiAgentRunTrace/methods/appendReasoning/4",
+        "spark-class-model://model/AiAgentRunTrace/methods/appendEvent/5",
+        "spark-class-model://model/AiAgentRunTrace/methods/appendToolCall/6",
+        "spark-class-model://model/AiAgentRunTrace/methods/appendError/7",
+        "spark-class-model://model/AiAgentRunTrace/methods/markAborted/8",
+        "spark-class-model://model/AiAgentRunTrace/methods/finish/9",
+        "spark-class-model://model/AiAgentRunTrace/methods/reset/10"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTrace%2Fmethods%2Fsnapshot%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTraceSnapshot",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTrace%2Fmethods%2Fsubscribe%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTraceListener",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTrace%2Fmethods%2FappendEvent%2F5/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentStreamEvent",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRunTrace%2Fmethods%2FappendToolCall%2F6/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallRecord"
+      ]
     }
   }
 }

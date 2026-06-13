@@ -37,16 +37,93 @@
         "declarationKind": "type",
         "componentName": "AiSessionTracePanel"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "entries",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "isStreaming",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "isReasoning",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "diagnostics",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "SessionDiagnosticsData"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "height",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "emptyText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.628Z",
+  "generatedAt": "2026-06-13T06:21:06.721Z",
   "$defs": {
     "AiSessionTracePanelProps": {
       "type": "object",
       "title": "AiSessionTracePanelProps",
-      "description": "AiSessionTracePanel 根组件 Props。\nentries       — 外部 AI runtime 传入的 live 流展示条目（不由 UI 组件创建或缓存）。\nisStreaming   — 是否正在接收流式增量。\nisReasoning   — 是否正在接收推理文本。\ndiagnostics   — 外部诊断投影。永远有值（含空摘要）。\nheight        — 面板高度 CSS 值，默认 '100%'。\nemptyText     — 无 live entries 且诊断投影为空时的占位文本。"
+      "description": "AiSessionTracePanel 根组件 Props。\nentries       — 外部 AI runtime 传入的 live 流展示条目（不由 UI 组件创建或缓存）。\nisStreaming   — 是否正在接收流式增量。\nisReasoning   — 是否正在接收推理文本。\ndiagnostics   — 外部诊断投影。永远有值（含空摘要）。\nheight        — 面板高度 CSS 值，默认 '100%'。\nemptyText     — 无 live entries 且诊断投影为空时的占位文本。",
+      "properties": {
+        "entries": {
+          "type": "array"
+        },
+        "isStreaming": {
+          "type": "boolean"
+        },
+        "isReasoning": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "object",
+          "title": "SessionDiagnosticsData"
+        },
+        "height": {
+          "type": "string"
+        },
+        "emptyText": {
+          "type": "string"
+        }
+      }
     }
   }
 }

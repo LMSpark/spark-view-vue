@@ -1943,6 +1943,28 @@
         "$id": "spark-class-model://schema/DataSetCrudTool"
       }
     },
+    "spark-class-model://model/DataSetCrudTool/constructors/0": {
+      "ref": "spark-class-model://model/DataSetCrudTool/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/DataSetCrudTool",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/b4d961cc1585f3c0ea1f80a6e6d250145843a8092dcb76c47ea75a5077e0315e"
+    },
+    "spark-class-model://schema/shared/b4d961cc1585f3c0ea1f80a6e6d250145843a8092dcb76c47ea75a5077e0315e": {
+      "ref": "spark-class-model://schema/shared/b4d961cc1585f3c0ea1f80a6e6d250145843a8092dcb76c47ea75a5077e0315e",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "dataSetName": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b4d961cc1585f3c0ea1f80a6e6d250145843a8092dcb76c47ea75a5077e0315e"
+      }
+    },
     "spark-class-model://model/DataSetCrudTool/methods/fromDataSet/0": {
       "ref": "spark-class-model://model/DataSetCrudTool/methods/fromDataSet/0",
       "kind": "method",
@@ -3841,6 +3863,7 @@
       "kind": "model",
       "className": "DataSetCrudTool",
       "schemaRef": "spark-class-model://schema/DataSetCrudTool",
+      "constructorRef": "spark-class-model://model/DataSetCrudTool/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/DataSetCrudTool/methods/fromDataSet/0",

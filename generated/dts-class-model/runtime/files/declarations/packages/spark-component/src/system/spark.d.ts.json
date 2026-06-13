@@ -62,6 +62,51 @@
       "targetFile": "files/declarations/packages/spark-utils/src/capability/core.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/CapabilityContext"
     },
+    "spark-class-model://model/SparkSystem/methods/createContext/0": {
+      "ref": "spark-class-model://model/SparkSystem/methods/createContext/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/SparkSystem",
+      "name": "createContext",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/c0a22b3a28fb5525978082bc9c433c86b6422e605191c6f4c21b83d554a5ea13",
+      "returnSchemaRef": "spark-class-model://schema/shared/847bba11c938fd42135226be7d37ecca9d911709de29c0d0a075b63153cd9d2f"
+    },
+    "spark-class-model://schema/shared/c0a22b3a28fb5525978082bc9c433c86b6422e605191c6f4c21b83d554a5ea13": {
+      "ref": "spark-class-model://schema/shared/c0a22b3a28fb5525978082bc9c433c86b6422e605191c6f4c21b83d554a5ea13",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "config": true,
+          "parent": {
+            "$ref": "spark-class-model://schema/CapabilityContext"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c0a22b3a28fb5525978082bc9c433c86b6422e605191c6f4c21b83d554a5ea13"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fmethods%2FcreateContext%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fmethods%2FcreateContext%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkSystem/methods/createContext/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/CapabilityContext",
+      "targetClassName": "CapabilityContext",
+      "targetFile": "files/declarations/packages/spark-utils/src/capability/core.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CapabilityContext"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fmethods%2FcreateContext%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fmethods%2FcreateContext%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SparkSystem/methods/createContext/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/CapabilityContext",
+      "targetClassName": "CapabilityContext",
+      "targetFile": "files/declarations/packages/spark-utils/src/capability/core.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CapabilityContext"
+    },
     "spark-class-model://model/SparkSystem": {
       "ref": "spark-class-model://model/SparkSystem",
       "kind": "model",
@@ -71,10 +116,14 @@
         "spark-class-model://model/SparkSystem/attributes/registry/0",
         "spark-class-model://model/SparkSystem/attributes/rootContext/1"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/SparkSystem/methods/createContext/0"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fattributes%2Fregistry%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FComponentRegistry",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fattributes%2FrootContext%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fattributes%2FrootContext%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fmethods%2FcreateContext%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSparkSystem%2Fmethods%2FcreateContext%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FCapabilityContext"
       ]
     }
   }

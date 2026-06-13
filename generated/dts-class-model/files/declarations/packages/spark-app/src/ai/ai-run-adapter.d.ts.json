@@ -53,7 +53,241 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "appendUserMessage",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "content",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "appendEvent",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "event",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "event": {
+                "type": "object",
+                "title": "AiAgentStreamEvent"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "appendDelta",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "delta",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "delta": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "appendReasoning",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "text",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "appendToolCall",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "record",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "record": {
+                "type": "object",
+                "title": "AiAgentToolCallRecord"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "appendError",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "markAborted",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "finish",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "reset",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "AiRunErrorFormatter": {
       "kind": "AiRunErrorFormatter",
@@ -145,7 +379,68 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "run",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "alias",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "TInput",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "chat",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "alias": {
+                "type": "string"
+              },
+              "input": true,
+              "chat": {
+                "type": "object",
+                "title": "AiAgentTaskChatOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiAgentHostRunResult>"
+          }
+        }
+      ]
     },
     "AiRunAdapterOptions": {
       "kind": "AiRunAdapterOptions",
@@ -166,7 +461,17 @@
         "className": "AiRunAdapterOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "formatError",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiRunErrorFormatter"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiRunAdapterCommand": {
@@ -188,7 +493,69 @@
         "className": "AiRunAdapterCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "host",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiRunHost"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "alias",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "input",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "trace",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiRunTraceSink"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "beforeFunctionCall",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiRunBeforeFunctionCall"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "onAbort",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiRunAbortHandler"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "userMessage",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiRunAdapterState": {
@@ -211,10 +578,107 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "isRunning",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "abort",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "reason",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "run",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "command",
+              "type": {
+                "type": "reference",
+                "name": "AiRunAdapterCommand",
+                "sourcePath": "declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "TInput",
+                    "refersToTypeParameter": true
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "AiRunAdapterRunStatus",
+                "sourcePath": "declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "$ref": "#/$defs/AiRunAdapterCommand",
+                "title": "AiRunAdapterCommand<TInput>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiRunAdapterRunStatus>"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.598Z",
+  "generatedAt": "2026-06-13T06:21:06.680Z",
   "$defs": {
     "AiRunTraceSink": {
       "type": "object",
@@ -249,12 +713,38 @@
     "AiRunAdapterOptions": {
       "type": "object",
       "title": "AiRunAdapterOptions",
-      "description": "Ai Run Adapter Options 的调用配置。"
+      "description": "Ai Run Adapter Options 的调用配置。",
+      "properties": {
+        "formatError": {
+          "$ref": "#/$defs/AiRunErrorFormatter"
+        }
+      }
     },
     "AiRunAdapterCommand": {
       "type": "object",
       "title": "AiRunAdapterCommand",
-      "description": "Ai Run Adapter Command 的命令参数。"
+      "description": "Ai Run Adapter Command 的命令参数。",
+      "properties": {
+        "host": {
+          "$ref": "#/$defs/AiRunHost"
+        },
+        "alias": {
+          "type": "string"
+        },
+        "input": true,
+        "trace": {
+          "$ref": "#/$defs/AiRunTraceSink"
+        },
+        "beforeFunctionCall": {
+          "$ref": "#/$defs/AiRunBeforeFunctionCall"
+        },
+        "onAbort": {
+          "$ref": "#/$defs/AiRunAbortHandler"
+        },
+        "userMessage": {
+          "type": "string"
+        }
+      }
     },
     "AiRunAdapterState": {
       "type": "object",

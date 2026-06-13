@@ -12,16 +12,110 @@
       "schema": {
         "type": "object",
         "title": "PageDataDesignHostInput",
+        "properties": {
+          "pageId": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "effectiveDescription": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "planningTitle": {
+            "type": "string"
+          },
+          "planningPath": {
+            "type": "string"
+          },
+          "dataRequirement": {
+            "type": "string"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/PageDataDesignHostInput"
       }
+    },
+    "spark-class-model://model/PageDataDesignHostInput/attributes/pageId/0": {
+      "ref": "spark-class-model://model/PageDataDesignHostInput/attributes/pageId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDataDesignHostInput",
+      "name": "pageId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageDataDesignHostInput/attributes/description/1": {
+      "ref": "spark-class-model://model/PageDataDesignHostInput/attributes/description/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDataDesignHostInput",
+      "name": "description",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageDataDesignHostInput/attributes/effectiveDescription/2": {
+      "ref": "spark-class-model://model/PageDataDesignHostInput/attributes/effectiveDescription/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDataDesignHostInput",
+      "name": "effectiveDescription",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/PageDataDesignHostInput/attributes/projectId/3": {
+      "ref": "spark-class-model://model/PageDataDesignHostInput/attributes/projectId/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDataDesignHostInput",
+      "name": "projectId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageDataDesignHostInput/attributes/planningTitle/4": {
+      "ref": "spark-class-model://model/PageDataDesignHostInput/attributes/planningTitle/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDataDesignHostInput",
+      "name": "planningTitle",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageDataDesignHostInput/attributes/planningPath/5": {
+      "ref": "spark-class-model://model/PageDataDesignHostInput/attributes/planningPath/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDataDesignHostInput",
+      "name": "planningPath",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/PageDataDesignHostInput/attributes/dataRequirement/6": {
+      "ref": "spark-class-model://model/PageDataDesignHostInput/attributes/dataRequirement/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/PageDataDesignHostInput",
+      "name": "dataRequirement",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
     },
     "spark-class-model://model/PageDataDesignHostInput": {
       "ref": "spark-class-model://model/PageDataDesignHostInput",
       "kind": "model",
       "className": "PageDataDesignHostInput",
       "schemaRef": "spark-class-model://schema/PageDataDesignHostInput",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/PageDataDesignHostInput/attributes/pageId/0",
+        "spark-class-model://model/PageDataDesignHostInput/attributes/description/1",
+        "spark-class-model://model/PageDataDesignHostInput/attributes/effectiveDescription/2",
+        "spark-class-model://model/PageDataDesignHostInput/attributes/projectId/3",
+        "spark-class-model://model/PageDataDesignHostInput/attributes/planningTitle/4",
+        "spark-class-model://model/PageDataDesignHostInput/attributes/planningPath/5",
+        "spark-class-model://model/PageDataDesignHostInput/attributes/dataRequirement/6"
+      ],
       "methodRefs": [],
       "linkRefs": []
     }

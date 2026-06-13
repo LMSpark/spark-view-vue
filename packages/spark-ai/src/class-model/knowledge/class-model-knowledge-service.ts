@@ -16,6 +16,7 @@ import {
 } from '../class-model/model-projection'
 import {
   renderAttributeTypeText,
+  renderConstructorSignature,
   renderMethodSignature,
   renderMethodSignatureFromMeta,
 } from '../class-model/signature-renderer'
@@ -94,6 +95,7 @@ public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
           ...componentProfileProperty(model.provenance),
           ...(input.includeMembers
             ? {
+                ...constructorQueryProperty(model),
                 attributes: model.attributes.map(attribute => ({
                   name: attribute.name,
                   summary: summarizeJsDoc(attribute.jsdoc),
@@ -125,6 +127,7 @@ public query(input: ClassModelKnowledgeQueryInput): AiJsonValue {
         ...componentProfileProperty(model.provenance),
         ...(input.includeMembers
           ? {
+              ...constructorQueryProperty(model),
               attributes: model.attributes.map(attribute => ({
                 name: attribute.name,
                 summary: summarizeJsDoc(attribute.jsdoc),
@@ -242,6 +245,18 @@ function listSurfaceLinkedClassNames(surface: DtsClassModelSurfaceDocument, mode
   for (const relation of model.declarationRelations ?? []) {
     collectTypeRefs(surface, linked, relation.targetName ?? relation.typeText)
   }
+  const constructorMeta = model.constructorMeta
+  if (constructorMeta !== undefined) {
+    collectTypeRefs(surface, linked, constructorMeta.signatureText)
+    for (const parameter of constructorMeta.parameters ?? []) {
+      collectDtsTypeRefs(surface, linked, parameter.type)
+    }
+    if (constructorMeta.paramsSchema !== undefined) {
+      for (const schema of Object.values(constructorMeta.paramsSchema.properties ?? {})) {
+        collectSchemaTypeRefs(surface, linked, schema)
+      }
+    }
+  }
   for (const attribute of model.attributes) collectSchemaTypeRefs(surface, linked, attribute.schema)
   for (const method of model.methods) {
     collectTypeRefs(surface, linked, method.signatureText)
@@ -303,6 +318,9 @@ function renderSurfaceClassModel(model: ClassModel): string {
     renderDeclarationRelations(model),
     model.jsdoc.trim(),
     `class ${model.className} {`,
+    ...(model.constructorMeta === undefined
+      ? []
+      : [indent(renderSurfaceConstructor(model.constructorMeta))]),
     ...model.attributes.map(attribute => indent(`${attribute.writable ? '' : 'readonly '}${attribute.name}: ${jsonSchemaToTypeText(attribute.schema)}`)),
     ...model.methods.map(method => indent(renderSurfaceMethod(method))),
     '}',
@@ -387,6 +405,27 @@ function renderComponentProfile(provenance: SourceProvenanceMeta | undefined): s
   return `/** SPARK component ${parts.join('; ')} */`
 }
 
+function constructorQueryProperty(
+  model: ClassModel,
+): { constructorSignature?: { summary: string; signature: string } } {
+  const constructorMeta = model.constructorMeta
+  return constructorMeta === undefined
+    ? {}
+    : {
+        constructorSignature: {
+          summary: summarizeJsDoc(constructorMeta.jsdoc),
+          signature: renderConstructorSignature(constructorMeta),
+        },
+      }
+}
+
+function renderSurfaceConstructor(constructorMeta: NonNullable<ClassModel['constructorMeta']>): string {
+  return [
+    constructorMeta.jsdoc.trim(),
+    renderConstructorSignature(constructorMeta),
+  ].filter(part => part.length > 0).join('\n')
+}
+
 function renderSurfaceMethod(method: ClassModel['methods'][number]): string {
   return [
     method.jsdoc.trim(),
@@ -406,6 +445,8 @@ function modelMatchesKeyword(model: ProjectedModel, keyword: string): boolean {
     model.provenance?.componentLevel ?? '',
     model.provenance?.componentLayer ?? '',
     model.provenance?.componentDirectory ?? '',
+    summarizeJsDoc(model.constructorMeta?.jsdoc ?? ''),
+    model.constructorMeta === undefined ? '' : renderConstructorSignature(model.constructorMeta),
     ...model.attributes.flatMap(attribute => [attribute.name, summarizeJsDoc(attribute.jsdoc)]),
     ...model.methods.flatMap(method => [method.name, summarizeJsDoc(method.jsdoc)]),
   ]

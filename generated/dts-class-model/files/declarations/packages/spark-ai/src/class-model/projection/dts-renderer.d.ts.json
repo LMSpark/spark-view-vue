@@ -46,7 +46,27 @@
         "className": "ModelGuideRenderInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "document",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ClassModelDocument"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ModelGuide": {
@@ -68,7 +88,35 @@
         "className": "ModelGuide",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "declaration",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "text",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AttributeGuideRenderInput": {
@@ -90,7 +138,36 @@
         "className": "AttributeGuideRenderInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "document",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ClassModelDocument"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "attributeName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AttributeGuide": {
@@ -112,7 +189,44 @@
         "className": "AttributeGuide",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "attributeName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "declaration",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "text",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "MethodGuideRenderInput": {
@@ -134,7 +248,36 @@
         "className": "MethodGuideRenderInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "document",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ClassModelDocument"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "methodName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "MethodGuide": {
@@ -156,41 +299,150 @@
         "className": "MethodGuide",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "methodName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "declaration",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "text",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.594Z",
+  "generatedAt": "2026-06-13T06:21:06.672Z",
   "$defs": {
     "ModelGuideRenderInput": {
       "type": "object",
       "title": "ModelGuideRenderInput",
-      "description": "Model Guide Render Input 的输入数据。"
+      "description": "Model Guide Render Input 的输入数据。",
+      "properties": {
+        "document": {
+          "type": "object",
+          "title": "ClassModelDocument"
+        },
+        "kind": {
+          "type": "string"
+        }
+      }
     },
     "ModelGuide": {
       "type": "object",
       "title": "ModelGuide",
-      "description": "Model Guide 的语义模型。"
+      "description": "Model Guide 的语义模型。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "declaration": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
     },
     "AttributeGuideRenderInput": {
       "type": "object",
       "title": "AttributeGuideRenderInput",
-      "description": "Attribute Guide Render Input 的输入数据。"
+      "description": "Attribute Guide Render Input 的输入数据。",
+      "properties": {
+        "document": {
+          "type": "object",
+          "title": "ClassModelDocument"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "attributeName": {
+          "type": "string"
+        }
+      }
     },
     "AttributeGuide": {
       "type": "object",
       "title": "AttributeGuide",
-      "description": "Attribute Guide 的语义模型。"
+      "description": "Attribute Guide 的语义模型。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "attributeName": {
+          "type": "string"
+        },
+        "declaration": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
     },
     "MethodGuideRenderInput": {
       "type": "object",
       "title": "MethodGuideRenderInput",
-      "description": "Method Guide Render Input 的输入数据。"
+      "description": "Method Guide Render Input 的输入数据。",
+      "properties": {
+        "document": {
+          "type": "object",
+          "title": "ClassModelDocument"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "methodName": {
+          "type": "string"
+        }
+      }
     },
     "MethodGuide": {
       "type": "object",
       "title": "MethodGuide",
-      "description": "Method Guide 的语义模型。"
+      "description": "Method Guide 的语义模型。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "methodName": {
+          "type": "string"
+        },
+        "declaration": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
     }
   }
 }

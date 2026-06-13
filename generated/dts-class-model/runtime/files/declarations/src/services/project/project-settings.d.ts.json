@@ -459,18 +459,114 @@
       "schema": {
         "type": "object",
         "title": "SaveProjectRuntimeSettingsCommand",
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "current": {
+            "$ref": "spark-class-model://schema/ProjectRuntimeSettings"
+          },
+          "input": {
+            "$ref": "spark-class-model://schema/ProjectRuntimeSettingsInput"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/SaveProjectRuntimeSettingsCommand"
       }
+    },
+    "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/tenantId/0": {
+      "ref": "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/tenantId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SaveProjectRuntimeSettingsCommand",
+      "name": "tenantId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/projectId/1": {
+      "ref": "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/projectId/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SaveProjectRuntimeSettingsCommand",
+      "name": "projectId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/9f2f1f62ff9aafaaa81a5c39850798fb016f786b724fe1d9856c3742f7784c31": {
+      "ref": "spark-class-model://schema/shared/9f2f1f62ff9aafaaa81a5c39850798fb016f786b724fe1d9856c3742f7784c31",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ProjectRuntimeSettings",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9f2f1f62ff9aafaaa81a5c39850798fb016f786b724fe1d9856c3742f7784c31"
+      }
+    },
+    "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/current/2": {
+      "ref": "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/current/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SaveProjectRuntimeSettingsCommand",
+      "name": "current",
+      "schemaRef": "spark-class-model://schema/shared/9f2f1f62ff9aafaaa81a5c39850798fb016f786b724fe1d9856c3742f7784c31",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSaveProjectRuntimeSettingsCommand%2Fattributes%2Fcurrent%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectRuntimeSettings": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSaveProjectRuntimeSettingsCommand%2Fattributes%2Fcurrent%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectRuntimeSettings",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/current/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectRuntimeSettings",
+      "targetClassName": "ProjectRuntimeSettings",
+      "targetFile": "files/declarations/src/services/project/project-settings.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectRuntimeSettings"
+    },
+    "spark-class-model://schema/shared/4bf3dd3d7245cdf9cfe9315bd7238d830ef825021d4c2fb12688fa82e467146f": {
+      "ref": "spark-class-model://schema/shared/4bf3dd3d7245cdf9cfe9315bd7238d830ef825021d4c2fb12688fa82e467146f",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/ProjectRuntimeSettingsInput",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4bf3dd3d7245cdf9cfe9315bd7238d830ef825021d4c2fb12688fa82e467146f"
+      }
+    },
+    "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/input/3": {
+      "ref": "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/input/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/SaveProjectRuntimeSettingsCommand",
+      "name": "input",
+      "schemaRef": "spark-class-model://schema/shared/4bf3dd3d7245cdf9cfe9315bd7238d830ef825021d4c2fb12688fa82e467146f",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSaveProjectRuntimeSettingsCommand%2Fattributes%2Finput%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectRuntimeSettingsInput": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSaveProjectRuntimeSettingsCommand%2Fattributes%2Finput%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectRuntimeSettingsInput",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/input/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/ProjectRuntimeSettingsInput",
+      "targetClassName": "ProjectRuntimeSettingsInput",
+      "targetFile": "files/declarations/src/services/project/project-settings.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectRuntimeSettingsInput"
     },
     "spark-class-model://model/SaveProjectRuntimeSettingsCommand": {
       "ref": "spark-class-model://model/SaveProjectRuntimeSettingsCommand",
       "kind": "model",
       "className": "SaveProjectRuntimeSettingsCommand",
       "schemaRef": "spark-class-model://schema/SaveProjectRuntimeSettingsCommand",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/tenantId/0",
+        "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/projectId/1",
+        "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/current/2",
+        "spark-class-model://model/SaveProjectRuntimeSettingsCommand/attributes/input/3"
+      ],
       "methodRefs": [],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSaveProjectRuntimeSettingsCommand%2Fattributes%2Fcurrent%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectRuntimeSettings",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FSaveProjectRuntimeSettingsCommand%2Fattributes%2Finput%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectRuntimeSettingsInput"
+      ]
     },
     "spark-class-model://schema/ProjectUiSettings": {
       "ref": "spark-class-model://schema/ProjectUiSettings",

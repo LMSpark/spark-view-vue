@@ -325,16 +325,6 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/9800c53311ff16fa548d103dae2576892b6327674b8b00486027a188f14c061c": {
-      "ref": "spark-class-model://schema/shared/9800c53311ff16fa548d103dae2576892b6327674b8b00486027a188f14c061c",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "AbortSignal",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/9800c53311ff16fa548d103dae2576892b6327674b8b00486027a188f14c061c"
-      }
-    },
     "spark-class-model://model/RequestConfig/attributes/signal/13": {
       "ref": "spark-class-model://model/RequestConfig/attributes/signal/13",
       "kind": "attribute",
@@ -667,15 +657,6 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/64548ceafe9aab4d7796870e008d6f500df671e4cce68d21381c972fd24c6f89": {
-      "ref": "spark-class-model://schema/shared/64548ceafe9aab4d7796870e008d6f500df671e4cce68d21381c972fd24c6f89",
-      "kind": "schema",
-      "schema": {
-        "$ref": "spark-class-model://schema/ApiEnvelopeContext",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/64548ceafe9aab4d7796870e008d6f500df671e4cce68d21381c972fd24c6f89"
-      }
-    },
     "spark-class-model://model/ApiEnvelope/attributes/context/5": {
       "ref": "spark-class-model://model/ApiEnvelope/attributes/context/5",
       "kind": "attribute",
@@ -694,15 +675,6 @@
       "targetClassName": "ApiEnvelopeContext",
       "targetFile": "files/declarations/packages/spark-utils/src/http/types.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/ApiEnvelopeContext"
-    },
-    "spark-class-model://schema/shared/c4804aec1591e911f7f09ea8587c08e329db16bc2eb22ca5b69669c7bb118315": {
-      "ref": "spark-class-model://schema/shared/c4804aec1591e911f7f09ea8587c08e329db16bc2eb22ca5b69669c7bb118315",
-      "kind": "schema",
-      "schema": {
-        "$ref": "spark-class-model://schema/ApiEnvelopeEvent",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/c4804aec1591e911f7f09ea8587c08e329db16bc2eb22ca5b69669c7bb118315"
-      }
     },
     "spark-class-model://model/ApiEnvelope/attributes/event/6": {
       "ref": "spark-class-model://model/ApiEnvelope/attributes/event/6",
@@ -1173,14 +1145,6 @@
         "properties": {
           "name": {
             "type": "string"
-          },
-          "onRequest": {
-            "type": "object",
-            "title": "(config: RequestConfig) => RequestConfig | Promise<RequestConfig>"
-          },
-          "onRequestError": {
-            "type": "object",
-            "title": "(error: RequestError) => void | Promise<void>"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1196,43 +1160,70 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/44095e8893291e5a4aa17f8f650cd0c50744b04954be646d88325c5d4a83841d": {
-      "ref": "spark-class-model://schema/shared/44095e8893291e5a4aa17f8f650cd0c50744b04954be646d88325c5d4a83841d",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(config: RequestConfig) => RequestConfig | Promise<RequestConfig>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/44095e8893291e5a4aa17f8f650cd0c50744b04954be646d88325c5d4a83841d"
-      }
-    },
-    "spark-class-model://model/RequestInterceptor/attributes/onRequest/1": {
-      "ref": "spark-class-model://model/RequestInterceptor/attributes/onRequest/1",
-      "kind": "attribute",
+    "spark-class-model://model/RequestInterceptor/methods/onRequest/0": {
+      "ref": "spark-class-model://model/RequestInterceptor/methods/onRequest/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/RequestInterceptor",
       "name": "onRequest",
-      "schemaRef": "spark-class-model://schema/shared/44095e8893291e5a4aa17f8f650cd0c50744b04954be646d88325c5d4a83841d",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/5cf75e784e2fec04910be46148ea3ec6fc1ad0870b8f8eb46efb34ba27982434"
     },
-    "spark-class-model://schema/shared/03f1cb701896fade0b1cf6d1ff7640b75f1000fdf2023ab8970da507ba597093": {
-      "ref": "spark-class-model://schema/shared/03f1cb701896fade0b1cf6d1ff7640b75f1000fdf2023ab8970da507ba597093",
+    "spark-class-model://schema/shared/5cf75e784e2fec04910be46148ea3ec6fc1ad0870b8f8eb46efb34ba27982434": {
+      "ref": "spark-class-model://schema/shared/5cf75e784e2fec04910be46148ea3ec6fc1ad0870b8f8eb46efb34ba27982434",
       "kind": "schema",
       "schema": {
-        "type": "object",
-        "title": "(error: RequestError) => void | Promise<void>",
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/RequestConfig"
+          },
+          {
+            "type": "object",
+            "title": "Promise<RequestConfig>"
+          }
+        ],
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/03f1cb701896fade0b1cf6d1ff7640b75f1000fdf2023ab8970da507ba597093"
+        "$id": "spark-class-model://schema/shared/5cf75e784e2fec04910be46148ea3ec6fc1ad0870b8f8eb46efb34ba27982434"
       }
     },
-    "spark-class-model://model/RequestInterceptor/attributes/onRequestError/2": {
-      "ref": "spark-class-model://model/RequestInterceptor/attributes/onRequestError/2",
-      "kind": "attribute",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRequestInterceptor%2Fmethods%2FonRequest%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FRequestConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRequestInterceptor%2Fmethods%2FonRequest%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FRequestConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RequestInterceptor/methods/onRequest/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/RequestConfig",
+      "targetClassName": "RequestConfig",
+      "targetFile": "files/declarations/packages/spark-utils/src/http/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RequestConfig"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRequestInterceptor%2Fmethods%2FonRequest%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FRequestConfig": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRequestInterceptor%2Fmethods%2FonRequest%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FRequestConfig",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RequestInterceptor/methods/onRequest/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/RequestConfig",
+      "targetClassName": "RequestConfig",
+      "targetFile": "files/declarations/packages/spark-utils/src/http/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RequestConfig"
+    },
+    "spark-class-model://model/RequestInterceptor/methods/onRequestError/1": {
+      "ref": "spark-class-model://model/RequestInterceptor/methods/onRequestError/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/RequestInterceptor",
       "name": "onRequestError",
-      "schemaRef": "spark-class-model://schema/shared/03f1cb701896fade0b1cf6d1ff7640b75f1000fdf2023ab8970da507ba597093",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRequestInterceptor%2Fmethods%2FonRequestError%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FRequestError": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRequestInterceptor%2Fmethods%2FonRequestError%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FRequestError",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RequestInterceptor/methods/onRequestError/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/RequestError",
+      "targetClassName": "RequestError",
+      "targetFile": "files/declarations/packages/spark-utils/src/http/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RequestError"
     },
     "spark-class-model://model/RequestInterceptor": {
       "ref": "spark-class-model://model/RequestInterceptor",
@@ -1240,12 +1231,17 @@
       "className": "RequestInterceptor",
       "schemaRef": "spark-class-model://schema/RequestInterceptor",
       "attributeRefs": [
-        "spark-class-model://model/RequestInterceptor/attributes/name/0",
-        "spark-class-model://model/RequestInterceptor/attributes/onRequest/1",
-        "spark-class-model://model/RequestInterceptor/attributes/onRequestError/2"
+        "spark-class-model://model/RequestInterceptor/attributes/name/0"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/RequestInterceptor/methods/onRequest/0",
+        "spark-class-model://model/RequestInterceptor/methods/onRequestError/1"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRequestInterceptor%2Fmethods%2FonRequest%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FRequestConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRequestInterceptor%2Fmethods%2FonRequest%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FRequestConfig",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRequestInterceptor%2Fmethods%2FonRequestError%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FRequestError"
+      ]
     },
     "spark-class-model://schema/ResponseInterceptor": {
       "ref": "spark-class-model://schema/ResponseInterceptor",
@@ -1256,14 +1252,6 @@
         "properties": {
           "name": {
             "type": "string"
-          },
-          "onResponse": {
-            "type": "object",
-            "title": "<T>(response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>"
-          },
-          "onResponseError": {
-            "type": "object",
-            "title": "(error: RequestError) => RequestError | Promise<RequestError>"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1279,43 +1267,98 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/14d3f95d7c987b193e57a3c89a7cc93e51482efb37a783dce66db3ab508c980f": {
-      "ref": "spark-class-model://schema/shared/14d3f95d7c987b193e57a3c89a7cc93e51482efb37a783dce66db3ab508c980f",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "<T>(response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/14d3f95d7c987b193e57a3c89a7cc93e51482efb37a783dce66db3ab508c980f"
-      }
-    },
-    "spark-class-model://model/ResponseInterceptor/attributes/onResponse/1": {
-      "ref": "spark-class-model://model/ResponseInterceptor/attributes/onResponse/1",
-      "kind": "attribute",
+    "spark-class-model://model/ResponseInterceptor/methods/onResponse/0": {
+      "ref": "spark-class-model://model/ResponseInterceptor/methods/onResponse/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ResponseInterceptor",
       "name": "onResponse",
-      "schemaRef": "spark-class-model://schema/shared/14d3f95d7c987b193e57a3c89a7cc93e51482efb37a783dce66db3ab508c980f",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/85f0aaf09b31d61763bbae8990f5ed491133df98ffe23c0ce4361232d5094323"
     },
-    "spark-class-model://schema/shared/28b9993d5d1fc2156dfe5998f12aeb12557673917e000dbefad2e278cd4db082": {
-      "ref": "spark-class-model://schema/shared/28b9993d5d1fc2156dfe5998f12aeb12557673917e000dbefad2e278cd4db082",
+    "spark-class-model://schema/shared/85f0aaf09b31d61763bbae8990f5ed491133df98ffe23c0ce4361232d5094323": {
+      "ref": "spark-class-model://schema/shared/85f0aaf09b31d61763bbae8990f5ed491133df98ffe23c0ce4361232d5094323",
       "kind": "schema",
       "schema": {
-        "type": "object",
-        "title": "(error: RequestError) => RequestError | Promise<RequestError>",
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/HttpResponse",
+            "title": "HttpResponse<T>"
+          },
+          {
+            "type": "object",
+            "title": "Promise<HttpResponse<T>>"
+          }
+        ],
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/28b9993d5d1fc2156dfe5998f12aeb12557673917e000dbefad2e278cd4db082"
+        "$id": "spark-class-model://schema/shared/85f0aaf09b31d61763bbae8990f5ed491133df98ffe23c0ce4361232d5094323"
       }
     },
-    "spark-class-model://model/ResponseInterceptor/attributes/onResponseError/2": {
-      "ref": "spark-class-model://model/ResponseInterceptor/attributes/onResponseError/2",
-      "kind": "attribute",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResponseInterceptor%2Fmethods%2FonResponse%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpResponse": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResponseInterceptor%2Fmethods%2FonResponse%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpResponse",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ResponseInterceptor/methods/onResponse/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/HttpResponse",
+      "targetClassName": "HttpResponse",
+      "targetFile": "files/declarations/packages/spark-utils/src/http/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/HttpResponse"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResponseInterceptor%2Fmethods%2FonResponse%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FHttpResponse": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResponseInterceptor%2Fmethods%2FonResponse%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FHttpResponse",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ResponseInterceptor/methods/onResponse/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/HttpResponse",
+      "targetClassName": "HttpResponse",
+      "targetFile": "files/declarations/packages/spark-utils/src/http/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/HttpResponse"
+    },
+    "spark-class-model://model/ResponseInterceptor/methods/onResponseError/1": {
+      "ref": "spark-class-model://model/ResponseInterceptor/methods/onResponseError/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ResponseInterceptor",
       "name": "onResponseError",
-      "schemaRef": "spark-class-model://schema/shared/28b9993d5d1fc2156dfe5998f12aeb12557673917e000dbefad2e278cd4db082",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/4293fa04cd0740c064010b6a4bdec28561c9dbf3ed53b5f1ed3d9c6ea897a0c3"
+    },
+    "spark-class-model://schema/shared/4293fa04cd0740c064010b6a4bdec28561c9dbf3ed53b5f1ed3d9c6ea897a0c3": {
+      "ref": "spark-class-model://schema/shared/4293fa04cd0740c064010b6a4bdec28561c9dbf3ed53b5f1ed3d9c6ea897a0c3",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/RequestError"
+          },
+          {
+            "type": "object",
+            "title": "Promise<RequestError>"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4293fa04cd0740c064010b6a4bdec28561c9dbf3ed53b5f1ed3d9c6ea897a0c3"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResponseInterceptor%2Fmethods%2FonResponseError%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FRequestError": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResponseInterceptor%2Fmethods%2FonResponseError%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FRequestError",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ResponseInterceptor/methods/onResponseError/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/RequestError",
+      "targetClassName": "RequestError",
+      "targetFile": "files/declarations/packages/spark-utils/src/http/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RequestError"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResponseInterceptor%2Fmethods%2FonResponseError%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FRequestError": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResponseInterceptor%2Fmethods%2FonResponseError%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FRequestError",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ResponseInterceptor/methods/onResponseError/1",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/RequestError",
+      "targetClassName": "RequestError",
+      "targetFile": "files/declarations/packages/spark-utils/src/http/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/RequestError"
     },
     "spark-class-model://model/ResponseInterceptor": {
       "ref": "spark-class-model://model/ResponseInterceptor",
@@ -1323,12 +1366,18 @@
       "className": "ResponseInterceptor",
       "schemaRef": "spark-class-model://schema/ResponseInterceptor",
       "attributeRefs": [
-        "spark-class-model://model/ResponseInterceptor/attributes/name/0",
-        "spark-class-model://model/ResponseInterceptor/attributes/onResponse/1",
-        "spark-class-model://model/ResponseInterceptor/attributes/onResponseError/2"
+        "spark-class-model://model/ResponseInterceptor/attributes/name/0"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/ResponseInterceptor/methods/onResponse/0",
+        "spark-class-model://model/ResponseInterceptor/methods/onResponseError/1"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResponseInterceptor%2Fmethods%2FonResponse%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpResponse",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResponseInterceptor%2Fmethods%2FonResponse%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FHttpResponse",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResponseInterceptor%2Fmethods%2FonResponseError%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FRequestError",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FResponseInterceptor%2Fmethods%2FonResponseError%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FRequestError"
+      ]
     },
     "spark-class-model://schema/HttpClientFactoryOptions": {
       "ref": "spark-class-model://schema/HttpClientFactoryOptions",
@@ -1455,10 +1504,6 @@
             "type": "object",
             "title": "Record<string, string>"
           },
-          "getHeaders": {
-            "type": "object",
-            "title": "() => Record<string, string>"
-          },
           "fallbackToCache": {
             "type": "boolean"
           },
@@ -1552,17 +1597,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/FileLoadOptions/attributes/getHeaders/6": {
-      "ref": "spark-class-model://model/FileLoadOptions/attributes/getHeaders/6",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/FileLoadOptions",
-      "name": "getHeaders",
-      "schemaRef": "spark-class-model://schema/shared/8f43391470f770a60100d3e07294be867d6b27a32e7f149dab901ff67e55eba6",
-      "readable": true,
-      "writable": false
-    },
-    "spark-class-model://model/FileLoadOptions/attributes/fallbackToCache/7": {
-      "ref": "spark-class-model://model/FileLoadOptions/attributes/fallbackToCache/7",
+    "spark-class-model://model/FileLoadOptions/attributes/fallbackToCache/6": {
+      "ref": "spark-class-model://model/FileLoadOptions/attributes/fallbackToCache/6",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/FileLoadOptions",
       "name": "fallbackToCache",
@@ -1582,8 +1618,8 @@
         "$id": "spark-class-model://schema/shared/c0eaefad5c32c7c717229281e5861f5d072790689cffc355d43afb543e3054a3"
       }
     },
-    "spark-class-model://model/FileLoadOptions/attributes/expirationTiers/8": {
-      "ref": "spark-class-model://model/FileLoadOptions/attributes/expirationTiers/8",
+    "spark-class-model://model/FileLoadOptions/attributes/expirationTiers/7": {
+      "ref": "spark-class-model://model/FileLoadOptions/attributes/expirationTiers/7",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/FileLoadOptions",
       "name": "expirationTiers",
@@ -1591,18 +1627,18 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoadOptions%2Fattributes%2FexpirationTiers%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FCacheExpirationTier": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoadOptions%2Fattributes%2FexpirationTiers%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FCacheExpirationTier",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoadOptions%2Fattributes%2FexpirationTiers%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FCacheExpirationTier": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoadOptions%2Fattributes%2FexpirationTiers%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FCacheExpirationTier",
       "kind": "link",
-      "fromRef": "spark-class-model://model/FileLoadOptions/attributes/expirationTiers/8",
+      "fromRef": "spark-class-model://model/FileLoadOptions/attributes/expirationTiers/7",
       "relation": "attribute",
       "targetModelRef": "spark-class-model://model/CacheExpirationTier",
       "targetClassName": "CacheExpirationTier",
       "targetFile": "files/declarations/packages/spark-utils/src/http/types.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/CacheExpirationTier"
     },
-    "spark-class-model://model/FileLoadOptions/attributes/defaultExpirationLevel/9": {
-      "ref": "spark-class-model://model/FileLoadOptions/attributes/defaultExpirationLevel/9",
+    "spark-class-model://model/FileLoadOptions/attributes/defaultExpirationLevel/8": {
+      "ref": "spark-class-model://model/FileLoadOptions/attributes/defaultExpirationLevel/8",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/FileLoadOptions",
       "name": "defaultExpirationLevel",
@@ -1610,8 +1646,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/FileLoadOptions/attributes/maxCacheSize/10": {
-      "ref": "spark-class-model://model/FileLoadOptions/attributes/maxCacheSize/10",
+    "spark-class-model://model/FileLoadOptions/attributes/maxCacheSize/9": {
+      "ref": "spark-class-model://model/FileLoadOptions/attributes/maxCacheSize/9",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/FileLoadOptions",
       "name": "maxCacheSize",
@@ -1619,8 +1655,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/FileLoadOptions/attributes/maxStorageBytes/11": {
-      "ref": "spark-class-model://model/FileLoadOptions/attributes/maxStorageBytes/11",
+    "spark-class-model://model/FileLoadOptions/attributes/maxStorageBytes/10": {
+      "ref": "spark-class-model://model/FileLoadOptions/attributes/maxStorageBytes/10",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/FileLoadOptions",
       "name": "maxStorageBytes",
@@ -1628,8 +1664,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/FileLoadOptions/attributes/maxStorageTotalBytes/12": {
-      "ref": "spark-class-model://model/FileLoadOptions/attributes/maxStorageTotalBytes/12",
+    "spark-class-model://model/FileLoadOptions/attributes/maxStorageTotalBytes/11": {
+      "ref": "spark-class-model://model/FileLoadOptions/attributes/maxStorageTotalBytes/11",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/FileLoadOptions",
       "name": "maxStorageTotalBytes",
@@ -1637,14 +1673,23 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/FileLoadOptions/attributes/maxEntryStorageBytes/13": {
-      "ref": "spark-class-model://model/FileLoadOptions/attributes/maxEntryStorageBytes/13",
+    "spark-class-model://model/FileLoadOptions/attributes/maxEntryStorageBytes/12": {
+      "ref": "spark-class-model://model/FileLoadOptions/attributes/maxEntryStorageBytes/12",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/FileLoadOptions",
       "name": "maxEntryStorageBytes",
       "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
       "readable": true,
       "writable": false
+    },
+    "spark-class-model://model/FileLoadOptions/methods/getHeaders/0": {
+      "ref": "spark-class-model://model/FileLoadOptions/methods/getHeaders/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/FileLoadOptions",
+      "name": "getHeaders",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730"
     },
     "spark-class-model://model/FileLoadOptions": {
       "ref": "spark-class-model://model/FileLoadOptions",
@@ -1658,19 +1703,20 @@
         "spark-class-model://model/FileLoadOptions/attributes/request/3",
         "spark-class-model://model/FileLoadOptions/attributes/timeout/4",
         "spark-class-model://model/FileLoadOptions/attributes/headers/5",
-        "spark-class-model://model/FileLoadOptions/attributes/getHeaders/6",
-        "spark-class-model://model/FileLoadOptions/attributes/fallbackToCache/7",
-        "spark-class-model://model/FileLoadOptions/attributes/expirationTiers/8",
-        "spark-class-model://model/FileLoadOptions/attributes/defaultExpirationLevel/9",
-        "spark-class-model://model/FileLoadOptions/attributes/maxCacheSize/10",
-        "spark-class-model://model/FileLoadOptions/attributes/maxStorageBytes/11",
-        "spark-class-model://model/FileLoadOptions/attributes/maxStorageTotalBytes/12",
-        "spark-class-model://model/FileLoadOptions/attributes/maxEntryStorageBytes/13"
+        "spark-class-model://model/FileLoadOptions/attributes/fallbackToCache/6",
+        "spark-class-model://model/FileLoadOptions/attributes/expirationTiers/7",
+        "spark-class-model://model/FileLoadOptions/attributes/defaultExpirationLevel/8",
+        "spark-class-model://model/FileLoadOptions/attributes/maxCacheSize/9",
+        "spark-class-model://model/FileLoadOptions/attributes/maxStorageBytes/10",
+        "spark-class-model://model/FileLoadOptions/attributes/maxStorageTotalBytes/11",
+        "spark-class-model://model/FileLoadOptions/attributes/maxEntryStorageBytes/12"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/FileLoadOptions/methods/getHeaders/0"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoadOptions%2Fattributes%2Frequest%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoadOptions%2Fattributes%2FexpirationTiers%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FCacheExpirationTier"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFileLoadOptions%2Fattributes%2FexpirationTiers%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FCacheExpirationTier"
       ]
     },
     "spark-class-model://schema/CacheEntry": {

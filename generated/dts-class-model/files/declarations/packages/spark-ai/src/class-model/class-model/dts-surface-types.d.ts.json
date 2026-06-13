@@ -38,7 +38,67 @@
         "className": "DtsClassModelSurfaceDocument",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "schemaVersion",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "source",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "declarations"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "configPath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "models",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, ClassModel>>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "fileIndex",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, readonly string[]>>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "generatedAt",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ProjectDtsClassModelSurfaceOptions": {
@@ -60,21 +120,97 @@
         "className": "ProjectDtsClassModelSurfaceOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "configPath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "skipVueComponentDts",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "exportedOnly",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "failOnDuplicate",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.581Z",
+  "generatedAt": "2026-06-13T06:21:06.633Z",
   "$defs": {
     "DtsClassModelSurfaceDocument": {
       "type": "object",
       "title": "DtsClassModelSurfaceDocument",
-      "description": "Dts Class Model Surface Document 的语义模型。"
+      "description": "Dts Class Model Surface Document 的语义模型。",
+      "properties": {
+        "schemaVersion": {
+          "type": "number"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "declarations"
+          ]
+        },
+        "configPath": {
+          "type": "string"
+        },
+        "models": {
+          "type": "object",
+          "title": "Readonly<Record<string, ClassModel>>"
+        },
+        "fileIndex": {
+          "type": "object",
+          "title": "Readonly<Record<string, readonly string[]>>"
+        },
+        "generatedAt": {
+          "type": "string"
+        }
+      }
     },
     "ProjectDtsClassModelSurfaceOptions": {
       "type": "object",
       "title": "ProjectDtsClassModelSurfaceOptions",
-      "description": "Project Dts Class Model Surface Options 的调用配置。"
+      "description": "Project Dts Class Model Surface Options 的调用配置。",
+      "properties": {
+        "configPath": {
+          "type": "string"
+        },
+        "skipVueComponentDts": {
+          "type": "boolean"
+        },
+        "exportedOnly": {
+          "type": "boolean"
+        },
+        "failOnDuplicate": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }

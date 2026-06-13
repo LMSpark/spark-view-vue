@@ -1490,7 +1490,16 @@
               "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/ProjectNodeModelOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -1503,6 +1512,14 @@
             "type": "reference",
             "name": "ProjectNodeData",
             "sourcePath": "declarations/packages/spark-project-model/src/navigation/project-node.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/ProjectNodeData"
           }
         },
         {
@@ -1522,7 +1539,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "patch": {
+                "$ref": "#/$defs/ProjectNodeNavigationPatch"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "rebindNavigationNode",
@@ -1555,12 +1582,28 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "node": {
+                "$ref": "#/$defs/ProjectNodeData"
+              },
+              "pid": {
+                "type": "string"
+              },
+              "descriptionContext": {
+                "type": "array"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.882Z",
+  "generatedAt": "2026-06-13T06:21:07.138Z",
   "$defs": {
     "ChildPlacement": {
       "type": "object",

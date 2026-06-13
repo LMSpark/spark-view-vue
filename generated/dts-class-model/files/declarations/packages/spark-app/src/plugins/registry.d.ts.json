@@ -119,16 +119,6 @@
           "writable": true
         },
         {
-          "name": "loader",
-          "jsdoc": "动态导入函数",
-          "schema": {
-            "type": "object",
-            "title": "() => Promise<{\n        default: Plugin;\n    }>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "defaultOptions",
           "jsdoc": "默认配置",
           "schema": {
@@ -157,7 +147,33 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "loader",
+          "jsdoc": "动态导入函数",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "unknown",
+                "name": "{\n        default: Plugin;\n    }"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<{\n        default: Plugin;\n    }>"
+          }
+        }
+      ]
     },
     "PluginInstance": {
       "kind": "PluginInstance",
@@ -251,7 +267,21 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "loader": {
+                "type": "object",
+                "title": "Omit<PluginLoader, 'id'>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "registerAll",
@@ -303,7 +333,25 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "entries": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "Record<string, Omit<PluginLoader, 'id'>>"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "get",
@@ -325,6 +373,18 @@
               "name": "PluginLoader",
               "sourcePath": "declarations/packages/spark-app/src/plugins/registry.d.ts"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/PluginLoader"
           }
         },
         {
@@ -343,6 +403,18 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -357,6 +429,17 @@
               "name": "PluginLoader",
               "sourcePath": "declarations/packages/spark-app/src/plugins/registry.d.ts"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/PluginLoader"
+            }
           }
         },
         {
@@ -369,6 +452,17 @@
             "elementType": {
               "type": "intrinsic",
               "name": "string"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         },
@@ -388,6 +482,18 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -398,7 +504,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "getStats",
@@ -408,6 +520,14 @@
           "type": {
             "type": "unknown",
             "name": "{\n        total: number;\n        plugins: string[];\n    }"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object"
           }
         }
       ]
@@ -495,6 +615,30 @@
                 }
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pluginConfigs": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "Record<string, boolean | PluginConfigItem>"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "registry": {
+                "$ref": "#/$defs/PluginRegistry"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PluginInstance[]>"
           }
         },
         {
@@ -560,12 +704,38 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "config": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "$ref": "#/$defs/PluginConfigItem"
+                  }
+                ]
+              },
+              "registry": {
+                "$ref": "#/$defs/PluginRegistry"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PluginInstance | null>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.621Z",
+  "generatedAt": "2026-06-13T06:21:06.709Z",
   "$defs": {
     "PluginConfigItem": {
       "type": "object",
@@ -600,10 +770,6 @@
         },
         "module": {
           "type": "string"
-        },
-        "loader": {
-          "type": "object",
-          "title": "() => Promise<{\n        default: Plugin;\n    }>"
         },
         "defaultOptions": {
           "type": "object",

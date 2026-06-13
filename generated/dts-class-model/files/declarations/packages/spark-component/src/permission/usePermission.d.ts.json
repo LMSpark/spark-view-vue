@@ -51,10 +51,264 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "isPermitted",
+          "jsdoc": "判断动作是否被权限允许",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "action",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "reference",
+                  "name": "unknown"
+                }
+              }
+            },
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "Omit",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  },
+                  {
+                    "type": "literal",
+                    "value": "permissionMode"
+                  }
+                ]
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "object",
+                "title": "PermissionAction"
+              },
+              "context": {
+                "type": "object",
+                "title": "Omit<PermissionActionContext, 'permissionMode'>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "isModelActionAllowed",
+          "jsdoc": "判断模型级动作（create/import/export）是否允许",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "action",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "modelPerm",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "reference",
+                  "name": "ModelPermission"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "object",
+                "title": "SparkNode"
+              },
+              "modelPerm": {
+                "type": "object",
+                "title": "ModelPermission"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "isRowActionAllowed",
+          "jsdoc": "判断行级动作（edit/delete/create-child）是否允许",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "action",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "row",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "reference",
+                  "name": "DataRow"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "object",
+                "title": "SparkNode"
+              },
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "resolveFieldState",
+          "jsdoc": "解析字段权限状态（可见性 + 可编辑性）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "field",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            },
+            {
+              "name": "row",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "undefined"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "config",
+              "type": {
+                "type": "reference",
+                "name": "Omit",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  },
+                  {
+                    "type": "literal",
+                    "value": "field"
+                  }
+                ]
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "row": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "DataRow"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "config": {
+                "type": "object",
+                "title": "Omit<FieldRenderConfig, 'field'>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "FieldRenderState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.797Z",
+  "generatedAt": "2026-06-13T06:21:07.008Z",
   "$defs": {
     "UsePermissionReturn": {
       "type": "object",

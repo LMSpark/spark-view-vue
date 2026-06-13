@@ -38,8 +38,47 @@
         "className": "DtsClassModelBundleLoaderOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
-      "methods": []
+      "attributes": [
+        {
+          "name": "manifestUrl",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "fetchJson",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "url",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<unknown>"
+          }
+        }
+      ]
     },
     "DtsClassModelBundleLoader": {
       "kind": "DtsClassModelBundleLoader",
@@ -65,7 +104,16 @@
               "sourcePath": "declarations/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/DtsClassModelBundleLoaderOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -83,6 +131,15 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<DtsClassModelBundleManifest>"
           }
         },
         {
@@ -107,6 +164,19 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "className": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ClassModel>"
           }
         },
         {
@@ -131,6 +201,19 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "sourcePath": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<DtsFileProjectionDocument>"
           }
         },
         {
@@ -155,6 +238,19 @@
                 "name": "readonly string[]"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rootClassName": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<readonly string[]>"
           }
         },
         {
@@ -176,17 +272,35 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "configPath": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DtsClassModelSurfaceDocument"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.580Z",
+  "generatedAt": "2026-06-13T06:21:06.625Z",
   "$defs": {
     "DtsClassModelBundleLoaderOptions": {
       "type": "object",
       "title": "DtsClassModelBundleLoaderOptions",
-      "description": "Dts Class Model Bundle Loader Options 的调用配置。"
+      "description": "Dts Class Model Bundle Loader Options 的调用配置。",
+      "properties": {
+        "manifestUrl": {
+          "type": "string"
+        }
+      }
     },
     "DtsClassModelBundleLoader": {
       "type": "object",

@@ -40,7 +40,44 @@
         "className": "AiAgentRunCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "options",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentOptions<TInput>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "kindID",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "input",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "chat",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTaskChatOptions"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentRunResult": {
@@ -62,7 +99,27 @@
         "className": "AiAgentRunResult",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "task",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTask<TInput>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "session",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentSession"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentSession": {
@@ -95,7 +152,21 @@
               "name": "unknown"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "type": "object",
+              "title": "AiAgentOptions"
+            },
+            "targetInput": {
+              "type": "object",
+              "title": "AiAgentTarget"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -143,6 +214,15 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -160,6 +240,22 @@
               {
                 "type": "literal",
                 "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "AiAgentSessionRecord"
+              },
+              {
+                "type": "null"
               }
             ]
           }
@@ -198,6 +294,19 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "reason": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiAgentSessionRecord | null>"
           }
         },
         {
@@ -222,22 +331,59 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "request": {
+                "type": "object",
+                "title": "AiAgentChatRequest"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.545Z",
+  "generatedAt": "2026-06-13T06:21:06.529Z",
   "$defs": {
     "AiAgentRunCommand": {
       "type": "object",
       "title": "AiAgentRunCommand",
-      "description": "Ai Agent Run Command 的命令参数。"
+      "description": "Ai Agent Run Command 的命令参数。",
+      "properties": {
+        "options": {
+          "type": "object",
+          "title": "AiAgentOptions<TInput>"
+        },
+        "kindID": {
+          "type": "string"
+        },
+        "input": true,
+        "chat": {
+          "type": "object",
+          "title": "AiAgentTaskChatOptions"
+        }
+      }
     },
     "AiAgentRunResult": {
       "type": "object",
       "title": "AiAgentRunResult",
-      "description": "Ai Agent Run Result 的返回结果。"
+      "description": "Ai Agent Run Result 的返回结果。",
+      "properties": {
+        "task": {
+          "type": "object",
+          "title": "AiAgentTask<TInput>"
+        },
+        "session": {
+          "$ref": "#/$defs/AiAgentSession"
+        }
+      }
     },
     "AiAgentSession": {
       "type": "object",

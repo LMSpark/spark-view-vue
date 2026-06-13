@@ -38,7 +38,46 @@
         "className": "EnrichFunctionCallFailureCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "protocolToolName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "args",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonParams"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "callResult",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentFunctionCallFailure"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleInstanceId",
+          "jsdoc": "当前业务实例 ID；app 层 recovery hook 可用来插值实例级提示。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "EnrichFunctionCallResultOptions": {
@@ -61,15 +100,54 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "enrichRecoveryHints",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "command",
+              "type": {
+                "type": "reference",
+                "name": "EnrichFunctionCallFailureCommand",
+                "sourcePath": "declarations/packages/spark-ai/src/agent/tool-loop/function-call-recovery-enricher.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "unknown",
+            "name": "readonly string[]"
+          },
+          "returnSchema": {
+            "type": "array"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.568Z",
+  "generatedAt": "2026-06-13T06:21:06.590Z",
   "$defs": {
     "EnrichFunctionCallFailureCommand": {
       "type": "object",
       "title": "EnrichFunctionCallFailureCommand",
-      "description": "Enrich Function Call Failure Command 的命令参数。"
+      "description": "Enrich Function Call Failure Command 的命令参数。",
+      "properties": {
+        "protocolToolName": {
+          "type": "string"
+        },
+        "args": {
+          "type": "object",
+          "title": "AiJsonParams"
+        },
+        "callResult": {
+          "type": "object",
+          "title": "AiAgentFunctionCallFailure"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        }
+      }
     },
     "EnrichFunctionCallResultOptions": {
       "type": "object",

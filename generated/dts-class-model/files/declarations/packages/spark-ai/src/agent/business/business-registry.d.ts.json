@@ -53,7 +53,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "registration": {
+                "type": "object",
+                "title": "AiAgentRegistration<TInput>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "get",
@@ -81,6 +92,19 @@
                 }
               ]
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "moduleId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentRegistration<TInput>"
           }
         },
         {
@@ -101,6 +125,18 @@
                 }
               ]
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "AiAgentRegistration<TInput>"
+            }
           }
         },
         {
@@ -119,12 +155,24 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "moduleId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.542Z",
+  "generatedAt": "2026-06-13T06:21:06.526Z",
   "$defs": {
     "AiAgentRegistry": {
       "type": "object",

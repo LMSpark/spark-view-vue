@@ -40,7 +40,78 @@
         "className": "AiAgentSessionSummary",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "historyCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "messageCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "toolCallCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "failedToolCallCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "functionNames",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "lastAssistantText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentSessionTranscriptEntry": {
@@ -62,7 +133,149 @@
         "className": "AiAgentSessionTranscriptEntry",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "seq",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "id",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "timestamp",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "message"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "functionCall"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "unknown"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "direction",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "role",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "source",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "toolName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "content",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "args",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "result",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentSessionTranscriptOptions": {
@@ -84,26 +297,142 @@
         "className": "AiAgentSessionTranscriptOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "contentLimit",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.565Z",
+  "generatedAt": "2026-06-13T06:21:06.578Z",
   "$defs": {
     "AiAgentSessionSummary": {
       "type": "object",
       "title": "AiAgentSessionSummary",
-      "description": "Ai Agent Session Summary 的语义模型。"
+      "description": "Ai Agent Session Summary 的语义模型。",
+      "properties": {
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "historyCount": {
+          "type": "number"
+        },
+        "messageCount": {
+          "type": "number"
+        },
+        "toolCallCount": {
+          "type": "number"
+        },
+        "failedToolCallCount": {
+          "type": "number"
+        },
+        "functionNames": {
+          "type": "array"
+        },
+        "lastAssistantText": {
+          "type": "string"
+        }
+      }
     },
     "AiAgentSessionTranscriptEntry": {
       "type": "object",
       "title": "AiAgentSessionTranscriptEntry",
-      "description": "Ai Agent Session Transcript Entry 的语义模型。"
+      "description": "Ai Agent Session Transcript Entry 的语义模型。",
+      "properties": {
+        "seq": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "timestamp": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "message"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "functionCall"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "unknown"
+              ]
+            }
+          ]
+        },
+        "direction": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "toolName": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "args": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string"
+        }
+      }
     },
     "AiAgentSessionTranscriptOptions": {
       "type": "object",
       "title": "AiAgentSessionTranscriptOptions",
-      "description": "Ai Agent Session Transcript Options 的调用配置。"
+      "description": "Ai Agent Session Transcript Options 的调用配置。",
+      "properties": {
+        "contentLimit": {
+          "type": "number"
+        }
+      }
     }
   }
 }

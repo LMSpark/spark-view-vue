@@ -67,7 +67,148 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "debug",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "args",
+              "type": {
+                "type": "rest",
+                "elementType": {
+                  "type": "array",
+                  "elementType": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "args": {
+                "type": "array",
+                "items": true
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "info",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "args",
+              "type": {
+                "type": "rest",
+                "elementType": {
+                  "type": "array",
+                  "elementType": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "args": {
+                "type": "array",
+                "items": true
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "warn",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "args",
+              "type": {
+                "type": "rest",
+                "elementType": {
+                  "type": "array",
+                  "elementType": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "args": {
+                "type": "array",
+                "items": true
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "error",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "args",
+              "type": {
+                "type": "rest",
+                "elementType": {
+                  "type": "array",
+                  "elementType": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "args": {
+                "type": "array",
+                "items": true
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "LogTransport": {
       "kind": "LogTransport",
@@ -82,10 +223,92 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "send",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "level",
+              "type": {
+                "type": "reference",
+                "name": "LogLevel",
+                "sourcePath": "declarations/packages/spark-utils/src/logger.d.ts"
+              }
+            },
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "meta",
+              "type": {
+                "type": "reference",
+                "name": "Record",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                ]
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "level": {
+                "$ref": "#/$defs/LogLevel"
+              },
+              "message": {
+                "type": "string"
+              },
+              "meta": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.913Z",
+  "generatedAt": "2026-06-13T06:21:07.180Z",
   "$defs": {
     "LogLevel": {
       "type": "object",

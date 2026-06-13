@@ -59,7 +59,57 @@
         "className": "ClassModelAgentAdapterRegisterCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "host",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentHost"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "alias",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleClass",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ClassModelAgentAdapterConstructor",
+            "title": "ClassModelAgentAdapterConstructor<T>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "metadata",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiRuntimeApiMetadataJson"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "options",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions",
+            "title": "ClassModelAgentAdapterRegisterOptions<T>"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ClassModelAgentAdapterRegistrationCommand": {
@@ -81,7 +131,38 @@
         "className": "ClassModelAgentAdapterRegistrationCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "moduleClass",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ClassModelAgentAdapterConstructor",
+            "title": "ClassModelAgentAdapterConstructor<T>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "metadata",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiRuntimeApiMetadataJson"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "options",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions",
+            "title": "ClassModelAgentAdapterRegisterOptions<T>"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ClassModelAgentAdapterRegisterOptions": {
@@ -103,8 +184,467 @@
         "className": "ClassModelAgentAdapterRegisterOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
-      "methods": []
+      "attributes": [
+        {
+          "name": "moduleId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "instance",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "constructArgs",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "jsonSchemaDefs",
+          "jsdoc": "metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "dtsClassModelManifestUrl",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "rootClassName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "knowledge",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ClassModelKnowledgeProvider"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "inputContract",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentInputContract"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "sessionStore",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentSessionStore"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "executionToolNames",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ReadonlySet<string>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "planWithoutToolMarkers",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "resolveInstance",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "T",
+            "refersToTypeParameter": true
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "dtsClassModelFetchJson",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "url",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<unknown>"
+          }
+        },
+        {
+          "name": "systemPrompt",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "instance",
+              "type": {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "beforeFunctionCall",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "instance",
+              "type": {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "AiAgentBeforeFunctionCallDirective"
+              },
+              {
+                "type": "object",
+                "title": "Promise<AiAgentBeforeFunctionCallDirective>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "afterFunctionCall",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "instance",
+              "type": {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "AiAgentLifecycleDirective"
+              },
+              {
+                "type": "object",
+                "title": "Promise<AiAgentLifecycleDirective>"
+              }
+            ]
+          }
+        },
+        {
+          "name": "onStartSession",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "instance",
+              "type": {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "onEndBusinessInstance",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "instance",
+              "type": {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "directive",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "releaseModuleInstance",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "instance",
+              "type": {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "moduleInstanceId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "toolLoopNudge",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "enrichRecoveryHints",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "command",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "unknown",
+            "name": "readonly string[]"
+          },
+          "returnSchema": {
+            "type": "array"
+          }
+        }
+      ]
     },
     "ClassModelAgentAdapter": {
       "kind": "ClassModelAgentAdapter",
@@ -143,6 +683,20 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "$ref": "#/$defs/ClassModelAgentAdapterRegisterCommand",
+                "title": "ClassModelAgentAdapterRegisterCommand<T>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentHost"
           }
         },
         {
@@ -169,12 +723,26 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "$ref": "#/$defs/ClassModelAgentAdapterRegistrationCommand",
+                "title": "ClassModelAgentAdapterRegistrationCommand<T>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentRegistration"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.554Z",
+  "generatedAt": "2026-06-13T06:21:06.544Z",
   "$defs": {
     "ClassModelAgentAdapterConstructor": {
       "type": "object",
@@ -184,17 +752,90 @@
     "ClassModelAgentAdapterRegisterCommand": {
       "type": "object",
       "title": "ClassModelAgentAdapterRegisterCommand",
-      "description": "Class Model Agent Adapter Register Command 的命令参数。"
+      "description": "Class Model Agent Adapter Register Command 的命令参数。",
+      "properties": {
+        "host": {
+          "type": "object",
+          "title": "AiAgentHost"
+        },
+        "alias": {
+          "type": "string"
+        },
+        "moduleClass": {
+          "$ref": "#/$defs/ClassModelAgentAdapterConstructor",
+          "title": "ClassModelAgentAdapterConstructor<T>"
+        },
+        "metadata": {
+          "type": "object",
+          "title": "AiRuntimeApiMetadataJson"
+        },
+        "options": {
+          "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions",
+          "title": "ClassModelAgentAdapterRegisterOptions<T>"
+        }
+      }
     },
     "ClassModelAgentAdapterRegistrationCommand": {
       "type": "object",
       "title": "ClassModelAgentAdapterRegistrationCommand",
-      "description": "Class Model Agent Adapter Registration Command 的命令参数。"
+      "description": "Class Model Agent Adapter Registration Command 的命令参数。",
+      "properties": {
+        "moduleClass": {
+          "$ref": "#/$defs/ClassModelAgentAdapterConstructor",
+          "title": "ClassModelAgentAdapterConstructor<T>"
+        },
+        "metadata": {
+          "type": "object",
+          "title": "AiRuntimeApiMetadataJson"
+        },
+        "options": {
+          "$ref": "#/$defs/ClassModelAgentAdapterRegisterOptions",
+          "title": "ClassModelAgentAdapterRegisterOptions<T>"
+        }
+      }
     },
     "ClassModelAgentAdapterRegisterOptions": {
       "type": "object",
       "title": "ClassModelAgentAdapterRegisterOptions",
-      "description": "Class Model Agent Adapter Register Options 的调用配置。"
+      "description": "Class Model Agent Adapter Register Options 的调用配置。",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "instance": true,
+        "constructArgs": {
+          "type": "array"
+        },
+        "jsonSchemaDefs": {
+          "type": "object",
+          "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+        },
+        "dtsClassModelManifestUrl": {
+          "type": "string"
+        },
+        "rootClassName": {
+          "type": "string"
+        },
+        "knowledge": {
+          "type": "object",
+          "title": "ClassModelKnowledgeProvider"
+        },
+        "inputContract": {
+          "type": "object",
+          "title": "AiAgentInputContract"
+        },
+        "sessionStore": {
+          "type": "object",
+          "title": "AiAgentSessionStore"
+        },
+        "executionToolNames": {
+          "type": "object",
+          "title": "ReadonlySet<string>"
+        },
+        "planWithoutToolMarkers": {
+          "type": "array"
+        }
+      }
     },
     "ClassModelAgentAdapter": {
       "type": "object",

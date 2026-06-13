@@ -86,7 +86,42 @@
         "className": "FileLoaderStoreInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "key",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "data",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "sourceTimestamp",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "expirationLevel",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "JsonLoadOptions": {
@@ -190,19 +225,54 @@
         "className": "TransformLoadOptions",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "transform",
           "jsdoc": "对原始文件内容应用变换，结果自动缓存（缓存键=文件路径）。\n提供后 load() 返回 T（变换结果），而非原始 JSON。",
-          "schema": {
-            "type": "object",
-            "title": "(rawContent: string) => T | Promise<T>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rawContent",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rawContent": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     },
     "LoadOptions": {
       "kind": "LoadOptions",
@@ -324,7 +394,20 @@
               }
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "$ref": "#/$defs/FileLoader"
+            },
+            "transform": {
+              "type": "object",
+              "title": "(rawContent: string) => T | Promise<T>"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -368,6 +451,22 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "fileName": {
+                "type": "string"
+              },
+              "opts": {
+                "$ref": "#/$defs/TransformedFileLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<FileLoadResult<T>>"
           }
         },
         {
@@ -423,6 +522,25 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "fileNames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "opts": {
+                "$ref": "#/$defs/TransformedFileLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<Map<string, FileLoadResult<T>>>"
           }
         }
       ]
@@ -450,7 +568,17 @@
               "name": "unknown"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "type": "object",
+              "title": "FileLoadOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -506,6 +634,21 @@
                 }
               ]
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "event": true,
+              "listener": {
+                "type": "object",
+                "title": "(payload: FileLoaderEventMap[K]) => void"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "() => void"
           }
         },
         {
@@ -547,6 +690,22 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "fileName": {
+                "type": "string"
+              },
+              "options": {
+                "$ref": "#/$defs/TransformedFileLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<FileLoadResult<string>>"
           }
         },
         {
@@ -593,6 +752,23 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "fileName": {
+                "type": "string"
+              },
+              "options": {
+                "$ref": "#/$defs/TransformLoadOptions",
+                "title": "TransformLoadOptions<T>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<FileLoadResult<T>>"
           }
         },
         {
@@ -631,6 +807,22 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "fileName": {
+                "type": "string"
+              },
+              "options": {
+                "$ref": "#/$defs/TextLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<FileLoadResult<string>>"
           }
         },
         {
@@ -672,6 +864,22 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "fileName": {
+                "type": "string"
+              },
+              "options": {
+                "$ref": "#/$defs/JsonLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<FileLoadResult<unknown>>"
           }
         },
         {
@@ -731,6 +939,26 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "fileNames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "options": {
+                "$ref": "#/$defs/TransformLoadOptions",
+                "title": "TransformLoadOptions<T>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<Map<string, FileLoadResult<T>>>"
           }
         },
         {
@@ -782,6 +1010,25 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "fileNames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "options": {
+                "$ref": "#/$defs/TextLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<Map<string, FileLoadResult<string>>>"
           }
         },
         {
@@ -836,6 +1083,25 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "fileNames": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "options": {
+                "$ref": "#/$defs/JsonLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<Map<string, FileLoadResult<unknown>>>"
           }
         },
         {
@@ -897,6 +1163,20 @@
                 "refersToTypeParameter": true
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "transform": {
+                "type": "object",
+                "title": "(rawContent: string) => T | Promise<T>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/TransformedFileLoader",
+            "title": "TransformedFileLoader<T>"
           }
         },
         {
@@ -916,7 +1196,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/FileLoaderStoreInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "retrieve",
@@ -941,7 +1231,20 @@
           "type": {
             "type": "intrinsic",
             "name": "unknown"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "sourceTimestamp": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "clearCache",
@@ -962,7 +1265,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "hasCache",
@@ -980,6 +1293,18 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -990,6 +1315,14 @@
           "type": {
             "type": "unknown",
             "name": "{\n        size: number;\n        keys: string[];\n    }"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object"
           }
         },
         {
@@ -1017,12 +1350,31 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.906Z",
+  "generatedAt": "2026-06-13T06:21:07.172Z",
   "$defs": {
     "LoadOptionBase": {
       "type": "object",
@@ -1040,7 +1392,19 @@
     "FileLoaderStoreInput": {
       "type": "object",
       "title": "FileLoaderStoreInput",
-      "description": "File Loader Store Input 的输入数据。"
+      "description": "File Loader Store Input 的输入数据。",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "data": true,
+        "sourceTimestamp": {
+          "type": "string"
+        },
+        "expirationLevel": {
+          "type": "number"
+        }
+      }
     },
     "JsonLoadOptions": {
       "type": "object",
@@ -1071,13 +1435,7 @@
     "TransformLoadOptions": {
       "type": "object",
       "title": "TransformLoadOptions",
-      "description": "Transform Load Options 的调用配置。",
-      "properties": {
-        "transform": {
-          "type": "object",
-          "title": "(rawContent: string) => T | Promise<T>"
-        }
-      }
+      "description": "Transform Load Options 的调用配置。"
     },
     "LoadOptions": {
       "type": "object",

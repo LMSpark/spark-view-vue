@@ -530,29 +530,86 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "beforeMount",
           "jsdoc": "挂载前钩子",
-          "schema": {
-            "type": "object",
-            "title": "(context: BootstrapContext) => void | Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "BootstrapContext",
+                "sourcePath": "declarations/packages/spark-app/src/types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         },
         {
           "name": "afterMount",
           "jsdoc": "挂载后钩子",
-          "schema": {
-            "type": "object",
-            "title": "(context: BootstrapContext) => void | Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "BootstrapContext",
+                "sourcePath": "declarations/packages/spark-app/src/types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         }
-      ],
-      "methods": []
+      ]
     },
     "RouterGuardOptions": {
       "kind": "RouterGuardOptions",
@@ -566,19 +623,43 @@
         "className": "RouterGuardOptions",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "checkPermission",
           "jsdoc": "自定义权限检查",
-          "schema": {
-            "type": "object",
-            "title": "(permissions: string[], required: string[]) => boolean"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "permissions",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            },
+            {
+              "name": "required",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "boolean"
+          }
         }
-      ],
-      "methods": []
+      ]
     },
     "ErrorHandlerOptions": {
       "kind": "ErrorHandlerOptions",
@@ -592,39 +673,85 @@
         "className": "ErrorHandlerOptions",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "onError",
           "jsdoc": "错误回调",
-          "schema": {
-            "type": "object",
-            "title": "(error: Error, context: ErrorContext) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "error",
+              "type": {
+                "type": "reference",
+                "name": "Error"
+              }
+            },
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "ErrorContext",
+                "sourcePath": "declarations/packages/spark-app/src/types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "errorClassifier",
           "jsdoc": "自定义错误分类",
-          "schema": {
-            "type": "object",
-            "title": "(error: Error) => ErrorType"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "error",
+              "type": {
+                "type": "reference",
+                "name": "Error"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "ErrorType",
+            "sourcePath": "declarations/packages/spark-app/src/types.d.ts"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "$ref": "#/$defs/ErrorType"
+          }
         },
         {
           "name": "onErrorByType",
           "jsdoc": "错误类型处理回调（消费层实现 UI 交互）",
-          "schema": {
-            "type": "object",
-            "title": "(type: ErrorType, error: Error) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "type",
+              "type": {
+                "type": "reference",
+                "name": "ErrorType",
+                "sourcePath": "declarations/packages/spark-app/src/types.d.ts"
+              }
+            },
+            {
+              "name": "error",
+              "type": {
+                "type": "reference",
+                "name": "Error"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     },
     "ErrorContext": {
       "kind": "ErrorContext",
@@ -739,7 +866,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.628Z",
+  "generatedAt": "2026-06-13T06:21:06.721Z",
   "$defs": {
     "AppEnvironment": {
       "type": "object",
@@ -919,46 +1046,18 @@
         "themeService": {
           "type": "object",
           "title": "ThemeCapability"
-        },
-        "beforeMount": {
-          "type": "object",
-          "title": "(context: BootstrapContext) => void | Promise<void>"
-        },
-        "afterMount": {
-          "type": "object",
-          "title": "(context: BootstrapContext) => void | Promise<void>"
         }
       }
     },
     "RouterGuardOptions": {
       "type": "object",
       "title": "RouterGuardOptions",
-      "description": "路由守卫选项",
-      "properties": {
-        "checkPermission": {
-          "type": "object",
-          "title": "(permissions: string[], required: string[]) => boolean"
-        }
-      }
+      "description": "路由守卫选项"
     },
     "ErrorHandlerOptions": {
       "type": "object",
       "title": "ErrorHandlerOptions",
-      "description": "错误处理选项",
-      "properties": {
-        "onError": {
-          "type": "object",
-          "title": "(error: Error, context: ErrorContext) => void"
-        },
-        "errorClassifier": {
-          "type": "object",
-          "title": "(error: Error) => ErrorType"
-        },
-        "onErrorByType": {
-          "type": "object",
-          "title": "(type: ErrorType, error: Error) => void"
-        }
-      }
+      "description": "错误处理选项"
     },
     "ErrorContext": {
       "type": "object",

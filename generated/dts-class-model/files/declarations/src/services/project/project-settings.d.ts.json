@@ -323,7 +323,44 @@
         "className": "SaveProjectRuntimeSettingsCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "tenantId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "projectId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "current",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ProjectRuntimeSettings"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "input",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ProjectRuntimeSettingsInput"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ProjectUiSettings": {
@@ -380,7 +417,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.934Z",
+  "generatedAt": "2026-06-13T06:21:07.208Z",
   "$defs": {
     "ProjectLayoutPlacement": {
       "type": "object",
@@ -496,7 +533,21 @@
     "SaveProjectRuntimeSettingsCommand": {
       "type": "object",
       "title": "SaveProjectRuntimeSettingsCommand",
-      "description": "Save Project Runtime Settings Command 的命令参数。"
+      "description": "Save Project Runtime Settings Command 的命令参数。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "current": {
+          "$ref": "#/$defs/ProjectRuntimeSettings"
+        },
+        "input": {
+          "$ref": "#/$defs/ProjectRuntimeSettingsInput"
+        }
+      }
     },
     "ProjectUiSettings": {
       "type": "object",

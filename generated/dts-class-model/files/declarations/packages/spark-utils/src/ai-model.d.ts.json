@@ -50,7 +50,17 @@
               ]
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "_options": {
+              "type": "object",
+              "title": "Record<string, unknown>"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -72,12 +82,21 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.900Z",
+  "generatedAt": "2026-06-13T06:21:07.168Z",
   "$defs": {
     "SparkAIModel": {
       "type": "object",

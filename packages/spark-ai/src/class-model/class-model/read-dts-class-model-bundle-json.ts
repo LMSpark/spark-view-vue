@@ -27,6 +27,7 @@ import type {
   DtsClassModelDuplicateRecord,
   DtsClassModelRuntimeAttribute,
   DtsClassModelRuntimeClassEntry,
+  DtsClassModelRuntimeConstructor,
   DtsClassModelRuntimeFileEntry,
   DtsClassModelRuntimeLink,
   DtsClassModelRuntimeLinkRelation,
@@ -112,6 +113,7 @@ const METHOD_PARAMETER_STYLES = new Set<MethodParameterStyle>([
 
 const RUNTIME_LINK_RELATIONS = new Set<DtsClassModelRuntimeLinkRelation>([
   'attribute',
+  'constructor-parameter',
   'method-parameter',
   'method-return',
 ])
@@ -370,23 +372,42 @@ function parseRuntimeRef(value: unknown, path: string): DtsClassModelRuntimeRef 
   const record = requireJsonRecord(value, path)
   const kind = readRequiredString(record, 'kind', `${path}.kind`)
   if (kind === 'model') return parseRuntimeModel(record, path)
+  if (kind === 'constructor') return parseRuntimeConstructor(record, path)
   if (kind === 'attribute') return parseRuntimeAttribute(record, path)
   if (kind === 'method') return parseRuntimeMethod(record, path)
   if (kind === 'schema') return parseRuntimeSchemaRef(record, path)
   if (kind === 'link') return parseRuntimeLink(record, path)
-  throw new Error(`${path}.kind must be one of: model, attribute, method, schema, link`)
+  throw new Error(`${path}.kind must be one of: model, constructor, attribute, method, schema, link`)
 }
 
 function parseRuntimeModel(value: unknown, path: string): DtsClassModelRuntimeModel {
   const record = requireJsonRecord(value, path)
+  const constructorRef = readOptionalString(record, 'constructorRef', `${path}.constructorRef`)
   return {
     ref: readRequiredString(record, 'ref', `${path}.ref`),
     kind: 'model',
     className: readRequiredString(record, 'className', `${path}.className`),
     schemaRef: readRequiredString(record, 'schemaRef', `${path}.schemaRef`),
+    ...(constructorRef === undefined ? {} : { constructorRef }),
     attributeRefs: readRequiredStringArray(record, 'attributeRefs', `${path}.attributeRefs`),
     methodRefs: readRequiredStringArray(record, 'methodRefs', `${path}.methodRefs`),
     linkRefs: readRequiredStringArray(record, 'linkRefs', `${path}.linkRefs`),
+  }
+}
+
+function parseRuntimeConstructor(value: unknown, path: string): DtsClassModelRuntimeConstructor {
+  const record = requireJsonRecord(value, path)
+  return {
+    ref: readRequiredString(record, 'ref', `${path}.ref`),
+    kind: 'constructor',
+    ownerRef: readRequiredString(record, 'ownerRef', `${path}.ownerRef`),
+    parameterStyle: readRequiredDeclarationKind({
+      record,
+      field: 'parameterStyle',
+      path: `${path}.parameterStyle`,
+      allowed: METHOD_PARAMETER_STYLES,
+    }),
+    paramsSchemaRef: readRequiredString(record, 'paramsSchemaRef', `${path}.paramsSchemaRef`),
   }
 }
 

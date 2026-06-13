@@ -63,39 +63,84 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "normalize",
           "jsdoc": "normalize 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(value: TValue | undefined) => TValue"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "reference",
+                  "name": "TValue",
+                  "refersToTypeParameter": true
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "TValue",
+            "refersToTypeParameter": true
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "equals",
           "jsdoc": "equals 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(a: TValue, b: TValue) => boolean"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "a",
+              "type": {
+                "type": "reference",
+                "name": "TValue",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "b",
+              "type": {
+                "type": "reference",
+                "name": "TValue",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "boolean"
+          }
         },
         {
           "name": "emitValue",
           "jsdoc": "emit Value 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(value: TValue) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "reference",
+                "name": "TValue",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     },
     "CommitValueOptions": {
       "kind": "CommitValueOptions",
@@ -126,7 +171,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.688Z",
+  "generatedAt": "2026-06-13T06:21:06.836Z",
   "$defs": {
     "UnifiedValueBridgeOptions": {
       "type": "object",
@@ -140,18 +185,6 @@
         "fallbackValue": true,
         "debounceMs": {
           "type": "number"
-        },
-        "normalize": {
-          "type": "object",
-          "title": "(value: TValue | undefined) => TValue"
-        },
-        "equals": {
-          "type": "object",
-          "title": "(a: TValue, b: TValue) => boolean"
-        },
-        "emitValue": {
-          "type": "object",
-          "title": "(value: TValue) => void"
         }
       }
     },

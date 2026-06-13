@@ -16,6 +16,28 @@
         "$id": "spark-class-model://schema/SnapshotHistory"
       }
     },
+    "spark-class-model://model/SnapshotHistory/constructors/0": {
+      "ref": "spark-class-model://model/SnapshotHistory/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/SnapshotHistory",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f4b4c35e3494df911c5c34147767b238d19f5c8d762e17dc6c540477e929284c"
+    },
+    "spark-class-model://schema/shared/f4b4c35e3494df911c5c34147767b238d19f5c8d762e17dc6c540477e929284c": {
+      "ref": "spark-class-model://schema/shared/f4b4c35e3494df911c5c34147767b238d19f5c8d762e17dc6c540477e929284c",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "_limit": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f4b4c35e3494df911c5c34147767b238d19f5c8d762e17dc6c540477e929284c"
+      }
+    },
     "spark-class-model://model/SnapshotHistory/methods/push/0": {
       "ref": "spark-class-model://model/SnapshotHistory/methods/push/0",
       "kind": "method",
@@ -68,6 +90,7 @@
       "kind": "model",
       "className": "SnapshotHistory",
       "schemaRef": "spark-class-model://schema/SnapshotHistory",
+      "constructorRef": "spark-class-model://model/SnapshotHistory/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/SnapshotHistory/methods/push/0",

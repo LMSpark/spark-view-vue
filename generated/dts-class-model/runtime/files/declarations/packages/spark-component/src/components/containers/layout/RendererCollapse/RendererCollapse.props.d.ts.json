@@ -38,10 +38,6 @@
                 }
               }
             ]
-          },
-          "onChange": {
-            "type": "object",
-            "title": "(value: string | number | Array<string | number>) => void"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -105,24 +101,13 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/ac67cf878f05657514d98820d0403f2cd7ac3239a44557e9b20863305d93cab1": {
-      "ref": "spark-class-model://schema/shared/ac67cf878f05657514d98820d0403f2cd7ac3239a44557e9b20863305d93cab1",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(value: string | number | Array<string | number>) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/ac67cf878f05657514d98820d0403f2cd7ac3239a44557e9b20863305d93cab1"
-      }
-    },
-    "spark-class-model://model/RCollapseProps/attributes/onChange/2": {
-      "ref": "spark-class-model://model/RCollapseProps/attributes/onChange/2",
-      "kind": "attribute",
+    "spark-class-model://model/RCollapseProps/methods/onChange/0": {
+      "ref": "spark-class-model://model/RCollapseProps/methods/onChange/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/RCollapseProps",
       "name": "onChange",
-      "schemaRef": "spark-class-model://schema/shared/ac67cf878f05657514d98820d0403f2cd7ac3239a44557e9b20863305d93cab1",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
     "spark-class-model://model/RCollapseProps": {
       "ref": "spark-class-model://model/RCollapseProps",
@@ -131,10 +116,11 @@
       "schemaRef": "spark-class-model://schema/RCollapseProps",
       "attributeRefs": [
         "spark-class-model://model/RCollapseProps/attributes/toolbar/0",
-        "spark-class-model://model/RCollapseProps/attributes/modelValue/1",
-        "spark-class-model://model/RCollapseProps/attributes/onChange/2"
+        "spark-class-model://model/RCollapseProps/attributes/modelValue/1"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/RCollapseProps/methods/onChange/0"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRCollapseProps%2Fattributes%2Ftoolbar%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FRToolbarProps"
       ]

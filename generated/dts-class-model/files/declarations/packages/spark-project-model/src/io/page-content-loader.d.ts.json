@@ -104,19 +104,34 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "getHeaders",
           "jsdoc": "get Headers 回调。",
-          "schema": {
-            "type": "object",
-            "title": "() => Record<string, string>"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, string>"
+          }
         }
-      ],
-      "methods": []
+      ]
     },
     "PageContentLoader": {
       "kind": "PageContentLoader",
@@ -151,7 +166,17 @@
               "isOptional": true
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "type": "object",
+              "title": "Partial<PageContentLoaderOptions>"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -200,6 +225,27 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              },
+              "filename": {
+                "type": "object",
+                "title": "PageNodeFileName"
+              },
+              "options": {
+                "type": "object",
+                "title": "PageNodeLoadOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<PageContentLoadResult<string>>"
           }
         },
         {
@@ -221,7 +267,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "clearAllCache",
@@ -231,6 +287,14 @@
           "type": {
             "type": "unknown",
             "name": "{\n        size: number;\n        keys: string[];\n    }"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object"
           }
         },
         {
@@ -241,6 +305,14 @@
           "type": {
             "type": "unknown",
             "name": "{\n        size: number;\n        keys: string[];\n    }"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object"
           }
         },
         {
@@ -251,6 +323,15 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "HttpClientBase"
           }
         },
         {
@@ -269,12 +350,22 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.870Z",
+  "generatedAt": "2026-06-13T06:21:07.124Z",
   "$defs": {
     "PageContentLoaderOptions": {
       "type": "object",
@@ -323,10 +414,6 @@
         },
         "timeout": {
           "type": "number"
-        },
-        "getHeaders": {
-          "type": "object",
-          "title": "() => Record<string, string>"
         }
       }
     },

@@ -21,18 +21,6 @@
           "fallbackValue": true,
           "debounceMs": {
             "type": "number"
-          },
-          "normalize": {
-            "type": "object",
-            "title": "(value: TValue | undefined) => TValue"
-          },
-          "equals": {
-            "type": "object",
-            "title": "(a: TValue, b: TValue) => boolean"
-          },
-          "emitValue": {
-            "type": "object",
-            "title": "(value: TValue) => void"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -86,62 +74,31 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/18bf746f301d49beb6a5b6cf7d1d5a39c817e52c0ca89a565bc627d9abee9e52": {
-      "ref": "spark-class-model://schema/shared/18bf746f301d49beb6a5b6cf7d1d5a39c817e52c0ca89a565bc627d9abee9e52",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(value: TValue | undefined) => TValue",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/18bf746f301d49beb6a5b6cf7d1d5a39c817e52c0ca89a565bc627d9abee9e52"
-      }
-    },
-    "spark-class-model://model/UnifiedValueBridgeOptions/attributes/normalize/3": {
-      "ref": "spark-class-model://model/UnifiedValueBridgeOptions/attributes/normalize/3",
-      "kind": "attribute",
+    "spark-class-model://model/UnifiedValueBridgeOptions/methods/normalize/0": {
+      "ref": "spark-class-model://model/UnifiedValueBridgeOptions/methods/normalize/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UnifiedValueBridgeOptions",
       "name": "normalize",
-      "schemaRef": "spark-class-model://schema/shared/18bf746f301d49beb6a5b6cf7d1d5a39c817e52c0ca89a565bc627d9abee9e52",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
     },
-    "spark-class-model://schema/shared/a0bf3a7dda6a82f55a1d3f7fff89c6d03295a51d7796dac87937544b63f392c3": {
-      "ref": "spark-class-model://schema/shared/a0bf3a7dda6a82f55a1d3f7fff89c6d03295a51d7796dac87937544b63f392c3",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(a: TValue, b: TValue) => boolean",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/a0bf3a7dda6a82f55a1d3f7fff89c6d03295a51d7796dac87937544b63f392c3"
-      }
-    },
-    "spark-class-model://model/UnifiedValueBridgeOptions/attributes/equals/4": {
-      "ref": "spark-class-model://model/UnifiedValueBridgeOptions/attributes/equals/4",
-      "kind": "attribute",
+    "spark-class-model://model/UnifiedValueBridgeOptions/methods/equals/1": {
+      "ref": "spark-class-model://model/UnifiedValueBridgeOptions/methods/equals/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UnifiedValueBridgeOptions",
       "name": "equals",
-      "schemaRef": "spark-class-model://schema/shared/a0bf3a7dda6a82f55a1d3f7fff89c6d03295a51d7796dac87937544b63f392c3",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
     },
-    "spark-class-model://schema/shared/d26f6c41747f8e57172d0f8878a4ac54870b0d145d2c6f04fd3aaa8a1881a0ea": {
-      "ref": "spark-class-model://schema/shared/d26f6c41747f8e57172d0f8878a4ac54870b0d145d2c6f04fd3aaa8a1881a0ea",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(value: TValue) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/d26f6c41747f8e57172d0f8878a4ac54870b0d145d2c6f04fd3aaa8a1881a0ea"
-      }
-    },
-    "spark-class-model://model/UnifiedValueBridgeOptions/attributes/emitValue/5": {
-      "ref": "spark-class-model://model/UnifiedValueBridgeOptions/attributes/emitValue/5",
-      "kind": "attribute",
+    "spark-class-model://model/UnifiedValueBridgeOptions/methods/emitValue/2": {
+      "ref": "spark-class-model://model/UnifiedValueBridgeOptions/methods/emitValue/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UnifiedValueBridgeOptions",
       "name": "emitValue",
-      "schemaRef": "spark-class-model://schema/shared/d26f6c41747f8e57172d0f8878a4ac54870b0d145d2c6f04fd3aaa8a1881a0ea",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
     "spark-class-model://model/UnifiedValueBridgeOptions": {
       "ref": "spark-class-model://model/UnifiedValueBridgeOptions",
@@ -151,12 +108,13 @@
       "attributeRefs": [
         "spark-class-model://model/UnifiedValueBridgeOptions/attributes/value/0",
         "spark-class-model://model/UnifiedValueBridgeOptions/attributes/fallbackValue/1",
-        "spark-class-model://model/UnifiedValueBridgeOptions/attributes/debounceMs/2",
-        "spark-class-model://model/UnifiedValueBridgeOptions/attributes/normalize/3",
-        "spark-class-model://model/UnifiedValueBridgeOptions/attributes/equals/4",
-        "spark-class-model://model/UnifiedValueBridgeOptions/attributes/emitValue/5"
+        "spark-class-model://model/UnifiedValueBridgeOptions/attributes/debounceMs/2"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UnifiedValueBridgeOptions/methods/normalize/0",
+        "spark-class-model://model/UnifiedValueBridgeOptions/methods/equals/1",
+        "spark-class-model://model/UnifiedValueBridgeOptions/methods/emitValue/2"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUnifiedValueBridgeOptions%2Fattributes%2Fvalue%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef"
       ]

@@ -36,16 +36,106 @@
         "className": "DtsNativeScriptRunCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
-      "methods": []
+      "attributes": [
+        {
+          "name": "instance",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "manifestUrl",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rootClassName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "host",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentRuntimeHostContext"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "script",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "fetchJson",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "url",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<unknown>"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.561Z",
+  "generatedAt": "2026-06-13T06:21:06.572Z",
   "$defs": {
     "DtsNativeScriptRunCommand": {
       "type": "object",
       "title": "DtsNativeScriptRunCommand",
-      "description": "Dts Native Script Run Command 的命令参数。"
+      "description": "Dts Native Script Run Command 的命令参数。",
+      "properties": {
+        "instance": true,
+        "manifestUrl": {
+          "type": "string"
+        },
+        "rootClassName": {
+          "type": "string"
+        },
+        "host": {
+          "type": "object",
+          "title": "AiAgentRuntimeHostContext"
+        },
+        "script": {
+          "type": "string"
+        }
+      }
     }
   }
 }

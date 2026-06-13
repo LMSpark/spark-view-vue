@@ -75,7 +75,17 @@
               "name": "unknown"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "type": "object",
+              "title": "ProjectModelInitOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -102,6 +112,19 @@
               "name": "TNode",
               "refersToTypeParameter": true
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": true
           }
         },
         {
@@ -139,7 +162,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "callback": {
+                "type": "object",
+                "title": "(node: TNode) => void"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "replaceNavigationRoot",
@@ -157,6 +191,20 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "root": {
+                "type": "object",
+                "title": "ProjectModelData"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectModelData"
           }
         },
         {
@@ -175,6 +223,20 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "project": {
+                "type": "object",
+                "title": "ProjectInfoInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectInfo"
           }
         },
         {
@@ -196,6 +258,23 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "children": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "ProjectNodeData"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectModelData"
           }
         },
         {
@@ -224,7 +303,17 @@
                 "value": null
               }
             ]
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "findNodeLocation",
@@ -249,6 +338,26 @@
               {
                 "type": "literal",
                 "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ProjectNodeLocation"
+              },
+              {
+                "type": "null"
               }
             ]
           }
@@ -278,6 +387,26 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ConfigPageNode"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -304,6 +433,20 @@
                 "refersToTypeParameter": true
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "NavigationNodeDraft"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/ProjectDesignNodeEditResult",
+            "title": "ProjectDesignNodeEditResult<TNode>"
           }
         },
         {
@@ -322,6 +465,19 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ConfigPageNode"
           }
         },
         {
@@ -340,7 +496,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "readPlanningProjection",
@@ -352,6 +518,18 @@
             "elementType": {
               "type": "reference",
               "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "ProjectPageNodeSummary"
             }
           }
         },
@@ -381,6 +559,20 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "createId": {
+                "type": "object",
+                "title": "() => string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectNodeData"
           }
         },
         {
@@ -428,6 +620,31 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "createId": {
+                "type": "object",
+                "title": "() => string"
+              },
+              "parent": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "ProjectNodeData"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectNodeData"
           }
         },
         {
@@ -455,6 +672,26 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ProjectNodeData"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -465,7 +702,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "toTree",
@@ -478,12 +721,24 @@
               "type": "reference",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "ProjectNodeData"
+            }
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.888Z",
+  "generatedAt": "2026-06-13T06:21:07.155Z",
   "$defs": {
     "ProjectDesignNodeEditResult": {
       "type": "object",

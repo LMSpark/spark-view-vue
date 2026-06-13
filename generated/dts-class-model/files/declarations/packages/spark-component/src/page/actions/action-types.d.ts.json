@@ -179,7 +179,97 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "getCurrentRow",
+          "jsdoc": "获取表单当前绑定的数据行（未绑定时返回 null）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "DataRow"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "getFormData",
+          "jsdoc": "获取表单当前填写的字段数据（不含主键）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        {
+          "name": "validate",
+          "jsdoc": "可选：触发表单校验；返回 false 则执行器中止提交",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<boolean>"
+          }
+        }
+      ]
     },
     "ActionExecutionScope": {
       "kind": "ActionExecutionScope",
@@ -1720,49 +1810,144 @@
         "className": "ActionExecutionContext",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "getDataSet",
           "jsdoc": "获取当前页面的 DataSet 实例（用于 DataViewKey 解析）；页面未就绪时返回 null",
-          "schema": {
-            "type": "object",
-            "title": "() => DataSetContract | null"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "DataSetContract"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataSetContract"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
         },
         {
           "name": "getDataSource",
           "jsdoc": "可选：获取容器作用域 DataView（调用方已确定 DataView 时提供）。\n适用于容器明确持有 DataView 的场景（如 r-table 内置按钮），\n此时可省略 descriptor 上的 DataViewKey，避免误报\"数据视图未就绪\"。",
-          "schema": {
-            "type": "object",
-            "title": "() => DataView | null"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "DataView"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
         },
         {
           "name": "getPageService",
           "jsdoc": "获取页面服务能力（消息/确认/弹窗等 UI 交互）；未注册时返回 null",
-          "schema": {
-            "type": "object",
-            "title": "() => PageServiceCapability | null"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "PageServiceCapability"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
         },
         {
           "name": "getRouter",
           "jsdoc": "获取路由器（navigate 动作使用）；非路由环境返回 null",
-          "schema": {
-            "type": "object",
-            "title": "() => RouterLike | null"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "RouterLike",
+                "sourcePath": "declarations/packages/spark-component/src/page/actions/action-types.d.ts"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/RouterLike"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
         }
-      ],
-      "methods": []
+      ]
     },
     "ActionExecutionControl": {
       "kind": "ActionExecutionControl",
@@ -1800,10 +1985,55 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "push",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "to",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "unknown",
+                    "name": "{\n        path: string;\n        query?: Record<string, string>;\n    }"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "to": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.788Z",
+  "generatedAt": "2026-06-13T06:21:06.993Z",
   "$defs": {
     "ActionUiDecorator": {
       "type": "object",
@@ -2341,25 +2571,7 @@
     "ActionExecutionContext": {
       "type": "object",
       "title": "ActionExecutionContext",
-      "description": "动作执行上下文：执行器与调用方（容器/渲染器）之间的依赖注入接口。\n执行器不直接持有 Vue 组件或 DataSet 引用，而是通过此接口的工厂函数按需获取，\n从而保持执行器框架无关性并支持懒解析。",
-      "properties": {
-        "getDataSet": {
-          "type": "object",
-          "title": "() => DataSetContract | null"
-        },
-        "getDataSource": {
-          "type": "object",
-          "title": "() => DataView | null"
-        },
-        "getPageService": {
-          "type": "object",
-          "title": "() => PageServiceCapability | null"
-        },
-        "getRouter": {
-          "type": "object",
-          "title": "() => RouterLike | null"
-        }
-      }
+      "description": "动作执行上下文：执行器与调用方（容器/渲染器）之间的依赖注入接口。\n执行器不直接持有 Vue 组件或 DataSet 引用，而是通过此接口的工厂函数按需获取，\n从而保持执行器框架无关性并支持懒解析。"
     },
     "ActionExecutionControl": {
       "type": "object",

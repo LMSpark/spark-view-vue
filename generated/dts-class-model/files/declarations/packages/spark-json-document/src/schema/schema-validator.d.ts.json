@@ -76,7 +76,26 @@
         "className": "JsonValidationResult",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "ok",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "issues",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "JsonSchemaValidateOptions": {
@@ -98,7 +117,18 @@
         "className": "JsonSchemaValidateOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "schemaDefs",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, JsonSchema>>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "JsonSchemaValidator": {
@@ -149,6 +179,20 @@
             "type": "reference",
             "name": "JsonValidationResult",
             "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-validator.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": true,
+              "schema": true,
+              "options": {
+                "$ref": "#/$defs/JsonSchemaValidateOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/JsonValidationResult"
           }
         },
         {
@@ -186,6 +230,23 @@
             "type": "reference",
             "name": "JsonValidationResult",
             "sourcePath": "declarations/packages/spark-json-document/src/schema/schema-validator.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true,
+              "schema": {
+                "type": "object",
+                "title": "JsonSchema"
+              },
+              "options": {
+                "$ref": "#/$defs/JsonSchemaValidateOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/JsonValidationResult"
           }
         },
         {
@@ -214,6 +275,21 @@
           "type": {
             "type": "intrinsic",
             "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "issues": {
+                "type": "array"
+              },
+              "maxCount": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
           }
         },
         {
@@ -242,12 +318,27 @@
           "type": {
             "type": "intrinsic",
             "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "issues": {
+                "type": "array"
+              },
+              "maxCount": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.867Z",
+  "generatedAt": "2026-06-13T06:21:07.118Z",
   "$defs": {
     "JsonValidationIssue": {
       "type": "object",
@@ -265,12 +356,26 @@
     "JsonValidationResult": {
       "type": "object",
       "title": "JsonValidationResult",
-      "description": "校验结果：ok + issues 列表"
+      "description": "校验结果：ok + issues 列表",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "issues": {
+          "type": "array"
+        }
+      }
     },
     "JsonSchemaValidateOptions": {
       "type": "object",
       "title": "JsonSchemaValidateOptions",
-      "description": "校验选项：文档级 $defs 供 AJV 2020 原生解析 #/$defs/* $ref。"
+      "description": "校验选项：文档级 $defs 供 AJV 2020 原生解析 #/$defs/* $ref。",
+      "properties": {
+        "schemaDefs": {
+          "type": "object",
+          "title": "Readonly<Record<string, JsonSchema>>"
+        }
+      }
     },
     "JsonSchemaValidator": {
       "type": "object",

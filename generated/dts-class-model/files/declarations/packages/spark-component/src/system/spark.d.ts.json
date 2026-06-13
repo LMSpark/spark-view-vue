@@ -51,10 +51,69 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "createContext",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "config",
+              "type": {
+                "type": "intersection",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "Partial",
+                    "typeArguments": [
+                      {
+                        "type": "reference",
+                        "name": "unknown"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "unknown",
+                    "name": "{\n        type: string;\n    }"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "parent",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": true,
+              "parent": {
+                "type": "object",
+                "title": "CapabilityContext"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "CapabilityContext"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.800Z",
+  "generatedAt": "2026-06-13T06:21:07.017Z",
   "$defs": {
     "SparkSystem": {
       "type": "object",

@@ -37,16 +37,43 @@
         "declarationKind": "type",
         "componentName": "AiToolApprovalPanel"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "pending",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "emptyText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.629Z",
+  "generatedAt": "2026-06-13T06:21:06.723Z",
   "$defs": {
     "AiToolApprovalPanelProps": {
       "type": "object",
       "title": "AiToolApprovalPanelProps",
-      "description": "Ai Tool Approval Panel Props 的属性契约。"
+      "description": "Ai Tool Approval Panel Props 的属性契约。",
+      "properties": {
+        "pending": {
+          "type": "array"
+        },
+        "emptyText": {
+          "type": "string"
+        }
+      }
     }
   }
 }

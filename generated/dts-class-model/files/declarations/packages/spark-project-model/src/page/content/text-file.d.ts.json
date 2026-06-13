@@ -66,7 +66,35 @@
               "isOptional": true
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "pageId": {
+              "type": "string"
+            },
+            "fileName": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "script.js"
+                  ]
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "style.css"
+                  ]
+                }
+              ]
+            },
+            "initialText": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -110,6 +138,14 @@
           "type": {
             "type": "intrinsic",
             "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
           }
         },
         {
@@ -128,7 +164,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "loadText",
@@ -146,7 +192,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "markSaved",
@@ -156,7 +212,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "undo",
@@ -166,6 +228,14 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -176,12 +246,20 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.886Z",
+  "generatedAt": "2026-06-13T06:21:07.150Z",
   "$defs": {
     "PageTextFile": {
       "type": "object",

@@ -75,18 +75,6 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/569f4d6b0385907ee0c3d2e2a5efabb760b1d33bf4126133b5020c2eda699d1e": {
-      "ref": "spark-class-model://schema/shared/569f4d6b0385907ee0c3d2e2a5efabb760b1d33bf4126133b5020c2eda699d1e",
-      "kind": "schema",
-      "schema": {
-        "type": "array",
-        "items": {
-          "type": "number"
-        },
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/569f4d6b0385907ee0c3d2e2a5efabb760b1d33bf4126133b5020c2eda699d1e"
-      }
-    },
     "spark-class-model://model/RPaginationProps/attributes/pageSizes/3": {
       "ref": "spark-class-model://model/RPaginationProps/attributes/pageSizes/3",
       "kind": "attribute",

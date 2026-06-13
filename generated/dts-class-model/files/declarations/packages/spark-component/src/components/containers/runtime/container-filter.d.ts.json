@@ -36,7 +36,47 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "error",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "message",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "error",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "error": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "FilterPanelDataView": {
       "kind": "FilterPanelDataView",
@@ -98,19 +138,136 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "getColumn",
           "jsdoc": "get Column 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(field: string) => unknown"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "field",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "unknown"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
+        },
+        {
+          "name": "setFilter",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "expr",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "reference",
+                  "name": "FilterExpression"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "expr": {
+                "type": "object",
+                "title": "FilterExpression"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "executeFilter",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "expr",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "reference",
+                  "name": "FilterExpression"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "expr": {
+                "type": "object",
+                "title": "FilterExpression"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "refresh",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         }
-      ],
-      "methods": []
+      ]
     },
     "UseFilterPanelOptions": {
       "kind": "UseFilterPanelOptions",
@@ -209,32 +366,63 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "searchFilters",
           "jsdoc": "应用过滤（executeFilter 模式，用于搜索按钮）。",
-          "schema": {
-            "type": "object",
-            "title": "() => Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         },
         {
           "name": "resetFilters",
           "jsdoc": "重置所有过滤值。",
-          "schema": {
-            "type": "object",
-            "title": "() => Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.690Z",
+  "generatedAt": "2026-06-13T06:21:06.839Z",
   "$defs": {
     "ErrorLoggerLike": {
       "type": "object",
@@ -269,10 +457,6 @@
               "type": "null"
             }
           ]
-        },
-        "getColumn": {
-          "type": "object",
-          "title": "(field: string) => unknown"
         }
       }
     },
@@ -314,14 +498,6 @@
         "activeFilterCount": {
           "type": "object",
           "title": "ComputedRef<number>"
-        },
-        "searchFilters": {
-          "type": "object",
-          "title": "() => Promise<void>"
-        },
-        "resetFilters": {
-          "type": "object",
-          "title": "() => Promise<void>"
         }
       }
     }

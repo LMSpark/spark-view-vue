@@ -31,26 +31,6 @@
       },
       "attributes": [
         {
-          "name": "onCrossAppNavigate",
-          "jsdoc": "跨应用导航回调：检测到\n@app :projectId/path 格式时调用，由调用方实现项目切换逻辑",
-          "schema": {
-            "type": "object",
-            "title": "(projectId: string, path: string) => Promise<void>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
-          "name": "getHeaders",
-          "jsdoc": "返回额外请求头（如 Authorization），用于远程上下文数据加载",
-          "schema": {
-            "type": "object",
-            "title": "() => Record<string, string>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "actionRegistry",
           "jsdoc": "system-action 命令执行器",
           "schema": {
@@ -61,24 +41,76 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "onCrossAppNavigate",
+          "jsdoc": "跨应用导航回调：检测到\n@app :projectId/path 格式时调用，由调用方实现项目切换逻辑",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "projectId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "path",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        },
+        {
+          "name": "getHeaders",
+          "jsdoc": "返回额外请求头（如 Authorization），用于远程上下文数据加载",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, string>"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.617Z",
+  "generatedAt": "2026-06-13T06:21:06.703Z",
   "$defs": {
     "UseNavigationOptions": {
       "type": "object",
       "title": "UseNavigationOptions",
       "description": "Use Navigation Options 的调用配置。",
       "properties": {
-        "onCrossAppNavigate": {
-          "type": "object",
-          "title": "(projectId: string, path: string) => Promise<void>"
-        },
-        "getHeaders": {
-          "type": "object",
-          "title": "() => Record<string, string>"
-        },
         "actionRegistry": {
           "type": "object",
           "title": "NavigationActionRegistry"

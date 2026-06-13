@@ -146,11 +146,58 @@
         "className": "ResolveFieldPermissionStateInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "field",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "row",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "config",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Omit<FieldRenderConfig, 'field'>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "permissionMode",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "NavPermissionMode"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.797Z",
+  "generatedAt": "2026-06-13T06:21:07.007Z",
   "$defs": {
     "PermissionActionContext": {
       "type": "object",
@@ -176,7 +223,31 @@
     "ResolveFieldPermissionStateInput": {
       "type": "object",
       "title": "ResolveFieldPermissionStateInput",
-      "description": "Resolve Field Permission State Input 的输入数据。"
+      "description": "Resolve Field Permission State Input 的输入数据。",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataRow"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "config": {
+          "type": "object",
+          "title": "Omit<FieldRenderConfig, 'field'>"
+        },
+        "permissionMode": {
+          "type": "object",
+          "title": "NavPermissionMode"
+        }
+      }
     }
   }
 }

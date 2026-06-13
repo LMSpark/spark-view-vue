@@ -137,42 +137,101 @@
           "schema": true,
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "emitUpdate",
           "jsdoc": "向 Vue v-model/update 事件发出新值。",
-          "schema": {
-            "type": "object",
-            "title": "(value: TValue) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "reference",
+                "name": "TValue",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "coerce",
           "jsdoc": "将未知原始值转换成字段组件的值类型。",
-          "schema": {
-            "type": "object",
-            "title": "(rawValue: unknown) => TValue"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rawValue",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "TValue",
+            "refersToTypeParameter": true
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rawValue": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "formatDisplay",
           "jsdoc": "自定义当前值展示文本。",
-          "schema": {
-            "type": "object",
-            "title": "(value: unknown, helpers: ReturnType<typeof useFieldOptions>) => string"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "helpers",
+              "type": {
+                "type": "reference",
+                "name": "ReturnType",
+                "typeArguments": [
+                  {
+                    "type": "unknown",
+                    "name": "typeof useFieldOptions"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "string"
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.743Z",
+  "generatedAt": "2026-06-13T06:21:06.932Z",
   "$defs": {
     "OptionalWithUndefined": {
       "type": "object",
@@ -204,19 +263,7 @@
         "fieldType": {
           "type": "string"
         },
-        "fallbackValue": true,
-        "emitUpdate": {
-          "type": "object",
-          "title": "(value: TValue) => void"
-        },
-        "coerce": {
-          "type": "object",
-          "title": "(rawValue: unknown) => TValue"
-        },
-        "formatDisplay": {
-          "type": "object",
-          "title": "(value: unknown, helpers: ReturnType<typeof useFieldOptions>) => string"
-        }
+        "fallbackValue": true
       }
     }
   }

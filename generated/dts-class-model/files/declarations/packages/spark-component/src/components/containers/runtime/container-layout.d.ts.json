@@ -132,16 +132,6 @@
           "writable": true
         },
         {
-          "name": "getChildGridStyle",
-          "jsdoc": "计算子元素的 CSS 样式（传入节点和索引）。",
-          "schema": {
-            "type": "object",
-            "title": "(child: SparkNode, index?: number) => CSSProperties"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "gridChildren",
           "jsdoc": "过滤后的子节点数组（供模板 v-for 遍历）。",
           "schema": {
@@ -152,7 +142,53 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "getChildGridStyle",
+          "jsdoc": "计算子元素的 CSS 样式（传入节点和索引）。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "child",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "index",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "CSSProperties"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "child": {
+                "type": "object",
+                "title": "SparkNode"
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "CSSProperties"
+          }
+        }
+      ]
     },
     "UseCompositeItemGridOptions": {
       "kind": "UseCompositeItemGridOptions",
@@ -166,59 +202,169 @@
         "className": "UseCompositeItemGridOptions",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "children",
           "jsdoc": "子节点集合。",
-          "schema": {
-            "type": "object",
-            "title": "() => SparkNode['children'] | undefined"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "unknown",
+              "name": "SparkNode['children']"
+            }
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "bodyClass",
           "jsdoc": "复合容器内容区 class；空值会被标准化为空字符串。",
-          "schema": {
-            "type": "object",
-            "title": "() => string | null | undefined"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "literal",
+                "value": null
+              },
+              {
+                "type": "intrinsic",
+                "name": "undefined"
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
         },
         {
           "name": "gridColumns",
           "jsdoc": "复合容器内容区列数；字符串/数字都会被标准化为正整数。",
-          "schema": {
-            "type": "object",
-            "title": "() => string | number | null | undefined"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              {
+                "type": "literal",
+                "value": null
+              },
+              {
+                "type": "intrinsic",
+                "name": "undefined"
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
         },
         {
           "name": "gridAutoRows",
           "jsdoc": "复合容器内容区自动行高；仅接受有效字符串。",
-          "schema": {
-            "type": "object",
-            "title": "() => string | null | undefined"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "literal",
+                "value": null
+              },
+              {
+                "type": "intrinsic",
+                "name": "undefined"
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
         },
         {
           "name": "gridGap",
           "jsdoc": "复合容器内容区间距；数字转 px，字符串按 CSS 原样透传。",
-          "schema": {
-            "type": "object",
-            "title": "() => string | number | null | undefined"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              {
+                "type": "literal",
+                "value": null
+              },
+              {
+                "type": "intrinsic",
+                "name": "undefined"
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
         }
-      ],
-      "methods": []
+      ]
     },
     "CompositeItemGridState": {
       "kind": "CompositeItemGridState",
@@ -262,22 +408,58 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "getContentChildGridStyle",
           "jsdoc": "get Content Child Grid Style 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(child: SparkNode, index?: number) => CSSProperties"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "child",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "index",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "CSSProperties"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "child": {
+                "type": "object",
+                "title": "SparkNode"
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "CSSProperties"
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.692Z",
+  "generatedAt": "2026-06-13T06:21:06.844Z",
   "$defs": {
     "UseContainerGridOptions": {
       "type": "object",
@@ -322,10 +504,6 @@
           "type": "object",
           "title": "ComputedRef<CSSProperties>"
         },
-        "getChildGridStyle": {
-          "type": "object",
-          "title": "(child: SparkNode, index?: number) => CSSProperties"
-        },
         "gridChildren": {
           "type": "object",
           "title": "ComputedRef<SparkNode[]>"
@@ -335,29 +513,7 @@
     "UseCompositeItemGridOptions": {
       "type": "object",
       "title": "UseCompositeItemGridOptions",
-      "description": "Use Composite Item Grid Options 的调用配置。",
-      "properties": {
-        "children": {
-          "type": "object",
-          "title": "() => SparkNode['children'] | undefined"
-        },
-        "bodyClass": {
-          "type": "object",
-          "title": "() => string | null | undefined"
-        },
-        "gridColumns": {
-          "type": "object",
-          "title": "() => string | number | null | undefined"
-        },
-        "gridAutoRows": {
-          "type": "object",
-          "title": "() => string | null | undefined"
-        },
-        "gridGap": {
-          "type": "object",
-          "title": "() => string | number | null | undefined"
-        }
-      }
+      "description": "Use Composite Item Grid Options 的调用配置。"
     },
     "CompositeItemGridState": {
       "type": "object",
@@ -375,10 +531,6 @@
         "contentGridStyle": {
           "type": "object",
           "title": "ComputedRef<CSSProperties>"
-        },
-        "getContentChildGridStyle": {
-          "type": "object",
-          "title": "(child: SparkNode, index?: number) => CSSProperties"
         }
       }
     }

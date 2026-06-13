@@ -125,46 +125,6 @@
           "writable": true
         },
         {
-          "name": "$el",
-          "jsdoc": "当前页面容器 DOM 元素（可用于 focus、scroll 等操作）",
-          "schema": {
-            "type": "object",
-            "title": "() => HTMLElement | null"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "$query",
-          "jsdoc": "通过 CSS 选择器查询页面内单个元素",
-          "schema": {
-            "type": "object",
-            "title": "(selector: string) => HTMLElement | null"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "$queryAll",
-          "jsdoc": "通过 CSS 选择器查询页面内所有匹配元素",
-          "schema": {
-            "type": "object",
-            "title": "(selector: string) => NodeListOf<Element>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
-          "name": "$refreshData",
-          "jsdoc": "刷新数据——重新触发指定 DataView 的远端加载接口。\n@param key 可选视图键；格式为 `'tableName'`（等同 `'tableName@default'`）\n或 `'tableName@viewId'`（指定具体视图）。\n省略则刷新页面内所有有远端加载接口的 DataView。",
-          "schema": {
-            "type": "object",
-            "title": "(key?: string) => Promise<void>"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "$page",
           "jsdoc": "UI 交互服务（框架无关，替代 ElMessage / ElMessageBox）。\n✅ 推荐：所有消息提示、确认框、输入框、导航均通过此接口调用。\n类型直接来自 page-config 的 runtime service contract，渲染层注入对应实现。",
           "schema": {
@@ -211,7 +171,167 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "$el",
+          "jsdoc": "当前页面容器 DOM 元素（可用于 focus、scroll 等操作）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "HTMLElement"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "HTMLElement"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "$query",
+          "jsdoc": "通过 CSS 选择器查询页面内单个元素",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "selector",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "HTMLElement"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "HTMLElement"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "$queryAll",
+          "jsdoc": "通过 CSS 选择器查询页面内所有匹配元素",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "selector",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "NodeListOf",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "Element"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selector": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "NodeListOf<Element>"
+          }
+        },
+        {
+          "name": "$refreshData",
+          "jsdoc": "刷新数据——重新触发指定 DataView 的远端加载接口。\n@param key 可选视图键；格式为 `'tableName'`（等同 `'tableName@default'`）\n或 `'tableName@viewId'`（指定具体视图）。\n省略则刷新页面内所有有远端加载接口的 DataView。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "key",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        }
+      ]
     },
     "PermissionApiInScript": {
       "kind": "PermissionApiInScript",
@@ -226,7 +346,907 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "isPermittedAction",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "action",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            },
+            {
+              "name": "context",
+              "type": {
+                "type": "reference",
+                "name": "PermissionActionContext"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string"
+              },
+              "context": {
+                "type": "object",
+                "title": "PermissionActionContext"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "isModelScopedPermAction",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "action",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "isRowScopedPermAction",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "action",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canCreate",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "modelPermission",
+              "type": {
+                "type": "reference",
+                "name": "ModelPermission"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "modelPermission": {
+                "type": "object",
+                "title": "ModelPermission"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canImport",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "modelPermission",
+              "type": {
+                "type": "reference",
+                "name": "ModelPermission"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "modelPermission": {
+                "type": "object",
+                "title": "ModelPermission"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canExport",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "modelPermission",
+              "type": {
+                "type": "reference",
+                "name": "ModelPermission"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "modelPermission": {
+                "type": "object",
+                "title": "ModelPermission"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canDelete",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canCreateChild",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canEdit",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "isFieldVisible",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "field",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "isFieldEditable",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "field",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "getFieldVisibility",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "field",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "FieldVisibility"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "FieldVisibility"
+          }
+        },
+        {
+          "name": "resolveFieldPermissionState",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "field",
+              "type": {
+                "type": "optional",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            },
+            {
+              "name": "row",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "DataRow"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "undefined"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "config",
+              "type": {
+                "type": "reference",
+                "name": "Omit",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  },
+                  {
+                    "type": "literal",
+                    "value": "field"
+                  }
+                ]
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "FieldRenderState"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "row": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "DataRow"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "config": {
+                "type": "object",
+                "title": "Omit<FieldRenderConfig, 'field'>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "FieldRenderState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "computeFieldState",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "config",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "FieldRenderState"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "title": "FieldRenderConfig"
+              },
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "FieldRenderState"
+          }
+        },
+        {
+          "name": "filterDeletableRows",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rows",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "DataRow"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "DataRow"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "DataRow"
+            }
+          }
+        },
+        {
+          "name": "filterEditableRows",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rows",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "DataRow"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "DataRow"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "DataRow"
+            }
+          }
+        },
+        {
+          "name": "filterFields",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        {
+          "name": "getEditableFields",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            },
+            {
+              "name": "allFields",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              },
+              "allFields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "name": "getVisibleFields",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            },
+            {
+              "name": "allFields",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "intrinsic",
+                  "name": "string"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "intrinsic",
+              "name": "string"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              },
+              "allFields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "name": "filterDisplayableFields",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "DataRow"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataRow"
+          }
+        },
+        {
+          "name": "extractModelPermission",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "dataSource",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "unknown",
+                    "name": "{\n        _modelPerm?: ModelPermission;\n    }"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "undefined"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "ModelPermission"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "dataSource": {
+                "anyOf": [
+                  {
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ModelPermission"
+          }
+        }
+      ]
     },
     "PageComponentAccessInScript": {
       "kind": "PageComponentAccessInScript",
@@ -241,10 +1261,171 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "get",
+          "jsdoc": "按组件 id 获取实例快照（只读元数据，不返回组件 API 对象）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ComponentInstanceSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "list",
+          "jsdoc": "列出页面组件实例（可按 type 过滤，只读元数据）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "type",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "ComponentInstanceSnapshot"
+            }
+          }
+        },
+        {
+          "name": "getApi",
+          "jsdoc": "按组件 id 获取组件暴露 API（运行时实现可返回任意结构）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "getApisByType",
+          "jsdoc": "按 type 获取同类组件 API 列表",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "type",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "T",
+              "refersToTypeParameter": true
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": true
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.800Z",
+  "generatedAt": "2026-06-13T06:21:07.014Z",
   "$defs": {
     "PageRoute": {
       "type": "object",
@@ -281,22 +1462,6 @@
         },
         "$route": {
           "$ref": "#/$defs/PageRoute"
-        },
-        "$el": {
-          "type": "object",
-          "title": "() => HTMLElement | null"
-        },
-        "$query": {
-          "type": "object",
-          "title": "(selector: string) => HTMLElement | null"
-        },
-        "$queryAll": {
-          "type": "object",
-          "title": "(selector: string) => NodeListOf<Element>"
-        },
-        "$refreshData": {
-          "type": "object",
-          "title": "(key?: string) => Promise<void>"
         },
         "$page": {
           "type": "object",

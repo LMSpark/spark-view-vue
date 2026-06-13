@@ -189,7 +189,16 @@
               "sourcePath": "declarations/packages/spark-data/src/validation.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "schema": {
+              "$ref": "#/$defs/DataSchema"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -210,6 +219,19 @@
             "type": "reference",
             "name": "ValidationResult",
             "sourcePath": "declarations/packages/spark-data/src/validation.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/ValidationResult"
           }
         },
         {
@@ -235,6 +257,25 @@
               "name": "ValidationResult",
               "sourcePath": "declarations/packages/spark-data/src/validation.d.ts"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/ValidationResult"
+            }
           }
         },
         {
@@ -253,6 +294,19 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
           }
         },
         {
@@ -281,12 +335,32 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/ValidationError"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.859Z",
+  "generatedAt": "2026-06-13T06:21:07.110Z",
   "$defs": {
     "ValidationError": {
       "type": "object",

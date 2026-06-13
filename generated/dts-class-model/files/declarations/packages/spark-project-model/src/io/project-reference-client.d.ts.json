@@ -47,29 +47,58 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "getProjectsApi",
           "jsdoc": "get Projects Api 回调。",
-          "schema": {
-            "type": "object",
-            "title": "() => string"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
         },
         {
           "name": "getProjectNavigationApi",
           "jsdoc": "get Project Navigation Api 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(projectId: string) => string"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "projectId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
         }
-      ],
-      "methods": []
+      ]
     },
     "ProjectSummary": {
       "kind": "ProjectSummary",
@@ -208,7 +237,16 @@
               "sourcePath": "declarations/packages/spark-project-model/src/io/project-reference-client.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/ProjectReferenceClientOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -242,6 +280,19 @@
                 }
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "$ref": "#/$defs/ListProjectReferencesOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectSummary[]>"
           }
         },
         {
@@ -270,12 +321,25 @@
                 }
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectPageReference[]>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.871Z",
+  "generatedAt": "2026-06-13T06:21:07.127Z",
   "$defs": {
     "ProjectReferenceClientOptions": {
       "type": "object",
@@ -285,14 +349,6 @@
         "http": {
           "type": "object",
           "title": "HttpClientBase"
-        },
-        "getProjectsApi": {
-          "type": "object",
-          "title": "() => string"
-        },
-        "getProjectNavigationApi": {
-          "type": "object",
-          "title": "(projectId: string) => string"
         }
       }
     },

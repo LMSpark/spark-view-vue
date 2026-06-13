@@ -125,6 +125,18 @@ public buildLoadedSurface(configPath = ''): DtsClassModelSurfaceDocument {
 
 function listLinkedClassNames(manifest: DtsClassModelBundleManifest, model: ClassModel): readonly string[] {
   const linked = new Set<string>()
+  const constructorMeta = model.constructorMeta
+  if (constructorMeta !== undefined) {
+    collectFromTypeText(manifest, linked, constructorMeta.signatureText)
+    for (const parameter of constructorMeta.parameters ?? []) {
+      collectFromDtsType(manifest, linked, parameter.type)
+    }
+    if (constructorMeta.paramsSchema !== undefined) {
+      for (const schema of Object.values(constructorMeta.paramsSchema.properties ?? {})) {
+        collectFromSchema(manifest, linked, schema)
+      }
+    }
+  }
   for (const attribute of model.attributes) collectFromSchema(manifest, linked, attribute.schema)
   for (const method of model.methods) {
     collectFromTypeText(manifest, linked, method.signatureText)

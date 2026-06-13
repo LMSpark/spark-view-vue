@@ -55,6 +55,25 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://model/NavigationTreeNodeLike/methods/toNodeData/0": {
+      "ref": "spark-class-model://model/NavigationTreeNodeLike/methods/toNodeData/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/NavigationTreeNodeLike",
+      "name": "toNodeData",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationTreeNodeLike%2Fmethods%2FtoNodeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationTreeNodeLike%2Fmethods%2FtoNodeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NavigationTreeNodeLike/methods/toNodeData/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/declarations/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
     "spark-class-model://model/NavigationTreeNodeLike": {
       "ref": "spark-class-model://model/NavigationTreeNodeLike",
       "kind": "model",
@@ -65,8 +84,12 @@
         "spark-class-model://model/NavigationTreeNodeLike/attributes/pid/1",
         "spark-class-model://model/NavigationTreeNodeLike/attributes/order/2"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/NavigationTreeNodeLike/methods/toNodeData/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNavigationTreeNodeLike%2Fmethods%2FtoNodeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData"
+      ]
     },
     "spark-class-model://schema/NavigationIndex": {
       "ref": "spark-class-model://schema/NavigationIndex",
@@ -76,6 +99,29 @@
         "title": "NavigationIndex",
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/NavigationIndex"
+      }
+    },
+    "spark-class-model://model/NavigationIndex/constructors/0": {
+      "ref": "spark-class-model://model/NavigationIndex/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/NavigationIndex",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/35d981ab65d9c01552a211e2cb1279c529f36cf93eb17986ac22f141e42388c5"
+    },
+    "spark-class-model://schema/shared/35d981ab65d9c01552a211e2cb1279c529f36cf93eb17986ac22f141e42388c5": {
+      "ref": "spark-class-model://schema/shared/35d981ab65d9c01552a211e2cb1279c529f36cf93eb17986ac22f141e42388c5",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "nodesById": {
+            "type": "object",
+            "title": "Map<string, TNode>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/35d981ab65d9c01552a211e2cb1279c529f36cf93eb17986ac22f141e42388c5"
       }
     },
     "spark-class-model://model/NavigationIndex/methods/rebuild/0": {
@@ -126,21 +172,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963",
       "returnSchemaRef": "spark-class-model://schema/shared/11d4ea710c0857a7ef77be94495b61aec958a088b84acd5937f16f8ebe8956e6"
-    },
-    "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963": {
-      "ref": "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "nodeId": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/10f7ec29aa7b97c5177febc3461214bb5dce309e04f262cd3735ed033cebe963"
-      }
     },
     "spark-class-model://model/NavigationIndex/methods/nextChildOrder/4": {
       "ref": "spark-class-model://model/NavigationIndex/methods/nextChildOrder/4",
@@ -237,6 +268,7 @@
       "kind": "model",
       "className": "NavigationIndex",
       "schemaRef": "spark-class-model://schema/NavigationIndex",
+      "constructorRef": "spark-class-model://model/NavigationIndex/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/NavigationIndex/methods/rebuild/0",

@@ -24,18 +24,6 @@
           "isCurrentFieldEditable": {
             "$ref": "spark-class-model://schema/ValueRef",
             "title": "ValueRef<boolean>"
-          },
-          "syncValue": {
-            "type": "object",
-            "title": "(value: string) => void"
-          },
-          "emitUpdate": {
-            "type": "object",
-            "title": "(value: string) => void"
-          },
-          "getRowRawValue": {
-            "type": "object",
-            "title": "(row: DataRow) => unknown"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -99,42 +87,40 @@
       "targetFile": "files/declarations/packages/spark-component/src/components/shared-types.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/ValueRef"
     },
-    "spark-class-model://model/UseHtmlEditorStateOptions/attributes/syncValue/3": {
-      "ref": "spark-class-model://model/UseHtmlEditorStateOptions/attributes/syncValue/3",
-      "kind": "attribute",
+    "spark-class-model://model/UseHtmlEditorStateOptions/methods/syncValue/0": {
+      "ref": "spark-class-model://model/UseHtmlEditorStateOptions/methods/syncValue/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseHtmlEditorStateOptions",
       "name": "syncValue",
-      "schemaRef": "spark-class-model://schema/shared/d6fa2742f8c4b07105727382b200964d4d3c00d550e19a9f873035bc43dc5c52",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/670a1e80f5fbc27041a0d8c43ab32938d273e1e95683f60b0068f19a84d0227c"
     },
-    "spark-class-model://model/UseHtmlEditorStateOptions/attributes/emitUpdate/4": {
-      "ref": "spark-class-model://model/UseHtmlEditorStateOptions/attributes/emitUpdate/4",
-      "kind": "attribute",
+    "spark-class-model://model/UseHtmlEditorStateOptions/methods/emitUpdate/1": {
+      "ref": "spark-class-model://model/UseHtmlEditorStateOptions/methods/emitUpdate/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseHtmlEditorStateOptions",
       "name": "emitUpdate",
-      "schemaRef": "spark-class-model://schema/shared/d6fa2742f8c4b07105727382b200964d4d3c00d550e19a9f873035bc43dc5c52",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/670a1e80f5fbc27041a0d8c43ab32938d273e1e95683f60b0068f19a84d0227c"
     },
-    "spark-class-model://schema/shared/5f18de86aee22e081818009fde6790298dd43056ea5bf2be893d33d66ef3e160": {
-      "ref": "spark-class-model://schema/shared/5f18de86aee22e081818009fde6790298dd43056ea5bf2be893d33d66ef3e160",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(row: DataRow) => unknown",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/5f18de86aee22e081818009fde6790298dd43056ea5bf2be893d33d66ef3e160"
-      }
-    },
-    "spark-class-model://model/UseHtmlEditorStateOptions/attributes/getRowRawValue/5": {
-      "ref": "spark-class-model://model/UseHtmlEditorStateOptions/attributes/getRowRawValue/5",
-      "kind": "attribute",
+    "spark-class-model://model/UseHtmlEditorStateOptions/methods/getRowRawValue/2": {
+      "ref": "spark-class-model://model/UseHtmlEditorStateOptions/methods/getRowRawValue/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseHtmlEditorStateOptions",
       "name": "getRowRawValue",
-      "schemaRef": "spark-class-model://schema/shared/5f18de86aee22e081818009fde6790298dd43056ea5bf2be893d33d66ef3e160",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/62c0720f121a1bc7746bb80e7db15f9bc9fbf5e3baaf35ef6ef6223604d1cfe1",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseHtmlEditorStateOptions%2Fmethods%2FgetRowRawValue%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseHtmlEditorStateOptions%2Fmethods%2FgetRowRawValue%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/UseHtmlEditorStateOptions/methods/getRowRawValue/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
     },
     "spark-class-model://model/UseHtmlEditorStateOptions": {
       "ref": "spark-class-model://model/UseHtmlEditorStateOptions",
@@ -144,15 +130,17 @@
       "attributeRefs": [
         "spark-class-model://model/UseHtmlEditorStateOptions/attributes/editorRef/0",
         "spark-class-model://model/UseHtmlEditorStateOptions/attributes/fieldValue/1",
-        "spark-class-model://model/UseHtmlEditorStateOptions/attributes/isCurrentFieldEditable/2",
-        "spark-class-model://model/UseHtmlEditorStateOptions/attributes/syncValue/3",
-        "spark-class-model://model/UseHtmlEditorStateOptions/attributes/emitUpdate/4",
-        "spark-class-model://model/UseHtmlEditorStateOptions/attributes/getRowRawValue/5"
+        "spark-class-model://model/UseHtmlEditorStateOptions/attributes/isCurrentFieldEditable/2"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UseHtmlEditorStateOptions/methods/syncValue/0",
+        "spark-class-model://model/UseHtmlEditorStateOptions/methods/emitUpdate/1",
+        "spark-class-model://model/UseHtmlEditorStateOptions/methods/getRowRawValue/2"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseHtmlEditorStateOptions%2Fattributes%2FfieldValue%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseHtmlEditorStateOptions%2Fattributes%2FisCurrentFieldEditable%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseHtmlEditorStateOptions%2Fattributes%2FisCurrentFieldEditable%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseHtmlEditorStateOptions%2Fmethods%2FgetRowRawValue%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow"
       ]
     }
   }

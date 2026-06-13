@@ -20,15 +20,7 @@
           "fieldType": {
             "type": "string"
           },
-          "fallbackValue": true,
-          "emitUpdate": {
-            "type": "object",
-            "title": "(value: TValue) => void"
-          },
-          "coerce": {
-            "type": "object",
-            "title": "(rawValue: unknown) => TValue"
-          }
+          "fallbackValue": true
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/UseChoiceFieldStateOptions"
@@ -81,23 +73,22 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://model/UseChoiceFieldStateOptions/attributes/emitUpdate/3": {
-      "ref": "spark-class-model://model/UseChoiceFieldStateOptions/attributes/emitUpdate/3",
-      "kind": "attribute",
+    "spark-class-model://model/UseChoiceFieldStateOptions/methods/emitUpdate/0": {
+      "ref": "spark-class-model://model/UseChoiceFieldStateOptions/methods/emitUpdate/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseChoiceFieldStateOptions",
       "name": "emitUpdate",
-      "schemaRef": "spark-class-model://schema/shared/d26f6c41747f8e57172d0f8878a4ac54870b0d145d2c6f04fd3aaa8a1881a0ea",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f"
     },
-    "spark-class-model://model/UseChoiceFieldStateOptions/attributes/coerce/4": {
-      "ref": "spark-class-model://model/UseChoiceFieldStateOptions/attributes/coerce/4",
-      "kind": "attribute",
+    "spark-class-model://model/UseChoiceFieldStateOptions/methods/coerce/1": {
+      "ref": "spark-class-model://model/UseChoiceFieldStateOptions/methods/coerce/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseChoiceFieldStateOptions",
       "name": "coerce",
-      "schemaRef": "spark-class-model://schema/shared/4bb76035769a6ea18d138d5f288016f11a0a879f6b9fcad3500c968b84b53bd3",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/6aea3eb0522caaaf8be995e13fea238cd5aa8fea2389fa416946e5230f8d0dd2",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
     },
     "spark-class-model://model/UseChoiceFieldStateOptions": {
       "ref": "spark-class-model://model/UseChoiceFieldStateOptions",
@@ -107,11 +98,12 @@
       "attributeRefs": [
         "spark-class-model://model/UseChoiceFieldStateOptions/attributes/props/0",
         "spark-class-model://model/UseChoiceFieldStateOptions/attributes/fieldType/1",
-        "spark-class-model://model/UseChoiceFieldStateOptions/attributes/fallbackValue/2",
-        "spark-class-model://model/UseChoiceFieldStateOptions/attributes/emitUpdate/3",
-        "spark-class-model://model/UseChoiceFieldStateOptions/attributes/coerce/4"
+        "spark-class-model://model/UseChoiceFieldStateOptions/attributes/fallbackValue/2"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UseChoiceFieldStateOptions/methods/emitUpdate/0",
+        "spark-class-model://model/UseChoiceFieldStateOptions/methods/coerce/1"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseChoiceFieldStateOptions%2Fattributes%2Fprops%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FOptionFieldStateProps"
       ]

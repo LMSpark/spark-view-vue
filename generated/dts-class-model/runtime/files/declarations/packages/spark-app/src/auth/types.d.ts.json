@@ -278,15 +278,6 @@
         "$id": "spark-class-model://schema/AuthConfig"
       }
     },
-    "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0": {
-      "ref": "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0"
-      }
-    },
     "spark-class-model://model/AuthConfig/attributes/apiEndpoints/0": {
       "ref": "spark-class-model://model/AuthConfig/attributes/apiEndpoints/0",
       "kind": "attribute",
@@ -415,15 +406,6 @@
       "targetClassName": "TenantInfo",
       "targetFile": "files/declarations/packages/spark-app/src/types.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/TenantInfo"
-    },
-    "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387": {
-      "ref": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
-      "kind": "schema",
-      "schema": {
-        "type": "number",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
-      }
     },
     "spark-class-model://model/AuthConfig/attributes/timeout/8": {
       "ref": "spark-class-model://model/AuthConfig/attributes/timeout/8",

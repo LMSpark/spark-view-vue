@@ -271,6 +271,38 @@
         "$id": "spark-class-model://schema/DynamicRouter"
       }
     },
+    "spark-class-model://model/DynamicRouter/constructors/0": {
+      "ref": "spark-class-model://model/DynamicRouter/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/DynamicRouter",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ae3566c1f90db299f0c0ba618dfad49398e010f66e7dcdd7c4923de7e7ccd832"
+    },
+    "spark-class-model://schema/shared/ae3566c1f90db299f0c0ba618dfad49398e010f66e7dcdd7c4923de7e7ccd832": {
+      "ref": "spark-class-model://schema/shared/ae3566c1f90db299f0c0ba618dfad49398e010f66e7dcdd7c4923de7e7ccd832",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/DynamicRouterOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ae3566c1f90db299f0c0ba618dfad49398e010f66e7dcdd7c4923de7e7ccd832"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDynamicRouter%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDynamicRouterOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDynamicRouter%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDynamicRouterOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DynamicRouter/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/DynamicRouterOptions",
+      "targetClassName": "DynamicRouterOptions",
+      "targetFile": "files/declarations/packages/spark-app/src/router/dynamic.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DynamicRouterOptions"
+    },
     "spark-class-model://model/DynamicRouter/methods/registerRoutes/0": {
       "ref": "spark-class-model://model/DynamicRouter/methods/registerRoutes/0",
       "kind": "method",
@@ -312,16 +344,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
       "returnSchemaRef": "spark-class-model://schema/shared/e64f0cd433e181153cc7d888d85d9d2e56a0790663d48e09e4df7d61475aa49b"
     },
-    "spark-class-model://schema/shared/e64f0cd433e181153cc7d888d85d9d2e56a0790663d48e09e4df7d61475aa49b": {
-      "ref": "spark-class-model://schema/shared/e64f0cd433e181153cc7d888d85d9d2e56a0790663d48e09e4df7d61475aa49b",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "Promise<ProjectModelData | null>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/e64f0cd433e181153cc7d888d85d9d2e56a0790663d48e09e4df7d61475aa49b"
-      }
-    },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDynamicRouter%2Fmethods%2FrefreshRoutes%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectModelData": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDynamicRouter%2Fmethods%2FrefreshRoutes%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectModelData",
       "kind": "link",
@@ -340,22 +362,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
       "returnSchemaRef": "spark-class-model://schema/shared/ce22d053f66f008f84576ae656c38a2d4a2c2e4c3b4c44cc9fa9c0aff3104b93"
-    },
-    "spark-class-model://schema/shared/ce22d053f66f008f84576ae656c38a2d4a2c2e4c3b4c44cc9fa9c0aff3104b93": {
-      "ref": "spark-class-model://schema/shared/ce22d053f66f008f84576ae656c38a2d4a2c2e4c3b4c44cc9fa9c0aff3104b93",
-      "kind": "schema",
-      "schema": {
-        "anyOf": [
-          {
-            "$ref": "spark-class-model://schema/ProjectModelData"
-          },
-          {
-            "type": "null"
-          }
-        ],
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/ce22d053f66f008f84576ae656c38a2d4a2c2e4c3b4c44cc9fa9c0aff3104b93"
-      }
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDynamicRouter%2Fmethods%2FgetNavTree%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectModelData": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDynamicRouter%2Fmethods%2FgetNavTree%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectModelData",
@@ -381,6 +387,7 @@
       "kind": "model",
       "className": "DynamicRouter",
       "schemaRef": "spark-class-model://schema/DynamicRouter",
+      "constructorRef": "spark-class-model://model/DynamicRouter/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/DynamicRouter/methods/registerRoutes/0",
@@ -390,6 +397,7 @@
         "spark-class-model://model/DynamicRouter/methods/getRegisteredRoutes/4"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDynamicRouter%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDynamicRouterOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDynamicRouter%2Fmethods%2FrefreshRoutes%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectModelData",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDynamicRouter%2Fmethods%2FgetNavTree%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectModelData"
       ]

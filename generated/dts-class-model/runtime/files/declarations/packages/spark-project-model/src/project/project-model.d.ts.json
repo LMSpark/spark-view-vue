@@ -82,6 +82,23 @@
       "targetFile": "files/declarations/packages/spark-project-model/src/project/project-session.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/ProjectSession"
     },
+    "spark-class-model://model/ProjectModel/constructors/0": {
+      "ref": "spark-class-model://model/ProjectModel/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/ProjectModel",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/8f0e147816628c5793fccc579ab9456de43e164c8dcd445448e693aff2e2f4ca"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectModel%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectModelInitOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectModel%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectModelInitOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectModel/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/ProjectModelInitOptions",
+      "targetClassName": "ProjectModelInitOptions",
+      "targetFile": "files/declarations/packages/spark-project-model/src/project/project-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectModelInitOptions"
+    },
     "spark-class-model://model/ProjectModel/methods/subscribe/0": {
       "ref": "spark-class-model://model/ProjectModel/methods/subscribe/0",
       "kind": "method",
@@ -1215,6 +1232,7 @@
       "kind": "model",
       "className": "ProjectModel",
       "schemaRef": "spark-class-model://schema/ProjectModel",
+      "constructorRef": "spark-class-model://model/ProjectModel/constructors/0",
       "attributeRefs": [
         "spark-class-model://model/ProjectModel/attributes/design/0",
         "spark-class-model://model/ProjectModel/attributes/session/1"
@@ -1271,6 +1289,7 @@
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectModel%2Fattributes%2Fdesign%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectDesign",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectModel%2Fattributes%2Fsession%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FProjectSession",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectModel%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectModelInitOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectModel%2Fmethods%2Fsubscribe%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectModelEventListener",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectModel%2Fmethods%2FreplaceProjectInfo%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectInfoInput",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectModel%2Fmethods%2FreplaceProjectInfo%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectInfo",

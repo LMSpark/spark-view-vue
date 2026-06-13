@@ -66,7 +66,46 @@
         "className": "ClassModelDocument",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "schemaVersion",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rootKind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "module",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiRuntimeApiMetadataJson"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "$defs",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "SourceProvenanceMeta": {
@@ -88,7 +127,150 @@
         "className": "SourceProvenanceMeta",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "file",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "line",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "className",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "memberName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "typeEntryFile",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentType",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentLevel",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ComponentClassModelLevel"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentLayer",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ComponentClassModelLayer"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "componentDirectory",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "declarationKind",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "class"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "interface"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "type"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "enum"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "function"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "const"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "component"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ComponentClassModelLevel": {
@@ -237,7 +419,35 @@
         "className": "ClassModelDeclarationRelation",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ClassModelDeclarationRelationKind"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "typeText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "targetName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ClassModel": {
@@ -259,7 +469,141 @@
         "className": "ClassModel",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "className",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "jsdoc",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/JsDocMeta"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "declarationTypeText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "declarationRelations",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "shapeKind",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "class"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "interface"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "type"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "enum"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "function"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "const"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "component"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "provenance",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/SourceProvenanceMeta"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "constructorMeta",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/ConstructorMeta"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "attributes",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "methods",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "JsDocMeta": {
@@ -296,7 +640,63 @@
         "className": "ConstructorMeta",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "signatureText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "parameterStyle",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/MethodParameterStyle"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "parameters",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "paramsSchema",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchemaObject"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "jsdoc",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/JsDocMeta"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "provenance",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/SourceProvenanceMeta"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AttributeMeta": {
@@ -318,7 +718,63 @@
         "className": "AttributeMeta",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "name",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "schema",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchema"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "readable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "writable",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "jsdoc",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/JsDocMeta"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "provenance",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/SourceProvenanceMeta"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "MethodParameterStyle": {
@@ -437,7 +893,26 @@
         "className": "DtsReflectionSignature",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "parameters",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "type",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/DtsTypeMeta"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "DtsReflectionTypeMeta": {
@@ -459,7 +934,30 @@
         "className": "DtsReflectionTypeMeta",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "type",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "reflection"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "declaration",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "MethodParameterMeta": {
@@ -481,7 +979,58 @@
         "className": "MethodParameterMeta",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "name",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "type",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/DtsTypeMeta"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "flags",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<{\n        isOptional?: boolean;\n    }>"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "defaultValue",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "MethodMeta": {
@@ -503,21 +1052,208 @@
         "className": "MethodMeta",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "name",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "signatureText",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "parameterStyle",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/MethodParameterStyle"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "parameters",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "type",
+          "jsdoc": "TypeDoc SignatureReflection.type（返回类型 SSOT）。",
+          "schema": {
+            "$ref": "#/$defs/DtsTypeMeta"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "paramsSchema",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchemaObject"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "returnSchema",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchema"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "takesContext",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "jsdoc",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/JsDocMeta"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "provenance",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/SourceProvenanceMeta"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.586Z",
+  "generatedAt": "2026-06-13T06:21:06.644Z",
   "$defs": {
     "ClassModelDocument": {
       "type": "object",
       "title": "ClassModelDocument",
-      "description": "ClassModel 文档：只保留 module 真源，不预存 models 索引。\nLLM 可见的 ClassModel 在 guide 投影时按 attribute 链从 module 按需派生；\n连通性由 auditClassModelReflectionConnectivity 验证。"
+      "description": "ClassModel 文档：只保留 module 真源，不预存 models 索引。\nLLM 可见的 ClassModel 在 guide 投影时按 attribute 链从 module 按需派生；\n连通性由 auditClassModelReflectionConnectivity 验证。",
+      "properties": {
+        "schemaVersion": {
+          "type": "number"
+        },
+        "rootKind": {
+          "type": "string"
+        },
+        "module": {
+          "type": "object",
+          "title": "AiRuntimeApiMetadataJson"
+        },
+        "$defs": {
+          "type": "object",
+          "title": "Readonly<Record<string, AiJsonSchemaObject>>"
+        }
+      }
     },
     "SourceProvenanceMeta": {
       "type": "object",
       "title": "SourceProvenanceMeta",
-      "description": "Source Provenance Meta 的语义模型。"
+      "description": "Source Provenance Meta 的语义模型。",
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "number"
+        },
+        "className": {
+          "type": "string"
+        },
+        "memberName": {
+          "type": "string"
+        },
+        "typeEntryFile": {
+          "type": "string"
+        },
+        "componentName": {
+          "type": "string"
+        },
+        "componentType": {
+          "type": "string"
+        },
+        "componentLevel": {
+          "$ref": "#/$defs/ComponentClassModelLevel"
+        },
+        "componentLayer": {
+          "$ref": "#/$defs/ComponentClassModelLayer"
+        },
+        "componentDirectory": {
+          "type": "string"
+        },
+        "declarationKind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "class"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "interface"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "type"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "enum"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "function"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "const"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "component"
+              ]
+            }
+          ]
+        }
+      }
     },
     "ComponentClassModelLevel": {
       "type": "object",
@@ -537,12 +1273,98 @@
     "ClassModelDeclarationRelation": {
       "type": "object",
       "title": "ClassModelDeclarationRelation",
-      "description": "Class Model Declaration Relation 的语义模型。"
+      "description": "Class Model Declaration Relation 的语义模型。",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/ClassModelDeclarationRelationKind"
+        },
+        "typeText": {
+          "type": "string"
+        },
+        "targetName": {
+          "type": "string"
+        }
+      }
     },
     "ClassModel": {
       "type": "object",
       "title": "ClassModel",
-      "description": "guide 投影时的 class 视图；DTS 生成线会直接持久化这个结构。"
+      "description": "guide 投影时的 class 视图；DTS 生成线会直接持久化这个结构。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "className": {
+          "type": "string"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/JsDocMeta"
+        },
+        "declarationTypeText": {
+          "type": "string"
+        },
+        "declarationRelations": {
+          "type": "array"
+        },
+        "shapeKind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "class"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "interface"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "type"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "enum"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "function"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "const"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "component"
+              ]
+            }
+          ]
+        },
+        "provenance": {
+          "$ref": "#/$defs/SourceProvenanceMeta"
+        },
+        "constructorMeta": {
+          "$ref": "#/$defs/ConstructorMeta"
+        },
+        "attributes": {
+          "type": "array"
+        },
+        "methods": {
+          "type": "array"
+        }
+      }
     },
     "JsDocMeta": {
       "type": "object",
@@ -552,12 +1374,54 @@
     "ConstructorMeta": {
       "type": "object",
       "title": "ConstructorMeta",
-      "description": "Constructor Meta 的语义模型。"
+      "description": "Constructor Meta 的语义模型。",
+      "properties": {
+        "signatureText": {
+          "type": "string"
+        },
+        "parameterStyle": {
+          "$ref": "#/$defs/MethodParameterStyle"
+        },
+        "parameters": {
+          "type": "array"
+        },
+        "paramsSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/JsDocMeta"
+        },
+        "provenance": {
+          "$ref": "#/$defs/SourceProvenanceMeta"
+        }
+      }
     },
     "AttributeMeta": {
       "type": "object",
       "title": "AttributeMeta",
-      "description": "Attribute Meta 的语义模型。"
+      "description": "Attribute Meta 的语义模型。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "object",
+          "title": "AiJsonSchema"
+        },
+        "readable": {
+          "type": "boolean"
+        },
+        "writable": {
+          "type": "boolean"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/JsDocMeta"
+        },
+        "provenance": {
+          "$ref": "#/$defs/SourceProvenanceMeta"
+        }
+      }
     },
     "MethodParameterStyle": {
       "type": "object",
@@ -572,22 +1436,104 @@
     "DtsReflectionSignature": {
       "type": "object",
       "title": "DtsReflectionSignature",
-      "description": "TypeDoc `ReflectionType` 精简：函数/构造签名。"
+      "description": "TypeDoc `ReflectionType` 精简：函数/构造签名。",
+      "properties": {
+        "parameters": {
+          "type": "array"
+        },
+        "type": {
+          "$ref": "#/$defs/DtsTypeMeta"
+        }
+      }
     },
     "DtsReflectionTypeMeta": {
       "type": "object",
       "title": "DtsReflectionTypeMeta",
-      "description": "DTS reflection 类型：承载函数或对象字面量中的签名树，用于回调参数和内联函数类型的递归寻址。"
+      "description": "DTS reflection 类型：承载函数或对象字面量中的签名树，用于回调参数和内联函数类型的递归寻址。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "reflection"
+          ]
+        },
+        "declaration": {
+          "type": "object",
+          "title": "Readonly<{\n        signatures: readonly DtsReflectionSignature[];\n    }>"
+        }
+      }
     },
     "MethodParameterMeta": {
       "type": "object",
       "title": "MethodParameterMeta",
-      "description": "Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 记录 DTS 参数。"
+      "description": "Method Parameter Meta 按 TypeDoc JSONOutput.ParameterReflection 记录 DTS 参数。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/DtsTypeMeta"
+        },
+        "flags": {
+          "type": "object",
+          "title": "Readonly<{\n        isOptional?: boolean;\n    }>"
+        },
+        "defaultValue": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
     },
     "MethodMeta": {
       "type": "object",
       "title": "MethodMeta",
-      "description": "Method Meta 的语义模型。"
+      "description": "Method Meta 的语义模型。",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "signatureText": {
+          "type": "string"
+        },
+        "parameterStyle": {
+          "$ref": "#/$defs/MethodParameterStyle"
+        },
+        "parameters": {
+          "type": "array"
+        },
+        "type": {
+          "$ref": "#/$defs/DtsTypeMeta"
+        },
+        "paramsSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "returnSchema": {
+          "type": "object",
+          "title": "AiJsonSchema"
+        },
+        "takesContext": {
+          "type": "boolean"
+        },
+        "jsdoc": {
+          "$ref": "#/$defs/JsDocMeta"
+        },
+        "provenance": {
+          "$ref": "#/$defs/SourceProvenanceMeta"
+        }
+      }
     }
   }
 }

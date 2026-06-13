@@ -281,6 +281,25 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://model/TreeNodeLike/methods/toNodeData/0": {
+      "ref": "spark-class-model://model/TreeNodeLike/methods/toNodeData/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/TreeNodeLike",
+      "name": "toNodeData",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/9ae389da20ffd7a62e0fd5f84f4f32441e282b16641ab450aab95943142e2ef6"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeNodeLike%2Fmethods%2FtoNodeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeNodeLike%2Fmethods%2FtoNodeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/TreeNodeLike/methods/toNodeData/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/ProjectNodeData",
+      "targetClassName": "ProjectNodeData",
+      "targetFile": "files/declarations/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeData"
+    },
     "spark-class-model://model/TreeNodeLike": {
       "ref": "spark-class-model://model/TreeNodeLike",
       "kind": "model",
@@ -290,8 +309,12 @@
         "spark-class-model://model/TreeNodeLike/attributes/id/0",
         "spark-class-model://model/TreeNodeLike/attributes/pid/1"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/TreeNodeLike/methods/toNodeData/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeNodeLike%2Fmethods%2FtoNodeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData"
+      ]
     }
   }
 }

@@ -32,7 +32,77 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "refreshRoutes",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "reference",
+                    "name": "ProjectModelData"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectModelData | null>"
+          }
+        },
+        {
+          "name": "getNavTree",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "ProjectModelData"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ProjectModelData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      ]
     },
     "NavAccessOptions": {
       "kind": "NavAccessOptions",
@@ -60,7 +130,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.613Z",
+  "generatedAt": "2026-06-13T06:21:06.698Z",
   "$defs": {
     "DynamicRouterAccess": {
       "type": "object",

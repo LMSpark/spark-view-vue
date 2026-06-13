@@ -44,7 +44,44 @@
         "className": "AiAgentOrchestrationPlan",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "userMessage",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "systemPrompt",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "title",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "readonlySteps",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentInputContract": {
@@ -66,8 +103,117 @@
         "className": "AiAgentInputContract",
         "declarationKind": "type"
       },
-      "attributes": [],
-      "methods": []
+      "attributes": [
+        {
+          "name": "paramsSchema",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiJsonSchemaObject"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "identityField",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "normalize",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "input",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "TInput",
+            "refersToTypeParameter": true
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "AiJsonParams"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "toScope",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "normalizedInput",
+              "type": {
+                "type": "reference",
+                "name": "TInput",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "normalizedInput": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentScope"
+          }
+        },
+        {
+          "name": "toOrchestration",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "normalizedInput",
+              "type": {
+                "type": "reference",
+                "name": "TInput",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentOrchestrationPlan",
+            "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-task.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "normalizedInput": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentOrchestrationPlan"
+          }
+        }
+      ]
     },
     "AiAgentTaskChatOptions": {
       "kind": "AiAgentTaskChatOptions",
@@ -93,7 +239,17 @@
         "className": "AiAgentTaskChatOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "systemPrompt",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentTaskRegistry": {
@@ -116,7 +272,49 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "get",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "kindID",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown",
+              "typeArguments": [
+                {
+                  "type": "reference",
+                  "name": "TInput",
+                  "refersToTypeParameter": true
+                }
+              ]
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "kindID": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentRegistration<TInput>"
+          }
+        }
+      ]
     },
     "AiAgentTask": {
       "kind": "AiAgentTask",
@@ -164,7 +362,24 @@
               "sourcePath": "declarations/packages/spark-ai/src/agent/business/business-task.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "kindID": {
+              "type": "string"
+            },
+            "normalizedInput": true,
+            "scope": {
+              "type": "object",
+              "title": "AiAgentScope"
+            },
+            "orchestration": {
+              "$ref": "#/$defs/AiAgentOrchestrationPlan"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -234,27 +449,66 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "$ref": "#/$defs/AiAgentTaskChatOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentChatRequest"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.546Z",
+  "generatedAt": "2026-06-13T06:21:06.536Z",
   "$defs": {
     "AiAgentOrchestrationPlan": {
       "type": "object",
       "title": "AiAgentOrchestrationPlan",
-      "description": "编排计划：LLM 对话的 userMessage、systemPrompt 和可选标题/步骤"
+      "description": "编排计划：LLM 对话的 userMessage、systemPrompt 和可选标题/步骤",
+      "properties": {
+        "userMessage": {
+          "type": "string"
+        },
+        "systemPrompt": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "readonlySteps": {
+          "type": "array"
+        }
+      }
     },
     "AiAgentInputContract": {
       "type": "object",
       "title": "AiAgentInputContract",
-      "description": "输入契约：定义一种业务 Task 的输入 schema、归一化函数、scope 和编排生成"
+      "description": "输入契约：定义一种业务 Task 的输入 schema、归一化函数、scope 和编排生成",
+      "properties": {
+        "paramsSchema": {
+          "type": "object",
+          "title": "AiJsonSchemaObject"
+        },
+        "identityField": true
+      }
     },
     "AiAgentTaskChatOptions": {
       "type": "object",
       "title": "AiAgentTaskChatOptions",
-      "description": "Chat 请求选项（剔除 historyMsgs 和 systemPrompt，由 Task 内部生成）"
+      "description": "Chat 请求选项（剔除 historyMsgs 和 systemPrompt，由 Task 内部生成）",
+      "properties": {
+        "systemPrompt": {
+          "type": "string"
+        }
+      }
     },
     "AiAgentTaskRegistry": {
       "type": "object",

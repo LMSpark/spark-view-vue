@@ -69,7 +69,73 @@
         "className": "AiDeliveryArtifact",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "page-file"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "navigation"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "name",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "dirty"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "saved"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "skipped"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "rolledBack"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiDeliveryResult": {
@@ -91,7 +157,69 @@
         "className": "AiDeliveryResult",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "mode",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiDeliveryMode"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "saved"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "skipped"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "rolledBack"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "failed"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "artifacts",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "message",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiDeliveryPort": {
@@ -141,6 +269,17 @@
                 "sourcePath": "declarations/src/services/ai/ai-delivery-port.d.ts"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiDeliveryResult>"
           }
         },
         {
@@ -174,6 +313,20 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": true,
+              "result": {
+                "$ref": "#/$defs/AiDeliveryResult"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -207,6 +360,21 @@
                 "sourcePath": "declarations/src/services/ai/ai-delivery-port.d.ts"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": true,
+              "error": {
+                "type": "object",
+                "title": "Error"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiDeliveryResult>"
           }
         }
       ]
@@ -230,11 +398,21 @@
         "className": "AiDeliveryResultExtras",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "delivery",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiDeliveryResult"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.921Z",
+  "generatedAt": "2026-06-13T06:21:07.191Z",
   "$defs": {
     "AiDeliveryMode": {
       "type": "object",
@@ -243,11 +421,99 @@
     },
     "AiDeliveryArtifact": {
       "type": "object",
-      "title": "AiDeliveryArtifact"
+      "title": "AiDeliveryArtifact",
+      "properties": {
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "page-file"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "navigation"
+              ]
+            }
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "dirty"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "saved"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "skipped"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "rolledBack"
+              ]
+            }
+          ]
+        }
+      }
     },
     "AiDeliveryResult": {
       "type": "object",
-      "title": "AiDeliveryResult"
+      "title": "AiDeliveryResult",
+      "properties": {
+        "mode": {
+          "$ref": "#/$defs/AiDeliveryMode"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "saved"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "skipped"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "rolledBack"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "failed"
+              ]
+            }
+          ]
+        },
+        "artifacts": {
+          "type": "array"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
     },
     "AiDeliveryPort": {
       "type": "object",
@@ -260,7 +526,12 @@
     },
     "AiDeliveryResultExtras": {
       "type": "object",
-      "title": "AiDeliveryResultExtras"
+      "title": "AiDeliveryResultExtras",
+      "properties": {
+        "delivery": {
+          "$ref": "#/$defs/AiDeliveryResult"
+        }
+      }
     }
   }
 }

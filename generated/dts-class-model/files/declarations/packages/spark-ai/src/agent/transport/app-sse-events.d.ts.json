@@ -87,11 +87,82 @@
         "className": "AiAgentAppSseEvent",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "name",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentAppSseEventName"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "ok",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "data",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rawData",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rawPayload",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "protocolVersion",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "context",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ApiEnvelopeContext"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "event",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ApiEnvelopeEvent"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.573Z",
+  "generatedAt": "2026-06-13T06:21:06.602Z",
   "$defs": {
     "AiAgentAppSseEventName": {
       "type": "object",
@@ -101,7 +172,31 @@
     "AiAgentAppSseEvent": {
       "type": "object",
       "title": "AiAgentAppSseEvent",
-      "description": "APP SSE 事件结构。\n字段说明：\nname            — 事件名（如 llm-frame）\nok              — 事件是否成功（false 表示 error 事件）\ndata            — 已解析的事件数据（泛型 T）\nrawData         — 原始 JSON 字符串\nrawPayload      — 原始解析荷载（未做类型转换）\nprotocolVersion — 可选协议版本号\ncontext         — API 信封上下文（可选）\nevent           — API 信封事件（可选）"
+      "description": "APP SSE 事件结构。\n字段说明：\nname            — 事件名（如 llm-frame）\nok              — 事件是否成功（false 表示 error 事件）\ndata            — 已解析的事件数据（泛型 T）\nrawData         — 原始 JSON 字符串\nrawPayload      — 原始解析荷载（未做类型转换）\nprotocolVersion — 可选协议版本号\ncontext         — API 信封上下文（可选）\nevent           — API 信封事件（可选）",
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/AiAgentAppSseEventName"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "data": true,
+        "rawData": {
+          "type": "string"
+        },
+        "rawPayload": true,
+        "protocolVersion": {
+          "type": "number"
+        },
+        "context": {
+          "type": "object",
+          "title": "ApiEnvelopeContext"
+        },
+        "event": {
+          "type": "object",
+          "title": "ApiEnvelopeEvent"
+        }
+      }
     }
   }
 }

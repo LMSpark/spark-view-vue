@@ -184,16 +184,6 @@
           "writable": true
         },
         {
-          "name": "sparkRemove",
-          "jsdoc": "spark Remove 回调。",
-          "schema": {
-            "type": "object",
-            "title": "<T>(name: CapabilityKey<T>) => void"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "sparkConsume",
           "jsdoc": "spark Consume 字段。",
           "schema": {
@@ -212,7 +202,45 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "sparkRemove",
+          "jsdoc": "spark Remove 回调。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "name",
+              "type": {
+                "type": "reference",
+                "name": "CapabilityKey",
+                "sourcePath": "declarations/packages/spark-component/src/core/useSparkComponent.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "T",
+                    "refersToTypeParameter": true
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "$ref": "#/$defs/CapabilityKey",
+                "title": "CapabilityKey<T>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "UseSparkPageComponentReturn": {
       "kind": "UseSparkPageComponentReturn",
@@ -237,19 +265,35 @@
         "className": "UseSparkPageComponentReturn",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "registerApi",
           "jsdoc": "register Api 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(api: unknown) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "api",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "api": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     },
     "UseSparkCapabilityReaderReturn": {
       "kind": "UseSparkCapabilityReaderReturn",
@@ -435,7 +479,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.782Z",
+  "generatedAt": "2026-06-13T06:21:06.985Z",
   "$defs": {
     "CapabilityKey": {
       "type": "object",
@@ -477,10 +521,6 @@
         "sparkProvide": {
           "type": "object"
         },
-        "sparkRemove": {
-          "type": "object",
-          "title": "<T>(name: CapabilityKey<T>) => void"
-        },
         "sparkConsume": {
           "$ref": "#/$defs/SparkCapabilityConsumer"
         },
@@ -492,13 +532,7 @@
     "UseSparkPageComponentReturn": {
       "type": "object",
       "title": "UseSparkPageComponentReturn",
-      "description": "Use Spark Page Component Return 的语义模型。",
-      "properties": {
-        "registerApi": {
-          "type": "object",
-          "title": "(api: unknown) => void"
-        }
-      }
+      "description": "Use Spark Page Component Return 的语义模型。"
     },
     "UseSparkCapabilityReaderReturn": {
       "type": "object",

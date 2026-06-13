@@ -128,22 +128,49 @@
         "className": "UseTabPagesOptions",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "navigate",
           "jsdoc": "navigate 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(fullPath: string) => Promise<void> | void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "fullPath",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              },
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.617Z",
+  "generatedAt": "2026-06-13T06:21:06.704Z",
   "$defs": {
     "TabPage": {
       "type": "object",
@@ -178,13 +205,7 @@
     "UseTabPagesOptions": {
       "type": "object",
       "title": "UseTabPagesOptions",
-      "description": "Use Tab Pages Options 的调用配置。",
-      "properties": {
-        "navigate": {
-          "type": "object",
-          "title": "(fullPath: string) => Promise<void> | void"
-        }
-      }
+      "description": "Use Tab Pages Options 的调用配置。"
     }
   }
 }

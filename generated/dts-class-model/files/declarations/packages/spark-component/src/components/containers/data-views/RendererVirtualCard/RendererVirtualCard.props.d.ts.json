@@ -271,22 +271,50 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "onPageChange",
           "jsdoc": "页加载回调。",
-          "schema": {
-            "type": "object",
-            "title": "(page: number) => void | Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "page",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.649Z",
+  "generatedAt": "2026-06-13T06:21:06.771Z",
   "$defs": {
     "RVirtualCardProps": {
       "type": "object",
@@ -365,10 +393,6 @@
         "onItemClick": {
           "type": "object",
           "title": "RowClickHandler"
-        },
-        "onPageChange": {
-          "type": "object",
-          "title": "(page: number) => void | Promise<void>"
         }
       }
     }

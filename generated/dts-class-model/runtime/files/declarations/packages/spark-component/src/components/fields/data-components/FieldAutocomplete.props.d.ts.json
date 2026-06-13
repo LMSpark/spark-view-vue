@@ -33,10 +33,6 @@
         "type": "object",
         "title": "RAutocompleteProps",
         "properties": {
-          "fetchSuggestions": {
-            "type": "object",
-            "title": "(queryString: string, cb: FetchSuggestionsCallback) => void"
-          },
           "triggerOnFocus": {
             "type": "boolean"
           },
@@ -51,27 +47,8 @@
         "$id": "spark-class-model://schema/RAutocompleteProps"
       }
     },
-    "spark-class-model://schema/shared/1783e089aed56e4470ade09458fac3aadcdb647d9f86e140dac6237d9c1274d2": {
-      "ref": "spark-class-model://schema/shared/1783e089aed56e4470ade09458fac3aadcdb647d9f86e140dac6237d9c1274d2",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(queryString: string, cb: FetchSuggestionsCallback) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/1783e089aed56e4470ade09458fac3aadcdb647d9f86e140dac6237d9c1274d2"
-      }
-    },
-    "spark-class-model://model/RAutocompleteProps/attributes/fetchSuggestions/0": {
-      "ref": "spark-class-model://model/RAutocompleteProps/attributes/fetchSuggestions/0",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/RAutocompleteProps",
-      "name": "fetchSuggestions",
-      "schemaRef": "spark-class-model://schema/shared/1783e089aed56e4470ade09458fac3aadcdb647d9f86e140dac6237d9c1274d2",
-      "readable": true,
-      "writable": false
-    },
-    "spark-class-model://model/RAutocompleteProps/attributes/triggerOnFocus/1": {
-      "ref": "spark-class-model://model/RAutocompleteProps/attributes/triggerOnFocus/1",
+    "spark-class-model://model/RAutocompleteProps/attributes/triggerOnFocus/0": {
+      "ref": "spark-class-model://model/RAutocompleteProps/attributes/triggerOnFocus/0",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/RAutocompleteProps",
       "name": "triggerOnFocus",
@@ -79,8 +56,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/RAutocompleteProps/attributes/highlightFirstItem/2": {
-      "ref": "spark-class-model://model/RAutocompleteProps/attributes/highlightFirstItem/2",
+    "spark-class-model://model/RAutocompleteProps/attributes/highlightFirstItem/1": {
+      "ref": "spark-class-model://model/RAutocompleteProps/attributes/highlightFirstItem/1",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/RAutocompleteProps",
       "name": "highlightFirstItem",
@@ -88,8 +65,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/RAutocompleteProps/attributes/valueKey/3": {
-      "ref": "spark-class-model://model/RAutocompleteProps/attributes/valueKey/3",
+    "spark-class-model://model/RAutocompleteProps/attributes/valueKey/2": {
+      "ref": "spark-class-model://model/RAutocompleteProps/attributes/valueKey/2",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/RAutocompleteProps",
       "name": "valueKey",
@@ -97,19 +74,40 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://model/RAutocompleteProps/methods/fetchSuggestions/0": {
+      "ref": "spark-class-model://model/RAutocompleteProps/methods/fetchSuggestions/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RAutocompleteProps",
+      "name": "fetchSuggestions",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRAutocompleteProps%2Fmethods%2FfetchSuggestions%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FFetchSuggestionsCallback": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRAutocompleteProps%2Fmethods%2FfetchSuggestions%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FFetchSuggestionsCallback",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RAutocompleteProps/methods/fetchSuggestions/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/FetchSuggestionsCallback",
+      "targetClassName": "FetchSuggestionsCallback",
+      "targetFile": "files/declarations/packages/spark-component/src/components/fields/data-components/FieldAutocomplete.props.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/FetchSuggestionsCallback"
+    },
     "spark-class-model://model/RAutocompleteProps": {
       "ref": "spark-class-model://model/RAutocompleteProps",
       "kind": "model",
       "className": "RAutocompleteProps",
       "schemaRef": "spark-class-model://schema/RAutocompleteProps",
       "attributeRefs": [
-        "spark-class-model://model/RAutocompleteProps/attributes/fetchSuggestions/0",
-        "spark-class-model://model/RAutocompleteProps/attributes/triggerOnFocus/1",
-        "spark-class-model://model/RAutocompleteProps/attributes/highlightFirstItem/2",
-        "spark-class-model://model/RAutocompleteProps/attributes/valueKey/3"
+        "spark-class-model://model/RAutocompleteProps/attributes/triggerOnFocus/0",
+        "spark-class-model://model/RAutocompleteProps/attributes/highlightFirstItem/1",
+        "spark-class-model://model/RAutocompleteProps/attributes/valueKey/2"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/RAutocompleteProps/methods/fetchSuggestions/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRAutocompleteProps%2Fmethods%2FfetchSuggestions%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FFetchSuggestionsCallback"
+      ]
     }
   }
 }

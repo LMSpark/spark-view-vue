@@ -74,16 +74,6 @@
         "$id": "spark-class-model://schema/shared/eb3bf231ad06ba439557814b2287a8ddbb46cb4a9a6b0aa8167756016e5e9ecf"
       }
     },
-    "spark-class-model://schema/shared/670efbe61ac7a80a990322e748af43249d111c5f5dde6682f8ad50f11b10248f": {
-      "ref": "spark-class-model://schema/shared/670efbe61ac7a80a990322e748af43249d111c5f5dde6682f8ad50f11b10248f",
-      "kind": "schema",
-      "schema": {
-        "$ref": "spark-class-model://schema/AiAgentRegistration",
-        "title": "AiAgentRegistration<TInput>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/670efbe61ac7a80a990322e748af43249d111c5f5dde6682f8ad50f11b10248f"
-      }
-    },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistry%2Fmethods%2Fget%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistry%2Fmethods%2Fget%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration",
       "kind": "link",

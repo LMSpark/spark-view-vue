@@ -38,7 +38,27 @@
         "className": "ClassModelFailureModeRecoveryCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "callResult",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Readonly<{\n        code: string;\n        msg: string;\n    }>"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleInstanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ClassModelFailureModeRecoveryContext": {
@@ -60,21 +80,71 @@
         "className": "ClassModelFailureModeRecoveryContext",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "actionName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "mode",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiApiActionFailureMode"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.594Z",
+  "generatedAt": "2026-06-13T06:21:06.673Z",
   "$defs": {
     "ClassModelFailureModeRecoveryCommand": {
       "type": "object",
       "title": "ClassModelFailureModeRecoveryCommand",
-      "description": "Class Model Failure Mode Recovery Command 的命令参数。"
+      "description": "Class Model Failure Mode Recovery Command 的命令参数。",
+      "properties": {
+        "callResult": {
+          "type": "object",
+          "title": "Readonly<{\n        code: string;\n        msg: string;\n    }>"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        }
+      }
     },
     "ClassModelFailureModeRecoveryContext": {
       "type": "object",
       "title": "ClassModelFailureModeRecoveryContext",
-      "description": "Class Model Failure Mode Recovery Context 的运行上下文。"
+      "description": "Class Model Failure Mode Recovery Context 的运行上下文。",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "actionName": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "object",
+          "title": "AiApiActionFailureMode"
+        }
+      }
     }
   }
 }

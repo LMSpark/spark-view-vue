@@ -24,14 +24,119 @@
         "$id": "spark-class-model://schema/AiRunTraceSink"
       }
     },
+    "spark-class-model://model/AiRunTraceSink/methods/appendUserMessage/0": {
+      "ref": "spark-class-model://model/AiRunTraceSink/methods/appendUserMessage/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunTraceSink",
+      "name": "appendUserMessage",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1"
+    },
+    "spark-class-model://model/AiRunTraceSink/methods/appendEvent/1": {
+      "ref": "spark-class-model://model/AiRunTraceSink/methods/appendEvent/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunTraceSink",
+      "name": "appendEvent",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3432d3689876c2972f062d28e82e44fca934451d5492b3bbbcbb3c2edf270d41"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunTraceSink%2Fmethods%2FappendEvent%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentStreamEvent": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunTraceSink%2Fmethods%2FappendEvent%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentStreamEvent",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiRunTraceSink/methods/appendEvent/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentStreamEvent",
+      "targetClassName": "AiAgentStreamEvent",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/chat/chat-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentStreamEvent"
+    },
+    "spark-class-model://model/AiRunTraceSink/methods/appendDelta/2": {
+      "ref": "spark-class-model://model/AiRunTraceSink/methods/appendDelta/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunTraceSink",
+      "name": "appendDelta",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/41a40836bfcfaba8948a1c809b2ec5f880d4132bb38c4d16a1870077dbe2c781"
+    },
+    "spark-class-model://model/AiRunTraceSink/methods/appendReasoning/3": {
+      "ref": "spark-class-model://model/AiRunTraceSink/methods/appendReasoning/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunTraceSink",
+      "name": "appendReasoning",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/3ec81bb53941037d55d87a09e2808d970bbb5ce6785d0ca4c9eab74b43acdad3"
+    },
+    "spark-class-model://model/AiRunTraceSink/methods/appendToolCall/4": {
+      "ref": "spark-class-model://model/AiRunTraceSink/methods/appendToolCall/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunTraceSink",
+      "name": "appendToolCall",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/52725675169490c65421cef3b8a00a198dfe6ca48afc68be5e7fa35e71e5b2b6"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunTraceSink%2Fmethods%2FappendToolCall%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallRecord": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunTraceSink%2Fmethods%2FappendToolCall%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallRecord",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiRunTraceSink/methods/appendToolCall/4",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentToolCallRecord",
+      "targetClassName": "AiAgentToolCallRecord",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/chat/chat-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolCallRecord"
+    },
+    "spark-class-model://model/AiRunTraceSink/methods/appendError/5": {
+      "ref": "spark-class-model://model/AiRunTraceSink/methods/appendError/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunTraceSink",
+      "name": "appendError",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/231d6d620221bfb92feadbe3f77bf3a4ef9a1775ef990e4da4738ee0852ec9b6"
+    },
+    "spark-class-model://model/AiRunTraceSink/methods/markAborted/6": {
+      "ref": "spark-class-model://model/AiRunTraceSink/methods/markAborted/6",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunTraceSink",
+      "name": "markAborted",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/231d6d620221bfb92feadbe3f77bf3a4ef9a1775ef990e4da4738ee0852ec9b6"
+    },
+    "spark-class-model://model/AiRunTraceSink/methods/finish/7": {
+      "ref": "spark-class-model://model/AiRunTraceSink/methods/finish/7",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunTraceSink",
+      "name": "finish",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
+    "spark-class-model://model/AiRunTraceSink/methods/reset/8": {
+      "ref": "spark-class-model://model/AiRunTraceSink/methods/reset/8",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunTraceSink",
+      "name": "reset",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
     "spark-class-model://model/AiRunTraceSink": {
       "ref": "spark-class-model://model/AiRunTraceSink",
       "kind": "model",
       "className": "AiRunTraceSink",
       "schemaRef": "spark-class-model://schema/AiRunTraceSink",
       "attributeRefs": [],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/AiRunTraceSink/methods/appendUserMessage/0",
+        "spark-class-model://model/AiRunTraceSink/methods/appendEvent/1",
+        "spark-class-model://model/AiRunTraceSink/methods/appendDelta/2",
+        "spark-class-model://model/AiRunTraceSink/methods/appendReasoning/3",
+        "spark-class-model://model/AiRunTraceSink/methods/appendToolCall/4",
+        "spark-class-model://model/AiRunTraceSink/methods/appendError/5",
+        "spark-class-model://model/AiRunTraceSink/methods/markAborted/6",
+        "spark-class-model://model/AiRunTraceSink/methods/finish/7",
+        "spark-class-model://model/AiRunTraceSink/methods/reset/8"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunTraceSink%2Fmethods%2FappendEvent%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentStreamEvent",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunTraceSink%2Fmethods%2FappendToolCall%2F4/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolCallRecord"
+      ]
     },
     "spark-class-model://schema/AiRunErrorFormatter": {
       "ref": "spark-class-model://schema/AiRunErrorFormatter",
@@ -119,14 +224,56 @@
         "$id": "spark-class-model://schema/AiRunHost"
       }
     },
+    "spark-class-model://model/AiRunHost/methods/run/0": {
+      "ref": "spark-class-model://model/AiRunHost/methods/run/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunHost",
+      "name": "run",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f2f71eea879668053d530c604dcb7ff6a56331761a2a0661070b3d2a0a7a997e",
+      "returnSchemaRef": "spark-class-model://schema/shared/d0db822e99dcadbd9d35439e3e83061dc21061c49e264934813aa9d71d2b8e6f"
+    },
+    "spark-class-model://schema/shared/f2f71eea879668053d530c604dcb7ff6a56331761a2a0661070b3d2a0a7a997e": {
+      "ref": "spark-class-model://schema/shared/f2f71eea879668053d530c604dcb7ff6a56331761a2a0661070b3d2a0a7a997e",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "alias": {
+            "type": "string"
+          },
+          "input": true,
+          "chat": {
+            "$ref": "spark-class-model://schema/AiAgentTaskChatOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f2f71eea879668053d530c604dcb7ff6a56331761a2a0661070b3d2a0a7a997e"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunHost%2Fmethods%2Frun%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunHost%2Fmethods%2Frun%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiRunHost/methods/run/0",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiAgentTaskChatOptions",
+      "targetClassName": "AiAgentTaskChatOptions",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/business-task.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentTaskChatOptions"
+    },
     "spark-class-model://model/AiRunHost": {
       "ref": "spark-class-model://model/AiRunHost",
       "kind": "model",
       "className": "AiRunHost",
       "schemaRef": "spark-class-model://schema/AiRunHost",
       "attributeRefs": [],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/AiRunHost/methods/run/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunHost%2Fmethods%2Frun%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiAgentTaskChatOptions"
+      ]
     },
     "spark-class-model://schema/AiRunAdapterOptions": {
       "ref": "spark-class-model://schema/AiRunAdapterOptions",
@@ -134,18 +281,55 @@
       "schema": {
         "type": "object",
         "title": "AiRunAdapterOptions",
+        "properties": {
+          "formatError": {
+            "$ref": "spark-class-model://schema/AiRunErrorFormatter"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiRunAdapterOptions"
       }
+    },
+    "spark-class-model://schema/shared/ab1cd997bb257f06345ba06e2017fe35cfd472baf5fa8432847f502fa74d237e": {
+      "ref": "spark-class-model://schema/shared/ab1cd997bb257f06345ba06e2017fe35cfd472baf5fa8432847f502fa74d237e",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiRunErrorFormatter",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ab1cd997bb257f06345ba06e2017fe35cfd472baf5fa8432847f502fa74d237e"
+      }
+    },
+    "spark-class-model://model/AiRunAdapterOptions/attributes/formatError/0": {
+      "ref": "spark-class-model://model/AiRunAdapterOptions/attributes/formatError/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiRunAdapterOptions",
+      "name": "formatError",
+      "schemaRef": "spark-class-model://schema/shared/ab1cd997bb257f06345ba06e2017fe35cfd472baf5fa8432847f502fa74d237e",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterOptions%2Fattributes%2FformatError%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunErrorFormatter": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterOptions%2Fattributes%2FformatError%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunErrorFormatter",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiRunAdapterOptions/attributes/formatError/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiRunErrorFormatter",
+      "targetClassName": "AiRunErrorFormatter",
+      "targetFile": "files/declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRunErrorFormatter"
     },
     "spark-class-model://model/AiRunAdapterOptions": {
       "ref": "spark-class-model://model/AiRunAdapterOptions",
       "kind": "model",
       "className": "AiRunAdapterOptions",
       "schemaRef": "spark-class-model://schema/AiRunAdapterOptions",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiRunAdapterOptions/attributes/formatError/0"
+      ],
       "methodRefs": [],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterOptions%2Fattributes%2FformatError%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunErrorFormatter"
+      ]
     },
     "spark-class-model://schema/AiRunAdapterCommand": {
       "ref": "spark-class-model://schema/AiRunAdapterCommand",
@@ -153,18 +337,191 @@
       "schema": {
         "type": "object",
         "title": "AiRunAdapterCommand",
+        "properties": {
+          "host": {
+            "$ref": "spark-class-model://schema/AiRunHost"
+          },
+          "alias": {
+            "type": "string"
+          },
+          "input": true,
+          "trace": {
+            "$ref": "spark-class-model://schema/AiRunTraceSink"
+          },
+          "beforeFunctionCall": {
+            "$ref": "spark-class-model://schema/AiRunBeforeFunctionCall"
+          },
+          "onAbort": {
+            "$ref": "spark-class-model://schema/AiRunAbortHandler"
+          },
+          "userMessage": {
+            "type": "string"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiRunAdapterCommand"
       }
+    },
+    "spark-class-model://schema/shared/f509c2b7b49bb58357648d4c0b850e5861df9b865d6b2ccdffb741e10acef2ff": {
+      "ref": "spark-class-model://schema/shared/f509c2b7b49bb58357648d4c0b850e5861df9b865d6b2ccdffb741e10acef2ff",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiRunHost",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f509c2b7b49bb58357648d4c0b850e5861df9b865d6b2ccdffb741e10acef2ff"
+      }
+    },
+    "spark-class-model://model/AiRunAdapterCommand/attributes/host/0": {
+      "ref": "spark-class-model://model/AiRunAdapterCommand/attributes/host/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiRunAdapterCommand",
+      "name": "host",
+      "schemaRef": "spark-class-model://schema/shared/f509c2b7b49bb58357648d4c0b850e5861df9b865d6b2ccdffb741e10acef2ff",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand%2Fattributes%2Fhost%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunHost": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand%2Fattributes%2Fhost%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunHost",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiRunAdapterCommand/attributes/host/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiRunHost",
+      "targetClassName": "AiRunHost",
+      "targetFile": "files/declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRunHost"
+    },
+    "spark-class-model://model/AiRunAdapterCommand/attributes/alias/1": {
+      "ref": "spark-class-model://model/AiRunAdapterCommand/attributes/alias/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiRunAdapterCommand",
+      "name": "alias",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiRunAdapterCommand/attributes/input/2": {
+      "ref": "spark-class-model://model/AiRunAdapterCommand/attributes/input/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiRunAdapterCommand",
+      "name": "input",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/8a2d9c40878cb427f3bbd62dc6e184bd0f05587c318bc9629a47c7c0f04a7464": {
+      "ref": "spark-class-model://schema/shared/8a2d9c40878cb427f3bbd62dc6e184bd0f05587c318bc9629a47c7c0f04a7464",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiRunTraceSink",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8a2d9c40878cb427f3bbd62dc6e184bd0f05587c318bc9629a47c7c0f04a7464"
+      }
+    },
+    "spark-class-model://model/AiRunAdapterCommand/attributes/trace/3": {
+      "ref": "spark-class-model://model/AiRunAdapterCommand/attributes/trace/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiRunAdapterCommand",
+      "name": "trace",
+      "schemaRef": "spark-class-model://schema/shared/8a2d9c40878cb427f3bbd62dc6e184bd0f05587c318bc9629a47c7c0f04a7464",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand%2Fattributes%2Ftrace%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunTraceSink": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand%2Fattributes%2Ftrace%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunTraceSink",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiRunAdapterCommand/attributes/trace/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiRunTraceSink",
+      "targetClassName": "AiRunTraceSink",
+      "targetFile": "files/declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRunTraceSink"
+    },
+    "spark-class-model://schema/shared/6460d6d7d851fb2b7d77d63432b4cd2ff52b4cba68edd38f87c9ee927fe6bb73": {
+      "ref": "spark-class-model://schema/shared/6460d6d7d851fb2b7d77d63432b4cd2ff52b4cba68edd38f87c9ee927fe6bb73",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiRunBeforeFunctionCall",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6460d6d7d851fb2b7d77d63432b4cd2ff52b4cba68edd38f87c9ee927fe6bb73"
+      }
+    },
+    "spark-class-model://model/AiRunAdapterCommand/attributes/beforeFunctionCall/4": {
+      "ref": "spark-class-model://model/AiRunAdapterCommand/attributes/beforeFunctionCall/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiRunAdapterCommand",
+      "name": "beforeFunctionCall",
+      "schemaRef": "spark-class-model://schema/shared/6460d6d7d851fb2b7d77d63432b4cd2ff52b4cba68edd38f87c9ee927fe6bb73",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand%2Fattributes%2FbeforeFunctionCall%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunBeforeFunctionCall": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand%2Fattributes%2FbeforeFunctionCall%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunBeforeFunctionCall",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiRunAdapterCommand/attributes/beforeFunctionCall/4",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiRunBeforeFunctionCall",
+      "targetClassName": "AiRunBeforeFunctionCall",
+      "targetFile": "files/declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRunBeforeFunctionCall"
+    },
+    "spark-class-model://schema/shared/096a6245fdec93e09666d7fd400464052fdd407b1aae6c8c0d6b051cb719b579": {
+      "ref": "spark-class-model://schema/shared/096a6245fdec93e09666d7fd400464052fdd407b1aae6c8c0d6b051cb719b579",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiRunAbortHandler",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/096a6245fdec93e09666d7fd400464052fdd407b1aae6c8c0d6b051cb719b579"
+      }
+    },
+    "spark-class-model://model/AiRunAdapterCommand/attributes/onAbort/5": {
+      "ref": "spark-class-model://model/AiRunAdapterCommand/attributes/onAbort/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiRunAdapterCommand",
+      "name": "onAbort",
+      "schemaRef": "spark-class-model://schema/shared/096a6245fdec93e09666d7fd400464052fdd407b1aae6c8c0d6b051cb719b579",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand%2Fattributes%2FonAbort%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunAbortHandler": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand%2Fattributes%2FonAbort%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunAbortHandler",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiRunAdapterCommand/attributes/onAbort/5",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiRunAbortHandler",
+      "targetClassName": "AiRunAbortHandler",
+      "targetFile": "files/declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRunAbortHandler"
+    },
+    "spark-class-model://model/AiRunAdapterCommand/attributes/userMessage/6": {
+      "ref": "spark-class-model://model/AiRunAdapterCommand/attributes/userMessage/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiRunAdapterCommand",
+      "name": "userMessage",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
     },
     "spark-class-model://model/AiRunAdapterCommand": {
       "ref": "spark-class-model://model/AiRunAdapterCommand",
       "kind": "model",
       "className": "AiRunAdapterCommand",
       "schemaRef": "spark-class-model://schema/AiRunAdapterCommand",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiRunAdapterCommand/attributes/host/0",
+        "spark-class-model://model/AiRunAdapterCommand/attributes/alias/1",
+        "spark-class-model://model/AiRunAdapterCommand/attributes/input/2",
+        "spark-class-model://model/AiRunAdapterCommand/attributes/trace/3",
+        "spark-class-model://model/AiRunAdapterCommand/attributes/beforeFunctionCall/4",
+        "spark-class-model://model/AiRunAdapterCommand/attributes/onAbort/5",
+        "spark-class-model://model/AiRunAdapterCommand/attributes/userMessage/6"
+      ],
       "methodRefs": [],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand%2Fattributes%2Fhost%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunHost",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand%2Fattributes%2Ftrace%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunTraceSink",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand%2Fattributes%2FbeforeFunctionCall%2F4/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunBeforeFunctionCall",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand%2Fattributes%2FonAbort%2F5/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRunAbortHandler"
+      ]
     },
     "spark-class-model://schema/AiRunAdapterState": {
       "ref": "spark-class-model://schema/AiRunAdapterState",
@@ -176,14 +533,93 @@
         "$id": "spark-class-model://schema/AiRunAdapterState"
       }
     },
+    "spark-class-model://model/AiRunAdapterState/methods/isRunning/0": {
+      "ref": "spark-class-model://model/AiRunAdapterState/methods/isRunning/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunAdapterState",
+      "name": "isRunning",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://model/AiRunAdapterState/methods/abort/1": {
+      "ref": "spark-class-model://model/AiRunAdapterState/methods/abort/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunAdapterState",
+      "name": "abort",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/9449a6662b463404188c48e985da308948a2d9aa995eac3244e8be1d49f35029"
+    },
+    "spark-class-model://model/AiRunAdapterState/methods/run/2": {
+      "ref": "spark-class-model://model/AiRunAdapterState/methods/run/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiRunAdapterState",
+      "name": "run",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/b4755168686892ac4701c3fd4d14a4c8eedcc2dbf092fbc4bf05b78f39a1f1aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b3afc97991b958c9aec9f75cc1bf23c69779be0d37e52923ebf1bbd2b5668ef6"
+    },
+    "spark-class-model://schema/shared/b4755168686892ac4701c3fd4d14a4c8eedcc2dbf092fbc4bf05b78f39a1f1aa": {
+      "ref": "spark-class-model://schema/shared/b4755168686892ac4701c3fd4d14a4c8eedcc2dbf092fbc4bf05b78f39a1f1aa",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "$ref": "spark-class-model://schema/AiRunAdapterCommand",
+            "title": "AiRunAdapterCommand<TInput>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b4755168686892ac4701c3fd4d14a4c8eedcc2dbf092fbc4bf05b78f39a1f1aa"
+      }
+    },
+    "spark-class-model://schema/shared/b3afc97991b958c9aec9f75cc1bf23c69779be0d37e52923ebf1bbd2b5668ef6": {
+      "ref": "spark-class-model://schema/shared/b3afc97991b958c9aec9f75cc1bf23c69779be0d37e52923ebf1bbd2b5668ef6",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<AiRunAdapterRunStatus>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b3afc97991b958c9aec9f75cc1bf23c69779be0d37e52923ebf1bbd2b5668ef6"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterState%2Fmethods%2Frun%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterState%2Fmethods%2Frun%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiRunAdapterState/methods/run/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/AiRunAdapterCommand",
+      "targetClassName": "AiRunAdapterCommand",
+      "targetFile": "files/declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRunAdapterCommand"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterState%2Fmethods%2Frun%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterRunStatus": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterState%2Fmethods%2Frun%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterRunStatus",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiRunAdapterState/methods/run/2",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiRunAdapterRunStatus",
+      "targetClassName": "AiRunAdapterRunStatus",
+      "targetFile": "files/declarations/packages/spark-app/src/ai/ai-run-adapter.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRunAdapterRunStatus"
+    },
     "spark-class-model://model/AiRunAdapterState": {
       "ref": "spark-class-model://model/AiRunAdapterState",
       "kind": "model",
       "className": "AiRunAdapterState",
       "schemaRef": "spark-class-model://schema/AiRunAdapterState",
       "attributeRefs": [],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/AiRunAdapterState/methods/isRunning/0",
+        "spark-class-model://model/AiRunAdapterState/methods/abort/1",
+        "spark-class-model://model/AiRunAdapterState/methods/run/2"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterState%2Fmethods%2Frun%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterCommand",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterState%2Fmethods%2Frun%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FAiRunAdapterRunStatus"
+      ]
     }
   }
 }

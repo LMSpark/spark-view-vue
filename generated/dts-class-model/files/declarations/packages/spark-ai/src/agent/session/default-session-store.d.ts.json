@@ -39,7 +39,21 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "now",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
+          },
+          "returnSchema": {
+            "type": "number"
+          }
+        }
+      ]
     },
     "DefaultAiAgentSessionStore": {
       "kind": "DefaultAiAgentSessionStore",
@@ -75,7 +89,16 @@
               "isOptional": true
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/DefaultAiAgentSessionStoreOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -95,6 +118,20 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentSessionRecord"
           }
         },
         {
@@ -132,6 +169,30 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "AiAgentSessionRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -159,6 +220,27 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "AiAgentSessionRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -169,6 +251,14 @@
           "type": {
             "type": "unknown",
             "name": "readonly AiAgentSessionRecord[]"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array"
           }
         },
         {
@@ -187,6 +277,19 @@
           "type": {
             "type": "unknown",
             "name": "readonly AiAgentHistoryEntry[]"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array"
           }
         },
         {
@@ -205,6 +308,20 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object",
+                "title": "AiAgentAppendMessageOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentMessageHistoryEntry"
           }
         },
         {
@@ -223,12 +340,26 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object",
+                "title": "AiAgentAppendFunctionCallOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "AiAgentFunctionCallHistoryEntry"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.565Z",
+  "generatedAt": "2026-06-13T06:21:06.578Z",
   "$defs": {
     "DefaultAiAgentSessionStoreOptions": {
       "type": "object",

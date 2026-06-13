@@ -40,7 +40,58 @@
         "className": "AiApiMetadataGraphEdge",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "parentKind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "via",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "attribute"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "action"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "viaName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "child",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiApiObjectMetadata"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiApiMetadataGraphNode": {
@@ -62,7 +113,36 @@
         "className": "AiApiMetadataGraphNode",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "api",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiApiObjectMetadata"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "parentKind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "edges",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiApiNestedApiRecord": {
@@ -84,26 +164,133 @@
         "className": "AiApiNestedApiRecord",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "api",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiApiObjectMetadata"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "parentKind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "via",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "viaName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.593Z",
+  "generatedAt": "2026-06-13T06:21:06.670Z",
   "$defs": {
     "AiApiMetadataGraphEdge": {
       "type": "object",
       "title": "AiApiMetadataGraphEdge",
-      "description": "从父模型到子模型的边：经可读/可写属性，或经 action 的 resultApis。"
+      "description": "从父模型到子模型的边：经可读/可写属性，或经 action 的 resultApis。",
+      "properties": {
+        "parentKind": {
+          "type": "string"
+        },
+        "via": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "attribute"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "action"
+              ]
+            }
+          ]
+        },
+        "viaName": {
+          "type": "string"
+        },
+        "child": {
+          "type": "object",
+          "title": "AiApiObjectMetadata"
+        }
+      }
     },
     "AiApiMetadataGraphNode": {
       "type": "object",
       "title": "AiApiMetadataGraphNode",
-      "description": "metadata 图中的一个节点（含出边）。"
+      "description": "metadata 图中的一个节点（含出边）。",
+      "properties": {
+        "api": {
+          "type": "object",
+          "title": "AiApiObjectMetadata"
+        },
+        "parentKind": {
+          "type": "string"
+        },
+        "edges": {
+          "type": "array"
+        }
+      }
     },
     "AiApiNestedApiRecord": {
       "type": "object",
       "title": "AiApiNestedApiRecord",
-      "description": "扁平嵌套 API 记录，供 guide 投影或注册 companion（迁移期）。"
+      "description": "扁平嵌套 API 记录，供 guide 投影或注册 companion（迁移期）。",
+      "properties": {
+        "api": {
+          "type": "object",
+          "title": "AiApiObjectMetadata"
+        },
+        "parentKind": {
+          "type": "string"
+        },
+        "via": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "viaName": {
+          "type": "string"
+        }
+      }
     }
   }
 }

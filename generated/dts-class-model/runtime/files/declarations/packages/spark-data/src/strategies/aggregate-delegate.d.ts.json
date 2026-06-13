@@ -14,72 +14,46 @@
       "schema": {
         "type": "object",
         "title": "AggregateDelegateOptions",
-        "properties": {
-          "getAggregates": {
-            "type": "object",
-            "title": "() => Record<string, AggregateColumnConfig>"
-          },
-          "emitSummaryChanged": {
-            "type": "object",
-            "title": "() => void"
-          },
-          "emitSelectionSummaryChanged": {
-            "type": "object",
-            "title": "() => void"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AggregateDelegateOptions"
       }
     },
-    "spark-class-model://schema/shared/c470aac5828ea5b424af6afb12e84cbc390bfaa3923c66a72853705b07e1d4e7": {
-      "ref": "spark-class-model://schema/shared/c470aac5828ea5b424af6afb12e84cbc390bfaa3923c66a72853705b07e1d4e7",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => Record<string, AggregateColumnConfig>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/c470aac5828ea5b424af6afb12e84cbc390bfaa3923c66a72853705b07e1d4e7"
-      }
-    },
-    "spark-class-model://model/AggregateDelegateOptions/attributes/getAggregates/0": {
-      "ref": "spark-class-model://model/AggregateDelegateOptions/attributes/getAggregates/0",
-      "kind": "attribute",
+    "spark-class-model://model/AggregateDelegateOptions/methods/getAggregates/0": {
+      "ref": "spark-class-model://model/AggregateDelegateOptions/methods/getAggregates/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/AggregateDelegateOptions",
       "name": "getAggregates",
-      "schemaRef": "spark-class-model://schema/shared/c470aac5828ea5b424af6afb12e84cbc390bfaa3923c66a72853705b07e1d4e7",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/a896f751b134e96f19aabb9b2cf663c307a33d10784be729d683c0b9a21a1e9a"
     },
-    "spark-class-model://model/AggregateDelegateOptions/attributes/emitSummaryChanged/1": {
-      "ref": "spark-class-model://model/AggregateDelegateOptions/attributes/emitSummaryChanged/1",
-      "kind": "attribute",
+    "spark-class-model://model/AggregateDelegateOptions/methods/emitSummaryChanged/1": {
+      "ref": "spark-class-model://model/AggregateDelegateOptions/methods/emitSummaryChanged/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/AggregateDelegateOptions",
       "name": "emitSummaryChanged",
-      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://model/AggregateDelegateOptions/attributes/emitSelectionSummaryChanged/2": {
-      "ref": "spark-class-model://model/AggregateDelegateOptions/attributes/emitSelectionSummaryChanged/2",
-      "kind": "attribute",
+    "spark-class-model://model/AggregateDelegateOptions/methods/emitSelectionSummaryChanged/2": {
+      "ref": "spark-class-model://model/AggregateDelegateOptions/methods/emitSelectionSummaryChanged/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/AggregateDelegateOptions",
       "name": "emitSelectionSummaryChanged",
-      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
     "spark-class-model://model/AggregateDelegateOptions": {
       "ref": "spark-class-model://model/AggregateDelegateOptions",
       "kind": "model",
       "className": "AggregateDelegateOptions",
       "schemaRef": "spark-class-model://schema/AggregateDelegateOptions",
-      "attributeRefs": [
-        "spark-class-model://model/AggregateDelegateOptions/attributes/getAggregates/0",
-        "spark-class-model://model/AggregateDelegateOptions/attributes/emitSummaryChanged/1",
-        "spark-class-model://model/AggregateDelegateOptions/attributes/emitSelectionSummaryChanged/2"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/AggregateDelegateOptions/methods/getAggregates/0",
+        "spark-class-model://model/AggregateDelegateOptions/methods/emitSummaryChanged/1",
+        "spark-class-model://model/AggregateDelegateOptions/methods/emitSelectionSummaryChanged/2"
       ],
-      "methodRefs": [],
       "linkRefs": []
     },
     "spark-class-model://schema/AggregateRecomputeOptions": {
@@ -126,6 +100,38 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AggregateDelegate"
       }
+    },
+    "spark-class-model://model/AggregateDelegate/constructors/0": {
+      "ref": "spark-class-model://model/AggregateDelegate/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/AggregateDelegate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/9ec4a72c533d864c202562d4b5ab4300e3c2a388bc20a25dc1579c5f0d4e8ff2"
+    },
+    "spark-class-model://schema/shared/9ec4a72c533d864c202562d4b5ab4300e3c2a388bc20a25dc1579c5f0d4e8ff2": {
+      "ref": "spark-class-model://schema/shared/9ec4a72c533d864c202562d4b5ab4300e3c2a388bc20a25dc1579c5f0d4e8ff2",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/AggregateDelegateOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9ec4a72c533d864c202562d4b5ab4300e3c2a388bc20a25dc1579c5f0d4e8ff2"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAggregateDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAggregateDelegateOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAggregateDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAggregateDelegateOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AggregateDelegate/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/AggregateDelegateOptions",
+      "targetClassName": "AggregateDelegateOptions",
+      "targetFile": "files/declarations/packages/spark-data/src/strategies/aggregate-delegate.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AggregateDelegateOptions"
     },
     "spark-class-model://model/AggregateDelegate/methods/recompute/0": {
       "ref": "spark-class-model://model/AggregateDelegate/methods/recompute/0",
@@ -236,12 +242,14 @@
       "kind": "model",
       "className": "AggregateDelegate",
       "schemaRef": "spark-class-model://schema/AggregateDelegate",
+      "constructorRef": "spark-class-model://model/AggregateDelegate/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/AggregateDelegate/methods/recompute/0",
         "spark-class-model://model/AggregateDelegate/methods/recomputeSelection/1"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAggregateDelegate%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FAggregateDelegateOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAggregateDelegate%2Fmethods%2Frecompute%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAggregateRecomputeOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAggregateDelegate%2Fmethods%2Frecompute%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAggregateDelegate%2Fmethods%2FrecomputeSelection%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FAggregateRecomputeOptions",

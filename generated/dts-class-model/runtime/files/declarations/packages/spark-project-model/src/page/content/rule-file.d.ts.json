@@ -43,6 +43,13 @@
       "readable": true,
       "writable": true
     },
+    "spark-class-model://model/PageRuleFile/constructors/0": {
+      "ref": "spark-class-model://model/PageRuleFile/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/PageRuleFile",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/920ba8f7230adf63702bca64a491021e112f332cb7d717e06a17001d30598ca6"
+    },
     "spark-class-model://model/PageRuleFile/methods/getText/0": {
       "ref": "spark-class-model://model/PageRuleFile/methods/getText/0",
       "kind": "method",
@@ -171,6 +178,7 @@
       "kind": "model",
       "className": "PageRuleFile",
       "schemaRef": "spark-class-model://schema/PageRuleFile",
+      "constructorRef": "spark-class-model://model/PageRuleFile/constructors/0",
       "attributeRefs": [
         "spark-class-model://model/PageRuleFile/attributes/pageId/0",
         "spark-class-model://model/PageRuleFile/attributes/tree/1"

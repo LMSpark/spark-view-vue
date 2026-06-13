@@ -56,14 +56,6 @@
           "wheelStatusText": {
             "$ref": "spark-class-model://schema/ValueRef",
             "title": "ValueRef<string>"
-          },
-          "scrollToPage": {
-            "type": "object",
-            "title": "(page: number) => Promise<void>"
-          },
-          "clearCache": {
-            "type": "object",
-            "title": "() => void"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -289,23 +281,22 @@
       "targetFile": "files/declarations/packages/spark-component/src/components/shared-types.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/ValueRef"
     },
-    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/scrollToPage/11": {
-      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/scrollToPage/11",
-      "kind": "attribute",
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/methods/scrollToPage/0": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/methods/scrollToPage/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
       "name": "scrollToPage",
-      "schemaRef": "spark-class-model://schema/shared/4a7d0db128e177f39d1ee436e1a38f63c6722c81a756076876402f272e83c121",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/17cca34214f2289596985f4b14900413ca1efacc45c24678839a262102ac403e",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
     },
-    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/clearCache/12": {
-      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/clearCache/12",
-      "kind": "attribute",
+    "spark-class-model://model/RendererVirtualCardZeroCodeOptions/methods/clearCache/1": {
+      "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions/methods/clearCache/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
       "name": "clearCache",
-      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
     "spark-class-model://model/RendererVirtualCardZeroCodeOptions": {
       "ref": "spark-class-model://model/RendererVirtualCardZeroCodeOptions",
@@ -323,11 +314,12 @@
         "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/totalPages/7",
         "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/progressText/8",
         "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/loadPolicyText/9",
-        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/wheelStatusText/10",
-        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/scrollToPage/11",
-        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/clearCache/12"
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/attributes/wheelStatusText/10"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/methods/scrollToPage/0",
+        "spark-class-model://model/RendererVirtualCardZeroCodeOptions/methods/clearCache/1"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2FresolvedView%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererVirtualCardZeroCodeOptions%2Fattributes%2Frows%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FValueRef",

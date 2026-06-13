@@ -13,14 +13,6 @@
         "type": "object",
         "title": "UseNavigationOptions",
         "properties": {
-          "onCrossAppNavigate": {
-            "type": "object",
-            "title": "(projectId: string, path: string) => Promise<void>"
-          },
-          "getHeaders": {
-            "type": "object",
-            "title": "() => Record<string, string>"
-          },
           "actionRegistry": {
             "$ref": "spark-class-model://schema/NavigationActionRegistry"
           }
@@ -28,44 +20,6 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/UseNavigationOptions"
       }
-    },
-    "spark-class-model://schema/shared/252954d4738513268b1e0897df985a80e402bb4fccae18c5e96467e6bdf27a97": {
-      "ref": "spark-class-model://schema/shared/252954d4738513268b1e0897df985a80e402bb4fccae18c5e96467e6bdf27a97",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(projectId: string, path: string) => Promise<void>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/252954d4738513268b1e0897df985a80e402bb4fccae18c5e96467e6bdf27a97"
-      }
-    },
-    "spark-class-model://model/UseNavigationOptions/attributes/onCrossAppNavigate/0": {
-      "ref": "spark-class-model://model/UseNavigationOptions/attributes/onCrossAppNavigate/0",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/UseNavigationOptions",
-      "name": "onCrossAppNavigate",
-      "schemaRef": "spark-class-model://schema/shared/252954d4738513268b1e0897df985a80e402bb4fccae18c5e96467e6bdf27a97",
-      "readable": true,
-      "writable": false
-    },
-    "spark-class-model://schema/shared/8f43391470f770a60100d3e07294be867d6b27a32e7f149dab901ff67e55eba6": {
-      "ref": "spark-class-model://schema/shared/8f43391470f770a60100d3e07294be867d6b27a32e7f149dab901ff67e55eba6",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => Record<string, string>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/8f43391470f770a60100d3e07294be867d6b27a32e7f149dab901ff67e55eba6"
-      }
-    },
-    "spark-class-model://model/UseNavigationOptions/attributes/getHeaders/1": {
-      "ref": "spark-class-model://model/UseNavigationOptions/attributes/getHeaders/1",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/UseNavigationOptions",
-      "name": "getHeaders",
-      "schemaRef": "spark-class-model://schema/shared/8f43391470f770a60100d3e07294be867d6b27a32e7f149dab901ff67e55eba6",
-      "readable": true,
-      "writable": false
     },
     "spark-class-model://schema/shared/1c5f5a28935da53ed656f8a5a893ad89a0bff2d8fd0f0ae2bd02271a2992ed06": {
       "ref": "spark-class-model://schema/shared/1c5f5a28935da53ed656f8a5a893ad89a0bff2d8fd0f0ae2bd02271a2992ed06",
@@ -76,8 +30,8 @@
         "$id": "spark-class-model://schema/shared/1c5f5a28935da53ed656f8a5a893ad89a0bff2d8fd0f0ae2bd02271a2992ed06"
       }
     },
-    "spark-class-model://model/UseNavigationOptions/attributes/actionRegistry/2": {
-      "ref": "spark-class-model://model/UseNavigationOptions/attributes/actionRegistry/2",
+    "spark-class-model://model/UseNavigationOptions/attributes/actionRegistry/0": {
+      "ref": "spark-class-model://model/UseNavigationOptions/attributes/actionRegistry/0",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/UseNavigationOptions",
       "name": "actionRegistry",
@@ -85,15 +39,43 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseNavigationOptions%2Fattributes%2FactionRegistry%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FNavigationActionRegistry": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseNavigationOptions%2Fattributes%2FactionRegistry%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FNavigationActionRegistry",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseNavigationOptions%2Fattributes%2FactionRegistry%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FNavigationActionRegistry": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseNavigationOptions%2Fattributes%2FactionRegistry%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FNavigationActionRegistry",
       "kind": "link",
-      "fromRef": "spark-class-model://model/UseNavigationOptions/attributes/actionRegistry/2",
+      "fromRef": "spark-class-model://model/UseNavigationOptions/attributes/actionRegistry/0",
       "relation": "attribute",
       "targetModelRef": "spark-class-model://model/NavigationActionRegistry",
       "targetClassName": "NavigationActionRegistry",
       "targetFile": "files/declarations/packages/spark-app/src/navigation/action-registry.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/NavigationActionRegistry"
+    },
+    "spark-class-model://model/UseNavigationOptions/methods/onCrossAppNavigate/0": {
+      "ref": "spark-class-model://model/UseNavigationOptions/methods/onCrossAppNavigate/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseNavigationOptions",
+      "name": "onCrossAppNavigate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://model/UseNavigationOptions/methods/getHeaders/1": {
+      "ref": "spark-class-model://model/UseNavigationOptions/methods/getHeaders/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseNavigationOptions",
+      "name": "getHeaders",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730"
+    },
+    "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730": {
+      "ref": "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Record<string, string>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8058a887bb7b362753c86cc60bce7d66c1d5665608fef74a183f31a1e6dc0730"
+      }
     },
     "spark-class-model://model/UseNavigationOptions": {
       "ref": "spark-class-model://model/UseNavigationOptions",
@@ -101,13 +83,14 @@
       "className": "UseNavigationOptions",
       "schemaRef": "spark-class-model://schema/UseNavigationOptions",
       "attributeRefs": [
-        "spark-class-model://model/UseNavigationOptions/attributes/onCrossAppNavigate/0",
-        "spark-class-model://model/UseNavigationOptions/attributes/getHeaders/1",
-        "spark-class-model://model/UseNavigationOptions/attributes/actionRegistry/2"
+        "spark-class-model://model/UseNavigationOptions/attributes/actionRegistry/0"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UseNavigationOptions/methods/onCrossAppNavigate/0",
+        "spark-class-model://model/UseNavigationOptions/methods/getHeaders/1"
+      ],
       "linkRefs": [
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseNavigationOptions%2Fattributes%2FactionRegistry%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FNavigationActionRegistry"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FUseNavigationOptions%2Fattributes%2FactionRegistry%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FNavigationActionRegistry"
       ]
     }
   }

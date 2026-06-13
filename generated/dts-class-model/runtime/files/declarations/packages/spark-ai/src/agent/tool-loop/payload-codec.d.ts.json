@@ -77,11 +77,53 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://model/ToolArgsParseError/constructors/0": {
+      "ref": "spark-class-model://model/ToolArgsParseError/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/ToolArgsParseError",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/f573a9643d7375aa3e45287ddb3850863c378ec2943a690ba8ba88cfda4e9483"
+    },
+    "spark-class-model://schema/shared/f573a9643d7375aa3e45287ddb3850863c378ec2943a690ba8ba88cfda4e9483": {
+      "ref": "spark-class-model://schema/shared/f573a9643d7375aa3e45287ddb3850863c378ec2943a690ba8ba88cfda4e9483",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "TOOL_ARGS_INVALID_JSON"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "TOOL_ARGS_NOT_OBJECT"
+                ]
+              }
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "raw": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f573a9643d7375aa3e45287ddb3850863c378ec2943a690ba8ba88cfda4e9483"
+      }
+    },
     "spark-class-model://model/ToolArgsParseError": {
       "ref": "spark-class-model://model/ToolArgsParseError",
       "kind": "model",
       "className": "ToolArgsParseError",
       "schemaRef": "spark-class-model://schema/ToolArgsParseError",
+      "constructorRef": "spark-class-model://model/ToolArgsParseError/constructors/0",
       "attributeRefs": [
         "spark-class-model://model/ToolArgsParseError/attributes/code/0",
         "spark-class-model://model/ToolArgsParseError/attributes/raw/1"

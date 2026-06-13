@@ -102,16 +102,6 @@
           "writable": true
         },
         {
-          "name": "getStepName",
-          "jsdoc": "get Step Name 名称。",
-          "schema": {
-            "type": "object",
-            "title": "(step: SparkNode, index: number) => string | number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "onStepChange",
           "jsdoc": "on Step Change 事件回调。",
           "schema": {
@@ -122,10 +112,68 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "getStepName",
+          "jsdoc": "get Step Name 名称。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "step",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "index",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "step": {
+                "type": "object",
+                "title": "SparkNode"
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.683Z",
+  "generatedAt": "2026-06-13T06:21:06.822Z",
   "$defs": {
     "StepsEmit": {
       "type": "object",
@@ -151,10 +199,6 @@
         "activeStepIndex": {
           "type": "object",
           "title": "ValueRef<number>"
-        },
-        "getStepName": {
-          "type": "object",
-          "title": "(step: SparkNode, index: number) => string | number"
         },
         "onStepChange": {
           "type": "object",

@@ -51,10 +51,54 @@
         "componentDirectory": "containers/data-views"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "getRows",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "DataRow"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "DataRow"
+            }
+          }
+        },
+        {
+          "name": "getItemCount",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.639Z",
+  "generatedAt": "2026-06-13T06:21:06.749Z",
   "$defs": {
     "RendererListApi": {
       "type": "object",

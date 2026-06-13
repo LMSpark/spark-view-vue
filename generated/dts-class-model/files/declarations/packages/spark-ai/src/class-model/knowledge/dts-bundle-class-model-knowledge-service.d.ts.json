@@ -40,7 +40,27 @@
         "className": "DtsBundleClassModelKnowledgeServiceOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "loader",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "DtsClassModelBundleLoader"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rootClassName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "CreateDtsBundleClassModelKnowledgeProviderOptions": {
@@ -62,8 +82,56 @@
         "className": "CreateDtsBundleClassModelKnowledgeProviderOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
-      "methods": []
+      "attributes": [
+        {
+          "name": "dtsClassModelManifestUrl",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rootClassName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
+      "methods": [
+        {
+          "name": "fetchJson",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "url",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<unknown>"
+          }
+        }
+      ]
     },
     "DtsBundleClassModelKnowledgeService": {
       "kind": "DtsBundleClassModelKnowledgeService",
@@ -96,7 +164,16 @@
               "sourcePath": "declarations/packages/spark-ai/src/class-model/knowledge/dts-bundle-class-model-knowledge-service.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/DtsBundleClassModelKnowledgeServiceOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -114,6 +191,15 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -138,6 +224,20 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ClassModelKnowledgeQueryInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiJsonValue>"
           }
         },
         {
@@ -162,6 +262,20 @@
                 "name": "string"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ClassModelModelGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<string>"
           }
         },
         {
@@ -186,6 +300,20 @@
                 "name": "string"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ClassModelAttributeGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<string>"
           }
         },
         {
@@ -210,22 +338,53 @@
                 "name": "string"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ClassModelMethodGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<string>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.589Z",
+  "generatedAt": "2026-06-13T06:21:06.651Z",
   "$defs": {
     "DtsBundleClassModelKnowledgeServiceOptions": {
       "type": "object",
       "title": "DtsBundleClassModelKnowledgeServiceOptions",
-      "description": "Dts Bundle Class Model Knowledge Service Options 的调用配置。"
+      "description": "Dts Bundle Class Model Knowledge Service Options 的调用配置。",
+      "properties": {
+        "loader": {
+          "type": "object",
+          "title": "DtsClassModelBundleLoader"
+        },
+        "rootClassName": {
+          "type": "string"
+        }
+      }
     },
     "CreateDtsBundleClassModelKnowledgeProviderOptions": {
       "type": "object",
       "title": "CreateDtsBundleClassModelKnowledgeProviderOptions",
-      "description": "Create Dts Bundle Class Model Knowledge Provider Options 的调用配置。"
+      "description": "Create Dts Bundle Class Model Knowledge Provider Options 的调用配置。",
+      "properties": {
+        "dtsClassModelManifestUrl": {
+          "type": "string"
+        },
+        "rootClassName": {
+          "type": "string"
+        }
+      }
     },
     "DtsBundleClassModelKnowledgeService": {
       "type": "object",

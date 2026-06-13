@@ -29,10 +29,6 @@
           },
           "httpClient": {
             "$ref": "spark-class-model://schema/HttpClientBase"
-          },
-          "endpointContextProvider": {
-            "type": "object",
-            "title": "() => Record<string, unknown>"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -136,24 +132,14 @@
       "targetFile": "files/declarations/packages/spark-utils/src/http/HttpClientBase.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/HttpClientBase"
     },
-    "spark-class-model://schema/shared/ea0903d29cc3984632494a0f8d9af17ed8f0ea13f63469c85121080b646aad58": {
-      "ref": "spark-class-model://schema/shared/ea0903d29cc3984632494a0f8d9af17ed8f0ea13f63469c85121080b646aad58",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => Record<string, unknown>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/ea0903d29cc3984632494a0f8d9af17ed8f0ea13f63469c85121080b646aad58"
-      }
-    },
-    "spark-class-model://model/TreeManagerOptions/attributes/endpointContextProvider/4": {
-      "ref": "spark-class-model://model/TreeManagerOptions/attributes/endpointContextProvider/4",
-      "kind": "attribute",
+    "spark-class-model://model/TreeManagerOptions/methods/endpointContextProvider/0": {
+      "ref": "spark-class-model://model/TreeManagerOptions/methods/endpointContextProvider/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/TreeManagerOptions",
       "name": "endpointContextProvider",
-      "schemaRef": "spark-class-model://schema/shared/ea0903d29cc3984632494a0f8d9af17ed8f0ea13f63469c85121080b646aad58",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/0032e705c251aedc00761f31772444b6ca08d46361b738fd4c322585df9f54d9"
     },
     "spark-class-model://model/TreeManagerOptions": {
       "ref": "spark-class-model://model/TreeManagerOptions",
@@ -164,10 +150,11 @@
         "spark-class-model://model/TreeManagerOptions/attributes/config/0",
         "spark-class-model://model/TreeManagerOptions/attributes/api/1",
         "spark-class-model://model/TreeManagerOptions/attributes/initialNodes/2",
-        "spark-class-model://model/TreeManagerOptions/attributes/httpClient/3",
-        "spark-class-model://model/TreeManagerOptions/attributes/endpointContextProvider/4"
+        "spark-class-model://model/TreeManagerOptions/attributes/httpClient/3"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/TreeManagerOptions/methods/endpointContextProvider/0"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeManagerOptions%2Fattributes%2Fconfig%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FTreeConfig",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeManagerOptions%2Fattributes%2Fapi%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FTreeApi",
@@ -181,16 +168,116 @@
       "schema": {
         "type": "object",
         "title": "FetchNestedInput",
+        "properties": {
+          "rootId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "limit": {
+            "type": "number"
+          },
+          "depthLimit": {
+            "type": "number"
+          },
+          "treeMode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "flat"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "nested"
+                ]
+              }
+            ]
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/FetchNestedInput"
       }
+    },
+    "spark-class-model://model/FetchNestedInput/attributes/rootId/0": {
+      "ref": "spark-class-model://model/FetchNestedInput/attributes/rootId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FetchNestedInput",
+      "name": "rootId",
+      "schemaRef": "spark-class-model://schema/shared/a4de3d015ab7310e281e9516ea51a2ff94b8a8688fe2ae47112f9bddb375248f",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/FetchNestedInput/attributes/limit/1": {
+      "ref": "spark-class-model://model/FetchNestedInput/attributes/limit/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FetchNestedInput",
+      "name": "limit",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/FetchNestedInput/attributes/depthLimit/2": {
+      "ref": "spark-class-model://model/FetchNestedInput/attributes/depthLimit/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FetchNestedInput",
+      "name": "depthLimit",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/c6de0191116a543becd8603621cf9227371283c193189b961b6b01dd2c9fab5e": {
+      "ref": "spark-class-model://schema/shared/c6de0191116a543becd8603621cf9227371283c193189b961b6b01dd2c9fab5e",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "flat"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "nested"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/c6de0191116a543becd8603621cf9227371283c193189b961b6b01dd2c9fab5e"
+      }
+    },
+    "spark-class-model://model/FetchNestedInput/attributes/treeMode/3": {
+      "ref": "spark-class-model://model/FetchNestedInput/attributes/treeMode/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/FetchNestedInput",
+      "name": "treeMode",
+      "schemaRef": "spark-class-model://schema/shared/c6de0191116a543becd8603621cf9227371283c193189b961b6b01dd2c9fab5e",
+      "readable": true,
+      "writable": false
     },
     "spark-class-model://model/FetchNestedInput": {
       "ref": "spark-class-model://model/FetchNestedInput",
       "kind": "model",
       "className": "FetchNestedInput",
       "schemaRef": "spark-class-model://schema/FetchNestedInput",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/FetchNestedInput/attributes/rootId/0",
+        "spark-class-model://model/FetchNestedInput/attributes/limit/1",
+        "spark-class-model://model/FetchNestedInput/attributes/depthLimit/2",
+        "spark-class-model://model/FetchNestedInput/attributes/treeMode/3"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },
@@ -203,6 +290,38 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/TreeManager"
       }
+    },
+    "spark-class-model://model/TreeManager/constructors/0": {
+      "ref": "spark-class-model://model/TreeManager/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/TreeManager",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/fe9ce1b0fc756cb024eb5e1cfbf878c19bfad3834f6e389df0a8055de966b2e3"
+    },
+    "spark-class-model://schema/shared/fe9ce1b0fc756cb024eb5e1cfbf878c19bfad3834f6e389df0a8055de966b2e3": {
+      "ref": "spark-class-model://schema/shared/fe9ce1b0fc756cb024eb5e1cfbf878c19bfad3834f6e389df0a8055de966b2e3",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/TreeManagerOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/fe9ce1b0fc756cb024eb5e1cfbf878c19bfad3834f6e389df0a8055de966b2e3"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeManager%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FTreeManagerOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeManager%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FTreeManagerOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/TreeManager/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/TreeManagerOptions",
+      "targetClassName": "TreeManagerOptions",
+      "targetFile": "files/declarations/packages/spark-data/src/tree-manager.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/TreeManagerOptions"
     },
     "spark-class-model://model/TreeManager/methods/getConfig/0": {
       "ref": "spark-class-model://model/TreeManager/methods/getConfig/0",
@@ -815,6 +934,7 @@
       "kind": "model",
       "className": "TreeManager",
       "schemaRef": "spark-class-model://schema/TreeManager",
+      "constructorRef": "spark-class-model://model/TreeManager/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/TreeManager/methods/getConfig/0",
@@ -839,6 +959,7 @@
         "spark-class-model://model/TreeManager/methods/buildSubTree/19"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeManager%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FTreeManagerOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeManager%2Fmethods%2FgetConfig%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FTreeConfig",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeManager%2Fmethods%2FaddNodesToCache%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FFlatTreeNode",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTreeManager%2Fmethods%2FgetAllNodes%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FFlatTreeNode",

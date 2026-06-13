@@ -141,7 +141,24 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "cancel",
+          "jsdoc": "取消操作（仅 before 阶段调用）",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "CrudLifecycleEventInput": {
       "kind": "CrudLifecycleEventInput",
@@ -162,11 +179,60 @@
         "className": "CrudLifecycleEventInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "operation",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/CrudOperation"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "phase",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "before"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "after"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "data",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "result",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "CrudResult"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.843Z",
+  "generatedAt": "2026-06-13T06:21:07.081Z",
   "$defs": {
     "CrudOperation": {
       "type": "object",
@@ -210,7 +276,33 @@
     "CrudLifecycleEventInput": {
       "type": "object",
       "title": "CrudLifecycleEventInput",
-      "description": "Crud Lifecycle Event Input 的输入数据。"
+      "description": "Crud Lifecycle Event Input 的输入数据。",
+      "properties": {
+        "operation": {
+          "$ref": "#/$defs/CrudOperation"
+        },
+        "phase": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "before"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "after"
+              ]
+            }
+          ]
+        },
+        "data": true,
+        "result": {
+          "type": "object",
+          "title": "CrudResult"
+        }
+      }
     }
   }
 }

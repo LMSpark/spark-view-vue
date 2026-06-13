@@ -86,16 +86,6 @@
           "writable": true
         },
         {
-          "name": "generator",
-          "jsdoc": "自定义生成函数（strategy='custom' 时必需）",
-          "schema": {
-            "type": "object",
-            "title": "(row: Partial<DataRow>, existingRows: DataRow[]) => string | number | Record<string, string | number>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "startValue",
           "jsdoc": "自增起始值（strategy='auto-increment' 时，默认 1）",
           "schema": {
@@ -105,7 +95,88 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "generator",
+          "jsdoc": "自定义生成函数（strategy='custom' 时必需）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "Partial",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "existingRows",
+              "type": {
+                "type": "array",
+                "elementType": {
+                  "type": "reference",
+                  "name": "unknown"
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              {
+                "type": "reference",
+                "name": "Record",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "union",
+                    "types": [
+                      {
+                        "type": "intrinsic",
+                        "name": "string"
+                      },
+                      {
+                        "type": "intrinsic",
+                        "name": "number"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "object",
+                "title": "Record<string, string | number>"
+              }
+            ]
+          }
+        }
+      ]
     },
     "PrimaryKeyGenerator": {
       "kind": "PrimaryKeyGenerator",
@@ -131,7 +202,16 @@
               "sourcePath": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "config": {
+              "$ref": "#/$defs/PrimaryKeyGeneratorConfig"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -179,6 +259,33 @@
                 "name": "number"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "Partial<DataRow>"
+              },
+              "existingRows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
           }
         },
         {
@@ -197,7 +304,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "getConfig",
@@ -214,12 +331,21 @@
                 "sourcePath": "declarations/packages/spark-data/src/core/primary-key-generator.d.ts"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Readonly<PrimaryKeyGeneratorConfig>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.805Z",
+  "generatedAt": "2026-06-13T06:21:07.021Z",
   "$defs": {
     "PrimaryKeyStrategy": {
       "type": "object",
@@ -236,10 +362,6 @@
         },
         "fields": {
           "type": "string"
-        },
-        "generator": {
-          "type": "object",
-          "title": "(row: Partial<DataRow>, existingRows: DataRow[]) => string | number | Record<string, string | number>"
         },
         "startValue": {
           "type": "number"

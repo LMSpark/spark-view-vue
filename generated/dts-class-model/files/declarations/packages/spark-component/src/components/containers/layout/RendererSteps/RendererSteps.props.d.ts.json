@@ -76,22 +76,55 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "onStepChange",
           "jsdoc": "步骤切换回调（value 为当前 step 的 value）",
-          "schema": {
-            "type": "object",
-            "title": "(value: string | number, step: SparkNode, index: number) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "step",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "index",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.682Z",
+  "generatedAt": "2026-06-13T06:21:06.820Z",
   "$defs": {
     "RStepsProps": {
       "type": "object",
@@ -111,10 +144,6 @@
               "type": "number"
             }
           ]
-        },
-        "onStepChange": {
-          "type": "object",
-          "title": "(value: string | number, step: SparkNode, index: number) => void"
         }
       }
     }

@@ -318,96 +318,100 @@
       "schema": {
         "type": "object",
         "title": "DataViewSyncGuardState",
-        "properties": {
-          "runWithViewSync": {
-            "type": "object",
-            "title": "<T>(action: () => T) => T"
-          },
-          "runWithViewSyncAsync": {
-            "type": "object",
-            "title": "<T>(action: () => Promise<T>) => Promise<T>"
-          },
-          "isViewSyncing": {
-            "type": "object",
-            "title": "() => boolean"
-          },
-          "getSyncDepth": {
-            "type": "object",
-            "title": "() => number"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/DataViewSyncGuardState"
       }
     },
-    "spark-class-model://schema/shared/0f83a0671dee37eef8b0444ff501a54c211171d3eec13ec80a05982e3929b559": {
-      "ref": "spark-class-model://schema/shared/0f83a0671dee37eef8b0444ff501a54c211171d3eec13ec80a05982e3929b559",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "<T>(action: () => T) => T",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/0f83a0671dee37eef8b0444ff501a54c211171d3eec13ec80a05982e3929b559"
-      }
-    },
-    "spark-class-model://model/DataViewSyncGuardState/attributes/runWithViewSync/0": {
-      "ref": "spark-class-model://model/DataViewSyncGuardState/attributes/runWithViewSync/0",
-      "kind": "attribute",
+    "spark-class-model://model/DataViewSyncGuardState/methods/runWithViewSync/0": {
+      "ref": "spark-class-model://model/DataViewSyncGuardState/methods/runWithViewSync/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/DataViewSyncGuardState",
       "name": "runWithViewSync",
-      "schemaRef": "spark-class-model://schema/shared/0f83a0671dee37eef8b0444ff501a54c211171d3eec13ec80a05982e3929b559",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/342b59557a5123742e02a2d45cf98b8827bba8d02eb61b2410e188ddc6abee0c",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
     },
-    "spark-class-model://schema/shared/377b3dfb3853da52ac174b1f0e7fa6b9a8450a1d7ed92003acc2253993948264": {
-      "ref": "spark-class-model://schema/shared/377b3dfb3853da52ac174b1f0e7fa6b9a8450a1d7ed92003acc2253993948264",
+    "spark-class-model://schema/shared/342b59557a5123742e02a2d45cf98b8827bba8d02eb61b2410e188ddc6abee0c": {
+      "ref": "spark-class-model://schema/shared/342b59557a5123742e02a2d45cf98b8827bba8d02eb61b2410e188ddc6abee0c",
       "kind": "schema",
       "schema": {
         "type": "object",
-        "title": "<T>(action: () => Promise<T>) => Promise<T>",
+        "properties": {
+          "action": {
+            "type": "object",
+            "title": "() => T"
+          }
+        },
+        "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/377b3dfb3853da52ac174b1f0e7fa6b9a8450a1d7ed92003acc2253993948264"
+        "$id": "spark-class-model://schema/shared/342b59557a5123742e02a2d45cf98b8827bba8d02eb61b2410e188ddc6abee0c"
       }
     },
-    "spark-class-model://model/DataViewSyncGuardState/attributes/runWithViewSyncAsync/1": {
-      "ref": "spark-class-model://model/DataViewSyncGuardState/attributes/runWithViewSyncAsync/1",
-      "kind": "attribute",
+    "spark-class-model://model/DataViewSyncGuardState/methods/runWithViewSyncAsync/1": {
+      "ref": "spark-class-model://model/DataViewSyncGuardState/methods/runWithViewSyncAsync/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/DataViewSyncGuardState",
       "name": "runWithViewSyncAsync",
-      "schemaRef": "spark-class-model://schema/shared/377b3dfb3853da52ac174b1f0e7fa6b9a8450a1d7ed92003acc2253993948264",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/5abc2ff1e8b6c773062ec3219f9cf0d950a4f11cd246000baf95679bb2d8bab3",
+      "returnSchemaRef": "spark-class-model://schema/shared/49f8c5b4697f8111cfb01b225b5a92caed50d7689552c93ad19ea898246dfc95"
     },
-    "spark-class-model://model/DataViewSyncGuardState/attributes/isViewSyncing/2": {
-      "ref": "spark-class-model://model/DataViewSyncGuardState/attributes/isViewSyncing/2",
-      "kind": "attribute",
+    "spark-class-model://schema/shared/5abc2ff1e8b6c773062ec3219f9cf0d950a4f11cd246000baf95679bb2d8bab3": {
+      "ref": "spark-class-model://schema/shared/5abc2ff1e8b6c773062ec3219f9cf0d950a4f11cd246000baf95679bb2d8bab3",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "object",
+            "title": "() => Promise<T>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5abc2ff1e8b6c773062ec3219f9cf0d950a4f11cd246000baf95679bb2d8bab3"
+      }
+    },
+    "spark-class-model://schema/shared/49f8c5b4697f8111cfb01b225b5a92caed50d7689552c93ad19ea898246dfc95": {
+      "ref": "spark-class-model://schema/shared/49f8c5b4697f8111cfb01b225b5a92caed50d7689552c93ad19ea898246dfc95",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Promise<T>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/49f8c5b4697f8111cfb01b225b5a92caed50d7689552c93ad19ea898246dfc95"
+      }
+    },
+    "spark-class-model://model/DataViewSyncGuardState/methods/isViewSyncing/2": {
+      "ref": "spark-class-model://model/DataViewSyncGuardState/methods/isViewSyncing/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/DataViewSyncGuardState",
       "name": "isViewSyncing",
-      "schemaRef": "spark-class-model://schema/shared/9778afd9e7f2bfe5b9ac79dcf1a18056ae441224b07a8b4ad106797b90dcb09a",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
     },
-    "spark-class-model://model/DataViewSyncGuardState/attributes/getSyncDepth/3": {
-      "ref": "spark-class-model://model/DataViewSyncGuardState/attributes/getSyncDepth/3",
-      "kind": "attribute",
+    "spark-class-model://model/DataViewSyncGuardState/methods/getSyncDepth/3": {
+      "ref": "spark-class-model://model/DataViewSyncGuardState/methods/getSyncDepth/3",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/DataViewSyncGuardState",
       "name": "getSyncDepth",
-      "schemaRef": "spark-class-model://schema/shared/592f1c0b94b286a10b4370427d46551b1c0c90bafdb07aafede6b15bb7d54503",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
     "spark-class-model://model/DataViewSyncGuardState": {
       "ref": "spark-class-model://model/DataViewSyncGuardState",
       "kind": "model",
       "className": "DataViewSyncGuardState",
       "schemaRef": "spark-class-model://schema/DataViewSyncGuardState",
-      "attributeRefs": [
-        "spark-class-model://model/DataViewSyncGuardState/attributes/runWithViewSync/0",
-        "spark-class-model://model/DataViewSyncGuardState/attributes/runWithViewSyncAsync/1",
-        "spark-class-model://model/DataViewSyncGuardState/attributes/isViewSyncing/2",
-        "spark-class-model://model/DataViewSyncGuardState/attributes/getSyncDepth/3"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/DataViewSyncGuardState/methods/runWithViewSync/0",
+        "spark-class-model://model/DataViewSyncGuardState/methods/runWithViewSyncAsync/1",
+        "spark-class-model://model/DataViewSyncGuardState/methods/isViewSyncing/2",
+        "spark-class-model://model/DataViewSyncGuardState/methods/getSyncDepth/3"
       ],
-      "methodRefs": [],
       "linkRefs": []
     }
   }

@@ -69,7 +69,71 @@
         "className": "VuePageConfigEntry",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "path",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "title",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "icon",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "description",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "scope",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/PageScope"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "source",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "hidden",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "VuePageEntry": {
@@ -92,10 +156,36 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "load",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "unknown",
+                "name": "{\n        default: Component;\n    }"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<{\n        default: Component;\n    }>"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.919Z",
+  "generatedAt": "2026-06-13T06:21:07.190Z",
   "$defs": {
     "PageScope": {
       "type": "object",
@@ -105,7 +195,30 @@
     "VuePageConfigEntry": {
       "type": "object",
       "title": "VuePageConfigEntry",
-      "description": "Vue Page Config Entry 的语义模型。"
+      "description": "Vue Page Config Entry 的语义模型。",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/PageScope"
+        },
+        "source": {
+          "type": "string"
+        },
+        "hidden": {
+          "type": "boolean"
+        }
+      }
     },
     "VuePageEntry": {
       "type": "object",

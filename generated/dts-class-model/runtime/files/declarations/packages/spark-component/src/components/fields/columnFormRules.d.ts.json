@@ -44,10 +44,6 @@
           "pattern": {
             "type": "object",
             "title": "RegExp"
-          },
-          "validator": {
-            "type": "object",
-            "title": "(rule: unknown, value: unknown, callback: (error?: Error) => void) => void"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -127,24 +123,13 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/9613239d50cf0267b2893b9f86951125f4f5725230f012ff66412d47bd4de36a": {
-      "ref": "spark-class-model://schema/shared/9613239d50cf0267b2893b9f86951125f4f5725230f012ff66412d47bd4de36a",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(rule: unknown, value: unknown, callback: (error?: Error) => void) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/9613239d50cf0267b2893b9f86951125f4f5725230f012ff66412d47bd4de36a"
-      }
-    },
-    "spark-class-model://model/FormItemRule/attributes/validator/7": {
-      "ref": "spark-class-model://model/FormItemRule/attributes/validator/7",
-      "kind": "attribute",
+    "spark-class-model://model/FormItemRule/methods/validator/0": {
+      "ref": "spark-class-model://model/FormItemRule/methods/validator/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/FormItemRule",
       "name": "validator",
-      "schemaRef": "spark-class-model://schema/shared/9613239d50cf0267b2893b9f86951125f4f5725230f012ff66412d47bd4de36a",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
     "spark-class-model://model/FormItemRule": {
       "ref": "spark-class-model://model/FormItemRule",
@@ -158,10 +143,11 @@
         "spark-class-model://model/FormItemRule/attributes/type/3",
         "spark-class-model://model/FormItemRule/attributes/min/4",
         "spark-class-model://model/FormItemRule/attributes/max/5",
-        "spark-class-model://model/FormItemRule/attributes/pattern/6",
-        "spark-class-model://model/FormItemRule/attributes/validator/7"
+        "spark-class-model://model/FormItemRule/attributes/pattern/6"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/FormItemRule/methods/validator/0"
+      ],
       "linkRefs": []
     }
   }

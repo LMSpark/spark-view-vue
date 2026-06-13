@@ -170,6 +170,14 @@
       "readable": true,
       "writable": true
     },
+    "spark-class-model://model/CrudLifecycleEvent/methods/cancel/0": {
+      "ref": "spark-class-model://model/CrudLifecycleEvent/methods/cancel/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CrudLifecycleEvent",
+      "name": "cancel",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+    },
     "spark-class-model://model/CrudLifecycleEvent": {
       "ref": "spark-class-model://model/CrudLifecycleEvent",
       "kind": "model",
@@ -182,7 +190,9 @@
         "spark-class-model://model/CrudLifecycleEvent/attributes/result/3",
         "spark-class-model://model/CrudLifecycleEvent/attributes/cancelled/4"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/CrudLifecycleEvent/methods/cancel/0"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudLifecycleEvent%2Fattributes%2Foperation%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FCrudOperation",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudLifecycleEvent%2Fattributes%2Fresult%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FCrudResult"
@@ -194,18 +204,107 @@
       "schema": {
         "type": "object",
         "title": "CrudLifecycleEventInput",
+        "properties": {
+          "operation": {
+            "$ref": "spark-class-model://schema/CrudOperation"
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "before"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "after"
+                ]
+              }
+            ]
+          },
+          "data": true,
+          "result": {
+            "$ref": "spark-class-model://schema/CrudResult"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/CrudLifecycleEventInput"
       }
+    },
+    "spark-class-model://model/CrudLifecycleEventInput/attributes/operation/0": {
+      "ref": "spark-class-model://model/CrudLifecycleEventInput/attributes/operation/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CrudLifecycleEventInput",
+      "name": "operation",
+      "schemaRef": "spark-class-model://schema/shared/ded230b7ff0bd32ef420c39d0a03957f42d1278919d573b01cb4423d5216971c",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudLifecycleEventInput%2Fattributes%2Foperation%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FCrudOperation": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudLifecycleEventInput%2Fattributes%2Foperation%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FCrudOperation",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudLifecycleEventInput/attributes/operation/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/CrudOperation",
+      "targetClassName": "CrudOperation",
+      "targetFile": "files/declarations/packages/spark-data/src/strategies/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudOperation"
+    },
+    "spark-class-model://model/CrudLifecycleEventInput/attributes/phase/1": {
+      "ref": "spark-class-model://model/CrudLifecycleEventInput/attributes/phase/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CrudLifecycleEventInput",
+      "name": "phase",
+      "schemaRef": "spark-class-model://schema/shared/2b96f1acb74d1ccd246256b165673f7d31239d292bd0eb6d003227a321a5de9c",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/CrudLifecycleEventInput/attributes/data/2": {
+      "ref": "spark-class-model://model/CrudLifecycleEventInput/attributes/data/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CrudLifecycleEventInput",
+      "name": "data",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/CrudLifecycleEventInput/attributes/result/3": {
+      "ref": "spark-class-model://model/CrudLifecycleEventInput/attributes/result/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CrudLifecycleEventInput",
+      "name": "result",
+      "schemaRef": "spark-class-model://schema/shared/3170628d3dc7369b476f5bb9244d494e21d049323fd0dc4ad70f7bc0f2f69b71",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudLifecycleEventInput%2Fattributes%2Fresult%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FCrudResult": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudLifecycleEventInput%2Fattributes%2Fresult%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FCrudResult",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudLifecycleEventInput/attributes/result/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/CrudResult",
+      "targetClassName": "CrudResult",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudResult"
     },
     "spark-class-model://model/CrudLifecycleEventInput": {
       "ref": "spark-class-model://model/CrudLifecycleEventInput",
       "kind": "model",
       "className": "CrudLifecycleEventInput",
       "schemaRef": "spark-class-model://schema/CrudLifecycleEventInput",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/CrudLifecycleEventInput/attributes/operation/0",
+        "spark-class-model://model/CrudLifecycleEventInput/attributes/phase/1",
+        "spark-class-model://model/CrudLifecycleEventInput/attributes/data/2",
+        "spark-class-model://model/CrudLifecycleEventInput/attributes/result/3"
+      ],
       "methodRefs": [],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudLifecycleEventInput%2Fattributes%2Foperation%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FCrudOperation",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudLifecycleEventInput%2Fattributes%2Fresult%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FCrudResult"
+      ]
     }
   }
 }

@@ -38,7 +38,17 @@
         "className": "ProjectPlanningEditorResolveContext",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "moduleInstanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "HeadlessProjectPlanningEditorScope": {
@@ -60,21 +70,53 @@
         "className": "HeadlessProjectPlanningEditorScope",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "tenantId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "projectId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.929Z",
+  "generatedAt": "2026-06-13T06:21:07.207Z",
   "$defs": {
     "ProjectPlanningEditorResolveContext": {
       "type": "object",
       "title": "ProjectPlanningEditorResolveContext",
-      "description": "Project Planning Editor Resolve Context 的运行上下文。"
+      "description": "Project Planning Editor Resolve Context 的运行上下文。",
+      "properties": {
+        "moduleInstanceId": {
+          "type": "string"
+        }
+      }
     },
     "HeadlessProjectPlanningEditorScope": {
       "type": "object",
       "title": "HeadlessProjectPlanningEditorScope",
-      "description": "Headless Project Planning Editor Scope 的语义模型。"
+      "description": "Headless Project Planning Editor Scope 的语义模型。",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        }
+      }
     }
   }
 }

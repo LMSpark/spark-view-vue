@@ -36,16 +36,67 @@
         "className": "FieldMaskInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "field",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "value",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "row",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "DataRow"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "permissionMode",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "NavPermissionMode"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.796Z",
+  "generatedAt": "2026-06-13T06:21:07.006Z",
   "$defs": {
     "FieldMaskInput": {
       "type": "object",
       "title": "FieldMaskInput",
-      "description": "Field Mask Input 的输入数据。"
+      "description": "Field Mask Input 的输入数据。",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "value": true,
+        "row": {
+          "type": "object",
+          "title": "DataRow"
+        },
+        "permissionMode": {
+          "type": "object",
+          "title": "NavPermissionMode"
+        }
+      }
     }
   }
 }

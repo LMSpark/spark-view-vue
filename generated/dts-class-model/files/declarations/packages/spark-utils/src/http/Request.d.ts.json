@@ -56,7 +56,17 @@
               "isOptional": true
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "defaults": {
+              "type": "object",
+              "title": "Partial<RequestConfig>"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -88,6 +98,20 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "title": "RequestConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<HttpResponse<unknown>>"
           }
         },
         {
@@ -116,12 +140,27 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "err": true,
+              "config": {
+                "type": "object",
+                "title": "RequestConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "RequestError"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.910Z",
+  "generatedAt": "2026-06-13T06:21:07.175Z",
   "$defs": {
     "Request": {
       "type": "object",

@@ -35,16 +35,6 @@
       },
       "attributes": [
         {
-          "name": "getNavigationApi",
-          "jsdoc": "get Navigation Api 回调。",
-          "schema": {
-            "type": "object",
-            "title": "() => string"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "http",
           "jsdoc": "http 字段。",
           "schema": {
@@ -55,7 +45,26 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "getNavigationApi",
+          "jsdoc": "get Navigation Api 回调。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        }
+      ]
     },
     "LinkProbeResult": {
       "kind": "LinkProbeResult",
@@ -115,7 +124,16 @@
               "sourcePath": "declarations/packages/spark-project-model/src/io/navigation-client.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/NavigationClientOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -133,6 +151,15 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectModelData>"
           }
         },
         {
@@ -157,6 +184,19 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "params": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectNodeData>"
           }
         },
         {
@@ -188,6 +228,23 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "patch": {
+                "type": "object",
+                "title": "NavigationNodePatch"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectNodeData>"
           }
         },
         {
@@ -221,6 +278,19 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectNodeData | null>"
           }
         },
         {
@@ -268,6 +338,32 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "newParentId": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectNodeData>"
           }
         },
         {
@@ -293,22 +389,31 @@
                 "sourcePath": "declarations/packages/spark-project-model/src/io/navigation-client.d.ts"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<LinkProbeResult>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.869Z",
+  "generatedAt": "2026-06-13T06:21:07.123Z",
   "$defs": {
     "NavigationClientOptions": {
       "type": "object",
       "title": "NavigationClientOptions",
       "description": "Navigation Client Options 的调用配置。",
       "properties": {
-        "getNavigationApi": {
-          "type": "object",
-          "title": "() => string"
-        },
         "http": {
           "type": "object",
           "title": "HttpClientBase"

@@ -224,16 +224,6 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/648eeae7e213de6bfb714f93345c97bf8e534426ee368c3d08f8a403719234fc": {
-      "ref": "spark-class-model://schema/shared/648eeae7e213de6bfb714f93345c97bf8e534426ee368c3d08f8a403719234fc",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "Readonly<Record<string, JsonSchema>>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/648eeae7e213de6bfb714f93345c97bf8e534426ee368c3d08f8a403719234fc"
-      }
-    },
     "spark-class-model://model/JsonSchemaObject/attributes/properties/4": {
       "ref": "spark-class-model://model/JsonSchemaObject/attributes/properties/4",
       "kind": "attribute",
@@ -251,15 +241,6 @@
       "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
       "readable": true,
       "writable": false
-    },
-    "spark-class-model://schema/shared/99ea7830b23a431a1c67224fb4ede91539bd0382802f41b57247b0f46e142316": {
-      "ref": "spark-class-model://schema/shared/99ea7830b23a431a1c67224fb4ede91539bd0382802f41b57247b0f46e142316",
-      "kind": "schema",
-      "schema": {
-        "$ref": "spark-class-model://schema/JsonSchema",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/99ea7830b23a431a1c67224fb4ede91539bd0382802f41b57247b0f46e142316"
-      }
     },
     "spark-class-model://model/JsonSchemaObject/attributes/additionalProperties/6": {
       "ref": "spark-class-model://model/JsonSchemaObject/attributes/additionalProperties/6",
@@ -341,28 +322,6 @@
       "schemaRef": "spark-class-model://schema/shared/6ab1938041ee02fe96d198c6255457d3adcef527434974f1a2ffa457f02f2612",
       "readable": true,
       "writable": false
-    },
-    "spark-class-model://schema/shared/81d0397840966389d7630dc56ed5038be8bf231120d1c52be38f565faac0f723": {
-      "ref": "spark-class-model://schema/shared/81d0397840966389d7630dc56ed5038be8bf231120d1c52be38f565faac0f723",
-      "kind": "schema",
-      "schema": {
-        "anyOf": [
-          {
-            "type": "string"
-          },
-          {
-            "type": "number"
-          },
-          {
-            "type": "boolean"
-          },
-          {
-            "type": "null"
-          }
-        ],
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/81d0397840966389d7630dc56ed5038be8bf231120d1c52be38f565faac0f723"
-      }
     },
     "spark-class-model://model/JsonSchemaObject/attributes/const/10": {
       "ref": "spark-class-model://model/JsonSchemaObject/attributes/const/10",

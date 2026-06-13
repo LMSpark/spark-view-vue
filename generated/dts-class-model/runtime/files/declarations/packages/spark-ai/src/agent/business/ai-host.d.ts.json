@@ -22,18 +22,77 @@
       "schema": {
         "type": "object",
         "title": "CreateAiAgentHostOptions",
+        "properties": {
+          "turnCallbacks": {
+            "$ref": "spark-class-model://schema/AiAgentTurnCallbacks"
+          },
+          "maxToolRounds": {
+            "type": "number"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/CreateAiAgentHostOptions"
       }
+    },
+    "spark-class-model://schema/shared/8e5aae409a3ccb3f257a7ccd65acb977601f68500a943f3a5776db38d644cc45": {
+      "ref": "spark-class-model://schema/shared/8e5aae409a3ccb3f257a7ccd65acb977601f68500a943f3a5776db38d644cc45",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentTurnCallbacks",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8e5aae409a3ccb3f257a7ccd65acb977601f68500a943f3a5776db38d644cc45"
+      }
+    },
+    "spark-class-model://model/CreateAiAgentHostOptions/attributes/turnCallbacks/0": {
+      "ref": "spark-class-model://model/CreateAiAgentHostOptions/attributes/turnCallbacks/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CreateAiAgentHostOptions",
+      "name": "turnCallbacks",
+      "schemaRef": "spark-class-model://schema/shared/8e5aae409a3ccb3f257a7ccd65acb977601f68500a943f3a5776db38d644cc45",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCreateAiAgentHostOptions%2Fattributes%2FturnCallbacks%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTurnCallbacks": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCreateAiAgentHostOptions%2Fattributes%2FturnCallbacks%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTurnCallbacks",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CreateAiAgentHostOptions/attributes/turnCallbacks/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentTurnCallbacks",
+      "targetClassName": "AiAgentTurnCallbacks",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/transport/transport-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentTurnCallbacks"
+    },
+    "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387": {
+      "ref": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "kind": "schema",
+      "schema": {
+        "type": "number",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
+      }
+    },
+    "spark-class-model://model/CreateAiAgentHostOptions/attributes/maxToolRounds/1": {
+      "ref": "spark-class-model://model/CreateAiAgentHostOptions/attributes/maxToolRounds/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CreateAiAgentHostOptions",
+      "name": "maxToolRounds",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": false
     },
     "spark-class-model://model/CreateAiAgentHostOptions": {
       "ref": "spark-class-model://model/CreateAiAgentHostOptions",
       "kind": "model",
       "className": "CreateAiAgentHostOptions",
       "schemaRef": "spark-class-model://schema/CreateAiAgentHostOptions",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/CreateAiAgentHostOptions/attributes/turnCallbacks/0",
+        "spark-class-model://model/CreateAiAgentHostOptions/attributes/maxToolRounds/1"
+      ],
       "methodRefs": [],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCreateAiAgentHostOptions%2Fattributes%2FturnCallbacks%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTurnCallbacks"
+      ]
     },
     "spark-class-model://schema/AiAgentHostRunResult": {
       "ref": "spark-class-model://schema/AiAgentHostRunResult",
@@ -41,18 +100,112 @@
       "schema": {
         "type": "object",
         "title": "AiAgentHostRunResult",
+        "properties": {
+          "task": {
+            "$ref": "spark-class-model://schema/AiAgentTask"
+          },
+          "session": {
+            "$ref": "spark-class-model://schema/AiAgentSession"
+          },
+          "resultExtras": {
+            "type": "object",
+            "title": "Readonly<Record<string, unknown>>"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiAgentHostRunResult"
       }
+    },
+    "spark-class-model://schema/shared/f3c0e5eb85d033fefb61576af4129485114737f7001965cd14416c3220408fb4": {
+      "ref": "spark-class-model://schema/shared/f3c0e5eb85d033fefb61576af4129485114737f7001965cd14416c3220408fb4",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentTask",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/f3c0e5eb85d033fefb61576af4129485114737f7001965cd14416c3220408fb4"
+      }
+    },
+    "spark-class-model://model/AiAgentHostRunResult/attributes/task/0": {
+      "ref": "spark-class-model://model/AiAgentHostRunResult/attributes/task/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostRunResult",
+      "name": "task",
+      "schemaRef": "spark-class-model://schema/shared/f3c0e5eb85d033fefb61576af4129485114737f7001965cd14416c3220408fb4",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRunResult%2Fattributes%2Ftask%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRunResult%2Fattributes%2Ftask%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHostRunResult/attributes/task/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentTask",
+      "targetClassName": "AiAgentTask",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/business-task.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentTask"
+    },
+    "spark-class-model://schema/shared/fdf362321f52d11c375d2536f42d8f96ac2d7c78cbc9bbcb85ed197f3a45b076": {
+      "ref": "spark-class-model://schema/shared/fdf362321f52d11c375d2536f42d8f96ac2d7c78cbc9bbcb85ed197f3a45b076",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentSession",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/fdf362321f52d11c375d2536f42d8f96ac2d7c78cbc9bbcb85ed197f3a45b076"
+      }
+    },
+    "spark-class-model://model/AiAgentHostRunResult/attributes/session/1": {
+      "ref": "spark-class-model://model/AiAgentHostRunResult/attributes/session/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostRunResult",
+      "name": "session",
+      "schemaRef": "spark-class-model://schema/shared/fdf362321f52d11c375d2536f42d8f96ac2d7c78cbc9bbcb85ed197f3a45b076",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRunResult%2Fattributes%2Fsession%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentSession": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRunResult%2Fattributes%2Fsession%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentSession",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHostRunResult/attributes/session/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentSession",
+      "targetClassName": "AiAgentSession",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/business-session.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentSession"
+    },
+    "spark-class-model://schema/shared/7e24edd51995779c3b1a78931005f9ef5f4a1c17858ac1180842204a4e6fd48a": {
+      "ref": "spark-class-model://schema/shared/7e24edd51995779c3b1a78931005f9ef5f4a1c17858ac1180842204a4e6fd48a",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Readonly<Record<string, unknown>>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/7e24edd51995779c3b1a78931005f9ef5f4a1c17858ac1180842204a4e6fd48a"
+      }
+    },
+    "spark-class-model://model/AiAgentHostRunResult/attributes/resultExtras/2": {
+      "ref": "spark-class-model://model/AiAgentHostRunResult/attributes/resultExtras/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostRunResult",
+      "name": "resultExtras",
+      "schemaRef": "spark-class-model://schema/shared/7e24edd51995779c3b1a78931005f9ef5f4a1c17858ac1180842204a4e6fd48a",
+      "readable": true,
+      "writable": false
     },
     "spark-class-model://model/AiAgentHostRunResult": {
       "ref": "spark-class-model://model/AiAgentHostRunResult",
       "kind": "model",
       "className": "AiAgentHostRunResult",
       "schemaRef": "spark-class-model://schema/AiAgentHostRunResult",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentHostRunResult/attributes/task/0",
+        "spark-class-model://model/AiAgentHostRunResult/attributes/session/1",
+        "spark-class-model://model/AiAgentHostRunResult/attributes/resultExtras/2"
+      ],
       "methodRefs": [],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRunResult%2Fattributes%2Ftask%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentTask",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRunResult%2Fattributes%2Fsession%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentSession"
+      ]
     },
     "spark-class-model://schema/AiAgentHostEntryMap": {
       "ref": "spark-class-model://schema/AiAgentHostEntryMap",
@@ -98,18 +251,87 @@
       "schema": {
         "type": "object",
         "title": "AiAgentHostEnsureCommand",
+        "properties": {
+          "moduleId": {
+            "type": "string"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiAgentHostEnsureCommand"
       }
+    },
+    "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96": {
+      "ref": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "kind": "schema",
+      "schema": {
+        "type": "string",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96"
+      }
+    },
+    "spark-class-model://model/AiAgentHostEnsureCommand/attributes/moduleId/0": {
+      "ref": "spark-class-model://model/AiAgentHostEnsureCommand/attributes/moduleId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostEnsureCommand",
+      "name": "moduleId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentHostEnsureCommand/methods/create/0": {
+      "ref": "spark-class-model://model/AiAgentHostEnsureCommand/methods/create/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiAgentHostEnsureCommand",
+      "name": "create",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/670efbe61ac7a80a990322e748af43249d111c5f5dde6682f8ad50f11b10248f"
+    },
+    "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa": {
+      "ref": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
+      }
+    },
+    "spark-class-model://schema/shared/670efbe61ac7a80a990322e748af43249d111c5f5dde6682f8ad50f11b10248f": {
+      "ref": "spark-class-model://schema/shared/670efbe61ac7a80a990322e748af43249d111c5f5dde6682f8ad50f11b10248f",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentRegistration",
+        "title": "AiAgentRegistration<TInput>",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/670efbe61ac7a80a990322e748af43249d111c5f5dde6682f8ad50f11b10248f"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostEnsureCommand%2Fmethods%2Fcreate%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostEnsureCommand%2Fmethods%2Fcreate%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHostEnsureCommand/methods/create/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/AiAgentRegistration",
+      "targetClassName": "AiAgentRegistration",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/business/registration-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRegistration"
     },
     "spark-class-model://model/AiAgentHostEnsureCommand": {
       "ref": "spark-class-model://model/AiAgentHostEnsureCommand",
       "kind": "model",
       "className": "AiAgentHostEnsureCommand",
       "schemaRef": "spark-class-model://schema/AiAgentHostEnsureCommand",
-      "attributeRefs": [],
-      "methodRefs": [],
-      "linkRefs": []
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentHostEnsureCommand/attributes/moduleId/0"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/AiAgentHostEnsureCommand/methods/create/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostEnsureCommand%2Fmethods%2Fcreate%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FAiAgentRegistration"
+      ]
     },
     "spark-class-model://schema/AiAgentHostRegistrationSummary": {
       "ref": "spark-class-model://schema/AiAgentHostRegistrationSummary",
@@ -117,16 +339,122 @@
       "schema": {
         "type": "object",
         "title": "AiAgentHostRegistrationSummary",
+        "properties": {
+          "alias": {
+            "type": "string"
+          },
+          "moduleId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "rootKinds": {
+            "type": "array"
+          },
+          "moduleCount": {
+            "type": "number"
+          },
+          "status": true
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiAgentHostRegistrationSummary"
       }
+    },
+    "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/alias/0": {
+      "ref": "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/alias/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostRegistrationSummary",
+      "name": "alias",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/moduleId/1": {
+      "ref": "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/moduleId/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostRegistrationSummary",
+      "name": "moduleId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/name/2": {
+      "ref": "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/name/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostRegistrationSummary",
+      "name": "name",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/description/3": {
+      "ref": "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/description/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostRegistrationSummary",
+      "name": "description",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22": {
+      "ref": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "kind": "schema",
+      "schema": {
+        "type": "array",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22"
+      }
+    },
+    "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/rootKinds/4": {
+      "ref": "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/rootKinds/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostRegistrationSummary",
+      "name": "rootKinds",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/moduleCount/5": {
+      "ref": "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/moduleCount/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostRegistrationSummary",
+      "name": "moduleCount",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b": {
+      "ref": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "kind": "schema",
+      "schema": true
+    },
+    "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/status/6": {
+      "ref": "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/status/6",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostRegistrationSummary",
+      "name": "status",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
     },
     "spark-class-model://model/AiAgentHostRegistrationSummary": {
       "ref": "spark-class-model://model/AiAgentHostRegistrationSummary",
       "kind": "model",
       "className": "AiAgentHostRegistrationSummary",
       "schemaRef": "spark-class-model://schema/AiAgentHostRegistrationSummary",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/alias/0",
+        "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/moduleId/1",
+        "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/name/2",
+        "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/description/3",
+        "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/rootKinds/4",
+        "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/moduleCount/5",
+        "spark-class-model://model/AiAgentHostRegistrationSummary/attributes/status/6"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },
@@ -136,18 +464,55 @@
       "schema": {
         "type": "object",
         "title": "AiAgentHostRegistrationDescription",
+        "properties": {
+          "inspectReport": {
+            "$ref": "spark-class-model://schema/AiAgentToolRuntimeInspectReport"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiAgentHostRegistrationDescription"
       }
+    },
+    "spark-class-model://schema/shared/a62f8719d2bae010058a1f8786c83e414534501873a88a2a503638d8c10a2fe4": {
+      "ref": "spark-class-model://schema/shared/a62f8719d2bae010058a1f8786c83e414534501873a88a2a503638d8c10a2fe4",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentToolRuntimeInspectReport",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/a62f8719d2bae010058a1f8786c83e414534501873a88a2a503638d8c10a2fe4"
+      }
+    },
+    "spark-class-model://model/AiAgentHostRegistrationDescription/attributes/inspectReport/0": {
+      "ref": "spark-class-model://model/AiAgentHostRegistrationDescription/attributes/inspectReport/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostRegistrationDescription",
+      "name": "inspectReport",
+      "schemaRef": "spark-class-model://schema/shared/a62f8719d2bae010058a1f8786c83e414534501873a88a2a503638d8c10a2fe4",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRegistrationDescription%2Fattributes%2FinspectReport%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolRuntimeInspectReport": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRegistrationDescription%2Fattributes%2FinspectReport%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolRuntimeInspectReport",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiAgentHostRegistrationDescription/attributes/inspectReport/0",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentToolRuntimeInspectReport",
+      "targetClassName": "AiAgentToolRuntimeInspectReport",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentToolRuntimeInspectReport"
     },
     "spark-class-model://model/AiAgentHostRegistrationDescription": {
       "ref": "spark-class-model://model/AiAgentHostRegistrationDescription",
       "kind": "model",
       "className": "AiAgentHostRegistrationDescription",
       "schemaRef": "spark-class-model://schema/AiAgentHostRegistrationDescription",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentHostRegistrationDescription/attributes/inspectReport/0"
+      ],
       "methodRefs": [],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiAgentHostRegistrationDescription%2Fattributes%2FinspectReport%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentToolRuntimeInspectReport"
+      ]
     },
     "spark-class-model://schema/AiAgentHostDryRunDiagnostic": {
       "ref": "spark-class-model://schema/AiAgentHostDryRunDiagnostic",
@@ -155,16 +520,118 @@
       "schema": {
         "type": "object",
         "title": "AiAgentHostDryRunDiagnostic",
+        "properties": {
+          "level": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warn"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              }
+            ]
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "fix": {
+            "type": "string"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiAgentHostDryRunDiagnostic"
       }
+    },
+    "spark-class-model://schema/shared/adef0da3760d2d284d29fcaedf2e438326d07bccf55d31e133384d428163d577": {
+      "ref": "spark-class-model://schema/shared/adef0da3760d2d284d29fcaedf2e438326d07bccf55d31e133384d428163d577",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "warn"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "info"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/adef0da3760d2d284d29fcaedf2e438326d07bccf55d31e133384d428163d577"
+      }
+    },
+    "spark-class-model://model/AiAgentHostDryRunDiagnostic/attributes/level/0": {
+      "ref": "spark-class-model://model/AiAgentHostDryRunDiagnostic/attributes/level/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostDryRunDiagnostic",
+      "name": "level",
+      "schemaRef": "spark-class-model://schema/shared/adef0da3760d2d284d29fcaedf2e438326d07bccf55d31e133384d428163d577",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentHostDryRunDiagnostic/attributes/code/1": {
+      "ref": "spark-class-model://model/AiAgentHostDryRunDiagnostic/attributes/code/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostDryRunDiagnostic",
+      "name": "code",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentHostDryRunDiagnostic/attributes/message/2": {
+      "ref": "spark-class-model://model/AiAgentHostDryRunDiagnostic/attributes/message/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostDryRunDiagnostic",
+      "name": "message",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentHostDryRunDiagnostic/attributes/fix/3": {
+      "ref": "spark-class-model://model/AiAgentHostDryRunDiagnostic/attributes/fix/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostDryRunDiagnostic",
+      "name": "fix",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
     },
     "spark-class-model://model/AiAgentHostDryRunDiagnostic": {
       "ref": "spark-class-model://model/AiAgentHostDryRunDiagnostic",
       "kind": "model",
       "className": "AiAgentHostDryRunDiagnostic",
       "schemaRef": "spark-class-model://schema/AiAgentHostDryRunDiagnostic",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentHostDryRunDiagnostic/attributes/level/0",
+        "spark-class-model://model/AiAgentHostDryRunDiagnostic/attributes/code/1",
+        "spark-class-model://model/AiAgentHostDryRunDiagnostic/attributes/message/2",
+        "spark-class-model://model/AiAgentHostDryRunDiagnostic/attributes/fix/3"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },
@@ -174,16 +641,71 @@
       "schema": {
         "type": "object",
         "title": "AiAgentHostOrchestrationSummary",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "userMessageLength": {
+            "type": "number"
+          },
+          "systemPromptLength": {
+            "type": "number"
+          },
+          "readonlyStepCount": {
+            "type": "number"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiAgentHostOrchestrationSummary"
       }
+    },
+    "spark-class-model://model/AiAgentHostOrchestrationSummary/attributes/title/0": {
+      "ref": "spark-class-model://model/AiAgentHostOrchestrationSummary/attributes/title/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostOrchestrationSummary",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiAgentHostOrchestrationSummary/attributes/userMessageLength/1": {
+      "ref": "spark-class-model://model/AiAgentHostOrchestrationSummary/attributes/userMessageLength/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostOrchestrationSummary",
+      "name": "userMessageLength",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentHostOrchestrationSummary/attributes/systemPromptLength/2": {
+      "ref": "spark-class-model://model/AiAgentHostOrchestrationSummary/attributes/systemPromptLength/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostOrchestrationSummary",
+      "name": "systemPromptLength",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiAgentHostOrchestrationSummary/attributes/readonlyStepCount/3": {
+      "ref": "spark-class-model://model/AiAgentHostOrchestrationSummary/attributes/readonlyStepCount/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiAgentHostOrchestrationSummary",
+      "name": "readonlyStepCount",
+      "schemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387",
+      "readable": true,
+      "writable": true
     },
     "spark-class-model://model/AiAgentHostOrchestrationSummary": {
       "ref": "spark-class-model://model/AiAgentHostOrchestrationSummary",
       "kind": "model",
       "className": "AiAgentHostOrchestrationSummary",
       "schemaRef": "spark-class-model://schema/AiAgentHostOrchestrationSummary",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiAgentHostOrchestrationSummary/attributes/title/0",
+        "spark-class-model://model/AiAgentHostOrchestrationSummary/attributes/userMessageLength/1",
+        "spark-class-model://model/AiAgentHostOrchestrationSummary/attributes/systemPromptLength/2",
+        "spark-class-model://model/AiAgentHostOrchestrationSummary/attributes/readonlyStepCount/3"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },
@@ -412,26 +934,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
       "returnSchemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22"
-    },
-    "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa": {
-      "ref": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {},
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
-      }
-    },
-    "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22": {
-      "ref": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
-      "kind": "schema",
-      "schema": {
-        "type": "array",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22"
-      }
     },
     "spark-class-model://model/AiAgentHost/methods/describe/5": {
       "ref": "spark-class-model://model/AiAgentHost/methods/describe/5",

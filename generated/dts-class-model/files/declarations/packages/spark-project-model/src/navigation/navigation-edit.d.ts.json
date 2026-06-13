@@ -431,10 +431,40 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "applyNavigationPatch",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "patch",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "patch": {
+                "type": "object",
+                "title": "ProjectNodeNavigationPatch"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.877Z",
+  "generatedAt": "2026-06-13T06:21:07.131Z",
   "$defs": {
     "NavigationNodeDraftNode": {
       "type": "object",

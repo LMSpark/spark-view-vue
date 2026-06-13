@@ -77,6 +77,47 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://model/PageTextFile/constructors/0": {
+      "ref": "spark-class-model://model/PageTextFile/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/PageTextFile",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e759894f5c0aab13d6b02cc89c73c594547dff7630df203634493404a6272ff7"
+    },
+    "spark-class-model://schema/shared/e759894f5c0aab13d6b02cc89c73c594547dff7630df203634493404a6272ff7": {
+      "ref": "spark-class-model://schema/shared/e759894f5c0aab13d6b02cc89c73c594547dff7630df203634493404a6272ff7",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string"
+          },
+          "fileName": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "script.js"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "style.css"
+                ]
+              }
+            ]
+          },
+          "initialText": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e759894f5c0aab13d6b02cc89c73c594547dff7630df203634493404a6272ff7"
+      }
+    },
     "spark-class-model://model/PageTextFile/methods/getText/0": {
       "ref": "spark-class-model://model/PageTextFile/methods/getText/0",
       "kind": "method",
@@ -93,21 +134,6 @@
       "name": "setText",
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1"
-    },
-    "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1": {
-      "ref": "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "content": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/8afa27b0bd5645bf19361037570014a6a4d0843406ec4498f963aa789e53afe1"
-      }
     },
     "spark-class-model://model/PageTextFile/methods/loadText/2": {
       "ref": "spark-class-model://model/PageTextFile/methods/loadText/2",
@@ -148,6 +174,7 @@
       "kind": "model",
       "className": "PageTextFile",
       "schemaRef": "spark-class-model://schema/PageTextFile",
+      "constructorRef": "spark-class-model://model/PageTextFile/constructors/0",
       "attributeRefs": [
         "spark-class-model://model/PageTextFile/attributes/pageId/0",
         "spark-class-model://model/PageTextFile/attributes/fileName/1"

@@ -346,7 +346,45 @@
         "className": "RenameNodeKeyInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "model",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/TreeModel"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "uid",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "nextKeyInput",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "policy",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Partial<JsonTreePolicy>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "UpdateNodeTypeInput": {
@@ -368,7 +406,45 @@
         "className": "UpdateNodeTypeInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "model",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/TreeModel"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "uid",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "nextType",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/JsonNodeType"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "policy",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Partial<JsonTreePolicy>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "JsonTreePolicy": {
@@ -394,7 +470,349 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "isProtected",
+          "jsdoc": "该路径是否受保护（不可删除）。默认全部可删除",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "path",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "object",
+                "title": "JsonPath"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canEditKey",
+          "jsdoc": "该路径的键是否可重命名。默认：对象属性可改，数组索引不可改",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "path",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "object",
+                "title": "JsonPath"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "canEditType",
+          "jsdoc": "该路径的类型是否可切换。默认：除根节点外均可",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "path",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "object",
+                "title": "JsonPath"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        },
+        {
+          "name": "suggestChildKey",
+          "jsdoc": "为目标对象建议新子键名",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "target",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "parentPath",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "target": {
+                "type": "object",
+                "title": "JsonObject"
+              },
+              "parentPath": {
+                "type": "object",
+                "title": "JsonPath"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "createDefaultArrayItem",
+          "jsdoc": "为数组添加子项时的默认值",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "parentPath",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentPath": {
+                "type": "object",
+                "title": "JsonPath"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "JsonValue"
+          }
+        },
+        {
+          "name": "createDefaultObjectValue",
+          "jsdoc": "为对象添加子项时的默认值",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "parentPath",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "key",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentPath": {
+                "type": "object",
+                "title": "JsonPath"
+              },
+              "key": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "JsonValue"
+          }
+        },
+        {
+          "name": "getValueOptions",
+          "jsdoc": "返回该路径的可选值列表（用于下拉选择，优先级低于 Schema enum）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "path",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "array",
+              "elementType": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "object",
+                "title": "JsonPath"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "name": "getValueLabels",
+          "jsdoc": "返回该路径的带标签下拉选项。优先级最高：getValueLabels > Schema enum > getValueOptions",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "path",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "array",
+              "elementType": {
+                "type": "unknown",
+                "name": "{\n        label: string;\n        value: string;\n    }"
+              }
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "object",
+                "title": "JsonPath"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "name": "getAutoPopulate",
+          "jsdoc": "值变更后需要自动填充到文档的补丁。返回的条目中已有的键不会被覆盖",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "changedPath",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "newValue",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "optional",
+            "elementType": {
+              "type": "array",
+              "elementType": {
+                "type": "reference",
+                "name": "AutoPopulateEntry",
+                "sourcePath": "declarations/packages/spark-json-document/src/tree/tree-types.d.ts"
+              }
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "changedPath": {
+                "type": "object",
+                "title": "JsonPath"
+              },
+              "newValue": {
+                "type": "object",
+                "title": "JsonValue"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/AutoPopulateEntry"
+            }
+          }
+        }
+      ]
     },
     "AutoPopulateEntry": {
       "kind": "AutoPopulateEntry",
@@ -483,7 +901,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.868Z",
+  "generatedAt": "2026-06-13T06:21:07.121Z",
   "$defs": {
     "JsonNodeType": {
       "type": "object",
@@ -599,12 +1017,42 @@
     "RenameNodeKeyInput": {
       "type": "object",
       "title": "RenameNodeKeyInput",
-      "description": "Rename Node Key Input 的输入数据。"
+      "description": "Rename Node Key Input 的输入数据。",
+      "properties": {
+        "model": {
+          "$ref": "#/$defs/TreeModel"
+        },
+        "uid": {
+          "type": "string"
+        },
+        "nextKeyInput": {
+          "type": "string"
+        },
+        "policy": {
+          "type": "object",
+          "title": "Partial<JsonTreePolicy>"
+        }
+      }
     },
     "UpdateNodeTypeInput": {
       "type": "object",
       "title": "UpdateNodeTypeInput",
-      "description": "Update Node Type Input 的输入数据。"
+      "description": "Update Node Type Input 的输入数据。",
+      "properties": {
+        "model": {
+          "$ref": "#/$defs/TreeModel"
+        },
+        "uid": {
+          "type": "string"
+        },
+        "nextType": {
+          "$ref": "#/$defs/JsonNodeType"
+        },
+        "policy": {
+          "type": "object",
+          "title": "Partial<JsonTreePolicy>"
+        }
+      }
     },
     "JsonTreePolicy": {
       "type": "object",

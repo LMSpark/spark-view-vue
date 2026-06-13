@@ -96,7 +96,53 @@
         "componentLayer": "data-view-container",
         "componentDirectory": "containers/data-views"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "view",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "DataView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rows",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "treeConfig",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "TreeConfig"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "primaryKey",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "RendererTreeViewStateOptions": {
@@ -129,7 +175,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.662Z",
+  "generatedAt": "2026-06-13T06:21:06.789Z",
   "$defs": {
     "RendererTreeViewState": {
       "type": "object",
@@ -149,7 +195,30 @@
     "TreeTableRowsInput": {
       "type": "object",
       "title": "TreeTableRowsInput",
-      "description": "Tree Table Rows Input 的输入数据。"
+      "description": "Tree Table Rows Input 的输入数据。",
+      "properties": {
+        "view": {
+          "anyOf": [
+            {
+              "type": "object",
+              "title": "DataView"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rows": {
+          "type": "array"
+        },
+        "treeConfig": {
+          "type": "object",
+          "title": "TreeConfig"
+        },
+        "primaryKey": {
+          "type": "string"
+        }
+      }
     },
     "RendererTreeViewStateOptions": {
       "type": "object",

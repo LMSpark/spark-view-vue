@@ -427,7 +427,26 @@
         "className": "ProjectPlanningInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "requirement",
+          "jsdoc": "项目级短需求；优先 navigation 根节点 description，否则 project.description。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "planningAttachmentRef",
+          "jsdoc": "策划详细说明附件引用；正文由工作区解析后传给 LLM。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "NavigationPlanningInput": {
@@ -449,7 +468,53 @@
         "className": "NavigationPlanningInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "nodeId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "title",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "nodeKind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "requirement",
+          "jsdoc": "节点短需求，即 navigation description。",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "planningAttachmentRef",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "ProjectInfo": {
@@ -638,7 +703,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.895Z",
+  "generatedAt": "2026-06-13T06:21:07.162Z",
   "$defs": {
     "ProjectNavigationDirtyScope": {
       "type": "object",
@@ -792,12 +857,37 @@
     "ProjectPlanningInput": {
       "type": "object",
       "title": "ProjectPlanningInput",
-      "description": "项目级策划输入：短需求 + 可选详细说明附件引用。"
+      "description": "项目级策划输入：短需求 + 可选详细说明附件引用。",
+      "properties": {
+        "requirement": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        }
+      }
     },
     "NavigationPlanningInput": {
       "type": "object",
       "title": "NavigationPlanningInput",
-      "description": "单个导航节点策划输入：节点 description + 可选附件引用。"
+      "description": "单个导航节点策划输入：节点 description + 可选附件引用。",
+      "properties": {
+        "nodeId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "type": "string"
+        },
+        "requirement": {
+          "type": "string"
+        },
+        "planningAttachmentRef": {
+          "type": "string"
+        }
+      }
     },
     "ProjectInfo": {
       "type": "object",

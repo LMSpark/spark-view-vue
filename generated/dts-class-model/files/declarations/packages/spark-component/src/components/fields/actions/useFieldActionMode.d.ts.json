@@ -94,22 +94,59 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "chooseByMode",
           "jsdoc": "choose By Mode 回调。",
-          "schema": {
-            "type": "object",
-            "title": "<T>(editableValue: T, readonlyValue: T) => ComputedRef<T>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "editableValue",
+              "type": {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "name": "readonlyValue",
+              "type": {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "ComputedRef",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "editableValue": true,
+              "readonlyValue": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ComputedRef<T>"
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.729Z",
+  "generatedAt": "2026-06-13T06:21:06.904Z",
   "$defs": {
     "FieldActionMode": {
       "type": "object",
@@ -135,10 +172,6 @@
         "actionMode": {
           "type": "object",
           "title": "ComputedRef<FieldActionMode>"
-        },
-        "chooseByMode": {
-          "type": "object",
-          "title": "<T>(editableValue: T, readonlyValue: T) => ComputedRef<T>"
         }
       }
     }

@@ -125,6 +125,8 @@ describe('readDtsClassModelBundleJson', () => {
         'parameterStyle',
         'parameters',
         'type',
+        'paramsSchema',
+        'returnSchema',
       ])
       expect(rawRemoveMethod).not.toHaveProperty(removedReturnTypeField)
       expect(rawRemoveMethod).not.toHaveProperty('signatureText')
@@ -138,8 +140,13 @@ describe('readDtsClassModelBundleJson', () => {
       expect(removeMethod).not.toHaveProperty(removedReturnTypeField)
       expect(removeMethod).not.toHaveProperty(removedReturnTypeRefsField)
       expect(removeMethod).not.toHaveProperty(removedReturnTextField)
-      expect(removeMethod).not.toHaveProperty('paramsSchema')
-      expect(removeMethod).not.toHaveProperty('returnSchema')
+      expect(removeMethod?.paramsSchema).toMatchObject({
+        type: 'object',
+        properties: {
+          moduleId: { type: 'string' },
+        },
+      })
+      expect(removeMethod?.returnSchema).toEqual({ type: 'boolean' })
       expect(removeMethod).not.toHaveProperty(removedParamsTextField)
       expect(removeMethod).not.toHaveProperty('provenance')
       const attachMethod = projection.models['SparkAIModel']?.methods.find(method => method.name === 'attach')
@@ -161,8 +168,13 @@ describe('readDtsClassModelBundleJson', () => {
       })
       expect(attachMethod).not.toHaveProperty(removedReturnTypeField)
       expect(attachMethod).not.toHaveProperty(removedReturnTypeRefsField)
-      expect(attachMethod).not.toHaveProperty('paramsSchema')
-      expect(attachMethod).not.toHaveProperty('returnSchema')
+      expect(attachMethod?.paramsSchema).toMatchObject({
+        type: 'object',
+        properties: {
+          model: { $ref: '#/$defs/SparkAIModel' },
+        },
+      })
+      expect(attachMethod?.returnSchema).toEqual({ $ref: '#/$defs/SparkAIModel' })
       expect(attachMethod).not.toHaveProperty(removedParamsTextField)
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
@@ -421,8 +433,16 @@ describe('readDtsClassModelBundleJson', () => {
       expect(registerMethod?.type).toEqual({ type: 'intrinsic', name: 'void' })
       expect(registerMethod).not.toHaveProperty(removedReturnTypeField)
       expect(registerMethod).not.toHaveProperty(removedReturnTypeRefsField)
-      expect(registerMethod).not.toHaveProperty('paramsSchema')
-      expect(registerMethod).not.toHaveProperty('returnSchema')
+      expect(registerMethod?.paramsSchema).toMatchObject({
+        type: 'object',
+        properties: {
+          registration: {
+            $ref: 'registration-types.d.ts.json#/$defs/AiAgentRegistration',
+            title: 'AiAgentRegistration<TInput>',
+          },
+        },
+      })
+      expect(registerMethod?.returnSchema).toBe(true)
 
       const runtimeManifest = readDtsClassModelRuntimeManifest(
         JSON.parse(readFileSync(result.runtimeManifestPath, 'utf8')) as unknown,
@@ -595,6 +615,99 @@ describe('readDtsClassModelBundleJson', () => {
           input: { type: 'string' },
         },
       })
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('extracts constructors into runtime refs and knowledge surface', async () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-constructor-${String(process.pid)}-${String(Date.now())}`)
+    const optionsSourcePath = 'declarations/packages/spark-ai/src/agent/business/widget-options.d.ts'
+    const widgetSourcePath = 'declarations/packages/spark-ai/src/agent/business/widget.d.ts'
+    const optionsPath = resolve(tempRoot, optionsSourcePath)
+    const widgetPath = resolve(tempRoot, widgetSourcePath)
+    const outputDir = resolve(tempRoot, 'generated/dts-class-model')
+    try {
+      mkdirSync(dirname(optionsPath), { recursive: true })
+      writeFileSync(optionsPath, [
+        '/** Options used to create a widget. */',
+        'export type WidgetOptions = {',
+        '  /** Stable widget id. */',
+        '  id: string',
+        '}',
+      ].join('\n'), 'utf8')
+      writeFileSync(widgetPath, [
+        "import type { WidgetOptions } from './widget-options'",
+        '/** Runtime widget created from typed options. */',
+        'export class Widget {',
+        '  /** Creates a widget from typed options. */',
+        '  constructor(options: WidgetOptions, label?: string)',
+        '  /** Stable widget id. */',
+        '  readonly id: string',
+        '}',
+      ].join('\n'), 'utf8')
+
+      const result = buildDtsClassModelBundle({
+        repoRoot: tempRoot,
+        rootFiles: [optionsPath, widgetPath],
+        outputDir,
+      })
+      const widgetEntry = result.manifest.files[widgetSourcePath]
+      if (widgetEntry === undefined) throw new Error(`Missing widget shard entry: ${widgetSourcePath}`)
+      const widgetProjection = readDtsFileProjectionDocument(
+        JSON.parse(readFileSync(resolve(outputDir, widgetEntry.file), 'utf8')) as unknown,
+      )
+      const widgetModel = widgetProjection.models['Widget']
+      if (widgetModel === undefined) throw new Error('Missing Widget model.')
+      expect(widgetModel.constructorMeta?.signatureText).toContain('constructor(options: WidgetOptions, label?: string)')
+      expect(widgetModel.constructorMeta?.parameters?.map(parameter => parameter.name)).toEqual(['options', 'label'])
+
+      const runtimeManifest = readDtsClassModelRuntimeManifest(
+        JSON.parse(readFileSync(result.runtimeManifestPath, 'utf8')) as unknown,
+      )
+      const runtimeWidgetEntry = runtimeManifest.classIndex['Widget']
+      if (runtimeWidgetEntry === undefined) throw new Error('Missing runtime Widget entry.')
+      const runtimeWidgetShard = readDtsClassModelRuntimeShard(
+        JSON.parse(readFileSync(resolve(dirname(result.runtimeManifestPath), runtimeWidgetEntry.file), 'utf8')) as unknown,
+      )
+      const runtimeWidget = runtimeWidgetShard['@refs'][runtimeWidgetEntry.modelRef]
+      if (runtimeWidget?.kind !== 'model') throw new Error('Missing runtime Widget model.')
+      expect(runtimeWidget.constructorRef).toMatch(/^spark-class-model:\/\/model\/Widget\/constructors\/0$/)
+      const runtimeConstructor = runtimeWidgetShard['@refs'][runtimeWidget.constructorRef ?? '']
+      if (runtimeConstructor?.kind !== 'constructor') throw new Error('Missing runtime Widget constructor.')
+      expect(runtimeConstructor.paramsSchemaRef).toMatch(/^spark-class-model:\/\/schema\/shared\//)
+
+      const runtimeLoader = new DtsClassModelRuntimeLoader({
+        manifestUrl: pathToFileURL(result.runtimeManifestPath).href,
+        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+      })
+      const constructorContract = await runtimeLoader.ensureConstructorContract({ className: 'Widget' })
+      expect(constructorContract.constructor.ref).toBe(runtimeConstructor.ref)
+      expect(constructorContract.parameterLinks.map(link => link.targetClassName)).toEqual(['WidgetOptions'])
+      expect(constructorContract.paramsSchemaClosure.schemas.map(schema => schema.ref)).toContain(
+        'spark-class-model://schema/WidgetOptions',
+      )
+      expect(constructorContract.targetModels.map(model => model.className)).toEqual(['WidgetOptions'])
+
+      const provider = createDtsBundleClassModelKnowledgeProvider({
+        dtsClassModelManifestUrl: pathToFileURL(result.manifestPath).href,
+        rootClassName: 'Widget',
+        fetchJson: async url => JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as unknown,
+      })
+      await provider.init()
+      const query = await provider.query({ includeMembers: true })
+      const payload = query as {
+        models?: Array<{
+          kind?: string
+          constructorSignature?: { signature?: string }
+        }>
+      }
+      const queryWidget = payload.models?.find(item => item.kind === 'Widget')
+      expect(queryWidget?.constructorSignature?.signature).toContain('constructor(options: WidgetOptions, label?: string)')
+      expect(payload.models?.map(model => model.kind)).toContain('WidgetOptions')
+      await expect(provider.modelGuide({ kind: 'Widget' })).resolves.toContain(
+        'constructor(options: WidgetOptions, label?: string)',
+      )
     } finally {
       rmSync(tempRoot, { recursive: true, force: true })
     }

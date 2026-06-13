@@ -199,16 +199,6 @@
           "writable": false
         },
         {
-          "name": "checkIsWhole",
-          "jsdoc": "自定义整词判断",
-          "schema": {
-            "type": "object",
-            "title": "(pattern: string, prefix: string) => boolean"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "loading",
           "jsdoc": "是否加载态",
           "schema": {
@@ -240,10 +230,39 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "checkIsWhole",
+          "jsdoc": "自定义整词判断",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "pattern",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "prefix",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.754Z",
+  "generatedAt": "2026-06-13T06:21:06.944Z",
   "$defs": {
     "RMentionOption": {
       "type": "object",
@@ -315,10 +334,6 @@
         },
         "whole": {
           "type": "boolean"
-        },
-        "checkIsWhole": {
-          "type": "object",
-          "title": "(pattern: string, prefix: string) => boolean"
         },
         "loading": {
           "type": "boolean"

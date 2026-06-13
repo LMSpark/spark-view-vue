@@ -368,6 +368,44 @@
       "readable": true,
       "writable": true
     },
+    "spark-class-model://model/DataTable/constructors/0": {
+      "ref": "spark-class-model://model/DataTable/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/DataTable",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/900b8c8c0e3d32dc52111137e812cdb672bcc8cb5c6555856418779d96d18428"
+    },
+    "spark-class-model://schema/shared/900b8c8c0e3d32dc52111137e812cdb672bcc8cb5c6555856418779d96d18428": {
+      "ref": "spark-class-model://schema/shared/900b8c8c0e3d32dc52111137e812cdb672bcc8cb5c6555856418779d96d18428",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "tableName": {
+            "type": "string"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "spark-class-model://schema/DataColumn"
+            }
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/900b8c8c0e3d32dc52111137e812cdb672bcc8cb5c6555856418779d96d18428"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataColumn": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataColumn",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DataTable/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/DataColumn",
+      "targetClassName": "DataColumn",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataColumn"
+    },
     "spark-class-model://model/DataTable/methods/setDataSet/0": {
       "ref": "spark-class-model://model/DataTable/methods/setDataSet/0",
       "kind": "method",
@@ -375,21 +413,6 @@
       "name": "setDataSet",
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/2d1e5ad750340cacd3a59ae8cd741f6d8a80039dc79bc38dd722886fa7036a89"
-    },
-    "spark-class-model://schema/shared/2d1e5ad750340cacd3a59ae8cd741f6d8a80039dc79bc38dd722886fa7036a89": {
-      "ref": "spark-class-model://schema/shared/2d1e5ad750340cacd3a59ae8cd741f6d8a80039dc79bc38dd722886fa7036a89",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "ds": {
-            "$ref": "spark-class-model://schema/DataSet"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/2d1e5ad750340cacd3a59ae8cd741f6d8a80039dc79bc38dd722886fa7036a89"
-      }
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fmethods%2FsetDataSet%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSet": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fmethods%2FsetDataSet%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSet",
@@ -706,24 +729,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/b9c89967d88a95252d631a79ac6fd63be9ecf7717524effc5c7904ad22e9e378",
       "returnSchemaRef": "spark-class-model://schema/shared/cddf8275afa15408533079581ad27f95be579f4eeafbb1fba9fb6f32a4a64387"
     },
-    "spark-class-model://schema/shared/b9c89967d88a95252d631a79ac6fd63be9ecf7717524effc5c7904ad22e9e378": {
-      "ref": "spark-class-model://schema/shared/b9c89967d88a95252d631a79ac6fd63be9ecf7717524effc5c7904ad22e9e378",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "rows": {
-            "type": "array",
-            "items": {
-              "$ref": "spark-class-model://schema/DataRow"
-            }
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/b9c89967d88a95252d631a79ac6fd63be9ecf7717524effc5c7904ad22e9e378"
-      }
-    },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fmethods%2FaddRows%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fmethods%2FaddRows%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
       "kind": "link",
@@ -838,6 +843,7 @@
       "kind": "model",
       "className": "DataTable",
       "schemaRef": "spark-class-model://schema/DataTable",
+      "constructorRef": "spark-class-model://model/DataTable/constructors/0",
       "attributeRefs": [
         "spark-class-model://model/DataTable/attributes/dataSet/0",
         "spark-class-model://model/DataTable/attributes/tableName/1",
@@ -878,6 +884,7 @@
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fattributes%2FcrudConfig%2F7/attribute/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fattributes%2Fvalidator%2F8/attribute/spark-class-model%3A%2F%2Fmodel%2FDataValidator",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fattributes%2Frows%2F9/attribute/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FDataColumn",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fmethods%2FsetDataSet%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataSet",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fmethods%2FgetView%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FDataView",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDataTable%2Fmethods%2FgetOrCreateView%2F3/method-return/spark-class-model%3A%2F%2Fmodel%2FDataView",

@@ -16,13 +16,24 @@
         "$id": "spark-class-model://schema/CreateClassModelKnowledgeWorkerApiOptions"
       }
     },
+    "spark-class-model://model/CreateClassModelKnowledgeWorkerApiOptions/methods/fetchJson/0": {
+      "ref": "spark-class-model://model/CreateClassModelKnowledgeWorkerApiOptions/methods/fetchJson/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CreateClassModelKnowledgeWorkerApiOptions",
+      "name": "fetchJson",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f7a60b73eced33e5993eaab20d6f834f485823649c4cc25931491c72eec27d15"
+    },
     "spark-class-model://model/CreateClassModelKnowledgeWorkerApiOptions": {
       "ref": "spark-class-model://model/CreateClassModelKnowledgeWorkerApiOptions",
       "kind": "model",
       "className": "CreateClassModelKnowledgeWorkerApiOptions",
       "schemaRef": "spark-class-model://schema/CreateClassModelKnowledgeWorkerApiOptions",
       "attributeRefs": [],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/CreateClassModelKnowledgeWorkerApiOptions/methods/fetchJson/0"
+      ],
       "linkRefs": []
     }
   }

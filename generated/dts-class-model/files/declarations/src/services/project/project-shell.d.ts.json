@@ -34,7 +34,45 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "switchAndReload",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "projectId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        }
+      ]
     },
     "ProjectWorkspaceScope": {
       "kind": "ProjectWorkspaceScope",
@@ -86,7 +124,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.934Z",
+  "generatedAt": "2026-06-13T06:21:07.209Z",
   "$defs": {
     "ProjectSwitchService": {
       "type": "object",

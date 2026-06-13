@@ -50,10 +50,6 @@
         "type": "object",
         "title": "PageFileApiOptions",
         "properties": {
-          "getPageFilesApi": {
-            "type": "object",
-            "title": "() => string"
-          },
           "http": {
             "$ref": "spark-class-model://schema/HttpClientBase"
           }
@@ -62,17 +58,8 @@
         "$id": "spark-class-model://schema/PageFileApiOptions"
       }
     },
-    "spark-class-model://model/PageFileApiOptions/attributes/getPageFilesApi/0": {
-      "ref": "spark-class-model://model/PageFileApiOptions/attributes/getPageFilesApi/0",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/PageFileApiOptions",
-      "name": "getPageFilesApi",
-      "schemaRef": "spark-class-model://schema/shared/50499ab0cf7653249c6352eb43acf225b14d3a9d43f5168438c0492452a97287",
-      "readable": true,
-      "writable": true
-    },
-    "spark-class-model://model/PageFileApiOptions/attributes/http/1": {
-      "ref": "spark-class-model://model/PageFileApiOptions/attributes/http/1",
+    "spark-class-model://model/PageFileApiOptions/attributes/http/0": {
+      "ref": "spark-class-model://model/PageFileApiOptions/attributes/http/0",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/PageFileApiOptions",
       "name": "http",
@@ -80,15 +67,24 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageFileApiOptions%2Fattributes%2Fhttp%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase": {
-      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageFileApiOptions%2Fattributes%2Fhttp%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageFileApiOptions%2Fattributes%2Fhttp%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageFileApiOptions%2Fattributes%2Fhttp%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
       "kind": "link",
-      "fromRef": "spark-class-model://model/PageFileApiOptions/attributes/http/1",
+      "fromRef": "spark-class-model://model/PageFileApiOptions/attributes/http/0",
       "relation": "attribute",
       "targetModelRef": "spark-class-model://model/HttpClientBase",
       "targetClassName": "HttpClientBase",
       "targetFile": "files/declarations/packages/spark-utils/src/http/HttpClientBase.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/HttpClientBase"
+    },
+    "spark-class-model://model/PageFileApiOptions/methods/getPageFilesApi/0": {
+      "ref": "spark-class-model://model/PageFileApiOptions/methods/getPageFilesApi/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/PageFileApiOptions",
+      "name": "getPageFilesApi",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96"
     },
     "spark-class-model://model/PageFileApiOptions": {
       "ref": "spark-class-model://model/PageFileApiOptions",
@@ -96,12 +92,13 @@
       "className": "PageFileApiOptions",
       "schemaRef": "spark-class-model://schema/PageFileApiOptions",
       "attributeRefs": [
-        "spark-class-model://model/PageFileApiOptions/attributes/getPageFilesApi/0",
-        "spark-class-model://model/PageFileApiOptions/attributes/http/1"
+        "spark-class-model://model/PageFileApiOptions/attributes/http/0"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/PageFileApiOptions/methods/getPageFilesApi/0"
+      ],
       "linkRefs": [
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageFileApiOptions%2Fattributes%2Fhttp%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageFileApiOptions%2Fattributes%2Fhttp%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase"
       ]
     },
     "spark-class-model://schema/PageFileApi": {
@@ -113,6 +110,38 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/PageFileApi"
       }
+    },
+    "spark-class-model://model/PageFileApi/constructors/0": {
+      "ref": "spark-class-model://model/PageFileApi/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/PageFileApi",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/5f827f525187fd1d9a4ee137a7de0052b5565617295b37034e2f34e2bb149f02"
+    },
+    "spark-class-model://schema/shared/5f827f525187fd1d9a4ee137a7de0052b5565617295b37034e2f34e2bb149f02": {
+      "ref": "spark-class-model://schema/shared/5f827f525187fd1d9a4ee137a7de0052b5565617295b37034e2f34e2bb149f02",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/PageFileApiOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/5f827f525187fd1d9a4ee137a7de0052b5565617295b37034e2f34e2bb149f02"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageFileApi%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FPageFileApiOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageFileApi%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FPageFileApiOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/PageFileApi/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/PageFileApiOptions",
+      "targetClassName": "PageFileApiOptions",
+      "targetFile": "files/declarations/packages/spark-project-model/src/io/page-file-api.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/PageFileApiOptions"
     },
     "spark-class-model://model/PageFileApi/methods/saveFileContent/0": {
       "ref": "spark-class-model://model/PageFileApi/methods/saveFileContent/0",
@@ -337,6 +366,7 @@
       "kind": "model",
       "className": "PageFileApi",
       "schemaRef": "spark-class-model://schema/PageFileApi",
+      "constructorRef": "spark-class-model://model/PageFileApi/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/PageFileApi/methods/saveFileContent/0",
@@ -348,6 +378,7 @@
         "spark-class-model://model/PageFileApi/methods/deleteVersion/6"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageFileApi%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FPageFileApiOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageFileApi%2Fmethods%2FsaveFileContent%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FPageNodeFileName",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageFileApi%2Fmethods%2FcreateFiles%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FPageFileCreateParams",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FPageFileApi%2Fmethods%2FlistVersions%2F3/method-parameter/spark-class-model%3A%2F%2Fmodel%2FPageNodeFileName",

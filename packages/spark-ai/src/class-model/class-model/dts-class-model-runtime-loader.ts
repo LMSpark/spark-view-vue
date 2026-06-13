@@ -6,6 +6,7 @@
  */
 import type {
   DtsClassModelRuntimeAttribute,
+  DtsClassModelRuntimeConstructor,
   DtsClassModelRuntimeLink,
   DtsClassModelRuntimeManifest,
   DtsClassModelRuntimeMethod,
@@ -50,6 +51,21 @@ export type DtsClassModelRuntimeAttributeContractQuery = Readonly<{
   className: string
   attributeName: string
   attributeIndex?: number
+}>
+
+/** Dts Class Model Runtime Constructor Contract Query 的查询条件。 */
+export type DtsClassModelRuntimeConstructorContractQuery = Readonly<{
+  className: string
+}>
+
+/** Dts Class Model Runtime Constructor Contract 的构造调用合同。 */
+export type DtsClassModelRuntimeConstructorContract = Readonly<{
+  model: DtsClassModelRuntimeModel
+  constructor: DtsClassModelRuntimeConstructor
+  paramsSchema: DtsClassModelRuntimeSchemaRef
+  paramsSchemaClosure: DtsClassModelRuntimeSchemaClosure
+  parameterLinks: readonly DtsClassModelRuntimeLink[]
+  targetModels: readonly DtsClassModelRuntimeModel[]
 }>
 
 /** Dts Class Model Runtime Method Contract 的运行时调用合同。 */
@@ -180,6 +196,31 @@ export class DtsClassModelRuntimeLoader {
       }
     }
     return reachable
+  }
+
+  /** 加载 constructor 调用合同：constructor ref、参数 schema closure 与构造参数子模型 links。 */
+  public async ensureConstructorContract(
+    query: DtsClassModelRuntimeConstructorContractQuery,
+  ): Promise<DtsClassModelRuntimeConstructorContract> {
+    const { model, file } = await this.ensureRuntimeModelWithFile(query.className)
+    if (model.constructorRef === undefined) {
+      throw new Error(`DTS class-model runtime constructor "${query.className}.constructor" was not found.`)
+    }
+    const constructor = await this.ensureRuntimeConstructor(model.constructorRef, file)
+    const paramsSchema = await this.ensureSchema(constructor.paramsSchemaRef, file)
+    const paramsSchemaClosure = await this.ensureSchemaClosure(constructor.paramsSchemaRef, file)
+    const constructorLinks = await this.ensureRuntimeLinksFromModel(model, file, constructor.ref)
+    const parameterLinks = constructorLinks.filter(link => link.relation === 'constructor-parameter')
+    const targetModels = await this.ensureRuntimeLinkTargetModels(parameterLinks)
+
+    return {
+      model,
+      constructor,
+      paramsSchema,
+      paramsSchemaClosure,
+      parameterLinks,
+      targetModels,
+    }
   }
 
   /** 加载 method 调用合同：method ref、参数 schema closure、返回 schema closure 与子模型 links。 */
@@ -325,6 +366,14 @@ export class DtsClassModelRuntimeLoader {
     const entry = await this.ensureRef(ref, file)
     if (entry.kind !== 'method') {
       throw new Error(`DTS class-model runtime ref "${ref}" is not a method.`)
+    }
+    return entry
+  }
+
+  private async ensureRuntimeConstructor(ref: string, file: string | undefined): Promise<DtsClassModelRuntimeConstructor> {
+    const entry = await this.ensureRef(ref, file)
+    if (entry.kind !== 'constructor') {
+      throw new Error(`DTS class-model runtime ref "${ref}" is not a constructor.`)
     }
     return entry
   }

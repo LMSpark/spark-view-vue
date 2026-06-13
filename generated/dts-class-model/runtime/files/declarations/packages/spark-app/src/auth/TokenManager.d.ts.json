@@ -16,6 +16,41 @@
         "$id": "spark-class-model://schema/TokenManager"
       }
     },
+    "spark-class-model://model/TokenManager/constructors/0": {
+      "ref": "spark-class-model://model/TokenManager/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/TokenManager",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/08cf4d56b768b6040e71c502d5c26a82f11342208d62c8bc3c01d252dfe21e2f"
+    },
+    "spark-class-model://schema/shared/08cf4d56b768b6040e71c502d5c26a82f11342208d62c8bc3c01d252dfe21e2f": {
+      "ref": "spark-class-model://schema/shared/08cf4d56b768b6040e71c502d5c26a82f11342208d62c8bc3c01d252dfe21e2f",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "storage": {
+            "$ref": "spark-class-model://schema/TokenStorage"
+          },
+          "tokenKey": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/08cf4d56b768b6040e71c502d5c26a82f11342208d62c8bc3c01d252dfe21e2f"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTokenManager%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FTokenStorage": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTokenManager%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FTokenStorage",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/TokenManager/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/TokenStorage",
+      "targetClassName": "TokenStorage",
+      "targetFile": "files/declarations/packages/spark-app/src/auth/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/TokenStorage"
+    },
     "spark-class-model://model/TokenManager/methods/getToken/0": {
       "ref": "spark-class-model://model/TokenManager/methods/getToken/0",
       "kind": "method",
@@ -46,13 +81,16 @@
       "kind": "model",
       "className": "TokenManager",
       "schemaRef": "spark-class-model://schema/TokenManager",
+      "constructorRef": "spark-class-model://model/TokenManager/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/TokenManager/methods/getToken/0",
         "spark-class-model://model/TokenManager/methods/setToken/1",
         "spark-class-model://model/TokenManager/methods/clearToken/2"
       ],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FTokenManager%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FTokenStorage"
+      ]
     }
   }
 }

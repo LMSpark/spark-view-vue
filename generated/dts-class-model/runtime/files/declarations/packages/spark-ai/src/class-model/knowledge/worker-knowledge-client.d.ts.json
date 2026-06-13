@@ -13,8 +13,89 @@
       "schema": {
         "type": "object",
         "title": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
+        "properties": {
+          "workerUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "title": "URL"
+              }
+            ]
+          },
+          "workerOptions": {
+            "type": "object",
+            "title": "WorkerOptions"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/CreateWorkerDtsClassModelKnowledgeProviderOptions"
+      }
+    },
+    "spark-class-model://schema/shared/34cf3797c434d780b9ffb1b78fb055df36381ed50c9fe17f4f20d12591efbe27": {
+      "ref": "spark-class-model://schema/shared/34cf3797c434d780b9ffb1b78fb055df36381ed50c9fe17f4f20d12591efbe27",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "title": "URL"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/34cf3797c434d780b9ffb1b78fb055df36381ed50c9fe17f4f20d12591efbe27"
+      }
+    },
+    "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions/attributes/workerUrl/0": {
+      "ref": "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions/attributes/workerUrl/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions",
+      "name": "workerUrl",
+      "schemaRef": "spark-class-model://schema/shared/34cf3797c434d780b9ffb1b78fb055df36381ed50c9fe17f4f20d12591efbe27",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/9e80358167501289fdbb43c1e8a4ec75cf508bfdcae9e04ed01c4841d9fdaac0": {
+      "ref": "spark-class-model://schema/shared/9e80358167501289fdbb43c1e8a4ec75cf508bfdcae9e04ed01c4841d9fdaac0",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "WorkerOptions",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9e80358167501289fdbb43c1e8a4ec75cf508bfdcae9e04ed01c4841d9fdaac0"
+      }
+    },
+    "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions/attributes/workerOptions/1": {
+      "ref": "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions/attributes/workerOptions/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions",
+      "name": "workerOptions",
+      "schemaRef": "spark-class-model://schema/shared/9e80358167501289fdbb43c1e8a4ec75cf508bfdcae9e04ed01c4841d9fdaac0",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions/methods/createWorker/0": {
+      "ref": "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions/methods/createWorker/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions",
+      "name": "createWorker",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/6d809d0da4acafe52cc8af29be0ba1f8bbe2b3e79b3f36cba3f390aa4f2cf499"
+    },
+    "spark-class-model://schema/shared/6d809d0da4acafe52cc8af29be0ba1f8bbe2b3e79b3f36cba3f390aa4f2cf499": {
+      "ref": "spark-class-model://schema/shared/6d809d0da4acafe52cc8af29be0ba1f8bbe2b3e79b3f36cba3f390aa4f2cf499",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "Worker",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6d809d0da4acafe52cc8af29be0ba1f8bbe2b3e79b3f36cba3f390aa4f2cf499"
       }
     },
     "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions": {
@@ -22,8 +103,13 @@
       "kind": "model",
       "className": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
       "schemaRef": "spark-class-model://schema/CreateWorkerDtsClassModelKnowledgeProviderOptions",
-      "attributeRefs": [],
-      "methodRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions/attributes/workerUrl/0",
+        "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions/attributes/workerOptions/1"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/CreateWorkerDtsClassModelKnowledgeProviderOptions/methods/createWorker/0"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/WorkerClassModelKnowledgeProvider": {
@@ -35,6 +121,42 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/WorkerClassModelKnowledgeProvider"
       }
+    },
+    "spark-class-model://model/WorkerClassModelKnowledgeProvider/constructors/0": {
+      "ref": "spark-class-model://model/WorkerClassModelKnowledgeProvider/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/WorkerClassModelKnowledgeProvider",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0fc4143ac0b3a9fc45bce9b04a216436c79939f7bbaf4fe8f8251e99a9cfae12"
+    },
+    "spark-class-model://schema/shared/0fc4143ac0b3a9fc45bce9b04a216436c79939f7bbaf4fe8f8251e99a9cfae12": {
+      "ref": "spark-class-model://schema/shared/0fc4143ac0b3a9fc45bce9b04a216436c79939f7bbaf4fe8f8251e99a9cfae12",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "worker": {
+            "type": "object",
+            "title": "Worker"
+          },
+          "init": {
+            "$ref": "spark-class-model://schema/ClassModelKnowledgeWorkerInitInput"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/0fc4143ac0b3a9fc45bce9b04a216436c79939f7bbaf4fe8f8251e99a9cfae12"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FWorkerClassModelKnowledgeProvider%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeWorkerInitInput": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FWorkerClassModelKnowledgeProvider%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeWorkerInitInput",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/WorkerClassModelKnowledgeProvider/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/ClassModelKnowledgeWorkerInitInput",
+      "targetClassName": "ClassModelKnowledgeWorkerInitInput",
+      "targetFile": "files/declarations/packages/spark-ai/src/class-model/knowledge/worker-knowledge-api.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ClassModelKnowledgeWorkerInitInput"
     },
     "spark-class-model://model/WorkerClassModelKnowledgeProvider/methods/query/0": {
       "ref": "spark-class-model://model/WorkerClassModelKnowledgeProvider/methods/query/0",
@@ -117,6 +239,7 @@
       "kind": "model",
       "className": "WorkerClassModelKnowledgeProvider",
       "schemaRef": "spark-class-model://schema/WorkerClassModelKnowledgeProvider",
+      "constructorRef": "spark-class-model://model/WorkerClassModelKnowledgeProvider/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/WorkerClassModelKnowledgeProvider/methods/query/0",
@@ -125,6 +248,7 @@
         "spark-class-model://model/WorkerClassModelKnowledgeProvider/methods/methodGuide/3"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FWorkerClassModelKnowledgeProvider%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeWorkerInitInput",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FWorkerClassModelKnowledgeProvider%2Fmethods%2Fquery%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelKnowledgeQueryInput",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FWorkerClassModelKnowledgeProvider%2Fmethods%2FmodelGuide%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelModelGuideInput",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FWorkerClassModelKnowledgeProvider%2Fmethods%2FattributeGuide%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FClassModelAttributeGuideInput",

@@ -118,22 +118,57 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "syncValue",
           "jsdoc": "sync Value 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(value: boolean | null) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "boolean"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.744Z",
+  "generatedAt": "2026-06-13T06:21:06.934Z",
   "$defs": {
     "BoundBooleanColumn": {
       "type": "object",
@@ -172,10 +207,6 @@
         "fieldName": {
           "type": "object",
           "title": "ValueRef<string>"
-        },
-        "syncValue": {
-          "type": "object",
-          "title": "(value: boolean | null) => void"
         }
       }
     }

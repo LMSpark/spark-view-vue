@@ -33,18 +33,114 @@
       "schema": {
         "type": "object",
         "title": "AiNativeScriptContextCommand",
+        "properties": {
+          "instance": true,
+          "metadata": {
+            "$ref": "spark-class-model://schema/AiRuntimeApiMetadataJson"
+          },
+          "host": {
+            "$ref": "spark-class-model://schema/AiAgentRuntimeHostContext"
+          },
+          "schemaDefs": {
+            "$ref": "spark-class-model://schema/AiNativeRuntimeSchemaDefs"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiNativeScriptContextCommand"
       }
+    },
+    "spark-class-model://model/AiNativeScriptContextCommand/attributes/instance/0": {
+      "ref": "spark-class-model://model/AiNativeScriptContextCommand/attributes/instance/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiNativeScriptContextCommand",
+      "name": "instance",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiNativeScriptContextCommand/attributes/metadata/1": {
+      "ref": "spark-class-model://model/AiNativeScriptContextCommand/attributes/metadata/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiNativeScriptContextCommand",
+      "name": "metadata",
+      "schemaRef": "spark-class-model://schema/shared/64f092d14bdbc6e0d1c9c21c72ceae4137080b03be000962465af2c375826ea7",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiNativeScriptContextCommand%2Fattributes%2Fmetadata%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRuntimeApiMetadataJson": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiNativeScriptContextCommand%2Fattributes%2Fmetadata%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRuntimeApiMetadataJson",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiNativeScriptContextCommand/attributes/metadata/1",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiRuntimeApiMetadataJson",
+      "targetClassName": "AiRuntimeApiMetadataJson",
+      "targetFile": "files/declarations/packages/spark-ai/src/class-model/metadata/ai-api-object-metadata-schema.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiRuntimeApiMetadataJson"
+    },
+    "spark-class-model://model/AiNativeScriptContextCommand/attributes/host/2": {
+      "ref": "spark-class-model://model/AiNativeScriptContextCommand/attributes/host/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiNativeScriptContextCommand",
+      "name": "host",
+      "schemaRef": "spark-class-model://schema/shared/e718e955332cf151822cd5b8d07a842b4395509f570ec9e5b9277323725e574a",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiNativeScriptContextCommand%2Fattributes%2Fhost%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeHostContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiNativeScriptContextCommand%2Fattributes%2Fhost%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeHostContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiNativeScriptContextCommand/attributes/host/2",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentRuntimeHostContext",
+      "targetClassName": "AiAgentRuntimeHostContext",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRuntimeHostContext"
+    },
+    "spark-class-model://schema/shared/b4b9a45dd7ffd8a54274a757856e866430d8896b77a1e81a1cc1f79b253b5602": {
+      "ref": "spark-class-model://schema/shared/b4b9a45dd7ffd8a54274a757856e866430d8896b77a1e81a1cc1f79b253b5602",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiNativeRuntimeSchemaDefs",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b4b9a45dd7ffd8a54274a757856e866430d8896b77a1e81a1cc1f79b253b5602"
+      }
+    },
+    "spark-class-model://model/AiNativeScriptContextCommand/attributes/schemaDefs/3": {
+      "ref": "spark-class-model://model/AiNativeScriptContextCommand/attributes/schemaDefs/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiNativeScriptContextCommand",
+      "name": "schemaDefs",
+      "schemaRef": "spark-class-model://schema/shared/b4b9a45dd7ffd8a54274a757856e866430d8896b77a1e81a1cc1f79b253b5602",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiNativeScriptContextCommand%2Fattributes%2FschemaDefs%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAiNativeRuntimeSchemaDefs": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiNativeScriptContextCommand%2Fattributes%2FschemaDefs%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAiNativeRuntimeSchemaDefs",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/AiNativeScriptContextCommand/attributes/schemaDefs/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiNativeRuntimeSchemaDefs",
+      "targetClassName": "AiNativeRuntimeSchemaDefs",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/native-runtime/native-script-runner.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiNativeRuntimeSchemaDefs"
     },
     "spark-class-model://model/AiNativeScriptContextCommand": {
       "ref": "spark-class-model://model/AiNativeScriptContextCommand",
       "kind": "model",
       "className": "AiNativeScriptContextCommand",
       "schemaRef": "spark-class-model://schema/AiNativeScriptContextCommand",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiNativeScriptContextCommand/attributes/instance/0",
+        "spark-class-model://model/AiNativeScriptContextCommand/attributes/metadata/1",
+        "spark-class-model://model/AiNativeScriptContextCommand/attributes/host/2",
+        "spark-class-model://model/AiNativeScriptContextCommand/attributes/schemaDefs/3"
+      ],
       "methodRefs": [],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiNativeScriptContextCommand%2Fattributes%2Fmetadata%2F1/attribute/spark-class-model%3A%2F%2Fmodel%2FAiRuntimeApiMetadataJson",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiNativeScriptContextCommand%2Fattributes%2Fhost%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeHostContext",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FAiNativeScriptContextCommand%2Fattributes%2FschemaDefs%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAiNativeRuntimeSchemaDefs"
+      ]
     },
     "spark-class-model://schema/AiNativeScriptRunCommand": {
       "ref": "spark-class-model://schema/AiNativeScriptRunCommand",
@@ -52,16 +148,32 @@
       "schema": {
         "type": "object",
         "title": "AiNativeScriptRunCommand",
+        "properties": {
+          "script": {
+            "type": "string"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiNativeScriptRunCommand"
       }
+    },
+    "spark-class-model://model/AiNativeScriptRunCommand/attributes/script/0": {
+      "ref": "spark-class-model://model/AiNativeScriptRunCommand/attributes/script/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiNativeScriptRunCommand",
+      "name": "script",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
     },
     "spark-class-model://model/AiNativeScriptRunCommand": {
       "ref": "spark-class-model://model/AiNativeScriptRunCommand",
       "kind": "model",
       "className": "AiNativeScriptRunCommand",
       "schemaRef": "spark-class-model://schema/AiNativeScriptRunCommand",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiNativeScriptRunCommand/attributes/script/0"
+      ],
       "methodRefs": [],
       "linkRefs": []
     }

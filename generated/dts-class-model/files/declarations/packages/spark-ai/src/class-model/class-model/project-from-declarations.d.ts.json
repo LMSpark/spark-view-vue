@@ -36,16 +36,83 @@
         "className": "ProjectDtsSourceFileProjectionOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "repoRoot",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "absolutePath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "sourceFile",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ts.SourceFile"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "checker",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ts.TypeChecker"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "exportedOnly",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.583Z",
+  "generatedAt": "2026-06-13T06:21:06.636Z",
   "$defs": {
     "ProjectDtsSourceFileProjectionOptions": {
       "type": "object",
       "title": "ProjectDtsSourceFileProjectionOptions",
-      "description": "Project Dts Source File Projection Options 的调用配置。"
+      "description": "Project Dts Source File Projection Options 的调用配置。",
+      "properties": {
+        "repoRoot": {
+          "type": "string"
+        },
+        "absolutePath": {
+          "type": "string"
+        },
+        "sourceFile": {
+          "type": "object",
+          "title": "ts.SourceFile"
+        },
+        "checker": {
+          "type": "object",
+          "title": "ts.TypeChecker"
+        },
+        "exportedOnly": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }

@@ -167,7 +167,16 @@
               "sourcePath": "declarations/packages/spark-app/src/router/dynamic.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/DynamicRouterOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -185,6 +194,15 @@
                 "name": "void"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
           }
         },
         {
@@ -203,7 +221,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "refreshRoutes",
@@ -228,6 +256,15 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<ProjectModelData | null>"
           }
         },
         {
@@ -247,6 +284,22 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "ProjectModelData"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -260,12 +313,23 @@
               "type": "intrinsic",
               "name": "string"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.623Z",
+  "generatedAt": "2026-06-13T06:21:06.713Z",
   "$defs": {
     "DynamicRouterOptions": {
       "type": "object",

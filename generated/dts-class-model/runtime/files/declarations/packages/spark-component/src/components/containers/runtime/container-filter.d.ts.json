@@ -19,13 +19,23 @@
         "$id": "spark-class-model://schema/ErrorLoggerLike"
       }
     },
+    "spark-class-model://model/ErrorLoggerLike/methods/error/0": {
+      "ref": "spark-class-model://model/ErrorLoggerLike/methods/error/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ErrorLoggerLike",
+      "name": "error",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4efc890a56dffcf80c77d66109dd4560e43015f3ae1cb6d6ddb1becf375ce7e1"
+    },
     "spark-class-model://model/ErrorLoggerLike": {
       "ref": "spark-class-model://model/ErrorLoggerLike",
       "kind": "model",
       "className": "ErrorLoggerLike",
       "schemaRef": "spark-class-model://schema/ErrorLoggerLike",
       "attributeRefs": [],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ErrorLoggerLike/methods/error/0"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/FilterPanelDataView": {
@@ -57,10 +67,6 @@
                 "type": "null"
               }
             ]
-          },
-          "getColumn": {
-            "type": "object",
-            "title": "(field: string) => unknown"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -151,24 +157,76 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/e8836836c826fa48148477e200b6659afecda3b99790ff4a741e51c3e286a763": {
-      "ref": "spark-class-model://schema/shared/e8836836c826fa48148477e200b6659afecda3b99790ff4a741e51c3e286a763",
+    "spark-class-model://model/FilterPanelDataView/methods/getColumn/0": {
+      "ref": "spark-class-model://model/FilterPanelDataView/methods/getColumn/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/FilterPanelDataView",
+      "name": "getColumn",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://model/FilterPanelDataView/methods/setFilter/1": {
+      "ref": "spark-class-model://model/FilterPanelDataView/methods/setFilter/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/FilterPanelDataView",
+      "name": "setFilter",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/26168ad8932724e41805d8269539a3b81e57c93ed7a4d4d2168ca936c3d793fa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://schema/shared/26168ad8932724e41805d8269539a3b81e57c93ed7a4d4d2168ca936c3d793fa": {
+      "ref": "spark-class-model://schema/shared/26168ad8932724e41805d8269539a3b81e57c93ed7a4d4d2168ca936c3d793fa",
       "kind": "schema",
       "schema": {
         "type": "object",
-        "title": "(field: string) => unknown",
+        "properties": {
+          "expr": {
+            "$ref": "spark-class-model://schema/FilterExpression"
+          }
+        },
+        "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/e8836836c826fa48148477e200b6659afecda3b99790ff4a741e51c3e286a763"
+        "$id": "spark-class-model://schema/shared/26168ad8932724e41805d8269539a3b81e57c93ed7a4d4d2168ca936c3d793fa"
       }
     },
-    "spark-class-model://model/FilterPanelDataView/attributes/getColumn/4": {
-      "ref": "spark-class-model://model/FilterPanelDataView/attributes/getColumn/4",
-      "kind": "attribute",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFilterPanelDataView%2Fmethods%2FsetFilter%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FFilterExpression": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFilterPanelDataView%2Fmethods%2FsetFilter%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FFilterExpression",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/FilterPanelDataView/methods/setFilter/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/FilterExpression",
+      "targetClassName": "FilterExpression",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/FilterExpression"
+    },
+    "spark-class-model://model/FilterPanelDataView/methods/executeFilter/2": {
+      "ref": "spark-class-model://model/FilterPanelDataView/methods/executeFilter/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/FilterPanelDataView",
-      "name": "getColumn",
-      "schemaRef": "spark-class-model://schema/shared/e8836836c826fa48148477e200b6659afecda3b99790ff4a741e51c3e286a763",
-      "readable": true,
-      "writable": false
+      "name": "executeFilter",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/26168ad8932724e41805d8269539a3b81e57c93ed7a4d4d2168ca936c3d793fa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFilterPanelDataView%2Fmethods%2FexecuteFilter%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FFilterExpression": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFilterPanelDataView%2Fmethods%2FexecuteFilter%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FFilterExpression",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/FilterPanelDataView/methods/executeFilter/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/FilterExpression",
+      "targetClassName": "FilterExpression",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/FilterExpression"
+    },
+    "spark-class-model://model/FilterPanelDataView/methods/refresh/3": {
+      "ref": "spark-class-model://model/FilterPanelDataView/methods/refresh/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/FilterPanelDataView",
+      "name": "refresh",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
     },
     "spark-class-model://model/FilterPanelDataView": {
       "ref": "spark-class-model://model/FilterPanelDataView",
@@ -179,12 +237,18 @@
         "spark-class-model://model/FilterPanelDataView/attributes/rows/0",
         "spark-class-model://model/FilterPanelDataView/attributes/columns/1",
         "spark-class-model://model/FilterPanelDataView/attributes/filterExpression/2",
-        "spark-class-model://model/FilterPanelDataView/attributes/dataTable/3",
-        "spark-class-model://model/FilterPanelDataView/attributes/getColumn/4"
+        "spark-class-model://model/FilterPanelDataView/attributes/dataTable/3"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/FilterPanelDataView/methods/getColumn/0",
+        "spark-class-model://model/FilterPanelDataView/methods/setFilter/1",
+        "spark-class-model://model/FilterPanelDataView/methods/executeFilter/2",
+        "spark-class-model://model/FilterPanelDataView/methods/refresh/3"
+      ],
       "linkRefs": [
-        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFilterPanelDataView%2Fattributes%2FfilterExpression%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FFilterExpression"
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFilterPanelDataView%2Fattributes%2FfilterExpression%2F2/attribute/spark-class-model%3A%2F%2Fmodel%2FFilterExpression",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFilterPanelDataView%2Fmethods%2FsetFilter%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FFilterExpression",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FFilterPanelDataView%2Fmethods%2FexecuteFilter%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FFilterExpression"
       ]
     },
     "spark-class-model://schema/UseFilterPanelOptions": {
@@ -313,14 +377,6 @@
           "activeFilterCount": {
             "type": "object",
             "title": "ComputedRef<number>"
-          },
-          "searchFilters": {
-            "type": "object",
-            "title": "() => Promise<void>"
-          },
-          "resetFilters": {
-            "type": "object",
-            "title": "() => Promise<void>"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -373,23 +429,23 @@
       "readable": true,
       "writable": true
     },
-    "spark-class-model://model/FilterPanelState/attributes/searchFilters/4": {
-      "ref": "spark-class-model://model/FilterPanelState/attributes/searchFilters/4",
-      "kind": "attribute",
+    "spark-class-model://model/FilterPanelState/methods/searchFilters/0": {
+      "ref": "spark-class-model://model/FilterPanelState/methods/searchFilters/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/FilterPanelState",
       "name": "searchFilters",
-      "schemaRef": "spark-class-model://schema/shared/4118b6a6f43f6cebd6f644795b03633db42affce8192daee90f77a33859360e5",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
     },
-    "spark-class-model://model/FilterPanelState/attributes/resetFilters/5": {
-      "ref": "spark-class-model://model/FilterPanelState/attributes/resetFilters/5",
-      "kind": "attribute",
+    "spark-class-model://model/FilterPanelState/methods/resetFilters/1": {
+      "ref": "spark-class-model://model/FilterPanelState/methods/resetFilters/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/FilterPanelState",
       "name": "resetFilters",
-      "schemaRef": "spark-class-model://schema/shared/4118b6a6f43f6cebd6f644795b03633db42affce8192daee90f77a33859360e5",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
     },
     "spark-class-model://model/FilterPanelState": {
       "ref": "spark-class-model://model/FilterPanelState",
@@ -400,11 +456,12 @@
         "spark-class-model://model/FilterPanelState/attributes/filterModel/0",
         "spark-class-model://model/FilterPanelState/attributes/filterConfigs/1",
         "spark-class-model://model/FilterPanelState/attributes/hasFilters/2",
-        "spark-class-model://model/FilterPanelState/attributes/activeFilterCount/3",
-        "spark-class-model://model/FilterPanelState/attributes/searchFilters/4",
-        "spark-class-model://model/FilterPanelState/attributes/resetFilters/5"
+        "spark-class-model://model/FilterPanelState/attributes/activeFilterCount/3"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/FilterPanelState/methods/searchFilters/0",
+        "spark-class-model://model/FilterPanelState/methods/resetFilters/1"
+      ],
       "linkRefs": []
     }
   }

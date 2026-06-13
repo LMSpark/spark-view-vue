@@ -2195,6 +2195,38 @@
         "$id": "spark-class-model://schema/ProjectNode"
       }
     },
+    "spark-class-model://model/ProjectNode/constructors/0": {
+      "ref": "spark-class-model://model/ProjectNode/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/ProjectNode",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/605b340533a42f5c487a23e649c2537e431bc6ccbc196ad7fe3ccffd23c20cc1"
+    },
+    "spark-class-model://schema/shared/605b340533a42f5c487a23e649c2537e431bc6ccbc196ad7fe3ccffd23c20cc1": {
+      "ref": "spark-class-model://schema/shared/605b340533a42f5c487a23e649c2537e431bc6ccbc196ad7fe3ccffd23c20cc1",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/ProjectNodeModelOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/605b340533a42f5c487a23e649c2537e431bc6ccbc196ad7fe3ccffd23c20cc1"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeModelOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeModelOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectNode/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/ProjectNodeModelOptions",
+      "targetClassName": "ProjectNodeModelOptions",
+      "targetFile": "files/declarations/packages/spark-project-model/src/navigation/project-node.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectNodeModelOptions"
+    },
     "spark-class-model://model/ProjectNode/methods/toNodeData/0": {
       "ref": "spark-class-model://model/ProjectNode/methods/toNodeData/0",
       "kind": "method",
@@ -2221,21 +2253,6 @@
       "name": "applyNavigationPatch",
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/0af1fbe165087ce5fc0fe6eb727214fc17e345c89c03c455060c1d7302a83e93"
-    },
-    "spark-class-model://schema/shared/0af1fbe165087ce5fc0fe6eb727214fc17e345c89c03c455060c1d7302a83e93": {
-      "ref": "spark-class-model://schema/shared/0af1fbe165087ce5fc0fe6eb727214fc17e345c89c03c455060c1d7302a83e93",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "patch": {
-            "$ref": "spark-class-model://schema/ProjectNodeNavigationPatch"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/0af1fbe165087ce5fc0fe6eb727214fc17e345c89c03c455060c1d7302a83e93"
-      }
     },
     "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FapplyNavigationPatch%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch": {
       "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FapplyNavigationPatch%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch",
@@ -2291,6 +2308,7 @@
       "kind": "model",
       "className": "ProjectNode",
       "schemaRef": "spark-class-model://schema/ProjectNode",
+      "constructorRef": "spark-class-model://model/ProjectNode/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/ProjectNode/methods/toNodeData/0",
@@ -2298,6 +2316,7 @@
         "spark-class-model://model/ProjectNode/methods/rebindNavigationNode/2"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeModelOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FtoNodeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FapplyNavigationPatch%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeNavigationPatch",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectNode%2Fmethods%2FrebindNavigationNode%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectNodeData"

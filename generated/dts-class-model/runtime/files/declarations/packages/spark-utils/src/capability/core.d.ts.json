@@ -64,6 +64,42 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://model/CapabilityKey/constructors/0": {
+      "ref": "spark-class-model://model/CapabilityKey/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/CapabilityKey",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/16ec7b943859468bfed76d839d220808b453cb8b4a0605aea3d8bdd072fe3e68"
+    },
+    "spark-class-model://schema/shared/16ec7b943859468bfed76d839d220808b453cb8b4a0605aea3d8bdd072fe3e68": {
+      "ref": "spark-class-model://schema/shared/16ec7b943859468bfed76d839d220808b453cb8b4a0605aea3d8bdd072fe3e68",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "reader": {
+            "$ref": "spark-class-model://schema/CapabilityReader",
+            "title": "CapabilityReader<T>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/16ec7b943859468bfed76d839d220808b453cb8b4a0605aea3d8bdd072fe3e68"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCapabilityKey%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FCapabilityReader": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCapabilityKey%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FCapabilityReader",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CapabilityKey/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/CapabilityReader",
+      "targetClassName": "CapabilityReader",
+      "targetFile": "files/declarations/packages/spark-utils/src/capability/core.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CapabilityReader"
+    },
     "spark-class-model://model/CapabilityKey/methods/read/0": {
       "ref": "spark-class-model://model/CapabilityKey/methods/read/0",
       "kind": "method",
@@ -72,19 +108,6 @@
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f",
       "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
-    },
-    "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f": {
-      "ref": "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "value": true
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f"
-      }
     },
     "spark-class-model://model/CapabilityKey/methods/toString/1": {
       "ref": "spark-class-model://model/CapabilityKey/methods/toString/1",
@@ -100,6 +123,7 @@
       "kind": "model",
       "className": "CapabilityKey",
       "schemaRef": "spark-class-model://schema/CapabilityKey",
+      "constructorRef": "spark-class-model://model/CapabilityKey/constructors/0",
       "attributeRefs": [
         "spark-class-model://model/CapabilityKey/attributes/name/0",
         "spark-class-model://model/CapabilityKey/attributes/token/1"
@@ -108,7 +132,9 @@
         "spark-class-model://model/CapabilityKey/methods/read/0",
         "spark-class-model://model/CapabilityKey/methods/toString/1"
       ],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCapabilityKey%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FCapabilityReader"
+      ]
     },
     "spark-class-model://schema/CapabilityName": {
       "ref": "spark-class-model://schema/CapabilityName",

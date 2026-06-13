@@ -69,72 +69,260 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "navigateTo",
           "jsdoc": "导航到指定节点（处理外部链接、重定向、首个叶子等）",
-          "schema": {
-            "type": "object",
-            "title": "(node: ProjectNodeData) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "node",
+              "type": {
+                "type": "reference",
+                "name": "ProjectNodeData"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "node": {
+                "type": "object",
+                "title": "ProjectNodeData"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "navigateToPath",
           "jsdoc": "导航到指定路径（自动追加租户前缀）",
-          "schema": {
-            "type": "object",
-            "title": "(path: string) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "path",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "setContextValue",
           "jsdoc": "设置当前模块上下文选择器的值",
-          "schema": {
-            "type": "object",
-            "title": "(value: string | number | null) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "isNodeActive",
           "jsdoc": "判断节点是否在活动路径上",
-          "schema": {
-            "type": "object",
-            "title": "(node: ProjectNodeData) => boolean"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "node",
+              "type": {
+                "type": "reference",
+                "name": "ProjectNodeData"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "node": {
+                "type": "object",
+                "title": "ProjectNodeData"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
         },
         {
           "name": "getBadge",
           "jsdoc": "获取节点的角标（运行时动态设定）",
-          "schema": {
-            "type": "object",
-            "title": "(nodeId: string) => string | number | undefined"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "nodeId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              {
+                "type": "intrinsic",
+                "name": "undefined"
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
         },
         {
           "name": "setBadge",
           "jsdoc": "设置节点的角标（运行时 API）",
-          "schema": {
-            "type": "object",
-            "title": "(nodeId: string, value: string | number | undefined) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "nodeId",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "value",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "number"
+                  },
+                  {
+                    "type": "intrinsic",
+                    "name": "undefined"
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.613Z",
+  "generatedAt": "2026-06-13T06:21:06.699Z",
   "$defs": {
     "NavigationContext": {
       "type": "object",
@@ -156,30 +344,6 @@
         "moduleContext": {
           "type": "object",
           "title": "ComputedRef<NavContextState | null>"
-        },
-        "navigateTo": {
-          "type": "object",
-          "title": "(node: ProjectNodeData) => void"
-        },
-        "navigateToPath": {
-          "type": "object",
-          "title": "(path: string) => void"
-        },
-        "setContextValue": {
-          "type": "object",
-          "title": "(value: string | number | null) => void"
-        },
-        "isNodeActive": {
-          "type": "object",
-          "title": "(node: ProjectNodeData) => boolean"
-        },
-        "getBadge": {
-          "type": "object",
-          "title": "(nodeId: string) => string | number | undefined"
-        },
-        "setBadge": {
-          "type": "object",
-          "title": "(nodeId: string, value: string | number | undefined) => void"
         }
       }
     }

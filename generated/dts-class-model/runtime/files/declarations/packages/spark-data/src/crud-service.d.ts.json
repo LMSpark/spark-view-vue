@@ -16,6 +16,63 @@
         "$id": "spark-class-model://schema/CrudService"
       }
     },
+    "spark-class-model://model/CrudService/constructors/0": {
+      "ref": "spark-class-model://model/CrudService/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/CrudService",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/985204ca818be471e8659d3b46815c2925b357a1d9e07150ed0fa86abb090a05"
+    },
+    "spark-class-model://schema/shared/985204ca818be471e8659d3b46815c2925b357a1d9e07150ed0fa86abb090a05": {
+      "ref": "spark-class-model://schema/shared/985204ca818be471e8659d3b46815c2925b357a1d9e07150ed0fa86abb090a05",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "api": {
+            "$ref": "spark-class-model://schema/CrudApi"
+          },
+          "httpConfigOrClient": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "Partial<RequestConfig>"
+              },
+              {
+                "$ref": "spark-class-model://schema/HttpClientBase"
+              }
+            ]
+          },
+          "endpointContextProvider": {
+            "type": "object",
+            "title": "() => Record<string, unknown>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/985204ca818be471e8659d3b46815c2925b357a1d9e07150ed0fa86abb090a05"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudApi": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudApi",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/CrudApi",
+      "targetClassName": "CrudApi",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/CrudApi"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/CrudService/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/HttpClientBase",
+      "targetClassName": "HttpClientBase",
+      "targetFile": "files/declarations/packages/spark-utils/src/http/HttpClientBase.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/HttpClientBase"
+    },
     "spark-class-model://model/CrudService/methods/getHttpClient/0": {
       "ref": "spark-class-model://model/CrudService/methods/getHttpClient/0",
       "kind": "method",
@@ -502,6 +559,7 @@
       "kind": "model",
       "className": "CrudService",
       "schemaRef": "spark-class-model://schema/CrudService",
+      "constructorRef": "spark-class-model://model/CrudService/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/CrudService/methods/getHttpClient/0",
@@ -518,6 +576,8 @@
         "spark-class-model://model/CrudService/methods/exportData/11"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudApi",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2FgetHttpClient%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fcreate%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FCrudService%2Fmethods%2Fretrieve%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FCrudOperationConfig",

@@ -12,18 +12,116 @@
       "schema": {
         "type": "object",
         "title": "DtsNativeScriptRunCommand",
+        "properties": {
+          "instance": true,
+          "manifestUrl": {
+            "type": "string"
+          },
+          "rootClassName": {
+            "type": "string"
+          },
+          "host": {
+            "$ref": "spark-class-model://schema/AiAgentRuntimeHostContext"
+          },
+          "script": {
+            "type": "string"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/DtsNativeScriptRunCommand"
       }
+    },
+    "spark-class-model://model/DtsNativeScriptRunCommand/attributes/instance/0": {
+      "ref": "spark-class-model://model/DtsNativeScriptRunCommand/attributes/instance/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DtsNativeScriptRunCommand",
+      "name": "instance",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DtsNativeScriptRunCommand/attributes/manifestUrl/1": {
+      "ref": "spark-class-model://model/DtsNativeScriptRunCommand/attributes/manifestUrl/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DtsNativeScriptRunCommand",
+      "name": "manifestUrl",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DtsNativeScriptRunCommand/attributes/rootClassName/2": {
+      "ref": "spark-class-model://model/DtsNativeScriptRunCommand/attributes/rootClassName/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DtsNativeScriptRunCommand",
+      "name": "rootClassName",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/e718e955332cf151822cd5b8d07a842b4395509f570ec9e5b9277323725e574a": {
+      "ref": "spark-class-model://schema/shared/e718e955332cf151822cd5b8d07a842b4395509f570ec9e5b9277323725e574a",
+      "kind": "schema",
+      "schema": {
+        "$ref": "spark-class-model://schema/AiAgentRuntimeHostContext",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e718e955332cf151822cd5b8d07a842b4395509f570ec9e5b9277323725e574a"
+      }
+    },
+    "spark-class-model://model/DtsNativeScriptRunCommand/attributes/host/3": {
+      "ref": "spark-class-model://model/DtsNativeScriptRunCommand/attributes/host/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DtsNativeScriptRunCommand",
+      "name": "host",
+      "schemaRef": "spark-class-model://schema/shared/e718e955332cf151822cd5b8d07a842b4395509f570ec9e5b9277323725e574a",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsNativeScriptRunCommand%2Fattributes%2Fhost%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeHostContext": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsNativeScriptRunCommand%2Fattributes%2Fhost%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeHostContext",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/DtsNativeScriptRunCommand/attributes/host/3",
+      "relation": "attribute",
+      "targetModelRef": "spark-class-model://model/AiAgentRuntimeHostContext",
+      "targetClassName": "AiAgentRuntimeHostContext",
+      "targetFile": "files/declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/AiAgentRuntimeHostContext"
+    },
+    "spark-class-model://model/DtsNativeScriptRunCommand/attributes/script/4": {
+      "ref": "spark-class-model://model/DtsNativeScriptRunCommand/attributes/script/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/DtsNativeScriptRunCommand",
+      "name": "script",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/DtsNativeScriptRunCommand/methods/fetchJson/0": {
+      "ref": "spark-class-model://model/DtsNativeScriptRunCommand/methods/fetchJson/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/DtsNativeScriptRunCommand",
+      "name": "fetchJson",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f7a60b73eced33e5993eaab20d6f834f485823649c4cc25931491c72eec27d15"
     },
     "spark-class-model://model/DtsNativeScriptRunCommand": {
       "ref": "spark-class-model://model/DtsNativeScriptRunCommand",
       "kind": "model",
       "className": "DtsNativeScriptRunCommand",
       "schemaRef": "spark-class-model://schema/DtsNativeScriptRunCommand",
-      "attributeRefs": [],
-      "methodRefs": [],
-      "linkRefs": []
+      "attributeRefs": [
+        "spark-class-model://model/DtsNativeScriptRunCommand/attributes/instance/0",
+        "spark-class-model://model/DtsNativeScriptRunCommand/attributes/manifestUrl/1",
+        "spark-class-model://model/DtsNativeScriptRunCommand/attributes/rootClassName/2",
+        "spark-class-model://model/DtsNativeScriptRunCommand/attributes/host/3",
+        "spark-class-model://model/DtsNativeScriptRunCommand/attributes/script/4"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/DtsNativeScriptRunCommand/methods/fetchJson/0"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FDtsNativeScriptRunCommand%2Fattributes%2Fhost%2F3/attribute/spark-class-model%3A%2F%2Fmodel%2FAiAgentRuntimeHostContext"
+      ]
     }
   }
 }

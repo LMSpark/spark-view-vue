@@ -33,16 +33,6 @@
         "$id": "spark-class-model://schema/RendererDetailZeroCodeOptions"
       }
     },
-    "spark-class-model://schema/shared/7e24edd51995779c3b1a78931005f9ef5f4a1c17858ac1180842204a4e6fd48a": {
-      "ref": "spark-class-model://schema/shared/7e24edd51995779c3b1a78931005f9ef5f4a1c17858ac1180842204a4e6fd48a",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "Readonly<Record<string, unknown>>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/7e24edd51995779c3b1a78931005f9ef5f4a1c17858ac1180842204a4e6fd48a"
-      }
-    },
     "spark-class-model://model/RendererDetailZeroCodeOptions/attributes/props/0": {
       "ref": "spark-class-model://model/RendererDetailZeroCodeOptions/attributes/props/0",
       "kind": "attribute",

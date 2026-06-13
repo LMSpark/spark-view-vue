@@ -73,32 +73,58 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "initDataSet",
           "jsdoc": "设置 DataSet 实例（必须是已编译好的 DataSet）",
-          "schema": {
-            "type": "object",
-            "title": "(ds: DataSet) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "ds",
+              "type": {
+                "type": "reference",
+                "name": "DataSet"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ds": {
+                "type": "object",
+                "title": "DataSet"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "clearDataSet",
           "jsdoc": "clear Data Set 回调。",
-          "schema": {
-            "type": "object",
-            "title": "() => void"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.795Z",
+  "generatedAt": "2026-06-13T06:21:07.003Z",
   "$defs": {
     "UsePageDataSetOptions": {
       "type": "object",
@@ -125,14 +151,6 @@
               "type": "null"
             }
           ]
-        },
-        "initDataSet": {
-          "type": "object",
-          "title": "(ds: DataSet) => void"
-        },
-        "clearDataSet": {
-          "type": "object",
-          "title": "() => void"
         }
       }
     }

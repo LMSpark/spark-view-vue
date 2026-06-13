@@ -19,14 +19,6 @@
         "properties": {
           "http": {
             "$ref": "spark-class-model://schema/HttpClientBase"
-          },
-          "getProjectsApi": {
-            "type": "object",
-            "title": "() => string"
-          },
-          "getProjectNavigationApi": {
-            "type": "object",
-            "title": "(projectId: string) => string"
           }
         },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -52,33 +44,38 @@
       "targetFile": "files/declarations/packages/spark-utils/src/http/HttpClientBase.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/HttpClientBase"
     },
-    "spark-class-model://model/ProjectReferenceClientOptions/attributes/getProjectsApi/1": {
-      "ref": "spark-class-model://model/ProjectReferenceClientOptions/attributes/getProjectsApi/1",
-      "kind": "attribute",
+    "spark-class-model://model/ProjectReferenceClientOptions/methods/getProjectsApi/0": {
+      "ref": "spark-class-model://model/ProjectReferenceClientOptions/methods/getProjectsApi/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/ProjectReferenceClientOptions",
       "name": "getProjectsApi",
-      "schemaRef": "spark-class-model://schema/shared/50499ab0cf7653249c6352eb43acf225b14d3a9d43f5168438c0492452a97287",
-      "readable": true,
-      "writable": true
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96"
     },
-    "spark-class-model://schema/shared/4ee83c5aa51a2f7d47204acc42cb19d3d2a29fd10d60ff51333d174777497133": {
-      "ref": "spark-class-model://schema/shared/4ee83c5aa51a2f7d47204acc42cb19d3d2a29fd10d60ff51333d174777497133",
+    "spark-class-model://model/ProjectReferenceClientOptions/methods/getProjectNavigationApi/1": {
+      "ref": "spark-class-model://model/ProjectReferenceClientOptions/methods/getProjectNavigationApi/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/ProjectReferenceClientOptions",
+      "name": "getProjectNavigationApi",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/5f531665602aa6bc11d1f7b0996d05b1ba02cc5611257789375dc53acd2a4ba8",
+      "returnSchemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96"
+    },
+    "spark-class-model://schema/shared/5f531665602aa6bc11d1f7b0996d05b1ba02cc5611257789375dc53acd2a4ba8": {
+      "ref": "spark-class-model://schema/shared/5f531665602aa6bc11d1f7b0996d05b1ba02cc5611257789375dc53acd2a4ba8",
       "kind": "schema",
       "schema": {
         "type": "object",
-        "title": "(projectId: string) => string",
+        "properties": {
+          "projectId": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/4ee83c5aa51a2f7d47204acc42cb19d3d2a29fd10d60ff51333d174777497133"
+        "$id": "spark-class-model://schema/shared/5f531665602aa6bc11d1f7b0996d05b1ba02cc5611257789375dc53acd2a4ba8"
       }
-    },
-    "spark-class-model://model/ProjectReferenceClientOptions/attributes/getProjectNavigationApi/2": {
-      "ref": "spark-class-model://model/ProjectReferenceClientOptions/attributes/getProjectNavigationApi/2",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/ProjectReferenceClientOptions",
-      "name": "getProjectNavigationApi",
-      "schemaRef": "spark-class-model://schema/shared/4ee83c5aa51a2f7d47204acc42cb19d3d2a29fd10d60ff51333d174777497133",
-      "readable": true,
-      "writable": true
     },
     "spark-class-model://model/ProjectReferenceClientOptions": {
       "ref": "spark-class-model://model/ProjectReferenceClientOptions",
@@ -86,11 +83,12 @@
       "className": "ProjectReferenceClientOptions",
       "schemaRef": "spark-class-model://schema/ProjectReferenceClientOptions",
       "attributeRefs": [
-        "spark-class-model://model/ProjectReferenceClientOptions/attributes/http/0",
-        "spark-class-model://model/ProjectReferenceClientOptions/attributes/getProjectsApi/1",
-        "spark-class-model://model/ProjectReferenceClientOptions/attributes/getProjectNavigationApi/2"
+        "spark-class-model://model/ProjectReferenceClientOptions/attributes/http/0"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/ProjectReferenceClientOptions/methods/getProjectsApi/0",
+        "spark-class-model://model/ProjectReferenceClientOptions/methods/getProjectNavigationApi/1"
+      ],
       "linkRefs": [
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectReferenceClientOptions%2Fattributes%2Fhttp%2F0/attribute/spark-class-model%3A%2F%2Fmodel%2FHttpClientBase"
       ]
@@ -249,6 +247,38 @@
         "$id": "spark-class-model://schema/ProjectReferenceClient"
       }
     },
+    "spark-class-model://model/ProjectReferenceClient/constructors/0": {
+      "ref": "spark-class-model://model/ProjectReferenceClient/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/ProjectReferenceClient",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/94c77092f1581997186f15b59dcbe16dc5c31c7121d47a5be5dfb86047f48500"
+    },
+    "spark-class-model://schema/shared/94c77092f1581997186f15b59dcbe16dc5c31c7121d47a5be5dfb86047f48500": {
+      "ref": "spark-class-model://schema/shared/94c77092f1581997186f15b59dcbe16dc5c31c7121d47a5be5dfb86047f48500",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "options": {
+            "$ref": "spark-class-model://schema/ProjectReferenceClientOptions"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/94c77092f1581997186f15b59dcbe16dc5c31c7121d47a5be5dfb86047f48500"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectReferenceClient%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectReferenceClientOptions": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectReferenceClient%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectReferenceClientOptions",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/ProjectReferenceClient/constructors/0",
+      "relation": "constructor-parameter",
+      "targetModelRef": "spark-class-model://model/ProjectReferenceClientOptions",
+      "targetClassName": "ProjectReferenceClientOptions",
+      "targetFile": "files/declarations/packages/spark-project-model/src/io/project-reference-client.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/ProjectReferenceClientOptions"
+    },
     "spark-class-model://model/ProjectReferenceClient/methods/listProjects/0": {
       "ref": "spark-class-model://model/ProjectReferenceClient/methods/listProjects/0",
       "kind": "method",
@@ -312,21 +342,6 @@
       "paramsSchemaRef": "spark-class-model://schema/shared/5f531665602aa6bc11d1f7b0996d05b1ba02cc5611257789375dc53acd2a4ba8",
       "returnSchemaRef": "spark-class-model://schema/shared/e0c5174cd596a3cb2edcf12cdbf80f22e5e17e6dd774b47bc95bb8753a3c2223"
     },
-    "spark-class-model://schema/shared/5f531665602aa6bc11d1f7b0996d05b1ba02cc5611257789375dc53acd2a4ba8": {
-      "ref": "spark-class-model://schema/shared/5f531665602aa6bc11d1f7b0996d05b1ba02cc5611257789375dc53acd2a4ba8",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "projectId": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/5f531665602aa6bc11d1f7b0996d05b1ba02cc5611257789375dc53acd2a4ba8"
-      }
-    },
     "spark-class-model://schema/shared/e0c5174cd596a3cb2edcf12cdbf80f22e5e17e6dd774b47bc95bb8753a3c2223": {
       "ref": "spark-class-model://schema/shared/e0c5174cd596a3cb2edcf12cdbf80f22e5e17e6dd774b47bc95bb8753a3c2223",
       "kind": "schema",
@@ -352,12 +367,14 @@
       "kind": "model",
       "className": "ProjectReferenceClient",
       "schemaRef": "spark-class-model://schema/ProjectReferenceClient",
+      "constructorRef": "spark-class-model://model/ProjectReferenceClient/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/ProjectReferenceClient/methods/listProjects/0",
         "spark-class-model://model/ProjectReferenceClient/methods/listProjectPages/1"
       ],
       "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectReferenceClient%2Fconstructors%2F0/constructor-parameter/spark-class-model%3A%2F%2Fmodel%2FProjectReferenceClientOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectReferenceClient%2Fmethods%2FlistProjects%2F0/method-parameter/spark-class-model%3A%2F%2Fmodel%2FListProjectReferencesOptions",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectReferenceClient%2Fmethods%2FlistProjects%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectSummary",
         "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FProjectReferenceClient%2Fmethods%2FlistProjectPages%2F1/method-return/spark-class-model%3A%2F%2Fmodel%2FProjectPageReference"

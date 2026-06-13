@@ -13,97 +13,78 @@
       "schema": {
         "type": "object",
         "title": "NativeTableLike",
-        "properties": {
-          "clearSelection": {
-            "type": "object",
-            "title": "() => void"
-          },
-          "toggleRowSelection": {
-            "type": "object",
-            "title": "(row: DataRow, selected?: boolean) => void"
-          },
-          "setCurrentRow": {
-            "type": "object",
-            "title": "(row: DataRow | null) => void"
-          },
-          "doLayout": {
-            "type": "object",
-            "title": "() => void"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/NativeTableLike"
       }
     },
-    "spark-class-model://model/NativeTableLike/attributes/clearSelection/0": {
-      "ref": "spark-class-model://model/NativeTableLike/attributes/clearSelection/0",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTableLike/methods/clearSelection/0": {
+      "ref": "spark-class-model://model/NativeTableLike/methods/clearSelection/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTableLike",
       "name": "clearSelection",
-      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://schema/shared/53f3d82da64665f398ce32643509205a8881ce36e7807b90d6fcc56058fd8ea0": {
-      "ref": "spark-class-model://schema/shared/53f3d82da64665f398ce32643509205a8881ce36e7807b90d6fcc56058fd8ea0",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(row: DataRow, selected?: boolean) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/53f3d82da64665f398ce32643509205a8881ce36e7807b90d6fcc56058fd8ea0"
-      }
-    },
-    "spark-class-model://model/NativeTableLike/attributes/toggleRowSelection/1": {
-      "ref": "spark-class-model://model/NativeTableLike/attributes/toggleRowSelection/1",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTableLike/methods/toggleRowSelection/1": {
+      "ref": "spark-class-model://model/NativeTableLike/methods/toggleRowSelection/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTableLike",
       "name": "toggleRowSelection",
-      "schemaRef": "spark-class-model://schema/shared/53f3d82da64665f398ce32643509205a8881ce36e7807b90d6fcc56058fd8ea0",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://schema/shared/13e9458a45fbc2ef92def1a4554019c838e9036aa91aeb9df581cb846e6dd2a8": {
-      "ref": "spark-class-model://schema/shared/13e9458a45fbc2ef92def1a4554019c838e9036aa91aeb9df581cb846e6dd2a8",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(row: DataRow | null) => void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/13e9458a45fbc2ef92def1a4554019c838e9036aa91aeb9df581cb846e6dd2a8"
-      }
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTableLike%2Fmethods%2FtoggleRowSelection%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTableLike%2Fmethods%2FtoggleRowSelection%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NativeTableLike/methods/toggleRowSelection/1",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
     },
-    "spark-class-model://model/NativeTableLike/attributes/setCurrentRow/2": {
-      "ref": "spark-class-model://model/NativeTableLike/attributes/setCurrentRow/2",
-      "kind": "attribute",
+    "spark-class-model://model/NativeTableLike/methods/setCurrentRow/2": {
+      "ref": "spark-class-model://model/NativeTableLike/methods/setCurrentRow/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTableLike",
       "name": "setCurrentRow",
-      "schemaRef": "spark-class-model://schema/shared/13e9458a45fbc2ef92def1a4554019c838e9036aa91aeb9df581cb846e6dd2a8",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://model/NativeTableLike/attributes/doLayout/3": {
-      "ref": "spark-class-model://model/NativeTableLike/attributes/doLayout/3",
-      "kind": "attribute",
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTableLike%2Fmethods%2FsetCurrentRow%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTableLike%2Fmethods%2FsetCurrentRow%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/NativeTableLike/methods/setCurrentRow/2",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/NativeTableLike/methods/doLayout/3": {
+      "ref": "spark-class-model://model/NativeTableLike/methods/doLayout/3",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/NativeTableLike",
       "name": "doLayout",
-      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
     "spark-class-model://model/NativeTableLike": {
       "ref": "spark-class-model://model/NativeTableLike",
       "kind": "model",
       "className": "NativeTableLike",
       "schemaRef": "spark-class-model://schema/NativeTableLike",
-      "attributeRefs": [
-        "spark-class-model://model/NativeTableLike/attributes/clearSelection/0",
-        "spark-class-model://model/NativeTableLike/attributes/toggleRowSelection/1",
-        "spark-class-model://model/NativeTableLike/attributes/setCurrentRow/2",
-        "spark-class-model://model/NativeTableLike/attributes/doLayout/3"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/NativeTableLike/methods/clearSelection/0",
+        "spark-class-model://model/NativeTableLike/methods/toggleRowSelection/1",
+        "spark-class-model://model/NativeTableLike/methods/setCurrentRow/2",
+        "spark-class-model://model/NativeTableLike/methods/doLayout/3"
       ],
-      "methodRefs": [],
-      "linkRefs": []
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTableLike%2Fmethods%2FtoggleRowSelection%2F1/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FNativeTableLike%2Fmethods%2FsetCurrentRow%2F2/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow"
+      ]
     },
     "spark-class-model://schema/RendererTableZeroCodeOptions": {
       "ref": "spark-class-model://schema/RendererTableZeroCodeOptions",

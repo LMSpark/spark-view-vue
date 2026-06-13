@@ -115,7 +115,25 @@
               "isOptional": true
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "$ref": "#/$defs/AiAgentToolCheckLevel"
+            },
+            "code": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            },
+            "hint": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -190,6 +208,24 @@
             "type": "reference",
             "name": "AiAgentToolCheck",
             "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "hint": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolCheck"
           }
         },
         {
@@ -226,6 +262,24 @@
             "type": "reference",
             "name": "AiAgentToolCheck",
             "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "hint": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolCheck"
           }
         },
         {
@@ -262,6 +316,24 @@
             "type": "reference",
             "name": "AiAgentToolCheck",
             "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "hint": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolCheck"
           }
         }
       ]
@@ -285,7 +357,43 @@
         "className": "AiAgentToolResultOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "ok",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "data",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "checks",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "state",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentToolResult": {
@@ -319,7 +427,17 @@
               ]
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/AiAgentToolResultOptions",
+              "title": "AiAgentToolResultOptions<TData>"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -417,6 +535,24 @@
                 "refersToTypeParameter": true
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": true,
+              "checks": {
+                "type": "array"
+              },
+              "state": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolResult",
+            "title": "AiAgentToolResult<TData>"
           }
         },
         {
@@ -462,6 +598,23 @@
                 "name": "never"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "checks": {
+                "type": "array"
+              },
+              "state": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolResult",
+            "title": "AiAgentToolResult<never>"
           }
         },
         {
@@ -504,6 +657,25 @@
                 "name": "never"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "hint": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolResult",
+            "title": "AiAgentToolResult<never>"
           }
         },
         {
@@ -536,6 +708,20 @@
                 "name": "never"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "result": {
+                "$ref": "#/$defs/AiAgentToolResult",
+                "title": "AiAgentToolResult<unknown>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolResult",
+            "title": "AiAgentToolResult<never>"
           }
         }
       ]
@@ -559,7 +745,29 @@
         "className": "AiAgentToolSpec",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "type",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "function"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "function",
+          "jsdoc": "",
+          "schema": {
+            "type": "object"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentRuntimeHostContext": {
@@ -581,7 +789,35 @@
         "className": "AiAgentRuntimeHostContext",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "moduleId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleInstanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "instanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentToolRuntimeKnowledgeProjection": {
@@ -603,7 +839,17 @@
         "className": "AiAgentToolRuntimeKnowledgeProjection",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "promptSnapshot",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentToolRuntimeInspectFinding": {
@@ -625,7 +871,63 @@
         "className": "AiAgentToolRuntimeInspectFinding",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "level",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warn"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "code",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "message",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "fix",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentToolRuntimeInspectReport": {
@@ -647,7 +949,63 @@
         "className": "AiAgentToolRuntimeInspectReport",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ok"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warning"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rootKinds",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleCount",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "findings",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentToolRuntime": {
@@ -670,10 +1028,133 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "getTools",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "unknown",
+            "name": "readonly AiAgentToolSpec[]"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array"
+          }
+        },
+        {
+          "name": "executeTool",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "toolName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            },
+            {
+              "name": "args",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "host",
+              "type": {
+                "type": "reference",
+                "name": "AiAgentRuntimeHostContext",
+                "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "AiAgentToolResult",
+                "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts",
+                "typeArguments": [
+                  {
+                    "type": "reference",
+                    "name": "unknown"
+                  }
+                ]
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "toolName": {
+                "type": "string"
+              },
+              "args": {
+                "type": "object",
+                "title": "AiJsonParams"
+              },
+              "host": {
+                "$ref": "#/$defs/AiAgentRuntimeHostContext"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiAgentToolResult<AiJsonValue>>"
+          }
+        },
+        {
+          "name": "projectKnowledge",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentToolRuntimeKnowledgeProjection",
+            "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolRuntimeKnowledgeProjection"
+          }
+        },
+        {
+          "name": "inspect",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "AiAgentToolRuntimeInspectReport",
+            "sourcePath": "declarations/packages/spark-ai/src/agent/tool-runtime/tool-runtime-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentToolRuntimeInspectReport"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.573Z",
+  "generatedAt": "2026-06-13T06:21:06.601Z",
   "$defs": {
     "AiAgentToolCheckLevel": {
       "type": "object",
@@ -702,7 +1183,20 @@
     "AiAgentToolResultOptions": {
       "type": "object",
       "title": "AiAgentToolResultOptions",
-      "description": "Ai Agent Tool Result Options 的调用配置。"
+      "description": "Ai Agent Tool Result Options 的调用配置。",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": true,
+        "checks": {
+          "type": "array"
+        },
+        "state": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
     },
     "AiAgentToolResult": {
       "type": "object",
@@ -725,27 +1219,120 @@
     "AiAgentToolSpec": {
       "type": "object",
       "title": "AiAgentToolSpec",
-      "description": "Ai Agent Tool Spec 的语义模型。"
+      "description": "Ai Agent Tool Spec 的语义模型。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "function"
+          ]
+        },
+        "function": {
+          "type": "object"
+        }
+      }
     },
     "AiAgentRuntimeHostContext": {
       "type": "object",
       "title": "AiAgentRuntimeHostContext",
-      "description": "Ai Agent Runtime Host Context 的运行上下文。"
+      "description": "Ai Agent Runtime Host Context 的运行上下文。",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        }
+      }
     },
     "AiAgentToolRuntimeKnowledgeProjection": {
       "type": "object",
       "title": "AiAgentToolRuntimeKnowledgeProjection",
-      "description": "Ai Agent Tool Runtime Knowledge Projection 的语义模型。"
+      "description": "Ai Agent Tool Runtime Knowledge Projection 的语义模型。",
+      "properties": {
+        "promptSnapshot": {
+          "type": "string"
+        }
+      }
     },
     "AiAgentToolRuntimeInspectFinding": {
       "type": "object",
       "title": "AiAgentToolRuntimeInspectFinding",
-      "description": "Ai Agent Tool Runtime Inspect Finding 的语义模型。"
+      "description": "Ai Agent Tool Runtime Inspect Finding 的语义模型。",
+      "properties": {
+        "level": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warn"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            }
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        }
+      }
     },
     "AiAgentToolRuntimeInspectReport": {
       "type": "object",
       "title": "AiAgentToolRuntimeInspectReport",
-      "description": "Ai Agent Tool Runtime Inspect Report 的语义模型。"
+      "description": "Ai Agent Tool Runtime Inspect Report 的语义模型。",
+      "properties": {
+        "status": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "ok"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warning"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            }
+          ]
+        },
+        "rootKinds": {
+          "type": "array"
+        },
+        "moduleCount": {
+          "type": "number"
+        },
+        "findings": {
+          "type": "array"
+        }
+      }
     },
     "AiAgentToolRuntime": {
       "type": "object",

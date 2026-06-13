@@ -36,16 +36,55 @@
         "className": "ClassModelReflectionConnectivityIssue",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "code",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "path",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "message",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.583Z",
+  "generatedAt": "2026-06-13T06:21:06.637Z",
   "$defs": {
     "ClassModelReflectionConnectivityIssue": {
       "type": "object",
       "title": "ClassModelReflectionConnectivityIssue",
-      "description": "Class Model Reflection Connectivity Issue 的语义模型。"
+      "description": "Class Model Reflection Connectivity Issue 的语义模型。",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
     }
   }
 }

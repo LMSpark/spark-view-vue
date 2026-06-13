@@ -33,39 +33,70 @@
         "className": "AggregateDelegateOptions",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "getAggregates",
           "jsdoc": "返回当前视图聚合配置（每次调用时读取，支持运行时动态配置）。",
-          "schema": {
-            "type": "object",
-            "title": "() => Record<string, AggregateColumnConfig>"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "reference",
+            "name": "Record",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
           },
-          "readable": true,
-          "writable": false
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Record<string, AggregateColumnConfig>"
+          }
         },
         {
           "name": "emitSummaryChanged",
           "jsdoc": "通知订阅方全部聚合行已更新（aggregateResult + selectionAggregateResult）。",
-          "schema": {
-            "type": "object",
-            "title": "() => void"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "emitSelectionSummaryChanged",
           "jsdoc": "通知订阅方仅选中行聚合已更新（selectionAggregateResult）。",
-          "schema": {
-            "type": "object",
-            "title": "() => void"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     },
     "AggregateRecomputeOptions": {
       "kind": "AggregateRecomputeOptions",
@@ -116,7 +147,16 @@
               "sourcePath": "declarations/packages/spark-data/src/strategies/aggregate-delegate.d.ts"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "$ref": "#/$defs/AggregateDelegateOptions"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -160,7 +200,31 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              },
+              "selectedRows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              },
+              "options": {
+                "$ref": "#/$defs/AggregateRecomputeOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "recomputeSelection",
@@ -192,31 +256,34 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "selectedRows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              },
+              "options": {
+                "$ref": "#/$defs/AggregateRecomputeOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.836Z",
+  "generatedAt": "2026-06-13T06:21:07.070Z",
   "$defs": {
     "AggregateDelegateOptions": {
       "type": "object",
       "title": "AggregateDelegateOptions",
-      "description": "Aggregate Delegate Options 的调用配置。",
-      "properties": {
-        "getAggregates": {
-          "type": "object",
-          "title": "() => Record<string, AggregateColumnConfig>"
-        },
-        "emitSummaryChanged": {
-          "type": "object",
-          "title": "() => void"
-        },
-        "emitSelectionSummaryChanged": {
-          "type": "object",
-          "title": "() => void"
-        }
-      }
+      "description": "Aggregate Delegate Options 的调用配置。"
     },
     "AggregateRecomputeOptions": {
       "type": "object",

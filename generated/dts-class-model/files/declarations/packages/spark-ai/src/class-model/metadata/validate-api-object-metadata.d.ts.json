@@ -38,7 +38,57 @@
         "className": "ApiObjectValidationFinding",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "level",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warn"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rule",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "message",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "fix",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiApiObjectMetadataValidationError": {
@@ -78,7 +128,19 @@
               "name": "readonly ApiObjectValidationFinding[]"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "findings": {
+              "type": "array"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -103,12 +165,39 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.593Z",
+  "generatedAt": "2026-06-13T06:21:06.671Z",
   "$defs": {
     "ApiObjectValidationFinding": {
       "type": "object",
       "title": "ApiObjectValidationFinding",
-      "description": "Api Object Validation Finding 的语义模型。"
+      "description": "Api Object Validation Finding 的语义模型。",
+      "properties": {
+        "level": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warn"
+              ]
+            }
+          ]
+        },
+        "rule": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        }
+      }
     },
     "AiApiObjectMetadataValidationError": {
       "type": "object",

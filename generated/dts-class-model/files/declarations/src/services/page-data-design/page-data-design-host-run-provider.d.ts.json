@@ -36,16 +36,103 @@
         "className": "PageDataDesignHostInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "pageId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "description",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "effectiveDescription",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "projectId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "planningTitle",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "planningPath",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "dataRequirement",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.923Z",
+  "generatedAt": "2026-06-13T06:21:07.195Z",
   "$defs": {
     "PageDataDesignHostInput": {
       "type": "object",
       "title": "PageDataDesignHostInput",
-      "description": "Page Data Design Host Input 的输入数据。"
+      "description": "Page Data Design Host Input 的输入数据。",
+      "properties": {
+        "pageId": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "effectiveDescription": {
+          "type": "string"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "planningTitle": {
+          "type": "string"
+        },
+        "planningPath": {
+          "type": "string"
+        },
+        "dataRequirement": {
+          "type": "string"
+        }
+      }
     }
   }
 }

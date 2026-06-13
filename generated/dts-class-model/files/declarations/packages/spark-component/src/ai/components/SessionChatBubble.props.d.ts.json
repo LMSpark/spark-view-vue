@@ -37,16 +37,117 @@
         "declarationKind": "type",
         "componentName": "SessionChatBubble"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "role",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "user"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "assistant"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "system"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "content",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "timestamp",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "isTyping",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.630Z",
+  "generatedAt": "2026-06-13T06:21:06.723Z",
   "$defs": {
     "SessionChatBubbleProps": {
       "type": "object",
       "title": "SessionChatBubbleProps",
-      "description": "Session Chat Bubble Props 的属性契约。"
+      "description": "Session Chat Bubble Props 的属性契约。",
+      "properties": {
+        "role": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "user"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "assistant"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "system"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            }
+          ]
+        },
+        "content": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "isTyping": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }

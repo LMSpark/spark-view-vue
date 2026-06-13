@@ -62,7 +62,44 @@
         "className": "AiNativeScriptContextCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "instance",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "metadata",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiRuntimeApiMetadataJson"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "host",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentRuntimeHostContext"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "schemaDefs",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiNativeRuntimeSchemaDefs"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiNativeScriptRunCommand": {
@@ -89,11 +126,21 @@
         "className": "AiNativeScriptRunCommand",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "script",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.563Z",
+  "generatedAt": "2026-06-13T06:21:06.575Z",
   "$defs": {
     "AiNativeRuntimeSchemaDefs": {
       "type": "object",
@@ -103,12 +150,31 @@
     "AiNativeScriptContextCommand": {
       "type": "object",
       "title": "AiNativeScriptContextCommand",
-      "description": "Ai Native Script Context Command 的命令参数。"
+      "description": "Ai Native Script Context Command 的命令参数。",
+      "properties": {
+        "instance": true,
+        "metadata": {
+          "type": "object",
+          "title": "AiRuntimeApiMetadataJson"
+        },
+        "host": {
+          "type": "object",
+          "title": "AiAgentRuntimeHostContext"
+        },
+        "schemaDefs": {
+          "$ref": "#/$defs/AiNativeRuntimeSchemaDefs"
+        }
+      }
     },
     "AiNativeScriptRunCommand": {
       "type": "object",
       "title": "AiNativeScriptRunCommand",
-      "description": "Ai Native Script Run Command 的命令参数。"
+      "description": "Ai Native Script Run Command 的命令参数。",
+      "properties": {
+        "script": {
+          "type": "string"
+        }
+      }
     }
   }
 }

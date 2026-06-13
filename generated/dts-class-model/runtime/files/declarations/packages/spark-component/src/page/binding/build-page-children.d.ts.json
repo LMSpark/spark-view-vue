@@ -72,15 +72,6 @@
       "targetFile": "files/declarations/packages/spark-component/src/page/binding/build-page-children.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/PageScriptCaller"
     },
-    "spark-class-model://schema/shared/398d8ffcd3752838581a8a3e5a1b31f0ee34ac3cb4836e14e82df9783efb4935": {
-      "ref": "spark-class-model://schema/shared/398d8ffcd3752838581a8a3e5a1b31f0ee34ac3cb4836e14e82df9783efb4935",
-      "kind": "schema",
-      "schema": {
-        "$ref": "spark-class-model://schema/ActionExecutionContext",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/398d8ffcd3752838581a8a3e5a1b31f0ee34ac3cb4836e14e82df9783efb4935"
-      }
-    },
     "spark-class-model://model/BuildPageChildrenOptions/attributes/actionCtx/1": {
       "ref": "spark-class-model://model/BuildPageChildrenOptions/attributes/actionCtx/1",
       "kind": "attribute",

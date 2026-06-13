@@ -45,7 +45,52 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "setStorageScope",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "scopeKey",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "literal",
+                    "value": null
+                  }
+                ]
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "scopeKey": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        }
+      ]
     },
     "ThemeServiceOptions": {
       "kind": "ThemeServiceOptions",
@@ -146,7 +191,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.626Z",
+  "generatedAt": "2026-06-13T06:21:06.717Z",
   "$defs": {
     "ThemeCapability": {
       "type": "object",

@@ -115,32 +115,61 @@
           "schema": true,
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "formatDisplay",
           "jsdoc": "format Display 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(value: unknown) => string"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": {
+            "type": "string"
+          }
         },
         {
           "name": "coerce",
           "jsdoc": "运行时类型校正函数。\n`sourceFieldValue` 从行数据中读取的原始值类型不可控（DataSet 行数据是 `unknown`），\n此函数在赋给 `fieldValue` 之前统一做类型校正，避免非预期类型（如 boolean false）\n流入 el-input / el-input-number 等的 :model-value，从而消除 Vue runtime prop 警告。\n注意：仅对来自行数据的值应用；`props.modelValue` 显式传入时直接使用（调用方负责类型正确性）。",
-          "schema": {
-            "type": "object",
-            "title": "(rawValue: unknown) => TValue"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rawValue",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "TValue",
+            "refersToTypeParameter": true
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rawValue": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.733Z",
+  "generatedAt": "2026-06-13T06:21:06.911Z",
   "$defs": {
     "OptionalWithUndefined": {
       "type": "object",
@@ -168,15 +197,7 @@
         "type": {
           "type": "string"
         },
-        "fallbackValue": true,
-        "formatDisplay": {
-          "type": "object",
-          "title": "(value: unknown) => string"
-        },
-        "coerce": {
-          "type": "object",
-          "title": "(rawValue: unknown) => TValue"
-        }
+        "fallbackValue": true
       }
     }
   }

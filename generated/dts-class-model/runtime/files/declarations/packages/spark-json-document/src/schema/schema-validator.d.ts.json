@@ -63,16 +63,45 @@
       "schema": {
         "type": "object",
         "title": "JsonValidationResult",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "issues": {
+            "type": "array"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/JsonValidationResult"
       }
+    },
+    "spark-class-model://model/JsonValidationResult/attributes/ok/0": {
+      "ref": "spark-class-model://model/JsonValidationResult/attributes/ok/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonValidationResult",
+      "name": "ok",
+      "schemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/JsonValidationResult/attributes/issues/1": {
+      "ref": "spark-class-model://model/JsonValidationResult/attributes/issues/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonValidationResult",
+      "name": "issues",
+      "schemaRef": "spark-class-model://schema/shared/6a7f71a05a1d45ad05b136c292bc4c9f309f51a5d36ff2013ac9cac6a074ff22",
+      "readable": true,
+      "writable": true
     },
     "spark-class-model://model/JsonValidationResult": {
       "ref": "spark-class-model://model/JsonValidationResult",
       "kind": "model",
       "className": "JsonValidationResult",
       "schemaRef": "spark-class-model://schema/JsonValidationResult",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/JsonValidationResult/attributes/ok/0",
+        "spark-class-model://model/JsonValidationResult/attributes/issues/1"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },
@@ -82,16 +111,33 @@
       "schema": {
         "type": "object",
         "title": "JsonSchemaValidateOptions",
+        "properties": {
+          "schemaDefs": {
+            "type": "object",
+            "title": "Readonly<Record<string, JsonSchema>>"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/JsonSchemaValidateOptions"
       }
+    },
+    "spark-class-model://model/JsonSchemaValidateOptions/attributes/schemaDefs/0": {
+      "ref": "spark-class-model://model/JsonSchemaValidateOptions/attributes/schemaDefs/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/JsonSchemaValidateOptions",
+      "name": "schemaDefs",
+      "schemaRef": "spark-class-model://schema/shared/648eeae7e213de6bfb714f93345c97bf8e534426ee368c3d08f8a403719234fc",
+      "readable": true,
+      "writable": false
     },
     "spark-class-model://model/JsonSchemaValidateOptions": {
       "ref": "spark-class-model://model/JsonSchemaValidateOptions",
       "kind": "model",
       "className": "JsonSchemaValidateOptions",
       "schemaRef": "spark-class-model://schema/JsonSchemaValidateOptions",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/JsonSchemaValidateOptions/attributes/schemaDefs/0"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },

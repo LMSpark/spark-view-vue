@@ -43,7 +43,16 @@
               "isOptional": true
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "_limit": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -64,7 +73,15 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "snapshot": true
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "undo",
@@ -84,7 +101,13 @@
                 "value": null
               }
             ]
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "redo",
@@ -104,7 +127,13 @@
                 "value": null
               }
             ]
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "clear",
@@ -114,12 +143,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.914Z",
+  "generatedAt": "2026-06-13T06:21:07.181Z",
   "$defs": {
     "SnapshotHistory": {
       "type": "object",

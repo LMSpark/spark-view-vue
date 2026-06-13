@@ -44,7 +44,72 @@
         "componentDirectory": "containers/data-views"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "setScrollTop",
+          "jsdoc": "将视口滚动到指定像素位置。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "viewportHeight",
+          "jsdoc": "返回当前视口高度。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
+        },
+        {
+          "name": "viewportScrollTop",
+          "jsdoc": "返回当前视口滚动位置。",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
+        }
+      ]
     },
     "WheelPageEvent": {
       "kind": "WheelPageEvent",
@@ -163,112 +228,212 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "pageHeight",
           "jsdoc": "桌面端单页虚拟高度。",
-          "schema": {
-            "type": "object",
-            "title": "() => number"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
         },
         {
           "name": "mobilePageHeight",
           "jsdoc": "移动端单页虚拟高度。",
-          "schema": {
-            "type": "object",
-            "title": "() => number"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
         },
         {
           "name": "mobileBreakpoint",
           "jsdoc": "切换移动端页高的视口宽度阈值。",
-          "schema": {
-            "type": "object",
-            "title": "() => number"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
         },
         {
           "name": "overscanPages",
           "jsdoc": "当前页前后额外渲染的页数。",
-          "schema": {
-            "type": "object",
-            "title": "() => number"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
         },
         {
           "name": "prefetchPages",
           "jsdoc": "当前页前后预加载的页数。",
-          "schema": {
-            "type": "object",
-            "title": "() => number"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
         },
         {
           "name": "maxCachedPages",
           "jsdoc": "内存中最多保留的页缓存数量。",
-          "schema": {
-            "type": "object",
-            "title": "() => number"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
         },
         {
           "name": "settleDelay",
           "jsdoc": "滚动停止后等待加载的毫秒数。",
-          "schema": {
-            "type": "object",
-            "title": "() => number"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
         },
         {
           "name": "wheelStepPx",
           "jsdoc": "滚轮累计多少像素至少跳一页。",
-          "schema": {
-            "type": "object",
-            "title": "() => number"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
         },
         {
           "name": "maxWheelJumpPages",
           "jsdoc": "单次滚轮最多跳过的页数。",
-          "schema": {
-            "type": "object",
-            "title": "() => number"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
         },
         {
           "name": "dispatchPageChange",
           "jsdoc": "通知外层切换到指定页。",
-          "schema": {
-            "type": "object",
-            "title": "(page: number) => Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "page",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.653Z",
+  "generatedAt": "2026-06-13T06:21:06.775Z",
   "$defs": {
     "VirtualCardViewportExpose": {
       "type": "object",
@@ -317,46 +482,6 @@
         "requestState": {
           "type": "object",
           "title": "ComputedRef<RequestState>"
-        },
-        "pageHeight": {
-          "type": "object",
-          "title": "() => number"
-        },
-        "mobilePageHeight": {
-          "type": "object",
-          "title": "() => number"
-        },
-        "mobileBreakpoint": {
-          "type": "object",
-          "title": "() => number"
-        },
-        "overscanPages": {
-          "type": "object",
-          "title": "() => number"
-        },
-        "prefetchPages": {
-          "type": "object",
-          "title": "() => number"
-        },
-        "maxCachedPages": {
-          "type": "object",
-          "title": "() => number"
-        },
-        "settleDelay": {
-          "type": "object",
-          "title": "() => number"
-        },
-        "wheelStepPx": {
-          "type": "object",
-          "title": "() => number"
-        },
-        "maxWheelJumpPages": {
-          "type": "object",
-          "title": "() => number"
-        },
-        "dispatchPageChange": {
-          "type": "object",
-          "title": "(page: number) => Promise<void>"
         }
       }
     }

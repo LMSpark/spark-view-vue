@@ -410,16 +410,6 @@
           "writable": false
         },
         {
-          "name": "onChange",
-          "jsdoc": "字段值变更回调。\n统一由字段控制层透传给事件分发器，替代隐式监听提取。",
-          "schema": {
-            "type": "object",
-            "title": "(...args: unknown[]) => void | Promise<void>"
-          },
-          "readable": true,
-          "writable": false
-        },
-        {
           "name": "titleAlign",
           "jsdoc": "表头/详情标题对齐方向。\n用于表格表头及详情项标题的水平对齐控制。",
           "schema": {
@@ -531,7 +521,51 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "onChange",
+          "jsdoc": "字段值变更回调。\n统一由字段控制层透传给事件分发器，替代隐式监听提取。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "args",
+              "type": {
+                "type": "rest",
+                "elementType": {
+                  "type": "array",
+                  "elementType": {
+                    "type": "intrinsic",
+                    "name": "unknown"
+                  }
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              },
+              {
+                "type": "reference",
+                "name": "Promise",
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ]
+              }
+            ]
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
+        }
+      ]
     },
     "SparkPrimaryActionTextProps": {
       "kind": "SparkPrimaryActionTextProps",
@@ -1843,49 +1877,53 @@
         "className": "SparkVisibilityEventProps",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "onOpen",
           "jsdoc": "打开动作触发时回调。\n一般用于进入显示流程前准备数据或记录埋点。",
-          "schema": {
-            "type": "object",
-            "title": "() => void"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "onClose",
           "jsdoc": "关闭动作触发时回调。\n一般用于执行关闭确认、清理临时状态或通知外层。",
-          "schema": {
-            "type": "object",
-            "title": "() => void"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "onOpened",
           "jsdoc": "打开完成后回调。\n适合执行依赖 DOM 已稳定可见的逻辑，例如 autofocus 或尺寸测量。",
-          "schema": {
-            "type": "object",
-            "title": "() => void"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         },
         {
           "name": "onClosed",
           "jsdoc": "关闭完成后回调。\n适合做最终清理、销毁临时资源或恢复外层页面状态。",
-          "schema": {
-            "type": "object",
-            "title": "() => void"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     },
     "SparkVisibilityContainerProps": {
       "kind": "SparkVisibilityContainerProps",
@@ -1924,7 +1962,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.778Z",
+  "generatedAt": "2026-06-13T06:21:06.976Z",
   "$defs": {
     "ValueRef": {
       "type": "object",
@@ -2075,10 +2113,6 @@
         },
         "placeholder": {
           "type": "string"
-        },
-        "onChange": {
-          "type": "object",
-          "title": "(...args: unknown[]) => void | Promise<void>"
         },
         "titleAlign": {
           "anyOf": [
@@ -2632,25 +2666,7 @@
     "SparkVisibilityEventProps": {
       "type": "object",
       "title": "SparkVisibilityEventProps",
-      "description": "可见性生命周期事件（统一命名层）。\n适用于 dialog、drawer、popover 等具备显隐状态的组件。",
-      "properties": {
-        "onOpen": {
-          "type": "object",
-          "title": "() => void"
-        },
-        "onClose": {
-          "type": "object",
-          "title": "() => void"
-        },
-        "onOpened": {
-          "type": "object",
-          "title": "() => void"
-        },
-        "onClosed": {
-          "type": "object",
-          "title": "() => void"
-        }
-      }
+      "description": "可见性生命周期事件（统一命名层）。\n适用于 dialog、drawer、popover 等具备显隐状态的组件。"
     },
     "SparkVisibilityContainerProps": {
       "type": "object",

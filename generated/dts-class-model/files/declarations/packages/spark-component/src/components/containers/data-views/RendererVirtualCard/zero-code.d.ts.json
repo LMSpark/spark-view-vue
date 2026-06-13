@@ -149,32 +149,66 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "scrollToPage",
           "jsdoc": "滚动到指定页并触发必要加载。",
-          "schema": {
-            "type": "object",
-            "title": "(page: number) => Promise<void>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "page",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<void>"
+          }
         },
         {
           "name": "clearCache",
           "jsdoc": "清空分页缓存并重新加载当前页。",
-          "schema": {
-            "type": "object",
-            "title": "() => void"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.654Z",
+  "generatedAt": "2026-06-13T06:21:06.776Z",
   "$defs": {
     "RendererVirtualCardZeroCodeOptions": {
       "type": "object",
@@ -224,14 +258,6 @@
         "wheelStatusText": {
           "type": "object",
           "title": "ValueRef<string>"
-        },
-        "scrollToPage": {
-          "type": "object",
-          "title": "(page: number) => Promise<void>"
-        },
-        "clearCache": {
-          "type": "object",
-          "title": "() => void"
         }
       }
     }

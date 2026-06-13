@@ -69,22 +69,6 @@
         "type": "object",
         "title": "UseControlledFieldChangeOptions",
         "properties": {
-          "getValue": {
-            "type": "object",
-            "title": "() => TValue"
-          },
-          "emitUpdate": {
-            "type": "object",
-            "title": "(value: TValue) => void"
-          },
-          "syncValue": {
-            "type": "object",
-            "title": "(value: TValue) => void"
-          },
-          "afterDefault": {
-            "type": "object",
-            "title": "(nextValue: TValue, previousValue: TValue) => void | Promise<void>"
-          },
           "handlerSource": {
             "type": "object",
             "title": "Readonly<Record<string, unknown>>"
@@ -94,64 +78,8 @@
         "$id": "spark-class-model://schema/UseControlledFieldChangeOptions"
       }
     },
-    "spark-class-model://schema/shared/3dee2908e0d47c0d89557cb22c37f80a7c138d8d9695ed9df9a542074d7ea8a0": {
-      "ref": "spark-class-model://schema/shared/3dee2908e0d47c0d89557cb22c37f80a7c138d8d9695ed9df9a542074d7ea8a0",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "() => TValue",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/3dee2908e0d47c0d89557cb22c37f80a7c138d8d9695ed9df9a542074d7ea8a0"
-      }
-    },
-    "spark-class-model://model/UseControlledFieldChangeOptions/attributes/getValue/0": {
-      "ref": "spark-class-model://model/UseControlledFieldChangeOptions/attributes/getValue/0",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/UseControlledFieldChangeOptions",
-      "name": "getValue",
-      "schemaRef": "spark-class-model://schema/shared/3dee2908e0d47c0d89557cb22c37f80a7c138d8d9695ed9df9a542074d7ea8a0",
-      "readable": true,
-      "writable": true
-    },
-    "spark-class-model://model/UseControlledFieldChangeOptions/attributes/emitUpdate/1": {
-      "ref": "spark-class-model://model/UseControlledFieldChangeOptions/attributes/emitUpdate/1",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/UseControlledFieldChangeOptions",
-      "name": "emitUpdate",
-      "schemaRef": "spark-class-model://schema/shared/d26f6c41747f8e57172d0f8878a4ac54870b0d145d2c6f04fd3aaa8a1881a0ea",
-      "readable": true,
-      "writable": true
-    },
-    "spark-class-model://model/UseControlledFieldChangeOptions/attributes/syncValue/2": {
-      "ref": "spark-class-model://model/UseControlledFieldChangeOptions/attributes/syncValue/2",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/UseControlledFieldChangeOptions",
-      "name": "syncValue",
-      "schemaRef": "spark-class-model://schema/shared/d26f6c41747f8e57172d0f8878a4ac54870b0d145d2c6f04fd3aaa8a1881a0ea",
-      "readable": true,
-      "writable": true
-    },
-    "spark-class-model://schema/shared/77bf926af8da4bcb407742442eaf7f8a3b76e72537f5d2a182f46bb03c0797e0": {
-      "ref": "spark-class-model://schema/shared/77bf926af8da4bcb407742442eaf7f8a3b76e72537f5d2a182f46bb03c0797e0",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(nextValue: TValue, previousValue: TValue) => void | Promise<void>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/77bf926af8da4bcb407742442eaf7f8a3b76e72537f5d2a182f46bb03c0797e0"
-      }
-    },
-    "spark-class-model://model/UseControlledFieldChangeOptions/attributes/afterDefault/3": {
-      "ref": "spark-class-model://model/UseControlledFieldChangeOptions/attributes/afterDefault/3",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/UseControlledFieldChangeOptions",
-      "name": "afterDefault",
-      "schemaRef": "spark-class-model://schema/shared/77bf926af8da4bcb407742442eaf7f8a3b76e72537f5d2a182f46bb03c0797e0",
-      "readable": true,
-      "writable": false
-    },
-    "spark-class-model://model/UseControlledFieldChangeOptions/attributes/handlerSource/4": {
-      "ref": "spark-class-model://model/UseControlledFieldChangeOptions/attributes/handlerSource/4",
+    "spark-class-model://model/UseControlledFieldChangeOptions/attributes/handlerSource/0": {
+      "ref": "spark-class-model://model/UseControlledFieldChangeOptions/attributes/handlerSource/0",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/UseControlledFieldChangeOptions",
       "name": "handlerSource",
@@ -159,19 +87,54 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://model/UseControlledFieldChangeOptions/methods/getValue/0": {
+      "ref": "spark-class-model://model/UseControlledFieldChangeOptions/methods/getValue/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseControlledFieldChangeOptions",
+      "name": "getValue",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://model/UseControlledFieldChangeOptions/methods/emitUpdate/1": {
+      "ref": "spark-class-model://model/UseControlledFieldChangeOptions/methods/emitUpdate/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseControlledFieldChangeOptions",
+      "name": "emitUpdate",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f"
+    },
+    "spark-class-model://model/UseControlledFieldChangeOptions/methods/syncValue/2": {
+      "ref": "spark-class-model://model/UseControlledFieldChangeOptions/methods/syncValue/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseControlledFieldChangeOptions",
+      "name": "syncValue",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4df90ce7d42adf24656490084dfbf8b7047ef9cb998cfcf747d76c8db7cf955f"
+    },
+    "spark-class-model://model/UseControlledFieldChangeOptions/methods/afterDefault/3": {
+      "ref": "spark-class-model://model/UseControlledFieldChangeOptions/methods/afterDefault/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/UseControlledFieldChangeOptions",
+      "name": "afterDefault",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
     "spark-class-model://model/UseControlledFieldChangeOptions": {
       "ref": "spark-class-model://model/UseControlledFieldChangeOptions",
       "kind": "model",
       "className": "UseControlledFieldChangeOptions",
       "schemaRef": "spark-class-model://schema/UseControlledFieldChangeOptions",
       "attributeRefs": [
-        "spark-class-model://model/UseControlledFieldChangeOptions/attributes/getValue/0",
-        "spark-class-model://model/UseControlledFieldChangeOptions/attributes/emitUpdate/1",
-        "spark-class-model://model/UseControlledFieldChangeOptions/attributes/syncValue/2",
-        "spark-class-model://model/UseControlledFieldChangeOptions/attributes/afterDefault/3",
-        "spark-class-model://model/UseControlledFieldChangeOptions/attributes/handlerSource/4"
+        "spark-class-model://model/UseControlledFieldChangeOptions/attributes/handlerSource/0"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UseControlledFieldChangeOptions/methods/getValue/0",
+        "spark-class-model://model/UseControlledFieldChangeOptions/methods/emitUpdate/1",
+        "spark-class-model://model/UseControlledFieldChangeOptions/methods/syncValue/2",
+        "spark-class-model://model/UseControlledFieldChangeOptions/methods/afterDefault/3"
+      ],
       "linkRefs": []
     }
   }

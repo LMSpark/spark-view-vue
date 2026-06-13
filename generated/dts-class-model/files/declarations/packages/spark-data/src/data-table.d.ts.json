@@ -95,7 +95,23 @@
               "isOptional": true
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "tableName": {
+              "type": "string"
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "title": "DataColumn"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -230,7 +246,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "ds": {
+                "type": "object",
+                "title": "DataSet"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "onDataSetRelationsReady",
@@ -240,7 +267,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "getView",
@@ -261,6 +294,19 @@
               "type": "reference",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "viewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataView"
           }
         },
         {
@@ -279,6 +325,19 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "viewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataView"
           }
         },
         {
@@ -315,7 +374,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "cb": {
+                "type": "object",
+                "title": "(view: DataView) => void"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "setApi",
@@ -346,7 +416,28 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "api": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "CrudApi"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "setCrudConfig",
@@ -364,7 +455,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "title": "CrudOperationConfig"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "toJson",
@@ -374,6 +476,15 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "TableMetadata"
           }
         },
         {
@@ -396,6 +507,22 @@
             "type": "reference",
             "name": "DataTableAddColumnsResult",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "columns": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataColumn"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/DataTableAddColumnsResult"
           }
         },
         {
@@ -430,6 +557,25 @@
               "type": "intrinsic",
               "name": "string"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "columnName": {
+                "type": "string"
+              },
+              "updates": {
+                "type": "object",
+                "title": "Partial<DataColumn>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         {
@@ -448,7 +594,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "columnName": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "addRows",
@@ -469,6 +625,22 @@
           "type": {
             "type": "intrinsic",
             "name": "number"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
           }
         },
         {
@@ -487,6 +659,19 @@
           "type": {
             "type": "reference",
             "name": "unknown"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "viewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "DataView"
           }
         },
         {
@@ -505,7 +690,17 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "viewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "destroy",
@@ -515,7 +710,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
-          }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "fromJson",
@@ -557,12 +758,36 @@
             "type": "reference",
             "name": "DataTable",
             "sourcePath": "declarations/packages/spark-data/src/data-table.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "TableMetadata"
+                  },
+                  {
+                    "type": "object",
+                    "title": "Record<string, unknown>"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/DataTable"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.810Z",
+  "generatedAt": "2026-06-13T06:21:07.025Z",
   "$defs": {
     "DataTableAddColumnsResult": {
       "type": "object",

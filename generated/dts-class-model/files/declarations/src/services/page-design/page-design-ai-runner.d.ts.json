@@ -98,19 +98,28 @@
         "className": "PageDesignAiRunEvents",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "onToolCall",
           "jsdoc": "on Tool Call 事件回调。",
-          "schema": {
-            "type": "object",
-            "title": "(record: AiAgentToolCallRecord) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "record",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     },
     "PageDesignAiRunCommand": {
       "kind": "PageDesignAiRunCommand",
@@ -313,7 +322,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.924Z",
+  "generatedAt": "2026-06-13T06:21:07.197Z",
   "$defs": {
     "PageDesignAiRunOptions": {
       "type": "object",
@@ -342,13 +351,7 @@
     "PageDesignAiRunEvents": {
       "type": "object",
       "title": "PageDesignAiRunEvents",
-      "description": "DevSystem 侧 channel：仅转发 tool call 状态，不承载 stream/delta/reasoning（见 trace / spark-ai）。",
-      "properties": {
-        "onToolCall": {
-          "type": "object",
-          "title": "(record: AiAgentToolCallRecord) => void"
-        }
-      }
+      "description": "DevSystem 侧 channel：仅转发 tool call 状态，不承载 stream/delta/reasoning（见 trace / spark-ai）。"
     },
     "PageDesignAiRunCommand": {
       "type": "object",

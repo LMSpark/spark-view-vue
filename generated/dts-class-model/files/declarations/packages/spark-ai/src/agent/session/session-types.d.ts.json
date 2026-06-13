@@ -64,7 +64,63 @@
         "className": "AiAgentFunctionCallCheck",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "level",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warn"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "info"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "code",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "message",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "hint",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentFunctionCallFailure": {
@@ -86,7 +142,56 @@
         "className": "AiAgentFunctionCallFailure",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "ok",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "code",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "msg",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "fix",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "checks",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentFunctionCallResult": {
@@ -247,7 +352,71 @@
         "className": "AiAgentHistoryEntryBase",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "moduleId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleInstanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "instanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "runtimeInstanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "id",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "seq",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "timestamp",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentMessageHistoryEntry": {
@@ -274,7 +443,57 @@
         "className": "AiAgentMessageHistoryEntry",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "message"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "role",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentMessageRole"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "source",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentMessageSource"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "content",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "metadata",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentFunctionCallHistoryEntry": {
@@ -301,7 +520,80 @@
         "className": "AiAgentFunctionCallHistoryEntry",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "kind",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "functionCall"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "toolName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "args",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentFunctionCallHistoryStatus"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "completedAt",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "result",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "error",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentFunctionCallFailure"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "metadata",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentHistoryEntry": {
@@ -350,7 +642,98 @@
         "className": "AiAgentSessionRecord",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "moduleId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleInstanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "instanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "runtimeInstanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentSessionStatus"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "startedAt",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "updatedAt",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "stoppedAt",
+          "jsdoc": "",
+          "schema": {
+            "type": "number"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "reason",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "history",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentStartSessionResult": {
@@ -372,7 +755,65 @@
         "className": "AiAgentStartSessionResult",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "type": "string",
+            "enum": [
+              "Started"
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "instanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "moduleInstanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "session",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentSessionRecord"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "tools",
+          "jsdoc": "",
+          "schema": {
+            "type": "array"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "AiAgentAppendFunctionCallOptions": {
@@ -399,7 +840,68 @@
         "className": "AiAgentAppendFunctionCallOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "runtimeInstanceId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "toolName",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "args",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "status",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentFunctionCallHistoryStatus"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "result",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "error",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/AiAgentFunctionCallFailure"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "metadata",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     },
     "AiAgentSessionStore": {
@@ -432,6 +934,19 @@
             "type": "reference",
             "name": "AiAgentSessionRecord",
             "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentSessionRecord"
           }
         },
         {
@@ -470,6 +985,29 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/AiAgentSessionRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -498,6 +1036,26 @@
                 "value": null
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/AiAgentSessionRecord"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         {
@@ -508,6 +1066,14 @@
           "type": {
             "type": "unknown",
             "name": "readonly AiAgentSessionRecord[]"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array"
           }
         },
         {
@@ -526,6 +1092,19 @@
           "type": {
             "type": "unknown",
             "name": "readonly AiAgentHistoryEntry[]"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array"
           }
         },
         {
@@ -545,6 +1124,19 @@
             "type": "reference",
             "name": "AiAgentMessageHistoryEntry",
             "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object",
+                "title": "AiAgentAppendMessageOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentMessageHistoryEntry"
           }
         },
         {
@@ -565,22 +1157,87 @@
             "type": "reference",
             "name": "AiAgentFunctionCallHistoryEntry",
             "sourcePath": "declarations/packages/spark-ai/src/agent/session/session-types.d.ts"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "$ref": "#/$defs/AiAgentAppendFunctionCallOptions"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "$ref": "#/$defs/AiAgentFunctionCallHistoryEntry"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.567Z",
+  "generatedAt": "2026-06-13T06:21:06.588Z",
   "$defs": {
     "AiAgentFunctionCallCheck": {
       "type": "object",
       "title": "AiAgentFunctionCallCheck",
-      "description": "工具调用失败结果"
+      "description": "工具调用失败结果",
+      "properties": {
+        "level": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "warn"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "info"
+              ]
+            }
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        }
+      }
     },
     "AiAgentFunctionCallFailure": {
       "type": "object",
       "title": "AiAgentFunctionCallFailure",
-      "description": "Ai Agent Function Call Failure 的语义模型。"
+      "description": "Ai Agent Function Call Failure 的语义模型。",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "enum": [
+            false
+          ]
+        },
+        "code": {
+          "type": "string"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "fix": {
+          "type": "string"
+        },
+        "checks": {
+          "type": "array"
+        }
+      }
     },
     "AiAgentFunctionCallResult": {
       "type": "object",
@@ -610,17 +1267,87 @@
     "AiAgentHistoryEntryBase": {
       "type": "object",
       "title": "AiAgentHistoryEntryBase",
-      "description": "历史条目公共字段"
+      "description": "历史条目公共字段",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "runtimeInstanceId": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "seq": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      }
     },
     "AiAgentMessageHistoryEntry": {
       "type": "object",
       "title": "AiAgentMessageHistoryEntry",
-      "description": "消息历史条目（用户消息 / 助手回复 / 系统消息）"
+      "description": "消息历史条目（用户消息 / 助手回复 / 系统消息）",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "message"
+          ]
+        },
+        "role": {
+          "$ref": "#/$defs/AiAgentMessageRole"
+        },
+        "source": {
+          "$ref": "#/$defs/AiAgentMessageSource"
+        },
+        "content": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
     },
     "AiAgentFunctionCallHistoryEntry": {
       "type": "object",
       "title": "AiAgentFunctionCallHistoryEntry",
-      "description": "工具调用历史条目（OpenAI function call 记录）"
+      "description": "工具调用历史条目（OpenAI function call 记录）",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "functionCall"
+          ]
+        },
+        "toolName": {
+          "type": "string"
+        },
+        "args": true,
+        "status": {
+          "$ref": "#/$defs/AiAgentFunctionCallHistoryStatus"
+        },
+        "completedAt": {
+          "type": "number"
+        },
+        "result": true,
+        "error": {
+          "$ref": "#/$defs/AiAgentFunctionCallFailure"
+        },
+        "metadata": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
     },
     "AiAgentHistoryEntry": {
       "type": "object",
@@ -630,17 +1357,92 @@
     "AiAgentSessionRecord": {
       "type": "object",
       "title": "AiAgentSessionRecord",
-      "description": "会话记录：包含生命周期状态和历史条目，是 Agent 诊断与再次接入会话的根数据"
+      "description": "会话记录：包含生命周期状态和历史条目，是 Agent 诊断与再次接入会话的根数据",
+      "properties": {
+        "moduleId": {
+          "type": "string"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "runtimeInstanceId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/AiAgentSessionStatus"
+        },
+        "startedAt": {
+          "type": "number"
+        },
+        "updatedAt": {
+          "type": "number"
+        },
+        "stoppedAt": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "history": {
+          "type": "array"
+        }
+      }
     },
     "AiAgentStartSessionResult": {
       "type": "object",
       "title": "AiAgentStartSessionResult",
-      "description": "会话启动结果：返回给业务方的初始状态"
+      "description": "会话启动结果：返回给业务方的初始状态",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "Started"
+          ]
+        },
+        "instanceId": {
+          "type": "string"
+        },
+        "moduleId": {
+          "type": "string"
+        },
+        "moduleInstanceId": {
+          "type": "string"
+        },
+        "session": {
+          "$ref": "#/$defs/AiAgentSessionRecord"
+        },
+        "tools": {
+          "type": "array"
+        }
+      }
     },
     "AiAgentAppendFunctionCallOptions": {
       "type": "object",
       "title": "AiAgentAppendFunctionCallOptions",
-      "description": "向 sessionStore 追加工具调用记录的参数"
+      "description": "向 sessionStore 追加工具调用记录的参数",
+      "properties": {
+        "runtimeInstanceId": {
+          "type": "string"
+        },
+        "toolName": {
+          "type": "string"
+        },
+        "args": true,
+        "status": {
+          "$ref": "#/$defs/AiAgentFunctionCallHistoryStatus"
+        },
+        "result": true,
+        "error": {
+          "$ref": "#/$defs/AiAgentFunctionCallFailure"
+        },
+        "metadata": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
     },
     "AiAgentSessionStore": {
       "type": "object",

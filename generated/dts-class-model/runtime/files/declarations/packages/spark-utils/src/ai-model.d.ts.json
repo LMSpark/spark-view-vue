@@ -16,6 +16,29 @@
         "$id": "spark-class-model://schema/SparkAIModel"
       }
     },
+    "spark-class-model://model/SparkAIModel/constructors/0": {
+      "ref": "spark-class-model://model/SparkAIModel/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/SparkAIModel",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/e6e5c724d75a9332ae977c5409fdcc0d4287521a05b4a9514ee835b6c990fae6"
+    },
+    "spark-class-model://schema/shared/e6e5c724d75a9332ae977c5409fdcc0d4287521a05b4a9514ee835b6c990fae6": {
+      "ref": "spark-class-model://schema/shared/e6e5c724d75a9332ae977c5409fdcc0d4287521a05b4a9514ee835b6c990fae6",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "_options": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/e6e5c724d75a9332ae977c5409fdcc0d4287521a05b4a9514ee835b6c990fae6"
+      }
+    },
     "spark-class-model://model/SparkAIModel/methods/toJson/0": {
       "ref": "spark-class-model://model/SparkAIModel/methods/toJson/0",
       "kind": "method",
@@ -30,6 +53,7 @@
       "kind": "model",
       "className": "SparkAIModel",
       "schemaRef": "spark-class-model://schema/SparkAIModel",
+      "constructorRef": "spark-class-model://model/SparkAIModel/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/SparkAIModel/methods/toJson/0"

@@ -302,11 +302,63 @@
         "className": "DesignerTableUiStateReconcileInput",
         "declarationKind": "type"
       },
-      "attributes": [],
-      "methods": []
+      "attributes": [
+        {
+          "name": "metadata",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "DataSetMetadata"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "currentTables",
+          "jsdoc": "",
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>"
+            }
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "layoutForNewTable",
+          "jsdoc": "",
+          "schema": {
+            "$ref": "#/$defs/LayoutForNewTable"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "createId",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "string"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.928Z",
+  "generatedAt": "2026-06-13T06:21:07.204Z",
   "$defs": {
     "PageDataEditorMode": {
       "type": "object",
@@ -402,7 +454,23 @@
     "DesignerTableUiStateReconcileInput": {
       "type": "object",
       "title": "DesignerTableUiStateReconcileInput",
-      "description": "Designer Table Ui State Reconcile Input 的输入数据。"
+      "description": "Designer Table Ui State Reconcile Input 的输入数据。",
+      "properties": {
+        "metadata": {
+          "type": "object",
+          "title": "DataSetMetadata"
+        },
+        "currentTables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "title": "Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>"
+          }
+        },
+        "layoutForNewTable": {
+          "$ref": "#/$defs/LayoutForNewTable"
+        }
+      }
     }
   }
 }

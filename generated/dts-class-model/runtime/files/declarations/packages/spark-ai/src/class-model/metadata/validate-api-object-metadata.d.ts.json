@@ -13,16 +13,106 @@
       "schema": {
         "type": "object",
         "title": "ApiObjectValidationFinding",
+        "properties": {
+          "level": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "error"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "warn"
+                ]
+              }
+            ]
+          },
+          "rule": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "fix": {
+            "type": "string"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/ApiObjectValidationFinding"
       }
+    },
+    "spark-class-model://schema/shared/acf435808869a0071a5ae0732dce4f8b62a23e58ef9d5417df5be4c91b9e3c7d": {
+      "ref": "spark-class-model://schema/shared/acf435808869a0071a5ae0732dce4f8b62a23e58ef9d5417df5be4c91b9e3c7d",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          {
+            "type": "string",
+            "enum": [
+              "warn"
+            ]
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/acf435808869a0071a5ae0732dce4f8b62a23e58ef9d5417df5be4c91b9e3c7d"
+      }
+    },
+    "spark-class-model://model/ApiObjectValidationFinding/attributes/level/0": {
+      "ref": "spark-class-model://model/ApiObjectValidationFinding/attributes/level/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ApiObjectValidationFinding",
+      "name": "level",
+      "schemaRef": "spark-class-model://schema/shared/acf435808869a0071a5ae0732dce4f8b62a23e58ef9d5417df5be4c91b9e3c7d",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ApiObjectValidationFinding/attributes/rule/1": {
+      "ref": "spark-class-model://model/ApiObjectValidationFinding/attributes/rule/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ApiObjectValidationFinding",
+      "name": "rule",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ApiObjectValidationFinding/attributes/message/2": {
+      "ref": "spark-class-model://model/ApiObjectValidationFinding/attributes/message/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ApiObjectValidationFinding",
+      "name": "message",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/ApiObjectValidationFinding/attributes/fix/3": {
+      "ref": "spark-class-model://model/ApiObjectValidationFinding/attributes/fix/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/ApiObjectValidationFinding",
+      "name": "fix",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": false
     },
     "spark-class-model://model/ApiObjectValidationFinding": {
       "ref": "spark-class-model://model/ApiObjectValidationFinding",
       "kind": "model",
       "className": "ApiObjectValidationFinding",
       "schemaRef": "spark-class-model://schema/ApiObjectValidationFinding",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/ApiObjectValidationFinding/attributes/level/0",
+        "spark-class-model://model/ApiObjectValidationFinding/attributes/rule/1",
+        "spark-class-model://model/ApiObjectValidationFinding/attributes/message/2",
+        "spark-class-model://model/ApiObjectValidationFinding/attributes/fix/3"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },
@@ -62,11 +152,37 @@
       "readable": true,
       "writable": false
     },
+    "spark-class-model://model/AiApiObjectMetadataValidationError/constructors/0": {
+      "ref": "spark-class-model://model/AiApiObjectMetadataValidationError/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/AiApiObjectMetadataValidationError",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0da38bf685f09213b0c91f44922301bf5fa3388d07b1ad72b9ec3851a841feb2"
+    },
+    "spark-class-model://schema/shared/0da38bf685f09213b0c91f44922301bf5fa3388d07b1ad72b9ec3851a841feb2": {
+      "ref": "spark-class-model://schema/shared/0da38bf685f09213b0c91f44922301bf5fa3388d07b1ad72b9ec3851a841feb2",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "findings": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/0da38bf685f09213b0c91f44922301bf5fa3388d07b1ad72b9ec3851a841feb2"
+      }
+    },
     "spark-class-model://model/AiApiObjectMetadataValidationError": {
       "ref": "spark-class-model://model/AiApiObjectMetadataValidationError",
       "kind": "model",
       "className": "AiApiObjectMetadataValidationError",
       "schemaRef": "spark-class-model://schema/AiApiObjectMetadataValidationError",
+      "constructorRef": "spark-class-model://model/AiApiObjectMetadataValidationError/constructors/0",
       "attributeRefs": [
         "spark-class-model://model/AiApiObjectMetadataValidationError/attributes/kind/0",
         "spark-class-model://model/AiApiObjectMetadataValidationError/attributes/findings/1"

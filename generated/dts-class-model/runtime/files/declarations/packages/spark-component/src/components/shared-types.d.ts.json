@@ -418,10 +418,6 @@
           "placeholder": {
             "type": "string"
           },
-          "onChange": {
-            "type": "object",
-            "title": "(...args: unknown[]) => void | Promise<void>"
-          },
           "titleAlign": {
             "anyOf": [
               {
@@ -577,27 +573,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://schema/shared/acf62743f5fff2f85035d24b305fd960e1fe1558fd91dc9494635af3cc2f6c4b": {
-      "ref": "spark-class-model://schema/shared/acf62743f5fff2f85035d24b305fd960e1fe1558fd91dc9494635af3cc2f6c4b",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(...args: unknown[]) => void | Promise<void>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/acf62743f5fff2f85035d24b305fd960e1fe1558fd91dc9494635af3cc2f6c4b"
-      }
-    },
-    "spark-class-model://model/SparkFieldSemanticProps/attributes/onChange/9": {
-      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/onChange/9",
-      "kind": "attribute",
-      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
-      "name": "onChange",
-      "schemaRef": "spark-class-model://schema/shared/acf62743f5fff2f85035d24b305fd960e1fe1558fd91dc9494635af3cc2f6c4b",
-      "readable": true,
-      "writable": false
-    },
-    "spark-class-model://model/SparkFieldSemanticProps/attributes/titleAlign/10": {
-      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/titleAlign/10",
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/titleAlign/9": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/titleAlign/9",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
       "name": "titleAlign",
@@ -605,8 +582,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/SparkFieldSemanticProps/attributes/valueAlign/11": {
-      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/valueAlign/11",
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/valueAlign/10": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/valueAlign/10",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
       "name": "valueAlign",
@@ -614,8 +591,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/SparkFieldSemanticProps/attributes/headerCellClassName/12": {
-      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/headerCellClassName/12",
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/headerCellClassName/11": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/headerCellClassName/11",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
       "name": "headerCellClassName",
@@ -623,8 +600,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/SparkFieldSemanticProps/attributes/cellClassName/13": {
-      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/cellClassName/13",
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/cellClassName/12": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/cellClassName/12",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
       "name": "cellClassName",
@@ -632,8 +609,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/SparkFieldSemanticProps/attributes/titleClassName/14": {
-      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/titleClassName/14",
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/titleClassName/13": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/titleClassName/13",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
       "name": "titleClassName",
@@ -641,8 +618,8 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/SparkFieldSemanticProps/attributes/valueClassName/15": {
-      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/valueClassName/15",
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/valueClassName/14": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/valueClassName/14",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
       "name": "valueClassName",
@@ -650,14 +627,23 @@
       "readable": true,
       "writable": false
     },
-    "spark-class-model://model/SparkFieldSemanticProps/attributes/sortable/16": {
-      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/sortable/16",
+    "spark-class-model://model/SparkFieldSemanticProps/attributes/sortable/15": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/attributes/sortable/15",
       "kind": "attribute",
       "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
       "name": "sortable",
       "schemaRef": "spark-class-model://schema/shared/81ea73977bc136e64b7305cfecebd208b7e59ddd3547d85d47b5ebd911e96651",
       "readable": true,
       "writable": false
+    },
+    "spark-class-model://model/SparkFieldSemanticProps/methods/onChange/0": {
+      "ref": "spark-class-model://model/SparkFieldSemanticProps/methods/onChange/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/SparkFieldSemanticProps",
+      "name": "onChange",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
     },
     "spark-class-model://model/SparkFieldSemanticProps": {
       "ref": "spark-class-model://model/SparkFieldSemanticProps",
@@ -674,16 +660,17 @@
         "spark-class-model://model/SparkFieldSemanticProps/attributes/label/6",
         "spark-class-model://model/SparkFieldSemanticProps/attributes/readonly/7",
         "spark-class-model://model/SparkFieldSemanticProps/attributes/placeholder/8",
-        "spark-class-model://model/SparkFieldSemanticProps/attributes/onChange/9",
-        "spark-class-model://model/SparkFieldSemanticProps/attributes/titleAlign/10",
-        "spark-class-model://model/SparkFieldSemanticProps/attributes/valueAlign/11",
-        "spark-class-model://model/SparkFieldSemanticProps/attributes/headerCellClassName/12",
-        "spark-class-model://model/SparkFieldSemanticProps/attributes/cellClassName/13",
-        "spark-class-model://model/SparkFieldSemanticProps/attributes/titleClassName/14",
-        "spark-class-model://model/SparkFieldSemanticProps/attributes/valueClassName/15",
-        "spark-class-model://model/SparkFieldSemanticProps/attributes/sortable/16"
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/titleAlign/9",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/valueAlign/10",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/headerCellClassName/11",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/cellClassName/12",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/titleClassName/13",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/valueClassName/14",
+        "spark-class-model://model/SparkFieldSemanticProps/attributes/sortable/15"
       ],
-      "methodRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/SparkFieldSemanticProps/methods/onChange/0"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/SparkPrimaryActionTextProps": {
@@ -2352,76 +2339,54 @@
       "schema": {
         "type": "object",
         "title": "SparkVisibilityEventProps",
-        "properties": {
-          "onOpen": {
-            "type": "object",
-            "title": "() => void"
-          },
-          "onClose": {
-            "type": "object",
-            "title": "() => void"
-          },
-          "onOpened": {
-            "type": "object",
-            "title": "() => void"
-          },
-          "onClosed": {
-            "type": "object",
-            "title": "() => void"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/SparkVisibilityEventProps"
       }
     },
-    "spark-class-model://model/SparkVisibilityEventProps/attributes/onOpen/0": {
-      "ref": "spark-class-model://model/SparkVisibilityEventProps/attributes/onOpen/0",
-      "kind": "attribute",
+    "spark-class-model://model/SparkVisibilityEventProps/methods/onOpen/0": {
+      "ref": "spark-class-model://model/SparkVisibilityEventProps/methods/onOpen/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/SparkVisibilityEventProps",
       "name": "onOpen",
-      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://model/SparkVisibilityEventProps/attributes/onClose/1": {
-      "ref": "spark-class-model://model/SparkVisibilityEventProps/attributes/onClose/1",
-      "kind": "attribute",
+    "spark-class-model://model/SparkVisibilityEventProps/methods/onClose/1": {
+      "ref": "spark-class-model://model/SparkVisibilityEventProps/methods/onClose/1",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/SparkVisibilityEventProps",
       "name": "onClose",
-      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://model/SparkVisibilityEventProps/attributes/onOpened/2": {
-      "ref": "spark-class-model://model/SparkVisibilityEventProps/attributes/onOpened/2",
-      "kind": "attribute",
+    "spark-class-model://model/SparkVisibilityEventProps/methods/onOpened/2": {
+      "ref": "spark-class-model://model/SparkVisibilityEventProps/methods/onOpened/2",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/SparkVisibilityEventProps",
       "name": "onOpened",
-      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
-    "spark-class-model://model/SparkVisibilityEventProps/attributes/onClosed/3": {
-      "ref": "spark-class-model://model/SparkVisibilityEventProps/attributes/onClosed/3",
-      "kind": "attribute",
+    "spark-class-model://model/SparkVisibilityEventProps/methods/onClosed/3": {
+      "ref": "spark-class-model://model/SparkVisibilityEventProps/methods/onClosed/3",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/SparkVisibilityEventProps",
       "name": "onClosed",
-      "schemaRef": "spark-class-model://schema/shared/79b9632a7567714b4f35d7877e585587e74a7b3077e09185a009d84c5f810839",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa"
     },
     "spark-class-model://model/SparkVisibilityEventProps": {
       "ref": "spark-class-model://model/SparkVisibilityEventProps",
       "kind": "model",
       "className": "SparkVisibilityEventProps",
       "schemaRef": "spark-class-model://schema/SparkVisibilityEventProps",
-      "attributeRefs": [
-        "spark-class-model://model/SparkVisibilityEventProps/attributes/onOpen/0",
-        "spark-class-model://model/SparkVisibilityEventProps/attributes/onClose/1",
-        "spark-class-model://model/SparkVisibilityEventProps/attributes/onOpened/2",
-        "spark-class-model://model/SparkVisibilityEventProps/attributes/onClosed/3"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/SparkVisibilityEventProps/methods/onOpen/0",
+        "spark-class-model://model/SparkVisibilityEventProps/methods/onClose/1",
+        "spark-class-model://model/SparkVisibilityEventProps/methods/onOpened/2",
+        "spark-class-model://model/SparkVisibilityEventProps/methods/onClosed/3"
       ],
-      "methodRefs": [],
       "linkRefs": []
     },
     "spark-class-model://schema/SparkVisibilityContainerProps": {

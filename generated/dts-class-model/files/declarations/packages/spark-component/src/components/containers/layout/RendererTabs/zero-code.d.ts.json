@@ -92,16 +92,6 @@
           "writable": true
         },
         {
-          "name": "getPaneName",
-          "jsdoc": "get Pane Name 名称。",
-          "schema": {
-            "type": "object",
-            "title": "(pane: SparkNode, index: number) => string | number"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "onTabChange",
           "jsdoc": "on Tab Change 事件回调。",
           "schema": {
@@ -112,10 +102,68 @@
           "writable": true
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "getPaneName",
+          "jsdoc": "get Pane Name 名称。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "pane",
+              "type": {
+                "type": "reference",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "index",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pane": {
+                "type": "object",
+                "title": "SparkNode"
+              },
+              "index": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.685Z",
+  "generatedAt": "2026-06-13T06:21:06.825Z",
   "$defs": {
     "TabsEmit": {
       "type": "object",
@@ -137,10 +185,6 @@
         "paneConfigs": {
           "type": "object",
           "title": "ValueRef<SparkNode[]>"
-        },
-        "getPaneName": {
-          "type": "object",
-          "title": "(pane: SparkNode, index: number) => string | number"
         },
         "onTabChange": {
           "type": "object",

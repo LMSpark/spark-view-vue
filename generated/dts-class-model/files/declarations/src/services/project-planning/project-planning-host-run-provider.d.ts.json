@@ -36,15 +36,44 @@
         "className": "ProjectPlanningDeliveryContext",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "editor",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "ProjectWorkspace"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "saveNavigationAfterRun",
+          "jsdoc": "",
+          "schema": {
+            "type": "boolean"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.930Z",
+  "generatedAt": "2026-06-13T06:21:07.207Z",
   "$defs": {
     "ProjectPlanningDeliveryContext": {
       "type": "object",
-      "title": "ProjectPlanningDeliveryContext"
+      "title": "ProjectPlanningDeliveryContext",
+      "properties": {
+        "editor": {
+          "type": "object",
+          "title": "ProjectWorkspace"
+        },
+        "saveNavigationAfterRun": {
+          "type": "boolean"
+        }
+      }
     }
   }
 }

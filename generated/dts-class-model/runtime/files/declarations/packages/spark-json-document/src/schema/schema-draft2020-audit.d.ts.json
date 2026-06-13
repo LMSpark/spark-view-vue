@@ -12,16 +12,58 @@
       "schema": {
         "type": "object",
         "title": "Draft2020AuditIssue",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/Draft2020AuditIssue"
       }
+    },
+    "spark-class-model://model/Draft2020AuditIssue/attributes/path/0": {
+      "ref": "spark-class-model://model/Draft2020AuditIssue/attributes/path/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Draft2020AuditIssue",
+      "name": "path",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/Draft2020AuditIssue/attributes/rule/1": {
+      "ref": "spark-class-model://model/Draft2020AuditIssue/attributes/rule/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Draft2020AuditIssue",
+      "name": "rule",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/Draft2020AuditIssue/attributes/detail/2": {
+      "ref": "spark-class-model://model/Draft2020AuditIssue/attributes/detail/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/Draft2020AuditIssue",
+      "name": "detail",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
     },
     "spark-class-model://model/Draft2020AuditIssue": {
       "ref": "spark-class-model://model/Draft2020AuditIssue",
       "kind": "model",
       "className": "Draft2020AuditIssue",
       "schemaRef": "spark-class-model://schema/Draft2020AuditIssue",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/Draft2020AuditIssue/attributes/path/0",
+        "spark-class-model://model/Draft2020AuditIssue/attributes/rule/1",
+        "spark-class-model://model/Draft2020AuditIssue/attributes/detail/2"
+      ],
       "methodRefs": [],
       "linkRefs": []
     }

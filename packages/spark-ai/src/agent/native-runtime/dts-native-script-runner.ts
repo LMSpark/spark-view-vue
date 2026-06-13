@@ -145,7 +145,7 @@ function createApiFromSurface(
       .map((method) => {
         if (method.paramsSchema === undefined) {
           throw new Error(
-            `DTS method "${model.className}.${method.name}" only preserves signatureText; executable paramsSchema must come from runtime metadata.`,
+            `DTS method "${model.className}.${method.name}" must preserve executable paramsSchema in the DTS bundle.`,
           )
         }
         return {
@@ -212,7 +212,7 @@ function requiredConstructorParamsSchema(
 ): AiJsonSchemaObject {
   if (constructorMeta.paramsSchema === undefined) {
     throw new Error(
-      `DTS constructor "${className}" only preserves signatureText; executable paramsSchema must come from runtime metadata.`,
+      `DTS constructor "${className}" must preserve executable paramsSchema in the DTS bundle.`,
     )
   }
   return constructorMeta.paramsSchema
@@ -254,7 +254,32 @@ function resolveSchemaClassName(
   schema: AiJsonSchema | undefined,
 ): string | undefined {
   if (schema === undefined || schema === true || schema === false || typeof schema !== 'object') return undefined
-  return resolveClassNameFromTypeText(surface, schema.title)
+  return resolveClassNameFromSchemaRef(surface, schema.$ref)
+    ?? resolveClassNameFromTypeText(surface, schema.title)
+    ?? resolveClassNameFromSchema(surface, schema.items)
+    ?? firstDefined(Object.values(schema.properties ?? {}).map(child => resolveClassNameFromSchema(surface, child)))
+    ?? firstDefined((schema.anyOf ?? []).map(child => resolveClassNameFromSchema(surface, child)))
+    ?? firstDefined((schema.oneOf ?? []).map(child => resolveClassNameFromSchema(surface, child)))
+    ?? firstDefined((schema.allOf ?? []).map(child => resolveClassNameFromSchema(surface, child)))
+}
+
+function resolveClassNameFromSchema(
+  surface: DtsClassModelSurfaceDocument,
+  schema: AiJsonSchema | undefined,
+): string | undefined {
+  return resolveSchemaClassName(surface, schema)
+}
+
+function resolveClassNameFromSchemaRef(
+  surface: DtsClassModelSurfaceDocument,
+  ref: unknown,
+): string | undefined {
+  if (typeof ref !== 'string' || ref.length === 0) return undefined
+  const marker = '#/$defs/'
+  const markerIndex = ref.indexOf(marker)
+  if (markerIndex < 0) return undefined
+  const className = decodeJsonPointerToken(ref.slice(markerIndex + marker.length))
+  return surface.models[className] === undefined ? undefined : className
 }
 
 function resolveClassNameFromTypeText(
@@ -269,6 +294,10 @@ function resolveClassNameFromTypeText(
 function containsTypeReference(typeText: string, className: string): boolean {
   const escaped = className.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   return new RegExp(`\\b${escaped}\\b`, 'u').test(typeText)
+}
+
+function decodeJsonPointerToken(value: string): string {
+  return value.replaceAll('~1', '/').replaceAll('~0', '~')
 }
 
 function summarizeJsDoc(jsdoc: string): string {

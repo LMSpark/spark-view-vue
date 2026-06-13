@@ -43,8 +43,78 @@
         "className": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
-      "methods": []
+      "attributes": [
+        {
+          "name": "workerUrl",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "title": "URL"
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "workerOptions",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "WorkerOptions"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
+      "methods": [
+        {
+          "name": "createWorker",
+          "jsdoc": "",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "url",
+              "type": {
+                "type": "union",
+                "types": [
+                  {
+                    "type": "intrinsic",
+                    "name": "string"
+                  },
+                  {
+                    "type": "reference",
+                    "name": "URL"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "options",
+              "type": {
+                "type": "reference",
+                "name": "WorkerOptions"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Worker"
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Worker"
+          }
+        }
+      ]
     },
     "WorkerClassModelKnowledgeProvider": {
       "kind": "WorkerClassModelKnowledgeProvider",
@@ -83,7 +153,21 @@
               "name": "unknown"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "worker": {
+              "type": "object",
+              "title": "Worker"
+            },
+            "init": {
+              "type": "object",
+              "title": "ClassModelKnowledgeWorkerInitInput"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [],
       "methods": [
@@ -109,6 +193,20 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ClassModelKnowledgeQueryInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiJsonValue>"
           }
         },
         {
@@ -133,6 +231,20 @@
                 "name": "string"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ClassModelModelGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<string>"
           }
         },
         {
@@ -157,6 +269,20 @@
                 "name": "string"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ClassModelAttributeGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<string>"
           }
         },
         {
@@ -181,17 +307,48 @@
                 "name": "string"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "ClassModelMethodGuideInput"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<string>"
           }
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.590Z",
+  "generatedAt": "2026-06-13T06:21:06.661Z",
   "$defs": {
     "CreateWorkerDtsClassModelKnowledgeProviderOptions": {
       "type": "object",
       "title": "CreateWorkerDtsClassModelKnowledgeProviderOptions",
-      "description": "Create Worker Dts Class Model Knowledge Provider Options 的调用配置。"
+      "description": "Create Worker Dts Class Model Knowledge Provider Options 的调用配置。",
+      "properties": {
+        "workerUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "title": "URL"
+            }
+          ]
+        },
+        "workerOptions": {
+          "type": "object",
+          "title": "WorkerOptions"
+        }
+      }
     },
     "WorkerClassModelKnowledgeProvider": {
       "type": "object",

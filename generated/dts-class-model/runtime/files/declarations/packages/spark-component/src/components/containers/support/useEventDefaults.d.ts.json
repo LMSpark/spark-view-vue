@@ -15,44 +15,28 @@
       "schema": {
         "type": "object",
         "title": "EventDefaultDeclaration",
-        "properties": {
-          "systemDefault": {
-            "type": "object",
-            "title": "(...args: TArgs) => void | Promise<void>"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/EventDefaultDeclaration"
       }
     },
-    "spark-class-model://schema/shared/990a206ca38ff94921fc61157480ae9f3a706ad5d8b6a7e9a2b6274d1d6e1bb0": {
-      "ref": "spark-class-model://schema/shared/990a206ca38ff94921fc61157480ae9f3a706ad5d8b6a7e9a2b6274d1d6e1bb0",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(...args: TArgs) => void | Promise<void>",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/990a206ca38ff94921fc61157480ae9f3a706ad5d8b6a7e9a2b6274d1d6e1bb0"
-      }
-    },
-    "spark-class-model://model/EventDefaultDeclaration/attributes/systemDefault/0": {
-      "ref": "spark-class-model://model/EventDefaultDeclaration/attributes/systemDefault/0",
-      "kind": "attribute",
+    "spark-class-model://model/EventDefaultDeclaration/methods/systemDefault/0": {
+      "ref": "spark-class-model://model/EventDefaultDeclaration/methods/systemDefault/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/EventDefaultDeclaration",
       "name": "systemDefault",
-      "schemaRef": "spark-class-model://schema/shared/990a206ca38ff94921fc61157480ae9f3a706ad5d8b6a7e9a2b6274d1d6e1bb0",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
     },
     "spark-class-model://model/EventDefaultDeclaration": {
       "ref": "spark-class-model://model/EventDefaultDeclaration",
       "kind": "model",
       "className": "EventDefaultDeclaration",
       "schemaRef": "spark-class-model://schema/EventDefaultDeclaration",
-      "attributeRefs": [
-        "spark-class-model://model/EventDefaultDeclaration/attributes/systemDefault/0"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/EventDefaultDeclaration/methods/systemDefault/0"
       ],
-      "methodRefs": [],
       "linkRefs": []
     },
     "spark-class-model://schema/EventArgsMap": {

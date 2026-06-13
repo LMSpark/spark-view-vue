@@ -36,16 +36,55 @@
         "className": "Draft2020AuditIssue",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "path",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "rule",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "detail",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.862Z",
+  "generatedAt": "2026-06-13T06:21:07.113Z",
   "$defs": {
     "Draft2020AuditIssue": {
       "type": "object",
       "title": "Draft2020AuditIssue",
-      "description": "Draft2020 Audit Issue 的语义模型。"
+      "description": "Draft2020 Audit Issue 的语义模型。",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "rule": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        }
+      }
     }
   }
 }

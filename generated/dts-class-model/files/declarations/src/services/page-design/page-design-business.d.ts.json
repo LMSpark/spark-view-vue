@@ -178,16 +178,6 @@
           "writable": true
         },
         {
-          "name": "getPageDesignEditor",
-          "jsdoc": "get Page Design Editor 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace"
-          },
-          "readable": true,
-          "writable": true
-        },
-        {
           "name": "knowledge",
           "jsdoc": "Node/E2E 可注入非 Worker knowledge provider；浏览器生产默认使用 Worker provider。",
           "schema": {
@@ -198,10 +188,42 @@
           "writable": false
         }
       ],
-      "methods": []
+      "methods": [
+        {
+          "name": "getPageDesignEditor",
+          "jsdoc": "get Page Design Editor 回调。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "context",
+              "type": {
+                "type": "unknown",
+                "name": "{\n        moduleInstanceId: string;\n    }"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "ProjectWorkspace"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "ProjectWorkspace"
+          }
+        }
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.925Z",
+  "generatedAt": "2026-06-13T06:21:07.198Z",
   "$defs": {
     "PageDesignRunInput": {
       "type": "object",
@@ -260,10 +282,6 @@
         "host": {
           "type": "object",
           "title": "AiAgentHost"
-        },
-        "getPageDesignEditor": {
-          "type": "object",
-          "title": "(context: {\n        moduleInstanceId: string;\n    }) => ProjectWorkspace"
         },
         "knowledge": {
           "type": "object",

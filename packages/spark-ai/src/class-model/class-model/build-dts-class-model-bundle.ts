@@ -17,6 +17,7 @@ import {
   DTS_CLASS_MODEL_RUNTIME_VERSION,
   type DtsFileModuleSemanticMeta,
   type DtsClassModelRuntimeClassEntry,
+  type DtsClassModelRuntimeConstructor,
   type DtsClassModelRuntimeLink,
   type DtsClassModelRuntimeManifest,
   type DtsClassModelRuntimeMethod,
@@ -104,6 +105,11 @@ type RuntimeMethodRefs = Readonly<{
   method: DtsClassModelRuntimeMethod
   paramsSchema: RuntimePooledSchema
   returnSchema?: RuntimePooledSchema
+}>
+
+type RuntimeConstructorRefs = Readonly<{
+  constructor: DtsClassModelRuntimeConstructor
+  paramsSchema: RuntimePooledSchema
 }>
 
 type RuntimeSharedSchemaPool = Readonly<{
@@ -404,22 +410,29 @@ function compactClassModelForBundle(model: ClassModel, refContext: BundleSchemaR
     ...model,
     ...(model.constructorMeta === undefined
       ? {}
-      : { constructorMeta: compactConstructorMetaForBundle(model.constructorMeta) }),
+      : { constructorMeta: compactConstructorMetaForBundle(model.constructorMeta, refContext) }),
     attributes: model.attributes.map(attribute => compactAttributeMetaForBundle(attribute, refContext)),
-    methods: model.methods.map(compactMethodMetaForBundle),
+    methods: model.methods.map(method => compactMethodMetaForBundle(method, refContext)),
   }
 }
 
-function compactConstructorMetaForBundle(constructorMeta: ConstructorMeta): ConstructorMeta {
+function compactConstructorMetaForBundle(
+  constructorMeta: ConstructorMeta,
+  refContext: BundleSchemaRefContext,
+): ConstructorMeta {
   const signatureText = constructorMeta.signatureText?.trim()
   if (signatureText === undefined || signatureText.length === 0) {
     throw new Error('DTS constructor is missing signatureText')
   }
+  const paramsSchema = constructorMeta.paramsSchema === undefined
+    ? undefined
+    : referenceSchemaObjectForBundle(constructorMeta.paramsSchema, refContext)
   return {
     jsdoc: constructorMeta.jsdoc,
     signatureText,
     parameterStyle: constructorMeta.parameterStyle ?? 'positional',
     parameters: constructorMeta.parameters ?? [],
+    ...(paramsSchema === undefined ? {} : { paramsSchema }),
   }
 }
 
@@ -436,18 +449,26 @@ function compactAttributeMetaForBundle(
   }
 }
 
-function compactMethodMetaForBundle(method: MethodMeta): MethodMeta {
+function compactMethodMetaForBundle(method: MethodMeta, refContext: BundleSchemaRefContext): MethodMeta {
   const parameters = method.parameters ?? []
   const typeMeta = resolveMethodReturnType(method)
   if (typeMeta === undefined) {
     throw new Error(`DTS method is missing type: ${method.name}`)
   }
+  const paramsSchema = method.paramsSchema === undefined
+    ? undefined
+    : referenceSchemaObjectForBundle(method.paramsSchema, refContext)
+  const returnSchema = method.returnSchema === undefined
+    ? undefined
+    : referenceSchemaForBundle(method.returnSchema, refContext)
   const compact: MethodMeta = {
     name: method.name,
     jsdoc: method.jsdoc,
     parameterStyle: method.parameterStyle ?? 'positional',
     parameters,
     type: typeMeta,
+    ...(paramsSchema === undefined ? {} : { paramsSchema }),
+    ...(returnSchema === undefined ? {} : { returnSchema }),
     ...(method.takesContext === undefined ? {} : { takesContext: method.takesContext }),
   }
   if (canRenderMethodSignatureFromTypeTree(compact)) {
@@ -575,6 +596,7 @@ function createRuntimeModel(
   const methodRefs: string[] = []
   const linkRefs: string[] = []
   const seenLinks = new Set<string>()
+  let constructorRef: string | undefined
 
   model.attributes.forEach((attribute, index) => {
     const attributeRef = runtimeAttributeRef(model.className, attribute.name, index)
@@ -601,6 +623,35 @@ function createRuntimeModel(
       seenLinks,
     })
   })
+
+  if (model.constructorMeta !== undefined) {
+    const runtimeConstructor = createRuntimeConstructor(modelRef, model.className, model.constructorMeta, context)
+    refs[runtimeConstructor.constructor.ref] = runtimeConstructor.constructor
+    if (runtimeConstructor.paramsSchema.schemaNode !== undefined) {
+      refs[runtimeConstructor.paramsSchema.schemaRef] = runtimeConstructor.paramsSchema.schemaNode
+    }
+    constructorRef = runtimeConstructor.constructor.ref
+    for (const parameter of model.constructorMeta.parameters ?? []) {
+      collectRuntimeLinksFromTypeMeta({
+        typeMeta: parameter.type,
+        fromRef: runtimeConstructor.constructor.ref,
+        relation: 'constructor-parameter',
+        context,
+        refs,
+        linkRefs,
+        seenLinks,
+      })
+    }
+    collectRuntimeLinksFromSchema({
+      schema: runtimeConstructor.paramsSchema.schema,
+      fromRef: runtimeConstructor.constructor.ref,
+      relation: 'constructor-parameter',
+      context,
+      refs,
+      linkRefs,
+      seenLinks,
+    })
+  }
 
   model.methods.forEach((method, index) => {
     const runtimeMethod = createRuntimeMethod(modelRef, model.className, method, index, context)
@@ -657,11 +708,32 @@ function createRuntimeModel(
     kind: 'model',
     className: model.className,
     schemaRef,
+    ...(constructorRef === undefined ? {} : { constructorRef }),
     attributeRefs,
     methodRefs,
     linkRefs,
   }
   return refs
+}
+
+function createRuntimeConstructor(
+  ownerRef: string,
+  className: string,
+  constructorMeta: ConstructorMeta,
+  context: RuntimeBundleContext,
+): RuntimeConstructorRefs {
+  const constructorRef = runtimeConstructorRef(className)
+  const paramsSchema = poolRuntimeSchemaForBundle(runtimeParamsSchemaForConstructor(constructorMeta, context), context)
+  return {
+    constructor: {
+      ref: constructorRef,
+      kind: 'constructor',
+      ownerRef,
+      parameterStyle: constructorMeta.parameterStyle ?? 'positional',
+      paramsSchemaRef: paramsSchema.schemaRef,
+    },
+    paramsSchema,
+  }
 }
 
 function createRuntimeMethod(
@@ -743,6 +815,24 @@ function runtimeClassSchemaForBundle(
     title: model.className,
     ...(Object.keys(properties).length === 0 ? {} : { properties }),
   }, schemaRef)
+}
+
+function runtimeParamsSchemaForConstructor(
+  constructorMeta: ConstructorMeta,
+  context: RuntimeBundleContext,
+): AiJsonSchemaObject {
+  const schema = constructorMeta.paramsSchema ?? {
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  }
+  const referenced = referenceSchemaObjectForRuntime(schema, context)
+  return {
+    ...referenced,
+    type: referenced.type ?? 'object',
+    properties: referenced.properties ?? {},
+    additionalProperties: referenced.additionalProperties ?? false,
+  }
 }
 
 function runtimeParamsSchemaForMethod(
@@ -1126,6 +1216,10 @@ function runtimeAttributeRef(className: string, attributeName: string, attribute
   return `${runtimeModelRef(className)}/attributes/${encodeURIComponent(attributeName)}/${String(attributeIndex)}`
 }
 
+function runtimeConstructorRef(className: string): string {
+  return `${runtimeModelRef(className)}/constructors/0`
+}
+
 function runtimeMethodRef(className: string, methodName: string, methodIndex: number): string {
   return `${runtimeModelRef(className)}/methods/${encodeURIComponent(methodName)}/${String(methodIndex)}`
 }
@@ -1188,6 +1282,14 @@ function referenceRequiredSchemaForBundle(
   refContext: BundleSchemaRefContext,
 ): AiJsonSchema {
   return referenceSchemaForBundle(schema, refContext) ?? true
+}
+
+function referenceSchemaObjectForBundle(
+  schema: AiJsonSchemaObject,
+  refContext: BundleSchemaRefContext,
+): AiJsonSchemaObject {
+  const referenced = referenceSchemaForBundle(schema, refContext)
+  return isJsonSchemaObject(referenced) ? referenced : {}
 }
 
 function referenceSchemaForBundle(

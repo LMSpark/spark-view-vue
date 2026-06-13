@@ -16,14 +16,401 @@
         "$id": "spark-class-model://schema/RendererTreeApi"
       }
     },
+    "spark-class-model://model/RendererTreeApi/methods/getTreeData/0": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/getTreeData/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "getTreeData",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/a0c983f3670811a4d09e154cbf801128a113a8c1b30ce1084cea83c58500c3d3"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FgetTreeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FgetTreeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererTreeApi/methods/getTreeData/0",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/RendererTreeApi/methods/getNativeTree/1": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/getNativeTree/1",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "getNativeTree",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    "spark-class-model://model/RendererTreeApi/methods/getCurrentNode/2": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/getCurrentNode/2",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "getCurrentNode",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/3fca7935715ce1bc7a9eb176303d6946df39828f4b54088be9fd2f262735b5a8"
+    },
+    "spark-class-model://schema/shared/3fca7935715ce1bc7a9eb176303d6946df39828f4b54088be9fd2f262735b5a8": {
+      "ref": "spark-class-model://schema/shared/3fca7935715ce1bc7a9eb176303d6946df39828f4b54088be9fd2f262735b5a8",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "$ref": "spark-class-model://schema/DataRow"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/3fca7935715ce1bc7a9eb176303d6946df39828f4b54088be9fd2f262735b5a8"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FgetCurrentNode%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FgetCurrentNode%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererTreeApi/methods/getCurrentNode/2",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/RendererTreeApi/methods/setCurrentKey/3": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/setCurrentKey/3",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "setCurrentKey",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0119cda19ed3874fc38244829f74cb6091d13fbb4d8926d88031b038f6670998"
+    },
+    "spark-class-model://model/RendererTreeApi/methods/expandToNode/4": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/expandToNode/4",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "expandToNode",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0119cda19ed3874fc38244829f74cb6091d13fbb4d8926d88031b038f6670998",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
+    },
+    "spark-class-model://model/RendererTreeApi/methods/filter/5": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/filter/5",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "filter",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/df24e229caad3b362e649f664be149c87630f9fb1e406bd76e3c920378937edf"
+    },
+    "spark-class-model://schema/shared/df24e229caad3b362e649f664be149c87630f9fb1e406bd76e3c920378937edf": {
+      "ref": "spark-class-model://schema/shared/df24e229caad3b362e649f664be149c87630f9fb1e406bd76e3c920378937edf",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/df24e229caad3b362e649f664be149c87630f9fb1e406bd76e3c920378937edf"
+      }
+    },
+    "spark-class-model://model/RendererTreeApi/methods/getCheckedNodes/6": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/getCheckedNodes/6",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "getCheckedNodes",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/4ff6594790caac14a50f6799e0b1ad64495520eca21c0cf41ba2d953f5d47b95",
+      "returnSchemaRef": "spark-class-model://schema/shared/a0c983f3670811a4d09e154cbf801128a113a8c1b30ce1084cea83c58500c3d3"
+    },
+    "spark-class-model://schema/shared/4ff6594790caac14a50f6799e0b1ad64495520eca21c0cf41ba2d953f5d47b95": {
+      "ref": "spark-class-model://schema/shared/4ff6594790caac14a50f6799e0b1ad64495520eca21c0cf41ba2d953f5d47b95",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "leafOnly": {
+            "type": "boolean"
+          },
+          "includeHalfChecked": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/4ff6594790caac14a50f6799e0b1ad64495520eca21c0cf41ba2d953f5d47b95"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FgetCheckedNodes%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FgetCheckedNodes%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererTreeApi/methods/getCheckedNodes/6",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/RendererTreeApi/methods/getCheckedKeys/7": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/getCheckedKeys/7",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "getCheckedKeys",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/8dcb03fce87aa95b9173b2842fd287a9a41924f3f7e8610d82895c3844fbd627"
+    },
+    "spark-class-model://model/RendererTreeApi/methods/setCheckedKeys/8": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/setCheckedKeys/8",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "setCheckedKeys",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/6792de8de20636eb64f7b89cea14d039388849b9745db76d91a8cf158fc5b0a7"
+    },
+    "spark-class-model://schema/shared/6792de8de20636eb64f7b89cea14d039388849b9745db76d91a8cf158fc5b0a7": {
+      "ref": "spark-class-model://schema/shared/6792de8de20636eb64f7b89cea14d039388849b9745db76d91a8cf158fc5b0a7",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "keys": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/6792de8de20636eb64f7b89cea14d039388849b9745db76d91a8cf158fc5b0a7"
+      }
+    },
+    "spark-class-model://model/RendererTreeApi/methods/moveNode/9": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/moveNode/9",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "moveNode",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ab1ffaffec9f328ec8005ca597c173423a141dabfa68df2a92e187ce2b69a41c",
+      "returnSchemaRef": "spark-class-model://schema/shared/f3e18958d35e88cdc5d23683f5f47524a5375da6c31eb3a5473b0eb0848b1bd2"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FmoveNode%2F9/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FmoveNode%2F9/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererTreeApi/methods/moveNode/9",
+      "relation": "method-return",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/RendererTreeApi/methods/appendNode/10": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/appendNode/10",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "appendNode",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/cd2d855c11be7da1e28549d403480a92d9d720591d92d3494e6241986a6c29da"
+    },
+    "spark-class-model://schema/shared/cd2d855c11be7da1e28549d403480a92d9d720591d92d3494e6241986a6c29da": {
+      "ref": "spark-class-model://schema/shared/cd2d855c11be7da1e28549d403480a92d9d720591d92d3494e6241986a6c29da",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "parentKey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "nodeData": {
+            "$ref": "spark-class-model://schema/DataRow"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/cd2d855c11be7da1e28549d403480a92d9d720591d92d3494e6241986a6c29da"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FappendNode%2F10/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FappendNode%2F10/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererTreeApi/methods/appendNode/10",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/RendererTreeApi/methods/insertBefore/11": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/insertBefore/11",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "insertBefore",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/9712755c59f8540ca12566b953e9379b4e8c22e45b218d51c946efcc89b1c8cd"
+    },
+    "spark-class-model://schema/shared/9712755c59f8540ca12566b953e9379b4e8c22e45b218d51c946efcc89b1c8cd": {
+      "ref": "spark-class-model://schema/shared/9712755c59f8540ca12566b953e9379b4e8c22e45b218d51c946efcc89b1c8cd",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "refKey": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "nodeData": {
+            "$ref": "spark-class-model://schema/DataRow"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/9712755c59f8540ca12566b953e9379b4e8c22e45b218d51c946efcc89b1c8cd"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FinsertBefore%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FinsertBefore%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererTreeApi/methods/insertBefore/11",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/RendererTreeApi/methods/insertAfter/12": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/insertAfter/12",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "insertAfter",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/9712755c59f8540ca12566b953e9379b4e8c22e45b218d51c946efcc89b1c8cd"
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FinsertAfter%2F12/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FinsertAfter%2F12/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererTreeApi/methods/insertAfter/12",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/RendererTreeApi/methods/updateNode/13": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/updateNode/13",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "updateNode",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/8b4d964699153b91c25f32e00f985d96a34d04cbe7ac33191a918d6d0d51a3c3",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
+    "spark-class-model://schema/shared/8b4d964699153b91c25f32e00f985d96a34d04cbe7ac33191a918d6d0d51a3c3": {
+      "ref": "spark-class-model://schema/shared/8b4d964699153b91c25f32e00f985d96a34d04cbe7ac33191a918d6d0d51a3c3",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "patch": {
+            "type": "object",
+            "title": "Partial<DataRow>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/8b4d964699153b91c25f32e00f985d96a34d04cbe7ac33191a918d6d0d51a3c3"
+      }
+    },
+    "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FupdateNode%2F13/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow": {
+      "ref": "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FupdateNode%2F13/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+      "kind": "link",
+      "fromRef": "spark-class-model://model/RendererTreeApi/methods/updateNode/13",
+      "relation": "method-parameter",
+      "targetModelRef": "spark-class-model://model/DataRow",
+      "targetClassName": "DataRow",
+      "targetFile": "files/declarations/packages/spark-data/src/types.d.ts.json",
+      "targetSchemaRef": "spark-class-model://schema/DataRow"
+    },
+    "spark-class-model://model/RendererTreeApi/methods/removeNode/14": {
+      "ref": "spark-class-model://model/RendererTreeApi/methods/removeNode/14",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/RendererTreeApi",
+      "name": "removeNode",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/0119cda19ed3874fc38244829f74cb6091d13fbb4d8926d88031b038f6670998",
+      "returnSchemaRef": "spark-class-model://schema/shared/7cb541e84f226754a46c21c79f131fa2898354e1242456e6fd1c162bce319553"
+    },
     "spark-class-model://model/RendererTreeApi": {
       "ref": "spark-class-model://model/RendererTreeApi",
       "kind": "model",
       "className": "RendererTreeApi",
       "schemaRef": "spark-class-model://schema/RendererTreeApi",
       "attributeRefs": [],
-      "methodRefs": [],
-      "linkRefs": []
+      "methodRefs": [
+        "spark-class-model://model/RendererTreeApi/methods/getTreeData/0",
+        "spark-class-model://model/RendererTreeApi/methods/getNativeTree/1",
+        "spark-class-model://model/RendererTreeApi/methods/getCurrentNode/2",
+        "spark-class-model://model/RendererTreeApi/methods/setCurrentKey/3",
+        "spark-class-model://model/RendererTreeApi/methods/expandToNode/4",
+        "spark-class-model://model/RendererTreeApi/methods/filter/5",
+        "spark-class-model://model/RendererTreeApi/methods/getCheckedNodes/6",
+        "spark-class-model://model/RendererTreeApi/methods/getCheckedKeys/7",
+        "spark-class-model://model/RendererTreeApi/methods/setCheckedKeys/8",
+        "spark-class-model://model/RendererTreeApi/methods/moveNode/9",
+        "spark-class-model://model/RendererTreeApi/methods/appendNode/10",
+        "spark-class-model://model/RendererTreeApi/methods/insertBefore/11",
+        "spark-class-model://model/RendererTreeApi/methods/insertAfter/12",
+        "spark-class-model://model/RendererTreeApi/methods/updateNode/13",
+        "spark-class-model://model/RendererTreeApi/methods/removeNode/14"
+      ],
+      "linkRefs": [
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FgetTreeData%2F0/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FgetCurrentNode%2F2/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FgetCheckedNodes%2F6/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FmoveNode%2F9/method-return/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FappendNode%2F10/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FinsertBefore%2F11/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FinsertAfter%2F12/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow",
+        "spark-class-model://link/spark-class-model%3A%2F%2Fmodel%2FRendererTreeApi%2Fmethods%2FupdateNode%2F13/method-parameter/spark-class-model%3A%2F%2Fmodel%2FDataRow"
+      ]
     }
   }
 }

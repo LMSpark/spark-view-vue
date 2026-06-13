@@ -103,22 +103,67 @@
           },
           "readable": true,
           "writable": false
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "validator",
           "jsdoc": "validator 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(rule: unknown, value: unknown, callback: (error?: Error) => void) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rule",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "value",
+              "type": {
+                "type": "intrinsic",
+                "name": "unknown"
+              }
+            },
+            {
+              "name": "callback",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "error",
+                          "type": {
+                            "type": "reference",
+                            "name": "Error"
+                          },
+                          "flags": {
+                            "isOptional": true
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": false
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.730Z",
+  "generatedAt": "2026-06-13T06:21:06.905Z",
   "$defs": {
     "FormItemRule": {
       "type": "object",
@@ -156,10 +201,6 @@
         "pattern": {
           "type": "object",
           "title": "RegExp"
-        },
-        "validator": {
-          "type": "object",
-          "title": "(rule: unknown, value: unknown, callback: (error?: Error) => void) => void"
         }
       }
     }

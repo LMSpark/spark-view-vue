@@ -14,16 +14,32 @@
       "schema": {
         "type": "object",
         "title": "AiBusinessIdOptions",
+        "properties": {
+          "businessId": {
+            "type": "string"
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiBusinessIdOptions"
       }
+    },
+    "spark-class-model://model/AiBusinessIdOptions/attributes/businessId/0": {
+      "ref": "spark-class-model://model/AiBusinessIdOptions/attributes/businessId/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiBusinessIdOptions",
+      "name": "businessId",
+      "schemaRef": "spark-class-model://schema/shared/00404e686415370f1711c4d7acfa2905444d3cf23cef2e10c47d445ebe690f96",
+      "readable": true,
+      "writable": true
     },
     "spark-class-model://model/AiBusinessIdOptions": {
       "ref": "spark-class-model://model/AiBusinessIdOptions",
       "kind": "model",
       "className": "AiBusinessIdOptions",
       "schemaRef": "spark-class-model://schema/AiBusinessIdOptions",
-      "attributeRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiBusinessIdOptions/attributes/businessId/0"
+      ],
       "methodRefs": [],
       "linkRefs": []
     },
@@ -33,17 +49,191 @@
       "schema": {
         "type": "object",
         "title": "AiBusinessInputOptions",
+        "properties": {
+          "paramsSchema": {
+            "type": "object",
+            "title": "AiJsonSchemaObject"
+          },
+          "identityField": true,
+          "messageField": true,
+          "systemPrompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "title": "(input: TInput) => string"
+              }
+            ]
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "title": "(input: TInput) => string | undefined"
+              }
+            ]
+          },
+          "readonlySteps": {
+            "anyOf": [
+              {
+                "type": "array"
+              },
+              {
+                "type": "object",
+                "title": "(input: TInput) => readonly string[] | undefined"
+              }
+            ]
+          }
+        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/AiBusinessInputOptions"
       }
+    },
+    "spark-class-model://schema/shared/630ef4fd9abed7c21e25329bcefe988d20d60599b876addb03cec8fad64223f5": {
+      "ref": "spark-class-model://schema/shared/630ef4fd9abed7c21e25329bcefe988d20d60599b876addb03cec8fad64223f5",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "title": "AiJsonSchemaObject",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/630ef4fd9abed7c21e25329bcefe988d20d60599b876addb03cec8fad64223f5"
+      }
+    },
+    "spark-class-model://model/AiBusinessInputOptions/attributes/paramsSchema/0": {
+      "ref": "spark-class-model://model/AiBusinessInputOptions/attributes/paramsSchema/0",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiBusinessInputOptions",
+      "name": "paramsSchema",
+      "schemaRef": "spark-class-model://schema/shared/630ef4fd9abed7c21e25329bcefe988d20d60599b876addb03cec8fad64223f5",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiBusinessInputOptions/attributes/identityField/1": {
+      "ref": "spark-class-model://model/AiBusinessInputOptions/attributes/identityField/1",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiBusinessInputOptions",
+      "name": "identityField",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://model/AiBusinessInputOptions/attributes/messageField/2": {
+      "ref": "spark-class-model://model/AiBusinessInputOptions/attributes/messageField/2",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiBusinessInputOptions",
+      "name": "messageField",
+      "schemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/b95e0d8a7d5bd795776b58ea3d2858f5ee66a6001f37eea7fc3b44a42fbb6471": {
+      "ref": "spark-class-model://schema/shared/b95e0d8a7d5bd795776b58ea3d2858f5ee66a6001f37eea7fc3b44a42fbb6471",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "title": "(input: TInput) => string"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/b95e0d8a7d5bd795776b58ea3d2858f5ee66a6001f37eea7fc3b44a42fbb6471"
+      }
+    },
+    "spark-class-model://model/AiBusinessInputOptions/attributes/systemPrompt/3": {
+      "ref": "spark-class-model://model/AiBusinessInputOptions/attributes/systemPrompt/3",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiBusinessInputOptions",
+      "name": "systemPrompt",
+      "schemaRef": "spark-class-model://schema/shared/b95e0d8a7d5bd795776b58ea3d2858f5ee66a6001f37eea7fc3b44a42fbb6471",
+      "readable": true,
+      "writable": true
+    },
+    "spark-class-model://schema/shared/25a204504c66f414f526858f3102c325797ca8952705a22797afac2db6eeacb7": {
+      "ref": "spark-class-model://schema/shared/25a204504c66f414f526858f3102c325797ca8952705a22797afac2db6eeacb7",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "title": "(input: TInput) => string | undefined"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/25a204504c66f414f526858f3102c325797ca8952705a22797afac2db6eeacb7"
+      }
+    },
+    "spark-class-model://model/AiBusinessInputOptions/attributes/title/4": {
+      "ref": "spark-class-model://model/AiBusinessInputOptions/attributes/title/4",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiBusinessInputOptions",
+      "name": "title",
+      "schemaRef": "spark-class-model://schema/shared/25a204504c66f414f526858f3102c325797ca8952705a22797afac2db6eeacb7",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://schema/shared/ef87ecf7ba319077d64d0dd2a9eaf69d90e0681763d2968004d994a569c5abd3": {
+      "ref": "spark-class-model://schema/shared/ef87ecf7ba319077d64d0dd2a9eaf69d90e0681763d2968004d994a569c5abd3",
+      "kind": "schema",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "array"
+          },
+          {
+            "type": "object",
+            "title": "(input: TInput) => readonly string[] | undefined"
+          }
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ef87ecf7ba319077d64d0dd2a9eaf69d90e0681763d2968004d994a569c5abd3"
+      }
+    },
+    "spark-class-model://model/AiBusinessInputOptions/attributes/readonlySteps/5": {
+      "ref": "spark-class-model://model/AiBusinessInputOptions/attributes/readonlySteps/5",
+      "kind": "attribute",
+      "ownerRef": "spark-class-model://model/AiBusinessInputOptions",
+      "name": "readonlySteps",
+      "schemaRef": "spark-class-model://schema/shared/ef87ecf7ba319077d64d0dd2a9eaf69d90e0681763d2968004d994a569c5abd3",
+      "readable": true,
+      "writable": false
+    },
+    "spark-class-model://model/AiBusinessInputOptions/methods/normalize/0": {
+      "ref": "spark-class-model://model/AiBusinessInputOptions/methods/normalize/0",
+      "kind": "method",
+      "ownerRef": "spark-class-model://model/AiBusinessInputOptions",
+      "name": "normalize",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
     },
     "spark-class-model://model/AiBusinessInputOptions": {
       "ref": "spark-class-model://model/AiBusinessInputOptions",
       "kind": "model",
       "className": "AiBusinessInputOptions",
       "schemaRef": "spark-class-model://schema/AiBusinessInputOptions",
-      "attributeRefs": [],
-      "methodRefs": [],
+      "attributeRefs": [
+        "spark-class-model://model/AiBusinessInputOptions/attributes/paramsSchema/0",
+        "spark-class-model://model/AiBusinessInputOptions/attributes/identityField/1",
+        "spark-class-model://model/AiBusinessInputOptions/attributes/messageField/2",
+        "spark-class-model://model/AiBusinessInputOptions/attributes/systemPrompt/3",
+        "spark-class-model://model/AiBusinessInputOptions/attributes/title/4",
+        "spark-class-model://model/AiBusinessInputOptions/attributes/readonlySteps/5"
+      ],
+      "methodRefs": [
+        "spark-class-model://model/AiBusinessInputOptions/methods/normalize/0"
+      ],
       "linkRefs": []
     },
     "spark-class-model://schema/CreateSimpleInputContractOptions": {

@@ -224,52 +224,145 @@
         "className": "DataViewSyncGuardState",
         "declarationKind": "type"
       },
-      "attributes": [
+      "attributes": [],
+      "methods": [
         {
           "name": "runWithViewSync",
           "jsdoc": "在同步深度保护内执行同步操作。\n同步深度 > 0 时，事件桥接层可跳过循环回写。",
-          "schema": {
-            "type": "object",
-            "title": "<T>(action: () => T) => T"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "action",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [],
+                      "type": {
+                        "type": "reference",
+                        "name": "T",
+                        "refersToTypeParameter": true
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "T",
+            "refersToTypeParameter": true
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "object",
+                "title": "() => T"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "runWithViewSyncAsync",
           "jsdoc": "在同步深度保护内执行异步操作（Promise 版）。",
-          "schema": {
-            "type": "object",
-            "title": "<T>(action: () => Promise<T>) => Promise<T>"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "action",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [],
+                      "type": {
+                        "type": "reference",
+                        "name": "Promise",
+                        "typeArguments": [
+                          {
+                            "type": "reference",
+                            "name": "T",
+                            "refersToTypeParameter": true
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              }
+            ]
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "object",
+                "title": "() => Promise<T>"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<T>"
+          }
         },
         {
           "name": "isViewSyncing",
           "jsdoc": "当前是否处于同步保护中（syncDepth > 0）。",
-          "schema": {
-            "type": "object",
-            "title": "() => boolean"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "boolean"
+          }
         },
         {
           "name": "getSyncDepth",
           "jsdoc": "获取当前同步保护的嵌套深度。",
-          "schema": {
-            "type": "object",
-            "title": "() => number"
+          "parameterStyle": "positional",
+          "parameters": [],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.693Z",
+  "generatedAt": "2026-06-13T06:21:06.846Z",
   "$defs": {
     "ToolbarPosition": {
       "type": "object",
@@ -346,25 +439,7 @@
     "DataViewSyncGuardState": {
       "type": "object",
       "title": "DataViewSyncGuardState",
-      "description": "`useDataViewSyncGuard` 返回状态。",
-      "properties": {
-        "runWithViewSync": {
-          "type": "object",
-          "title": "<T>(action: () => T) => T"
-        },
-        "runWithViewSyncAsync": {
-          "type": "object",
-          "title": "<T>(action: () => Promise<T>) => Promise<T>"
-        },
-        "isViewSyncing": {
-          "type": "object",
-          "title": "() => boolean"
-        },
-        "getSyncDepth": {
-          "type": "object",
-          "title": "() => number"
-        }
-      }
+      "description": "`useDataViewSyncGuard` 返回状态。"
     }
   }
 }

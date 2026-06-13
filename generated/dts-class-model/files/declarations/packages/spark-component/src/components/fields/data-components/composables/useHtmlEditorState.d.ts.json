@@ -65,42 +65,98 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "syncValue",
           "jsdoc": "sync Value 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(value: string) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "emitUpdate",
           "jsdoc": "emit Update 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(value: string) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "getRowRawValue",
           "jsdoc": "get Row Raw Value 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(row: DataRow) => unknown"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "row",
+              "type": {
+                "type": "reference",
+                "name": "DataRow"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "unknown"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.741Z",
+  "generatedAt": "2026-06-13T06:21:06.931Z",
   "$defs": {
     "UseHtmlEditorStateOptions": {
       "type": "object",
@@ -118,18 +174,6 @@
         "isCurrentFieldEditable": {
           "type": "object",
           "title": "ValueRef<boolean>"
-        },
-        "syncValue": {
-          "type": "object",
-          "title": "(value: string) => void"
-        },
-        "emitUpdate": {
-          "type": "object",
-          "title": "(value: string) => void"
-        },
-        "getRowRawValue": {
-          "type": "object",
-          "title": "(row: DataRow) => unknown"
         }
       }
     }

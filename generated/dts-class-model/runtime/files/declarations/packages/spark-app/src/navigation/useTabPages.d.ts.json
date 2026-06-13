@@ -133,44 +133,28 @@
       "schema": {
         "type": "object",
         "title": "UseTabPagesOptions",
-        "properties": {
-          "navigate": {
-            "type": "object",
-            "title": "(fullPath: string) => Promise<void> | void"
-          }
-        },
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "spark-class-model://schema/UseTabPagesOptions"
       }
     },
-    "spark-class-model://schema/shared/67999bf97a8de754385a6fd0c2a07814fc175bf113301d703cb8297e42b2e08c": {
-      "ref": "spark-class-model://schema/shared/67999bf97a8de754385a6fd0c2a07814fc175bf113301d703cb8297e42b2e08c",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "title": "(fullPath: string) => Promise<void> | void",
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/67999bf97a8de754385a6fd0c2a07814fc175bf113301d703cb8297e42b2e08c"
-      }
-    },
-    "spark-class-model://model/UseTabPagesOptions/attributes/navigate/0": {
-      "ref": "spark-class-model://model/UseTabPagesOptions/attributes/navigate/0",
-      "kind": "attribute",
+    "spark-class-model://model/UseTabPagesOptions/methods/navigate/0": {
+      "ref": "spark-class-model://model/UseTabPagesOptions/methods/navigate/0",
+      "kind": "method",
       "ownerRef": "spark-class-model://model/UseTabPagesOptions",
       "name": "navigate",
-      "schemaRef": "spark-class-model://schema/shared/67999bf97a8de754385a6fd0c2a07814fc175bf113301d703cb8297e42b2e08c",
-      "readable": true,
-      "writable": false
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
+      "returnSchemaRef": "spark-class-model://schema/shared/f9940279bcf4bbea66101020cf78c3f8ef9f171e4f7ba9a856273eb3dcf38219"
     },
     "spark-class-model://model/UseTabPagesOptions": {
       "ref": "spark-class-model://model/UseTabPagesOptions",
       "kind": "model",
       "className": "UseTabPagesOptions",
       "schemaRef": "spark-class-model://schema/UseTabPagesOptions",
-      "attributeRefs": [
-        "spark-class-model://model/UseTabPagesOptions/attributes/navigate/0"
+      "attributeRefs": [],
+      "methodRefs": [
+        "spark-class-model://model/UseTabPagesOptions/methods/navigate/0"
       ],
-      "methodRefs": [],
       "linkRefs": []
     }
   }

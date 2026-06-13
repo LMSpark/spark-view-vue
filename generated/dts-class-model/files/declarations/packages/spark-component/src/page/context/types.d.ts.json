@@ -32,7 +32,168 @@
         "declarationKind": "type"
       },
       "attributes": [],
-      "methods": []
+      "methods": [
+        {
+          "name": "get",
+          "jsdoc": "按组件 id 获取实例快照（只读元数据，不返回组件 API 对象）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "anyOf": [
+              {
+                "type": "object",
+                "title": "PageComponentInstanceEntry"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        {
+          "name": "list",
+          "jsdoc": "列出页面组件实例（可按 type 过滤，只读元数据）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "type",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "unknown"
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "title": "PageComponentInstanceEntry"
+            }
+          }
+        },
+        {
+          "name": "getApi",
+          "jsdoc": "按组件 id 获取组件暴露 API（用于脚本调用组件能力）",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "union",
+            "types": [
+              {
+                "type": "reference",
+                "name": "T",
+                "refersToTypeParameter": true
+              },
+              {
+                "type": "literal",
+                "value": null
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
+        },
+        {
+          "name": "getApisByType",
+          "jsdoc": "按 type 获取同类组件 API 列表",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "type",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "array",
+            "elementType": {
+              "type": "reference",
+              "name": "T",
+              "refersToTypeParameter": true
+            }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "array",
+            "items": true
+          }
+        }
+      ]
     },
     "PageContext": {
       "kind": "PageContext",
@@ -103,52 +264,211 @@
           },
           "readable": true,
           "writable": true
-        },
+        }
+      ],
+      "methods": [
         {
           "name": "setTimeout",
           "jsdoc": "set Timeout 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(handler: (...args: unknown[]) => void, timeout?: number) => number"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "handler",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "args",
+                          "type": {
+                            "type": "rest",
+                            "elementType": {
+                              "type": "array",
+                              "elementType": {
+                                "type": "intrinsic",
+                                "name": "unknown"
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "timeout",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "handler": {
+                "type": "object",
+                "title": "(...args: unknown[]) => void"
+              },
+              "timeout": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
         },
         {
           "name": "clearTimeout",
           "jsdoc": "clear Timeout 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(id?: number) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         },
         {
           "name": "setInterval",
           "jsdoc": "set Interval 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(handler: (...args: unknown[]) => void, timeout?: number) => number"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "handler",
+              "type": {
+                "type": "reflection",
+                "declaration": {
+                  "signatures": [
+                    {
+                      "parameters": [
+                        {
+                          "name": "args",
+                          "type": {
+                            "type": "rest",
+                            "elementType": {
+                              "type": "array",
+                              "elementType": {
+                                "type": "intrinsic",
+                                "name": "unknown"
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "type": {
+                        "type": "intrinsic",
+                        "name": "void"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "timeout",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "handler": {
+                "type": "object",
+                "title": "(...args: unknown[]) => void"
+              },
+              "timeout": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "number"
+          }
         },
         {
           "name": "clearInterval",
           "jsdoc": "clear Interval 回调。",
-          "schema": {
-            "type": "object",
-            "title": "(id?: number) => void"
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              },
+              "flags": {
+                "isOptional": true
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
           },
-          "readable": true,
-          "writable": true
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": true
         }
-      ],
-      "methods": []
+      ]
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.793Z",
+  "generatedAt": "2026-06-13T06:21:06.998Z",
   "$defs": {
     "PageComponentAccessApi": {
       "type": "object",
@@ -181,22 +501,6 @@
         "h": {
           "type": "object",
           "title": "typeof h"
-        },
-        "setTimeout": {
-          "type": "object",
-          "title": "(handler: (...args: unknown[]) => void, timeout?: number) => number"
-        },
-        "clearTimeout": {
-          "type": "object",
-          "title": "(id?: number) => void"
-        },
-        "setInterval": {
-          "type": "object",
-          "title": "(handler: (...args: unknown[]) => void, timeout?: number) => number"
-        },
-        "clearInterval": {
-          "type": "object",
-          "title": "(id?: number) => void"
         }
       }
     }

@@ -53,7 +53,19 @@
               "name": "string"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "businessRegistrationId": {
+              "type": "string"
+            },
+            "businessInstanceId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -128,7 +140,25 @@
               "name": "string"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "businessRegistrationId": {
+              "type": "string"
+            },
+            "businessInstanceId": {
+              "type": "string"
+            },
+            "instanceId": {
+              "type": "string"
+            },
+            "runtimeInstanceId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -189,7 +219,22 @@
               "name": "string"
             }
           }
-        ]
+        ],
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "moduleId": {
+              "type": "string"
+            },
+            "moduleInstanceId": {
+              "type": "string"
+            },
+            "instanceId": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
       },
       "attributes": [
         {
@@ -246,11 +291,51 @@
         "className": "AiAgentAppendMessageOptions",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "role",
+          "jsdoc": "消息角色：user / assistant / system / tool",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentMessageRole"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "content",
+          "jsdoc": "消息正文",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "source",
+          "jsdoc": "消息来源标注（用于区分用户输入 / LLM 输出 / 工具返回值）",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentMessageSource"
+          },
+          "readable": true,
+          "writable": false
+        },
+        {
+          "name": "metadata",
+          "jsdoc": "附加元数据（如工具调用 ID、token 用量等）",
+          "schema": {
+            "type": "object",
+            "title": "Record<string, unknown>"
+          },
+          "readable": true,
+          "writable": false
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.560Z",
+  "generatedAt": "2026-06-13T06:21:06.557Z",
   "$defs": {
     "AiAgentTarget": {
       "type": "object",
@@ -297,7 +382,24 @@
     "AiAgentAppendMessageOptions": {
       "type": "object",
       "title": "AiAgentAppendMessageOptions",
-      "description": "Ai Agent Append Message Options 的调用配置。"
+      "description": "Ai Agent Append Message Options 的调用配置。",
+      "properties": {
+        "role": {
+          "type": "object",
+          "title": "AiAgentMessageRole"
+        },
+        "content": {
+          "type": "string"
+        },
+        "source": {
+          "type": "object",
+          "title": "AiAgentMessageSource"
+        },
+        "metadata": {
+          "type": "object",
+          "title": "Record<string, unknown>"
+        }
+      }
     }
   }
 }

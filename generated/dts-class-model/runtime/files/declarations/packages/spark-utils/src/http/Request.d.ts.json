@@ -16,6 +16,29 @@
         "$id": "spark-class-model://schema/Request"
       }
     },
+    "spark-class-model://model/Request/constructors/0": {
+      "ref": "spark-class-model://model/Request/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/Request",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/ba38c6975454067c8ac7f7bb41d2572b2fc20c967300d64ec69bbb5c5636cbc1"
+    },
+    "spark-class-model://schema/shared/ba38c6975454067c8ac7f7bb41d2572b2fc20c967300d64ec69bbb5c5636cbc1": {
+      "ref": "spark-class-model://schema/shared/ba38c6975454067c8ac7f7bb41d2572b2fc20c967300d64ec69bbb5c5636cbc1",
+      "kind": "schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "defaults": {
+            "type": "object",
+            "title": "Partial<RequestConfig>"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "spark-class-model://schema/shared/ba38c6975454067c8ac7f7bb41d2572b2fc20c967300d64ec69bbb5c5636cbc1"
+      }
+    },
     "spark-class-model://model/Request/methods/executeRequest/0": {
       "ref": "spark-class-model://model/Request/methods/executeRequest/0",
       "kind": "method",
@@ -69,6 +92,7 @@
       "kind": "model",
       "className": "Request",
       "schemaRef": "spark-class-model://schema/Request",
+      "constructorRef": "spark-class-model://model/Request/constructors/0",
       "attributeRefs": [],
       "methodRefs": [
         "spark-class-model://model/Request/methods/executeRequest/0",

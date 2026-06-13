@@ -52,6 +52,13 @@
       "targetFile": "files/declarations/packages/spark-data/src/dataset.d.ts.json",
       "targetSchemaRef": "spark-class-model://schema/DataSet"
     },
+    "spark-class-model://model/PageDataSetFile/constructors/0": {
+      "ref": "spark-class-model://model/PageDataSetFile/constructors/0",
+      "kind": "constructor",
+      "ownerRef": "spark-class-model://model/PageDataSetFile",
+      "parameterStyle": "positional",
+      "paramsSchemaRef": "spark-class-model://schema/shared/920ba8f7230adf63702bca64a491021e112f332cb7d717e06a17001d30598ca6"
+    },
     "spark-class-model://model/PageDataSetFile/methods/getText/0": {
       "ref": "spark-class-model://model/PageDataSetFile/methods/getText/0",
       "kind": "method",
@@ -68,21 +75,6 @@
       "name": "setText",
       "parameterStyle": "positional",
       "paramsSchemaRef": "spark-class-model://schema/shared/3ec81bb53941037d55d87a09e2808d970bbb5ce6785d0ca4c9eab74b43acdad3"
-    },
-    "spark-class-model://schema/shared/3ec81bb53941037d55d87a09e2808d970bbb5ce6785d0ca4c9eab74b43acdad3": {
-      "ref": "spark-class-model://schema/shared/3ec81bb53941037d55d87a09e2808d970bbb5ce6785d0ca4c9eab74b43acdad3",
-      "kind": "schema",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "text": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "spark-class-model://schema/shared/3ec81bb53941037d55d87a09e2808d970bbb5ce6785d0ca4c9eab74b43acdad3"
-      }
     },
     "spark-class-model://model/PageDataSetFile/methods/loadText/2": {
       "ref": "spark-class-model://model/PageDataSetFile/methods/loadText/2",
@@ -194,6 +186,7 @@
       "kind": "model",
       "className": "PageDataSetFile",
       "schemaRef": "spark-class-model://schema/PageDataSetFile",
+      "constructorRef": "spark-class-model://model/PageDataSetFile/constructors/0",
       "attributeRefs": [
         "spark-class-model://model/PageDataSetFile/attributes/pageId/0",
         "spark-class-model://model/PageDataSetFile/attributes/value/1"

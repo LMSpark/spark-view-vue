@@ -38,7 +38,67 @@
         "className": "AiAgentDiagnosticEventInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "request",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentChatRequest"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "scope",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentScope"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "turn",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTurnMeta"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "type",
+          "jsdoc": "",
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "llm-request"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "llm-append"
+                ]
+              }
+            ]
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "data",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     },
     "ToolResultEventInput": {
@@ -60,21 +120,117 @@
         "className": "ToolResultEventInput",
         "declarationKind": "type"
       },
-      "attributes": [],
+      "attributes": [
+        {
+          "name": "request",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentChatRequest"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "scope",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentScope"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "turn",
+          "jsdoc": "",
+          "schema": {
+            "type": "object",
+            "title": "AiAgentTurnMeta"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "eventModuleId",
+          "jsdoc": "",
+          "schema": {
+            "type": "string"
+          },
+          "readable": true,
+          "writable": true
+        },
+        {
+          "name": "data",
+          "jsdoc": "",
+          "schema": true,
+          "readable": true,
+          "writable": true
+        }
+      ],
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T04:00:57.568Z",
+  "generatedAt": "2026-06-13T06:21:06.589Z",
   "$defs": {
     "AiAgentDiagnosticEventInput": {
       "type": "object",
       "title": "AiAgentDiagnosticEventInput",
-      "description": "Ai Agent Diagnostic Event Input 的输入数据。"
+      "description": "Ai Agent Diagnostic Event Input 的输入数据。",
+      "properties": {
+        "request": {
+          "type": "object",
+          "title": "AiAgentChatRequest"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "turn": {
+          "type": "object",
+          "title": "AiAgentTurnMeta"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "llm-request"
+              ]
+            },
+            {
+              "type": "string",
+              "enum": [
+                "llm-append"
+              ]
+            }
+          ]
+        },
+        "data": true
+      }
     },
     "ToolResultEventInput": {
       "type": "object",
       "title": "ToolResultEventInput",
-      "description": "Tool Result Event Input 的输入数据。"
+      "description": "Tool Result Event Input 的输入数据。",
+      "properties": {
+        "request": {
+          "type": "object",
+          "title": "AiAgentChatRequest"
+        },
+        "scope": {
+          "type": "object",
+          "title": "AiAgentScope"
+        },
+        "turn": {
+          "type": "object",
+          "title": "AiAgentTurnMeta"
+        },
+        "eventModuleId": {
+          "type": "string"
+        },
+        "data": true
+      }
     }
   }
 }
