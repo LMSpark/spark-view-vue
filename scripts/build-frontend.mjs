@@ -1,30 +1,26 @@
 #!/usr/bin/env node
 
-import { execSync } from 'node:child_process'
-import { resolve } from 'node:path'
+/**
+ * 前端生产构建：根 Vite 应用（monorepo 包通过 vite alias 指向 src，无需预构建 dist）。
+ *
+ * ClassModel bundle 真源在 generated/dts-class-model/（已入库）；缺失时 ensure 会按需生成。
+ */
 
-const ROOT_DIR = resolve(import.meta.dirname, '..')
-const CONFIG_TIME_BUILD_DEP_PACKAGES = ['@spark-appworks/spark-utils']
+import process from 'node:process'
+import { spawnSync } from 'node:child_process'
+import { ROOT_DIR, runCommand } from './build-shared.mjs'
 
-function run(cmd, opts = {}) {
-  console.log(`\n> ${cmd}\n`)
-  execSync(cmd, {
-    stdio: 'inherit',
+function ensureClassModelBundle() {
+  const result = spawnSync(process.execPath, ['scripts/ensure-class-model-bundle.mjs'], {
     cwd: ROOT_DIR,
-    env: process.env,
-    ...opts,
+    stdio: 'inherit',
   })
-}
-
-function buildConfigTimeDependencies() {
-  console.log('\n🔁 预构建配置期依赖...')
-  for (const pkg of CONFIG_TIME_BUILD_DEP_PACKAGES) {
-    run(`pnpm --filter ${pkg} run build`)
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1)
   }
-  console.log('✅ 配置期依赖已同步')
 }
 
-buildConfigTimeDependencies()
+ensureClassModelBundle()
 
-console.log('\n🧩 组件注册模式: 编译时注册')
-run('pnpm exec vite build')
+console.log('\n🧩 组件注册模式: 编译时注册（packages 走 Vite alias → src）')
+runCommand('pnpm exec vite build', { cwd: ROOT_DIR })

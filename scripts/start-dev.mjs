@@ -22,32 +22,26 @@ import { resolve } from 'node:path'
 import http from 'node:http'
 import net from 'node:net'
 import { loadLocalJavaEnv } from './load-java-env.mjs'
+import {
+  COMPOSE_FILE,
+  ROOT_DIR,
+  SERVER_DIR,
+  buildJavaProcessEnv,
+  mvnCommand,
+  resolveJavaHome,
+} from './build-shared.mjs'
 
 const BACKEND_PORT = process.env['BACKEND_PORT'] || '8180'
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`
-const ROOT_DIR = resolve(import.meta.dirname, '..')
-const SERVER_DIR = resolve(ROOT_DIR, 'spark-ai-server')
-const COMPOSE_FILE = resolve(SERVER_DIR, 'docker-compose.yml')
 const VITE_CLI = resolve(ROOT_DIR, 'node_modules', 'vite', 'bin', 'vite.js')
 const { loadedFiles, env: mergedEnv } = loadLocalJavaEnv(ROOT_DIR)
-const existingPath = mergedEnv['PATH'] ?? mergedEnv['Path'] ?? process.env['PATH'] ?? process.env['Path'] ?? ''
+const javaHome = resolveJavaHome(mergedEnv)
 
-// ── 检测 JAVA_HOME ──────────────────────────────────────────────────────────
-const JAVA_HOME_CANDIDATES = [
-  process.env['JAVA_HOME'],
-  'C:\\Program Files\\Microsoft\\jdk-17.0.16.8-hotspot',
-  'C:\\Program Files\\Eclipse Adoptium\\jdk-17',
-  'C:\\Program Files\\Java\\jdk-17',
-]
-const javaHome = JAVA_HOME_CANDIDATES.find(
-  (p) => p && existsSync(resolve(p, 'bin', process.platform === 'win32' ? 'java.exe' : 'java'))
-)
 if (!javaHome) {
   console.error('❌ 找不到 Java 17，请设置 JAVA_HOME 环境变量')
   process.exit(1)
 }
 
-// ── 检查 pom.xml 存在 ───────────────────────────────────────────────────────
 if (!existsSync(resolve(SERVER_DIR, 'pom.xml'))) {
   console.error(`❌ 找不到 ${SERVER_DIR}/pom.xml`)
   process.exit(1)
@@ -230,19 +224,14 @@ if (!portAvailable && !canReuseExistingBackend) {
   process.exit(1)
 }
 
-const mvnCmd = process.platform === 'win32' ? 'mvn.cmd' : 'mvn'
-const javaEnv = {
-  ...mergedEnv,
-  JAVA_HOME: javaHome,
-  PATH: `${resolve(javaHome, 'bin')}${process.platform === 'win32' ? ';' : ':'}${existingPath}`,
-}
+const javaEnv = buildJavaProcessEnv(javaHome, mergedEnv)
 
 let backend = null
 if (canReuseExistingBackend) {
   console.warn(`⚠️ 检测到 ${BACKEND_URL} 已有可用后端，将复用现有进程，不重复拉起 Java。`)
   console.warn('   若出现 MySQL Communications link failure，请停止旧 Java 进程后重新执行 pnpm run dev。')
 } else {
-  backend = spawn(mvnCmd, ['spring-boot:run', `-Dserver.port=${BACKEND_PORT}`], {
+  backend = spawn(mvnCommand(), ['spring-boot:run', `-Dserver.port=${BACKEND_PORT}`], {
     cwd: SERVER_DIR,
     env: javaEnv,
     stdio: ['ignore', 'pipe', 'pipe'],

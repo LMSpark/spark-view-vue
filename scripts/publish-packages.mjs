@@ -18,12 +18,10 @@
  */
 
 import { execSync } from 'child_process'
-import { readdirSync, existsSync, readFileSync } from 'fs'
-import { join, resolve } from 'path'
-import { fileURLToPath } from 'url'
-
-const ROOT = resolve(fileURLToPath(import.meta.url), '../../')
-const PACKAGES_DIR = join(ROOT, 'packages')
+import { existsSync, readFileSync } from 'fs'
+import { join } from 'path'
+import { PACKAGES_DIR, ROOT_DIR, runCommand } from './build-shared.mjs'
+import { resolvePackagesInBuildOrder } from './lib/sort-packages-by-dependency.mjs'
 
 const args = process.argv.slice(2)
 const DRY_RUN = args.includes('--dry-run')
@@ -32,51 +30,12 @@ const TAG = tagIdx !== -1 ? args[tagIdx + 1] : 'latest'
 const otpIdx = args.indexOf('--otp')
 const OTP = otpIdx !== -1 ? args[otpIdx + 1] : null
 
-const run = (cmd, cwd = ROOT) => execSync(cmd, { cwd, stdio: 'inherit' })
+const run = (cmd, cwd = ROOT_DIR) => execSync(cmd, { cwd, stdio: 'inherit' })
 
-/**
- * 按依赖关系排序包，确保被依赖的包先发布。
- * 例如 spark-utils → spark-component → spark-app
- */
-function sortPackagesByDependency(pkgDirs) {
-  const pkgMetas = pkgDirs.map(dir => {
-    const pkgJson = JSON.parse(readFileSync(join(PACKAGES_DIR, dir, 'package.json'), 'utf-8'))
-    return { dir, name: pkgJson.name, deps: Object.keys(pkgJson.dependencies ?? {}) }
-  })
-
-  const sorted = []
-  const visited = new Set()
-
-  function visit(meta) {
-    if (visited.has(meta.name)) return
-    visited.add(meta.name)
-    for (const dep of meta.deps) {
-      const depMeta = pkgMetas.find(m => m.name === dep)
-      if (depMeta) visit(depMeta)
-    }
-    sorted.push(meta.dir)
-  }
-
-  for (const meta of pkgMetas) visit(meta)
-  return sorted
-}
-
-// 1. 构建所有包，按照依赖顺序串行构建
 console.log('\n📦 构建所有子包...')
-const allPackages = readdirSync(PACKAGES_DIR).filter(
-  dir => existsSync(join(PACKAGES_DIR, dir, 'package.json'))
-)
-const packages = sortPackagesByDependency(allPackages)
+runCommand('node scripts/build-packages.mjs', { cwd: ROOT_DIR })
 
-console.log('\n📋 构建顺序:', packages.join(' → '))
-for (const pkg of packages) {
-  const pkgDir = join(PACKAGES_DIR, pkg)
-  console.log(`\n🔧 构建 ${pkg} ...`)
-  run('pnpm run build', pkgDir)
-}
-
-// 2. 按依赖顺序发布（被依赖包优先）
-
+const packages = resolvePackagesInBuildOrder(PACKAGES_DIR)
 console.log('\n📋 发布顺序:', packages.join(' → '))
 
 for (const pkg of packages) {
