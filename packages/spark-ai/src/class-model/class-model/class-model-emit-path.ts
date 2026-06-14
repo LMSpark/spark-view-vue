@@ -71,8 +71,10 @@ export function sourceFileFromEmitPath(emitPath: string): string {
 export function readSourceModifiedAtIso(command: Readonly<{
   repoRoot: string
   emitSourcePath: string
+  /** manifest / .dts-manifest 记录的源路径，优先于 emit 键推导。 */
+  sourceFile?: string
 }>): string | undefined {
-  const sourceRelativePath = sourceFileFromEmitPath(command.emitSourcePath)
+  const sourceRelativePath = command.sourceFile ?? sourceFileFromEmitPath(command.emitSourcePath)
   const absolutePath = resolve(command.repoRoot, sourceRelativePath)
   try {
     return statSync(absolutePath).mtime.toISOString()

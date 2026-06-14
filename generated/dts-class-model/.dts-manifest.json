@@ -184,7 +184,7 @@
     "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-emit-path.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts",
       "shardFile": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-emit-path.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:53:42.863Z"
+      "sourceModifiedAt": "2026-06-14T05:45:53.752Z"
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/consistency.d.ts": {
       "sourceFile": "packages/spark-ai/src/class-model/class-model/consistency.ts",
@@ -3004,7 +3004,7 @@
     "class-model-emit/src/services/ai/ai-delivery-port.d.ts": {
       "sourceFile": "src/services/ai/ai-delivery-port.ts",
       "shardFile": "files/class-model-emit/src/services/ai/ai-delivery-port.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:26:49.574Z"
+      "sourceModifiedAt": "2026-06-14T03:35:12.994Z"
     },
     "class-model-emit/src/services/ai/ai-host-run-bridge.d.ts": {
       "sourceFile": "src/services/ai/ai-host-run-bridge.ts",
@@ -3024,7 +3024,7 @@
     "class-model-emit/src/services/ai/spark-ai-agent-bindings.d.ts": {
       "sourceFile": "src/services/ai/spark-ai-agent-bindings.ts",
       "shardFile": "files/class-model-emit/src/services/ai/spark-ai-agent-bindings.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:26:31.220Z"
+      "sourceModifiedAt": "2026-06-14T03:35:12.871Z"
     },
     "class-model-emit/src/services/api-paths.d.ts": {
       "sourceFile": "src/services/api-paths.ts",
@@ -3069,12 +3069,12 @@
     "class-model-emit/src/services/page-design/page-design-headless.d.ts": {
       "sourceFile": "src/services/page-design/page-design-headless.ts",
       "shardFile": "files/class-model-emit/src/services/page-design/page-design-headless.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:26:34.272Z"
+      "sourceModifiedAt": "2026-06-14T03:35:14.497Z"
     },
     "class-model-emit/src/services/page-design/page-design-host-run-provider.d.ts": {
       "sourceFile": "src/services/page-design/page-design-host-run-provider.ts",
       "shardFile": "files/class-model-emit/src/services/page-design/page-design-host-run-provider.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:26:49.574Z"
+      "sourceModifiedAt": "2026-06-14T03:35:13.059Z"
     },
     "class-model-emit/src/services/project-model-artifacts/index.d.ts": {
       "sourceFile": "src/services/project-model-artifacts/index.ts",
@@ -3104,22 +3104,22 @@
     "class-model-emit/src/services/project-planning/project-planning-headless.d.ts": {
       "sourceFile": "src/services/project-planning/project-planning-headless.ts",
       "shardFile": "files/class-model-emit/src/services/project-planning/project-planning-headless.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:26:34.398Z"
+      "sourceModifiedAt": "2026-06-14T03:35:14.694Z"
     },
     "class-model-emit/src/services/project-planning/project-planning-host-run-provider.d.ts": {
       "sourceFile": "src/services/project-planning/project-planning-host-run-provider.ts",
       "shardFile": "files/class-model-emit/src/services/project-planning/project-planning-host-run-provider.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:26:37.713Z"
+      "sourceModifiedAt": "2026-06-14T03:35:14.840Z"
     },
     "class-model-emit/src/services/project/project-settings.d.ts": {
       "sourceFile": "src/services/project/project-settings.ts",
       "shardFile": "files/class-model-emit/src/services/project/project-settings.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:26:37.960Z"
+      "sourceModifiedAt": "2026-06-14T03:35:14.941Z"
     },
     "class-model-emit/src/services/project/project-shell.d.ts": {
       "sourceFile": "src/services/project/project-shell.ts",
       "shardFile": "files/class-model-emit/src/services/project/project-shell.d.ts.json",
-      "sourceModifiedAt": "2026-06-14T02:26:38.035Z"
+      "sourceModifiedAt": "2026-06-14T03:35:15.049Z"
     },
     "class-model-emit/src/services/sse-events.d.ts": {
       "sourceFile": "src/services/sse-events.ts",

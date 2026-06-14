@@ -18,7 +18,7 @@
     "ProjectPlanningEditorResolveContext",
     "HeadlessProjectPlanningEditorScope"
   ],
-  "generatedAt": "2026-06-14T02:26:34.398Z",
+  "generatedAt": "2026-06-14T03:35:14.694Z",
   "$defs": {
     "ProjectPlanningEditorResolveContext": {
       "type": "object",

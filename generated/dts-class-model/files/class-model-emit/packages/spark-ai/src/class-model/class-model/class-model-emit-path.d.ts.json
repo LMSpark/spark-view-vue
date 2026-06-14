@@ -16,7 +16,7 @@
   "symbols": [
     "ClassModelEmitSource"
   ],
-  "generatedAt": "2026-06-14T02:53:42.863Z",
+  "generatedAt": "2026-06-14T05:45:53.752Z",
   "$defs": {
     "ClassModelEmitSource": {
       "type": "object",

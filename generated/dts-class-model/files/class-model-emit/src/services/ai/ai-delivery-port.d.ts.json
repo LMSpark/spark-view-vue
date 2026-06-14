@@ -24,7 +24,7 @@
     "AiDeliveryPort",
     "AiDeliveryResultExtras"
   ],
-  "generatedAt": "2026-06-14T02:26:49.574Z",
+  "generatedAt": "2026-06-14T03:35:12.994Z",
   "$defs": {
     "AiDeliveryMode": {
       "type": "object",

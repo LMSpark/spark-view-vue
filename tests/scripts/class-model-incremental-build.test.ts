@@ -4,8 +4,11 @@ import { tmpdir } from 'node:os'
 import { describe, expect, it } from 'vitest'
 
 import {
+  augmentIncrementalPlanWithConfigDrift,
+  canSkipDeclarationEmit,
   planIncrementalBundleBuild,
   readDtsManifestSnapshot,
+  resolveEmitSourcePathsForIncrementalPlan,
   writeDtsManifestSnapshot,
 } from '../../scripts/lib/class-model-incremental-build.mjs'
 import { dtsSourcePathToBundleRelativeJson } from '../../packages/spark-ai/src/class-model/class-model/dts-bundle-url.ts'
@@ -165,5 +168,79 @@ describe('class-model-incremental-build', () => {
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
+  })
+
+  it('resolveEmitSourcePathsForIncrementalPlan prefers manifest keys when manifest exists', () => {
+    expect(resolveEmitSourcePathsForIncrementalPlan({
+      configEmitSourcePaths: [
+        'class-model-emit/a.d.ts',
+        'class-model-emit/b.d.ts',
+        'class-model-emit/phantom.d.ts',
+      ],
+      existingManifest: {
+        files: {
+          'class-model-emit/a.d.ts': { file: 'files/a.json' },
+          'class-model-emit/b.d.ts': { file: 'files/b.json' },
+        },
+      },
+    })).toEqual([
+      'class-model-emit/a.d.ts',
+      'class-model-emit/b.d.ts',
+    ])
+  })
+
+  it('augmentIncrementalPlanWithConfigDrift tracks config-only paths separately', () => {
+    const plan = {
+      mode: 'incremental',
+      changedSourcePaths: new Set(),
+      unchangedSourcePaths: new Set(['class-model-emit/a.d.ts']),
+      removedSourcePaths: new Set(),
+      programRootFiles: [],
+    }
+    const augmented = augmentIncrementalPlanWithConfigDrift(plan, {
+      repoRoot: process.cwd(),
+      configEmitSourcePaths: [
+        'class-model-emit/a.d.ts',
+        'class-model-emit/phantom.d.ts',
+      ],
+      existingManifest: {
+        files: {
+          'class-model-emit/a.d.ts': { file: 'files/a.json' },
+        },
+      },
+      existingDtsManifest: { schemaVersion: 1, entries: {} },
+      resolveProgramRootFiles: paths => paths,
+    })
+    expect(augmented.changedSourcePaths.size).toBe(0)
+    expect([...augmented.newConfigSourcePaths ?? []]).toEqual([])
+    expect(augmented.removedSourcePaths.size).toBe(0)
+  })
+
+  it('canSkipDeclarationEmit ignores newConfigSourcePaths', () => {
+    expect(canSkipDeclarationEmit({
+      mode: 'incremental',
+      changedSourcePaths: new Set(),
+      removedSourcePaths: new Set(),
+      newConfigSourcePaths: new Set(['class-model-emit/phantom.d.ts']),
+    })).toBe(true)
+  })
+
+  it('canSkipDeclarationEmit is true only when manifest shards unchanged and none removed', () => {
+    expect(canSkipDeclarationEmit({
+      mode: 'incremental',
+      changedSourcePaths: new Set(),
+      removedSourcePaths: new Set(),
+    })).toBe(true)
+    expect(canSkipDeclarationEmit({
+      mode: 'incremental',
+      changedSourcePaths: new Set(['class-model-emit/a.d.ts']),
+      removedSourcePaths: new Set(),
+    })).toBe(false)
+    expect(canSkipDeclarationEmit({
+      mode: 'incremental',
+      changedSourcePaths: new Set(),
+      removedSourcePaths: new Set(['class-model-emit/b.d.ts']),
+    })).toBe(false)
+    expect(canSkipDeclarationEmit(undefined)).toBe(false)
   })
 })

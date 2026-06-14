@@ -77,6 +77,62 @@ export function planIncrementalBundleBuild(command) {
   }
 }
 
+/**
+ * 增量计划显示无需重编译时，可跳过内存 declaration emit。
+ * config 独有路径（newConfigSourcePaths）不阻断跳过：稳定态下多为 tsconfig 推导幽灵项。
+ */
+export function canSkipDeclarationEmit(plan) {
+  return plan?.mode === 'incremental'
+    && plan.changedSourcePaths.size === 0
+    && plan.removedSourcePaths.size === 0
+}
+
+/**
+ * 稳定态以 manifest 键规划；config 中多出的路径仅在源文件可解析时视为 changed。
+ */
+export function resolveEmitSourcePathsForIncrementalPlan(command) {
+  const configPaths = [...command.configEmitSourcePaths].sort((left, right) => left.localeCompare(right))
+  const manifestPaths = Object.keys(command.existingManifest?.files ?? {}).sort((left, right) => left.localeCompare(right))
+  if (manifestPaths.length === 0) return configPaths
+  return manifestPaths
+}
+
+/**
+ * 将 tsconfig 与 manifest 漂移合并进增量计划（new/removed）。
+ * config 独有路径记入 newConfigSourcePaths，不并入 changedSourcePaths，避免阻断 emit 跳过。
+ */
+export function augmentIncrementalPlanWithConfigDrift(plan, command) {
+  if (plan === undefined || plan.mode !== 'incremental') return plan
+  const configSet = new Set(command.configEmitSourcePaths)
+  const manifestFiles = command.existingManifest?.files ?? {}
+  const newConfigSourcePaths = new Set(plan.newConfigSourcePaths ?? [])
+
+  for (const sourcePath of command.configEmitSourcePaths) {
+    if (manifestFiles[sourcePath] !== undefined) continue
+    const sourceModifiedAt = readSourceModifiedAtIso({
+      repoRoot: command.repoRoot,
+      emitSourcePath: sourcePath,
+      sourceFile: command.existingDtsManifest?.entries?.[sourcePath]?.sourceFile,
+    })
+    if (sourceModifiedAt === undefined) continue
+    newConfigSourcePaths.add(sourcePath)
+    plan.unchangedSourcePaths.delete(sourcePath)
+  }
+
+  for (const sourcePath of Object.keys(manifestFiles)) {
+    if (!configSet.has(sourcePath)) plan.removedSourcePaths.add(sourcePath)
+  }
+
+  plan.newConfigSourcePaths = newConfigSourcePaths
+  const dirtySourcePaths = [...plan.changedSourcePaths, ...newConfigSourcePaths]
+  if (dirtySourcePaths.length > 0 && plan.unchangedSourcePaths.size > 0) {
+    plan.programRootFiles = command.resolveProgramRootFiles(dirtySourcePaths)
+  } else if (plan.changedSourcePaths.size === 0 && newConfigSourcePaths.size === 0) {
+    plan.programRootFiles = []
+  }
+  return plan
+}
+
 function createFullBuildPlan(emitSourcePaths, dtsFiles) {
   return {
     mode: 'full',
@@ -98,6 +154,8 @@ function isSourceShardUnchanged(command, sourcePath) {
   const sourceModifiedAt = readSourceModifiedAtIso({
     repoRoot: command.repoRoot,
     emitSourcePath: sourcePath,
+    sourceFile: manifestEntry?.module?.sourceFile
+      ?? command.existingDtsManifest.entries?.[sourcePath]?.sourceFile,
   })
   if (sourceModifiedAt === undefined) return false
 

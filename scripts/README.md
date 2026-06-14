@@ -25,10 +25,12 @@ npm 包 (pnpm run build:packages)
   build:packages → typecheck → lint → verify:rules
 
 ClassModel 编译 + 运行时 (generate:class-model-surface)
-  内存 emit .d.ts (tsconfig.class-model-emit.json → src，虚拟键 class-model-emit/)
-  → AST 投影 → generated/dts-class-model/*.json
+  L1：emit 前 mtime 规划 → manifest 全未变则跳过 emit+投影（~3s）；否则内存 emit → 仅 changed shard 投影
+  诊断：node --import tsx scripts/generate-dts-class-model.mjs --plan-only
+  → generated/dts-class-model/*.json
   → 浏览器 Worker (Comlink) 按需 fetch manifest/shard
   → refreshBundle 可触发 --model 增量编译 + loader.reload()
+  详见 docs/build-pipeline-audit.md §五（官方 TS incremental / createIncrementalProgram）
 
 ClassModel 全量门禁 (verify:class-model:full)
   generate:class-model-surface → verify-class-model-guide-params-schema.mjs → verify:class-model → typecheck

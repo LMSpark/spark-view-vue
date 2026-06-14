@@ -20,7 +20,7 @@
     "ProjectWorkspaceScope",
     "ShellNavRootListener"
   ],
-  "generatedAt": "2026-06-14T02:26:38.035Z",
+  "generatedAt": "2026-06-14T03:35:15.049Z",
   "$defs": {
     "ProjectSwitchService": {
       "type": "object",

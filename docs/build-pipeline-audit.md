@@ -87,22 +87,44 @@ spark-utils
 
 ## 五、DTS ClassModel 生成（流水线 G）
 
-**入口**: `scripts/generate-dts-class-model.mjs`（约 998 行）
+**入口**: `scripts/generate-dts-class-model.mjs`
+
+### 官方增量编译路径（对照）
+
+| 层级 | 机制 | 官方入口 | 本仓现状 |
+|------|------|----------|----------|
+| **L1 应用增量** | 源文件 mtime + shard 指纹，跳过投影/emit | 无（自研） | ✅ 已落地：`.dts-manifest.json` + `planIncrementalBundleBuild` |
+| **L2 TS 官方增量** | `.tsbuildinfo` 记录图变更，跳过未变输出 | `incremental` + `tsBuildInfoFile`；Compiler API 须用 **`ts.createIncrementalProgram`**（普通 `createProgram` 忽略 buildinfo） | ❌ 未接入；内存 emit 无持久 buildinfo |
+| **L3 TS 工程引用** | 按 package 分片，`tsc --build` 只编脏子工程 | `composite` + `references` + `tsc -b` | ❌ 单仓 `tsconfig.class-model-emit.json` 扁平 include |
+| **L4 定向 emit** | 仅编译变更根文件 + 依赖闭包 | `program.emit(sourceFile)` / 缩小 `rootNames` | ✅ `--model`/`--source` + `sourceRootFiles`（compiler-api） |
+| **L5 监听增量** | watch + 复用 Program | `createWatchProgram` / `createSolutionBuilderWithWatch` | ❌ 仅 dev HMR，未用于 ClassModel |
+
+**TypeScript 要点**（[Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) / [SO: incremental API](https://stackoverflow.com/questions/57554342)）：
+
+- `compilerOptions.incremental: true` 必须配合 **`createIncrementalProgram`** 或 **`createIncrementalCompilerHost`**，否则不写 `.tsbuildinfo`。
+- `emitResult.emitSkipped` 表示**整次 emit 被中止**（如 `noEmitOnError`、rootDir 冲突），**不是**单文件跳过；单文件增量依赖 buildinfo 脏集。
+- 磁盘 `outDir` + buildinfo 才能让 TS 在二次运行时跳过未变 `.d.ts` 写出；内存 `writeFile` 回调无法复用官方 skip。
+
+### 本仓三级增量策略
 
 ```text
 tsconfig.class-model-emit.json
-  → emitDeclarationsToMemory (compiler-api 默认 / vue-tsc 可选)
-  → planIncrementalBundleBuild（对照 .dts-manifest.json + shard mtime）
-  → buildDtsClassModelBundle（仅变化项投影落盘；依赖闭包仍进 Program）
-  → generated/dts-class-model/manifest.json + files/**  （guide SSOT；默认无 runtime/）
+  → [L1] planIncrementalBundleBuild（emit 前，读 tsconfig 文件表 + .dts-manifest mtime）
+  → 若 canSkipDeclarationEmit → 跳过内存 emit + 投影（~90s → ~1s）
+  → 否则 emitDeclarationsToMemory (compiler-api / vue-tsc)
+  → [L1] 仅 changed shard 走 buildDtsClassModelBundle（projectOnlySourcePaths）
+  → generated/dts-class-model/manifest.json + files/**
   → Vite 插件：dev 静态映射 / build 拷贝至 dist/dts-class-model/
 ```
 
 | 事实 | 说明 |
 |------|------|
 | 不落盘 `.d.ts` | 默认全程内存 emit；bundle 内虚拟键前缀 `class-model-emit/` |
-| **增量投影** | 全量 generate 时对照 `.dts-manifest.json` 中 `sourceModifiedAt` 与源文件 mtime；shard 未变则跳过投影写盘（内存 emit 仍全仓） |
-| **`.dts-manifest.json`** | 构建辅助索引（`schemaVersion: 1` + `entries`）；记录 emit 键 → `sourceFile` / `shardFile` / `sourceModifiedAt`；旧版纯路径数组触发一次全量重建 |
+| **L1 增量（已落地）** | emit 前规划；manifest shard mtime 未变 → **跳过 declaration emit + 投影**（实测 ~70s → ~3s）；仅刷新 `.dts-manifest.json` |
+| **config 漂移** | tsconfig 推导项多于 manifest 时记入 `newConfigSourcePaths`（如 `env.d.ts` / `vite-env.d.ts` 环境声明），**不阻断** `canSkipDeclarationEmit` |
+| **部分变更** | 仅 changed 项进 `projectOnlySourcePaths`；Program 用依赖闭包；仍全量内存 emit（**P3：L2 磁盘 buildinfo**） |
+| **`.dts-manifest.json`** | 构建辅助索引（`schemaVersion: 1` + `entries`）；记录 emit 键 → `sourceFile` / `shardFile` / `sourceModifiedAt` |
+| **`--plan-only`** | 仅输出 emit 前增量计划（`changed` / `newConfig` / `removed`）后退出，用于诊断 |
 | **`--full`** | 强制清空 `generated/dts-class-model/` 后全量重建 |
 | **不使用 ajv** | 编译链仅依赖 `typescript` / `vue-tsc`；见下文「ajv 范围」 |
 | 产出含 JSON Schema 形状 | `paramsSchema` 等由 `dts-type-schema.ts`（TypeChecker）静态投影，非运行时校验 |
@@ -262,7 +284,7 @@ Worker fetch('/dts-class-model/manifest.json')
 | **33** | 🟢 | `vite.config.ts` fs.allow | ✔️ **已移除** |
 | **34** | ~~`ensure-class-model-bundle.mjs`~~ | ~~未调用 assert~~ | ✔️ **已修复**（见 #40） |
 | **41** | `class-model-bundle-assert.test.ts` | ~~可选扩展 manifest 缺失用例~~ | ✔️ **已修复** |
-| **42** | emit 阶段增量 | 内存 `.d.ts` emit 仍全仓 | 🟢 P3；投影落盘已增量 |
+| **42** | emit 阶段增量 | ~~内存 `.d.ts` emit 仍全仓~~ | ✔️ **L1 已落地**：`canSkipDeclarationEmit` 全未变时跳过 emit；**P3：L2 磁盘 buildinfo** |
 
 ---
 
@@ -286,7 +308,7 @@ Worker fetch('/dts-class-model/manifest.json')
 
 1. **P3** — `class-model-bundle-assert.test.ts` 扩展更多 semantic-gaps 失败样例（可选）
 2. **P3** — 逐步为 attribute/method 补 JSDoc（不计入 CI 门禁，仅改善 semantic-gaps.log 信息密度）
-3. **P3** — 增量 emit：在内存 `.d.ts` emit 阶段也按 mtime 跳过未变文件（当前仅投影落盘增量）
+3. **P3 — L2 官方增量 emit**：`.cache/class-model-emit/` + `incremental`/`tsBuildInfoFile` + `createIncrementalProgram`，部分变更时跳过未变 `.d.ts` 写出
 
 ---
 
@@ -300,6 +322,7 @@ pnpm run verify          # 无 dist
 pnpm run verify:dist     # 含 build:packages
 ls generated/dts-class-model/manifest.json  # SSOT（入库，可评审）
 pnpm exec vitest run tests/scripts/class-model-incremental-build.test.ts  # 增量 mtime 契约
-# 二次全量 generate 应出现：unchanged=N changed=0（仅刷新 .dts-manifest.json）
+node --import tsx scripts/generate-dts-class-model.mjs --plan-only       # 诊断 changed/newConfig/removed
+# 二次 generate 应出现：unchanged=N changed=0 newConfig=2 skipEmit=true（~3s，非 ~70s）
 pnpm run generate:class-model-surface
 ```

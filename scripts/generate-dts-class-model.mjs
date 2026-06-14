@@ -31,10 +31,13 @@ import {
   toClassModelEmitPath,
 } from '../packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts'
 import {
+  augmentIncrementalPlanWithConfigDrift,
+  canSkipDeclarationEmit,
   finalizeBundleWithoutProjection,
   planIncrementalBundleBuild,
   readDtsManifestSnapshot,
   removeObsoleteBundleShards,
+  resolveEmitSourcePathsForIncrementalPlan,
   writeDtsManifestSnapshot,
 } from './lib/class-model-incremental-build.mjs'
 import { buildDebugBreak } from './lib/build-debug.mjs'
@@ -65,31 +68,108 @@ buildDebugBreak('class-model-generate:start', {
   forceFullRebuild: cliOptions.forceFullRebuild,
 })
 
+const classModelEmitConfigPath = resolve(repoRoot, CLASS_MODEL_EMIT_TSCONFIG)
+const existingManifestPath = resolve(outputDir, 'manifest.json')
+const existingSemanticJsonPath = resolve(outputDir, 'semantic-gaps.json')
+const existingManifest = existsSync(existingManifestPath) ? readJsonFile(existingManifestPath) : undefined
+const existingSemanticReport = existsSync(existingSemanticJsonPath) ? readJsonFile(existingSemanticJsonPath) : undefined
+const existingDtsManifest = readDtsManifestSnapshot(dtsManifestPath)
+
+const emitSourcePathsFromConfig = listClassModelEmitSourcePathsFromConfig({
+  repoRoot,
+  configPath: classModelEmitConfigPath,
+})
+const emitSourcePathsForPrePlan = resolveEmitSourcePathsForIncrementalPlan({
+  configEmitSourcePaths: emitSourcePathsFromConfig,
+  existingManifest,
+})
+const preEmitIncrementalPlan = targetedBuildRequested || cliOptions.forceFullRebuild
+  ? undefined
+  : augmentIncrementalPlanWithConfigDrift(
+      planIncrementalBundleBuild({
+        repoRoot,
+        outputDir,
+        emitSourcePaths: emitSourcePathsForPrePlan,
+        dtsFiles: emitSourcePathsForPrePlan.map(sourcePath => resolve(repoRoot, sourcePath)),
+        existingManifest,
+        existingDtsManifest,
+        forceFullRebuild: false,
+        resolveProgramRootFiles: () => [],
+      }),
+      {
+        repoRoot,
+        configEmitSourcePaths: emitSourcePathsFromConfig,
+        existingManifest,
+        existingDtsManifest,
+        resolveProgramRootFiles: changedSourcePaths => collectDtsDependencyClosure({
+          repoRoot,
+          dtsFiles: changedSourcePaths.map(sourcePath => resolve(repoRoot, sourcePath)),
+          compilerHost: undefined,
+          targetSourcePaths: changedSourcePaths,
+        }),
+      },
+    )
+const skipDeclarationEmit = canSkipDeclarationEmit(preEmitIncrementalPlan)
+if (preEmitIncrementalPlan !== undefined) {
+  console.log([
+    'Pre-emit incremental plan:',
+    `mode=${preEmitIncrementalPlan.mode}`,
+    `unchanged=${String(preEmitIncrementalPlan.unchangedSourcePaths.size)}`,
+    `changed=${String(preEmitIncrementalPlan.changedSourcePaths.size)}`,
+    `newConfig=${String(preEmitIncrementalPlan.newConfigSourcePaths?.size ?? 0)}`,
+    `removed=${String(preEmitIncrementalPlan.removedSourcePaths.size)}`,
+    `skipEmit=${String(skipDeclarationEmit)}`,
+  ].join(' '))
+  if (cliOptions.planOnly) {
+    if (preEmitIncrementalPlan.changedSourcePaths.size > 0) {
+      console.log(`Changed: ${[...preEmitIncrementalPlan.changedSourcePaths].join(', ')}`)
+    }
+    if ((preEmitIncrementalPlan.newConfigSourcePaths?.size ?? 0) > 0) {
+      console.log(`New config only: ${[...preEmitIncrementalPlan.newConfigSourcePaths].join(', ')}`)
+    }
+    if (preEmitIncrementalPlan.removedSourcePaths.size > 0) {
+      console.log(`Removed: ${[...preEmitIncrementalPlan.removedSourcePaths].join(', ')}`)
+    }
+    process.exit(0)
+  }
+}
+
 let dtsFiles
 let declarationCompilerHost
+let declarationEmit
 
-console.log(targetedSeed === undefined
-  ? `Emitting ClassModel surface in memory (${emitBackend})...`
-  : `Emitting targeted ClassModel surface in memory (${emitBackend}): ${targetedSeed.sourceFiles.map(fileName => relative(repoRoot, fileName)).join(', ')}`)
-const declarationEmit = emitDeclarationsToMemory({
-  repoRoot,
-  configPath: resolve(repoRoot, CLASS_MODEL_EMIT_TSCONFIG),
-  checkDiagnostics,
-  backend: emitBackend,
-  ...(targetedSeed === undefined ? {} : { sourceRootFiles: targetedSeed.sourceFiles }),
-  onEvent: event => {
-    const line = renderDeclarationEmitEvent(event)
-    if (line.length > 0) console.log(line)
-  },
-})
-dtsFiles = [...declarationEmit.files.keys()].sort((left, right) => left.localeCompare(right))
-declarationCompilerHost = createInMemoryDeclarationCompilerHost(declarationEmit.files)
+if (skipDeclarationEmit) {
+  console.log('Skipping declaration emit; all ClassModel shards match source mtime.')
+  declarationEmit = { files: new Map(), emitSkipped: true }
+  dtsFiles = []
+  declarationCompilerHost = undefined
+} else {
+  console.log(targetedSeed === undefined
+    ? `Emitting ClassModel surface in memory (${emitBackend})...`
+    : `Emitting targeted ClassModel surface in memory (${emitBackend}): ${targetedSeed.sourceFiles.map(fileName => relative(repoRoot, fileName)).join(', ')}`)
+  declarationEmit = emitDeclarationsToMemory({
+    repoRoot,
+    configPath: classModelEmitConfigPath,
+    checkDiagnostics,
+    backend: emitBackend,
+    ...(targetedSeed === undefined ? {} : { sourceRootFiles: targetedSeed.sourceFiles }),
+    onEvent: event => {
+      const line = renderDeclarationEmitEvent(event)
+      if (line.length > 0) console.log(line)
+    },
+  })
+  dtsFiles = [...declarationEmit.files.keys()].sort((left, right) => left.localeCompare(right))
+  declarationCompilerHost = createInMemoryDeclarationCompilerHost(declarationEmit.files)
 
-if (dtsFiles.length === 0) {
-  throw new Error('No in-memory ClassModel emit outputs were produced.')
+  if (dtsFiles.length === 0) {
+    throw new Error('No in-memory ClassModel emit outputs were produced.')
+  }
 }
 console.log(`Collected DTS files: ${String(dtsFiles.length)}`)
-buildDebugBreak('class-model-generate:after-memory-emit', { dtsFileCount: dtsFiles.length })
+buildDebugBreak('class-model-generate:after-memory-emit', {
+  dtsFileCount: dtsFiles.length,
+  emitSkipped: declarationEmit.emitSkipped === true,
+})
 
 const targetedBuild = targetedBuildRequested
   ? prepareTargetedBuild({
@@ -103,31 +183,30 @@ const targetedBuild = targetedBuildRequested
       useEmittedDtsClosure: targetedSeed !== undefined,
     })
   : undefined
-const emitSourcePaths = dtsFiles.map(fileName => normalizeRepoPath(fileName, repoRoot))
-const existingManifestPath = resolve(outputDir, 'manifest.json')
-const existingSemanticJsonPath = resolve(outputDir, 'semantic-gaps.json')
-const existingManifest = existsSync(existingManifestPath) ? readJsonFile(existingManifestPath) : undefined
-const existingSemanticReport = existsSync(existingSemanticJsonPath) ? readJsonFile(existingSemanticJsonPath) : undefined
-const existingDtsManifest = readDtsManifestSnapshot(dtsManifestPath)
+const emitSourcePaths = skipDeclarationEmit
+  ? emitSourcePathsFromConfig
+  : dtsFiles.map(fileName => normalizeRepoPath(fileName, repoRoot))
 
-const incrementalPlan = targetedBuild === undefined
-  ? planIncrementalBundleBuild({
-      repoRoot,
-      outputDir,
-      emitSourcePaths,
-      dtsFiles,
-      compilerHost: declarationCompilerHost,
-      existingManifest,
-      existingDtsManifest,
-      forceFullRebuild: cliOptions.forceFullRebuild,
-      resolveProgramRootFiles: changedSourcePaths => collectDtsDependencyClosure({
+const incrementalPlan = skipDeclarationEmit
+  ? preEmitIncrementalPlan
+  : targetedBuild === undefined
+    ? planIncrementalBundleBuild({
         repoRoot,
+        outputDir,
+        emitSourcePaths,
         dtsFiles,
         compilerHost: declarationCompilerHost,
-        targetSourcePaths: changedSourcePaths,
-      }),
-    })
-  : undefined
+        existingManifest,
+        existingDtsManifest,
+        forceFullRebuild: cliOptions.forceFullRebuild,
+        resolveProgramRootFiles: changedSourcePaths => collectDtsDependencyClosure({
+          repoRoot,
+          dtsFiles,
+          compilerHost: declarationCompilerHost,
+          targetSourcePaths: changedSourcePaths,
+        }),
+      })
+    : undefined
 const buildRootFiles = targetedBuild?.rootFiles ?? incrementalPlan?.programRootFiles ?? dtsFiles
 const buildOutputDir = targetedBuild?.tempOutputDir ?? outputDir
 if (targetedBuild !== undefined) {
@@ -372,6 +451,55 @@ function emitDeclarationsToMemory(options) {
   return emitDeclarationsWithCompilerApiToMemory(options)
 }
 
+function parseClassModelEmitProject(command) {
+  const vueCore = require('@vue/language-core')
+  const configPath = resolve(command.configPath)
+  const configFile = ts.readConfigFile(configPath, ts.sys.readFile)
+  if (configFile.error !== undefined) {
+    throw new Error(formatDiagnostics([configFile.error]))
+  }
+
+  const vueParsed = vueCore.createParsedCommandLine(ts, ts.sys, toPosixPath(configPath))
+  const extraFileExtensions = vueCore.getAllExtensions(vueParsed.vueOptions).map(extension => ({
+    extension,
+    isMixedContent: true,
+    scriptKind: ts.ScriptKind.Deferred,
+  }))
+  const parsed = ts.parseJsonConfigFileContent(
+    configFile.config,
+    ts.sys,
+    command.repoRoot,
+    undefined,
+    configPath,
+    undefined,
+    extraFileExtensions,
+  )
+  if (parsed.errors.length > 0) {
+    throw new Error(formatDiagnostics(parsed.errors))
+  }
+
+  const compilerOptions = {
+    ...parsed.options,
+    allowNonTsExtensions: true,
+  }
+  return { parsed, compilerOptions }
+}
+
+/** 从 tsconfig.class-model-emit.json 推导虚拟 emit 键，供 emit 前增量规划。 */
+function listClassModelEmitSourcePathsFromConfig(command) {
+  const { parsed } = parseClassModelEmitProject(command)
+  const emitPaths = new Set()
+  for (const absolutePath of parsed.fileNames) {
+    const repoRelativePath = normalizeRepoPath(absolutePath, command.repoRoot)
+    try {
+      emitPaths.add(toClassModelEmitPath(repoRelativePath))
+    } catch {
+      // skip paths that cannot map to ClassModel emit virtual keys
+    }
+  }
+  return [...emitPaths].sort((left, right) => left.localeCompare(right))
+}
+
 function emitDeclarationsWithVueTscToMemory(options) {
   if (options.sourceRootFiles !== undefined && options.sourceRootFiles.length > 0) {
     throw new Error('Targeted declaration emit supports --compiler-api-emit only; vue-tsc CLI interception has no per-source emit mode.')
@@ -452,43 +580,18 @@ function emitDeclarationsWithCompilerApiToMemory(options) {
   const configPath = resolve(options.configPath)
   options.onEvent?.({ phase: 'parse-config', configPath })
 
-  const vueCore = require('@vue/language-core')
-  const { proxyCreateProgram } = vueTscRequire('@volar/typescript/lib/node/proxyCreateProgram')
-  const configFile = ts.readConfigFile(configPath, ts.sys.readFile)
-  if (configFile.error !== undefined) {
-    throw new Error(formatDiagnostics([configFile.error]))
-  }
-
-  const vueParsed = vueCore.createParsedCommandLine(ts, ts.sys, toPosixPath(configPath))
-  const extraFileExtensions = vueCore.getAllExtensions(vueParsed.vueOptions).map(extension => ({
-    extension,
-    isMixedContent: true,
-    scriptKind: ts.ScriptKind.Deferred,
-  }))
-  const parsed = ts.parseJsonConfigFileContent(
-    configFile.config,
-    ts.sys,
-    options.repoRoot,
-    undefined,
+  const { parsed, compilerOptions } = parseClassModelEmitProject({
+    repoRoot: options.repoRoot,
     configPath,
-    undefined,
-    extraFileExtensions,
-  )
-  if (parsed.errors.length > 0) {
-    throw new Error(formatDiagnostics(parsed.errors))
-  }
+  })
   reportTiming(options, timings, 'parse-config')
 
-  const compilerOptions = {
-    ...parsed.options,
-    // vue-tsc patches TypeScript's supported extensions. Direct Compiler API mode
-    // instead lets root .vue files enter the Program, then Volar supplies virtual TS.
-    allowNonTsExtensions: true,
-  }
   const host = ts.createCompilerHost(compilerOptions, true)
   const files = new Map()
   const rootFileNames = options.sourceRootFiles?.map(fileName => resolve(fileName)) ?? parsed.fileNames
 
+  const vueCore = require('@vue/language-core')
+  const { proxyCreateProgram } = vueTscRequire('@volar/typescript/lib/node/proxyCreateProgram')
   const vueCreateProgram = proxyCreateProgram(ts, ts.createProgram, (tsObject, createProgramOptions) => {
     const vueOptions = vueCore.createParsedCommandLine(tsObject, tsObject.sys, toPosixPath(configPath)).vueOptions
     return {
@@ -594,6 +697,7 @@ function parseCliOptions(args) {
   let emitBackend = 'compiler-api'
   let checkDiagnostics = false
   let forceFullRebuild = false
+  let planOnly = false
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index]
@@ -603,6 +707,10 @@ function parseCliOptions(args) {
     }
     if (arg === '--full') {
       forceFullRebuild = true
+      continue
+    }
+    if (arg === '--plan-only') {
+      planOnly = true
       continue
     }
     if (arg === '--vue-tsc-emit') {
@@ -665,6 +773,7 @@ function parseCliOptions(args) {
     checkDiagnostics,
     emitBackend: readEmitBackendValue(emitBackend),
     forceFullRebuild,
+    planOnly,
     models: uniqueStrings(models),
     sources: uniqueStrings(sources),
   }
