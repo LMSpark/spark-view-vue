@@ -95,7 +95,6 @@ const registeredDocPrefixes = [
   'src/',
   'tests/',
   'tools/',
-  'vue-virtual-card-scroll-demo/',
 ]
 
 export function scanDocRules(options = {}) {

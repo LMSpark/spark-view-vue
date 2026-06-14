@@ -55,7 +55,6 @@
     "vanilla-jsoneditor": "^3.12.0"
   },
   "peerDependencies": {
-    "@spark-appworks/spark-ai": "workspace:*",
     "@element-plus/icons-vue": "catalog:",
     "element-plus": "catalog:",
     "vue": "catalog:",
@@ -68,6 +67,7 @@
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
+    "@spark-appworks/spark-ai": "workspace:*",
     "eslint": "catalog:",
     "rimraf": "catalog:",
     "typescript": "catalog:",

@@ -19,8 +19,6 @@ export function createDefaultExcluder(root) {
     const rel = relativePath(root, filePath)
     return rel.startsWith('spark-ai-server/')
       || rel === 'spark-ai-server'
-      || rel.startsWith('vue-virtual-card-scroll-demo/')
-      || rel === 'vue-virtual-card-scroll-demo'
       || rel.startsWith('dist/')
       || rel.includes('/dist/')
       || rel.includes('/node_modules/')

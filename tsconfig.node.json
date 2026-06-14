@@ -22,6 +22,7 @@
   "include": [
     "vite.config.ts",
     "tools/vite-plugin-spark-components.ts",
+    "tools/vite-plugin-class-model-static.ts",
     "packages/vite-plugin-spark-catalog/src/**/*.ts"
   ]
 }

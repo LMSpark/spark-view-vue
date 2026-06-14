@@ -1,7 +1,6 @@
 node_modules
 
 # Local IDE/workspace state
-.codex/
 .cursor/
 .vscode/
 .idea/
@@ -10,7 +9,6 @@ node_modules
 .github/
 .changeset/
 .claude/
-AGENTS.md
 CLAUDE.md
 *.code-workspace
 *.sublime-project
@@ -18,7 +16,6 @@ CLAUDE.md
 .cursorignore
 .cursorindexingignore
 /%SystemDrive%/
-/vite.codex-dev.mjs
 
 # Build artifacts
 **/bin/
@@ -87,9 +84,6 @@ temp-catalog-per-comp/
 # AI / e2e 本地运行产物（报告、联调日志等，不提交）
 artifacts/
 
-# AI smoke test trace logs (generated, not committed)
-.codex-tmp/
-
 # pageDesign LLM e2e 探针页（本地 replacePage / host-run 生成，不提交）
 spark-ai-server/data/pages-config/**/ai-leave-request-form-*/
 spark-ai-server/data/pages-config/**/ai-student-grade-management-*/
@@ -104,3 +98,6 @@ spark-ai-server/data/pages-config/**/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-
 
 # TypeScript incremental build cache
 *.tsbuildinfo
+
+# ClassModel 实验 runtime ref 树（默认不生成；勿入库）
+generated/dts-class-model/runtime/
