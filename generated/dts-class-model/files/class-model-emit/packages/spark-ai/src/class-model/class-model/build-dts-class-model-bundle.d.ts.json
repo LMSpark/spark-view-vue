@@ -125,7 +125,7 @@
       "additionalProperties": false
     }
   },
-  "generatedAt": "2026-06-14T18:04:35.265Z",
+  "generatedAt": "2026-06-14T18:17:49.965Z",
   "models": {
     "BuildDtsClassModelBundleProgressPhase": {
       "name": "BuildDtsClassModelBundleProgressPhase",

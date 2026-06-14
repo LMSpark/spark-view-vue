@@ -231,9 +231,9 @@ export function buildDtsClassModelBundle(
     schemaVersion: DTS_CLASS_MODEL_BUNDLE_VERSION,
     protocol: DTS_CLASS_MODEL_BUNDLE_PROTOCOL,
     scannedFileCount: Object.keys(files).length,
-    files,
-    classIndex,
-    ...(duplicates.length === 0 ? {} : { duplicates }),
+    files: sortRecord(files),
+    classIndex: sortRecord(classIndex),
+    ...(duplicates.length === 0 ? {} : { duplicates: sortDuplicateRecords(duplicates) }),
   }
   const manifestPath = resolve(outputDir, 'manifest.json')
   mkdirSync(outputDir, { recursive: true })
@@ -752,6 +752,22 @@ function buildClassNameSourceIndex(
     }
   }
   return index
+}
+
+function sortRecord<T>(record: Readonly<Record<string, T>>): Record<string, T> {
+  const sorted: Record<string, T> = {}
+  for (const [key, value] of Object.entries(record).sort(([left], [right]) => left.localeCompare(right))) {
+    sorted[key] = value
+  }
+  return sorted
+}
+
+function sortDuplicateRecords(
+  duplicates: ReadonlyArray<{ className: string; keptFile: string; skippedFile: string }>,
+): Array<{ className: string; keptFile: string; skippedFile: string }> {
+  return [...duplicates].sort((left, right) => left.className.localeCompare(right.className)
+    || left.keptFile.localeCompare(right.keptFile)
+    || left.skippedFile.localeCompare(right.skippedFile))
 }
 
 function buildSchemaClassNamesBySourcePath(command: Readonly<{

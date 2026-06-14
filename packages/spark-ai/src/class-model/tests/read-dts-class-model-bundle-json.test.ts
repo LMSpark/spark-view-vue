@@ -123,6 +123,48 @@ describe('readDtsClassModelBundleJson', () => {
     }
   })
 
+  it('writes sorted manifest files and class index keys', () => {
+    const tempRoot = resolve(tmpdir(), `spark-dts-class-model-sorted-${String(process.pid)}-${String(Date.now())}`)
+    try {
+      const alphaSourcePath = 'class-model-emit/packages/demo/src/alpha.d.ts'
+      const zetaSourcePath = 'class-model-emit/packages/demo/src/zeta.d.ts'
+      const alphaPath = resolve(tempRoot, alphaSourcePath)
+      const zetaPath = resolve(tempRoot, zetaSourcePath)
+      const outputDir = resolve(tempRoot, 'generated/dts-class-model')
+      mkdirSync(dirname(alphaPath), { recursive: true })
+      mkdirSync(dirname(zetaPath), { recursive: true })
+      writeFileSync(alphaPath, [
+        '/** Alpha model. */',
+        'export class Alpha {',
+        '  /** Creates Alpha. */',
+        '  constructor()',
+        '}',
+      ].join('\n'), 'utf8')
+      writeFileSync(zetaPath, [
+        '/** Zeta model. */',
+        'export class Zeta {',
+        '  /** Creates Zeta. */',
+        '  constructor()',
+        '}',
+      ].join('\n'), 'utf8')
+
+      const result = buildDtsClassModelBundle({
+        repoRoot: tempRoot,
+        rootFiles: [zetaPath, alphaPath],
+        outputDir,
+      })
+      const manifest = JSON.parse(readFileSync(result.manifestPath, 'utf8')) as {
+        files: Record<string, unknown>
+        classIndex: Record<string, unknown>
+      }
+
+      expect(Object.keys(manifest.files)).toEqual([alphaSourcePath, zetaSourcePath])
+      expect(Object.keys(manifest.classIndex)).toEqual(['Alpha', 'Zeta'])
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true })
+    }
+  })
+
   it('parses a generated per-file projection shard', () => {
     const tempRoot = resolve(tmpdir(), `spark-dts-class-model-shard-${String(process.pid)}-${String(Date.now())}`)
     try {
