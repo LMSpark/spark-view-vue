@@ -306,6 +306,15 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -314,7 +323,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:54.070Z",
+  "generatedAt": "2026-06-14T02:38:48.397Z",
   "$defs": {
     "RVirtualCardProps": {
       "type": "object",

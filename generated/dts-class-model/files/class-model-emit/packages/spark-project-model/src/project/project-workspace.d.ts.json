@@ -434,6 +434,11 @@
             "type": "intrinsic",
             "name": "string"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "string"
           }
@@ -454,6 +459,15 @@
           "type": {
             "type": "intrinsic",
             "name": "string"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "string"
@@ -477,6 +491,11 @@
                 "name": "string"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "object",
@@ -1710,7 +1729,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:55.851Z",
+  "generatedAt": "2026-06-14T02:38:50.189Z",
   "$defs": {
     "ProjectPageLoadOptions": {
       "type": "object",

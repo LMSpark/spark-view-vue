@@ -560,6 +560,16 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "args": {
+                "type": "array",
+                "items": true
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -1888,6 +1898,11 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -1898,6 +1913,11 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
           },
           "returnSchema": true
         },
@@ -1910,6 +1930,11 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -1920,6 +1945,11 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
           },
           "returnSchema": true
         }
@@ -1962,7 +1992,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:55.017Z",
+  "generatedAt": "2026-06-14T02:38:49.281Z",
   "$defs": {
     "ValueRef": {
       "type": "object",

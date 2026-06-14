@@ -128,6 +128,19 @@ ClassModelRuntime.executeTool('model_script')
 
 未知工具名或未知参数进入 runtime 时会 fail-fast，不做 silent fallback。
 
+## JSON SSOT（guide manifest）
+
+生产 **不读** `generated/dts-class-model/runtime/`。`model_script` 的 API 元数据来自 guide shard：
+
+```text
+manifest.json + files/**/*.d.ts.json
+  → DtsClassModelBundleLoader.buildLoadedSurface()
+  → createRuntimeApiMetadataFromSurface() / buildRuntimeApiMetadata()
+  → executeDtsNativeScript()
+```
+
+`DtsClassModelRuntimeLoader` 已移出公共 API，仅保留在包内单测（`writeExperimentalRuntimeBundle: true` 时对照 ref 图）。日常 generate 默认不写 `runtime/`。
+
 ## pageDesign 端到端
 
 ```text

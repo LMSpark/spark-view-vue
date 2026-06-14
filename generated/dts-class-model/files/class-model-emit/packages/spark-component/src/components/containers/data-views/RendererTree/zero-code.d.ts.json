@@ -227,6 +227,11 @@
             "type": "intrinsic",
             "name": "unknown"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -259,6 +264,25 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -277,6 +301,15 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         },
@@ -312,6 +345,18 @@
               "type": "intrinsic",
               "name": "unknown"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "leafOnly": {
+                "type": "boolean"
+              },
+              "includeHalfChecked": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "array",
@@ -349,6 +394,15 @@
                 }
               ]
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "leafOnly": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "array",
@@ -403,6 +457,28 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "keys": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              },
+              "leafOnly": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -428,6 +504,14 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": true,
+              "parentNode": true
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         },
@@ -455,6 +539,14 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": true,
+              "refNode": true
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -481,6 +573,14 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": true,
+              "refNode": true
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -499,6 +599,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "nodeOrData": true
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         },
@@ -531,6 +638,22 @@
               "name": "NativeTreeNodeLike",
               "sourcePath": "class-model-emit/packages/spark-component/src/components/containers/data-views/RendererTree/zero-code.d.ts"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "$ref": "#/$defs/NativeTreeNodeLike"
@@ -576,6 +699,11 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
           },
           "returnSchema": true
         }
@@ -779,7 +907,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:54.062Z",
+  "generatedAt": "2026-06-14T02:38:48.392Z",
   "$defs": {
     "TreeNode": {
       "type": "object",

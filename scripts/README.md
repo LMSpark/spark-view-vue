@@ -31,7 +31,7 @@ ClassModel 编译 + 运行时 (generate:class-model-surface)
   → refreshBundle 可触发 --model 增量编译 + loader.reload()
 
 ClassModel 全量门禁 (verify:class-model:full)
-  generate:class-model-surface → verify:class-model → typecheck
+  generate:class-model-surface → verify-class-model-guide-params-schema.mjs → verify:class-model → typecheck
   （读 packages/*/src，无需先 build:packages）
 ```
 
@@ -41,7 +41,7 @@ ClassModel 全量门禁 (verify:class-model:full)
 - `packages/*/dist` 仅服务 npm 发布与消费者；`publish:packages` 会先跑 `build-packages`。
 - 编译期 `.d.ts` 仅在内存存在；bundle `sourcePath` 使用虚拟前缀 `class-model-emit/`；产物为 `generated/dts-class-model/**/*.json`。
 - `generated/dts-class-model/` 已入库（编译 SSOT，可人工评审）；Vite 插件 dev/build 映射到 `/dts-class-model/`。
-- `ensure:class-model-bundle` 在 manifest 缺失时 generate。
+- `ensure:class-model-bundle` 在 manifest 缺失时 generate，并 `assertClassModelBundleComplete`。
 - ClassModel 运行时知识在 Web Worker 内按需加载；编译 refresh 见 `scripts/lib/class-model-knowledge-refresh.mjs`。
 - Java 改动后必须重启 `pnpm run dev`；纯前端走 Vite HMR。
 
@@ -58,6 +58,8 @@ ClassModel 全量门禁 (verify:class-model:full)
 - `verify-model-convergence-offline.mjs`：模型收敛离线验收。
 - `generate-dts-class-model.mjs`：ClassModel 编译（内存 emit → JSON bundle；`--model` 增量）。
 - `lib/class-model-knowledge-refresh.mjs`：Node 宿主 refreshBundle 回调（触发 targeted compile）。
+- `lib/class-model-bundle-assert.mjs`：guide manifest + shard 完整性；`assertClassModelGuideParamsSchema` 供全量门禁。
+- `verify-class-model-guide-params-schema.mjs`：`verify:class-model:full` 的 paramsSchema 校验。
 - ClassModel 编译期 TS API：`packages/spark-ai/src/class-model/class-model/build-index.ts`（禁止浏览器 import）。
 
 ## 放置原则

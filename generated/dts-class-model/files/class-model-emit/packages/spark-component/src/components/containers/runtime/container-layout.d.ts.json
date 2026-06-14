@@ -216,6 +216,11 @@
               "name": "SparkNode['children']"
             }
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -239,6 +244,11 @@
                 "name": "undefined"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
           },
           "returnSchema": {
             "anyOf": [
@@ -277,6 +287,11 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": {
             "anyOf": [
               {
@@ -312,6 +327,11 @@
                 "name": "undefined"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
           },
           "returnSchema": {
             "anyOf": [
@@ -349,6 +369,11 @@
                 "name": "undefined"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
           },
           "returnSchema": {
             "anyOf": [
@@ -459,7 +484,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:54.378Z",
+  "generatedAt": "2026-06-14T02:38:48.664Z",
   "$defs": {
     "UseContainerGridOptions": {
       "type": "object",

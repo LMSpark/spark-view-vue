@@ -119,6 +119,15 @@
             "type": "unknown",
             "name": "readonly string[]"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "$ref": "#/$defs/EnrichFunctionCallFailureCommand"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "array"
           }
@@ -126,7 +135,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.183Z",
+  "generatedAt": "2026-06-14T02:38:47.679Z",
   "$defs": {
     "EnrichFunctionCallFailureCommand": {
       "type": "object",

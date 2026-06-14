@@ -349,7 +349,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.554Z",
+  "generatedAt": "2026-06-14T02:38:47.875Z",
   "$defs": {
     "ClassModelKnowledgeWorkerInitInput": {
       "type": "object",

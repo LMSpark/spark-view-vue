@@ -7,11 +7,11 @@
     "sourceFile": "packages/spark-ai/src/class-model/class-model/build-index.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "class-model/class-model/build-index",
-    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/build-index\n职责：DTS ClassModel 编译期入口（Node + typescript）；不得被浏览器 / Worker 引用。",
+    "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/build-index\n职责：DTS ClassModel 编译期入口（Node + typescript）；不得被浏览器 / Worker 引用。\n边界：只 re-export 编译期 bundle 与投影 API，不执行业务 Agent 或页面逻辑。\nAI用途：脚本或测试需要调用 buildDtsClassModelBundle / projectDtsFileProjection 时，用本模块作为 Node 侧入口。",
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
   "symbols": [],
   "models": {},
-  "generatedAt": "2026-06-13T22:23:53.282Z"
+  "generatedAt": "2026-06-14T02:38:47.749Z"
 }

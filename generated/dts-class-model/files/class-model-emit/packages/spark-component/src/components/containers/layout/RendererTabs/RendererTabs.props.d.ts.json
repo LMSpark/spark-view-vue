@@ -144,6 +144,22 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -171,12 +187,25 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pane": {
+                "$ref": "#/$defs/TabsClickEvent"
+              },
+              "event": {
+                "type": "object",
+                "title": "Event"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:54.322Z",
+  "generatedAt": "2026-06-14T02:38:48.607Z",
   "$defs": {
     "TabsClickEvent": {
       "type": "object",

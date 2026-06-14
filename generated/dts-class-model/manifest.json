@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "protocol": "spark-appworks.dts-class-model.bundle",
-  "generatedAt": "2026-06-13T22:24:11.703Z",
+  "generatedAt": "2026-06-14T02:38:56.574Z",
   "scannedFileCount": 660,
   "files": {
     "class-model-emit/packages/spark-ai/src/agent/business/ai-host.d.ts": {
@@ -37,7 +37,7 @@
         "sourceFile": "packages/spark-ai/src/agent/business/business-kit.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "agent/business/business-kit",
-        "jsdoc": "@module @spark-appworks/spark-ai:agent/business/business-kit\n职责：构建业务级 AI 输入契约，把 businessId、paramsSchema、identity/message 字段、systemPrompt、title 和 readonlySteps 标准化成 AiAgentInputContract。\n边界：只处理输入校验、scope 创建和 orchestration 文案组装，不创建会话、不执行工具，也不持久化业务状态。\nAI用途：注册新的 pageDesign、projectPlanning 等业务入口时，用本模块确认输入字段如何转成会话 scope、用户消息和系统提示。",
+        "jsdoc": "@module @spark-appworks/spark-ai:agent/business/business-kit\n职责：构建业务级 AI 输入契约，把 businessId、paramsSchema、identity/message 字段、systemPrompt、title 和 readonlySteps 标准化成 AiAgentInputContract。\n边界：只处理输入校验、scope 创建和 orchestration 文案组装，不创建会话、不执行工具，也不持久化业务状态。\nAI用途：注册新的业务模块入口时，用本模块确认输入字段如何转成会话 scope、用户消息和系统提示。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "AiBusinessIdOptions",
@@ -99,7 +99,7 @@
         "sourceFile": "packages/spark-ai/src/agent/business/business-task.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "agent/business/business-task",
-        "jsdoc": "@module @spark-appworks/spark-ai:agent/business/business-task\n职责：把业务输入转换成 AiAgentTask，生成 target、scope、用户消息、系统提示和 orchestration plan。\n边界：只负责 task 构造和输入契约执行，不管理 Host 注册表、不保存 session，也不执行模型调用。\nAI用途：需要理解 pageDesign/projectPlanning 等业务输入如何变成 Agent 请求时，用本模块核对字段流向。",
+        "jsdoc": "@module @spark-appworks/spark-ai:agent/business/business-task\n职责：把业务输入转换成 AiAgentTask，生成 target、scope、用户消息、系统提示和 orchestration plan。\n边界：只负责 task 构造和输入契约执行，不管理 Host 注册表、不保存 session，也不执行模型调用。\nAI用途：需要理解业务输入如何变成 Agent 请求时，用本模块核对字段流向。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "AiAgentOrchestrationPlan",
@@ -627,7 +627,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/build-index.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/build-index",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/build-index\n职责：DTS ClassModel 编译期入口（Node + typescript）；不得被浏览器 / Worker 引用。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/build-index\n职责：DTS ClassModel 编译期入口（Node + typescript）；不得被浏览器 / Worker 引用。\n边界：只 re-export 编译期 bundle 与投影 API，不执行业务 Agent 或页面逻辑。\nAI用途：脚本或测试需要调用 buildDtsClassModelBundle / projectDtsFileProjection 时，用本模块作为 Node 侧入口。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -640,9 +640,11 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/class-model-emit-path.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/class-model-emit-path",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/class-model-emit-path\nClassModel 编译期内存 emit 的虚拟路径约定（非磁盘目录）。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/class-model-emit-path\n职责：ClassModel 编译期内存 emit 的虚拟路径约定（非磁盘目录）。\n边界：只做路径字符串规则，不访问文件系统或 TypeScript Program。\nAI用途：判断 bundle 键是否为 class-model-emit 虚拟源或映射 repo 路径时，用本模块统一约定。",
         "jsdocSource": "leading-jsdoc",
-        "symbols": []
+        "symbols": [
+          "ClassModelEmitSource"
+        ]
       }
     },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/consistency.d.ts": {
@@ -690,19 +692,6 @@
           "DtsClassModelBundleFileEntry",
           "DtsClassModelBundleClassEntry",
           "DtsClassModelBundleManifest",
-          "DtsClassModelRuntimeFileEntry",
-          "DtsClassModelRuntimeClassEntry",
-          "DtsClassModelRuntimeRefEntry",
-          "DtsClassModelRuntimeManifest",
-          "DtsClassModelRuntimeLinkRelation",
-          "DtsClassModelRuntimeLink",
-          "DtsClassModelRuntimeAttribute",
-          "DtsClassModelRuntimeMethod",
-          "DtsClassModelRuntimeConstructor",
-          "DtsClassModelRuntimeModel",
-          "DtsClassModelRuntimeSchemaRef",
-          "DtsClassModelRuntimeRef",
-          "DtsClassModelRuntimeShard",
           "DtsClassModelDuplicateRecord",
           "DtsClassModelSemanticGapKind",
           "DtsClassModelSemanticGap",
@@ -719,7 +708,7 @@
         "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-bundle-url.ts",
         "packageName": "@spark-appworks/spark-ai",
         "modulePath": "class-model/class-model/dts-bundle-url",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-url\n职责：DTS ClassModel bundle 的相对路径与 manifest URL 解析（纯字符串/URL，无 Node FS）。\n边界：供运行时 loader 与编译脚本共用；不得引入 node:path / node:fs / typescript。",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-url\n职责：DTS ClassModel bundle 的相对路径与 manifest URL 解析（纯字符串/URL，无 Node FS）。\n边界：供运行时 loader 与编译脚本共用；不得引入 node:path / node:fs / typescript。\nAI用途：解析 manifest 相对 URL 或 bundle 文件相对路径时，用本模块保持与 guide shard 命名一致。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -740,29 +729,6 @@
         ]
       }
     },
-    "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts": {
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json",
-      "module": {
-        "name": "@spark-appworks/spark-ai:class-model/class-model/dts-class-model-runtime-loader",
-        "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
-        "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.ts",
-        "packageName": "@spark-appworks/spark-ai",
-        "modulePath": "class-model/class-model/dts-class-model-runtime-loader",
-        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-class-model-runtime-loader\n职责：按 runtime manifest 动态加载最小 ClassModel shard，并沿构建期 links 扩展子模型闭包。\n边界：只消费 runtime JSON 协议，不解析 .d.ts、不扫描签名文本，也不生成 guide 文案。\nAI用途：需要按需加载 AJV 参数 schema 与属性/参数/返回值子模型链时，用本模块作为运行时入口。",
-        "jsdocSource": "leading-jsdoc",
-        "symbols": [
-          "DtsClassModelRuntimeLoaderOptions",
-          "DtsClassModelRuntimeSchemaClosure",
-          "DtsClassModelRuntimeMethodContractQuery",
-          "DtsClassModelRuntimeAttributeContractQuery",
-          "DtsClassModelRuntimeConstructorContractQuery",
-          "DtsClassModelRuntimeConstructorContract",
-          "DtsClassModelRuntimeMethodContract",
-          "DtsClassModelRuntimeAttributeContract",
-          "DtsClassModelRuntimeLoader"
-        ]
-      }
-    },
     "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-jsdoc-reader.d.ts": {
       "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-jsdoc-reader.d.ts.json",
       "module": {
@@ -773,6 +739,19 @@
         "modulePath": "class-model/class-model/dts-jsdoc-reader",
         "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-jsdoc-reader\n职责：从 TypeScript AST 节点读取和清理 JSDoc 注释，统一处理多行注释格式和标签。\n边界：只做 JSDoc 文本提取和格式归一化，不解释 JSDoc 语义、不生成 ClassModel 字段。\nAI用途：排查 JSDoc 读取丢失或格式错乱时，用本模块确认提取和清理规则。",
         "jsdocSource": "leading-jsdoc",
+        "symbols": []
+      }
+    },
+    "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-to-runtime-api.d.ts": {
+      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-to-runtime-api.d.ts.json",
+      "module": {
+        "name": "@spark-appworks/spark-ai:class-model/class-model/dts-surface-to-runtime-api",
+        "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-to-runtime-api.d.ts",
+        "sourceFile": "packages/spark-ai/src/class-model/class-model/dts-surface-to-runtime-api.ts",
+        "packageName": "@spark-appworks/spark-ai",
+        "modulePath": "class-model/class-model/dts-surface-to-runtime-api",
+        "jsdoc": "@module @spark-appworks/spark-ai:class-model/class-model/dts-surface-to-runtime-api\n职责：把 guide bundle 已加载的 DtsClassModelSurfaceDocument 映射为 AiRuntimeApiMetadataJson，供 model_script 与 guide 共用同一份 JSON shard。\n边界：只做 JSON surface → runtime API metadata 的薄映射，不访问 TypeChecker，也不读取 runtime/manifest.json。\nAI用途：确认 script 执行契约是否直接来自 guide manifest shard 中的 paramsSchema / returnSchema。",
+        "jsdocSource": "source-file-jsdoc",
         "symbols": []
       }
     },
@@ -9516,7 +9495,7 @@
         "sourceFile": "packages/spark-project-model/src/navigation/navigation-kinds.ts",
         "packageName": "@spark-appworks/spark-project-model",
         "modulePath": "navigation/navigation-kinds",
-        "jsdoc": "@module @spark-appworks/spark-project-model:navigation/navigation-kinds\n职责：按 nodeKind 实例化非配置页导航节点（统一 `ProjectNode`，family 由 nodeKind 派生）。",
+        "jsdoc": "@module @spark-appworks/spark-project-model:navigation/navigation-kinds\n职责：按 nodeKind 实例化非配置页导航节点（统一 `ProjectNode`，family 由 nodeKind 派生）。\n边界：不处理 page/sub-page 配置页；配置页由 instantiate-project-node 路由到 ConfigPageNode。\nAI用途：扩展导航 nodeKind 或排查非配置页节点实例化时，用本模块确认默认 ProjectNode 构造路径。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -9667,7 +9646,7 @@
         "sourceFile": "packages/spark-project-model/src/page/instantiate-project-node.ts",
         "packageName": "@spark-appworks/spark-project-model",
         "modulePath": "page/instantiate-project-node",
-        "jsdoc": "@module @spark-appworks/spark-project-model:page/instantiate-project-node\n职责：配置页节点实例化（page / sub-page 统一 ConfigPageNode）。",
+        "jsdoc": "@module @spark-appworks/spark-project-model:page/instantiate-project-node\n职责：配置页节点实例化（page / sub-page 统一 ConfigPageNode）。\n边界：只根据 nodeKind 在 ConfigPageNode 与导航节点之间分流，不加载页面四文件。\nAI用途：判断项目树节点应实例化为配置页还是导航节点时，用本模块作为统一入口。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -10149,7 +10128,7 @@
         "sourceFile": "src/class-model-artifacts/artifact-urls.ts",
         "packageName": "app",
         "modulePath": "class-model-artifacts/artifact-urls",
-        "jsdoc": "@module app:class-model-artifacts/artifact-urls\n职责：提供主应用 artifact-urls 能力，围绕 模块入口、副作用注册或内部组合逻辑 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 class-model-artifacts/artifact-urls。",
+        "jsdoc": "@module app:class-model-artifacts/artifact-urls\n职责：提供主应用 ClassModel 静态 bundle 的 HTTP manifest URL。\n边界：只解析发布路径；bundle 真源在 generated/dts-class-model/（入库，可人工评审）。\nAI用途：Worker 按需 fetch shard 时，用本模块定位 manifest 入口 URL。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -10485,7 +10464,7 @@
         "sourceFile": "src/services/ai/spark-ai-agent-bindings.ts",
         "packageName": "app",
         "modulePath": "services/ai/spark-ai-agent-bindings",
-        "jsdoc": "@module app:services/ai/spark-ai-agent-bindings\n职责：spark-ai agent 类型与 ClassModel 适配器的 app 层统一 import 入口。\n边界：只做 re-export，不包含业务编排。",
+        "jsdoc": "@module app:services/ai/spark-ai-agent-bindings\n职责：spark-ai agent 类型与 ClassModel 适配器的 app 层统一 import 入口。\n边界：只做 re-export，不包含业务编排。\nAI用途：应用层需要引用 spark-ai agent 类型或 ClassModel 适配器时，用本模块避免散落深层子路径 import。",
         "jsdocSource": "leading-jsdoc",
         "symbols": []
       }
@@ -10631,7 +10610,7 @@
         "sourceFile": "src/services/page-design/page-design-headless.ts",
         "packageName": "app",
         "modulePath": "services/page-design/page-design-headless",
-        "jsdoc": "@module app:services/page-design/page-design-headless\n职责：pageDesign 隔离式 headless ProjectWorkspace 工厂与 registry getter。",
+        "jsdoc": "@module app:services/page-design/page-design-headless\n职责：pageDesign 隔离式 headless ProjectWorkspace 工厂与 registry getter。\n边界：只创建/解析 headless editor，不执行 Host Run 或四文件落盘。\nAI用途：SSE 或后端下发 Host Run 前需要隔离式 editor 时，用本模块获取 ProjectWorkspace。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "PageDesignEditorResolveContext"
@@ -10646,7 +10625,7 @@
         "sourceFile": "src/services/page-design/page-design-host-run-provider.ts",
         "packageName": "app",
         "modulePath": "services/page-design/page-design-host-run-provider",
-        "jsdoc": "@module app:services/page-design/page-design-host-run-provider\n职责：pageDesign 隔离式 Host Run——headless editor 注册、四文件 delivery、SSE prepare。\n边界：DevSystem 内联 runner 共用 editor 语义见 page-design-ai-runner。",
+        "jsdoc": "@module app:services/page-design/page-design-host-run-provider\n职责：pageDesign 隔离式 Host Run——headless editor 注册、四文件 delivery、SSE prepare。\n边界：DevSystem 内联 runner 共用 editor 语义见 page-design-ai-runner；不进入 spark-ai 内核。\nAI用途：排查 pageDesign Host Run 的 delivery 与 SSE prepare 接线时，用本模块定位 provider 契约。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "PageDesignDeliveryContext",
@@ -10750,7 +10729,7 @@
         "sourceFile": "src/services/project-planning/project-planning-headless.ts",
         "packageName": "app",
         "modulePath": "services/project-planning/project-planning-headless",
-        "jsdoc": "@module app:services/project-planning/project-planning-headless\n职责：projectPlanning 隔离式 headless ProjectWorkspace 工厂与 registry getter。",
+        "jsdoc": "@module app:services/project-planning/project-planning-headless\n职责：projectPlanning 隔离式 headless ProjectWorkspace 工厂与 registry getter。\n边界：只创建/解析 headless editor，不执行 Host Run 或导航落盘。\nAI用途：projectPlanning Host Run 需要隔离式 ProjectWorkspace 时，用本模块获取 editor 实例。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ProjectPlanningEditorResolveContext",
@@ -10781,7 +10760,7 @@
         "sourceFile": "src/services/project/project-settings.ts",
         "packageName": "app",
         "modulePath": "services/project/project-settings",
-        "jsdoc": "@module app:services/project/project-settings\n职责：项目运行时设置（HTTP）与壳层 UI 偏好（localStorage）。\n边界：只处理 app 层配置读写，不修改 spark-project-model 协议。",
+        "jsdoc": "@module app:services/project/project-settings\n职责：项目运行时设置（HTTP）与壳层 UI 偏好（localStorage）。\n边界：只处理 app 层配置读写，不修改 spark-project-model 协议。\nAI用途：调整项目布局偏好或读取项目详情/导航元数据时，用本模块定位 HTTP 与 localStorage 接线。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ProjectLayoutPlacement",
@@ -10802,7 +10781,7 @@
         "sourceFile": "src/services/project/project-shell.ts",
         "packageName": "app",
         "modulePath": "services/project/project-shell",
-        "jsdoc": "@module app:services/project/project-shell\n职责：App 层项目壳——committed ProjectModel 缓存、ProjectWorkspace 单例、导航同步、项目切换 inject。\n边界：不进入 spark-project-model 内核；DevSystem 编辑宿主与 committed 投影分离。",
+        "jsdoc": "@module app:services/project/project-shell\n职责：App 层项目壳——committed ProjectModel 缓存、ProjectWorkspace 单例、导航同步、项目切换 inject。\n边界：不进入 spark-project-model 内核；DevSystem 编辑宿主与 committed 投影分离。\nAI用途：切换项目、同步导航或获取 committed ProjectWorkspace 单例时，用本模块定位壳层服务。",
         "jsdocSource": "leading-jsdoc",
         "symbols": [
           "ProjectSwitchService",
@@ -11825,6 +11804,10 @@
       "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts",
       "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/build-dts-class-model-bundle.d.ts.json"
     },
+    "ClassModelEmitSource": {
+      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-emit-path.d.ts",
+      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/class-model-emit-path.d.ts.json"
+    },
     "ClassModelBuildConsistencyIssue": {
       "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/consistency.d.ts",
       "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/consistency.d.ts.json"
@@ -11850,58 +11833,6 @@
       "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
     },
     "DtsClassModelBundleManifest": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeFileEntry": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeClassEntry": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeRefEntry": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeManifest": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeLinkRelation": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeLink": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeAttribute": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeMethod": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeConstructor": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeModel": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeSchemaRef": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeRef": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
-    },
-    "DtsClassModelRuntimeShard": {
       "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts",
       "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-bundle-types.d.ts.json"
     },
@@ -11932,42 +11863,6 @@
     "DtsClassModelBundleLoader": {
       "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
       "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts.json"
-    },
-    "DtsClassModelRuntimeLoaderOptions": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
-    },
-    "DtsClassModelRuntimeSchemaClosure": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
-    },
-    "DtsClassModelRuntimeMethodContractQuery": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
-    },
-    "DtsClassModelRuntimeAttributeContractQuery": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
-    },
-    "DtsClassModelRuntimeConstructorContractQuery": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
-    },
-    "DtsClassModelRuntimeConstructorContract": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
-    },
-    "DtsClassModelRuntimeMethodContract": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
-    },
-    "DtsClassModelRuntimeAttributeContract": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
-    },
-    "DtsClassModelRuntimeLoader": {
-      "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts",
-      "file": "files/class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-runtime-loader.d.ts.json"
     },
     "DtsClassModelSurfaceDocument": {
       "sourcePath": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-surface-types.d.ts",

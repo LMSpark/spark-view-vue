@@ -3657,6 +3657,31 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              },
+              "currentRow": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/DataRow"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "originatorId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -3704,6 +3729,27 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              },
+              "selectedRows": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/DataRow"
+                }
+              },
+              "originatorId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -3729,6 +3775,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         },
@@ -3764,6 +3822,21 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              },
+              "event": {
+                "$ref": "#/$defs/DataViewEditingFieldChangeEvent"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -3789,6 +3862,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         },
@@ -3816,6 +3901,18 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -3841,6 +3938,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         },
@@ -3876,6 +3985,21 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              },
+              "requestState": {
+                "$ref": "#/$defs/RequestState"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -3909,6 +4033,21 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              },
+              "mutating": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -3935,6 +4074,18 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -3960,6 +4111,18 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "tableName": {
+                "type": "string"
+              },
+              "viewId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         }
@@ -6123,6 +6286,13 @@
             "type": "intrinsic",
             "name": "unknown"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": true
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -6142,12 +6312,19 @@
             "type": "intrinsic",
             "name": "unknown"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "data": true
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:55.642Z",
+  "generatedAt": "2026-06-14T02:38:49.886Z",
   "$defs": {
     "SparkEventEmitter": {
       "type": "object",

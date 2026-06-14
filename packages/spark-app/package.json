@@ -3,7 +3,12 @@
   "version": "0.3.7",
   "type": "module",
   "main": "./dist/index.js",
-  "types": "./dist/types/index.d.ts",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.vue.js"
+  ],
   "private": false,
   "license": "MIT",
   "description": "SPARK Application Layer - 应用层基础设施（AppContext、Router Guards、Error Boundary、Bootstrap）",
@@ -25,7 +30,7 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "types": "./dist/types/index.d.ts"
+      "types": "./dist/index.d.ts"
     }
   },
   "dependencies": {

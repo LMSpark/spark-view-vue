@@ -34,7 +34,7 @@
       ],
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
-        "line": 11,
+        "line": 12,
         "className": "DtsClassModelBundleLoaderOptions",
         "declarationKind": "type"
       },
@@ -73,6 +73,15 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<unknown>"
@@ -87,7 +96,7 @@
       "shapeKind": "class",
       "provenance": {
         "file": "class-model-emit/packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.d.ts",
-        "line": 16,
+        "line": 17,
         "className": "DtsClassModelBundleLoader",
         "declarationKind": "class"
       },
@@ -295,6 +304,43 @@
           }
         },
         {
+          "name": "buildRuntimeApiMetadata",
+          "jsdoc": "从已加载的 guide manifest 闭包构建 script 用 runtime API metadata。\nguide 与 script 共用同一 shard 中的 paramsSchema / returnSchema。",
+          "parameterStyle": "positional",
+          "parameters": [
+            {
+              "name": "rootClassName",
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "name": "Promise",
+            "typeArguments": [
+              {
+                "type": "reference",
+                "name": "unknown"
+              }
+            ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "rootClassName": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "returnSchema": {
+            "type": "object",
+            "title": "Promise<AiRuntimeApiMetadataJson>"
+          }
+        },
+        {
           "name": "buildLoadedSurface",
           "jsdoc": "执行 build Loaded Surface 操作。",
           "parameterStyle": "positional",
@@ -331,7 +377,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.370Z",
+  "generatedAt": "2026-06-14T02:38:47.774Z",
   "$defs": {
     "DtsClassModelBundleLoaderOptions": {
       "type": "object",

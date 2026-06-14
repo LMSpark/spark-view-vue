@@ -8,9 +8,12 @@ spark-ai 的 AI 知识面只来自 TypeScript 声明，编译期**不在磁盘�
 源码 class + JSDoc
   -> generate-dts-class-model.mjs（内存 emit .d.ts，compiler-api / vue-tsc）
   -> buildDtsClassModelBundle（AST 投影，一次性写出 JSON shard）
-  -> generated/dts-class-model/manifest.json + files/**/*.d.ts.json
+  -> generated/dts-class-model/manifest.json + files/**/*.d.ts.json   # guide SSOT（生产）
+  -> model_script：同一 manifest → DtsClassModelBundleLoader.buildRuntimeApiMetadata()
   -> 运行时 Web Worker（Comlink）按 className 按需 fetch shard
 ```
+
+`generated/dts-class-model/runtime/`（ref 图实验树）**默认不再生成**；需 `node scripts/generate-dts-class-model.mjs --experimental-runtime-bundle` 才写出。已冻结：生产 guide/script 不读；`pnpm run build` 不校验其 manifest。详见 [`docs/spark-ai-platform.md`](docs/spark-ai-platform.md) §3.4。
 
 没有额外 registry、没有额外 catalog、没有约定标签。`.d.ts` 只在编译期内存中存在；bundle 内 `sourcePath` 使用虚拟前缀 `class-model-emit/`（非磁盘目录）。
 
@@ -20,7 +23,8 @@ spark-ai 的 AI 知识面只来自 TypeScript 声明，编译期**不在磁盘�
 |---|---|---|
 | `WorkerClassModelKnowledgeProvider` | 主线程 | Comlink 客户端；只传 manifest URL 与查询参数 |
 | `worker-knowledge-handler` | Web Worker | Comlink 服务端；持有 `DtsBundleClassModelKnowledgeService` |
-| `DtsClassModelBundleLoader` | Worker 内 | `fetch(manifest)` → BFS 按需加载 shard JSON，缓存于 Map |
+| `DtsClassModelBundleLoader` | Worker 内 | `fetch(manifest)` → BFS 按需加载 shard JSON；`buildRuntimeApiMetadata()` 供 script |
+| `createRuntimeApiMetadataFromSurface` | 主线程 | guide surface → `AiRuntimeApiMetadataJson` 薄映射（与 guide 同源 shard） |
 | `ClassModelKnowledgeService` | Worker 内 | 已加载 surface → query / guide 文本 |
 | `ClassModelRuntime` | 主线程 | 七个工具闭集；路由到 knowledge provider 或 script executor |
 | `ClassModelAgentAdapter` | 主线程 | 业务实例 + ToolLoop 接入 |

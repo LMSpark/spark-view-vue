@@ -7,7 +7,7 @@
     "sourceFile": "src/services/page-design/page-design-host-run-provider.ts",
     "packageName": "app",
     "modulePath": "services/page-design/page-design-host-run-provider",
-    "jsdoc": "@module app:services/page-design/page-design-host-run-provider\n职责：pageDesign 隔离式 Host Run——headless editor 注册、四文件 delivery、SSE prepare。\n边界：DevSystem 内联 runner 共用 editor 语义见 page-design-ai-runner。",
+    "jsdoc": "@module app:services/page-design/page-design-host-run-provider\n职责：pageDesign 隔离式 Host Run——headless editor 注册、四文件 delivery、SSE prepare。\n边界：DevSystem 内联 runner 共用 editor 语义见 page-design-ai-runner；不进入 spark-ai 内核。\nAI用途：排查 pageDesign Host Run 的 delivery 与 SSE prepare 接线时，用本模块定位 provider 契约。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "PageDesignDeliveryContext",
@@ -22,7 +22,7 @@
     "PageDesignDeliveryContext": {
       "kind": "PageDesignDeliveryContext",
       "className": "PageDesignDeliveryContext",
-      "jsdoc": "",
+      "jsdoc": "pageDesign Host Run 落盘时携带的 editor 与 pageId 上下文。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    editor: ProjectWorkspace;\n    pageId: string;\n}>",
       "declarationRelations": [
@@ -34,7 +34,7 @@
       ],
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-host-run-provider.d.ts",
-        "line": 10,
+        "line": 12,
         "className": "PageDesignDeliveryContext",
         "declarationKind": "type"
       },
@@ -76,7 +76,7 @@
       ],
       "provenance": {
         "file": "class-model-emit/src/services/page-design/page-design-host-run-provider.d.ts",
-        "line": 15,
+        "line": 17,
         "className": "CreatePageDesignDeliveryPortOptions",
         "declarationKind": "type"
       },
@@ -135,11 +135,12 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:56.044Z",
+  "generatedAt": "2026-06-14T02:38:50.381Z",
   "$defs": {
     "PageDesignDeliveryContext": {
       "type": "object",
       "title": "PageDesignDeliveryContext",
+      "description": "pageDesign Host Run 落盘时携带的 editor 与 pageId 上下文。",
       "properties": {
         "editor": {
           "type": "object",

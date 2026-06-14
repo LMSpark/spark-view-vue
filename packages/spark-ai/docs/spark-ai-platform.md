@@ -224,8 +224,30 @@ pnpm run generate:class-model-surface
 ```
 
 - `type`：返回类型 SSOT（对齐 TypeDoc `SignatureReflection.type`）
-- `signatureText`：读侧从 type 树派生，bundle 内可不持久化
-- `reflection`：mutator 回调 `(tool: DataSetCrudTool) => void` 的结构化签名
+- `parameters`：参数 type 树 SSOT；guide 签名从 type 树派生
+- `paramsSchema`：**必填**；Compiler API 投影写入 shard，guide 与 `model_script` FC 校验共用
+- `returnSchema`：可选；链式 `resultApis` 导航
+- `signatureText`：读侧可从 type 树派生，bundle 内可不持久化
+
+### 3.4 JSON SSOT：单一 guide manifest（生产真源）
+
+```text
+Compiler API（一次投影）
+  → manifest.json + files/**/*.d.ts.json   ← 唯一生产读模型
+       ├─ model_*_guide   → DtsClassModelBundleLoader + ClassModelKnowledgeService
+       └─ model_script    → DtsClassModelBundleLoader.buildRuntimeApiMetadata()
+                              → createRuntimeApiMetadataFromSurface()（薄映射，不二次编译）
+```
+
+| 层 | 模块 | 职责 |
+| -- | ---- | ---- |
+| 编译写 | `build-dts-class-model-bundle.ts` · `compactMethodMetaForBundle` | 强制落盘 `paramsSchema`；缺则 fail-fast |
+| 读 | `DtsClassModelBundleLoader` | BFS 闭包 + `buildLoadedSurface()` |
+| 映射 | `dts-surface-to-runtime-api.ts` | surface → `AiRuntimeApiMetadataJson`（script 专用薄层） |
+| 执行 | `dts-native-script-runner.ts` | 只调 `loader.buildRuntimeApiMetadata()` |
+
+**冻结（非生产）：** `generated/dts-class-model/runtime/` + 包内 `DtsClassModelRuntimeLoader`（已移出 `@spark-appworks/spark-ai` 公共导出）
+ref 图 + shared schema pool 的实验压缩树；**默认不再生成**（`generate-dts-class-model.mjs` 需 `--experimental-runtime-bundle` 才写出）。`pnpm run build` 不要求 `runtime/manifest.json`。新能力与生产路径 **禁止** 接入 runtime manifest。
 
 ### 3.3 编译期命令速查
 
@@ -521,10 +543,11 @@ LLM tool_call
               → ClassModelAgentToolRuntime.scriptExecutor
                 → resolveInstance() 获取领域实例
                 → 按 metadata 来源分两路：
-                   ├─ DTS 主线（生产）：executeDtsNativeScript({ instance, manifestUrl, rootClassName, host, fetchJson?, script })
-                   │     → createDtsNativeRuntimeApiMetadata()  // 从 DTS bundle 动态加载
-                   │     → createAiApiScriptContext()           // 构建 Proxy API surface
-                   │     → executeNativeScriptInSandbox()       // sandbox 执行
+                   ├─ DTS 主线（生产）：executeDtsNativeScript({ instance, manifestUrl, rootClassName, ... })
+                   │     → DtsClassModelBundleLoader.buildRuntimeApiMetadata()
+                   │     → createRuntimeApiMetadataFromSurface()  // 读 guide shard 内 paramsSchema
+                   │     → createAiApiScriptContext()
+                   │     → executeNativeScriptInSandbox()
                    │
                    └─ Runtime API 路径（内部/单测）：executeAiNativeScript({ instance, metadata, host, schemaDefs?, script })
                          → createAiNativeScriptContext()
@@ -547,13 +570,15 @@ await page.editDataSet(async (ds) => {
 
 | 文件 | 职责 |
 | ---- | ---- |
-| `agent/native-runtime/dts-native-script-runner.ts` | DTS 主线：从 manifest URL 动态加载 metadata，创建上下文，委托 sandbox |
-| `agent/native-runtime/native-script-runner.ts` | Runtime API 路径：接收预构建 `AiRuntimeApiMetadataJson`，创建上下文，委托 sandbox |
-| `agent/native-runtime/native-script-context.ts` | 创建 Proxy API surface：attribute read/write + action call，参数校验 |
-| `agent/native-runtime/native-script-sandbox.ts` | `new Function` 沙箱执行，错误三分类处理 |
-| `class-model/runtime/class-model-runtime.ts` | 7 工具路由 + 参数校验 + `rejectUnknownArgs` |
-| `agent/business/class-model-agent-adapter.ts` | 业务注册入口，连接 metadata、ClassModel、Runtime、Host |
-| `agent/tool-loop/function-call-recovery-enricher.ts` | FC 失败时旧参数名映射与 ClassModel 恢复提示 |
+| `class-model/dts-class-model-bundle-loader.ts` | guide manifest 加载；`buildRuntimeApiMetadata()` 统一入口 |
+| `class-model/dts-surface-to-runtime-api.ts` | guide surface → script 用 `AiRuntimeApiMetadataJson` 薄映射 |
+| `agent/native-runtime/dts-native-script-runner.ts` | `executeDtsNativeScript`；委托 loader + sandbox |
+| `agent/native-runtime/native-script-runner.ts` | 预构建 metadata 路径（内部/单测）；非生产 DTS 主线 |
+| `agent/native-runtime/native-script-context.ts` | Proxy API surface；`paramsSchema` FC 校验 |
+| `agent/native-runtime/native-script-sandbox.ts` | `new Function` 沙箱执行 |
+| `class-model/runtime/class-model-runtime.ts` | 7 工具路由 + `rejectUnknownArgs` |
+| `agent/business/class-model-agent-adapter.ts` | 业务注册 + scriptExecutor 接线 |
+| `agent/tool-loop/function-call-recovery-enricher.ts` | FC 失败恢复提示 |
 
 ### 7.3 native-script-context：Proxy API surface
 
@@ -757,7 +782,7 @@ createAiHostRunBridge()
 | LLM 传 `methodName` 给 `model_action_guide` | 旧参数名 | 改用 `model_action_guide({ kind, actionName })` |
 | LLM 传 `code` 给 `model_script` | 旧参数名 | 改用 `model_script({ script })` |
 | LLM 传 `member` 给 `model_query` | 旧参数名 | 改用 `model_query({ keyword, includeMembers: true })` |
-| LLM 传 `path` 给 `model_script` | 误用路径协议 | `model_script` 只接受 `{ script }`，重新查 `model_class_guide` |
+| `model_script` 只接受 `{ script }` | 误用路径协议 | `model_script` 只接受 `{ script }`；契约见 guide manifest shard §3.4 |
 | 未知参数被拒绝 | `rejectUnknownArgs` 白名单 | 查 §7.7 参数表，按当前 schema 重写 |
 | action 参数不对 | 未查 action 签名 | 先读 `model_action_guide`，按签名重写脚本 |
 | pageDesign 被门禁拒绝 | gate 检查失败 | 检查 effectiveDescription / implGate / upstreamContractsSatisfied / allowedOperations |
@@ -895,6 +920,7 @@ export function ensureXxxBusiness(options: {
 | Phase 1 | pageDesign / projectPlanning 生产注册 + Host Run；DevSystem 内联仅 pageDesign | ✅ |
 | Phase 2 | 统一 DeliveryPort（save / trace / rollback / resultExtras.delivery） | ✅ |
 | Phase 3 | pageDataDesign preset → pageDesign + allowedOperations gate + selective save + data-only prompt | ✅ |
+| Phase 3.5 | guide manifest JSON SSOT：`paramsSchema` 编译落盘 + `buildRuntimeApiMetadata`；`runtime/` 冻结 | ✅ |
 
 ### 13.2 当前缺口
 
@@ -907,6 +933,7 @@ export function ensureXxxBusiness(options: {
 | 项目模型收敛 | ✅ domain-model 删除；sub-page → nested page | 见 `MODEL-HIERARCHY.md` |
 | semantic-gaps | `gapCount = 0` | 保持生成门禁，不允许回退 |
 | Worker 依赖 | 浏览器 Worker 必须 | Node 侧可直载 loader（测试已覆盖） |
+| runtime ref 树 | 已冻结；默认不生成；单测显式 `writeExperimentalRuntimeBundle` | 勿接入生产；`--experimental-runtime-bundle` 仅对照用 |
 
 ### 13.3 后续路线
 
@@ -947,6 +974,8 @@ pnpm run test
 | Host Run 桥 | `src/services/ai/ai-host-run-bridge.ts` |
 | 7 工具定义 | `packages/spark-ai/src/class-model/tools/class-model-tool-specs.ts` |
 | 7 工具运行时 | `packages/spark-ai/src/class-model/runtime/class-model-runtime.ts` |
+| JSON SSOT 映射 | `packages/spark-ai/src/class-model/class-model/dts-surface-to-runtime-api.ts` |
+| guide loader | `packages/spark-ai/src/class-model/class-model/dts-class-model-bundle-loader.ts` |
 | DTS script runner | `packages/spark-ai/src/agent/native-runtime/dts-native-script-runner.ts` |
 | sandbox | `packages/spark-ai/src/agent/native-runtime/native-script-sandbox.ts` |
 | 知识 Worker | `src/services/class-model-knowledge.worker.ts` |

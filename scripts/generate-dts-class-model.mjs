@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 // 一气呵成生成 DTS ClassModel 产物：
 // 1. TypeScript + Volar 在内存中生成 .d.ts
-// 2. 每个 .d.ts 生成一个同路径 .d.ts.json
+// 2. 每个 .d.ts 生成一个同路径 .d.ts.json（guide SSOT，生产 guide + script 共用）
 // 3. 写入 generated/dts-class-model/manifest.json
-// 4. 写入 generated/dts-class-model/runtime/manifest.json
-// 5. 写入缺 JSDoc 语义补充日志 semantic-gaps.log / semantic-gaps.json
+// 4. 写入缺 JSDoc 语义补充日志 semantic-gaps.log / semantic-gaps.json
 
 import {
   copyFileSync,
@@ -118,7 +117,6 @@ const result = buildDtsClassModelBundle({
   rootFiles: buildRootFiles,
   outputDir: buildOutputDir,
   ...(declarationCompilerHost === undefined ? {} : { compilerHost: declarationCompilerHost }),
-  ...(targetedBuild?.runtimeClassIndexBase === undefined ? {} : { runtimeClassIndexBase: targetedBuild.runtimeClassIndexBase }),
   exportedOnly: false,
   progressInterval: 50,
   onProgress: event => {
@@ -141,6 +139,7 @@ const publishedResult = targetedBuild === undefined
 if (targetedBuild !== undefined) {
   removeTreeSync(targetedBuild.tempOutputDir)
 }
+removeTreeSync(resolve(outputDir, 'runtime'))
 timings.mark('build-bundle')
 
 console.log(`DTS files: ${String(dtsFiles.length)}`)
@@ -148,7 +147,6 @@ if (targetedBuild !== undefined) {
   console.log(`Targeted per-file JSON: ${String(result.fileCount)}`)
 }
 console.log(`Wrote ${relative(repoRoot, publishedResult.manifestPath)}`)
-console.log(`Wrote runtime ${relative(repoRoot, publishedResult.runtimeManifestPath)}`)
 console.log(`Per-file JSON: ${String(publishedResult.fileCount)}`)
 console.log(`ClassModel symbols (incl. duplicates in files): ${String(publishedResult.modelCount)}`)
 console.log(`classIndex entries: ${String(Object.keys(publishedResult.manifest.classIndex).length)}`)
@@ -171,9 +169,6 @@ function renderProgress(event) {
   }
   if (event.phase === 'project-file') {
     return `Projected DTS file ${String(event.current ?? 0)}/${String(event.total ?? 0)}: ${event.sourcePath ?? ''}`
-  }
-  if (event.phase === 'write-runtime') {
-    return 'Writing runtime bundle...'
   }
   if (event.phase === 'write-semantic-gaps') {
     return 'Writing semantic gap logs...'
@@ -555,16 +550,11 @@ function readEmitBackendValue(value) {
 
 function prepareTargetedBuild(options) {
   const existingManifestPath = resolve(options.outputDir, 'manifest.json')
-  const existingRuntimeManifestPath = resolve(options.outputDir, 'runtime/manifest.json')
   if (!existsSync(existingManifestPath)) {
     throw new Error('Targeted ClassModel compile requires an existing generated/dts-class-model/manifest.json. Run a full generate once first.')
   }
-  if (!existsSync(existingRuntimeManifestPath)) {
-    throw new Error('Targeted ClassModel compile requires an existing generated/dts-class-model/runtime/manifest.json. Run a full generate once first.')
-  }
 
   const existingManifest = readJsonFile(existingManifestPath)
-  const existingRuntimeManifest = readJsonFile(existingRuntimeManifestPath)
   const dtsFileBySourcePath = createDtsFileBySourcePath(options.dtsFiles, options.repoRoot)
   const targetSourcePaths = new Set(options.seed?.targetSourcePaths ?? [])
 
@@ -623,23 +613,17 @@ function prepareTargetedBuild(options) {
     sources: options.sources,
     targetSourcePaths: [...targetSourcePaths],
     rootFiles,
-    runtimeClassIndexBase: options.seed?.runtimeClassIndexBase ?? existingRuntimeManifest.classIndex ?? {},
     tempOutputDir: mkdtempSync(resolve(tmpdir(), 'spark-dts-class-model-target-')),
   }
 }
 
 function readTargetedBuildSeed(options) {
   const existingManifestPath = resolve(options.outputDir, 'manifest.json')
-  const existingRuntimeManifestPath = resolve(options.outputDir, 'runtime/manifest.json')
   if (!existsSync(existingManifestPath)) {
     throw new Error('Targeted ClassModel compile requires an existing generated/dts-class-model/manifest.json. Run a full generate once first.')
   }
-  if (!existsSync(existingRuntimeManifestPath)) {
-    throw new Error('Targeted ClassModel compile requires an existing generated/dts-class-model/runtime/manifest.json. Run a full generate once first.')
-  }
 
   const existingManifest = readJsonFile(existingManifestPath)
-  const existingRuntimeManifest = readJsonFile(existingRuntimeManifestPath)
   const targetSourcePaths = new Set()
 
   for (const modelName of options.models) {
@@ -668,7 +652,6 @@ function readTargetedBuildSeed(options) {
   return {
     targetSourcePaths: [...targetSourcePaths],
     sourceFiles: uniqueStrings(sourceFiles),
-    runtimeClassIndexBase: existingRuntimeManifest.classIndex ?? {},
   }
 }
 
@@ -786,22 +769,16 @@ function declaresNamedSymbol(node, symbolName) {
 
 function mergeTargetedBundle(command) {
   const existingManifestPath = resolve(command.outputDir, 'manifest.json')
-  const existingRuntimeManifestPath = resolve(command.outputDir, 'runtime/manifest.json')
   const existingSemanticJsonPath = resolve(command.outputDir, 'semantic-gaps.json')
   const existingManifest = readJsonFile(existingManifestPath)
-  const existingRuntimeManifest = readJsonFile(existingRuntimeManifestPath)
   const existingSemanticReport = existsSync(existingSemanticJsonPath)
     ? readJsonFile(existingSemanticJsonPath)
     : undefined
   const targetManifest = command.result.manifest
-  const targetRuntimeManifest = command.result.runtimeManifest
   const targetSourcePaths = new Set(Object.keys(targetManifest.files))
 
   for (const entry of Object.values(targetManifest.files)) {
     copyBundleFile(command.tempOutputDir, command.outputDir, entry.file)
-  }
-  for (const entry of Object.values(targetRuntimeManifest.files)) {
-    copyBundleFile(resolve(command.tempOutputDir, 'runtime'), resolve(command.outputDir, 'runtime'), entry.file)
   }
 
   const mergedManifest = mergeBundleManifest({
@@ -813,9 +790,6 @@ function mergeTargetedBundle(command) {
   writeFileSync(existingManifestPath, `${JSON.stringify(mergedManifest, null, 2)}\n`, 'utf8')
   writeDtsManifestFromBundleManifest(command.repoRoot, command.outputDir, mergedManifest)
   assertMergedBundleFilesExist(command.outputDir, mergedManifest.files)
-
-  const mergedRuntimeManifest = mergeRuntimeManifest(existingRuntimeManifest, targetRuntimeManifest, targetSourcePaths)
-  writeFileSync(existingRuntimeManifestPath, `${JSON.stringify(mergedRuntimeManifest, null, 2)}\n`, 'utf8')
 
   const semanticReport = mergeSemanticGapReports({
     existing: existingSemanticReport,
@@ -830,8 +804,6 @@ function mergeTargetedBundle(command) {
   return {
     manifest: mergedManifest,
     manifestPath: existingManifestPath,
-    runtimeManifest: mergedRuntimeManifest,
-    runtimeManifestPath: existingRuntimeManifestPath,
     semanticLogPath,
     semanticLogJsonPath,
     semanticGapCount: semanticReport.gapCount,
@@ -888,36 +860,6 @@ function writeDtsManifestFromBundleManifest(repoRoot, outputDir, manifest) {
     .sort((left, right) => left.localeCompare(right))
     .map(sourcePath => resolve(repoRoot, sourcePath))
   writeFileSync(resolve(outputDir, '.dts-manifest.json'), `${JSON.stringify(dtsFiles, null, 2)}\n`, 'utf8')
-}
-
-function mergeRuntimeManifest(existingManifest, targetManifest, targetSourcePaths) {
-  const files = {}
-  for (const [sourcePath, entry] of Object.entries(existingManifest.files ?? {})) {
-    if (!targetSourcePaths.has(sourcePath)) files[sourcePath] = entry
-  }
-  Object.assign(files, targetManifest.files)
-
-  const classIndex = {}
-  for (const [className, entry] of Object.entries(existingManifest.classIndex ?? {})) {
-    if (!targetSourcePaths.has(entry.sourcePath)) classIndex[className] = entry
-  }
-  for (const [className, entry] of Object.entries(targetManifest.classIndex ?? {})) {
-    classIndex[className] ??= entry
-  }
-
-  const updatedRuntimeFiles = new Set(Object.values(targetManifest.files ?? {}).map(entry => entry.file))
-  const refIndex = {}
-  for (const [ref, entry] of Object.entries(existingManifest.refIndex ?? {})) {
-    if (!updatedRuntimeFiles.has(entry.file)) refIndex[ref] = entry
-  }
-  Object.assign(refIndex, targetManifest.refIndex)
-
-  return {
-    ...existingManifest,
-    files: sortRecord(files),
-    classIndex: sortRecord(classIndex),
-    refIndex: sortRecord(refIndex),
-  }
 }
 
 function mergeSemanticGapReports(command) {

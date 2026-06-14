@@ -805,18 +805,20 @@ function projectFunctionPropertySignature(command: FunctionPropertySignatureComm
   const { site, memberName, member, typeNode } = command
   const { context, sourceFile, className } = site
   const line = sourceFile.getLineAndCharacterOfPosition(member.getStart()).line + 1
+  const signatureFromType = context.checker.getSignatureFromDeclaration(typeNode)
   const signatures = context.checker.getTypeAtLocation(member).getCallSignatures()
-  const signature = signatures[0]
-  const returnType = signature === undefined
-    ? context.checker.getTypeFromTypeNode(typeNode.type)
-    : context.checker.getReturnTypeOfSignature(signature)
+  const signature = signatureFromType ?? signatures[0]
+  if (signature === undefined) {
+    throw new Error(`Missing function property signature for ${className}.${memberName}`)
+  }
+  const returnType = context.checker.getReturnTypeOfSignature(signature)
   return {
     name: memberName,
     signatureText: member.getText(sourceFile).replace(/;$/u, '').trim(),
     parameterStyle: parameterStyleFromDeclaration(typeNode),
     parameters: methodParametersFromDeclaration(context.checker, context.repoRoot, typeNode, sourceFile),
     type: dtsTypeMetaFromTypeNode(context.checker, context.repoRoot, typeNode.type, sourceFile),
-    ...(signature === undefined ? {} : { paramsSchema: paramsSchemaFromSignature(context.checker, signature) }),
+    paramsSchema: paramsSchemaFromSignature(context.checker, signature),
     returnSchema: typeToAiJsonSchema(context.checker, returnType, typeNode.type),
     jsdoc: readJsDoc(context.checker, member),
     provenance: createProvenance({

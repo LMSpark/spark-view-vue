@@ -72,6 +72,18 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "projectId": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -96,6 +108,11 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Record<string, string>"
@@ -104,7 +121,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.761Z",
+  "generatedAt": "2026-06-14T02:38:48.071Z",
   "$defs": {
     "UseNavigationOptions": {
       "type": "object",

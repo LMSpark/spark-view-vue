@@ -172,6 +172,11 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Record<string, string>"
@@ -185,6 +190,11 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "boolean"
@@ -204,6 +214,11 @@
                 "name": "ProjectModelData"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "object",
@@ -225,6 +240,11 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<ProjectModelData>"
@@ -238,6 +258,11 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "boolean"
@@ -384,6 +409,11 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -421,6 +451,16 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "type": "object",
+                "title": "Error"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -429,7 +469,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.824Z",
+  "generatedAt": "2026-06-14T02:38:48.172Z",
   "$defs": {
     "SparkOptions": {
       "type": "object",

@@ -237,6 +237,15 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "pageId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -274,6 +283,16 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "object",
+                "title": "PageNodeRenderConfig"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -296,6 +315,16 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "type": "object",
+                "title": "Error"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -316,12 +345,21 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "payload": {
+                "$ref": "#/$defs/PageRuntimeErrorPayload"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:55.124Z",
+  "generatedAt": "2026-06-14T02:38:49.450Z",
   "$defs": {
     "PageRuntimeErrorPhase": {
       "type": "object",

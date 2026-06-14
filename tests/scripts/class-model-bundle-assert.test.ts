@@ -1,9 +1,11 @@
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { describe, expect, it } from 'vitest'
-// @ts-expect-error -- Node .mjs helper has no declaration file
-import { assertClassModelBundleComplete } from '../../scripts/lib/class-model-bundle-assert.mjs'
+// @ts-ignore TS7016 -- Node .mjs helper；契约见 scripts/lib/class-model-bundle-assert.d.ts
+import { assertClassModelBundleComplete, assertClassModelGuideParamsSchema, assertClassModelSemanticGapsZero } from '../../scripts/lib/class-model-bundle-assert.mjs'
+
+const repoRoot = process.cwd()
 
 describe('class-model-bundle-assert', () => {
   it('throws when manifest shard file is missing', () => {
@@ -14,8 +16,6 @@ describe('class-model-bundle-assert', () => {
           'class-model-emit/foo.d.ts': { file: 'files/missing.json' },
         },
       }))
-      mkdirSync(join(root, 'runtime'), { recursive: true })
-      writeFileSync(join(root, 'runtime/manifest.json'), '{}')
 
       expect(() => assertClassModelBundleComplete(root)).toThrow(/incomplete/i)
     } finally {
@@ -23,22 +23,73 @@ describe('class-model-bundle-assert', () => {
     }
   })
 
-  it('passes when manifest shards and runtime manifest exist', () => {
+  it('passes when guide manifest shards are complete', () => {
     const root = mkdtempSync(join(tmpdir(), 'spark-class-model-assert-'))
     try {
       mkdirSync(join(root, 'files'), { recursive: true })
-      mkdirSync(join(root, 'runtime'), { recursive: true })
-      writeFileSync(join(root, 'files/foo.json'), '{}')
+      writeFileSync(join(root, 'files/foo.json'), JSON.stringify({
+        models: {
+          Demo: {
+            methods: [{
+              name: 'run',
+              paramsSchema: { type: 'object', properties: {} },
+            }],
+          },
+        },
+      }))
       writeFileSync(join(root, 'manifest.json'), JSON.stringify({
         files: {
           'class-model-emit/foo.d.ts': { file: 'files/foo.json' },
         },
       }))
-      writeFileSync(join(root, 'runtime/manifest.json'), '{}')
 
       expect(() => assertClassModelBundleComplete(root)).not.toThrow()
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
+  })
+
+  it('throws when manifest.json is missing', () => {
+    const root = mkdtempSync(join(tmpdir(), 'spark-class-model-assert-'))
+    try {
+      expect(() => assertClassModelBundleComplete(root)).toThrow(/Missing .*manifest\.json/i)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('throws when guide shard method is missing paramsSchema', () => {
+    const root = mkdtempSync(join(tmpdir(), 'spark-class-model-assert-'))
+    try {
+      mkdirSync(join(root, 'files'), { recursive: true })
+      writeFileSync(join(root, 'files/foo.json'), JSON.stringify({
+        models: {
+          Demo: {
+            methods: [{ name: 'run' }],
+          },
+        },
+      }))
+      writeFileSync(join(root, 'manifest.json'), JSON.stringify({
+        files: {
+          'class-model-emit/foo.d.ts': { file: 'files/foo.json' },
+        },
+      }))
+
+      expect(() => assertClassModelGuideParamsSchema(root)).toThrow(/paramsSchema/i)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('passes paramsSchema gate on checked-in guide bundle when present', () => {
+    const bundleRoot = resolve(repoRoot, 'generated/dts-class-model')
+    if (!existsSync(join(bundleRoot, 'manifest.json'))) return
+    expect(() => assertClassModelGuideParamsSchema(bundleRoot)).not.toThrow()
+  })
+
+  it('passes semantic gaps zero gate on checked-in bundle when present', () => {
+    const bundleRoot = resolve(repoRoot, 'generated/dts-class-model')
+    if (!existsSync(join(bundleRoot, 'semantic-gaps.json'))) return
+    expect(() => assertClassModelSemanticGapsZero(bundleRoot)).not.toThrow()
   })
 })

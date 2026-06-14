@@ -832,6 +832,15 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "$ref": "#/$defs/RequestConfig"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "anyOf": [
               {
@@ -876,6 +885,15 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "$ref": "#/$defs/RequestError"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "object",
@@ -964,6 +982,16 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "response": {
+                "$ref": "#/$defs/HttpResponse",
+                "title": "HttpResponse<T>"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "anyOf": [
               {
@@ -1011,6 +1039,15 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "$ref": "#/$defs/RequestError"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "anyOf": [
@@ -1266,6 +1303,11 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Record<string, string>"
@@ -1493,7 +1535,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:55.913Z",
+  "generatedAt": "2026-06-14T02:38:50.249Z",
   "$defs": {
     "Method": {
       "type": "object",

@@ -1,11 +1,14 @@
 /**
  * @module @spark-appworks/spark-ai:class-model/class-model/class-model-emit-path
- * ClassModel 编译期内存 emit 的虚拟路径约定（非磁盘目录）。
+ * 职责：ClassModel 编译期内存 emit 的虚拟路径约定（非磁盘目录）。
+ * 边界：只做路径字符串规则，不访问文件系统或 TypeScript Program。
+ * AI用途：判断 bundle 键是否为 class-model-emit 虚拟源或映射 repo 路径时，用本模块统一约定。
  */
 export const CLASS_MODEL_EMIT_PREFIX = 'class-model-emit/' as const
 
 export const CLASS_MODEL_EMIT_SOURCE = 'class-model-emit' as const
 
+/** ClassModel 内存 emit 来源标识（对应 tsconfig.class-model-emit.json）。 */
 export type ClassModelEmitSource = typeof CLASS_MODEL_EMIT_SOURCE
 
 export const CLASS_MODEL_EMIT_TSCONFIG = 'tsconfig.class-model-emit.json' as const

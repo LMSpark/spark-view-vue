@@ -52,6 +52,11 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -81,6 +86,19 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "DataRow"
+              },
+              "selected": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -109,6 +127,23 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "DataRow"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -119,6 +154,11 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
           },
           "returnSchema": true
         }
@@ -204,7 +244,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:54.022Z",
+  "generatedAt": "2026-06-14T02:38:48.350Z",
   "$defs": {
     "NativeTableLike": {
       "type": "object",

@@ -379,6 +379,11 @@
             "type": "intrinsic",
             "name": "number"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "number"
           }
@@ -718,7 +723,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.152Z",
+  "generatedAt": "2026-06-14T02:38:47.632Z",
   "$defs": {
     "AiAgentRunTraceToolCall": {
       "type": "object",

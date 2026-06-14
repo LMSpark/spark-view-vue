@@ -7,11 +7,11 @@
     "sourceFile": "packages/spark-project-model/src/navigation/navigation-kinds.ts",
     "packageName": "@spark-appworks/spark-project-model",
     "modulePath": "navigation/navigation-kinds",
-    "jsdoc": "@module @spark-appworks/spark-project-model:navigation/navigation-kinds\n职责：按 nodeKind 实例化非配置页导航节点（统一 `ProjectNode`，family 由 nodeKind 派生）。",
+    "jsdoc": "@module @spark-appworks/spark-project-model:navigation/navigation-kinds\n职责：按 nodeKind 实例化非配置页导航节点（统一 `ProjectNode`，family 由 nodeKind 派生）。\n边界：不处理 page/sub-page 配置页；配置页由 instantiate-project-node 路由到 ConfigPageNode。\nAI用途：扩展导航 nodeKind 或排查非配置页节点实例化时，用本模块确认默认 ProjectNode 构造路径。",
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
   "symbols": [],
   "models": {},
-  "generatedAt": "2026-06-13T22:23:55.745Z"
+  "generatedAt": "2026-06-14T02:38:50.053Z"
 }

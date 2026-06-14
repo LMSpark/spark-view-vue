@@ -161,6 +161,23 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "row": {
+                "type": "object",
+                "title": "Partial<DataRow>"
+              },
+              "existingRows": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "title": "DataRow"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "anyOf": [
               {
@@ -345,7 +362,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:55.227Z",
+  "generatedAt": "2026-06-14T02:38:49.560Z",
   "$defs": {
     "PrimaryKeyStrategy": {
       "type": "object",

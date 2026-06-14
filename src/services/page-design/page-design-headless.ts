@@ -1,6 +1,8 @@
 /**
  * @module app:services/page-design/page-design-headless
  * 职责：pageDesign 隔离式 headless ProjectWorkspace 工厂与 registry getter。
+ * 边界：只创建/解析 headless editor，不执行 Host Run 或四文件落盘。
+ * AI用途：SSE 或后端下发 Host Run 前需要隔离式 editor 时，用本模块获取 ProjectWorkspace。
  */
 import { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import { getProjectNavigationApi, getProjectPageApi } from '@/services/api-paths'

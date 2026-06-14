@@ -115,6 +115,11 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": {
             "anyOf": [
               {
@@ -145,6 +150,11 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": {
             "anyOf": [
               {
@@ -160,7 +170,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:55.082Z",
+  "generatedAt": "2026-06-14T02:38:49.400Z",
   "$defs": {
     "PageContextDeps": {
       "type": "object",

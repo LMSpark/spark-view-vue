@@ -549,6 +549,11 @@
               "name": "string"
             }
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "string"
           }
@@ -904,7 +909,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.722Z",
+  "generatedAt": "2026-06-14T02:38:48.038Z",
   "$defs": {
     "AppLoggerApi": {
       "type": "object",

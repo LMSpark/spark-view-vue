@@ -20,7 +20,7 @@
     "ProjectPlanningDeliveryContext": {
       "kind": "ProjectPlanningDeliveryContext",
       "className": "ProjectPlanningDeliveryContext",
-      "jsdoc": "",
+      "jsdoc": "projectPlanning Host Run 落盘时携带的 editor 与导航保存策略。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    editor: ProjectWorkspace;\n    saveNavigationAfterRun: boolean;\n}>",
       "declarationRelations": [
@@ -32,7 +32,7 @@
       ],
       "provenance": {
         "file": "class-model-emit/src/services/project-planning/project-planning-host-run-provider.d.ts",
-        "line": 18,
+        "line": 19,
         "className": "ProjectPlanningDeliveryContext",
         "declarationKind": "type"
       },
@@ -60,11 +60,12 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:56.082Z",
+  "generatedAt": "2026-06-14T02:38:50.401Z",
   "$defs": {
     "ProjectPlanningDeliveryContext": {
       "type": "object",
       "title": "ProjectPlanningDeliveryContext",
+      "description": "projectPlanning Host Run 落盘时携带的 editor 与导航保存策略。",
       "properties": {
         "editor": {
           "type": "object",

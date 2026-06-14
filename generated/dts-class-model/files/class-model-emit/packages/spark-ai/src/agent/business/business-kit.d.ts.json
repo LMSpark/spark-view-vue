@@ -7,7 +7,7 @@
     "sourceFile": "packages/spark-ai/src/agent/business/business-kit.ts",
     "packageName": "@spark-appworks/spark-ai",
     "modulePath": "agent/business/business-kit",
-    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/business-kit\n职责：构建业务级 AI 输入契约，把 businessId、paramsSchema、identity/message 字段、systemPrompt、title 和 readonlySteps 标准化成 AiAgentInputContract。\n边界：只处理输入校验、scope 创建和 orchestration 文案组装，不创建会话、不执行工具，也不持久化业务状态。\nAI用途：注册新的 pageDesign、projectPlanning 等业务入口时，用本模块确认输入字段如何转成会话 scope、用户消息和系统提示。",
+    "jsdoc": "@module @spark-appworks/spark-ai:agent/business/business-kit\n职责：构建业务级 AI 输入契约，把 businessId、paramsSchema、identity/message 字段、systemPrompt、title 和 readonlySteps 标准化成 AiAgentInputContract。\n边界：只处理输入校验、scope 创建和 orchestration 文案组装，不创建会话、不执行工具，也不持久化业务状态。\nAI用途：注册新的业务模块入口时，用本模块确认输入字段如何转成会话 scope、用户消息和系统提示。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "AiBusinessIdOptions",
@@ -168,6 +168,16 @@
             "name": "TInput",
             "refersToTypeParameter": true
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "type": "object",
+                "title": "AiJsonParams"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         }
       ]
@@ -200,7 +210,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:52.948Z",
+  "generatedAt": "2026-06-14T02:38:47.445Z",
   "$defs": {
     "AiBusinessIdOptions": {
       "type": "object",

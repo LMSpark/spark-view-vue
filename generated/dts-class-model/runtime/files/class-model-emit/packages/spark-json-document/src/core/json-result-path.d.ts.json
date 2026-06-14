@@ -1,7 +1,0 @@
-{
-  "schemaVersion": 1,
-  "protocol": "spark-appworks.dts-class-model.runtime",
-  "sourcePath": "class-model-emit/packages/spark-json-document/src/core/json-result-path.d.ts",
-  "symbols": [],
-  "@refs": {}
-}

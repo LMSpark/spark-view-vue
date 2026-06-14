@@ -1,7 +1,8 @@
 /**
  * @module app:services/page-design/page-design-host-run-provider
  * 职责：pageDesign 隔离式 Host Run——headless editor 注册、四文件 delivery、SSE prepare。
- * 边界：DevSystem 内联 runner 共用 editor 语义见 page-design-ai-runner。
+ * 边界：DevSystem 内联 runner 共用 editor 语义见 page-design-ai-runner；不进入 spark-ai 内核。
+ * AI用途：排查 pageDesign Host Run 的 delivery 与 SSE prepare 接线时，用本模块定位 provider 契约。
  */
 import type {
   AiAgentHost,
@@ -39,6 +40,7 @@ import {
 
 // --- delivery ---
 
+/** pageDesign Host Run 落盘时携带的 editor 与 pageId 上下文。 */
 export type PageDesignDeliveryContext = Readonly<{
   editor: ProjectWorkspace
   pageId: string

@@ -224,6 +224,17 @@
             "type": "intrinsic",
             "name": "string"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true,
+              "helpers": {
+                "type": "object",
+                "title": "ReturnType<typeof useFieldOptions>"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "string"
           }
@@ -231,7 +242,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:54.832Z",
+  "generatedAt": "2026-06-14T02:38:49.107Z",
   "$defs": {
     "OptionalWithUndefined": {
       "type": "object",

@@ -52,7 +52,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:56.022Z",
+  "generatedAt": "2026-06-14T02:38:50.303Z",
   "$defs": {
     "ProjectApiScope": {
       "type": "object",

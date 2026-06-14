@@ -2,7 +2,7 @@
  * @module @spark-appworks/spark-ai:agent/business/business-task
  * 职责：把业务输入转换成 AiAgentTask，生成 target、scope、用户消息、系统提示和 orchestration plan。
  * 边界：只负责 task 构造和输入契约执行，不管理 Host 注册表、不保存 session，也不执行模型调用。
- * AI用途：需要理解 pageDesign/projectPlanning 等业务输入如何变成 Agent 请求时，用本模块核对字段流向。
+ * AI用途：需要理解业务输入如何变成 Agent 请求时，用本模块核对字段流向。
  */
 
 import {

@@ -7,7 +7,7 @@
     "sourceFile": "src/services/project/project-settings.ts",
     "packageName": "app",
     "modulePath": "services/project/project-settings",
-    "jsdoc": "@module app:services/project/project-settings\n职责：项目运行时设置（HTTP）与壳层 UI 偏好（localStorage）。\n边界：只处理 app 层配置读写，不修改 spark-project-model 协议。",
+    "jsdoc": "@module app:services/project/project-settings\n职责：项目运行时设置（HTTP）与壳层 UI 偏好（localStorage）。\n边界：只处理 app 层配置读写，不修改 spark-project-model 协议。\nAI用途：调整项目布局偏好或读取项目详情/导航元数据时，用本模块定位 HTTP 与 localStorage 接线。",
     "jsdocSource": "leading-jsdoc",
     "symbols": [
       "ProjectLayoutPlacement",
@@ -47,7 +47,7 @@
       ],
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
-        "line": 8,
+        "line": 9,
         "className": "ProjectLayoutPlacement",
         "declarationKind": "type"
       },
@@ -62,7 +62,7 @@
       "declarationTypeText": "{\n    tenantId: string;\n    projectId: string;\n    name: string;\n    projectType: string;\n    icon: string;\n    description: string;\n    homeNodeId: string | null;\n    order: number;\n}",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
-        "line": 10,
+        "line": 11,
         "className": "ProjectDetail",
         "declarationKind": "type"
       },
@@ -157,7 +157,7 @@
       "declarationTypeText": "{\n    id: string;\n    title: string;\n    path: string;\n    label: string;\n}",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
-        "line": 21,
+        "line": 22,
         "className": "ProjectHomeNodeOption",
         "declarationKind": "type"
       },
@@ -209,7 +209,7 @@
       "declarationTypeText": "{\n    project: ProjectDetail;\n    childPlacement: ProjectLayoutPlacement;\n    rootModuleId: string | null;\n    homeNodeOptions: ProjectHomeNodeOption[];\n}",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
-        "line": 28,
+        "line": 29,
         "className": "ProjectRuntimeSettings",
         "declarationKind": "type"
       },
@@ -271,7 +271,7 @@
       "declarationTypeText": "{\n    childPlacement: ProjectLayoutPlacement;\n    homeNodeId: string | null;\n}",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
-        "line": 35,
+        "line": 36,
         "className": "ProjectRuntimeSettingsInput",
         "declarationKind": "type"
       },
@@ -319,7 +319,7 @@
       ],
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
-        "line": 41,
+        "line": 42,
         "className": "SaveProjectRuntimeSettingsCommand",
         "declarationKind": "type"
       },
@@ -371,7 +371,7 @@
       "declarationTypeText": "{\n    headerFirst: boolean;\n    sidebarCollapsed: boolean;\n    showFooter: boolean;\n    pageMode: PageMode;\n}",
       "provenance": {
         "file": "class-model-emit/src/services/project/project-settings.d.ts",
-        "line": 49,
+        "line": 50,
         "className": "ProjectUiSettings",
         "declarationKind": "type"
       },
@@ -417,7 +417,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:56.085Z",
+  "generatedAt": "2026-06-14T02:38:50.403Z",
   "$defs": {
     "ProjectLayoutPlacement": {
       "type": "object",

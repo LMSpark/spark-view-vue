@@ -7,12 +7,14 @@
 
 export type AiDeliveryMode = 'manual' | 'auto'
 
+/** 单次交付涉及的文件或导航变更摘要。 */
 export type AiDeliveryArtifact = Readonly<{
   kind: 'page-file' | 'navigation'
   name: string
   status: 'dirty' | 'saved' | 'skipped' | 'rolledBack'
 }>
 
+/** Host Run 结束后的交付回执，包含模式、状态与产物列表。 */
 export type AiDeliveryResult = Readonly<{
   mode: AiDeliveryMode
   status: 'saved' | 'skipped' | 'rolledBack' | 'failed'
@@ -20,6 +22,7 @@ export type AiDeliveryResult = Readonly<{
   message?: string
 }>
 
+/** 应用层交付端口：负责 save、trace 与 rollback 三阶段契约。 */
 export interface AiDeliveryPort<TContext> {
   readonly mode: AiDeliveryMode
   save(context: TContext): Promise<AiDeliveryResult>
@@ -27,6 +30,7 @@ export interface AiDeliveryPort<TContext> {
   rollback(context: TContext, error: Error): Promise<AiDeliveryResult>
 }
 
+/** 附加在 Error 上的交付回执扩展字段。 */
 export type AiDeliveryResultExtras = Readonly<{
   delivery: AiDeliveryResult
 }>

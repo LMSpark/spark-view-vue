@@ -715,6 +715,15 @@
             "type": "intrinsic",
             "name": "boolean"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/OriginatorFilterContext"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "boolean"
           }
@@ -727,6 +736,11 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
           },
           "returnSchema": true
         },
@@ -746,6 +760,16 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "view": {
+                "type": "object",
+                "title": "DataView"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         },
@@ -781,6 +805,15 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/CurrentRowChangedContext"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "object",
@@ -820,6 +853,15 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/SelectedRowsChangedContext"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -857,6 +899,15 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/RowsChangedContext"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "object",
@@ -896,6 +947,15 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/ClearedContext"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -933,6 +993,15 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/RequestStateChangedContext"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "object",
@@ -972,6 +1041,15 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/SummaryChangedContext"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -1009,6 +1087,15 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/SelectionSummaryChangedContext"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "object",
@@ -1048,6 +1135,15 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/MutatingChangedContext"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -1085,6 +1181,15 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/ConfigChangedContext"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "object",
@@ -1124,6 +1229,15 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/EditingChangedContext"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -1146,6 +1260,15 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/OriginatorFilterContext"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         },
@@ -1174,12 +1297,22 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "error": true,
+              "context": {
+                "$ref": "#/$defs/DataViewBridgeBaseContext"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         }
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:54.404Z",
+  "generatedAt": "2026-06-14T02:38:48.735Z",
   "$defs": {
     "DataViewBridgeEventName": {
       "type": "object",

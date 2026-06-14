@@ -50,6 +50,7 @@ export {
 
 // --- delivery ---
 
+/** projectPlanning Host Run 落盘时携带的 editor 与导航保存策略。 */
 export type ProjectPlanningDeliveryContext = Readonly<{
   editor: ProjectWorkspace
   saveNavigationAfterRun: boolean

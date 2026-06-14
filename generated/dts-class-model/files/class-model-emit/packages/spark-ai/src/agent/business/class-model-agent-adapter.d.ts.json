@@ -676,6 +676,16 @@
             "name": "T",
             "refersToTypeParameter": true
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -700,6 +710,15 @@
                 "name": "unknown"
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "object",
@@ -733,6 +752,17 @@
               "type": "intrinsic",
               "name": "string"
             }
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "instance": true,
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "string"
@@ -777,6 +807,17 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "instance": true,
+              "options": {
+                "type": "object",
+                "title": "AiAgentBeforeFunctionCallOptions"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "anyOf": [
@@ -830,6 +871,17 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "instance": true,
+              "options": {
+                "type": "object",
+                "title": "AiAgentAfterFunctionCallOptions"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "anyOf": [
@@ -887,6 +939,16 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "instance": true,
+              "options": {
+                "$ref": "#/$defs/ClassModelAgentCompleteActionOptions"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "anyOf": [
               {
@@ -938,6 +1000,17 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "instance": true,
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "object",
@@ -991,6 +1064,21 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "instance": true,
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              },
+              "directive": {
+                "type": "object",
+                "title": "AiAgentLifecycleDirective"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -1021,6 +1109,16 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "instance": true,
+              "moduleInstanceId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -1043,6 +1141,16 @@
               "name": "string"
             }
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentToolLoopNudgeContext"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "string"
           }
@@ -1063,6 +1171,16 @@
           "type": {
             "type": "unknown",
             "name": "readonly string[]"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "object",
+                "title": "EnrichFunctionCallFailureCommand"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "array"
@@ -1166,7 +1284,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.047Z",
+  "generatedAt": "2026-06-14T02:38:47.518Z",
   "$defs": {
     "ClassModelAgentAdapterConstructor": {
       "type": "object",

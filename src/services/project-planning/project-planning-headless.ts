@@ -1,6 +1,8 @@
 /**
  * @module app:services/project-planning/project-planning-headless
  * 职责：projectPlanning 隔离式 headless ProjectWorkspace 工厂与 registry getter。
+ * 边界：只创建/解析 headless editor，不执行 Host Run 或导航落盘。
+ * AI用途：projectPlanning Host Run 需要隔离式 ProjectWorkspace 时，用本模块获取 editor 实例。
  */
 import { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import { getProjectNavigationApi, getProjectPageApi } from '@/services/api-paths'

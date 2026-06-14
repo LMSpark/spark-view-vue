@@ -7,11 +7,11 @@
     "sourceFile": "src/class-model-artifacts/artifact-urls.ts",
     "packageName": "app",
     "modulePath": "class-model-artifacts/artifact-urls",
-    "jsdoc": "@module app:class-model-artifacts/artifact-urls\n职责：提供主应用 artifact-urls 能力，围绕 模块入口、副作用注册或内部组合逻辑 连接视图、服务、布局、路由或平台租户流程。\n边界：只处理 app 层编排和 UI 入口，不定义底层包的核心协议，也不绕过配置真源。\nAI用途：需要理解应用入口、平台视图或业务服务接线时，用本模块定位 class-model-artifacts/artifact-urls。",
+    "jsdoc": "@module app:class-model-artifacts/artifact-urls\n职责：提供主应用 ClassModel 静态 bundle 的 HTTP manifest URL。\n边界：只解析发布路径；bundle 真源在 generated/dts-class-model/（入库，可人工评审）。\nAI用途：Worker 按需 fetch shard 时，用本模块定位 manifest 入口 URL。",
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
   "symbols": [],
   "models": {},
-  "generatedAt": "2026-06-13T22:23:55.924Z"
+  "generatedAt": "2026-06-14T02:38:50.265Z"
 }

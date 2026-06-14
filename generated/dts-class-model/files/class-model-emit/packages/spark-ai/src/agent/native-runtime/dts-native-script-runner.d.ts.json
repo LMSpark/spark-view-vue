@@ -106,6 +106,15 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<unknown>"
@@ -114,7 +123,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.113Z",
+  "generatedAt": "2026-06-14T02:38:47.555Z",
   "$defs": {
     "DtsNativeScriptRunCommand": {
       "type": "object",

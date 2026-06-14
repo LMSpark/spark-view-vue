@@ -221,6 +221,16 @@
               "name": "string"
             }
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "string"
           }
@@ -256,6 +266,16 @@
                 ]
               }
             ]
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object",
+                "title": "AiAgentBeforeFunctionCallOptions"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "anyOf": [
@@ -302,6 +322,16 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object",
+                "title": "AiAgentAfterFunctionCallOptions"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "anyOf": [
               {
@@ -347,6 +377,16 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -391,6 +431,20 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "type": "object",
+                "title": "AiAgentRuntimeContext"
+              },
+              "directive": {
+                "type": "object",
+                "title": "AiAgentLifecycleDirective"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -412,6 +466,15 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "moduleInstanceId": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         },
@@ -436,6 +499,15 @@
               "name": "string"
             }
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "context": {
+                "$ref": "#/$defs/AiAgentToolLoopNudgeContext"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "string"
           }
@@ -456,6 +528,16 @@
           "type": {
             "type": "unknown",
             "name": "readonly string[]"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "object",
+                "title": "EnrichFunctionCallFailureCommand"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "array"
@@ -667,7 +749,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.076Z",
+  "generatedAt": "2026-06-14T02:38:47.542Z",
   "$defs": {
     "AiAgentToolLoopNudgeReason": {
       "type": "object",

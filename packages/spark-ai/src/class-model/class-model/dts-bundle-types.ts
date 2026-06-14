@@ -8,16 +8,13 @@ import type {
   ClassModel,
   ComponentClassModelLayer,
   ComponentClassModelLevel,
-  MethodParameterStyle,
   SourceProvenanceMeta,
 } from './types'
-import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
+import type { AiJsonSchemaObject } from '../../json'
 
 export const DTS_FILE_PROJECTION_VERSION = 1 as const
 export const DTS_CLASS_MODEL_BUNDLE_PROTOCOL = 'spark-appworks.dts-class-model.bundle' as const
 export const DTS_CLASS_MODEL_BUNDLE_VERSION = 1 as const
-export const DTS_CLASS_MODEL_RUNTIME_PROTOCOL = 'spark-appworks.dts-class-model.runtime' as const
-export const DTS_CLASS_MODEL_RUNTIME_VERSION = 1 as const
 
 /** Dts File Projection Document 的语义模型。 */
 export type DtsFileProjectionDocument = Readonly<{
@@ -74,121 +71,6 @@ export type DtsClassModelBundleManifest = Readonly<{
   files: Readonly<Record<string, DtsClassModelBundleFileEntry>>
   classIndex: Readonly<Record<string, DtsClassModelBundleClassEntry>>
   duplicates?: readonly DtsClassModelDuplicateRecord[]
-}>
-
-/** Dts Class Model Runtime File Entry 的语义模型。 */
-export type DtsClassModelRuntimeFileEntry = Readonly<{
-  file: string
-  symbols: readonly string[]
-}>
-
-/** Dts Class Model Runtime Class Entry 的语义模型。 */
-export type DtsClassModelRuntimeClassEntry = Readonly<{
-  sourcePath: string
-  file: string
-  modelRef: string
-  schemaRef: string
-}>
-
-/** Dts Class Model Runtime Ref Entry 的语义模型。 */
-export type DtsClassModelRuntimeRefEntry = Readonly<{
-  file: string
-}>
-
-/** Dts Class Model Runtime Manifest 的语义模型。 */
-export type DtsClassModelRuntimeManifest = Readonly<{
-  schemaVersion: typeof DTS_CLASS_MODEL_RUNTIME_VERSION
-  protocol: typeof DTS_CLASS_MODEL_RUNTIME_PROTOCOL
-  files: Readonly<Record<string, DtsClassModelRuntimeFileEntry>>
-  classIndex: Readonly<Record<string, DtsClassModelRuntimeClassEntry>>
-  refIndex: Readonly<Record<string, DtsClassModelRuntimeRefEntry>>
-}>
-
-/** Dts Class Model Runtime Link Relation 的语义模型。 */
-export type DtsClassModelRuntimeLinkRelation =
-  | 'attribute'
-  | 'constructor-parameter'
-  | 'method-parameter'
-  | 'method-return'
-
-/** Dts Class Model Runtime Link 的语义模型。 */
-export type DtsClassModelRuntimeLink = Readonly<{
-  ref: string
-  kind: 'link'
-  fromRef: string
-  relation: DtsClassModelRuntimeLinkRelation
-  targetModelRef: string
-  targetClassName: string
-  targetFile: string
-  targetSchemaRef: string
-}>
-
-/** Dts Class Model Runtime Attribute 的语义模型。 */
-export type DtsClassModelRuntimeAttribute = Readonly<{
-  ref: string
-  kind: 'attribute'
-  ownerRef: string
-  name: string
-  schemaRef: string
-  readable: boolean
-  writable: boolean
-}>
-
-/** Dts Class Model Runtime Method 的语义模型。 */
-export type DtsClassModelRuntimeMethod = Readonly<{
-  ref: string
-  kind: 'method'
-  ownerRef: string
-  name: string
-  parameterStyle: MethodParameterStyle
-  paramsSchemaRef: string
-  returnSchemaRef?: string
-}>
-
-/** Dts Class Model Runtime Constructor 的语义模型。 */
-export type DtsClassModelRuntimeConstructor = Readonly<{
-  ref: string
-  kind: 'constructor'
-  ownerRef: string
-  parameterStyle: MethodParameterStyle
-  paramsSchemaRef: string
-}>
-
-/** Dts Class Model Runtime Model 的语义模型。 */
-export type DtsClassModelRuntimeModel = Readonly<{
-  ref: string
-  kind: 'model'
-  className: string
-  schemaRef: string
-  constructorRef?: string
-  attributeRefs: readonly string[]
-  methodRefs: readonly string[]
-  linkRefs: readonly string[]
-}>
-
-/** Dts Class Model Runtime Schema Ref 的语义模型。 */
-export type DtsClassModelRuntimeSchemaRef = Readonly<{
-  ref: string
-  kind: 'schema'
-  schema: AiJsonSchema
-}>
-
-/** Dts Class Model Runtime Ref 的语义模型。 */
-export type DtsClassModelRuntimeRef =
-  | DtsClassModelRuntimeModel
-  | DtsClassModelRuntimeConstructor
-  | DtsClassModelRuntimeAttribute
-  | DtsClassModelRuntimeMethod
-  | DtsClassModelRuntimeSchemaRef
-  | DtsClassModelRuntimeLink
-
-/** Dts Class Model Runtime Shard 的语义模型。 */
-export type DtsClassModelRuntimeShard = Readonly<{
-  schemaVersion: typeof DTS_CLASS_MODEL_RUNTIME_VERSION
-  protocol: typeof DTS_CLASS_MODEL_RUNTIME_PROTOCOL
-  sourcePath: string
-  symbols: readonly string[]
-  '@refs': Readonly<Record<string, DtsClassModelRuntimeRef>>
 }>
 
 /** Dts Class Model Duplicate Record 的记录结构。 */

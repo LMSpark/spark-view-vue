@@ -25,19 +25,6 @@ import type {
   DtsClassModelBundleFileEntry,
   DtsClassModelBundleManifest,
   DtsClassModelDuplicateRecord,
-  DtsClassModelRuntimeAttribute,
-  DtsClassModelRuntimeClassEntry,
-  DtsClassModelRuntimeConstructor,
-  DtsClassModelRuntimeFileEntry,
-  DtsClassModelRuntimeLink,
-  DtsClassModelRuntimeLinkRelation,
-  DtsClassModelRuntimeManifest,
-  DtsClassModelRuntimeMethod,
-  DtsClassModelRuntimeModel,
-  DtsClassModelRuntimeRef,
-  DtsClassModelRuntimeRefEntry,
-  DtsClassModelRuntimeSchemaRef,
-  DtsClassModelRuntimeShard,
   DtsFileModuleJsDocSource,
   DtsFileModuleSemanticMeta,
   DtsFileProjectionDocument,
@@ -45,8 +32,6 @@ import type {
 import {
   DTS_CLASS_MODEL_BUNDLE_PROTOCOL,
   DTS_CLASS_MODEL_BUNDLE_VERSION,
-  DTS_CLASS_MODEL_RUNTIME_PROTOCOL,
-  DTS_CLASS_MODEL_RUNTIME_VERSION,
   DTS_FILE_PROJECTION_VERSION,
 } from './dts-bundle-types'
 import { canRenderMethodSignatureFromTypeTree } from './dts-type-meta-ops'
@@ -109,13 +94,6 @@ const MODULE_JSDOC_SOURCES = new Set<DtsFileModuleJsDocSource>([
 const METHOD_PARAMETER_STYLES = new Set<MethodParameterStyle>([
   'positional',
   'named',
-])
-
-const RUNTIME_LINK_RELATIONS = new Set<DtsClassModelRuntimeLinkRelation>([
-  'attribute',
-  'constructor-parameter',
-  'method-parameter',
-  'method-return',
 ])
 
 type DeclarationKindReadCommand<T extends string> = Readonly<{
@@ -208,64 +186,6 @@ export function readDtsFileProjectionDocument(value: unknown): DtsFileProjection
   }
 }
 
-export function readDtsClassModelRuntimeManifest(value: unknown): DtsClassModelRuntimeManifest {
-  const record = requireJsonRecord(value, 'DTS class-model runtime manifest')
-  const schemaVersion = readRequiredNumber(record, 'schemaVersion', 'runtimeManifest.schemaVersion')
-  if (schemaVersion !== DTS_CLASS_MODEL_RUNTIME_VERSION) {
-    throw new Error(`Unsupported DTS class-model runtime manifest schemaVersion: ${String(schemaVersion)}`)
-  }
-  const protocol = readRequiredString(record, 'protocol', 'runtimeManifest.protocol')
-  if (protocol !== DTS_CLASS_MODEL_RUNTIME_PROTOCOL) {
-    throw new Error(`Unsupported DTS class-model runtime manifest protocol: ${protocol}`)
-  }
-  return {
-    schemaVersion: DTS_CLASS_MODEL_RUNTIME_VERSION,
-    protocol: DTS_CLASS_MODEL_RUNTIME_PROTOCOL,
-    files: readRequiredStringKeyedRecord({
-      record,
-      field: 'files',
-      path: 'runtimeManifest.files',
-      parseEntry: parseRuntimeFileEntry,
-    }),
-    classIndex: readRequiredStringKeyedRecord({
-      record,
-      field: 'classIndex',
-      path: 'runtimeManifest.classIndex',
-      parseEntry: parseRuntimeClassEntry,
-    }),
-    refIndex: readRequiredStringKeyedRecord({
-      record,
-      field: 'refIndex',
-      path: 'runtimeManifest.refIndex',
-      parseEntry: parseRuntimeRefEntry,
-    }),
-  }
-}
-
-export function readDtsClassModelRuntimeShard(value: unknown): DtsClassModelRuntimeShard {
-  const record = requireJsonRecord(value, 'DTS class-model runtime shard')
-  const schemaVersion = readRequiredNumber(record, 'schemaVersion', 'runtimeShard.schemaVersion')
-  if (schemaVersion !== DTS_CLASS_MODEL_RUNTIME_VERSION) {
-    throw new Error(`Unsupported DTS class-model runtime shard schemaVersion: ${String(schemaVersion)}`)
-  }
-  const protocol = readRequiredString(record, 'protocol', 'runtimeShard.protocol')
-  if (protocol !== DTS_CLASS_MODEL_RUNTIME_PROTOCOL) {
-    throw new Error(`Unsupported DTS class-model runtime shard protocol: ${protocol}`)
-  }
-  return {
-    schemaVersion: DTS_CLASS_MODEL_RUNTIME_VERSION,
-    protocol: DTS_CLASS_MODEL_RUNTIME_PROTOCOL,
-    sourcePath: readRequiredString(record, 'sourcePath', 'runtimeShard.sourcePath'),
-    symbols: readRequiredStringArray(record, 'symbols', 'runtimeShard.symbols'),
-    '@refs': readRequiredStringKeyedRecord({
-      record,
-      field: '@refs',
-      path: 'runtimeShard.@refs',
-      parseEntry: parseRuntimeRef,
-    }),
-  }
-}
-
 function parseBundleFileEntry(value: unknown, path: string): DtsClassModelBundleFileEntry {
   const record = requireJsonRecord(value, path)
   const file = readRequiredString(record, 'file', `${path}.file`)
@@ -340,134 +260,6 @@ function parseDuplicateRecord(value: unknown, path: string): DtsClassModelDuplic
     className: readRequiredString(record, 'className', `${path}.className`),
     keptFile: readRequiredString(record, 'keptFile', `${path}.keptFile`),
     skippedFile: readRequiredString(record, 'skippedFile', `${path}.skippedFile`),
-  }
-}
-
-function parseRuntimeFileEntry(value: unknown, path: string): DtsClassModelRuntimeFileEntry {
-  const record = requireJsonRecord(value, path)
-  return {
-    file: readRequiredString(record, 'file', `${path}.file`),
-    symbols: readRequiredStringArray(record, 'symbols', `${path}.symbols`),
-  }
-}
-
-function parseRuntimeClassEntry(value: unknown, path: string): DtsClassModelRuntimeClassEntry {
-  const record = requireJsonRecord(value, path)
-  return {
-    sourcePath: readRequiredString(record, 'sourcePath', `${path}.sourcePath`),
-    file: readRequiredString(record, 'file', `${path}.file`),
-    modelRef: readRequiredString(record, 'modelRef', `${path}.modelRef`),
-    schemaRef: readRequiredString(record, 'schemaRef', `${path}.schemaRef`),
-  }
-}
-
-function parseRuntimeRefEntry(value: unknown, path: string): DtsClassModelRuntimeRefEntry {
-  const record = requireJsonRecord(value, path)
-  return {
-    file: readRequiredString(record, 'file', `${path}.file`),
-  }
-}
-
-function parseRuntimeRef(value: unknown, path: string): DtsClassModelRuntimeRef {
-  const record = requireJsonRecord(value, path)
-  const kind = readRequiredString(record, 'kind', `${path}.kind`)
-  if (kind === 'model') return parseRuntimeModel(record, path)
-  if (kind === 'constructor') return parseRuntimeConstructor(record, path)
-  if (kind === 'attribute') return parseRuntimeAttribute(record, path)
-  if (kind === 'method') return parseRuntimeMethod(record, path)
-  if (kind === 'schema') return parseRuntimeSchemaRef(record, path)
-  if (kind === 'link') return parseRuntimeLink(record, path)
-  throw new Error(`${path}.kind must be one of: model, constructor, attribute, method, schema, link`)
-}
-
-function parseRuntimeModel(value: unknown, path: string): DtsClassModelRuntimeModel {
-  const record = requireJsonRecord(value, path)
-  const constructorRef = readOptionalString(record, 'constructorRef', `${path}.constructorRef`)
-  return {
-    ref: readRequiredString(record, 'ref', `${path}.ref`),
-    kind: 'model',
-    className: readRequiredString(record, 'className', `${path}.className`),
-    schemaRef: readRequiredString(record, 'schemaRef', `${path}.schemaRef`),
-    ...(constructorRef === undefined ? {} : { constructorRef }),
-    attributeRefs: readRequiredStringArray(record, 'attributeRefs', `${path}.attributeRefs`),
-    methodRefs: readRequiredStringArray(record, 'methodRefs', `${path}.methodRefs`),
-    linkRefs: readRequiredStringArray(record, 'linkRefs', `${path}.linkRefs`),
-  }
-}
-
-function parseRuntimeConstructor(value: unknown, path: string): DtsClassModelRuntimeConstructor {
-  const record = requireJsonRecord(value, path)
-  return {
-    ref: readRequiredString(record, 'ref', `${path}.ref`),
-    kind: 'constructor',
-    ownerRef: readRequiredString(record, 'ownerRef', `${path}.ownerRef`),
-    parameterStyle: readRequiredDeclarationKind({
-      record,
-      field: 'parameterStyle',
-      path: `${path}.parameterStyle`,
-      allowed: METHOD_PARAMETER_STYLES,
-    }),
-    paramsSchemaRef: readRequiredString(record, 'paramsSchemaRef', `${path}.paramsSchemaRef`),
-  }
-}
-
-function parseRuntimeAttribute(value: unknown, path: string): DtsClassModelRuntimeAttribute {
-  const record = requireJsonRecord(value, path)
-  return {
-    ref: readRequiredString(record, 'ref', `${path}.ref`),
-    kind: 'attribute',
-    ownerRef: readRequiredString(record, 'ownerRef', `${path}.ownerRef`),
-    name: readRequiredString(record, 'name', `${path}.name`),
-    schemaRef: readRequiredString(record, 'schemaRef', `${path}.schemaRef`),
-    readable: readRequiredBoolean(record, 'readable', `${path}.readable`),
-    writable: readRequiredBoolean(record, 'writable', `${path}.writable`),
-  }
-}
-
-function parseRuntimeMethod(value: unknown, path: string): DtsClassModelRuntimeMethod {
-  const record = requireJsonRecord(value, path)
-  const returnSchemaRef = readOptionalString(record, 'returnSchemaRef', `${path}.returnSchemaRef`)
-  return {
-    ref: readRequiredString(record, 'ref', `${path}.ref`),
-    kind: 'method',
-    ownerRef: readRequiredString(record, 'ownerRef', `${path}.ownerRef`),
-    name: readRequiredString(record, 'name', `${path}.name`),
-    parameterStyle: readRequiredDeclarationKind({
-      record,
-      field: 'parameterStyle',
-      path: `${path}.parameterStyle`,
-      allowed: METHOD_PARAMETER_STYLES,
-    }),
-    paramsSchemaRef: readRequiredString(record, 'paramsSchemaRef', `${path}.paramsSchemaRef`),
-    ...(returnSchemaRef === undefined ? {} : { returnSchemaRef }),
-  }
-}
-
-function parseRuntimeSchemaRef(value: unknown, path: string): DtsClassModelRuntimeSchemaRef {
-  const record = requireJsonRecord(value, path)
-  return {
-    ref: readRequiredString(record, 'ref', `${path}.ref`),
-    kind: 'schema',
-    schema: readRequiredJsonSchema(record, 'schema', `${path}.schema`),
-  }
-}
-
-function parseRuntimeLink(value: unknown, path: string): DtsClassModelRuntimeLink {
-  const record = requireJsonRecord(value, path)
-  return {
-    ref: readRequiredString(record, 'ref', `${path}.ref`),
-    kind: 'link',
-    fromRef: readRequiredString(record, 'fromRef', `${path}.fromRef`),
-    relation: readRequiredDeclarationKind({
-      record,
-      field: 'relation',
-      path: `${path}.relation`,
-      allowed: RUNTIME_LINK_RELATIONS,
-    }),
-    targetModelRef: readRequiredString(record, 'targetModelRef', `${path}.targetModelRef`),
-    targetClassName: readRequiredString(record, 'targetClassName', `${path}.targetClassName`),
-    targetFile: readRequiredString(record, 'targetFile', `${path}.targetFile`),
-    targetSchemaRef: readRequiredString(record, 'targetSchemaRef', `${path}.targetSchemaRef`),
   }
 }
 

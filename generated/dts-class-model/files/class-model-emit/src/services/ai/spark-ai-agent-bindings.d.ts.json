@@ -7,11 +7,11 @@
     "sourceFile": "src/services/ai/spark-ai-agent-bindings.ts",
     "packageName": "app",
     "modulePath": "services/ai/spark-ai-agent-bindings",
-    "jsdoc": "@module app:services/ai/spark-ai-agent-bindings\n职责：spark-ai agent 类型与 ClassModel 适配器的 app 层统一 import 入口。\n边界：只做 re-export，不包含业务编排。",
+    "jsdoc": "@module app:services/ai/spark-ai-agent-bindings\n职责：spark-ai agent 类型与 ClassModel 适配器的 app 层统一 import 入口。\n边界：只做 re-export，不包含业务编排。\nAI用途：应用层需要引用 spark-ai agent 类型或 ClassModel 适配器时，用本模块避免散落深层子路径 import。",
     "jsdocSource": "leading-jsdoc",
     "symbols": []
   },
   "symbols": [],
   "models": {},
-  "generatedAt": "2026-06-13T22:23:56.021Z"
+  "generatedAt": "2026-06-14T02:38:50.302Z"
 }

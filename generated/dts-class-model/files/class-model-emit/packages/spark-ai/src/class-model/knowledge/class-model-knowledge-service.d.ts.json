@@ -240,6 +240,15 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "requestedClassName": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -688,7 +697,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.525Z",
+  "generatedAt": "2026-06-14T02:38:47.867Z",
   "$defs": {
     "ClassModelKnowledgeQueryInput": {
       "type": "object",

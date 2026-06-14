@@ -1,7 +1,0 @@
-{
-  "schemaVersion": 1,
-  "protocol": "spark-appworks.dts-class-model.runtime",
-  "sourcePath": "class-model-emit/src/layout/demo-nav.d.ts",
-  "symbols": [],
-  "@refs": {}
-}

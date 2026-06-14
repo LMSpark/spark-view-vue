@@ -98,6 +98,11 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Record<string, unknown>"
@@ -1274,7 +1279,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:55.560Z",
+  "generatedAt": "2026-06-14T02:38:49.826Z",
   "$defs": {
     "TreeManagerOptions": {
       "type": "object",

@@ -1,7 +1,7 @@
 # SPARK AppWorks 编译管线审计
 
 > **初版审计**: 2026-06-14  
-> **复核日期**: 2026-06-14（含 #1–#3、#30–#31、P2/P5 修复验证）  
+> **终审日期**: 2026-06-14（全链路终审：所有🔴已清零，🟡仅剩 2 项，🟢 12 项均为设计取舍或低优先级）  
 > **SSOT 索引**: 日常命令见 [`scripts/README.md`](../scripts/README.md)；ClassModel 架构见 [`packages/spark-ai/ARCHITECTURE.md`](../packages/spark-ai/ARCHITECTURE.md)
 
 ---
@@ -93,7 +93,7 @@ spark-utils
 tsconfig.class-model-emit.json
   → emitDeclarationsToMemory (compiler-api 默认 / vue-tsc 可选)
   → buildDtsClassModelBundle (TS AST 投影)
-  → generated/dts-class-model/manifest.json + files/** + runtime/**
+  → generated/dts-class-model/manifest.json + files/**  （guide SSOT；默认无 runtime/）
   → Vite 插件：dev 静态映射 / build 拷贝至 dist/dts-class-model/
 ```
 
@@ -104,13 +104,13 @@ tsconfig.class-model-emit.json
 | 产出含 JSON Schema 形状 | `paramsSchema` 等由 `dts-type-schema.ts`（TypeChecker）静态投影，非运行时校验 |
 | 定向重建 | `--model RootClassName`；refresh 见 `scripts/lib/class-model-knowledge-refresh.mjs` |
 | 运行时加载 | Web Worker + `DtsClassModelBundleLoader` 按 HTTP fetch `/dts-class-model/**` |
-| **双源架构** | 仅 `generated/dts-class-model/` 一处真源（**入库，可人工评审**）；无 public 镜像 |
+| **单源架构** | 仅 `generated/dts-class-model/` 一处真源（**入库，可人工评审**）；无 `public/` 镜像；无 `runtime/manifest.json` 生产读路径 |
 
-**守卫**: `scripts/ensure-class-model-bundle.mjs` — manifest 缺失时 generate。
+**守卫**: `scripts/ensure-class-model-bundle.mjs` — manifest 缺失时 generate，随后 `assertClassModelBundleComplete`（shard 完整性）。
 
 **静态发布**: `tools/vite-plugin-class-model-static.ts` — dev 中间件 + build 拷贝至 `dist/`。
 
-**门禁**: `verify:class-model:full` = generate + verify:class-model + typecheck（无需 `build:packages`）。
+**门禁**: `verify:class-model:full` = generate → `verify-class-model-guide-params-schema.mjs` → `verify-class-model-semantic-gaps.mjs`（gapCount=0）→ verify:class-model → typecheck。
 
 ---
 
@@ -140,28 +140,33 @@ tsconfig.class-model-emit.json
 
 | # | 位置 | 问题 | 复核 |
 |---|------|------|------|
-| 1 | `packages/spark-json-document/vite.config.ts` | ~~ajv/jmespath 被 Rollup 内联~~ | ✔️ **已修复**：`preserveModules` + 标准 external；`dist/index.js` 约 20 行，无 ajv 字符串 |
-| 2 | `packages/spark-json-document/vite.config.ts` + `package.json exports` | ~~`./schema` / `./tree` JS 入口缺失~~ | ✔️ **已修复**：多 entry 产出 `dist/schema/index.js`、`dist/tree/index.js` |
-| 3 | `packages/spark-data/tsconfig.json:12` | ~~dev tsconfig 将 spark-utils 指到 dist~~ | ✔️ **已修复**：改为 `../spark-utils/src/index.ts` |
-| **30** | `artifact-urls.ts` | ~~硬编码 5273 + 模块顶层求值~~ | ✔️ **已修复**：`getDtsClassModelManifestUrl()` 延迟求值；`location.origin` / `VITE_DEV_SERVER_ORIGIN` / `SPARK_FE_ORIGIN` |
-| **31** | `artifact-urls.ts` | ~~Node e2e fallback 不可达~~ | ✔️ **已修复**：e2e 传 `SPARK_FE_ORIGIN`；`start-dev` 注入 `VITE_DEV_SERVER_ORIGIN` |
+| 1 | `packages/spark-json-document/vite.config.ts` | ~~ajv/jmespath 被 Rollup 内联~~ | ✔️ **已修复** |
+| 2 | `packages/spark-json-document/vite.config.ts` + `package.json exports` | ~~`./schema` / `./tree` JS 入口缺失~~ | ✔️ **已修复** |
+| 3 | `packages/spark-data/tsconfig.json:12` | ~~dev tsconfig 将 spark-utils 指到 dist~~ | ✔️ **已修复** |
+| 30 | `artifact-urls.ts` | ~~硬编码 5273 + 模块顶层求值~~ | ✔️ **已修复** |
+| 31 | `artifact-urls.ts` | ~~Node e2e fallback 不可达~~ | ✔️ **已修复** |
+| 19 | `spark-component/.../JsonTreeEditor.vue` | ~~vxe-table 运行时依赖未声明~~ | ✔️ **已修复**：加入 devDeps |
+
+**🔴 已全部清零。**
 
 ### 🟡 中严重度
 
 | # | 位置 | 问题 | 复核 |
 |---|------|------|------|
-| 4 | `spark-data` / `spark-app` `tsconfig.build.json` | 仅这两包用 `declarationDir: ./dist/types`，其余包 `.d.ts` 在 `dist/` 根 | ✅ 下游 paths 被迫分叉 |
+| 4 | ~~`spark-data` / `spark-app` `declarationDir`~~ | ~~仅这两包用 `declarationDir: ./dist/types`~~ | ✔️ **已修复**：与全仓一致，`.d.ts` 落在 `dist/` 根 |
 | 5 | `sort-packages-by-dependency.mjs:19` | 拓扑只读 `dependencies`，不读 `peerDependencies` | ✅ 当前无 peer 依赖 workspace 包 |
 | 6 | `spark-project-model/tsconfig.build.json` | ~~构建 tsconfig 自引用~~ | ✔️ **已修复** |
 | 7 | `spark-project-model/vite.config.ts` | ~~自引用 alias~~ | ✔️ **已修复** |
 | 8 | `spark-component` / `spark-app` `tsconfig.build.json` | ~~未映射 json-document 子路径~~ | ✔️ **已修复** |
 | 17 | `spark-component/tsconfig.build.json` | ~~缺 spark-utils/internal~~ | ✔️ **已修复** |
 | 18 | `spark-component/package.json` | ~~vue-router 仅 peerDeps~~ | ✔️ **已修复**：加入 devDependencies |
-| 19 | `spark-component/.../JsonTreeEditor.vue` | ~~vxe-table 类型未声明~~ | ✔️ **已修复**：devDep `vxe-table` |
+| ~~19~~ | ~~vxe-table~~ | ~~已升级至🔴并修复~~ | ✔️ 加入 devDeps `vxe-table` |
 | 20 | `spark-project-model/tsconfig.build.json` | ~~缺 declarationMap 等~~ | ✔️ **已修复** |
 | 21 | `build-packages.mjs --only` | ~~不含传递依赖~~ | ✔️ **已修复** |
 | 22 | 根 `vite.config.ts` manualChunks | ~~无 spark-json-document chunk~~ | ✔️ **已修复** |
-| **32** | ~~`sync-class-model-static` 全量删拷~~ | ✔️ **已移除**：改 Vite 插件直读 `generated/`（#32 关闭） |
+| **32** | ~~`sync-class-model-static` 全量删拷~~ | ✔️ **已移除**：改 Vite 插件直读 `generated/` |
+| **37** | ~~`spark-ai/tsconfig.json`~~ | ~~开发 tsconfig 将 spark-utils + spark-json-document 解析到 dist~~ | ✔️ **已修复**：统一指向 `packages/*/src` |
+| **38** | ~~`spark-app/tsconfig.json`~~ | ~~开发 tsconfig 将 spark-utils / spark-data 解析到 dist~~ | ✔️ **已修复**：统一指向 `packages/*/src` |
 
 ### 🟢 低严重度
 
@@ -170,7 +175,7 @@ tsconfig.class-model-emit.json
 | 9 | `spark-json-document/vite.config.ts` | ~~单字符串 entry 风格不一致~~ | ✔️ 已与 spark-utils 对齐（多 entry + preserveModules） |
 | 10 | 根 `vite.config.ts:185` | `spark-project-model` chunk 名 `'spark-config'` | ✅ |
 | 11 | `spark-data/package.json` | 顶层 `"postcss": {}` | ✅ |
-| 12 | `spark-utils` / `spark-data` / `spark-component` `tsconfig.json` | `target: ES2020` 覆盖根 ES2022 | ✅ spark-component **有** L21 target（初版 #14 自纠有误，已恢复） |
+| 12 | `spark-utils`/`spark-data`/`spark-component`/`spark-ai`/`spark-app`/`spark-project-model` `tsconfig.json` | `target: ES2020` 覆盖根 ES2022（**6 包**，仅 spark-json-document 继承 ES2022） | ✅ |
 | 13 | `spark-component/tsconfig.json:6` | `rootDir: "../.."` | ✅ |
 | 14 | `spark-component/tsconfig.json:9-10` | spark-utils → src，internal → dist | ✅ |
 | 15 | `package-build-cache.mjs` | CONFIG_FILES 硬编码；`builtAt` 非确定性 | ✅ 设计取舍 |
@@ -178,14 +183,15 @@ tsconfig.class-model-emit.json
 | 23 | `spark-project-model/package.json` | ~~eslint legacy --ext~~ | ✔️ **已修复**：`eslint "src/**/*.ts"` |
 | 24 | `spark-json-document/package.json` | ~~无 lint~~ | ✔️ **已修复**：补 lint + ESLint devDeps |
 | 25 | `spark-app/package.json` | ~~lint 不含 .js~~ | ✔️ **已修复**：含 `{ts,tsx,js}` |
-| 26 | `spark-app/package.json:46-49,60-61` | `vue`/`vue-router` 同时在 peer + dev Deps | ✅ 冗余 |
-| 27 | 所有 `packages/*/package.json` | 无 `sideEffects` 字段 | ✅ 错失 tree-shaking |
-| 28 | `spark-utils` 仅此一包有 `module` 字段 | 其余 6 包仅 `exports`；legacy bundler 消费不一致 | ✅ |
+| 26 | `spark-app/package.json:46-49,60-61` | `vue`/`vue-router` 同时在 peer + dev Deps | ✅ 冗余（发布所需 devDeps，保留） |
+| 27 | 所有 `packages/*/package.json` | ~~无 `sideEffects` 字段~~ | ✔️ **已修复**：纯 TS 包 `false`；Vue 包标注 `**/*.css` / `**/*.vue.js` |
+| 28 | ~~`spark-utils` 仅此一包有 `module` 字段~~ | ~~其余 6 包仅 `exports`~~ | ✔️ **已修复**：publish 包统一 `module: ./dist/index.js` |
 | 29 | `spark-project-model/vite.config.ts:28-30` | `test: {}` 放在 vite.config.ts；其他包用独立 vitest.config.ts | ✅ |
 | **33** | 根 `vite.config.ts` | ~~`server.fs.allow` 可收窄~~ | ✔️ **已移除** |
 | **34** | `vite-plugin-class-model-static` closeBundle | ~~不校验 shard 完整性~~ | ✔️ **已修复**：`assertClassModelBundleComplete` |
 | **35** | `vite-plugin-class-model-static` cpSync | 全量拷贝 21MB | ✅ 低优先级，行为正确 |
-| **36** | `artifact-urls.ts` resolveManifestBaseOrigin | 无 fallback 时 throw | ✅ 调用点在浏览器 origin 可用后 |
+| **40** | ~~`ensure-class-model-bundle.mjs`~~ | ~~仅 manifest 存在检查~~ | ✔️ **已修复**：generate 后调用 `assertClassModelBundleComplete` |
+| **41** | `class-model-bundle-assert.test.ts` | 可选扩展 manifest 缺失用例 | 🟢 低优先级 |
 
 ### ⚠️ 初版误报（已排除）
 
@@ -232,35 +238,39 @@ Worker fetch('/dts-class-model/manifest.json')
 | `generated/dts-class-model/` 入库可评审 | ✅ | 已移除 public 镜像 |
 | `ensure:class-model-bundle.mjs` | ✅ | manifest 缺失时 generate |
 | `artifact-urls.ts` 运行时求值 | ✅ | `getDtsClassModelManifestUrl()` + env |
-| `assertClassModelBundleComplete` | ✅ | build 前校验 manifest + shard + runtime |
+| `assertClassModelBundleComplete` | ✅ | build / ensure 前校验 manifest + shard |
+| `assertClassModelGuideParamsSchema` | ✅ | `verify:class-model:full` 校验 paramsSchema |
 
 ### 遗留问题（低优先级）
 
 | # | 严重度 | 位置 | 问题 | 状态 |
 |---|--------|------|------|------|
-| **33** | 🟢 | `vite.config.ts` fs.allow | ~~`'..'` 可收窄~~ | ✔️ **已移除** |
+| **33** | 🟢 | `vite.config.ts` fs.allow | ✔️ **已移除** |
+| **34** | ~~`ensure-class-model-bundle.mjs`~~ | ~~未调用 assert~~ | ✔️ **已修复**（见 #40） |
+| **41** | `class-model-bundle-assert.test.ts` | ~~可选扩展 manifest 缺失用例~~ | ✔️ **已修复** |
 
 ---
 
-## 十一、declarationDir 连锁（复核表）
+## 十一、types 入口（复核表）
 
-| 包 | declarationDir | types 入口 |
-|---|---|---|
-| spark-utils | — | `./dist/index.d.ts` |
-| spark-data | `./dist/types` | `./dist/types/index.d.ts` |
-| spark-json-document | — | `./dist/index.d.ts` |
-| spark-project-model | — | `./dist/index.d.ts` |
-| spark-ai | — | `./dist/index.d.ts` |
-| spark-component | — | `./dist/index.d.ts` |
-| spark-app | `./dist/types` | `./dist/types/index.d.ts` |
+| 包 | types 入口 |
+|---|---|
+| spark-utils | `./dist/index.d.ts` |
+| spark-data | `./dist/index.d.ts` |
+| spark-json-document | `./dist/index.d.ts` |
+| spark-project-model | `./dist/index.d.ts` |
+| spark-ai | `./dist/index.d.ts` |
+| spark-component | `./dist/index.d.ts` |
+| spark-app | `./dist/index.d.ts` |
+
+全仓已统一：**无 `declarationDir`**，声明与 JS 同目录 `dist/`。
 
 ---
 
 ## 十二、后续优先级建议
 
-1. **P1** — 评估 declarationDir 是否收敛到 `dist/`（#4）
-2. **P2** — sideEffects（#27）、package.json 字段统一（#26 #28）
-3. **P3** — project-model vitest 配置迁出 vite.config（#29）
+1. **P3** — `class-model-bundle-assert.test.ts` 扩展更多 semantic-gaps 失败样例（可选）
+2. **P3** — 逐步为 attribute/method 补 JSDoc（不计入 CI 门禁，仅改善 semantic-gaps.log 信息密度）
 
 ---
 

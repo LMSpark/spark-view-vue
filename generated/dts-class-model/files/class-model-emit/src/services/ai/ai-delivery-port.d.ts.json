@@ -53,7 +53,7 @@
     "AiDeliveryArtifact": {
       "kind": "AiDeliveryArtifact",
       "className": "AiDeliveryArtifact",
-      "jsdoc": "",
+      "jsdoc": "单次交付涉及的文件或导航变更摘要。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    kind: 'page-file' | 'navigation';\n    name: string;\n    status: 'dirty' | 'saved' | 'skipped' | 'rolledBack';\n}>",
       "declarationRelations": [
@@ -65,7 +65,7 @@
       ],
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
-        "line": 8,
+        "line": 9,
         "className": "AiDeliveryArtifact",
         "declarationKind": "type"
       },
@@ -141,7 +141,7 @@
     "AiDeliveryResult": {
       "kind": "AiDeliveryResult",
       "className": "AiDeliveryResult",
-      "jsdoc": "",
+      "jsdoc": "Host Run 结束后的交付回执，包含模式、状态与产物列表。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    mode: AiDeliveryMode;\n    status: 'saved' | 'skipped' | 'rolledBack' | 'failed';\n    artifacts: readonly AiDeliveryArtifact[];\n    message?: string;\n}>",
       "declarationRelations": [
@@ -153,7 +153,7 @@
       ],
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
-        "line": 13,
+        "line": 15,
         "className": "AiDeliveryResult",
         "declarationKind": "type"
       },
@@ -225,11 +225,11 @@
     "AiDeliveryPort": {
       "kind": "AiDeliveryPort",
       "className": "AiDeliveryPort",
-      "jsdoc": "",
+      "jsdoc": "应用层交付端口：负责 save、trace 与 rollback 三阶段契约。",
       "shapeKind": "interface",
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
-        "line": 19,
+        "line": 22,
         "className": "AiDeliveryPort",
         "declarationKind": "interface"
       },
@@ -382,7 +382,7 @@
     "AiDeliveryResultExtras": {
       "kind": "AiDeliveryResultExtras",
       "className": "AiDeliveryResultExtras",
-      "jsdoc": "",
+      "jsdoc": "附加在 Error 上的交付回执扩展字段。",
       "shapeKind": "type",
       "declarationTypeText": "Readonly<{\n    delivery: AiDeliveryResult;\n}>",
       "declarationRelations": [
@@ -394,7 +394,7 @@
       ],
       "provenance": {
         "file": "class-model-emit/src/services/ai/ai-delivery-port.d.ts",
-        "line": 25,
+        "line": 29,
         "className": "AiDeliveryResultExtras",
         "declarationKind": "type"
       },
@@ -412,7 +412,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:56.005Z",
+  "generatedAt": "2026-06-14T02:38:50.296Z",
   "$defs": {
     "AiDeliveryMode": {
       "type": "object",
@@ -422,6 +422,7 @@
     "AiDeliveryArtifact": {
       "type": "object",
       "title": "AiDeliveryArtifact",
+      "description": "单次交付涉及的文件或导航变更摘要。",
       "properties": {
         "kind": {
           "anyOf": [
@@ -475,6 +476,7 @@
     "AiDeliveryResult": {
       "type": "object",
       "title": "AiDeliveryResult",
+      "description": "Host Run 结束后的交付回执，包含模式、状态与产物列表。",
       "properties": {
         "mode": {
           "$ref": "#/$defs/AiDeliveryMode"
@@ -518,6 +520,7 @@
     "AiDeliveryPort": {
       "type": "object",
       "title": "AiDeliveryPort",
+      "description": "应用层交付端口：负责 save、trace 与 rollback 三阶段契约。",
       "properties": {
         "mode": {
           "$ref": "#/$defs/AiDeliveryMode"
@@ -527,6 +530,7 @@
     "AiDeliveryResultExtras": {
       "type": "object",
       "title": "AiDeliveryResultExtras",
+      "description": "附加在 Error 上的交付回执扩展字段。",
       "properties": {
         "delivery": {
           "$ref": "#/$defs/AiDeliveryResult"

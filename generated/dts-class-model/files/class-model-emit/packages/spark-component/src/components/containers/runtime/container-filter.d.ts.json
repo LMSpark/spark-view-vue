@@ -158,6 +158,15 @@
             "type": "intrinsic",
             "name": "unknown"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -422,7 +431,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:54.348Z",
+  "generatedAt": "2026-06-14T02:38:48.654Z",
   "$defs": {
     "ErrorLoggerLike": {
       "type": "object",

@@ -191,6 +191,16 @@
             "type": "intrinsic",
             "name": "boolean"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "object",
+                "title": "Sjd.JsonPath"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "boolean"
           }
@@ -212,6 +222,16 @@
             "type": "intrinsic",
             "name": "boolean"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "object",
+                "title": "Sjd.JsonPath"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "boolean"
           }
@@ -232,6 +252,16 @@
           "type": {
             "type": "intrinsic",
             "name": "boolean"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "object",
+                "title": "Sjd.JsonPath"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "boolean"
@@ -261,6 +291,20 @@
             "type": "intrinsic",
             "name": "string"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "target": {
+                "type": "object",
+                "title": "Sjd.JsonObject"
+              },
+              "parentPath": {
+                "type": "object",
+                "title": "Sjd.JsonPath"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "string"
           }
@@ -281,6 +325,16 @@
           "type": {
             "type": "reference",
             "name": "JsonValue"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentPath": {
+                "type": "object",
+                "title": "Sjd.JsonPath"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": {
             "type": "object",
@@ -311,6 +365,19 @@
             "type": "reference",
             "name": "JsonValue"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "parentPath": {
+                "type": "object",
+                "title": "Sjd.JsonPath"
+              },
+              "key": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Sjd.JsonValue"
@@ -319,7 +386,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:54.687Z",
+  "generatedAt": "2026-06-14T02:38:48.969Z",
   "$defs": {
     "JsonTreeEditorProps": {
       "type": "object",

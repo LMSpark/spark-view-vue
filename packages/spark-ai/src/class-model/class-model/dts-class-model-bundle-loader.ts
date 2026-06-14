@@ -17,6 +17,8 @@ import {
   readDtsClassModelBundleManifest,
   readDtsFileProjectionDocument,
 } from './read-dts-class-model-bundle-json'
+import { createRuntimeApiMetadataFromSurface } from './dts-surface-to-runtime-api'
+import type { AiRuntimeApiMetadataJson } from '../metadata'
 
 /** Dts Class Model Bundle Loader Options 的调用配置。 */
 export type DtsClassModelBundleLoaderOptions = Readonly<{
@@ -110,6 +112,15 @@ public async ensureReachableClosure(rootClassName: string): Promise<readonly str
       }
     }
     return reachable
+  }
+
+    /**
+     * 从已加载的 guide manifest 闭包构建 script 用 runtime API metadata。
+     * guide 与 script 共用同一 shard 中的 paramsSchema / returnSchema。
+     */
+  public async buildRuntimeApiMetadata(rootClassName: string): Promise<AiRuntimeApiMetadataJson> {
+    await this.ensureReachableClosure(rootClassName)
+    return createRuntimeApiMetadataFromSurface(this.buildLoadedSurface(), rootClassName)
   }
 
     /** 执行 build Loaded Surface 操作。 */

@@ -2,6 +2,7 @@
  * @module app:services/project/project-shell
  * 职责：App 层项目壳——committed ProjectModel 缓存、ProjectWorkspace 单例、导航同步、项目切换 inject。
  * 边界：不进入 spark-project-model 内核；DevSystem 编辑宿主与 committed 投影分离。
+ * AI用途：切换项目、同步导航或获取 committed ProjectWorkspace 单例时，用本模块定位壳层服务。
  */
 import type { InjectionKey } from 'vue'
 import type { ProjectModelData } from '@spark-appworks/spark-project-model'

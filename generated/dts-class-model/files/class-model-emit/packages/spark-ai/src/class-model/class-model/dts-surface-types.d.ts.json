@@ -24,11 +24,11 @@
       "className": "DtsClassModelSurfaceDocument",
       "jsdoc": "Dts Class Model Surface Document 的语义模型。",
       "shapeKind": "type",
-      "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION;\n    source: typeof CLASS_MODEL_EMIT_SOURCE;\n    configPath: string;\n    models: Readonly<Record<string, ClassModel>>;\n    fileIndex: Readonly<Record<string, readonly string[]>>;\n    generatedAt?: string;\n}>",
+      "declarationTypeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION;\n    source: ClassModelEmitSource;\n    configPath: string;\n    models: Readonly<Record<string, ClassModel>>;\n    fileIndex: Readonly<Record<string, readonly string[]>>;\n    generatedAt?: string;\n}>",
       "declarationRelations": [
         {
           "kind": "alias",
-          "typeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION;\n    source: typeof CLASS_MODEL_EMIT_SOURCE;\n    configPath: string;\n    models: Readonly<Record<string, ClassModel>>;\n    fileIndex: Readonly<Record<string, readonly string[]>>;\n    generatedAt?: string;\n}>",
+          "typeText": "Readonly<{\n    schemaVersion: typeof DTS_CLASS_MODEL_SURFACE_VERSION;\n    source: ClassModelEmitSource;\n    configPath: string;\n    models: Readonly<Record<string, ClassModel>>;\n    fileIndex: Readonly<Record<string, readonly string[]>>;\n    generatedAt?: string;\n}>",
           "targetName": "Readonly"
         }
       ],
@@ -51,7 +51,10 @@
         {
           "name": "source",
           "jsdoc": "",
-          "schema": true,
+          "schema": {
+            "type": "object",
+            "title": "ClassModelEmitSource"
+          },
           "readable": true,
           "writable": true
         },
@@ -156,7 +159,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.460Z",
+  "generatedAt": "2026-06-14T02:38:47.800Z",
   "$defs": {
     "DtsClassModelSurfaceDocument": {
       "type": "object",
@@ -166,7 +169,10 @@
         "schemaVersion": {
           "type": "number"
         },
-        "source": true,
+        "source": {
+          "type": "object",
+          "title": "ClassModelEmitSource"
+        },
         "configPath": {
           "type": "string"
         },

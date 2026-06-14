@@ -2,6 +2,7 @@
  * @module @spark-appworks/spark-ai:class-model/class-model/dts-bundle-url
  * 职责：DTS ClassModel bundle 的相对路径与 manifest URL 解析（纯字符串/URL，无 Node FS）。
  * 边界：供运行时 loader 与编译脚本共用；不得引入 node:path / node:fs / typescript。
+ * AI用途：解析 manifest 相对 URL 或 bundle 文件相对路径时，用本模块保持与 guide shard 命名一致。
  */
 
 export function dtsSourcePathToBundleRelativeJson(sourcePath: string): string {

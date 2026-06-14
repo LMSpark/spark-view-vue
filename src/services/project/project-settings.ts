@@ -2,6 +2,7 @@
  * @module app:services/project/project-settings
  * 职责：项目运行时设置（HTTP）与壳层 UI 偏好（localStorage）。
  * 边界：只处理 app 层配置读写，不修改 spark-project-model 协议。
+ * AI用途：调整项目布局偏好或读取项目详情/导航元数据时，用本模块定位 HTTP 与 localStorage 接线。
  */
 import type { PageMode } from '@spark-appworks/spark-app'
 import {

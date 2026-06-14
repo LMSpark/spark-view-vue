@@ -319,6 +319,16 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "event": {
+                "type": "object",
+                "title": "AiAgentStreamEvent"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -338,6 +348,15 @@
             "type": "intrinsic",
             "name": "void"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "delta": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -356,6 +375,15 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "reasoning": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         },
@@ -385,6 +413,16 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "usage": {
+                "type": "object",
+                "title": "Record<string, unknown>"
+              }
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         }
@@ -719,6 +757,15 @@
               }
             ]
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "input": {
+                "$ref": "#/$defs/AiAgentPrepareSessionInput"
+              }
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "object",
             "title": "Promise<void>"
@@ -804,7 +851,7 @@
       ]
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.254Z",
+  "generatedAt": "2026-06-14T02:38:47.735Z",
   "$defs": {
     "AiAgentTransportToolSpec": {
       "type": "object",

@@ -88,6 +88,13 @@
             "name": "TValue",
             "refersToTypeParameter": true
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true
+            },
+            "additionalProperties": false
+          },
           "returnSchema": true
         },
         {
@@ -116,6 +123,14 @@
             "type": "intrinsic",
             "name": "boolean"
           },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "a": true,
+              "b": true
+            },
+            "additionalProperties": false
+          },
           "returnSchema": {
             "type": "boolean"
           }
@@ -137,6 +152,13 @@
           "type": {
             "type": "intrinsic",
             "name": "void"
+          },
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "value": true
+            },
+            "additionalProperties": false
           },
           "returnSchema": true
         }
@@ -171,7 +193,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:54.340Z",
+  "generatedAt": "2026-06-14T02:38:48.628Z",
   "$defs": {
     "UnifiedValueBridgeOptions": {
       "type": "object",

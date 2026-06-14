@@ -113,7 +113,7 @@
       "methods": []
     }
   },
-  "generatedAt": "2026-06-13T22:23:53.638Z",
+  "generatedAt": "2026-06-14T02:38:47.955Z",
   "$defs": {
     "ClassModelFailureModeRecoveryCommand": {
       "type": "object",
