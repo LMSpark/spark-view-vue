@@ -13,7 +13,7 @@ pnpm monorepo，无 lerna/nx/turborepo，构建编排集中在 `scripts/`。
 | 流水线 | 入口 | 用途 |
 |--------|------|------|
 | A. Dev | `pnpm run dev` | Docker MySQL → Java → Vite HMR |
-| B. 前端生产 | `pnpm run build:fe` | ensure ClassModel bundle → sync public → 根 Vite build |
+| B. 前端生产 | `pnpm run build:fe` | ensure ClassModel bundle → 根 Vite build |
 | C. 全量发布 | `pnpm run build` | Java JAR + 前端 |
 | D. npm 包 | `pnpm run build:packages` | 拓扑排序 + 增量 stamp |
 | E. 日常门禁 | `pnpm run verify` | typecheck + lint + verify:rules（**不**预构建 dist） |
@@ -156,8 +156,8 @@ tsconfig.class-model-emit.json
 | 7 | `spark-project-model/vite.config.ts` | ~~自引用 alias~~ | ✔️ **已修复** |
 | 8 | `spark-component` / `spark-app` `tsconfig.build.json` | ~~未映射 json-document 子路径~~ | ✔️ **已修复** |
 | 17 | `spark-component/tsconfig.build.json` | ~~缺 spark-utils/internal~~ | ✔️ **已修复** |
-| 18 | `spark-component/package.json:53-57` | `vue-router` 仅在 `peerDependencies`，未列入 `devDependencies`；`vue` 两者皆有 | ✅ CI 独立 install 时 vue-router 类型可能缺失 |
-| 19 | `spark-component/src/.../JsonTreeEditor.vue:199` | `import type ... from 'vxe-table'` 但 package.json 未声明 `vxe-table` 依赖 | ✅ type-only 不致运行时错误，但消费者类型解析失败 |
+| 18 | `spark-component/package.json` | ~~vue-router 仅 peerDeps~~ | ✔️ **已修复**：加入 devDependencies |
+| 19 | `spark-component/.../JsonTreeEditor.vue` | ~~vxe-table 类型未声明~~ | ✔️ **已修复**：devDep `vxe-table` |
 | 20 | `spark-project-model/tsconfig.build.json` | ~~缺 declarationMap 等~~ | ✔️ **已修复** |
 | 21 | `build-packages.mjs --only` | ~~不含传递依赖~~ | ✔️ **已修复** |
 | 22 | 根 `vite.config.ts` manualChunks | ~~无 spark-json-document chunk~~ | ✔️ **已修复** |
@@ -175,14 +175,17 @@ tsconfig.class-model-emit.json
 | 14 | `spark-component/tsconfig.json:9-10` | spark-utils → src，internal → dist | ✅ |
 | 15 | `package-build-cache.mjs` | CONFIG_FILES 硬编码；`builtAt` 非确定性 | ✅ 设计取舍 |
 | 16 | 根 `vite.config.ts:15` | `VITE_CACHE_DIR` 未文档化 | ✅ |
-| 23 | `spark-project-model/package.json:22` | `eslint src --ext .ts` 使用 legacy `--ext` flag，flat config 下被忽略 | ✅ |
-| 24 | `spark-json-document/package.json` | 无 `lint`/`lint:fix` script，无 ESLint devDep | ✅ 完全未 lint |
-| 25 | `spark-app/package.json:43` | lint glob `{ts,tsx}` 不含 `.js`；其他 3 包含 | ✅ |
+| 23 | `spark-project-model/package.json` | ~~eslint legacy --ext~~ | ✔️ **已修复**：`eslint "src/**/*.ts"` |
+| 24 | `spark-json-document/package.json` | ~~无 lint~~ | ✔️ **已修复**：补 lint + ESLint devDeps |
+| 25 | `spark-app/package.json` | ~~lint 不含 .js~~ | ✔️ **已修复**：含 `{ts,tsx,js}` |
 | 26 | `spark-app/package.json:46-49,60-61` | `vue`/`vue-router` 同时在 peer + dev Deps | ✅ 冗余 |
 | 27 | 所有 `packages/*/package.json` | 无 `sideEffects` 字段 | ✅ 错失 tree-shaking |
 | 28 | `spark-utils` 仅此一包有 `module` 字段 | 其余 6 包仅 `exports`；legacy bundler 消费不一致 | ✅ |
 | 29 | `spark-project-model/vite.config.ts:28-30` | `test: {}` 放在 vite.config.ts；其他包用独立 vitest.config.ts | ✅ |
-| **33** | 根 `vite.config.ts:44-45` | `server.fs.allow: ['..', '../../src']` 在 public 迁移后可收窄 | 🆕 ClassModel JSON 已走 `public/`，`'..'` 中仅剩 `generated/` 可能需要；如确认无其他依赖可移除 |
+| **33** | 根 `vite.config.ts` | ~~`server.fs.allow` 可收窄~~ | ✔️ **已移除** |
+| **34** | `vite-plugin-class-model-static` closeBundle | ~~不校验 shard 完整性~~ | ✔️ **已修复**：`assertClassModelBundleComplete` |
+| **35** | `vite-plugin-class-model-static` cpSync | 全量拷贝 21MB | ✅ 低优先级，行为正确 |
+| **36** | `artifact-urls.ts` resolveManifestBaseOrigin | 无 fallback 时 throw | ✅ 调用点在浏览器 origin 可用后 |
 
 ### ⚠️ 初版误报（已排除）
 
@@ -229,13 +232,13 @@ Worker fetch('/dts-class-model/manifest.json')
 | `generated/dts-class-model/` 入库可评审 | ✅ | 已移除 public 镜像 |
 | `ensure:class-model-bundle.mjs` | ✅ | manifest 缺失时 generate |
 | `artifact-urls.ts` 运行时求值 | ✅ | `getDtsClassModelManifestUrl()` + env |
-| `--from-disk` / `--delete-declarations` 清理 | ✅ | 已从 generate 脚本移除 |
+| `assertClassModelBundleComplete` | ✅ | build 前校验 manifest + shard + runtime |
 
 ### 遗留问题（低优先级）
 
 | # | 严重度 | 位置 | 问题 | 状态 |
 |---|--------|------|------|------|
-| **33** | 🟢 | `vite.config.ts` fs.allow | `'..'` 可收窄 | 待确认后移除 |
+| **33** | 🟢 | `vite.config.ts` fs.allow | ~~`'..'` 可收窄~~ | ✔️ **已移除** |
 
 ---
 
@@ -256,9 +259,8 @@ Worker fetch('/dts-class-model/manifest.json')
 ## 十二、后续优先级建议
 
 1. **P1** — 评估 declarationDir 是否收敛到 `dist/`（#4）
-2. **P2** — lint 统一（#18 #23 #24 #25）、vxe-table 类型依赖（#19）
-3. **P3** — fs.allow 收窄（#33）
-4. **P4** — sideEffects（#27）、package.json 字段统一（#26 #28）
+2. **P2** — sideEffects（#27）、package.json 字段统一（#26 #28）
+3. **P3** — project-model vitest 配置迁出 vite.config（#29）
 
 ---
 

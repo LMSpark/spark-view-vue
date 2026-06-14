@@ -329,9 +329,6 @@ importers:
       vanilla-jsoneditor:
         specifier: ^3.12.0
         version: 3.12.0(@typescript-eslint/types@8.60.1)
-      vue-router:
-        specifier: 'catalog:'
-        version: 5.1.0(@vue/compiler-sfc@3.5.35)(vite@8.0.16(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue@3.5.35(typescript@6.0.3))
     devDependencies:
       '@eslint/js':
         specifier: 'catalog:'
@@ -366,6 +363,12 @@ importers:
       vue:
         specifier: 3.5.35
         version: 3.5.35(typescript@6.0.3)
+      vue-router:
+        specifier: 'catalog:'
+        version: 5.1.0(@vue/compiler-sfc@3.5.35)(vite@8.0.16(@types/node@25.9.1)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.99.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue@3.5.35(typescript@6.0.3))
+      vxe-table:
+        specifier: 'catalog:'
+        version: 4.19.7(vue@3.5.35(typescript@6.0.3))
 
   packages/spark-data:
     dependencies:
@@ -413,9 +416,24 @@ importers:
         specifier: 'catalog:'
         version: 0.16.0
     devDependencies:
+      '@eslint/js':
+        specifier: 'catalog:'
+        version: 10.0.1(eslint@10.4.1(jiti@2.6.1))
       '@types/jmespath':
         specifier: 'catalog:'
         version: 0.15.2
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.1
+      '@typescript-eslint/eslint-plugin':
+        specifier: 'catalog:'
+        version: 8.60.1(@typescript-eslint/parser@8.60.1(eslint@10.4.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.4.1(jiti@2.6.1))(typescript@6.0.3)
+      '@typescript-eslint/parser':
+        specifier: 'catalog:'
+        version: 8.60.1(eslint@10.4.1(jiti@2.6.1))(typescript@6.0.3)
+      eslint:
+        specifier: 'catalog:'
+        version: 10.4.1(jiti@2.6.1)
       rimraf:
         specifier: 'catalog:'
         version: 6.1.3

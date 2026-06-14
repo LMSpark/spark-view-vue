@@ -40,8 +40,8 @@
     "typecheck": "vue-tsc --noEmit -p tsconfig.json",
     "test": "vitest",
     "test:run": "vitest run",
-    "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0",
-    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
+    "lint": "eslint \"src/**/*.{ts,tsx,js}\" --max-warnings=0",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
   },
   "peerDependencies": {
     "vue": "catalog:",

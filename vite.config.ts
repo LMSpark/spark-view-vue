@@ -42,9 +42,6 @@ export default defineConfig({
   server: {
     port: 5273,
     strictPort: true,
-    fs: {
-      allow: ['..', '../../src']
-    },
     proxy: {
       // ── API 代理到 Java 后端 ──────────────────────────────────────────
       // 页面配置（routes.json, rule.json 等）、AI 端点全部由 Java 后端管理。

@@ -1,6 +1,10 @@
 import { createReadStream, cpSync, existsSync, statSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { join, normalize, resolve } from 'node:path'
 import type { Plugin } from 'vite'
+
+const requireModule = createRequire(import.meta.url)
+const { assertClassModelBundleComplete } = requireModule('../scripts/lib/class-model-bundle-assert.mjs')
 
 /** HTTP 前缀；与 src/class-model-artifacts/artifact-urls.ts 中 DTS_CLASS_MODEL_MANIFEST_PATH 对齐。 */
 export const CLASS_MODEL_HTTP_PREFIX = '/dts-class-model'
@@ -31,12 +35,7 @@ export function classModelStaticPlugin(options: ClassModelStaticPluginOptions = 
     },
     closeBundle() {
       const sourceDir = resolve(repoRoot, options.generatedDir ?? CLASS_MODEL_GENERATED_DIR)
-      const manifestPath = join(sourceDir, 'manifest.json')
-      if (!existsSync(manifestPath)) {
-        throw new Error(
-          `Missing ${CLASS_MODEL_GENERATED_DIR}/manifest.json. Run pnpm run generate:class-model-surface before build.`,
-        )
-      }
+      assertClassModelBundleComplete(sourceDir)
       const targetDir = join(distDir, httpPrefix.slice(1))
       cpSync(sourceDir, targetDir, { recursive: true })
     },
